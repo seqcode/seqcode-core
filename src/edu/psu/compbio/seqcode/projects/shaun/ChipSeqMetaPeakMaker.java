@@ -1,0 +1,139 @@
+package edu.psu.compbio.seqcode.projects.shaun;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
+import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.PointParser;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.RegionParser;
+import edu.psu.compbio.seqcode.gse.tools.utils.Args;
+import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
+import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
+
+public class ChipSeqMetaPeakMaker {
+
+	private Organism org;
+	private Genome gen;
+	private ArrayList<Region> regions;
+	private ArrayList<Point> peaks;
+	private RealValuedHistogram histo;
+	private int windowSize;
+	
+	//main
+	public static void main(String[] args) throws SQLException, NotFoundException {
+		int readLen=26, readExt=0;
+		Pair<Organism,Genome> pair = Args.parseGenome(args);
+		if(pair==null){return;}
+		List<ChipSeqLocator> expts = Args.parseChipSeq(args,"expt");
+		String peaks = Args.parseString(args,"peaks","error");
+		int histwin = Args.parseInteger(args,"histwin", 1000);
+		int histbins = Args.parseInteger(args,"bins", 2000);
+		
+		ChipSeqMetaPeakMaker metamaker = new ChipSeqMetaPeakMaker(pair.car(), pair.cdr(), histwin, histbins);
+		metamaker.loadPeaks(peaks);
+		metamaker.execute(expts, readLen, readExt);
+		metamaker.printMeta();
+	}
+	
+	//Constructor
+	public ChipSeqMetaPeakMaker(Organism o, Genome g, int histwindow, int numBins){
+		org=o;
+		gen =g;
+		regions = new ArrayList<Region>();
+		peaks = new ArrayList<Point>();
+		histo = new RealValuedHistogram(-1*histwindow, histwindow, numBins);
+		windowSize = histwindow;
+	}
+	
+	//Load the positive hits
+	public void loadPeaks(String inFile){
+	    File pFile = new File(inFile);
+	    try {
+			if(!pFile.isFile()){System.err.println("Invalid positive file name");System.exit(1);}
+			BufferedReader reader = new BufferedReader(new FileReader(pFile));
+			
+		    String line;
+		    while ((line = reader.readLine()) != null) {
+		        line = line.trim();
+		        String[] words = line.split("\\s+");
+		        PointParser pparser = new PointParser(gen);
+		    	Point p = pparser.execute(words[2]);
+		    	peaks.add(p);
+		        RegionParser parser = new RegionParser(gen);
+		       	Region r = parser.execute(words[0]);
+		       	regions.add(r);
+		    }
+	    } catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public RealValuedHistogram execute(String [][] exp){
+		return(execute(exp, 26.0, 174.0));
+	}
+	public RealValuedHistogram execute(String [][] exp, double readLength, double readExtension){
+		ArrayList<ChipSeqLocator> locs = new ArrayList<ChipSeqLocator>();
+		for(String[] e : exp)
+			locs.add(new ChipSeqLocator(e[0], e[1]));
+		return(execute(locs, readLength, readExtension));
+	}
+	public RealValuedHistogram execute(List<ChipSeqLocator> locs, double readLength, double readExtension){
+		double hittot = 0;
+		ArrayList<SeqExpt> handles = new ArrayList<SeqExpt>();
+		try {
+			//Load experiments
+            for(ChipSeqLocator l : locs){
+				System.err.print(String.format("%s\t", l.getExptName()));
+				SeqExpt curr = new SeqExpt(gen, l);
+			    curr.setReadLength(readLength);
+                curr.setReadExtension(readExtension);
+				handles.add(curr);
+				hittot += curr.getHitCount();	
+			}System.err.print(String.format("%.0f reads loaded\n", hittot));
+	            
+            //Iterate through peaks
+            for(Point p : peaks) { 
+            	//System.out.println(p.toString());
+            	String c = p.getChrom();
+				int st = p.getLocation();
+				Region currRegion = new Region(gen, c, st-windowSize, st+windowSize);
+				LinkedList<StrandedRegion> ipHits = new LinkedList<StrandedRegion>();
+				for(SeqExpt IP: handles){
+					ipHits.addAll(IP.loadExtendedHits(currRegion));									
+				}
+				for(StrandedRegion r : ipHits){
+					histo.addValueRange(r.getStart()-p.getLocation(), r.getEnd()-p.getLocation(), 1/hittot);
+				}
+				
+            }	
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return(histo);
+		
+	}
+	public void printMeta(){
+		histo.printContents();
+	}
+}

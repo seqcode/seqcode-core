@@ -1,0 +1,197 @@
+<?xml version="1.0"?>
+<project name="seqcode">
+
+  <property name="src.dir" location="src" />	
+  <property name="lib.dir" location="lib" />
+  <property name="build.dir" location="build" />
+  <property name="build.classes.dir" location="${build.dir}/classes" />
+  <property name="build.dist.dir" location="${build.dir}/dist" />
+  <property name="build.unjar.dir" location="${build.dir}/unjar" />
+  <property name="build.compiler" value="javac1.6"/>
+  <property name="pwfiles.basepath"  value="passwords"/>
+  <path id="compile.classpath">
+    <pathelement location="${build.classes.dir}"/>
+     <fileset dir="${lib.dir}">
+        <include name="**/*.jar"/>
+      </fileset>
+  </path>	
+
+  <!-- ======================================================================= -->
+  <!-- Target: init                                                            -->
+  <!-- Depends:                                                                -->
+  <!-- Description: Perform any initialization required to run other targets   -->
+  <!-- ======================================================================= -->
+  <target name="init">
+    <mkdir dir="${build.classes.dir}" />
+    <mkdir dir="${build.dist.dir}" />
+  </target>
+
+  <!-- ======================================================================= -->
+  <!-- Target: clean                                                           -->
+  <!-- Depends: init                                                           -->
+  <!-- Description: clean up files produced in the build                       -->
+  <!-- ======================================================================= -->
+  <target name="clean" depends="init" description="remove build output" >
+    <delete dir="${build.dist.dir}" />
+    <delete dir="${build.classes.dir}" />
+  </target>
+
+  <!-- ======================================================================= -->
+  <!-- Target: compile                                                         -->
+  <!-- Depends: init                                                           -->
+  <!-- Description: Compile the source code                                    -->
+  <!-- ======================================================================= -->
+  <target name="compile" depends="init" description="Compile the code" >
+    <javac srcdir="${src.dir}"
+	   destdir="${build.classes.dir}"	
+	   classpathref="compile.classpath"
+	   debug="true"
+	   debuglevel="lines,vars,source"
+	   deprecation="yes"
+	   compiler="modern"
+	   verbose="no">		  
+      <include name="**/*.java"/>
+    </javac>
+  </target>
+
+
+  <!-- ======================================================================= -->
+  <!-- Target: buildfilecopy                                                   -->
+  <!-- Depends: init                                                           -->
+  <!-- Description: Copies all non-source files required by utils              -->
+  <!--              from the src directory to the build directory              -->
+  <!-- ======================================================================= -->
+  <target name="buildfilecopy" depends="init" description="Copy non-src files to the build dir" >
+    <copy todir="${build.classes.dir}">
+      <fileset dir="${src.dir}">
+	<include name="**/*.gif"/>
+	<include name="**/*.html"/>
+	<include name="**/*.jpg"/>
+	<include name="**/*.xml"/>
+	<include name="**/*.txt"/>
+	<include name="**/*.dtd"/>
+	<include name="**/*.bat"/>
+	<include name="**/*.exe"/>
+	<include name="**/*.ico"/>
+	<include name="**/*.properties"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- ======================================================================= -->
+  <!-- Target: build                                                           -->
+  <!-- Depends: compile, buildfilecopy                                         -->
+  <!-- Description: Compiles all the client source files and copies other      -->
+  <!--              required files to the build directory to create a usable   -->
+  <!--              version of the utils module                                -->
+  <!-- ======================================================================= -->
+  <target name="build" depends="compile, buildfilecopy"
+          description="build and copy files" >
+  </target>
+
+
+  <target name="unjarall" unless="build.unjar.dir.present">
+    <mkdir dir="${build.unjar.dir}.tmp" />
+    <unjar dest="${build.unjar.dir}.tmp">
+      <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </unjar>
+    <move file="${build.unjar.dir}.tmp" tofile="${build.unjar.dir}" />
+  </target>
+
+  <target name="requirepwset">
+    <fail unless="pwset"
+	  message="Must set pwset property.  This is a subdir of
+		   pwfiles.basepath (${pwfiles.basepath})."/>
+  </target>
+
+  <target name="setpwfilespath" depends="init, requirepwset" unless="${pwfiles.path}">
+    <property name="pwfiles.path" value="${pwfiles.basepath}/${pwset}"/>
+  </target>
+
+  <target name="unjarwd" unless="build.unjar.dir.present">
+    <mkdir dir="${build.unjar.dir}.tmp" />
+    <unjar dest="${build.unjar.dir}.tmp">
+      <fileset dir="${lib.dir}">
+	<include name="batik/batik-1.7/*.jar"/>
+	<include name="jfreechart/jfreechar-1.0.6/*.jar"/>
+	<include name="ojdbc/ojdbc14.jar"/>
+	<include name="mysql-connector/mysql-connector-java-3.1.12-bin.jar"/>
+	<include name="log4j/*.jar"/>
+      </fileset>
+    </unjar>
+    <move file="${build.unjar.dir}.tmp" tofile="${build.unjar.dir}" />
+  </target>
+
+  <target name="makewarpdrivejar" depends="build, unjarwd, setpwfilespath">
+    <delete dir="${build.unjar.dir}/META-INF"/>
+    <jar destfile="${build.dist.dir}/cgs-warpdrive.${pwset}.jar" manifest="manifests/warpdrive_manifest.txt">	    
+      <fileset dir="${build.classes.dir}" includes="**/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="**/*.properties"/>
+      <fileset dir="${build.classes.dir}" includes="**/*.txt"/>
+      <fileset dir="${pwfiles.path}" includes="*"/>
+      <fileset dir="${build.unjar.dir}"/>	    
+    </jar>  
+    <chmod file="${build.dist.dir}/cgs-warpdrive.${pwset}.jar}" perm="755"/>
+  </target>
+
+  <target name="makeseqcodejar" depends="build, unjarall">
+    <delete dir="${build.unjar.dir}/META-INF"/>
+    <jar destfile="${build.dist.dir}/seqcode.jar" >	    
+      <fileset dir="${build.classes.dir}" includes="**/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="**/*.properties"/>
+      <fileset dir="${build.classes.dir}" includes="**/*.txt"/>
+      <fileset dir="${pwfiles.basepath}" includes="*"/>
+      <fileset dir="${build.unjar.dir}"/>	    
+    </jar>  
+    <chmod file="${build.dist.dir}/seqcode.jar}" perm="755"/>
+  </target>
+
+  <target name="unjarcli" unless="build.unjar.dir.present">
+    <mkdir dir="${build.unjar.dir}.tmp" />
+    <unjar dest="${build.unjar.dir}.tmp">
+      <fileset dir="${lib.dir}">
+	<include name="ApacheCommons/commons-cli-1.2.jar"/>
+      </fileset>
+    </unjar>
+    <move file="${build.unjar.dir}.tmp" tofile="${build.unjar.dir}" />
+  </target>
+
+  <target name="compilereaddb" depends="init" description="Compile readdb" >
+    <javac srcdir="${src.dir}"
+	   destdir="${build.classes.dir}"	
+	   classpathref="compile.classpath"
+	   debug="true"
+	   debuglevel="lines,vars,source"
+	   deprecation="yes"
+	   compiler="modern"
+	   verbose="no">		  
+      <include name="edu/psu/bmb/compbio/seqcode/gse/projects/readdb/*.java"/>
+    </javac>
+  </target>
+  <target name="makereaddbjar" depends="compilereaddb, unjarcli">
+    <mkdir dir="${build.dir}/javadoc"/>
+    <javadoc destdir="${build.dir}/javadoc">
+      <fileset dir="${src.dir}" includes="**/readdb/*.java"/>
+    </javadoc>
+    <move file="${build.unjar.dir}/META-INF/LICENSE.txt"
+	    tofile="${build.unjar.dir}/Apache-Commons-Cli-LICENSE.txt"/>
+    <move file="${build.unjar.dir}/META-INF/NOTICE.txt"
+	    tofile="${build.unjar.dir}/Apache-Commons-Cli-NOTICE.txt"/>
+    <copy file="${src.dir}/edu/psu/bmb/compbio/seqcode/gse/projects/readdb/HOWTO"
+	  tofile="${build.classes.dir}/HOWTO"/>
+    <copy file="${src.dir}/edu/psu/bmb/compbio/seqcode/gse/projects/readdb/LICENSE"
+	  tofile="${build.classes.dir}/LICENSE"/>
+    <delete dir="${build.unjar.dir}/META-INF"/>
+    <jar destfile="${build.dist.dir}/gse-readdb.jar">	    
+      <fileset dir="${build.classes.dir}" includes="HOWTO"/>
+      <fileset dir="${build.classes.dir}" includes="LICENSE"/>
+      <fileset dir="${build.dir}/javadoc"/>
+      <fileset dir="${src.dir}" includes="**/readdb/*.java"/>
+      <fileset dir="${build.classes.dir}" includes="**/readdb/*.class"/>
+      <fileset dir="${build.unjar.dir}" includes="**org/apache/commons/cli/*.class"/>	    
+      <fileset dir="${build.unjar.dir}" includes="*.txt"/>	    
+    </jar>  
+    <chmod file="${build.dist.dir}/gse-readdb.jar" perm="755"/>
+  </target>
+
+</project>

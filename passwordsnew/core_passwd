@@ -1,0 +1,5 @@
+jdbcconnectstring=jdbc:mysql://setanta.rcc.psu.edu/core?user=mahonylab&passwd=bi0inf2012
+dbiconnectstring=DBI:mysql:host=setanta.rcc.psu.edu;database=core
+user=mahonylab
+passwd=bi0inf2012
+schema=core

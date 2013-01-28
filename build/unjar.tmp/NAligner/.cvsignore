@@ -1,0 +1,13 @@
+bin
+obj
+doc
+Releases
+CVSROOT
+*.user
+*.suo
+*.idx
+*.mdx
+*.wdx
+_ReSharper*
+*resharper*
+

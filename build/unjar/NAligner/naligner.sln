@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "naligner", "naligner.csproj", "{68BB6B9B-57B5-4E16-8B23-952CD406CE9B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{68BB6B9B-57B5-4E16-8B23-952CD406CE9B}.Debug.ActiveCfg = Debug|.NET
+		{68BB6B9B-57B5-4E16-8B23-952CD406CE9B}.Debug.Build.0 = Debug|.NET
+		{68BB6B9B-57B5-4E16-8B23-952CD406CE9B}.Release.ActiveCfg = Release|.NET
+		{68BB6B9B-57B5-4E16-8B23-952CD406CE9B}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

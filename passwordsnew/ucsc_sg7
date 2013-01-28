@@ -1,0 +1,5 @@
+jdbcconnectstring=jdbc:mysql://setanta.rcc.psu.edu/ucsc_sg7?user=ucsc&passwd=genomeannotations!
+dbiconnectstring=DBI:mysql:host=setanta.rcc.psu.edu;database=ucsc_sg7
+user=ucsc
+passwd=genomeannotations!
+schema=ucsc_sg7
