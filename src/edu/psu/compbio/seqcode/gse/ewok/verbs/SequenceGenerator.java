@@ -133,6 +133,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
             if (result == null) {
                 java.sql.Connection cxn =
                 DatabaseFactory.getConnection("core");
+                cxn.setAutoCommit(false);
                 PreparedStatement ps;
                 int start = Math.max(region.getStart() + 1,0);
                 ps = cxn.prepareStatement("select substr(sequence,?,?) from chromsequence where id = ?");
