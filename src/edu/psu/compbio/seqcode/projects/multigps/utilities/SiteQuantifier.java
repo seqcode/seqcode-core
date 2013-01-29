@@ -110,7 +110,7 @@ public class SiteQuantifier {
 			System.err.println("SiteQuantifier:");
 			System.err.println("\tArgs:\n" +
 					"\t--peaks <peaks file(s)>\n" +
-					"\t--win <<window size to take around each peak point>\n" +
+					"\t--win <window size to take around each peak point>\n" +
 					"\t--signalnoise [flag to print signal/noise stats]\n" +
 					"");
 		}else{

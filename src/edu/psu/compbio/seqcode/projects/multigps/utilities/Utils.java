@@ -39,25 +39,27 @@ public class Utils {
 			BufferedReader reader = new BufferedReader(new FileReader(pFile));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				line = line.trim();
-				String[] words = line.split("\\s+");
-
-				if(words.length>=3 && words[2].contains(":")){
-					PointParser pparser = new PointParser(gen);
-					Point p = pparser.execute(words[2]);
-					points.add(p);
-				}else if(words.length>=1 && words[0].contains(":")){
-					if(words[0].contains("-")){
-						RegionParser parser = new RegionParser(gen);
-						Region q = parser.execute(words[0]);
-						points.add(q.getMidpoint());
-					}else{
-						PointParser pparser = new PointParser(gen);
-						Point p = pparser.execute(words[0]);
-						points.add(p);
-					}
-				}
-			}reader.close();
+	            line = line.trim();
+	            String[] words = line.split("\\s+");
+	            
+	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
+	                if(words.length>=3 && words[2].contains(":")){
+		                PointParser pparser = new PointParser(gen);
+		            	Point p = pparser.execute(words[2]);
+		            	points.add(p);		                
+	                }else if(words.length>=1 && words[0].contains(":")){
+		            	if(words[0].contains("-")){
+		                	RegionParser rparser = new RegionParser(gen);
+			            	Region q = rparser.execute(words[0]);
+			            	points.add(q.getMidpoint());			            	
+		            	}else{
+		            		PointParser pparser = new PointParser(gen);
+			            	Point p = pparser.execute(words[0]);
+			            	points.add(p);
+		            	}
+		            }
+                }
+	        }reader.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -109,40 +111,36 @@ public class Utils {
 			BufferedReader reader = new BufferedReader(new FileReader(pFile));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				line = line.trim();
-				String[] words = line.split("\\s+");
-
-				if(words.length>=3 && win!=-1 && words[2].contains(":")){
-					PointParser pparser = new PointParser(gen);
-					Point p = pparser.execute(words[2]);
-					int rstart = p.getLocation()-(win/2)<1 ? 1:p.getLocation()-(win/2);
-					int rend = p.getLocation()+(win/2)>gen.getChromLength(p.getChrom()) ? gen.getChromLength(p.getChrom()):p.getLocation()+(win/2)-1;
-					Region r = new Region(p.getGenome(), p.getChrom(), rstart, rend);
-					regs.add(r);
-				}else if(words.length>=1 && words[0].contains(":")){
-					if(words[0].contains("-")){
-						RegionParser parser = new RegionParser(gen);
-						Region q = parser.execute(words[0]);
-						if(win!=-1){
-							int rstart = q.getMidpoint().getLocation()-(win/2)<1 ? 1:q.getMidpoint().getLocation()-(win/2);
-							int rend = q.getMidpoint().getLocation()+(win/2)>gen.getChromLength(q.getChrom()) ? gen.getChromLength(q.getChrom()):q.getMidpoint().getLocation()+(win/2)-1;
-							Region r = new Region(q.getGenome(), q.getChrom(), rstart, rend);
-							if(r!=null){regs.add(r);}
-						}else{
-							if(q!=null){regs.add(q);}
-						}
-					}else{
-						if(win==-1)
-							win=200; 
-						PointParser pparser = new PointParser(gen);
-						Point p = pparser.execute(words[0]);
-						int rstart = p.getLocation()-(win/2)<1 ? 1:p.getLocation()-(win/2);
-						int rend = p.getLocation()+(win/2)>gen.getChromLength(p.getChrom()) ? gen.getChromLength(p.getChrom()):p.getLocation()+(win/2)-1;
-						Region r = new Region(p.getGenome(), p.getChrom(), rstart, rend);
-						regs.add(r);
-					}
-				}
-			}reader.close();
+	            line = line.trim();
+	            String[] words = line.split("\\s+");
+	            
+	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
+	                if(words.length>=3 && words[2].contains(":")){
+		                PointParser pparser = new PointParser(gen);
+		            	Point p = pparser.execute(words[2]);
+		                if(win==-1 && words[0].contains(":") && words[0].contains("-")){
+		                	RegionParser rparser = new RegionParser(gen);
+			            	Region q = rparser.execute(words[0]);
+			            	regs.add(q);
+		                }else{
+		                	regs.add(p.expand(win/2));
+		                }
+	                }else if(words.length>=1 && words[0].contains(":")){
+		            	if(words[0].contains("-")){
+		                	RegionParser rparser = new RegionParser(gen);
+			            	Region q = rparser.execute(words[0]);
+			            	if(win==-1){
+			                	if(q!=null){regs.add(q);}
+			                }else
+			                	regs.add(q.getMidpoint().expand(win/2));
+		            	}else{
+		            		PointParser pparser = new PointParser(gen);
+			            	Point p = pparser.execute(words[0]);
+			            	regs.add(p.expand(win/2));
+		            	}
+		            }
+                }
+	        }reader.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
