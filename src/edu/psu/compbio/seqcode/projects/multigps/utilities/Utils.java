@@ -46,16 +46,19 @@ public class Utils {
 	                if(words.length>=3 && words[2].contains(":")){
 		                PointParser pparser = new PointParser(gen);
 		            	Point p = pparser.execute(words[2]);
-		            	points.add(p);		                
+		            	if(p!=null)
+		            		points.add(p);		                
 	                }else if(words.length>=1 && words[0].contains(":")){
 		            	if(words[0].contains("-")){
 		                	RegionParser rparser = new RegionParser(gen);
 			            	Region q = rparser.execute(words[0]);
-			            	points.add(q.getMidpoint());			            	
+			            	if(q!=null)
+			            		points.add(q.getMidpoint());			            	
 		            	}else{
 		            		PointParser pparser = new PointParser(gen);
 			            	Point p = pparser.execute(words[0]);
-			            	points.add(p);
+			            	if(p!=null)
+			            		points.add(p);
 		            	}
 		            }
                 }

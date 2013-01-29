@@ -54,12 +54,13 @@ public class SiteQuantifier {
 			//expand 
 			Region r = p.expand(win/2);
 			//Overlap check
-			if(lastr == null || !lastr.overlaps(r)){
+			if(lastr != null && lastr.overlaps(r)){
+				//Combine
+				lastr = lastr.combine(r);
+			}else{
 				//Add to list
 				regs.add(r);
 				lastr = r;
-			}else{
-				lastr = lastr.combine(r);
 			}
 		}
 		//Simple stats
