@@ -130,10 +130,14 @@ public class SiteQuantifier {
 				for(ControlledExperiment r : c.getReplicates()){
 					List<StrandedBaseCount> bc = r.getSignal().getUnstrandedBases(currReg);
 					for(StrandedBaseCount b : bc){
-						if(b.getStrand()=='+')
+						if(b.getStrand()=='+' && sp.getStrand()=='+')
 							pos_hits[b.getCoordinate()-currReg.getStart()]+=b.getCount();
-						else
+						else if(b.getStrand()=='-' && sp.getStrand()=='-')
+							pos_hits[currReg.getEnd()-b.getCoordinate()]+=b.getCount();
+						else if(b.getStrand()=='-' && sp.getStrand()=='+')
 							neg_hits[currReg.getEnd()-b.getCoordinate()]+=b.getCount();
+						else if(b.getStrand()=='+' && sp.getStrand()=='-')
+							neg_hits[b.getCoordinate()-currReg.getStart()]+=b.getCount();
 					}
 				}
 			}
