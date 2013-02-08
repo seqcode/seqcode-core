@@ -20,7 +20,7 @@ import edu.psu.compbio.seqcode.gse.deepseq.ReadHit;
 public class SAMReader extends AlignmentFileReader{
 
     public SAMReader(File f, Genome g, int mis, boolean nonUnique, int idSeed) {
-	super(f, g, mis, nonUnique, idSeed);
+    	super(f, g, mis, nonUnique, idSeed);
     }
     
 	protected void estimateGenome() {
@@ -90,8 +90,12 @@ public class SAMReader extends AlignmentFileReader{
         float weight = 1 / ((float)mapcount);
         Read currRead = new Read((int)totalWeight);
 		for (SAMRecord record : records) {
-		    int start = record.getAlignmentStart();
-		    int end = record.getAlignmentEnd();
+			//int start =  record.getAlignmentStart();
+		    //int end =  record.getAlignmentEnd();
+			//Inefficiency to get around some buggy ENCODE BAM files
+		    int fivePrime = record.getReadNegativeStrandFlag() ? record.getAlignmentEnd() : record.getAlignmentStart();
+		    int start =  record.getReadNegativeStrandFlag() ? fivePrime-readLength+1 : fivePrime;
+		    int end =  record.getReadNegativeStrandFlag() ? fivePrime : fivePrime+readLength-1;
 		    ReadHit currHit = new ReadHit(gen,
 						  currID,
 						  record.getReferenceName().replaceFirst("^chr", ""), 
