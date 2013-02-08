@@ -560,7 +560,7 @@ public class Config {
 				"\t--jointinmodel [flag to allow joint events in model updates]\n" +
 				"\t--fixedmodelrange [flag to keep binding model range constant]\n" +
 				//"\t--mlsharedconfig [flag to share the component config in the ML step]\n" +
-				"\t--mlconfignotshared [flag to share the component config in the ML step]\n" +
+				"\t--mlconfignotshared [flag to not share component configs in the ML step]\n" +
 				"\t--noscaling [flag to turn off signal vs control scaling]\n" +
 				"\t--medianscale [flag to use scaling by median (default = regression)]\n" +
 				"\t--exclude <file of regions to ignore>\n" +
