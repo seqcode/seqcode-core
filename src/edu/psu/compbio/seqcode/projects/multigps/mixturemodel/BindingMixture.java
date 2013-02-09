@@ -607,8 +607,16 @@ public class BindingMixture {
     				currEvents.addAll(condEvents);
     			}
             }
+            
+            //If we haven't used shared component ML, we need to edit and consolidate binding events
+            // 1) Consolidate, because otherwise you can have duplicate binding events
+            // 2) Edit - set counts to zero at conditions where the event is not active
+            if(!config.getMLSharedComponentConfiguration()){
+            	currEvents = consolidateBindingEvents(currEvents);
+            }
+            
+            //Add in sequences and final motif scores here
             if(config.isAddingSequences()){
-	            //Add in sequences and final motif scores here
 	            String seq = config.getFindingMotifs() ? motifFinder.getSeq(w):null;
 	            Pair<Double[][], String[][]> motifScores = config.getFindingMotifs() ? motifFinder.scanRegionWithMotifsGetSeqs(w, seq) : null;
 	            if(seq!=null && motifScores!=null){
@@ -920,6 +928,51 @@ public class BindingMixture {
         	
         	return distrib;
         }
+	}
+	
+	/**
+	 * Consolidate and edit binding events.
+	 * Follows a strict definition of binding event quantification - 
+	 * if the event is not present in the condition, it gets a zero count assigned.
+	 * Also merges positional duplicate events. 
+	 * @param ev
+	 * @return
+	 */
+	private List<BindingEvent> consolidateBindingEvents(List<BindingEvent> ev){
+		List<BindingEvent> newEvents = new ArrayList<BindingEvent>();
+		HashMap<Point, Integer> eventMap = new HashMap<Point, Integer>();
+		int count=0;
+		for(BindingEvent be : ev){
+			if(!eventMap.containsKey(be.getPoint())){
+				eventMap.put(be.getPoint(), count);
+				count++;
+				
+				newEvents.add(be);
+				//First time an event is added, clear out inactive events
+				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+					if(!be.isFoundInCondition(cond)){
+						be.setCondSigHits(cond, 0.0);
+		        		for(ControlledExperiment rep : cond.getReplicates()){
+		        			be.setRepSigHits(rep, 0.0);
+		        		}if(config.CALC_COMP_LL)
+			            	be.setLLd(cond, 0);
+		        }	}
+			}else{
+				int index = eventMap.get(be.getPoint());
+				//For events that are already in the list, just update the active condition read counts
+				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+					if(be.isFoundInCondition(cond)){
+						newEvents.get(index).setCondSigHits(cond, be.getCondSigHits(cond));
+						newEvents.get(index).setCondCtrlHits(cond, be.getCondCtrlHits(cond));
+		        		for(ControlledExperiment rep : cond.getReplicates()){
+		        			newEvents.get(index).setRepSigHits(rep, be.getRepSigHits(rep));
+							newEvents.get(index).setRepCtrlHits(rep, be.getRepCtrlHits(rep));
+		        		}if(config.CALC_COMP_LL)
+		        			newEvents.get(index).setLLd(cond, be.getLLd(cond));
+		        }	}
+			}
+		}
+		return newEvents;
 	}
 	
 	/**
