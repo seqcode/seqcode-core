@@ -55,6 +55,7 @@ public class Config {
 	protected int maxThreads=8;
 	protected double alphaScalingFactor = 1.0; //Scale the condition-specific alpha value by this factor
 	protected boolean multicondition_posprior=true; //Multiple condition positional prior
+	protected double prob_shared_binding=0.9; //Prior probability that binding sites are shared between conditions (Constant used to build positional priors between conditions)
 	protected int bmAnalysisWindowMax=5000;
 	protected int minComponentsForBMUpdate = 500;
 	protected double minComponentReadFactorForBM = 3; //Components must have (this factor times the condition alpha) number of reads assigned before being included in BM update
@@ -95,7 +96,7 @@ public class Config {
 	public final int MAXSECTION = 50000000;
     public final int INIT_COMPONENT_SPACING=30;  //Initial component spacing
     public final int MAX_EM_ITER=2000;
-    public final int EM_ML_ITER=10;     				//Run EM up until <tt>ML_ITER</tt> without using sparse prior
+    public final int EM_ML_ITER=100;     				//Run EM up until <tt>ML_ITER</tt> without using sparse prior
     public final int ML_ML_ITER=100;     				//Run ML up until <tt>ML_ITER</tt> without using sparse prior
     public final int ALPHA_ANNEALING_ITER=100;     //Run EM up until <tt>ALPHA_ANNEALING_ITER</tt> with smaller alpha based on the current iteration
     public final int POSPRIOR_ITER=150;     //Run EM up until <tt>ALPHA_ANNEALING_ITER</tt> with uniform positional prior and then up until at least <tt>POSPRIOR_ANNEALING_ITER</tt> with activated positional prior
@@ -106,8 +107,7 @@ public class Config {
     public final double NOISE_EMISSION_MIN = 0.01; //Arbitrary floor on the emission probability of noise (must be non-zero to mop up noise reads)
     public final double NOISE_EMISSION_MAX = 0.95; //Arbitrary ceiling on the emission probability of noise
     public final int NOISE_DISTRIB_SMOOTHING_WIN = 50; //Smoothing window for the noise distribution used in the BindingMixture
-    public final int MAX_BINDINGMODEL_WIDTH=800; //Maximum width for binding models (affects how large the read profiles are for binding components
-    public final double PROB_SHARED_BINDING=0.5; //Prior probability that binding sites are shared between conditions (Constant used to build positional priors between conditions)
+    public final int MAX_BINDINGMODEL_WIDTH=800; //Maximum width for binding models (affects how large the read profiles are for binding components    
     public final int MOTIF_FINDING_SEQWINDOW=80; //Bases to extract around components for motif-finding
     public final int MOTIF_FINDING_TOPSEQS=500; //Number of top components to analyze
     public final double MOTIF_FINDING_ALLOWED_REPETITIVE = 0.2; //Percentage of the examined sequence window allowed to be lowercase or N
@@ -370,6 +370,8 @@ public class Config {
 					regionsToIgnore = Utils.loadRegionsFromFile(Args.parseString(args, "exclude", null), gen, -1);
 				//Turn off multi-condition positional prior
 				multicondition_posprior = Args.parseFlags(args).contains("noposprior") ? false : true;
+				//Set a value for the multi-condition positional prior
+				prob_shared_binding = Args.parseDouble(args,"probshared",prob_shared_binding);
 				//Turn off motif-finding 
 				findMotifs = Args.parseFlags(args).contains("nomotifs") ? false : true;
 				if(findMotifs){ //Do we need to load sequences?
@@ -447,6 +449,7 @@ public class Config {
 	public int getMaxThreads(){return maxThreads;}
 	public double getAlphaScalingFactor(){return alphaScalingFactor;}
 	public boolean useMultiConditionPosPrior(){return multicondition_posprior;}
+	public double getProbSharedBinding(){return prob_shared_binding;}
 	public int getBMAnalysisWindowMax(){return bmAnalysisWindowMax;}
 	public int getAddFlankingComponentSpacing(){return addFlankingComponentSpacing;}
 	public boolean isAddingAnnotations(){return addAnnotations;}
@@ -566,6 +569,7 @@ public class Config {
 				"\t--exclude <file of regions to ignore>\n" +
 				"\t--plotregions <regions to print during EM training>\n" +
 				"\t--noposprior [flag to turn off multi-cond pos prior]\n" +
+				"\t--probshared <probability that events are shared across conditions (pos prior)>\n" +
 				"\t--nomotifs [flag to turn off motif-finding & motif priors]\n" +
 				"\t--nomotifprior [flag to turn off motif priors only]\n" +
 				"\t--memepath <path to the meme bin dir (default: meme is in $PATH)>\n" +

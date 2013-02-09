@@ -79,9 +79,9 @@ public class BindingEM {
         //As it stands, we are assuming that we know how many total binding sites there are (# potential regions), and that each condition has an equal number of binding sites, 
         //and that those binding sites are shared randomly between conditions with the fixed sharing rate between two conditions.
         double N = numPotentialRegions;
-		double S = N*config.PROB_SHARED_BINDING;
+		double S = N*config.getProbSharedBinding();
 		double L = (double)config.getGenome().getGenomeLength();
-		probAgivenB = Math.log(config.PROB_SHARED_BINDING)/Math.log(2);
+		probAgivenB = Math.log(config.getProbSharedBinding())/Math.log(2);
         probAgivenNOTB =  Math.log((N-S)/(L-N+S))/Math.log(2);
         //System.err.println("EM initialized.\nPositonal prior constants:\tA given B="+probAgivenB+"\tA given notB="+probAgivenNOTB);
 	}

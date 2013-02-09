@@ -78,9 +78,9 @@ public class BindingMixture {
 		if(config.useMultiConditionPosPrior()){
 			//Calculating the prior variables here for info only -- actual variables calculated in BindingEM. 
 			double N = testRegions.size();
-			double S = N*config.PROB_SHARED_BINDING;
+			double S = N*config.getProbSharedBinding();
 			double L = (double)config.getGenome().getGenomeLength();
-			double infoProbAgivenB = Math.log(config.PROB_SHARED_BINDING)/Math.log(2);
+			double infoProbAgivenB = Math.log(config.getProbSharedBinding())/Math.log(2);
 	        double infoProbAgivenNOTB =  Math.log((N-S)/(L-N+S))/Math.log(2);
 			System.err.println("Multi-condition positional priors:\tA given B:"+infoProbAgivenB+"\tA given notB:"+infoProbAgivenNOTB);
 		}

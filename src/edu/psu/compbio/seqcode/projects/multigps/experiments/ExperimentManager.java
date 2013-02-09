@@ -280,7 +280,9 @@ public class ExperimentManager {
 					fout.write(BindingEvent.conditionHeadString(cond)+"\n");
 			    	for(BindingEvent e : events){
 			    		double Q = e.getCondSigVCtrlP(cond);
-			    		if(e.isFoundInCondition(cond) && Q <=config.getQMinThres())
+			    		//Because of the ML step and component sharing, I think that an event could be assigned a significant number of reads without being "present" in the condition's EM model.
+			    		//if(e.isFoundInCondition(cond) && Q <=config.getQMinThres())
+			    		if(Q <=config.getQMinThres())
 			    			fout.write(e.getConditionString(cond)+"\n");
 			    	}
 					fout.close();
