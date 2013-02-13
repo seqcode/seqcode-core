@@ -8,10 +8,10 @@ import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
+import edu.psu.compbio.seqcode.gse.seqview.components.Snapshot;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.gse.warpdrive.components.Snapshot;
 
 
 /**

@@ -25,9 +25,9 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.deepseq.ExtReadHit;
 import edu.psu.compbio.seqcode.gse.deepseq.ReadHit;
+import edu.psu.compbio.seqcode.gse.seqview.paintable.NonOverlappingLayout;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.paintable.AbstractPaintable;
-import edu.psu.compbio.seqcode.gse.warpdrive.paintable.NonOverlappingLayout;
 
 public abstract class FigurePaintable extends AbstractPaintable{
 
