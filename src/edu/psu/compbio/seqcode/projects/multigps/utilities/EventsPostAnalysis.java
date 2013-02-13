@@ -102,7 +102,7 @@ public class EventsPostAnalysis {
     		FileWriter fout = new FileWriter(filename);
     		fout.write("#Peaks to other peaks in same condition distance histograms\n\n");
 			for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
-				RealValuedHistogram peakPeakHisto = new RealValuedHistogram(0, histoWin, histoWin/10);
+				RealValuedHistogram peakPeakHisto = new RealValuedHistogram(0, histoWin, histoWin/5);
 				fout.write("#Condition: "+cond.getName()+"\n");
 				for(String chr : config.getGenome().getChromList()){
 					List<Integer> currCondChrLocs = eventStruct.get(cond.getIndex()).get(chr);
@@ -134,7 +134,7 @@ public class EventsPostAnalysis {
 	    		fout.write("#Peaks to peaks in other conditions distance histograms\n\n");
 				for(ExperimentCondition condA : manager.getExperimentSet().getConditions()){
 					for(ExperimentCondition condB : manager.getExperimentSet().getConditions()){if(condA != condB){
-						RealValuedHistogram peakPeakHisto = new RealValuedHistogram(0, histoWin, histoWin/10);
+						RealValuedHistogram peakPeakHisto = new RealValuedHistogram(0, histoWin, histoWin/5);
 						fout.write("#Condition: "+condA.getName()+" vs "+condB.getName()+"\n");
 						for(String chr : config.getGenome().getChromList()){
 							List<Integer> currCondChrLocsA = eventStruct.get(condA.getIndex()).get(chr);
