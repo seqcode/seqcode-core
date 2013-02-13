@@ -53,17 +53,12 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
 	
     private static int[] romvals;
     private static String[] intvals;
-    private boolean loadedgenes = false;
-
     private String species, version;
     private int speciesid, dbid;
     private java.sql.Connection cxn;
-    private boolean isyeast = false;
-
+    
     private Map<String,ChromosomeInfo> chroms;
     private Map<Integer,ChromosomeInfo> revchroms;
-    
-    private ChipChipDataset dataset;
     
     /**
      * This constructor is *only* for creating a 'temporary' genome, with the 
@@ -75,15 +70,12 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     	version = tempName;
     	speciesid = dbid = -1;
     	cxn = null;
-    	isyeast = false;
     	chroms = new HashMap<String,ChromosomeInfo>();
     	revchroms = new HashMap<Integer,ChromosomeInfo>();
     	
     	ChromosomeInfo info = new ChromosomeInfo(-1, 10000, "chrom");
     	chroms.put(info.getName(), info);
     	revchroms.put(-1, info);
-    	
-    	dataset = null;
     }
 
     public Genome(String tempName, Integer... lengths) { 
@@ -91,7 +83,6 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     	version = tempName;
     	speciesid = dbid = -1;
     	cxn = null;
-    	isyeast = false;
     	chroms = new HashMap<String,ChromosomeInfo>();
     	revchroms = new HashMap<Integer,ChromosomeInfo>();
     	
@@ -100,8 +91,6 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         	chroms.put(info.getName(), info);
         	revchroms.put(info.dbid, info);
     	}
-    	
-    	dataset = null;
     }
     
     public Genome(String tempName, File chrLengths, boolean inventids) {
@@ -109,7 +98,6 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     	version = tempName;
     	speciesid = dbid = -1;
     	cxn = null;
-    	isyeast = false;
     	chroms = new HashMap<String,ChromosomeInfo>();
     	revchroms = new HashMap<Integer,ChromosomeInfo>();
     	if(!chrLengths.isFile()){System.err.println("Invalid genome info file name");System.exit(1);}
@@ -142,7 +130,6 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-    	dataset = null;
     }
     
     public Genome(String tempName, Map<String, Integer> chrLengthMap) {
@@ -150,7 +137,6 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     	version = tempName;
     	speciesid = dbid = -1;
     	cxn = null;
-    	isyeast = false;
     	chroms = new HashMap<String,ChromosomeInfo>();
     	revchroms = new HashMap<Integer,ChromosomeInfo>();
     	int id=0;
@@ -159,7 +145,6 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         	chroms.put(info.getName(), info);
         	revchroms.put(info.dbid, info);
     	}
-	   dataset = null;
     }
     
     public Genome(String tempSpecies, String tempVersion, Pair<String,Integer>... lengths) { 
@@ -167,7 +152,6 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     	version = tempVersion;
     	speciesid = dbid = -1;
     	cxn = null;
-    	isyeast = false;
     	chroms = new HashMap<String,ChromosomeInfo>();
     	revchroms = new HashMap<Integer,ChromosomeInfo>();
     	
@@ -177,8 +161,6 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         	chroms.put(info.getName(), info);
         	revchroms.put(info.dbid, info);
     	}
-    	
-    	dataset = null;
     }
 
     /**
@@ -187,13 +169,9 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     public Genome(String species, String version) throws NotFoundException {
         this.species = species;
         this.version = version;
-        dataset = null; 
         chroms = null;
         revchroms = null;
         
-        if (this.species.equals("Saccharomyces cerevisiae")) {
-            isyeast = true;
-        }
         try {
             cxn = DatabaseFactory.getConnection("core");
             Statement stmt = cxn.createStatement();
@@ -258,19 +236,8 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             ex.printStackTrace();
             throw new DatabaseException("Couldn't connect with role core");
         }
-
-        if (this.species.equals("Saccharomyces cerevisiae")) {
-            isyeast = true;
-        }
     }
-    /**
-     * Returns a <code>ChipChipDataset</code> for this Genome.
-     */
-    public ChipChipDataset getChipChipDataset() { 
-        if(dataset == null) { dataset = new ChipChipDataset(this); }
-        return dataset;
-    }
-
+    
     public boolean isClosed() { 
         return cxn != null;
     }

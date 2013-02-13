@@ -26,7 +26,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 /**
  * @author tdanford
  */
-public class ExptSelectPanel extends GenericSelectPanel<ExptLocator> {
+public class ChipChipExptSelectPanel extends GenericSelectPanel<ExptLocator> {
     
     private MetadataLoader loader;
     private ChipChipMetadataLoader chipLoader;
@@ -49,7 +49,7 @@ public class ExptSelectPanel extends GenericSelectPanel<ExptLocator> {
     private Collection<ExptLocator> scans;    
     private JButton addDiffButton;
 
-    public ExptSelectPanel(Genome g) {
+    public ChipChipExptSelectPanel(Genome g) {
         super();
         hasAgilent = true;
         hasReps = true;
@@ -61,7 +61,7 @@ public class ExptSelectPanel extends GenericSelectPanel<ExptLocator> {
     /* this constructor lets you determine which experiment type selection buttons are shown.  The choices
        are experiment, experiment w/ replicate, MSP, and Bayes
     */
-    public ExptSelectPanel(Genome g,
+    public ChipChipExptSelectPanel(Genome g,
                            boolean hasExperimentButton,
                            boolean hasReplicateButton,
                            boolean hasMSPButton,

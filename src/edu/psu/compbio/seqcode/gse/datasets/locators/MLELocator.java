@@ -35,13 +35,13 @@ public class MLELocator
 	
 	public MLELocator(Genome g, String name, String version) {
 		super(name, version);
-		ds = g.getChipChipDataset();
+		ds = new ChipChipDataset(g);
 	}
 	
 	public MLELocator(Genome g, DataInputStream dis) 
 		throws IOException { 
 		super(dis);
-		ds = g.getChipChipDataset();
+		ds = new ChipChipDataset(g);
 	}
 
     public boolean equals(Object o) { 

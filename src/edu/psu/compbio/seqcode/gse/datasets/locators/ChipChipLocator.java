@@ -75,19 +75,19 @@ public class ChipChipLocator
 
     public ChipChipLocator(Genome g, String name, String version, String replicate) { 
         super(name, version,replicate);
-        ds = g.getChipChipDataset();
+        ds = new ChipChipDataset(g);
     }
 	
     public ChipChipLocator(Genome g, String name, String version) { 
         super(name, version);
-        ds = g.getChipChipDataset();
+        ds = new ChipChipDataset(g);
         replicate = null;
     }
 	
     public ChipChipLocator(Genome g, DataInputStream dis) 
         throws IOException { 
         super(dis);
-        ds = g.getChipChipDataset();
+        ds = new ChipChipDataset(g);
     }
     
     public LinkedList<String> getTreeAddr() { 

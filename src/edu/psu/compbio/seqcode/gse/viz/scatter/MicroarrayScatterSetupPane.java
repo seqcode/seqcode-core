@@ -12,26 +12,26 @@ import edu.psu.compbio.seqcode.gse.datasets.locators.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.viz.components.ExptSelectPanel;
+import edu.psu.compbio.seqcode.gse.viz.components.ChipChipExptSelectPanel;
 
 public class MicroarrayScatterSetupPane extends JTabbedPane implements ItemListener {
 
     private JPanel panelone, paneltwo;
     private JRadioButton cy5one, cy3one, ratioone, cy5two, cy3two, ratiotwo;
     private ButtonGroup radioone, radiotwo;
-    private ExptSelectPanel exptselone, exptseltwo;
+    private ChipChipExptSelectPanel exptselone, exptseltwo;
     private JCheckBox mvsa, logscale;
     private JComboBox species, genome;    
     private boolean handlingChange;
     
     public MicroarrayScatterSetupPane(Genome g) {
         handlingChange = false;
-        exptselone = new ExptSelectPanel(g,
+        exptselone = new ChipChipExptSelectPanel(g,
                                          false,
                                          true,
                                          false,
                                          false);
-        exptseltwo = new ExptSelectPanel(g,
+        exptseltwo = new ChipChipExptSelectPanel(g,
                                          false,
                                          true,
                                          false,

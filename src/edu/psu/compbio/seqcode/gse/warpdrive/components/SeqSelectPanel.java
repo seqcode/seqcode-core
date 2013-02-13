@@ -21,7 +21,7 @@ import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.components.GenericSelectPanel;
 
-public class ChipSeqSelectPanel extends GenericSelectPanel<ChipSeqLocator> {
+public class SeqSelectPanel extends GenericSelectPanel<ChipSeqLocator> {
     
     private ChipSeqLoader chipSeqLoader;
     private TreeSet<ChipSeqLocator> locators;
@@ -29,7 +29,7 @@ public class ChipSeqSelectPanel extends GenericSelectPanel<ChipSeqLocator> {
     private JTextField regex;
     private ChipSeqTableModel selectedModel, filteredModel;
 
-    public ChipSeqSelectPanel() { 
+    public SeqSelectPanel() { 
         try {
             chipSeqLoader = new ChipSeqLoader(true);
         } catch (Exception e) {

@@ -36,13 +36,13 @@ public class MSPLocator
 	
 	public MSPLocator(Genome g, String name, String version) { 
 		super(name, version);
-		ds = g.getChipChipDataset();
+		ds = new ChipChipDataset(g);
 	}
 	
 	public MSPLocator(Genome g, DataInputStream dis) 
 		throws IOException { 
 		super(dis);
-		ds = g.getChipChipDataset();
+		ds = new ChipChipDataset(g);
 	}
 
     public boolean equals(Object o) { 

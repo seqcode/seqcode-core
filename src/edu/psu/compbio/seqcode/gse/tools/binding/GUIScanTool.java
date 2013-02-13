@@ -25,7 +25,7 @@ import edu.psu.compbio.seqcode.gse.ewok.verbs.binding.CallerMapper;
 import edu.psu.compbio.seqcode.gse.utils.Listener;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
-import edu.psu.compbio.seqcode.gse.viz.components.ExptSelectPanel;
+import edu.psu.compbio.seqcode.gse.viz.components.ChipChipExptSelectPanel;
 import edu.psu.compbio.seqcode.gse.viz.utils.GenomeSelectPanel;
 
 public class GUIScanTool extends JFrame implements Listener<ActionEvent> {
@@ -46,7 +46,7 @@ public class GUIScanTool extends JFrame implements Listener<ActionEvent> {
 	private BindingScanLoader loader;
 	private JButton scanButton;	
 	private GenomeSelectPanel genomeSelector;
-	private ExptSelectPanel selectPanel;
+	private ChipChipExptSelectPanel selectPanel;
     private JTextField paramsField;
 
 	public GUIScanTool() throws SQLException, UnknownRoleException { 
@@ -58,7 +58,7 @@ public class GUIScanTool extends JFrame implements Listener<ActionEvent> {
 		c.setLayout(new BorderLayout());
 		c.add(genomeSelector = new GenomeSelectPanel("Homo sapiens", "hg17"), 
 				BorderLayout.NORTH);
-		c.add(selectPanel = new ExptSelectPanel(getGenome()), 
+		c.add(selectPanel = new ChipChipExptSelectPanel(getGenome()), 
 				BorderLayout.CENTER);
 		
 		JPanel scanPanel = new JPanel(); 

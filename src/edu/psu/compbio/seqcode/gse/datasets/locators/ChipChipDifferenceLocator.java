@@ -39,7 +39,7 @@ public class ChipChipDifferenceLocator
     private ChipChipLocator loc1, loc2;
 
     public ChipChipDifferenceLocator(Genome g, ChipChipLocator loc1, ChipChipLocator loc2) {  
-        super(g.getChipChipDataset(), 
+        super(new ChipChipDataset(g), 
                 String.format("Difference(%s-%s)", loc1.name, loc2.name), 
                 String.format("%s:%s", loc1.version, loc2.version));
         this.loc1 = loc1;

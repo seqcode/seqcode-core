@@ -19,7 +19,7 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.RegionExpanderFactoryLoader;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.gse.viz.components.ExptSelectPanel;
+import edu.psu.compbio.seqcode.gse.viz.components.ChipChipExptSelectPanel;
 import edu.psu.compbio.seqcode.gse.warpdrive.WarpOptions;
 
 public class WarpOptionsPane 
@@ -49,7 +49,7 @@ public class WarpOptionsPane
     private JCheckBox relative, hash, common, seqletters, oldchipseq;
     
     // chipseq tab
-    private ChipSeqSelectPanel seqSelect, pairedSeqSelect, interactionArcSelect;
+    private SeqSelectPanel seqSelect, pairedSeqSelect, interactionArcSelect;
 
     // annotations tab
     private JList genes, ncrnas, otherfeats;
@@ -58,7 +58,7 @@ public class WarpOptionsPane
     private JLabel geneslabel, ncrnaslabel, otherfeatslabel;
     
     //private ExptTreeSelectPanel exptSelect;
-    private ExptSelectPanel exptSelect;
+    private ChipChipExptSelectPanel exptSelect;
     
     // file-based tracks
     private FileBasedTracksPanel filetracks, chiapettracks;
@@ -196,21 +196,21 @@ public class WarpOptionsPane
         species.addItemListener(this);
         genome.addItemListener(this);        
         
-        exptSelect = new ExptSelectPanel(null);
+        exptSelect = new ChipChipExptSelectPanel(null);
         
         //chiapet tab
         chiapettracks = new FileBasedTracksPanel();
         
         // chipseq tab
-        seqSelect = new ChipSeqSelectPanel();        
+        seqSelect = new SeqSelectPanel();        
         seqPanel.setLayout(new BorderLayout());
         seqPanel.add(seqSelect, BorderLayout.CENTER);
 
-        pairedSeqSelect = new ChipSeqSelectPanel();
+        pairedSeqSelect = new SeqSelectPanel();
         pairedSeqPanel.setLayout(new BorderLayout());
         pairedSeqPanel.add(pairedSeqSelect, BorderLayout.CENTER);
         
-        interactionArcSelect = new ChipSeqSelectPanel();
+        interactionArcSelect = new SeqSelectPanel();
         interactionArcPanel.setLayout(new BorderLayout());
         interactionArcPanel.add(interactionArcSelect, BorderLayout.CENTER);
         
@@ -350,7 +350,7 @@ public class WarpOptionsPane
         try {
             Genome g = loadGenome();
             if (g != null) {
-                ChipChipDataset ds = loadGenome().getChipChipDataset();
+                ChipChipDataset ds = new ChipChipDataset(g);
                 for (int i = 0; i < opts.agilentdata.size(); i++) {
                     exptSelect.addToSelected(new ChipChipLocator(ds,
                                                                  opts.agilentdata.get(i).name,
@@ -371,7 +371,7 @@ public class WarpOptionsPane
         } catch (NullPointerException ex) {
             /* this doesn't work if we can't get a genome object.  Just ignore
                the exception.  It only means that we can't fill in the
-               selected experiments and teh user will have to do it again */
+               selected experiments and the user will have to do it again */
             ex.printStackTrace();
         }
         if (opts.position != null &&

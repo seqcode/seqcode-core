@@ -16,7 +16,7 @@ import edu.psu.compbio.seqcode.gse.viz.components.*;
 
 public class CGHAnalysisPanel extends JPanel implements Runnable, ActionListener {
 
-    private ExptSelectPanel exptpanel;
+    private ChipChipExptSelectPanel exptpanel;
     private JPanel paramspanel, buttonpanel, bottompanel;
     private RegionPanel regionpanel;
     private Genome genome;
@@ -29,7 +29,7 @@ public class CGHAnalysisPanel extends JPanel implements Runnable, ActionListener
         super();
         regionpanel = rp;
         genome = rp.getGenome();
-        exptpanel = new ExptSelectPanel(genome);
+        exptpanel = new ChipChipExptSelectPanel(genome);
 
         exptpanel.setPreferredSize(new Dimension(400,600));        
 
