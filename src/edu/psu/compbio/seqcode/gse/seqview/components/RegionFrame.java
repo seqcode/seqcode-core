@@ -23,7 +23,7 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 public class RegionFrame extends JFrame {
     
     public static void main(String args[]) throws NotFoundException, SQLException, IOException {
-        WarpOptions opts = WarpOptions.parseCL(args);
+        SeqViewOptions opts = SeqViewOptions.parseCL(args);
         RegionFrame frame = new RegionFrame(opts);
     }
 
@@ -52,7 +52,7 @@ public class RegionFrame extends JFrame {
         if(genomeFrameMap.containsKey(genomeName)) { 
             return genomeFrameMap.get(genomeName);
         } else { 
-            WarpOptions opts = new WarpOptions(genomeName);
+            SeqViewOptions opts = new SeqViewOptions(genomeName);
             RegionFrame f = new RegionFrame(opts);
             return f;
         }
@@ -62,7 +62,7 @@ public class RegionFrame extends JFrame {
     private boolean imageraster;
     private int imageheight = 1200, imagewidth = 1600;
 
-    public RegionFrame(WarpOptions opts) {
+    public RegionFrame(SeqViewOptions opts) {
         setTitle(opts.species + " " + opts.genome);
         panel = new RegionPanel(opts);
         //getContentPane().add(new ImageCachingPanel(panel));
@@ -86,7 +86,7 @@ public class RegionFrame extends JFrame {
     
     public RegionPanel getRegionPanel() { return panel; }
     
-    private JMenuBar createDefaultJMenuBar(WarpOptions opts) { 
+    private JMenuBar createDefaultJMenuBar(SeqViewOptions opts) { 
         JMenuBar jmb = new JMenuBar();
         JMenu filemenu, imagemenu, navigationmenu, displaymenu, toolsmenu; 
         JMenuItem item;
@@ -96,10 +96,10 @@ public class RegionFrame extends JFrame {
         filemenu.add((item = new JMenuItem("Configure Tracks")));
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {                    
-                    WarpOptions current = panel.getCurrentOptions();
-                    WarpOptionsFrame frame;
+                    SeqViewOptions current = panel.getCurrentOptions();
+                    SeqView frame;
                     try {
-                        frame = new WarpOptionsFrame(panel.getCurrentOptions());
+                        frame = new SeqView(panel.getCurrentOptions());
                         frame.addPainterContainer(panel);
                     } catch (NotFoundException e1) {
                         e1.printStackTrace();
@@ -267,63 +267,7 @@ public class RegionFrame extends JFrame {
                 }
             });
         group.add(item);
-        jmb.add(new WarpToolsMenu(panel));
-        
-        
-        if(BLASTInterfaceFactory.defaultFactory != null &&
-           BLASTInterfaceFactory.defaultFactory.size() > 0) { 
-            JMenu blastMenu = new JMenu("BLAST Against"); 
-
-            try {
-                final Genome base = Organism.findGenome(opts.genome);
-                for(String genome : BLASTInterfaceFactory.defaultFactory.getGenomes()) { 
-                    JMenuItem bitem = new JMenuItem(genome);
-                    blastMenu.add(bitem);
-
-                    final Genome target = Organism.findGenome(genome);
-                    bitem.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                RegionFrame targetFrame;
-                                if(RegionFrame.genomeFrameMap.containsKey(target.getVersion())) { 
-                                    targetFrame = RegionFrame.genomeFrameMap.get(target.getVersion());
-                                } else { 
-                                    WarpOptions opts = new WarpOptions(target.getVersion());                                                                        
-                                    opts.chrom = "1";
-                                    opts.start = 10000;
-                                    opts.stop = 20000;
-                                    targetFrame = new RegionFrame(opts);
-                                }                                
-                                RegionPanel targetPanel = targetFrame.getRegionPanel();
-                    
-                                /* we could create a BindingEventAnnotationPanel here instead ... */
-                                RegionListPanel regionPanel = new RegionListPanel(targetPanel, null);
-                                JFrame listFrame = RegionListPanel.makeFrame(regionPanel, "BLAST Hits");                                
-                                RegionList regionList = regionPanel;
-
-                                BlastRegionRunnable runner = 
-                                    new BlastRegionRunnable(base, target, BLASTInterfaceFactory.defaultFactory.getInterface(target));                    
-                                runner.startInThread(panel.getRegion(),regionList);
-                                
-                                Region startRegion = null;
-                                if(regionList.regionListSize() > 0) {
-                                    startRegion= regionList.regionAt(0);
-                                } else { 
-                                    java.util.List<String> chroms = target.getChromList();
-                                    String firstChrom = chroms.get(0);
-                                    int start = 1;
-                                    int end = Math.min(10000, target.getChromLength(firstChrom));
-                                    startRegion = new Region(target, firstChrom, start, end);
-                                }
-                                targetPanel.setRegion(startRegion);
-                            }
-                        });
-                }
-
-                jmb.add(blastMenu);
-            } catch (NotFoundException e1) {
-                e1.printStackTrace();
-            }
-        }
+        jmb.add(new SeqViewToolsMenu(panel));
 
         return jmb;
     }

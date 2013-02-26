@@ -8,7 +8,7 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.MultiZAlignGenerator;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionPanel;
 
-public class SpeciesAlignModel extends WarpModel implements RegionModel, Runnable {
+public class SpeciesAlignModel extends SeqViewModel implements RegionModel, Runnable {
 
     private static Object theRegionPanels = null;
 

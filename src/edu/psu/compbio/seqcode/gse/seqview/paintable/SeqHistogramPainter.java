@@ -11,24 +11,24 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
 
-public class ChipSeqHistogramPainter extends RegionPaintable {
+public class SeqHistogramPainter extends RegionPaintable {
 
 	private ChipSeqHistogramModel model;
 	private DynamicAttribute attrib;
 	protected static java.util.List configurationFields = null;
-	private ChipSeqHistogramProperties props;
+	private SeqHistogramProperties props;
 	private double[] gaussian;	//Gaussian kernel for density estimation
 	private int kernelWidth = 0;
 
-	public ChipSeqHistogramPainter(ChipSeqHistogramModel model) {
+	public SeqHistogramPainter(ChipSeqHistogramModel model) {
 		super();
 		this.model = model;
-		props = new ChipSeqHistogramProperties();
+		props = new SeqHistogramProperties();
 		model.addEventListener(this);
 		attrib = DynamicAttribute.getGlobalAttributes();
 	}
-	public ChipSeqHistogramProperties getProperties() {return props;}
-	public void setProperties(ChipSeqHistogramProperties p) {props = p;}
+	public SeqHistogramProperties getProperties() {return props;}
+	public void setProperties(SeqHistogramProperties p) {props = p;}
 	public void savePropsInDir(File dir) {
 		super.savePropsInDir(dir);
 		saveModelPropsInDir(dir,model);

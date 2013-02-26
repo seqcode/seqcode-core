@@ -15,7 +15,7 @@ import javax.swing.*;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
-import edu.psu.compbio.seqcode.gse.seqview.WarpOptions;
+import edu.psu.compbio.seqcode.gse.seqview.SeqViewOptions;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.viz.charting.*;
@@ -189,7 +189,7 @@ public class ChipChipScatterFrame extends JFrame {
     }
 
     public static void main(String args[]) throws Exception {
-        WarpOptions options = WarpOptions.parseCL(args);
+        SeqViewOptions options = SeqViewOptions.parseCL(args);
         Genome g = new Genome(options.species,options.genome);
         ChipChipDataset agilent = new ChipChipDataset(g);        
         Set<String> flags = Args.parseFlags(args);        

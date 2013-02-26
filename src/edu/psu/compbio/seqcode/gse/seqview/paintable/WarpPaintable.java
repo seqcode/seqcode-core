@@ -13,7 +13,7 @@ import edu.psu.compbio.seqcode.gse.datasets.function.*;
 import edu.psu.compbio.seqcode.gse.seqview.RectangleLookup;
 import edu.psu.compbio.seqcode.gse.seqview.components.*;
 import edu.psu.compbio.seqcode.gse.seqview.model.ModelProperties;
-import edu.psu.compbio.seqcode.gse.seqview.model.WarpModel;
+import edu.psu.compbio.seqcode.gse.seqview.model.SeqViewModel;
 import edu.psu.compbio.seqcode.gse.utils.EventSource;
 import edu.psu.compbio.seqcode.gse.utils.Listener;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
@@ -109,12 +109,12 @@ public abstract class WarpPaintable implements VizPaintable, Listener<EventObjec
             System.err.println(e.toString());
         }
     }
-    public void saveModelPropsInDir(File dir, WarpModel model) {
+    public void saveModelPropsInDir(File dir, SeqViewModel model) {
         ModelProperties mp = model.getProperties();
         File saveto = new File(dir + System.getProperty("file.separator") + (getLabel() + "." + mp.defaultName()).replaceAll(System.getProperty("file.separator"),"_"));
         mp.saveToFile(saveto);
     }
-    public void loadModelPropsInDir(File dir, WarpModel model) {
+    public void loadModelPropsInDir(File dir, SeqViewModel model) {
         ModelProperties mp = model.getProperties();
         File loadfrom = new File(dir + System.getProperty("file.separator") + (getLabel() + "." + mp.defaultName()).replaceAll(System.getProperty("file.separator"),"_"));
         mp.saveToFile(loadfrom);

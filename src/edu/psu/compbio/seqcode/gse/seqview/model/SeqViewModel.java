@@ -6,12 +6,12 @@ import edu.psu.compbio.seqcode.gse.utils.*;
 
 
 
-public abstract class WarpModel implements Model {
+public abstract class SeqViewModel implements Model {
     private HashSet<Listener<EventObject>> listeners;
     private boolean keepRunning;
     private ModelProperties props;
     
-    public WarpModel() {
+    public SeqViewModel() {
         listeners = new HashSet<Listener<EventObject>>();
         keepRunning = true;
         props = new ModelProperties();

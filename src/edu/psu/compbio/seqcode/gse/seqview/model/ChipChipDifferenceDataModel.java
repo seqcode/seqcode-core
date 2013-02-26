@@ -11,7 +11,7 @@ import edu.psu.compbio.seqcode.gse.seqview.paintable.WarpPaintable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
-public class ChipChipDifferenceDataModel extends WarpModel implements Runnable, RegionModel {
+public class ChipChipDifferenceDataModel extends SeqViewModel implements Runnable, RegionModel {
 
     private ChipChipData data1, data2;
     private boolean newregion;

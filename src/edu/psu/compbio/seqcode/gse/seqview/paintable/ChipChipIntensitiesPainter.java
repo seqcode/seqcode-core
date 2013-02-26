@@ -13,7 +13,7 @@ import edu.psu.compbio.seqcode.gse.seqview.model.ChipChipScaleModel;
 import edu.psu.compbio.seqcode.gse.seqview.model.Model;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
-public class ChipChipIntensitiesPainter extends TimChipChipPainter {
+public class ChipChipIntensitiesPainter extends ChipChipAdvPainter {
     private ChipChipDataModel model;
     public ChipChipIntensitiesPainter (ChipChipData data, ChipChipDataModel model) {
         super(data,model);

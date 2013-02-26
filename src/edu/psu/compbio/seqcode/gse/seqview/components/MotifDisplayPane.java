@@ -40,7 +40,7 @@ public class MotifDisplayPane extends JSplitPane {
                     mdp.saveAll();
                 }
             });
-        jmb.add(new WarpToolsMenu(null));
+        jmb.add(new SeqViewToolsMenu(null));
         frame.setJMenuBar(jmb);
         frame.pack();
         frame.setVisible(true);

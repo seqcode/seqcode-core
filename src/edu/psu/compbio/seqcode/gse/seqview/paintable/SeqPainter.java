@@ -14,9 +14,9 @@ import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqScaleModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
-/* paints ChIP-seq data across a genomic region. */
+/* paints Seqeuncing data across a genomic region. */
 
-public abstract class ChipSeqPainter extends RegionPaintable  {
+public abstract class SeqPainter extends RegionPaintable  {
 
     protected ChipSeqDataModel model;
     protected ChipSeqScaleModel scale;
@@ -25,18 +25,18 @@ public abstract class ChipSeqPainter extends RegionPaintable  {
     protected NonOverlappingLayout<Region> totalLayout = new NonOverlappingLayout<Region>();
 
     protected static java.util.List configurationFields = null;
-    private ChipSeqProperties props;
+    private SeqProperties props;
 
-    public ChipSeqPainter(ChipSeqDataModel model) {
+    public SeqPainter(ChipSeqDataModel model) {
         super();
         this.model = model;
-        props = new ChipSeqProperties();
+        props = new SeqProperties();
         scale = new ChipSeqScaleModel(model);
         model.addEventListener(this);
         attrib = DynamicAttribute.getGlobalAttributes();
     }
-    public ChipSeqProperties getProperties () {return props;}
-    public void setProperties(ChipSeqProperties p) {props = p;}
+    public SeqProperties getProperties () {return props;}
+    public void setProperties(SeqProperties p) {props = p;}
     public void savePropsInDir(File dir) {
         super.savePropsInDir(dir);
         saveModelPropsInDir(dir,model);

@@ -33,7 +33,7 @@ import edu.psu.compbio.seqcode.gse.projects.readdb.*;
  * If an extension is specified, then each return hit will
  * be extended by that many bp.
  */
-public class ChipSeqDataModel extends WarpModel implements RegionModel, Runnable {
+public class ChipSeqDataModel extends SeqViewModel implements RegionModel, Runnable {
     
     private Client client;
     private Collection<String> alignids;

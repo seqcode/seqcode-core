@@ -1,8 +1,8 @@
 package edu.psu.compbio.seqcode.gse.seqview.model;
 
-import edu.psu.compbio.seqcode.gse.seqview.WarpProperties;
+import edu.psu.compbio.seqcode.gse.seqview.SeqViewProperties;
 
-public class ModelProperties extends WarpProperties {
+public class ModelProperties extends SeqViewProperties {
 
     public ModelProperties() {
         super();

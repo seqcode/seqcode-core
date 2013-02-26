@@ -17,12 +17,12 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.RegionExpanderFactoryLoader;
-import edu.psu.compbio.seqcode.gse.seqview.WarpOptions;
+import edu.psu.compbio.seqcode.gse.seqview.SeqViewOptions;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.viz.components.ChipChipExptSelectPanel;
 
-public class WarpOptionsPane 
+public class SeqViewOptionsPane 
 	extends JTabbedPane 
 	implements ItemListener, ActionListener, Closeable {
     // regexes get special handling at the moment because there's no gui component for them,
@@ -38,7 +38,7 @@ public class WarpOptionsPane
         pairedSeqPanel,
         interactionArcPanel,
         optionsPanel;
-    private WarpOptions createdFrom;
+    private SeqViewOptions createdFrom;
     
     // species/location tab
     private JComboBox species, genome;
@@ -63,7 +63,7 @@ public class WarpOptionsPane
     // file-based tracks
     private FileBasedTracksPanel filetracks, chiapettracks;
 
-    public WarpOptionsPane () throws NotFoundException {
+    public SeqViewOptionsPane () throws NotFoundException {
         super();
         gfLoader = new RegionExpanderFactoryLoader<Gene>("gene");
         annotLoader = new RegionExpanderFactoryLoader<NamedTypedRegion>("annots");
@@ -74,7 +74,7 @@ public class WarpOptionsPane
         setSpeciesGenomeDefaults();
     }
 
-    public WarpOptionsPane(String species, String genome) throws NotFoundException {
+    public SeqViewOptionsPane(String species, String genome) throws NotFoundException {
         super();
         gfLoader = new RegionExpanderFactoryLoader<Gene>("gene");
         annotLoader = new RegionExpanderFactoryLoader<NamedTypedRegion>("annots");
@@ -102,7 +102,7 @@ public class WarpOptionsPane
         regexes = null;
     }
 
-    public WarpOptionsPane(WarpOptions opts) throws NotFoundException {
+    public SeqViewOptionsPane(SeqViewOptions opts) throws NotFoundException {
         super();
         gfLoader = new RegionExpanderFactoryLoader<Gene>("gene");
         annotLoader = new RegionExpanderFactoryLoader<NamedTypedRegion>("annots");
@@ -296,7 +296,7 @@ public class WarpOptionsPane
         addTab("Display Options",new JScrollPane(dummy));
     }
 
-    public void init(WarpOptions opts) throws NotFoundException {
+    public void init(SeqViewOptions opts) throws NotFoundException {
         handlingChange = true;
         init();
         createdFrom = opts;      
@@ -441,8 +441,8 @@ public class WarpOptionsPane
 
     /* fills in and returns a WarpOptions object based on the current selections 
      */
-    public WarpOptions parseOptions() {
-        WarpOptions these = new WarpOptions();
+    public SeqViewOptions parseOptions() {
+        SeqViewOptions these = new SeqViewOptions();
         // parse the species and location tab
         these.species = species.getSelectedItem().toString();
         these.genome = genome.getSelectedItem().toString();
@@ -507,8 +507,8 @@ public class WarpOptionsPane
         return these;
     }
     
-    public WarpOptions parseAndDiff() {
-        WarpOptions these = parseOptions();
+    public SeqViewOptions parseAndDiff() {
+        SeqViewOptions these = parseOptions();
         // need to see if we have existing options and if they're compatible.
         // if they are, return the difference.  Otherwise, return the complete
         // options.

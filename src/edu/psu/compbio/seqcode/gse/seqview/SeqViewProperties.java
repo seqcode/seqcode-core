@@ -11,10 +11,10 @@ import edu.psu.compbio.seqcode.gse.utils.json.*;
 import edu.psu.compbio.seqcode.gse.utils.models.*;
 import edu.psu.compbio.seqcode.gse.viz.components.RegexFileFilter;
 
-/** Base class for Warpdrive (paintable and model) properties.
+/** Base class for SeqView (paintable and model) properties.
  * Uses Tim's JSON model stuff to handle serializing and deserializing.
  */
-public abstract class WarpProperties extends Model {
+public abstract class SeqViewProperties extends Model {
 
     // controls whether some exception stack traces are printed
     private boolean debugging = true;
@@ -23,22 +23,22 @@ public abstract class WarpProperties extends Model {
     */
     private Boolean configuring;
 
-    public WarpProperties() {
+    public SeqViewProperties() {
         super();
         configuring = Boolean.FALSE;
     }
 
     static class DoneConfiguring implements Runnable {
-        private Collection<WarpProperties> p;
+        private Collection<SeqViewProperties> p;
         private MultiModelPrefs mmp;
-        public DoneConfiguring(Collection<WarpProperties> p, MultiModelPrefs mmp ) {this.p = p;this.mmp = mmp;} 
+        public DoneConfiguring(Collection<SeqViewProperties> p, MultiModelPrefs mmp ) {this.p = p;this.mmp = mmp;} 
         public void run() {
             synchronized (mmp) {
                 boolean done = false;
                 while (!done) {
                     try {
                         mmp.wait(); 
-                        for (WarpProperties prop : p) {
+                        for (SeqViewProperties prop : p) {
                             prop.configuring = false;   
                         }
                         done = true;
@@ -50,10 +50,10 @@ public abstract class WarpProperties extends Model {
             }
         }            
     }
-    public static void configure(Collection<? extends WarpProperties> props, JPanel regionpanel) {
+    public static void configure(Collection<? extends SeqViewProperties> props, JPanel regionpanel) {
         System.err.println("Configuring " + props);
-        Collection<WarpProperties> touse = new ArrayList<WarpProperties>();
-        for (WarpProperties p : props) {
+        Collection<SeqViewProperties> touse = new ArrayList<SeqViewProperties>();
+        for (SeqViewProperties p : props) {
             synchronized(p) {
                 if (p.configuring) {
                     continue;

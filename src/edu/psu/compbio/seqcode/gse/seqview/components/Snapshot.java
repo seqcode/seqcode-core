@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.io.File;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.gse.seqview.WarpOptions;
+import edu.psu.compbio.seqcode.gse.seqview.SeqViewOptions;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class Snapshot {
@@ -31,7 +31,7 @@ public class Snapshot {
         }
         if (picturename == null) {return;}
         try {
-            WarpOptions opts = WarpOptions.parseCL(args);
+            SeqViewOptions opts = SeqViewOptions.parseCL(args);
             RegionPanel panel = new RegionPanel(opts);
             File file = new File(picturename);
             panel.computeLayout(0,0,w,h);

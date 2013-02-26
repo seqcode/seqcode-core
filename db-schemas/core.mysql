@@ -54,9 +54,9 @@ CREATE TABLE chromsequence (
 ) Type=InnoDB;
 
 --
--- Table: condition
+-- Table: experiment types
 --
-CREATE TABLE conditions (
+CREATE TABLE expttype (
   id int(10) NOT NULL auto_increment,
   name varchar(100) NOT NULL,
   UNIQUE (id),
@@ -64,9 +64,9 @@ CREATE TABLE conditions (
 ) Type=InnoDB;
 
 --
--- Table: cells
+-- Table: Labs
 --
-CREATE TABLE cells (
+CREATE TABLE lab (
   id int(10) NOT NULL auto_increment,
   name varchar(100) NOT NULL,
   UNIQUE (id),
@@ -74,29 +74,33 @@ CREATE TABLE cells (
 ) Type=InnoDB;
 
 
-CREATE TABLE factors (
+--
+-- Table: expt condition
+--
+CREATE TABLE exptcondition (
+  id int(10) NOT NULL auto_increment,
+  name varchar(200) NOT NULL,
+  UNIQUE (id),
+  PRIMARY KEY (name)
+) Type=InnoDB;
+
+--
+-- Table: cell lines
+--
+CREATE TABLE cellline (
+  id int(10) NOT NULL auto_increment,
+  name varchar(200) NOT NULL,
+  UNIQUE (id),
+  PRIMARY KEY (name)
+) Type=InnoDB;
+
+--
+-- Table: expt targets
+--
+CREATE TABLE expttarget (
 	id int(10) NOT NULL auto_increment,
-	name varchar(100) NOT NULL,
+	name varchar(200) NOT NULL,
 	UNIQUE (id),
 	PRIMARY KEY (name)
 ) Type=InnoDB;
-
-CREATE TABLE timeseries (
-	id int(10) NOT NULL auto_increment,
-	name varchar(100) NOT NULL,
-	INDEX (id),
-	UNIQUE (id),
-	PRIMARY KEY (name)
-);
-
-CREATE TABLE timepoint (
-	id int(10) NOT NULL auto_increment,
-	time_series int(10) NOT NULL,
-	series_order int(10),
-	name varchar(100),
-	FOREIGN KEY fk_timepoint_ts (time_series) REFERENCES timeseries (id),
-	UNIQUE (id),
-	INDEX (id),
-	PRIMARY KEY (id)
-);
 

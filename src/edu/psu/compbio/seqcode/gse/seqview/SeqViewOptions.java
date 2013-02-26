@@ -20,7 +20,7 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
-public class WarpOptions {
+public class SeqViewOptions {
 
 	/**
 	 * Constants for accessing settings
@@ -120,7 +120,7 @@ public class WarpOptions {
         CHIPSEQANALYSES = 21;
     
     
-    public WarpOptions(String gname) {
+    public SeqViewOptions(String gname) {
         
     	this.loadOptions();
     	
@@ -162,7 +162,7 @@ public class WarpOptions {
         chipseqAnalyses = new ArrayList<ChipSeqAnalysis>();
     }
 
-    public WarpOptions() {
+    public SeqViewOptions() {
     	this.loadOptions();
     	
         start = -1;
@@ -194,7 +194,7 @@ public class WarpOptions {
 
     /* adds options from this into union.  For lists, it generates the 
        union.  For other settings, this takes priority */
-    public void mergeInto(WarpOptions union) throws IllegalArgumentException {
+    public void mergeInto(SeqViewOptions union) throws IllegalArgumentException {
         if (union == null) {throw new NullPointerException("Must supply options to mergeInto");}
         if (species == null) {throw new NullPointerException("Tried to call mergeInto when species is null");}
         if (genome == null) {throw new NullPointerException("Tried to call mergeInto when gnome is null");}
@@ -258,7 +258,7 @@ public class WarpOptions {
     /* deletes options from this that are also present in other.
        Doesn't mess with chrom, start, stop, or gene 
      */
-    public void differenceOf(WarpOptions other) {
+    public void differenceOf(SeqViewOptions other) {
         if (species != null &&
             other.species != null &&
             !other.species.equals(species)) {
@@ -316,8 +316,8 @@ public class WarpOptions {
         }
     }
 
-    public WarpOptions clone() {
-        WarpOptions o = new WarpOptions();
+    public SeqViewOptions clone() {
+        SeqViewOptions o = new SeqViewOptions();
         o.species = species;
         o.genome = genome;
         o.chrom = chrom;
@@ -357,13 +357,13 @@ public class WarpOptions {
     }
 
     /* Fills in a WarpOptions from command line arguments */
-    public static WarpOptions parseCL(String[] args) throws NotFoundException, SQLException, IOException {
+    public static SeqViewOptions parseCL(String[] args) throws NotFoundException, SQLException, IOException {
     	/**
     	 * TODO add a restore defaults option and an import option so that if 
     	 * someone screws up the warp drive options that are maintained with 
     	 * java.util.prefs.Preferences reasonable values can be restored  
     	 */
-        WarpOptions opts = new WarpOptions();
+        SeqViewOptions opts = new SeqViewOptions();
         WeightMatrixLoader wmloader = new WeightMatrixLoader();
         ChipSeqLoader chipseqloader = new ChipSeqLoader();
 
@@ -615,12 +615,12 @@ public class WarpOptions {
      * @throws IOException if reading from the specified output stream results in an IOException.
      * @throws InvalidPreferencesFormatException Data on input stream does not constitute a valid XML document with the mandated document type.
      */
-    public void importOptions(InputStream is) throws IOException, WarpDriveException {
+    public void importOptions(InputStream is) throws IOException, SeqViewException {
     	try {
 			Preferences.importPreferences(is);
 		} 
     	catch (InvalidPreferencesFormatException ipfex) {
-    		throw new WarpDriveException(ipfex);
+    		throw new SeqViewException(ipfex);
 		}
     	this.loadOptions();
     	
@@ -635,14 +635,14 @@ public class WarpOptions {
      * @throws IOException if writing to the specified output stream results in an IOException.
      * @throws BackingStoreException if preference data cannot be read from backing store.
      */
-    public void exportOptions(OutputStream os) throws IOException, WarpDriveException {
+    public void exportOptions(OutputStream os) throws IOException, SeqViewException {
     	this.saveOptions();
     	try {
     		Preferences prefs = Preferences.userNodeForPackage(this.getClass());
     		prefs.exportSubtree(os);
     	}
     	catch (BackingStoreException bsex) {
-    		throw new WarpDriveException(bsex);
+    		throw new SeqViewException(bsex);
     	}
     }
     

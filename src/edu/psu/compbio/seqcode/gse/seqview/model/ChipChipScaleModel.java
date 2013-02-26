@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.gse.datasets.chipchip.GenericExperiment;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
-public class ChipChipScaleModel extends WarpModel implements RegionModel, Listener<EventObject> {
+public class ChipChipScaleModel extends SeqViewModel implements RegionModel, Listener<EventObject> {
     
     private ArrayList<ChipChipDataModel> models;
     private ArrayList<ChipChipDifferenceDataModel> diffmodels;

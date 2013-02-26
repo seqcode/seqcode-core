@@ -14,7 +14,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
    and then notifies this thread.  This thread calls the GenericExperiment.window() method
    to start retrieving data from the database.   */
 
-public class ChipChipDataModel extends WarpModel implements Runnable, RegionModel {
+public class ChipChipDataModel extends SeqViewModel implements Runnable, RegionModel {
 
     private GenericExperiment data;
     private boolean newregion;

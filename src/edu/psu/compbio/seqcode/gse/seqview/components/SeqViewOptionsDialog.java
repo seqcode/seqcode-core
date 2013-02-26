@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,19 +19,17 @@ import edu.psu.compbio.seqcode.gse.utils.GenericFileFilter;
 import org.apache.log4j.Logger;
 
 /**
- * This is a dialog for managing the options/preferences for the WarpOptions
- * GUI. Unfortunately since the main GUI for Warp Drive is called 
- * WarpOptionsFrame the name is a bit confusing.
+ * This is a dialog for managing the options/preferences for the SeqViewOptions GUI. 
  *  
  * @author Bob
  *
  */
-public class WarpOptionsDialog extends JDialog {
+public class SeqViewOptionsDialog extends JDialog {
 
-	static Logger logger = Logger.getLogger(WarpOptionsDialog.class);
+	static Logger logger = Logger.getLogger(SeqViewOptionsDialog.class);
 	
-	private WarpOptionsFrame optionsFrame;
-	private WarpOptions options;
+	private SeqView optionsFrame;
+	private SeqViewOptions options;
 	
 	private JPanel mainPanel = new JPanel();
 	private GridBagLayout mainPanelLayout = new GridBagLayout();
@@ -88,7 +85,7 @@ public class WarpOptionsDialog extends JDialog {
 	 * Construct the dialog box
 	 * @param owner This will typically be the WarpOptionsFrame
 	 */
-	public WarpOptionsDialog(JFrame owner, WarpOptionsFrame wof, WarpOptions options) {
+	public SeqViewOptionsDialog(JFrame owner, SeqView wof, SeqViewOptions options) {
 		super(owner, true);
 		this.optionsFrame = wof;
 		this.options = options;
@@ -308,8 +305,8 @@ public class WarpOptionsDialog extends JDialog {
 	private boolean checkOptionValues() {
 		int width = Integer.valueOf(mainWindowWidthField.getText()).intValue();
 		if (!options.checkPreferredWindowWidth(width)) {
-			String errorMessage = "Main Window width must be between " + WarpOptions.MIN_WINDOW_WIDTH
-			+ " and " + WarpOptions.MAX_WINDOW_WIDTH + ".";
+			String errorMessage = "Main Window width must be between " + SeqViewOptions.MIN_WINDOW_WIDTH
+			+ " and " + SeqViewOptions.MAX_WINDOW_WIDTH + ".";
 			JOptionPane.showMessageDialog(this,
                     errorMessage,
                     "Invalid Main Window Width",
@@ -319,8 +316,8 @@ public class WarpOptionsDialog extends JDialog {
 		
 		int height = Integer.valueOf(mainWindowHeightField.getText()).intValue();
 		if (!options.checkPreferredWindowHeight(height)) {
-			String errorMessage = "Main Window height must be between " + WarpOptions.MIN_WINDOW_HEIGHT
-			+ " and " + WarpOptions.MAX_WINDOW_HEIGHT + ".";
+			String errorMessage = "Main Window height must be between " + SeqViewOptions.MIN_WINDOW_HEIGHT
+			+ " and " + SeqViewOptions.MAX_WINDOW_HEIGHT + ".";
 			JOptionPane.showMessageDialog(this,
                     errorMessage,
                     "Invalid Main Window Height",
@@ -332,8 +329,8 @@ public class WarpOptionsDialog extends JDialog {
 		if (!isCentered) {
 			int topLeftX = Integer.valueOf(topLeftXField.getText()).intValue();
 			if (!options.checkPreferredTopLeftX(topLeftX)) {
-				String errorMessage = "Top Left X location must be between " + WarpOptions.MIN_TOP_LEFT_X
-				+ " and " + WarpOptions.MAX_TOP_LEFT_X + ".";
+				String errorMessage = "Top Left X location must be between " + SeqViewOptions.MIN_TOP_LEFT_X
+				+ " and " + SeqViewOptions.MAX_TOP_LEFT_X + ".";
 				JOptionPane.showMessageDialog(this,
 	                    errorMessage,
 	                    "Invalid Top Left X Location",
@@ -343,8 +340,8 @@ public class WarpOptionsDialog extends JDialog {
 			
 			int topLeftY = Integer.valueOf(topLeftYField.getText()).intValue();
 			if (!options.checkPreferredTopLeftY(topLeftY)) {
-				String errorMessage = "Top Left Y location must be between " + WarpOptions.MIN_TOP_LEFT_Y
-				+ " and " + WarpOptions.MAX_TOP_LEFT_Y + ".";
+				String errorMessage = "Top Left Y location must be between " + SeqViewOptions.MIN_TOP_LEFT_Y
+				+ " and " + SeqViewOptions.MAX_TOP_LEFT_Y + ".";
 				JOptionPane.showMessageDialog(this,
 	                    errorMessage,
 	                    "Invalid Top Left Y Location",
@@ -426,10 +423,10 @@ public class WarpOptionsDialog extends JDialog {
 		}
 		//figure out what the text value will be and check that it's valid
 		int textValue = Long.valueOf(mainWindowWidthFieldFormat.format(newValue)).intValue();
-		if ((newValue > WarpOptions.MAX_WINDOW_WIDTH) || (newValue < WarpOptions.MIN_WINDOW_WIDTH)
+		if ((newValue > SeqViewOptions.MAX_WINDOW_WIDTH) || (newValue < SeqViewOptions.MIN_WINDOW_WIDTH)
 				|| !options.checkPreferredWindowWidth(textValue)) {
-			String errorMessage = "Main Window width must be between " + WarpOptions.MIN_WINDOW_WIDTH
-			+ " and " + WarpOptions.MAX_WINDOW_WIDTH + ".";
+			String errorMessage = "Main Window width must be between " + SeqViewOptions.MIN_WINDOW_WIDTH
+			+ " and " + SeqViewOptions.MAX_WINDOW_WIDTH + ".";
 			JOptionPane.showMessageDialog(this,
                     errorMessage,
                     "Invalid Main Window Width",
@@ -440,7 +437,7 @@ public class WarpOptionsDialog extends JDialog {
 				mainWindowWidthField.setValue(e.getOldValue());
 			}
 			else {
-				mainWindowWidthField.setValue(new Integer(WarpOptions.DEFAULT_WINDOW_WIDTH));
+				mainWindowWidthField.setValue(new Integer(SeqViewOptions.DEFAULT_WINDOW_WIDTH));
 			}
 		}
 	}
@@ -468,10 +465,10 @@ public class WarpOptionsDialog extends JDialog {
 		}
 		//figure out what the text value will be and check that it's valid
 		int textValue = Long.valueOf(mainWindowHeightFieldFormat.format(newValue)).intValue();
-		if ((newValue > WarpOptions.MAX_WINDOW_HEIGHT) || (newValue < WarpOptions.MIN_WINDOW_HEIGHT)
+		if ((newValue > SeqViewOptions.MAX_WINDOW_HEIGHT) || (newValue < SeqViewOptions.MIN_WINDOW_HEIGHT)
 				|| !options.checkPreferredWindowHeight(textValue)) {
-			String errorMessage = "Main Window height must be between " + WarpOptions.MIN_WINDOW_HEIGHT
-			+ " and " + WarpOptions.MAX_WINDOW_HEIGHT + ".";
+			String errorMessage = "Main Window height must be between " + SeqViewOptions.MIN_WINDOW_HEIGHT
+			+ " and " + SeqViewOptions.MAX_WINDOW_HEIGHT + ".";
 			JOptionPane.showMessageDialog(this,
                     errorMessage,
                     "Invalid Main Window Height",
@@ -482,7 +479,7 @@ public class WarpOptionsDialog extends JDialog {
 				mainWindowHeightField.setValue(e.getOldValue());
 			}
 			else {
-				mainWindowHeightField.setValue(new Integer(WarpOptions.DEFAULT_WINDOW_HEIGHT));
+				mainWindowHeightField.setValue(new Integer(SeqViewOptions.DEFAULT_WINDOW_HEIGHT));
 			}
 		}
 	}
@@ -510,10 +507,10 @@ public class WarpOptionsDialog extends JDialog {
 		}
 		//figure out what the text value will be and check that it's valid
 		int textValue = Long.valueOf(topLeftXFieldFormat.format(newValue)).intValue();
-		if ((newValue > WarpOptions.MAX_TOP_LEFT_X) || (newValue < WarpOptions.MIN_TOP_LEFT_X)
+		if ((newValue > SeqViewOptions.MAX_TOP_LEFT_X) || (newValue < SeqViewOptions.MIN_TOP_LEFT_X)
 				|| !options.checkPreferredTopLeftX(textValue)) {
 			String errorMessage = "Main Window top left X location must be between " 
-				+ WarpOptions.MIN_TOP_LEFT_X + " and " + WarpOptions.MAX_TOP_LEFT_X + ".";
+				+ SeqViewOptions.MIN_TOP_LEFT_X + " and " + SeqViewOptions.MAX_TOP_LEFT_X + ".";
 			JOptionPane.showMessageDialog(this,
                     errorMessage,
                     "Invalid Main Window Top Left X Location",
@@ -524,7 +521,7 @@ public class WarpOptionsDialog extends JDialog {
 				topLeftXField.setValue(e.getOldValue());
 			}
 			else {
-				topLeftXField.setValue(new Integer(WarpOptions.DEFAULT_TOP_LEFT_X));
+				topLeftXField.setValue(new Integer(SeqViewOptions.DEFAULT_TOP_LEFT_X));
 			}
 		}
 	}
@@ -552,10 +549,10 @@ public class WarpOptionsDialog extends JDialog {
 		}
 		//figure out what the text value will be and check that it's valid
 		int textValue = Long.valueOf(topLeftYFieldFormat.format(newValue)).intValue();
-		if ((newValue > WarpOptions.MAX_TOP_LEFT_Y) || (newValue < WarpOptions.MIN_TOP_LEFT_Y)
+		if ((newValue > SeqViewOptions.MAX_TOP_LEFT_Y) || (newValue < SeqViewOptions.MIN_TOP_LEFT_Y)
 				|| !options.checkPreferredTopLeftY(textValue)) {
 			String errorMessage = "Main Window top left Y location must be between " 
-				+ WarpOptions.MIN_TOP_LEFT_Y + " and " + WarpOptions.MAX_TOP_LEFT_Y + ".";
+				+ SeqViewOptions.MIN_TOP_LEFT_Y + " and " + SeqViewOptions.MAX_TOP_LEFT_Y + ".";
 			JOptionPane.showMessageDialog(this,
                     errorMessage,
                     "Invalid Main Window Top Left Y Location",
@@ -566,7 +563,7 @@ public class WarpOptionsDialog extends JDialog {
 				topLeftYField.setValue(e.getOldValue());
 			}
 			else {
-				topLeftYField.setValue(new Integer(WarpOptions.DEFAULT_TOP_LEFT_Y));
+				topLeftYField.setValue(new Integer(SeqViewOptions.DEFAULT_TOP_LEFT_Y));
 			}
 		}
 	}
@@ -644,7 +641,7 @@ public class WarpOptionsDialog extends JDialog {
 								JOptionPane.ERROR_MESSAGE);
 						logger.error("Error saving options", ioex);
 					}
-					catch (WarpDriveException wdex) {
+					catch (SeqViewException wdex) {
 						String errorMessage = "Error saving options. See log for details.";
 						JOptionPane.showMessageDialog(this,
 								errorMessage,
@@ -722,7 +719,7 @@ public class WarpOptionsDialog extends JDialog {
 							JOptionPane.ERROR_MESSAGE);
 					logger.error("Error importing options", ioex);
 				}
-				catch (WarpDriveException wdex) {
+				catch (SeqViewException wdex) {
 					String errorMessage = "Error importing options. See log for details.";
 					JOptionPane.showMessageDialog(this,
 							errorMessage,
@@ -759,15 +756,15 @@ public class WarpOptionsDialog extends JDialog {
 	 * @param e ActionEvent the event created by the user clicking on the button
 	 */
 	void originalsButton_actionPerformed(ActionEvent e) {
-		mainWindowWidthField.setValue(new Integer(WarpOptions.DEFAULT_WINDOW_WIDTH));
-		mainWindowHeightField.setValue(new Integer(WarpOptions.DEFAULT_WINDOW_HEIGHT));
-		if (WarpOptions.DEFAULT_WINDOW_IS_CENTERED) {
+		mainWindowWidthField.setValue(new Integer(SeqViewOptions.DEFAULT_WINDOW_WIDTH));
+		mainWindowHeightField.setValue(new Integer(SeqViewOptions.DEFAULT_WINDOW_HEIGHT));
+		if (SeqViewOptions.DEFAULT_WINDOW_IS_CENTERED) {
 			centeredButton.setSelected(true);
 		}
 		else {
 			topLeftButton.setSelected(true);
-			topLeftXField.setValue(new Integer(WarpOptions.DEFAULT_TOP_LEFT_X));
-			topLeftYField.setValue(new Integer(WarpOptions.DEFAULT_TOP_LEFT_Y));
+			topLeftXField.setValue(new Integer(SeqViewOptions.DEFAULT_TOP_LEFT_X));
+			topLeftYField.setValue(new Integer(SeqViewOptions.DEFAULT_TOP_LEFT_Y));
 		}
 	}
 	

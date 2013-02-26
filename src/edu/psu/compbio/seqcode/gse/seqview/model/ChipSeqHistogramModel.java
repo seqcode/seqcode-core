@@ -21,7 +21,7 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
  * Data model for chipseq histogram.  Separate methods for retrieving
  * plus and minus strand results
  */
-public class ChipSeqHistogramModel extends WarpModel implements RegionModel, Runnable {
+public class ChipSeqHistogramModel extends SeqViewModel implements RegionModel, Runnable {
     
     private Client client;
     private TreeMap<Integer,Float> resultsPlus, resultsMinus, resultsPval;

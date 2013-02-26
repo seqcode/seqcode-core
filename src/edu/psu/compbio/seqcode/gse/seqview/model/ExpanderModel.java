@@ -15,7 +15,7 @@ import edu.psu.compbio.seqcode.gse.utils.*;
  * input hasn't changed 
  */
 
-public class ExpanderModel<IN,OUT> extends WarpModel implements Runnable {
+public class ExpanderModel<IN,OUT> extends SeqViewModel implements Runnable {
 
     private boolean newinput;
     public boolean reloadInput = false;

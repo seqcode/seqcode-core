@@ -6,11 +6,11 @@ import javax.swing.*;
 
 import edu.psu.compbio.seqcode.gse.seqview.paintable.WarpPaintable;
 
-public class WarpPaintableHTConfigurationPanel extends HashtableConfigurationPanel {
+public class SeqViewPaintableHTConfigurationPanel extends HashtableConfigurationPanel {
 
     private WarpPaintable wp;
     private Hashtable<String,Object> table;
-    public WarpPaintableHTConfigurationPanel (Hashtable<String,Object> table, WarpPaintable w) {
+    public SeqViewPaintableHTConfigurationPanel (Hashtable<String,Object> table, WarpPaintable w) {
         super(table,w.configurationKeyOrder());
         this.table = table;
         wp = w;
@@ -25,7 +25,4 @@ public class WarpPaintableHTConfigurationPanel extends HashtableConfigurationPan
             table.remove("TrackLabel");
         }
     }
-
-    
-
 }

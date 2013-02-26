@@ -71,9 +71,9 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 
 
-/* RegionFrame encapsulates a set of painters that display a particular genomic region
+/**
+ *  RegionFrame encapsulates a set of painters that display a particular genomic region
  */
-
 public class RegionPanel extends JPanel 
 implements ActionListener, KeyListener, 
 Listener<EventObject>, PainterContainer, MouseListener {
@@ -108,7 +108,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	// painterCount, we can try to draw.
 	private int readyCount, painterCount;
 	private Region currentRegion;
-	private WarpOptions currentOptions;
+	private SeqViewOptions currentOptions;
 
 	// mgp is here because there's at most one instance per RegionPanel
 	// and this is an easy way to keep track of it.
@@ -123,10 +123,10 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	public RegionPanel(Genome g) {
 		super();
 		init(g);        
-		currentOptions = new WarpOptions();
+		currentOptions = new SeqViewOptions();
 	}
 
-	public RegionPanel(WarpOptions opts) {
+	public RegionPanel(SeqViewOptions opts) {
 		super();
 		Organism organism = null;
 		Genome g = null;
@@ -258,7 +258,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
-	public void addPaintersFromOpts(WarpOptions opts) {        
+	public void addPaintersFromOpts(SeqViewOptions opts) {        
 
 		if (!(opts.species.equals(genome.getSpecies()) &&
 				opts.genome.equals(genome.getVersion()))) {
@@ -295,7 +295,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		if (opts.gccontent) {
 			GCContentPainter p = new GCContentPainter(seqmodel);
 			p.addEventListener(this);
-			p.setOption(WarpOptions.GCCONTENT,null);
+			p.setOption(SeqViewOptions.GCCONTENT,null);
 			addPainter(p);
 			addModelToPaintable(p,seqmodel);
 		}
@@ -303,7 +303,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			GCContentPainter p = new GCContentPainter(seqmodel);
 			p.setLabel("Pyr (red) Pur (blue)");
 			p.addEventListener(this);
-			p.setOption(WarpOptions.GCCONTENT,null);
+			p.setOption(SeqViewOptions.GCCONTENT,null);
 			GCContentProperties props = p.getProperties();
 			props.BlueBases = "AG";
 			props.RedBases = "CT";
@@ -314,7 +314,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			CpGPainter p = new CpGPainter(seqmodel);
 			p.setLabel("CpG");
 			p.addEventListener(this);
-			p.setOption(WarpOptions.CPG,null);
+			p.setOption(SeqViewOptions.CPG,null);
 			addPainter(p);
 			addModelToPaintable(p,seqmodel);
 		}
@@ -322,7 +322,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			RegexMatchPainter p = new RegexMatchPainter(seqmodel);
 			p.setLabel("regexes");
 			p.addEventListener(this);
-			p.setOption(WarpOptions.REGEXMATCHER,null);
+			p.setOption(SeqViewOptions.REGEXMATCHER,null);
 			addPainter(p);
 			addModelToPaintable(p,seqmodel);
 			for (String r : opts.regexes.keySet()) {
@@ -334,7 +334,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			BasePairPainter p = new BasePairPainter(seqmodel);
 			p.setLabel("Sequence");
 			p.addEventListener(this);
-			p.setOption(WarpOptions.SEQLETTERS,null);
+			p.setOption(SeqViewOptions.SEQLETTERS,null);
 			addPainter(p);
 			addModelToPaintable(p,seqmodel);
 		}
@@ -398,12 +398,12 @@ Listener<EventObject>, PainterContainer, MouseListener {
 					RegionPaintable p;
 					if (opts.chipseqHistogramPainter) {
 						m = new ChipSeqHistogramModel(alignments);
-						p = new ChipSeqHistogramPainter((ChipSeqHistogramModel)m);
+						p = new SeqHistogramPainter((ChipSeqHistogramModel)m);
 					} else {
 						System.err.println("Using old ChipSeq painters");
 						m = new ChipSeqDataModel(new edu.psu.compbio.seqcode.gse.projects.readdb.Client(),
 								alignments);
-						p = new ChipSeqAboveBelowStrandPainter((ChipSeqDataModel)m);
+						p = new SeqAboveBelowStrandPainter((ChipSeqDataModel)m);
 					}
 					addModel(m);
 					Thread t = new Thread((Runnable)m); t.start();
@@ -466,7 +466,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				for (int i = 0; i < opts.chipseqAnalyses.size(); i++) {
 					ChipSeqAnalysis a = opts.chipseqAnalyses.get(i);
 					ChipSeqAnalysisModel m = new ChipSeqAnalysisModel(a);
-					ChipSeqAnalysisPainter p = new ChipSeqAnalysisPainter(a,m);
+					SeqAnalysisPainter p = new SeqAnalysisPainter(a,m);
 					addModel(m);
 					Thread t = new Thread((Runnable)m); t.start();
 					p.setLabel(a.toString());
@@ -561,24 +561,24 @@ Listener<EventObject>, PainterContainer, MouseListener {
 					// Finally, create the DataPainter and hook it up to
 					// the ScaleModel
 					//ChipChipDataPainter p = new ChipChipDataPainter(data,m);
-					TimChipChipPainter p = new TimChipChipPainter(data, m);
+					ChipChipAdvPainter p = new ChipChipAdvPainter(data, m);
 
 					scale.addModel(m);
 					p.setScaleModel(scale);
 					p.setLabel(envstr);
 					p.addEventListener(this);
-					p.setOption(WarpOptions.AGILENTDATA,opts.agilentdata.get(i));
+					p.setOption(SeqViewOptions.AGILENTDATA,opts.agilentdata.get(i));
 
 					try {
 						int expttype = dataset.getExptType(env);
 						if (expttype == ChipChipDataset.RULER) {
-							p.setChannelStyle(TimChipChipPainter.RULER);
+							p.setChannelStyle(ChipChipAdvPainter.RULER);
 						}
 						if (expttype == ChipChipDataset.EXPRESSION) {
-							p.setChannelStyle(TimChipChipPainter.EXPRESSION);
+							p.setChannelStyle(ChipChipAdvPainter.EXPRESSION);
 						}
 						if (expttype == ChipChipDataset.CGH) {
-							p.setChannelStyle(TimChipChipPainter.CGH);
+							p.setChannelStyle(ChipChipAdvPainter.CGH);
 						}
 
 					} catch (SQLException e) {
@@ -628,7 +628,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				p.setScaleModel(scale);
 				p.setLabel(label);
 				p.addEventListener(this);
-				p.setOption(WarpOptions.MSP,opts.msp.get(i));
+				p.setOption(SeqViewOptions.MSP,opts.msp.get(i));
 				addPainter(p);
 				addModelToPaintable(p, m);                
 				/* now add a scale if one doesn't already exist in this track */
@@ -668,7 +668,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				p.setScaleModel(scale);
 				p.setLabel(label);
 				p.addEventListener(this);
-				p.setOption(WarpOptions.BAYESRESULTS,opts.bayesresults.get(i));
+				p.setOption(SeqViewOptions.BAYESRESULTS,opts.bayesresults.get(i));
 				addPainter(p);           
 				addModelToPaintable(p, m);     
 				/* now add a scale if one doesn't already exist in this track */
@@ -729,7 +729,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 					p.setLabel(lbl);
 
 					p.addEventListener(this);
-					p.setOption(WarpOptions.BINDINGSCAN,null);
+					p.setOption(SeqViewOptions.BINDINGSCAN,null);
 					addPainter(p);
 					addModelToPaintable(p, model);
 
@@ -757,7 +757,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 					ExpressionMeasurementPainter p = new ExpressionMeasurementPainter(model);
 					p.setLabel("Expression");
-					p.setOption(WarpOptions.EXPRESSION,null);
+					p.setOption(SeqViewOptions.EXPRESSION,null);
 
 					p.addEventListener(this);
 					addPainter(p);
@@ -846,7 +846,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			Thread t = new Thread(m); t.start();               
 			p.setLabel(opts.otherannots.get(i).toString());
 			p.addEventListener(this);
-			p.setOption(WarpOptions.OTHERANNOTS,opts.otherannots.get(i));
+			p.setOption(SeqViewOptions.OTHERANNOTS,opts.otherannots.get(i));
 			addPainter(p);
 			addModelToPaintable(p, m);
 		}
@@ -884,7 +884,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			PerBaseScorePainter p = new PerBaseScorePainter<Double>(m,matrix.getMinScore(),0.0,matrix.getMaxScore());
 			p.setLabel(opts.motifs.get(i).toString());
 			p.addEventListener(this);
-			p.setOption(WarpOptions.MOTIFS,opts.motifs.get(i));            
+			p.setOption(SeqViewOptions.MOTIFS,opts.motifs.get(i));            
 			addPainter(p);
 			addModelToPaintable(p, m);
 		}
@@ -900,7 +900,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				String trackname = opts.motifscans.get(i).matrix.name;
 				p.setLabel(trackname);
 				p.addEventListener(this);
-				p.setOption(WarpOptions.MOTIFSCANS,opts.motifscans.get(i));
+				p.setOption(SeqViewOptions.MOTIFSCANS,opts.motifscans.get(i));
 				addPainter(p);
 				addModelToPaintable(p, m);
 			} catch (NotFoundException ex) {
@@ -930,29 +930,29 @@ Listener<EventObject>, PainterContainer, MouseListener {
        will remove it from the new options and it won't be re-added) */
 	public void removePainterFromOpts(RegionPaintable p) {
 		switch (p.getOptionKey()) {
-		case WarpOptions.BINDINGSCAN:
+		case SeqViewOptions.BINDINGSCAN:
 			currentOptions.bindingScans.clear();
-		case WarpOptions.GENES:
+		case SeqViewOptions.GENES:
 			currentOptions.genes.remove(p.getOptionInfo());
-		case WarpOptions.NCRNAS:
+		case SeqViewOptions.NCRNAS:
 			currentOptions.ncrnas.remove(p.getOptionInfo());
-		case WarpOptions.OTHERANNOTS:
+		case SeqViewOptions.OTHERANNOTS:
 			currentOptions.otherannots.remove(p.getOptionInfo());
-		case WarpOptions.AGILENTDATA:
+		case SeqViewOptions.AGILENTDATA:
 			currentOptions.agilentdata.remove(p.getOptionInfo());
-		case WarpOptions.BAYESRESULTS:
+		case SeqViewOptions.BAYESRESULTS:
 			currentOptions.bayesresults.remove(p.getOptionInfo());
-		case WarpOptions.AGILENTLL:
+		case SeqViewOptions.AGILENTLL:
 			currentOptions.agilentll.remove(p.getOptionInfo());
-		case WarpOptions.MSP:
+		case SeqViewOptions.MSP:
 			currentOptions.msp.remove(p.getOptionInfo());
-		case WarpOptions.MOTIFSCANS:
+		case SeqViewOptions.MOTIFSCANS:
 			currentOptions.motifscans.remove(p.getOptionInfo());
-		case WarpOptions.PEAKS:
+		case SeqViewOptions.PEAKS:
 			currentOptions.peakCallers.remove(p.getOptionInfo());
-		case WarpOptions.SEQLETTERS:
+		case SeqViewOptions.SEQLETTERS:
 			currentOptions.seqletters = false;
-		case WarpOptions.GCCONTENT:
+		case SeqViewOptions.GCCONTENT:
 			currentOptions.gccontent = false;            
 		}
 	}
@@ -1008,7 +1008,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		}
 	}
 
-	public WarpOptions getCurrentOptions() {
+	public SeqViewOptions getCurrentOptions() {
 		return currentOptions;
 	}
 
@@ -1639,8 +1639,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
     			   paintable.getProperties().saveToFile();
     			   if (painterModelMap.get(paintable) != null) {
     				   for (RegionModel m : painterModelMap.get(paintable)) {
-    					   if (m instanceof WarpModel) {
-    						   ((WarpModel)m).getProperties().saveToFile();
+    					   if (m instanceof SeqViewModel) {
+    						   ((SeqViewModel)m).getProperties().saveToFile();
     					   }
     				   }
     			   }
@@ -1658,8 +1658,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
     			   paintable.getProperties().TrackLabel = trackLabel;
     			   if (painterModelMap.get(paintable) != null) {
     				   for (RegionModel m : painterModelMap.get(paintable)) {
-    					   if (m instanceof WarpModel) {
-    						   ((WarpModel)m).getProperties().loadFromFile();
+    					   if (m instanceof SeqViewModel) {
+    						   ((SeqViewModel)m).getProperties().loadFromFile();
     					   }
     				   }
     			   }
@@ -1810,7 +1810,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
        public void configureTrack(String track) {
     	   if (painters.containsKey(track)) {
-    		   HashSet<WarpProperties> props = new HashSet<WarpProperties>();
+    		   HashSet<SeqViewProperties> props = new HashSet<SeqViewProperties>();
     		   ArrayList<RegionPaintable> plist = painters.get(track);            
     		   for (RegionPaintable p : plist) {                
     			   System.err.println("looking at painter " +p);
@@ -1822,7 +1822,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     				   props.add(m.getProperties());
     			   }
     		   }
-    		   WarpProperties.configure(props,this);
+    		   SeqViewProperties.configure(props,this);
     	   }
        }
 

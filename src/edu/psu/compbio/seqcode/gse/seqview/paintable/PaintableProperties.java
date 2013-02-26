@@ -1,8 +1,8 @@
 package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
-import edu.psu.compbio.seqcode.gse.seqview.WarpProperties;
+import edu.psu.compbio.seqcode.gse.seqview.SeqViewProperties;
 
-public class PaintableProperties extends WarpProperties {
+public class PaintableProperties extends SeqViewProperties {
 
     public Boolean DrawTrackLabel = Boolean.TRUE;
     public String TrackLabel = "";

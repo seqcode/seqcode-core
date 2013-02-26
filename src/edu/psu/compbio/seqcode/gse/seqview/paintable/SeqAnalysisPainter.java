@@ -10,29 +10,29 @@ import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 import edu.psu.compbio.seqcode.gse.viz.colors.ColorSet;
 
-public class ChipSeqAnalysisPainter extends RegionPaintable {
+public class SeqAnalysisPainter extends RegionPaintable {
 
 
     private ChipSeqAnalysis analysis;
     private ChipSeqAnalysisModel model;
-    private ChipSeqAnalysisProperties props;
+    private SeqAnalysisProperties props;
     private DynamicAttribute attrib;
     private NonOverlappingLayout<ChipSeqAnalysisResult> layout;
     private ColorSet cs;
 
-    public ChipSeqAnalysisPainter(ChipSeqAnalysis a, ChipSeqAnalysisModel m) {
+    public SeqAnalysisPainter(ChipSeqAnalysis a, ChipSeqAnalysisModel m) {
         super();
         analysis = a;
         model = m;
         model.addEventListener(this);
-        props = new ChipSeqAnalysisProperties();
+        props = new SeqAnalysisProperties();
         attrib = DynamicAttribute.getGlobalAttributes();
         layout = new NonOverlappingLayout<ChipSeqAnalysisResult>();
         cs = new ColorSet();
         initLabels();
     }
 
-    public ChipSeqAnalysisProperties getProperties() {return props;}
+    public SeqAnalysisProperties getProperties() {return props;}
 
     public int getMaxVertSpace() { 
         int numTracks = layout.getNumTracks();

@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.projects.chiapet.PairedStorage;
 
-public class InteractionLikelihoodModel extends WarpModel implements
+public class InteractionLikelihoodModel extends SeqViewModel implements
 RegionModel, Runnable {
 
 	private TreeMap<Integer,Double> results; //map from left edge of bin to height

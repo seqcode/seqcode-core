@@ -6,7 +6,7 @@ import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
-public class ChipSeqAnalysisModel extends WarpModel implements RegionModel, Runnable {
+public class ChipSeqAnalysisModel extends SeqViewModel implements RegionModel, Runnable {
 
     private ChipSeqAnalysis analysis;
     private ChipSeqAnalysisProperties props;

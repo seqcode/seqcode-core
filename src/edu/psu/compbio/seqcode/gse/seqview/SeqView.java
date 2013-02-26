@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.seqview.components;
+package edu.psu.compbio.seqcode.gse.seqview;
 
 import java.awt.*;
 import java.util.*;
@@ -6,16 +6,19 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
-import edu.psu.compbio.seqcode.gse.seqview.WarpOptions;
+import edu.psu.compbio.seqcode.gse.seqview.components.PainterContainer;
+import edu.psu.compbio.seqcode.gse.seqview.components.RegionFrame;
+import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsDialog;
+import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsPane;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 
-public class WarpOptionsFrame extends JFrame implements ActionListener {
+public class SeqView extends JFrame implements ActionListener {
 
 	//static Logger logger = Logger.getLogger(WarpOptionsFrame.class);
 	
     private ArrayList<PainterContainer> pcs;
-    private WarpOptionsPane pane;
+    private SeqViewOptionsPane pane;
     private JButton ok, cancel;  
     
     //variables for menus
@@ -27,27 +30,27 @@ public class WarpOptionsFrame extends JFrame implements ActionListener {
     private JMenu toolsMenu;
     private JMenuItem optionsItem;
     
-    public WarpOptionsFrame() throws NotFoundException {
+    public SeqView() throws NotFoundException {
         super();
-        setTitle("GSE Viz");
+        setTitle("SeqView");
         pcs = new ArrayList<PainterContainer>();
-        pane = new WarpOptionsPane();
+        pane = new SeqViewOptionsPane();
         init();
     }
 
-    public WarpOptionsFrame(String species, String genome) throws NotFoundException {
+    public SeqView(String species, String genome) throws NotFoundException {
         super();
-        setTitle("GSE Viz for " + species + ", " + genome);
+        setTitle("SeqView for " + species + ", " + genome);
         pcs = new ArrayList<PainterContainer>();
-        pane = new WarpOptionsPane(species,genome);
+        pane = new SeqViewOptionsPane(species,genome);
         init();
     }
     
-    public WarpOptionsFrame(WarpOptions opts) throws NotFoundException {
+    public SeqView(SeqViewOptions opts) throws NotFoundException {
         super();
-        setTitle("GSE Viz"); 
+        setTitle("SeqView"); 
         pcs = new ArrayList<PainterContainer>();
-        pane = new WarpOptionsPane(opts);
+        pane = new SeqViewOptionsPane(opts);
         init();
     }
 
@@ -68,7 +71,7 @@ public class WarpOptionsFrame extends JFrame implements ActionListener {
         content.add(buttonPanel,BorderLayout.SOUTH);
         content.add(pane,BorderLayout.CENTER);
         
-        WarpOptions options = pane.parseOptions();
+        SeqViewOptions options = pane.parseOptions();
         this.setSize(options.getPreferredWindowWidth(), options.getPreferredWindowHeight());
         if (options.isWindowCentered()) {
         	this.setLocationRelativeTo(null);	
@@ -155,7 +158,7 @@ public class WarpOptionsFrame extends JFrame implements ActionListener {
 
     public void actionPerformed (ActionEvent e) {
         if (e.getSource() == ok) {
-            WarpOptions opts = pane.parseOptions();
+            SeqViewOptions opts = pane.parseOptions();
             PainterContainer pc = null;
             for (int i = 0; i < pcs.size(); i++) {
                 if (pcs.get(i).getGenome().getVersion().equals(opts.genome)) {
@@ -234,7 +237,7 @@ public class WarpOptionsFrame extends JFrame implements ActionListener {
      * @param e
      */
     void options_actionPerformed(ActionEvent e) {
-    	new WarpOptionsDialog(this, this, pane.parseOptions());
+    	new SeqViewOptionsDialog(this, this, pane.parseOptions());
     }
 
     
@@ -242,7 +245,7 @@ public class WarpOptionsFrame extends JFrame implements ActionListener {
      * Configure log4j
      */
     public static void configureLogging() {
-    	ClassLoader loader = WarpOptionsFrame.class.getClassLoader();
+    	ClassLoader loader = SeqView.class.getClassLoader();
     	//PropertyConfigurator.configure(loader.getResource("edu/psu/compbio/seqcode/gse/utils/config/log4j.properties"));    	
     }
     
@@ -253,10 +256,10 @@ public class WarpOptionsFrame extends JFrame implements ActionListener {
      */
     public static void main(String args[]) {        
         try {
-        	WarpOptionsFrame.configureLogging();
+        	SeqView.configureLogging();
         	
-            WarpOptions opts = WarpOptions.parseCL(args);
-			new WarpOptionsFrame(opts);
+            SeqViewOptions opts = SeqViewOptions.parseCL(args);
+			new SeqView(opts);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

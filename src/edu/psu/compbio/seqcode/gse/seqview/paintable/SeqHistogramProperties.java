@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
-public class ChipSeqHistogramProperties extends ExperimentPaintableProperties {
+public class SeqHistogramProperties extends ExperimentPaintableProperties {
 
     public Integer LineWidth = 1;
     public Integer MaxReadCount = 200;

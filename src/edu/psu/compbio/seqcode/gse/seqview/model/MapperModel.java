@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.gse.utils.*;
 
 /* see ExpanderModel for an overview */
 
-public class MapperModel<IN,OUT> extends WarpModel implements Runnable {
+public class MapperModel<IN,OUT> extends SeqViewModel implements Runnable {
 
     private boolean newinput;
     private Mapper<IN,OUT> mapper;

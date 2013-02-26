@@ -23,7 +23,7 @@ import edu.psu.compbio.seqcode.gse.seqview.model.Model;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
-public class ChipSeqAboveBelowStrandPainter extends ChipSeqPainter {
+public class SeqAboveBelowStrandPainter extends SeqPainter {
 
     private Color color;
     protected Vector<ChipSeqHit> watsonLayoutHits = new Vector<ChipSeqHit>();
@@ -33,7 +33,7 @@ public class ChipSeqAboveBelowStrandPainter extends ChipSeqPainter {
     private Color plusHitColor = Color.blue;
     private Color minusHitColor = Color.blue;
 
-    public ChipSeqAboveBelowStrandPainter(ChipSeqDataModel model) {
+    public SeqAboveBelowStrandPainter(ChipSeqDataModel model) {
         super(model);
         attrib = DynamicAttribute.getGlobalAttributes();
     }
@@ -83,7 +83,7 @@ public class ChipSeqAboveBelowStrandPainter extends ChipSeqPainter {
         g.drawLine(x1, baseline, x2, baseline);
 
         double maxobsoverlap = Math.max(watsonMaxOverlap, crickMaxOverlap);
-        int propmaxoverlap = ((ChipSeqProperties)getProperties()).MaxReadCount;
+        int propmaxoverlap = ((SeqProperties)getProperties()).MaxReadCount;
         /* maxoverlap is the maximum height of the reads scale
            If the property is negative, use the observed maximum (ie, dynamic scaling).
            Otherwise, use the value from the property and clip peaks
@@ -160,7 +160,7 @@ public class ChipSeqAboveBelowStrandPainter extends ChipSeqPainter {
            the maximum number of tracks into which NonOverlappingLayout
            would have done the layout, tell NOL to use more tracks
         */
-        int propmaxTracks = ((ChipSeqProperties)getProperties()).MaxReadCount;
+        int propmaxTracks = ((SeqProperties)getProperties()).MaxReadCount;
         if (watsonLayout.getMaxTracks() <= propmaxTracks) {
             watsonLayout.setMaxTracks(propmaxTracks);
         }

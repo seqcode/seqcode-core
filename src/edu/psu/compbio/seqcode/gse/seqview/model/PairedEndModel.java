@@ -18,7 +18,7 @@ import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHitLeftComparator;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
-public class PairedEndModel extends WarpModel implements RegionModel, Runnable {
+public class PairedEndModel extends SeqViewModel implements RegionModel, Runnable {
 
     private Client client;
     private Set<ChipSeqAlignment> alignments;

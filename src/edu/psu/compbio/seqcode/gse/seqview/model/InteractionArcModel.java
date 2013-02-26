@@ -16,7 +16,7 @@ import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHitLeftComparator;
 
-public class InteractionArcModel extends WarpModel implements RegionModel,
+public class InteractionArcModel extends SeqViewModel implements RegionModel,
 Runnable {
 
 	private Client client;

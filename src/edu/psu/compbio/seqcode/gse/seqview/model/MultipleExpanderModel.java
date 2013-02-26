@@ -5,7 +5,7 @@ import java.util.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.Expander;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
-public class MultipleExpanderModel<IN,OUT> extends WarpModel implements Runnable {
+public class MultipleExpanderModel<IN,OUT> extends SeqViewModel implements Runnable {
 
     private boolean newinput;
     private LinkedList<Expander<IN,OUT>> expanders;

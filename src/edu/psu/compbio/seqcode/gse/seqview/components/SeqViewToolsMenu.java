@@ -4,13 +4,14 @@ import javax.swing.*;
 import java.awt.event.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.function.*;
+import edu.psu.compbio.seqcode.gse.seqview.SeqView;
 import edu.psu.compbio.seqcode.gse.tools.sequence.*;
 
-public class WarpToolsMenu extends JMenu {
+public class SeqViewToolsMenu extends JMenu {
 
     private final RegionPanel panel;
 
-    public WarpToolsMenu(RegionPanel p) {
+    public SeqViewToolsMenu(RegionPanel p) {
         super("WarpDrive");
         panel = p;
         final RegionPanel thispanel = panel;
@@ -18,7 +19,7 @@ public class WarpToolsMenu extends JMenu {
         add(item);
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    WarpOptionsFrame.main(new String[0]);
+                    SeqView.main(new String[0]);
                 }
             });
         item = new JMenuItem("Browse Weight Matrices");

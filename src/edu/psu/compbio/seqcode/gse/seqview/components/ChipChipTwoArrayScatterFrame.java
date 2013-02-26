@@ -42,7 +42,7 @@ import edu.psu.compbio.seqcode.gse.datasets.chipchip.SQLData;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
-import edu.psu.compbio.seqcode.gse.seqview.WarpOptions;
+import edu.psu.compbio.seqcode.gse.seqview.SeqViewOptions;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.SetTools;
 

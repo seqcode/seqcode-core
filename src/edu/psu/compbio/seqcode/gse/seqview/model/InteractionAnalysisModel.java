@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
-public class InteractionAnalysisModel extends WarpModel implements RegionModel,
+public class InteractionAnalysisModel extends SeqViewModel implements RegionModel,
 		Runnable {
 	
 	private Region region;

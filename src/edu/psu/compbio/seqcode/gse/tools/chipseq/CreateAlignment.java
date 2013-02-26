@@ -17,7 +17,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.*;
  * stuff for metadata
  *
  * Usage:
- * CreateAlignment --species "$SC;SGDv1" --align "name;replicate;alignment version" --factor "Gcn4" --cells "FY4" --condition "YPD" --paramsfile params.txt --readlength 36
+ * CreateAlignment --species "$SC;SGDv1" --align "name;replicate;alignment version" --lab "Pugh" --expttype "CHIPSEQ" --expttarget "Gcn4" --cellline "FY4" --exptcondition "YPD" --paramsfile params.txt --readlength 36
  */
 public class CreateAlignment {
 
@@ -28,9 +28,11 @@ public class CreateAlignment {
         Genome genome = Args.parseGenome(args).cdr();
         String alignname = Args.parseString(args,"align",null);
         String alignpieces[] = alignname.split(";");
-        String factorstring = Args.parseString(args,"factor",null);
-        String cellsstring = Args.parseString(args,"cells",null);
-        String conditionstring = Args.parseString(args,"condition",null);
+        String labstring = Args.parseString(args,"lab",null);
+        String typestring = Args.parseString(args,"expttype",null);
+        String targetstring = Args.parseString(args,"expttarget",null);
+        String cellsstring = Args.parseString(args,"cellline",null);
+        String conditionstring = Args.parseString(args,"exptcondition",null);
         String paramsfname = Args.parseString(args,"paramsfile",null);
         int readlength = Args.parseInteger(args,"readlength",36);
         
@@ -49,7 +51,7 @@ public class CreateAlignment {
             insert.setInt(4, readlength);
             insert.setInt(5, core.getCells(cellsstring).getDBID());
             insert.setInt(6, core.getCondition(conditionstring).getDBID());
-            insert.setInt(7, core.getFactor(factorstring).getDBID());
+            insert.setInt(7, core.getFactor(targetstring).getDBID());
             insert.execute();
             try {
                 expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);

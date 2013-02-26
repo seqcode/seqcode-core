@@ -8,7 +8,7 @@ import java.util.EventObject;
 /**
  * @author tdanford
  */
-public class HyperdriveActionEvent extends EventObject {
+public class SeqViewActionEvent extends EventObject {
     
     public static final int MOVE_LEFT = 0;
     public static final int MOVE_RIGHT = 1;
@@ -26,7 +26,7 @@ public class HyperdriveActionEvent extends EventObject {
      * @param t The "type" of event.
      * @param d Any associated data, to the event.
      */
-    public HyperdriveActionEvent(Object src, int t, Object d) {
+    public SeqViewActionEvent(Object src, int t, Object d) {
         super(src);
         type = t;
         data = d;
@@ -36,7 +36,7 @@ public class HyperdriveActionEvent extends EventObject {
      * @param src The source of the event (Swing component, usually).
      * @param t The "type" of event.
      */    
-    public HyperdriveActionEvent(Object src, int t) { 
+    public SeqViewActionEvent(Object src, int t) { 
         super(src);
         type = t;
         data = null;

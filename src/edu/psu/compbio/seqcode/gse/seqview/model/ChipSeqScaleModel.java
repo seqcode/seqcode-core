@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.gse.datasets.chipchip.GenericExperiment;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
-public class ChipSeqScaleModel extends WarpModel implements RegionModel, Listener<EventObject> {
+public class ChipSeqScaleModel extends SeqViewModel implements RegionModel, Listener<EventObject> {
     
     private ArrayList<ChipSeqDataModel> models;
     private double maxOverlap;

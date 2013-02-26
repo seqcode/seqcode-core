@@ -4,16 +4,16 @@ import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqDataModel;
 
 import java.awt.Graphics2D;
 
-public class ChipSeqCombinedPainter extends ChipSeqPainter {
+public class SeqCombinedPainter extends SeqPainter {
 
-    private ChipSeqBasicOverlapPainter basic;
-    private ChipSeqAboveBelowStrandPainter stranded;
+    private SeqBasicOverlapPainter basic;
+    private SeqAboveBelowStrandPainter stranded;
 
-    public ChipSeqCombinedPainter (ChipSeqDataModel model) {
+    public SeqCombinedPainter (ChipSeqDataModel model) {
         super(model);
-        basic = new ChipSeqBasicOverlapPainter(model);
+        basic = new SeqBasicOverlapPainter(model);
         basic.setProperties(getProperties());
-        stranded = new ChipSeqAboveBelowStrandPainter(model);
+        stranded = new SeqAboveBelowStrandPainter(model);
         stranded.setProperties(getProperties());       
     }
 

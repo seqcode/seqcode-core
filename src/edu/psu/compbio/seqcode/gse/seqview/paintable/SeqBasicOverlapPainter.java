@@ -23,11 +23,11 @@ import edu.psu.compbio.seqcode.gse.seqview.model.Model;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
-public class ChipSeqBasicOverlapPainter extends ChipSeqPainter {
+public class SeqBasicOverlapPainter extends SeqPainter {
 
     private Color color;
 
-    public ChipSeqBasicOverlapPainter(ChipSeqDataModel model) {
+    public SeqBasicOverlapPainter(ChipSeqDataModel model) {
         super(model);
         attrib = DynamicAttribute.getGlobalAttributes();
     }
@@ -42,7 +42,7 @@ public class ChipSeqBasicOverlapPainter extends ChipSeqPainter {
         WeightedRunningOverlapSum overlap = model.getTotalRunningOverlap();
         int maxTracksOverlap = (int)Math.ceil(overlap.getMaxOverlap());
 
-        int propmaxoverlap = ((ChipSeqProperties)getProperties()).MaxReadCount;
+        int propmaxoverlap = ((SeqProperties)getProperties()).MaxReadCount;
         /* maxoverlap is the maximum height of the reads scale
            If the property is negative, use the observed maximum (ie, dynamic scaling).
            Otherwise, use the value from the property and clip peaks
@@ -109,7 +109,7 @@ public class ChipSeqBasicOverlapPainter extends ChipSeqPainter {
         g.drawLine(x1, baseline, x2, baseline);
 
         int numTracks = Math.max(1, totalLayout.getNumTracks());
-        int propmaxoverlap = ((ChipSeqProperties)getProperties()).MaxReadCount;
+        int propmaxoverlap = ((SeqProperties)getProperties()).MaxReadCount;
         /* maxoverlap is the maximum height of the reads scale
            If the property is negative, use the observed maximum (ie, dynamic scaling).
            Otherwise, use the value from the property and clip peaks

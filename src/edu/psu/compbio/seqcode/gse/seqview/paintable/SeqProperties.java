@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
-public class ChipSeqProperties extends ExperimentPaintableProperties {
+public class SeqProperties extends ExperimentPaintableProperties {
 
     public Integer MaxReadCount = 40;
     public Boolean Overlapping = Boolean.TRUE;

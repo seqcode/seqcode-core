@@ -6,22 +6,21 @@ import java.awt.font.TextLayout;
 import java.awt.font.LineMetrics;
 import java.io.File;
 import java.util.*;
-
+import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
+import edu.psu.compbio.seqcode.gse.viz.colors.ColorSet;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipData;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.GenericExperiment;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
 import edu.psu.compbio.seqcode.gse.seqview.model.ChipChipDataModel;
 import edu.psu.compbio.seqcode.gse.seqview.model.ChipChipScaleModel;
 import edu.psu.compbio.seqcode.gse.seqview.model.Model;
 import edu.psu.compbio.seqcode.gse.seqview.model.ModelProperties;
-import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
-import edu.psu.compbio.seqcode.gse.viz.colors.ColorSet;
+import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
 
 /* paints ChIP-Chip data across a genomic region. */
 
-public class TimChipChipPainter extends RegionPaintable  {
+public class ChipChipAdvPainter extends RegionPaintable  {
 
     public static int CHIP = 1, EXPRESSION = 2, CGH = 3, RULER = 4;
     public static ColorSet colors = new ColorSet();
@@ -34,7 +33,7 @@ public class TimChipChipPainter extends RegionPaintable  {
     private ExtendedChipChipProperties props;
     private Color color; // this is basically a temporary variable shared by several methods
 
-    public TimChipChipPainter (GenericExperiment data, ChipChipDataModel model) {
+    public ChipChipAdvPainter (GenericExperiment data, ChipChipDataModel model) {
         super();
         this.data = data;
         this.model = model;
