@@ -10,8 +10,8 @@ import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
-import edu.psu.compbio.seqcode.gse.utils.database.Sequence;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
+import edu.psu.compbio.seqcode.gse.utils.database.Sequence;
 
 public class TimeSeriesLoader implements Closeable {
     

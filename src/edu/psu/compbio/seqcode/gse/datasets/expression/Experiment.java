@@ -18,8 +18,8 @@ import java.util.Set;
 
 import java.sql.Connection;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.general.TimePoint;
 import edu.psu.compbio.seqcode.gse.datasets.general.TimeSeriesLoader;
@@ -66,8 +66,8 @@ public class Experiment {
     private boolean logScale;
     private Map<String,String> params;
         
-    private Cells cells;
-    private Condition condition;
+    private CellLine cells;
+    private ExptCondition condition;
     private ProbePlatform platform;
     private TimePoint timePoint;
     
@@ -99,8 +99,8 @@ public class Experiment {
         
         // These next two lines, using the ChipChipLoader object, implicitly do another 
         // table-lookup against the cells and conditions tables 
-        cells = chipLoader.loadCells(cellsID);
-        condition = chipLoader.loadCondition(condID);
+        cells = chipLoader.loadCellLine(cellsID);
+        condition = chipLoader.loadExptCondition(condID);
         
         params = new HashMap<String,String>();
         
@@ -122,8 +122,8 @@ public class Experiment {
     public String getName() { return name; }
     public int getValueType() { return value; }
     public boolean isLogScale() { return logScale; }
-    public Cells getCells() { return cells; }
-    public Condition getCondition() { return condition; }
+    public CellLine getCells() { return cells; }
+    public ExptCondition getCondition() { return condition; }
     public ProbePlatform getPlatform() { return platform; }
     public TimePoint getTimePoint() { return timePoint; }
     

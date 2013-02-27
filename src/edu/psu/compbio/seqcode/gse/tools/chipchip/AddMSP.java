@@ -110,18 +110,18 @@ public class AddMSP {
             if (matcher.matches()) {
                 MetadataLoader loader = new MetadataLoader();
                 fieldnames.add("factorone");
-                values.add(Integer.toString(loader.getFactor(matcher.group(1)).getDBID()));
+                values.add(Integer.toString(loader.getExptTarget(matcher.group(1)).getDBID()));
                 fieldnames.add("cellsone");
-                values.add(Integer.toString(loader.getCells(matcher.group(2)).getDBID()));
+                values.add(Integer.toString(loader.getCellLine(matcher.group(2)).getDBID()));
                 fieldnames.add("conditionone");
-                values.add(Integer.toString(loader.getCondition(matcher.group(3)).getDBID()));
+                values.add(Integer.toString(loader.getExptCondition(matcher.group(3)).getDBID()));
 
                 fieldnames.add("factortwo");
-                values.add(Integer.toString(loader.getFactor(matcher.group(4)).getDBID()));
+                values.add(Integer.toString(loader.getExptTarget(matcher.group(4)).getDBID()));
                 fieldnames.add("cellstwo");
-                values.add(Integer.toString(loader.getCells(matcher.group(5)).getDBID()));
+                values.add(Integer.toString(loader.getCellLine(matcher.group(5)).getDBID()));
                 fieldnames.add("conditiontwo");
-                values.add(Integer.toString(loader.getCondition(matcher.group(6)).getDBID()));               
+                values.add(Integer.toString(loader.getExptCondition(matcher.group(6)).getDBID()));               
             }
 
             StringBuffer cmd = new StringBuffer("insert into rosettaanalysis(");

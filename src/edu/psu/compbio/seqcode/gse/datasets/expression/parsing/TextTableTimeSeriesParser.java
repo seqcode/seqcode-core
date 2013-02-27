@@ -3,12 +3,11 @@
  * 
  * @author Timothy Danford
  */
-package edu.psu.compbio.seqcode.gse.datasets.general.parsing;
+package edu.psu.compbio.seqcode.gse.datasets.expression.parsing;
 
 import java.io.*;
 import java.sql.SQLException;
 import java.util.Vector;
-
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 
 public class TextTableTimeSeriesParser { 

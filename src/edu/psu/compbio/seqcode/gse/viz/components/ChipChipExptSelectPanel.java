@@ -13,9 +13,9 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Factor;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.locators.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
@@ -38,13 +38,13 @@ public class ChipChipExptSelectPanel extends GenericSelectPanel<ExptLocator> {
     private boolean hasAgilent, hasReps, hasMSP, hasBayes;
     private JRadioButton agilentButton, agilentReplicateButton, mspButton, bayesButton;
     private ButtonGroup typeGroup;
-    private Wrapper<Cells> noCells;
-    private Wrapper<Condition> noCond;
-    private Wrapper<Factor> noFactor;
+    private Wrapper<CellLine> noCells;
+    private Wrapper<ExptCondition> noCond;
+    private Wrapper<ExptTarget> noFactor;
     private ExptTableModel selectedModel, filteredModel;
-    private Collection<Cells> allCells;
-    private Collection<Condition> allConds;
-    private Collection<Factor> allFactors;
+    private Collection<CellLine> allCells;
+    private Collection<ExptCondition> allConds;
+    private Collection<ExptTarget> allFactors;
 
     private Collection<ExptLocator> scans;    
     private JButton addDiffButton;
@@ -85,9 +85,9 @@ public class ChipChipExptSelectPanel extends GenericSelectPanel<ExptLocator> {
         }
         filter = new ExptLocatorFilter();
         if (g != null) {filter.setGenome(g);}
-        noCells = new Wrapper<Cells>("<NONE>", null);
-        noCond = new Wrapper<Condition>("<NONE>", null);
-        noFactor = new Wrapper<Factor>("<NONE>", null);		
+        noCells = new Wrapper<CellLine>("<NONE>", null);
+        noCond = new Wrapper<ExptCondition>("<NONE>", null);
+        noFactor = new Wrapper<ExptTarget>("<NONE>", null);		
         setBorder(new TitledBorder("Selected Experiments:"));
         selectedModel = new ExptTableModel();
         filteredModel = new ExptTableModel();
@@ -204,9 +204,9 @@ public class ChipChipExptSelectPanel extends GenericSelectPanel<ExptLocator> {
     }
     /* this filter() only gets called from the swing thread */
     public void filter() {
-        Cells cells = ((Wrapper<Cells>)(cellsModel.getSelectedItem())).value;
-        Condition cond = ((Wrapper<Condition>)(condModel.getSelectedItem())).value;
-        Factor factor = ((Wrapper<Factor>)(factorModel.getSelectedItem())).value;
+        CellLine cells = ((Wrapper<CellLine>)(cellsModel.getSelectedItem())).value;
+        ExptCondition cond = ((Wrapper<ExptCondition>)(condModel.getSelectedItem())).value;
+        ExptTarget factor = ((Wrapper<ExptTarget>)(factorModel.getSelectedItem())).value;
         filter(cells,cond,factor);
 
         filteredModel.clear();
@@ -217,7 +217,7 @@ public class ChipChipExptSelectPanel extends GenericSelectPanel<ExptLocator> {
         }
     }
     /* this gets called from anywhere and just updates scans */
-    public void filter(Cells cells, Condition cond, Factor factor) {
+    public void filter(CellLine cells, ExptCondition cond, ExptTarget factor) {
         synchronized(scans) {
             scans.clear();
             try { 
@@ -255,9 +255,9 @@ public class ChipChipExptSelectPanel extends GenericSelectPanel<ExptLocator> {
     public void retrieveData() {
         try {
             filter.setGenome(getGenome());
-            allCells = new TreeSet<Cells>();
-            allConds = new TreeSet<Condition>();
-            allFactors = new TreeSet<Factor>();
+            allCells = new TreeSet<CellLine>();
+            allConds = new TreeSet<ExptCondition>();
+            allFactors = new TreeSet<ExptTarget>();
             allCells.addAll(chipLoader.loadAllCells(getGenome()));
             allConds.addAll(chipLoader.loadAllConditions(getGenome()));
             allFactors.addAll(chipLoader.loadAllFactors(getGenome()));
@@ -276,20 +276,20 @@ public class ChipChipExptSelectPanel extends GenericSelectPanel<ExptLocator> {
             cellsModel.addElement(noCells);
             condModel.addElement(noCond);
             factorModel.addElement(noFactor);
-            for(Cells cells : allCells) { 
-                Wrapper<Cells> wrapper = new Wrapper<Cells>(cells.getName(), cells);
+            for(CellLine cells : allCells) { 
+                Wrapper<CellLine> wrapper = new Wrapper<CellLine>(cells.getName(), cells);
                 cellsModel.addElement(wrapper);
             }
 		
-            for(Condition cond : allConds) { 
-                Wrapper<Condition> wrapper = 
-                    new Wrapper<Condition>(cond.getName(), cond);
+            for(ExptCondition cond : allConds) { 
+                Wrapper<ExptCondition> wrapper = 
+                    new Wrapper<ExptCondition>(cond.getName(), cond);
                 condModel.addElement(wrapper);
             }
 
-            for(Factor factor : allFactors){ 
-                Wrapper<Factor> wrapper = 
-                    new Wrapper<Factor>(factor.getName(), factor);
+            for(ExptTarget factor : allFactors){ 
+                Wrapper<ExptTarget> wrapper = 
+                    new Wrapper<ExptTarget>(factor.getName(), factor);
                 factorModel.addElement(wrapper);
             }
             cellsModel.setSelectedItem(noCells);

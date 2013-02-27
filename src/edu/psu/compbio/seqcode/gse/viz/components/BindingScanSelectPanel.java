@@ -14,9 +14,9 @@ import javax.swing.event.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.binding.*;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Factor;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.*;
@@ -37,12 +37,12 @@ public class BindingScanSelectPanel extends GenericSelectPanel<BindingScan> {
     private JComboBox cellsBox, condBox, factorBox;
     private JTextField regex;
     private BindingScanFilter filter;
-    private Wrapper<Cells> noCells;
-    private Wrapper<Condition> noCond;
-    private Wrapper<Factor> noFactor;
-    private Collection<Cells> allCells;
-    private Collection<Condition> allConds;
-    private Collection<Factor> allFactors;
+    private Wrapper<CellLine> noCells;
+    private Wrapper<ExptCondition> noCond;
+    private Wrapper<ExptTarget> noFactor;
+    private Collection<CellLine> allCells;
+    private Collection<ExptCondition> allConds;
+    private Collection<ExptTarget> allFactors;
     private Collection<BindingScan> scans;
 
     public BindingScanSelectPanel() 
@@ -54,9 +54,9 @@ public class BindingScanSelectPanel extends GenericSelectPanel<BindingScan> {
 
         selectedModel = new BindingScanTableModel();        
         filteredModel = new BindingScanTableModel();
-        noCells = new Wrapper<Cells>("<NONE>", null);
-        noCond = new Wrapper<Condition>("<NONE>", null);
-        noFactor = new Wrapper<Factor>("<NONE>", null);	
+        noCells = new Wrapper<CellLine>("<NONE>", null);
+        noCond = new Wrapper<ExptCondition>("<NONE>", null);
+        noFactor = new Wrapper<ExptTarget>("<NONE>", null);	
         scans = new ArrayList<BindingScan>();
         init(filteredModel,selectedModel);
     }
@@ -107,9 +107,9 @@ public class BindingScanSelectPanel extends GenericSelectPanel<BindingScan> {
     public void clearSelected() { selectedModel.clear(); }
 
     public void filter() {
-        Cells cells = ((Wrapper<Cells>)(cellsModel.getSelectedItem())).value;
-        Condition cond = ((Wrapper<Condition>)(condModel.getSelectedItem())).value;
-        Factor factor = ((Wrapper<Factor>)(factorModel.getSelectedItem())).value;
+        CellLine cells = ((Wrapper<CellLine>)(cellsModel.getSelectedItem())).value;
+        ExptCondition cond = ((Wrapper<ExptCondition>)(condModel.getSelectedItem())).value;
+        ExptTarget factor = ((Wrapper<ExptTarget>)(factorModel.getSelectedItem())).value;
 
         filter(cells,cond,factor);
         filteredModel.clear();
@@ -117,7 +117,7 @@ public class BindingScanSelectPanel extends GenericSelectPanel<BindingScan> {
             filteredModel.addObject(bs);
         }
     }
-    public void filter(Cells cells, Condition cond, Factor factor) {
+    public void filter(CellLine cells, ExptCondition cond, ExptTarget factor) {
         String reg = regex.getText().trim();
         Pattern patt = null;
         if(reg.length() > 0) {
@@ -143,9 +143,9 @@ public class BindingScanSelectPanel extends GenericSelectPanel<BindingScan> {
 
     public void retrieveData() {
         try {
-            allCells = new TreeSet<Cells>(chipchiploader.loadAllCells(getGenome()));
-            allConds = new TreeSet<Condition>(chipchiploader.loadAllConditions(getGenome()));
-            allFactors = new TreeSet<Factor>(chipchiploader.loadAllFactors(getGenome()));
+            allCells = new TreeSet<CellLine>(chipchiploader.loadAllCells(getGenome()));
+            allConds = new TreeSet<ExptCondition>(chipchiploader.loadAllConditions(getGenome()));
+            allFactors = new TreeSet<ExptTarget>(chipchiploader.loadAllFactors(getGenome()));
             filter(null,null,null);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -166,20 +166,20 @@ public class BindingScanSelectPanel extends GenericSelectPanel<BindingScan> {
         cellsModel.addElement(noCells);
         condModel.addElement(noCond);
         factorModel.addElement(noFactor);
-        for(Cells cells : allCells) { 
-            Wrapper<Cells> wrapper = new Wrapper<Cells>(cells.getName(), cells);
+        for(CellLine cells : allCells) { 
+            Wrapper<CellLine> wrapper = new Wrapper<CellLine>(cells.getName(), cells);
             cellsModel.addElement(wrapper);
         }
             
-        for(Condition cond : allConds) { 
-            Wrapper<Condition> wrapper = 
-                new Wrapper<Condition>(cond.getName(), cond);
+        for(ExptCondition cond : allConds) { 
+            Wrapper<ExptCondition> wrapper = 
+                new Wrapper<ExptCondition>(cond.getName(), cond);
             condModel.addElement(wrapper);
         }
             
-        for(Factor factor : allFactors){ 
-            Wrapper<Factor> wrapper = 
-                new Wrapper<Factor>(factor.getName(), factor);
+        for(ExptTarget factor : allFactors){ 
+            Wrapper<ExptTarget> wrapper = 
+                new Wrapper<ExptTarget>(factor.getName(), factor);
             factorModel.addElement(wrapper);
         }
 		

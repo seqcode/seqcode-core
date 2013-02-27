@@ -15,13 +15,16 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 
 /**
  * @author tdanford
+ * Represents an entry in the core.exptcondition table.  
+ * This is used as metadata for sequencing experiments.  
+ * The name might describe cell stage like "ES" or a compact identifier of experimental conditions/treatments.
  */
-public class Condition implements Comparable<Condition> {
+public class ExptCondition implements Comparable<ExptCondition> {
     
 	private int dbid;
 	private String name;
     
-    public Condition(ResultSet rs) throws SQLException { 
+    public ExptCondition(ResultSet rs) throws SQLException { 
         dbid = rs.getInt(1);
         name = rs.getString(2);
     }
@@ -38,13 +41,13 @@ public class Condition implements Comparable<Condition> {
 	}
 	
 	public boolean equals(Object o) { 
-		if(!(o instanceof Condition)) { return false; }
-		Condition c = (Condition)o;
+		if(!(o instanceof ExptCondition)) { return false; }
+		ExptCondition c = (ExptCondition)o;
 		if(dbid != c.dbid) { return false; }
 		return true;
 	}
     
-    public int compareTo(Condition c) { return name.compareTo(c.name); }
+    public int compareTo(ExptCondition c) { return name.compareTo(c.name); }
     
     public Collection<ExptLocator> loadLocators(java.sql.Connection cxn, Genome g) throws SQLException {
         LinkedList<ExptLocator> locs = new LinkedList<ExptLocator>();

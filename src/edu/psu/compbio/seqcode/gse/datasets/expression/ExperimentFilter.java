@@ -7,9 +7,9 @@ import java.util.*;
 import java.sql.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Factor;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.*;
@@ -46,7 +46,7 @@ public class ExperimentFilter implements Closeable {
 	public Genome getGenome() { return genome; }
 	public void setGenome(Genome g) { genome = g; }
 	
-	public Cells getCells(Experiment expt) 
+	public CellLine getCells(Experiment expt) 
 		throws SQLException, UnknownRoleException {
 		
 		java.sql.Connection cxn = loader.getConnection();
@@ -61,11 +61,11 @@ public class ExperimentFilter implements Closeable {
 		rs.close();
 		ps.close();
 		
-		return chipLoader.loadCells(cellsID);
+		return chipLoader.loadCellLine(cellsID);
 	}
 	
-	public Collection<Experiment> findExpts(Cells cells, 
-			Condition cond) throws SQLException  {
+	public Collection<Experiment> findExpts(CellLine cells, 
+			ExptCondition cond) throws SQLException  {
 		
         LinkedList<Integer> dbids = new LinkedList<Integer>();
         

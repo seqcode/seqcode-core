@@ -10,8 +10,8 @@ import java.sql.Statement;
 import java.util.Map;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.TimePoint;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
@@ -113,8 +113,8 @@ public class ExpressionInserter implements Closeable {
     private int getLastProbePlatformID() throws SQLException { return getLastID("probe_platform_id"); }
     private int getLastProcessingID() throws SQLException { return getLastID("processing_id"); }
     
-    public int insertExperiment(String name, int type, boolean logscale, Cells cells, 
-            Condition cond, TimePoint point, ProbePlatform platform) throws SQLException {
+    public int insertExperiment(String name, int type, boolean logscale, CellLine cells, 
+            ExptCondition cond, TimePoint point, ProbePlatform platform) throws SQLException {
         insertExpt.setString(1, name);
         insertExpt.setInt(2, type);
         insertExpt.setInt(3, logscale ? 1 : 0);

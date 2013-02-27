@@ -11,9 +11,9 @@ package edu.psu.compbio.seqcode.gse.datasets.locators;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Factor;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 
 public class ExptLocatorFilterOptions {
     
@@ -34,17 +34,17 @@ public class ExptLocatorFilterOptions {
     
     public void clearOptionValue(String k) { optsMap.remove(k); }
     
-    public void setCells(Cells c) { optsMap.put("cells", c); }
-    public void setFactor(Factor f) { optsMap.put("factor", f); }
-    public void setCondition(Condition c) { optsMap.put("condition", c); }
+    public void setCells(CellLine c) { optsMap.put("cells", c); }
+    public void setFactor(ExptTarget f) { optsMap.put("factor", f); }
+    public void setCondition(ExptCondition c) { optsMap.put("condition", c); }
     
     public void setChipChipType() { optsMap.put("expt_type", AGILENT_TYPE); }
     public void setMSPType() { optsMap.put("expt_type", MSP_TYPE); }
     public void setBayesType() { optsMap.put("expt_type", BAYES_TYPE); }
     
-    public Cells getCells() { return optsMap.containsKey("cells") ? (Cells)optsMap.get("cells") : null; }
-    public Factor getFactor() { return optsMap.containsKey("factor") ? (Factor)optsMap.get("factor") : null; }
-    public Condition getCondition() { return optsMap.containsKey("condition") ? (Condition)optsMap.get("condition") : null; }
+    public CellLine getCells() { return optsMap.containsKey("cells") ? (CellLine)optsMap.get("cells") : null; }
+    public ExptTarget getFactor() { return optsMap.containsKey("factor") ? (ExptTarget)optsMap.get("factor") : null; }
+    public ExptCondition getCondition() { return optsMap.containsKey("condition") ? (ExptCondition)optsMap.get("condition") : null; }
     
     public int getExptType() { return (Integer)optsMap.get("expt_type"); }
     

@@ -17,9 +17,9 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Factor;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -95,19 +95,19 @@ public class ChipChipMetadataLoader implements edu.psu.compbio.seqcode.gse.utils
         cxn.commit();
     }
 
-    public Collection<Cells> loadAllCells(Genome g) throws SQLException { 
+    public Collection<CellLine> loadAllCells(Genome g) throws SQLException { 
     
-        HashSet<Cells> values = new HashSet<Cells>();
+        HashSet<CellLine> values = new HashSet<CellLine>();
         Statement s = cxn.createStatement();
         ResultSet rs = s.executeQuery("select e.cellsone, e.cellstwo from experiment e, " +
                                       "exptToGenome e2g where e.id=e2g.experiment and e2g.genome=" + g.getDBID()); 
 
         while(rs.next()) { 
             int id = rs.getInt(1);
-            values.add(metaLoader.loadCells(id));
+            values.add(metaLoader.loadCellLine(id));
             
             id = rs.getInt(2);
-            values.add(metaLoader.loadCells(id));
+            values.add(metaLoader.loadCellLine(id));
         }
 
         rs.close();
@@ -115,19 +115,19 @@ public class ChipChipMetadataLoader implements edu.psu.compbio.seqcode.gse.utils
         return values;
     }
 
-    public Collection<Condition> loadAllConditions(Genome g) throws SQLException {
+    public Collection<ExptCondition> loadAllConditions(Genome g) throws SQLException {
         
-        HashSet<Condition> values = new HashSet<Condition>();
+        HashSet<ExptCondition> values = new HashSet<ExptCondition>();
         Statement s = cxn.createStatement();
         ResultSet rs = s.executeQuery("select e.conditionone, e.conditiontwo from experiment e, " +
                                       "exptToGenome e2g where e.id=e2g.experiment and e2g.genome=" + g.getDBID()); 
 
         while(rs.next()) { 
             int id = rs.getInt(1);
-            values.add(metaLoader.loadCondition(id));
+            values.add(metaLoader.loadExptCondition(id));
             
             id = rs.getInt(2);
-            values.add(metaLoader.loadCondition(id));
+            values.add(metaLoader.loadExptCondition(id));
         }
 
         rs.close();
@@ -135,19 +135,19 @@ public class ChipChipMetadataLoader implements edu.psu.compbio.seqcode.gse.utils
         return values;
     }
 
-    public Collection<Factor> loadAllFactors(Genome g) throws SQLException {
+    public Collection<ExptTarget> loadAllFactors(Genome g) throws SQLException {
         
-        HashSet<Factor> values = new HashSet<Factor>();
+        HashSet<ExptTarget> values = new HashSet<ExptTarget>();
         Statement s = cxn.createStatement();
         ResultSet rs = s.executeQuery("select e.factorone, e.factortwo from experiment e, " +
                                       "exptToGenome e2g where e.id=e2g.experiment and e2g.genome=" + g.getDBID()); 
 
         while(rs.next()) { 
             int id = rs.getInt(1);
-            values.add(metaLoader.loadFactor(id));
+            values.add(metaLoader.loadExptTarget(id));
 
             id = rs.getInt(2);
-            values.add(metaLoader.loadFactor(id));
+            values.add(metaLoader.loadExptTarget(id));
         }
 
         rs.close();
@@ -625,12 +625,12 @@ public class ChipChipMetadataLoader implements edu.psu.compbio.seqcode.gse.utils
             expt.species = org.getDBID();
             MetadataLoader loader = new MetadataLoader();
             expt.fragdist = loadFragDist(fragdistname,fragdistversion).getDBID();
-            expt.factorone = loader.getFactor(factorone).getDBID();
-            expt.factortwo = loader.getFactor(factortwo).getDBID();
-            expt.cellsone = loader.getCells(cellsone).getDBID();
-            expt.cellstwo = loader.getCells(cellstwo).getDBID();
-            expt.conditionone = loader.getCondition(conditionone).getDBID();
-            expt.conditiontwo = loader.getCondition(conditiontwo).getDBID();
+            expt.factorone = loader.getExptTarget(factorone).getDBID();
+            expt.factortwo = loader.getExptTarget(factortwo).getDBID();
+            expt.cellsone = loader.getCellLine(cellsone).getDBID();
+            expt.cellstwo = loader.getCellLine(cellstwo).getDBID();
+            expt.conditionone = loader.getExptCondition(conditionone).getDBID();
+            expt.conditiontwo = loader.getExptCondition(conditiontwo).getDBID();
             expt.active = active;
             PreparedStatement ps = cxn.prepareStatement("insert into experiment(id,name,version,replicate,fragdist,species,cellsone,"+
                                                         "conditionone,factorone,cellstwo,conditiontwo,factortwo,active) values("+

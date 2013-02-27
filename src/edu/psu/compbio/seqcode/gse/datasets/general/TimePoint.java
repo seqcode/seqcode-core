@@ -6,7 +6,6 @@
 package edu.psu.compbio.seqcode.gse.datasets.general;
 
 import java.sql.*;
-
 import edu.psu.compbio.seqcode.gse.utils.database.Sequence;
 
 /*

@@ -63,12 +63,12 @@ public abstract class NormalizeExperiment {
                                                   org.getName(),
                                                   fd.getName(),
                                                   fd.getVersion(),
-                                                  general.loadFactor(oldexpt.getFactorOne()).getName(),
-                                                  general.loadFactor(oldexpt.getFactorTwo()).getName(),
-                                                  general.loadCells(oldexpt.getCellsOne()).getName(),
-                                                  general.loadCells(oldexpt.getCellsTwo()).getName(),
-                                                  general.loadCondition(oldexpt.getConditionOne()).getName(),
-                                                  general.loadCondition(oldexpt.getConditionTwo()).getName(),
+                                                  general.loadExptTarget(oldexpt.getFactorOne()).getName(),
+                                                  general.loadExptTarget(oldexpt.getFactorTwo()).getName(),
+                                                  general.loadCellLine(oldexpt.getCellsOne()).getName(),
+                                                  general.loadCellLine(oldexpt.getCellsTwo()).getName(),
+                                                  general.loadExptCondition(oldexpt.getConditionOne()).getName(),
+                                                  general.loadExptCondition(oldexpt.getConditionTwo()).getName(),
                                                   true);
         int oldexptid = oldexpt.getDBID();
         int newexptid = newexpt.getDBID();

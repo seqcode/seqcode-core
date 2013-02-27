@@ -43,7 +43,7 @@ public class GuessControlExpt {
         boolean strict = Args.parseFlags(args).contains("strict");
 
         for (String f : controlFactorNames) {
-            Factor factor = core.findFactor(f);
+            ExptTarget factor = core.findExptTarget(f);
             if (factor != null) {
                 controlFactorIDs.add(factor.getDBID());
             }
@@ -83,8 +83,8 @@ public class GuessControlExpt {
     public static Collection<ChipSeqAlignment> controlsForAlignment(ChipSeqAlignment a) throws Exception {
         ArrayList<ChipSeqAlignment> output = new ArrayList<ChipSeqAlignment>();
         ChipSeqExpt expt = a.getExpt();
-        Cells cells = expt.getCells();
-        Condition cond = expt.getCondition();
+        CellLine cells = expt.getCells();
+        ExptCondition cond = expt.getCondition();
         for (Integer i : controlFactorIDs) {
             output.addAll(loader.loadAlignments(null,null,null,
                                                 i, cells.getDBID(), cond.getDBID(), 

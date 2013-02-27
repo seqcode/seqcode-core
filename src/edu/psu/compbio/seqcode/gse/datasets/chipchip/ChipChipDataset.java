@@ -420,13 +420,13 @@ public class ChipChipDataset {
         int type = CHIP;
         for (Experiment expt : expts) {
             try {
-                if (core.loadFactor(expt.getFactorOne()).getName().toLowerCase().matches(".*ruler.*")) {
+                if (core.loadExptTarget(expt.getFactorOne()).getName().toLowerCase().matches(".*ruler.*")) {
                     type = RULER;
                 }
-                if (core.loadFactor(expt.getFactorOne()).getName().toLowerCase().matches(".*rna.*")) {
+                if (core.loadExptTarget(expt.getFactorOne()).getName().toLowerCase().matches(".*rna.*")) {
                     type = EXPRESSION;
                 }
-                if (core.loadFactor(expt.getFactorOne()).getName().toLowerCase().matches("cgh")) {
+                if (core.loadExptTarget(expt.getFactorOne()).getName().toLowerCase().matches("cgh")) {
                     type = CGH;
                 }
             } catch (Exception e) {

@@ -8,8 +8,8 @@ import java.util.*;
 import java.io.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.expression.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.general.TimePoint;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -27,8 +27,8 @@ public class TextTableExpressionParser {
             int index = ap.hasKey("index") ? Integer.parseInt(ap.getKeyValue("index")) : 0;
             boolean logScale = ap.hasKey("scale") ? ap.getKeyValue("scale").equals("log") : true;
             int type = ap.hasKey("type") ? Integer.parseInt(ap.getKeyValue("type")) : -1;
-            Cells cells = metaLoader.getCells(ap.getKeyValue("cells"));
-            Condition condition = metaLoader.getCondition(ap.getKeyValue("condition"));
+            CellLine cells = metaLoader.getCellLine(ap.getKeyValue("cells"));
+            ExptCondition condition = metaLoader.getExptCondition(ap.getKeyValue("condition"));
 
             File inputFile = new File(ap.getKeyValue("input"));
             ProbePlatform platform = loader.loadPlatform(ap.getKeyValue("platform"));
@@ -55,8 +55,8 @@ public class TextTableExpressionParser {
     private Map<String,Vector<Double>> values;
     
     private Map<String,String> params;
-    private Cells cells;
-    private Condition condition;
+    private CellLine cells;
+    private ExptCondition condition;
     private TimePoint timepoint;
     private ProbePlatform platform;
     private boolean logScale;
@@ -87,8 +87,8 @@ public class TextTableExpressionParser {
     public void addParameter(String k, String v) { params.put(k, v); }
     public void setLogScale(boolean ls) { logScale = ls; }
     public void setType(int t) { type = t; }
-    public void setCells(Cells c) { cells = c; }
-    public void setCondition(Condition c) { condition = c; }
+    public void setCells(CellLine c) { cells = c; }
+    public void setCondition(ExptCondition c) { condition = c; }
     
     public void insertIntoDB(ExpressionInserter inserter, String name, int index) throws SQLException {
         ExpressionLoader loader = inserter.getLoader();

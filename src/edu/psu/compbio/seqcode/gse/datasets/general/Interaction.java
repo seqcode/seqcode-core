@@ -1,7 +1,5 @@
 package edu.psu.compbio.seqcode.gse.datasets.general;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-
 public class Interaction {
 
 	private Region left, right;

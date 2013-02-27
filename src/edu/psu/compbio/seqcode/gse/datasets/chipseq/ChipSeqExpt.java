@@ -40,9 +40,9 @@ public class ChipSeqExpt {
     
     private int dbid, readlength;
     private String name, replicate;
-    private Factor factor;
-    private Condition condition;
-    private Cells cells;
+    private ExptTarget target;
+    private ExptCondition condition;
+    private CellLine cells;
     private Organism species;
     
     public ChipSeqExpt(ResultSet rs, ChipSeqLoader loader) throws SQLException { 
@@ -63,18 +63,18 @@ public class ChipSeqExpt {
         
         MetadataLoader mloader = loader == null ? new MetadataLoader() : loader.getMetadataLoader();
 
-        factor = mloader.loadFactor(factorID);
-        cells = mloader.loadCells(cellsID);
-        condition = mloader.loadCondition(condID);
+        target = mloader.loadExptTarget(factorID);
+        cells = mloader.loadCellLine(cellsID);
+        condition = mloader.loadExptCondition(condID);
     }
     
     public int getDBID() { return dbid; }
     public String getName() { return name; }
     public String getReplicate() { return replicate; }
     public Organism getOrganism() { return species; }
-    public Factor getFactor() { return factor; }
-    public Cells getCells() { return cells; }
-    public Condition getCondition() { return condition; }
+    public ExptTarget getFactor() { return target; }
+    public CellLine getCells() { return cells; }
+    public ExptCondition getCondition() { return condition; }
     public int getReadLength() {return readlength;}
     
     public String toString() { 

@@ -49,9 +49,9 @@ public class CreateAlignment {
             insert.setString(2, alignpieces[1]);
             insert.setInt(3, genome.getSpeciesDBID());
             insert.setInt(4, readlength);
-            insert.setInt(5, core.getCells(cellsstring).getDBID());
-            insert.setInt(6, core.getCondition(conditionstring).getDBID());
-            insert.setInt(7, core.getFactor(targetstring).getDBID());
+            insert.setInt(5, core.getCellLine(cellsstring).getDBID());
+            insert.setInt(6, core.getExptCondition(conditionstring).getDBID());
+            insert.setInt(7, core.getExptTarget(targetstring).getDBID());
             insert.execute();
             try {
                 expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);

@@ -7,9 +7,9 @@ import java.util.*;
 import java.sql.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Factor;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.*;
@@ -46,7 +46,7 @@ public class BindingScanFilter implements Closeable {
 	public Genome getGenome() { return genome; }
 	public void setGenome(Genome g) { genome = g; }
 	
-	public Collection<Cells> getCells(BindingScan scan) 
+	public Collection<CellLine> getCells(BindingScan scan) 
 		throws SQLException, UnknownRoleException {
 		
 		Collection<Pair<Integer,Integer>> exptIDs = loader.loadTypedExptPairs(scan);
@@ -95,11 +95,11 @@ public class BindingScanFilter implements Closeable {
 		}
 		
 		s.close();
-		return chipLoader.loadAllCells(dbids);
+		return chipLoader.loadAllCellLines(dbids);
 	}
 	
-	public Collection<BindingScan> findScans(Cells cells, 
-			Condition cond, Factor factor) throws SQLException  {
+	public Collection<BindingScan> findScans(CellLine cells, 
+			ExptCondition cond, ExptTarget factor) throws SQLException  {
 		
         if(genome==null) { return new LinkedList<BindingScan>(); }
         int gid = genome.getDBID();

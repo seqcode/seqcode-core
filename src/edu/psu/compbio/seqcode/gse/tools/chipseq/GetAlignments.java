@@ -39,13 +39,13 @@ public class GetAlignments {
 
         Integer factor = null, cells = null, condition = null;
         if (factorstring != null) {
-            factor = core.getFactor(factorstring).getDBID();
+            factor = core.getExptTarget(factorstring).getDBID();
         }
         if (cellsstring != null) {
-            cells = core.getCells(cellsstring).getDBID();
+            cells = core.getCellLine(cellsstring).getDBID();
         }
         if (conditionstring != null) {
-            condition = core.getCondition(conditionstring).getDBID();
+            condition = core.getExptCondition(conditionstring).getDBID();
         }
 
         for (String an : alignnames) {

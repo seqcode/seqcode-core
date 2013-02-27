@@ -13,9 +13,9 @@ import java.util.*;
 import java.sql.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Factor;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.*;
@@ -56,9 +56,9 @@ public class ExptLocatorFilter implements edu.psu.compbio.seqcode.gse.utils.Clos
 
         //System.err.println("opts is " + opts);
         int expt_type = opts.getExptType();
-        Cells c = opts.getCells();
-        Condition d = opts.getCondition();
-        Factor f = opts.getFactor();
+        CellLine c = opts.getCells();
+        ExptCondition d = opts.getCondition();
+        ExptTarget f = opts.getFactor();
         
         String query = null;
         Statement stmt = null;

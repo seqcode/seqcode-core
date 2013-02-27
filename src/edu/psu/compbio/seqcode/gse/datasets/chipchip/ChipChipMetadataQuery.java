@@ -3,9 +3,9 @@
  */
 package edu.psu.compbio.seqcode.gse.datasets.chipchip;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Factor;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 
 /**
@@ -14,9 +14,9 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 public class ChipChipMetadataQuery {
 
     private Genome genome;
-    private Cells cells;
-    private Condition cond;
-    private Factor factor;
+    private CellLine cells;
+    private ExptCondition cond;
+    private ExptTarget factor;
 
     public ChipChipMetadataQuery() {  
         genome = null;
@@ -28,11 +28,11 @@ public class ChipChipMetadataQuery {
     public Genome getGenome() { return genome; }
     public void setGenome(Genome g) { genome = g; }
 
-    public Cells getCells() { return cells; }
-    public void setCells(Cells c) { cells = c; }
+    public CellLine getCells() { return cells; }
+    public void setCells(CellLine c) { cells = c; }
 
-    public Condition getCondition() { return cond; }
-    public void setCondition(Condition c) { cond = c; }
+    public ExptCondition getCondition() { return cond; }
+    public void setCondition(ExptCondition c) { cond = c; }
 
     public boolean equals(Object o) { 
         if(!(o instanceof ChipChipMetadataQuery)) { return false; }

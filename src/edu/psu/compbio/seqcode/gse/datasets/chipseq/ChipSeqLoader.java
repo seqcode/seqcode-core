@@ -121,9 +121,9 @@ public class ChipSeqLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 
 	public Collection<ChipSeqExpt> loadAllExperiments() throws SQLException {
-        getMetadataLoader().loadAllFactors();
-        getMetadataLoader().loadAllCells();
-        getMetadataLoader().loadAllConditions();
+        getMetadataLoader().loadAllExptTargets();
+        getMetadataLoader().loadAllCellLines();
+        getMetadataLoader().loadAllExptConditions();
 		PreparedStatement ps = ChipSeqExpt.createLoadAll(getConnection());
         ps.setFetchSize(1000);
 		LinkedList<ChipSeqExpt> expts = new LinkedList<ChipSeqExpt>();

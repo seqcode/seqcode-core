@@ -46,19 +46,25 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
     
     public static final String role = "core";
 
-    private Map<String,Cells> cellsNames;
-    private Map<String,Condition> condNames;
-    private Map<String,Factor> factorNames;
+    private Map<String,Lab> labNames;
+    private Map<String,CellLine> cellNames;
+    private Map<String,ExptCondition> condNames;
+    private Map<String,ExptTarget> targetNames;
+    private Map<String,ExptType> exptTypeNames;
+    private Map<String,ReadType> readTypeNames;
 	
-    private Map<Integer,Cells> cellsIDs;
-    private Map<Integer,Condition> condIDs;
-    private Map<Integer,Factor> factorIDs;
+    private Map<Integer,Lab> labIDs;
+    private Map<Integer,CellLine> cellIDs;
+    private Map<Integer,ExptCondition> condIDs;
+    private Map<Integer,ExptTarget> targetIDs;
+    private Map<Integer,ExptType> exptTypeIDs;
+    private Map<Integer,ReadType> readTypeIDs;
 	
     private java.sql.Connection cxn;
     
-    private PreparedStatement loadCells, loadCond, loadFactor;
-    private PreparedStatement loadAllCells, loadAllCond, loadAllFactor;
-    private PreparedStatement loadCellsByName, loadCondByName, loadFactorByName;
+    private PreparedStatement loadLabs, loadCells, loadCond, loadTargets, loadExptTypes, loadReadTypes;
+    private PreparedStatement loadAllLabs, loadAllCells, loadAllCond, loadAllTargets, loadAllExptTypes, loadAllReadTypes;
+    private PreparedStatement loadLabsByName, loadCellsByName, loadCondByName, loadTargetsByName, loadExptTypesByName, loadReadTypesByName;
 	
     public MetadataLoader() throws SQLException { 
         try {
@@ -67,43 +73,65 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
             throw new IllegalArgumentException("Unknown role: " + role, e);
         }
         
-        loadCells = cxn.prepareStatement("select id, name from cells where id=?");
-        loadCond = cxn.prepareStatement("select id, name from conditions where id=?");
-        loadFactor = cxn.prepareStatement("select id, name from factors where id=?");
+        loadLabs = cxn.prepareStatement("select id, name from lab where id=?");
+        loadCells = cxn.prepareStatement("select id, name from cellline where id=?");
+        loadCond = cxn.prepareStatement("select id, name from exptcondition where id=?");
+        loadTargets = cxn.prepareStatement("select id, name from expttarget where id=?");
+        loadExptTypes = cxn.prepareStatement("select id, name from expttype where id=?");
+        loadReadTypes = cxn.prepareStatement("select id, name from readtype where id=?");
 
+        loadAllLabs = cxn.prepareStatement("select id, name from lab");
+        loadAllCells = cxn.prepareStatement("select id, name from cellline");
+        loadAllCond = cxn.prepareStatement("select id, name from exptcondition");
+        loadAllTargets = cxn.prepareStatement("select id, name from expttarget");
+        loadAllExptTypes = cxn.prepareStatement("select id, name from expttype");
+        loadAllReadTypes = cxn.prepareStatement("select id, name from readtype");
 
-        loadAllCells = cxn.prepareStatement("select id, name from cells");
-        loadAllCond = cxn.prepareStatement("select id, name from conditions");
-        loadAllFactor = cxn.prepareStatement("select id, name from factors");
+        loadLabsByName = cxn.prepareStatement("select id, name from lab where name=?");
+        loadCellsByName = cxn.prepareStatement("select id, name from cellline where name=?");
+        loadCondByName = cxn.prepareStatement("select id, name from exptcondition where name=?");
+        loadTargetsByName = cxn.prepareStatement("select id, name from expttarget where name=?");
+        loadExptTypesByName = cxn.prepareStatement("select id, name from expttype where name=?");
+        loadReadTypesByName = cxn.prepareStatement("select id, name from readtype where name=?");
 
-        loadCellsByName = cxn.prepareStatement("select id, name from cells where name=?");
-        loadCondByName = cxn.prepareStatement("select id, name from conditions where name=?");
-        loadFactorByName = cxn.prepareStatement("select id, name from factors where name=?");
-        
-        cellsNames = new HashMap<String,Cells>();
-        cellsIDs = new HashMap<Integer,Cells>();
-        condNames = new HashMap<String,Condition>();
-        condIDs = new HashMap<Integer,Condition>();
-        factorNames = new HashMap<String,Factor>();
-        factorIDs = new HashMap<Integer,Factor>();
+        labNames = new HashMap<String,Lab>();
+        labIDs = new HashMap<Integer,Lab>();
+        cellNames = new HashMap<String,CellLine>();
+        cellIDs = new HashMap<Integer,CellLine>();
+        condNames = new HashMap<String,ExptCondition>();
+        condIDs = new HashMap<Integer,ExptCondition>();
+        targetNames = new HashMap<String,ExptTarget>();
+        targetIDs = new HashMap<Integer,ExptTarget>();
+        exptTypeNames = new HashMap<String,ExptType>();
+        exptTypeIDs = new HashMap<Integer,ExptType>();
+        readTypeNames = new HashMap<String,ReadType>();
+        readTypeIDs = new HashMap<Integer,ReadType>();
     }
 	
     public boolean isClosed() { return cxn==null; }
 
     public void close() { 
         try {
+        	loadLabs.close(); loadLabs=null;
             loadCells.close(); loadCells = null;
             loadCond.close();  loadCond = null;
-            loadFactor.close(); loadFactor = null;
+            loadTargets.close(); loadTargets = null;
+            loadExptTypes.close(); loadExptTypes = null;
+            loadReadTypes.close(); loadReadTypes = null;
 
+            loadAllLabs.close(); loadAllLabs = null;
             loadAllCells.close(); loadAllCells = null;
             loadAllCond.close();  loadAllCond = null;
-            loadAllFactor.close(); loadAllFactor = null;
+            loadAllTargets.close(); loadAllTargets = null;
+            loadAllExptTypes.close(); loadAllExptTypes = null;
+            loadAllReadTypes.close(); loadAllReadTypes = null;
             
+            loadLabsByName.close(); loadLabsByName=null;
             loadCellsByName.close();  loadCellsByName = null;
             loadCondByName.close(); loadCondByName = null;
-            loadFactorByName.close(); loadFactorByName = null;
-            
+            loadTargetsByName.close(); loadTargetsByName = null;
+            loadExptTypesByName.close(); loadExptTypesByName = null;
+            loadReadTypesByName.close(); loadReadTypesByName = null;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -112,41 +140,171 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
     }
     
     public java.sql.Connection getConnection() { return cxn; }
+ 
+    //////////////////
+    // Lab stuff
+    //////////////////
     
-    public Cells getCells(String name) throws SQLException { 
+    public Lab getLab(String name) throws SQLException { 
+        synchronized (loadLabsByName) {
+            loadLabsByName.setString(1, name);
+            ResultSet rs = loadLabsByName.executeQuery();
+            
+            if(rs.next()) { 
+                Lab l = new Lab(rs);
+                rs.close();
+                
+                if(!labIDs.containsKey(l.getDBID())) { 
+                    labIDs.put(l.getDBID(), l);
+                    labNames.put(l.getName(), l);
+                }
+                
+                return l;
+            }
+            rs.close();
+        }
+        int id = insertLab(name);
+        return loadLab(id);
+    }
+    
+    public Lab findLab(String name) throws SQLException { 
+        synchronized (loadLabsByName) {
+            loadLabsByName.setString(1, name);
+            ResultSet rs = loadLabsByName.executeQuery();
+            
+            if(rs.next()) { 
+                Lab l = new Lab(rs);
+                rs.close();
+                
+                if(!labIDs.containsKey(l.getDBID())) { 
+                    labIDs.put(l.getDBID(), l);
+                    labNames.put(l.getName(), l);
+                }
+                
+                return l;
+            }            
+            rs.close();
+            return null;
+        }
+    }
+    
+    public Lab loadLab(int dbid) throws SQLException { 
+        if(labIDs.containsKey(dbid)) { return labIDs.get(dbid); }
+
+        Lab l = null;
+        synchronized(loadLabs) {
+            loadLabs.setInt(1, dbid);
+            ResultSet rs = loadLabs.executeQuery();
+            if(rs.next()) { 
+                l = new Lab(rs);
+                rs.close();
+            } else {
+                rs.close();
+                throw new IllegalArgumentException("Unknown Lab DBID: " + dbid);
+            }
+        }        
+        labIDs.put(dbid, l);
+        labNames.put(l.getName(), l);
+        return l;
+    }
+    
+    public Collection<Lab> loadAllLabs(Collection<Integer> dbids) throws SQLException {
+
+        LinkedList<Lab> values = new LinkedList<Lab>();
+        for(int dbid : dbids) { values.addLast(loadLab(dbid)); }
+        return values;
+    }
+
+    public Collection<Lab> loadAllLabs() throws SQLException {
+        
+        HashSet<Lab> values = new HashSet<Lab>();
+        ResultSet rs = loadAllLabs.executeQuery();
+
+        while(rs.next()) { 
+        	Lab l = new Lab(rs);
+            values.add(l);
+            labNames.put(l.getName(), l);
+            labIDs.put(l.getDBID(),l);
+        }
+        rs.close();
+        return values;
+    }	
+	
+    private int insertLab(String n) throws SQLException {
+    	Statement s = null;
+    	ResultSet rs = null;
+    	int id=-1;
+    	try{
+	    	s = cxn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+	    						    java.sql.ResultSet.CONCUR_UPDATABLE);
+	        s.executeUpdate("insert into lab (name) values ('" + n + "')", Statement.RETURN_GENERATED_KEYS);
+	        rs = s.getGeneratedKeys();
+
+	        if (rs.next())
+	            id = rs.getInt(1);
+	        else 
+	        	throw new IllegalArgumentException("Unable to insert new entry into lab table"); 
+	        rs.close();
+	        rs = null;
+	    } finally {
+	        if (rs != null) {
+	            try {
+	                rs.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+
+	        if (s != null) {
+	            try {
+	                s.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+	    }
+        return id;
+    }
+
+    
+    //////////////////
+    // CellLine stuff
+    //////////////////
+
+    public CellLine getCellLine(String name) throws SQLException { 
         synchronized (loadCellsByName) {
             loadCellsByName.setString(1, name);
             ResultSet rs = loadCellsByName.executeQuery();
             
             if(rs.next()) { 
-                Cells c = new Cells(rs);
+                CellLine c = new CellLine(rs);
                 rs.close();
                 
-                if(!cellsIDs.containsKey(c.getDBID())) { 
-                    cellsIDs.put(c.getDBID(), c);
-                    cellsNames.put(c.getName(), c);
+                if(!cellIDs.containsKey(c.getDBID())) { 
+                    cellIDs.put(c.getDBID(), c);
+                    cellNames.put(c.getName(), c);
                 }
                 
                 return c;
             }
             rs.close();
         }
-        int id = insertCells(name);
-        return loadCells(id);
+        int id = insertCellLine(name);
+        return loadCellLine(id);
     }
     
-    public Cells findCells(String name) throws SQLException { 
+    public CellLine findCellLine(String name) throws SQLException { 
         synchronized (loadCellsByName) {
             loadCellsByName.setString(1, name);
             ResultSet rs = loadCellsByName.executeQuery();
             
             if(rs.next()) { 
-                Cells c = new Cells(rs);
+                CellLine c = new CellLine(rs);
                 rs.close();
                 
-                if(!cellsIDs.containsKey(c.getDBID())) { 
-                    cellsIDs.put(c.getDBID(), c);
-                    cellsNames.put(c.getName(), c);
+                if(!cellIDs.containsKey(c.getDBID())) { 
+                    cellIDs.put(c.getDBID(), c);
+                    cellNames.put(c.getName(), c);
             }
                 
                 return c;
@@ -156,13 +314,96 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         }
     }
     
-    public Condition getCondition(String name) throws SQLException { 
+    public CellLine loadCellLine(int dbid) throws SQLException { 
+        if(cellIDs.containsKey(dbid)) { return cellIDs.get(dbid); }
+
+        CellLine c = null;
+        synchronized(loadCells) {
+            loadCells.setInt(1, dbid);
+            ResultSet rs = loadCells.executeQuery();
+            if(rs.next()) { 
+                c = new CellLine(rs);
+                rs.close();
+            } else {
+                rs.close();
+                throw new IllegalArgumentException("Unknown Cells DBID: " + dbid);
+            }
+        }        
+        cellIDs.put(dbid, c);
+        cellNames.put(c.getName(), c);
+        return c;
+    }
+    
+    public Collection<CellLine> loadAllCellLines(Collection<Integer> dbids) throws SQLException {
+
+        LinkedList<CellLine> values = new LinkedList<CellLine>();
+        for(int dbid : dbids) { values.addLast(loadCellLine(dbid)); }
+        return values;
+    }
+
+    public Collection<CellLine> loadAllCellLines() throws SQLException {
+        
+        HashSet<CellLine> values = new HashSet<CellLine>();
+        ResultSet rs = loadAllCells.executeQuery();
+
+        while(rs.next()) { 
+            CellLine c = new CellLine(rs);
+            values.add(c);
+            cellNames.put(c.getName(), c);
+            cellIDs.put(c.getDBID(),c);
+        }
+        rs.close();
+        return values;
+    }	
+
+    private int insertCellLine(String n) throws SQLException {
+    	Statement s = null;
+    	ResultSet rs = null;
+    	int id=-1;
+    	try{
+	    	s = cxn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+	    						    java.sql.ResultSet.CONCUR_UPDATABLE);
+	        s.executeUpdate("insert into cellline (name) values ('" + n + "')", Statement.RETURN_GENERATED_KEYS);
+	        rs = s.getGeneratedKeys();
+
+	        if (rs.next())
+	            id = rs.getInt(1);
+	        else 
+	        	throw new IllegalArgumentException("Unable to insert new entry into cellline table"); 
+	        rs.close();
+	        rs = null;
+	    } finally {
+	        if (rs != null) {
+	            try {
+	                rs.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+
+	        if (s != null) {
+	            try {
+	                s.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+	    }
+        return id;
+    }
+
+    
+    //////////////////
+    // ExptCondition stuff
+    //////////////////
+    
+    public ExptCondition getExptCondition(String name) throws SQLException { 
         synchronized (loadCondByName) {
             loadCondByName.setString(1, name);
             ResultSet rs = loadCondByName.executeQuery();
             
             if(rs.next()) { 
-                Condition c = new Condition(rs);
+                ExptCondition c = new ExptCondition(rs);
                 rs.close();
                 
                 if(!condIDs.containsKey(c.getDBID())) { 
@@ -174,17 +415,17 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
             }
             rs.close();
         }
-        int id = insertCondition(name);
-        return loadCondition(id);
+        int id = insertExptCondition(name);
+        return loadExptCondition(id);
     }        
 
-    public Condition findCondition(String name) throws SQLException { 
+    public ExptCondition findExptCondition(String name) throws SQLException { 
         synchronized (loadCondByName) {
             loadCondByName.setString(1, name);
             ResultSet rs = loadCondByName.executeQuery();
             
             if(rs.next()) { 
-                Condition c = new Condition(rs);
+                ExptCondition c = new ExptCondition(rs);
                 rs.close();
                 
                 if(!condIDs.containsKey(c.getDBID())) { 
@@ -199,18 +440,103 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         }
     }
     
-    public Factor findFactor(String name) throws SQLException { 
-        synchronized (loadFactorByName) {
-            loadFactorByName.setString(1, name);
-            ResultSet rs = loadFactorByName.executeQuery();
+    public ExptCondition loadExptCondition(int dbid) throws SQLException { 
+        if(condIDs.containsKey(dbid)) {  return condIDs.get(dbid); }
+        
+        ExptCondition c = null;
+        synchronized(loadCond) {
+            loadCond.setInt(1, dbid);
+            ResultSet rs = loadCond.executeQuery();
             
             if(rs.next()) { 
-                Factor c = new Factor(rs);
+                c = new ExptCondition(rs);
+                rs.close();
+            } else {
+                rs.close();
+                throw new IllegalArgumentException("Unknown ExptCondition DBID: " + dbid);
+            }
+        }
+        
+        condIDs.put(dbid, c);
+        condNames.put(c.getName(), c);
+        return c;
+    }
+
+    public Collection<ExptCondition> loadAllExptConditions(Collection<Integer> dbids) throws SQLException {
+
+        LinkedList<ExptCondition> values = new LinkedList<ExptCondition>();
+        for(int dbid : dbids) { values.addLast(loadExptCondition(dbid)); }
+        return values;
+    }
+
+    public Collection<ExptCondition> loadAllExptConditions() throws SQLException { 
+        HashSet<ExptCondition> values = new HashSet<ExptCondition>();
+        ResultSet rs = loadAllCond.executeQuery();
+
+        while(rs.next()) { 
+            ExptCondition c = new ExptCondition(rs);
+            values.add(c);
+            condNames.put(c.getName(), c);
+            condIDs.put(c.getDBID(),c);
+        }
+        rs.close();
+
+        return values;
+    }	
+
+    private int insertExptCondition(String n) throws SQLException {
+    	Statement s = null;
+    	ResultSet rs = null;
+    	int id=-1;
+    	try{
+	    	s = cxn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+	    						    java.sql.ResultSet.CONCUR_UPDATABLE);
+	        s.executeUpdate("insert into exptcondition (name) values ('" + n + "')", Statement.RETURN_GENERATED_KEYS);
+	        rs = s.getGeneratedKeys();
+
+	        if (rs.next())
+	            id = rs.getInt(1);
+	        else 
+	        	throw new IllegalArgumentException("Unable to insert new entry into exptcondition table"); 
+	        rs.close();
+	        rs = null;
+	    } finally {
+	        if (rs != null) {
+	            try {
+	                rs.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+
+	        if (s != null) {
+	            try {
+	                s.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+	    }
+        return id;
+    }
+
+    
+    //////////////////
+    // ExptTarget stuff
+    //////////////////
+    
+    public ExptTarget findExptTarget(String name) throws SQLException { 
+        synchronized (loadTargetsByName) {
+            loadTargetsByName.setString(1, name);
+            ResultSet rs = loadTargetsByName.executeQuery();
+            
+            if(rs.next()) { 
+                ExptTarget c = new ExptTarget(rs);
                 rs.close();
                 
-                if(!factorIDs.containsKey(c.getDBID())) { 
-                    factorIDs.put(c.getDBID(), c);
-                    factorNames.put(c.getName(), c);
+                if(!targetIDs.containsKey(c.getDBID())) { 
+                    targetIDs.put(c.getDBID(), c);
+                    targetNames.put(c.getName(), c);
                 }
                 
                 return c;
@@ -220,18 +546,18 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         return null;
     }
     
-    public Factor getFactor(String name) throws SQLException { 
-        synchronized (loadFactorByName) {
-            loadFactorByName.setString(1, name);
-            ResultSet rs = loadFactorByName.executeQuery();
+    public ExptTarget getExptTarget(String name) throws SQLException { 
+        synchronized (loadTargetsByName) {
+            loadTargetsByName.setString(1, name);
+            ResultSet rs = loadTargetsByName.executeQuery();
             
             if(rs.next()) { 
-                Factor c = new Factor(rs);
+                ExptTarget c = new ExptTarget(rs);
                 rs.close();
                 
-                if(!factorIDs.containsKey(c.getDBID())) { 
-                    factorIDs.put(c.getDBID(), c);
-                    factorNames.put(c.getName(), c);
+                if(!targetIDs.containsKey(c.getDBID())) { 
+                    targetIDs.put(c.getDBID(), c);
+                    targetNames.put(c.getName(), c);
                 }
                 
                 return c;
@@ -240,178 +566,335 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
             }
         }
         int id = insertFactor(name);
-        return loadFactor(id);
+        return loadExptTarget(id);
     }
     
-    public Cells loadCells(int dbid) throws SQLException { 
-        if(cellsIDs.containsKey(dbid)) { return cellsIDs.get(dbid); }
-
-        Cells c = null;
-        synchronized(loadCells) {
-            loadCells.setInt(1, dbid);
-            ResultSet rs = loadCells.executeQuery();
+    public ExptTarget loadExptTarget(int dbid) throws SQLException { 
+        if(targetIDs.containsKey(dbid)) { return targetIDs.get(dbid); }
+        
+        
+        ExptTarget c = null;
+        synchronized(loadTargets) {
+            loadTargets.setInt(1, dbid);
+            ResultSet rs = loadTargets.executeQuery();
+            
             if(rs.next()) { 
-                c = new Cells(rs);
+                c = new ExptTarget(rs);
                 rs.close();
             } else {
                 rs.close();
-                throw new IllegalArgumentException("Unknown Cells DBID: " + dbid);
+                throw new IllegalArgumentException("Unknown ExptTarget DBID: " + dbid);
+            }
+        }
+        
+        targetIDs.put(dbid, c);
+        targetNames.put(c.getName(), c);
+        return c;
+    }
+  	
+    public Collection<ExptTarget> loadAllExptTargets(Collection<Integer> dbids) throws SQLException {
+
+        LinkedList<ExptTarget> values = new LinkedList<ExptTarget>();
+        for(int dbid : dbids) { values.addLast(loadExptTarget(dbid)); }
+        return values;
+    }
+
+    public Collection<ExptTarget> loadAllExptTargets() throws SQLException { 
+        HashSet<ExptTarget> values = new HashSet<ExptTarget>();
+        ResultSet rs = loadAllTargets.executeQuery();
+
+        while(rs.next()) { 
+            ExptTarget f = new ExptTarget(rs);
+            values.add(f);
+            targetNames.put(f.getName(), f);
+            targetIDs.put(f.getDBID(),f);
+        }
+        rs.close();
+        return values;
+    }	
+	
+    private int insertFactor(String n) throws SQLException {
+    	Statement s = null;
+    	ResultSet rs = null;
+    	int id=-1;
+    	try{
+	    	s = cxn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+	    						    java.sql.ResultSet.CONCUR_UPDATABLE);
+	        s.executeUpdate("insert into expttarget (name) values ('" + n + "')", Statement.RETURN_GENERATED_KEYS);
+	        rs = s.getGeneratedKeys();
+
+	        if (rs.next())
+	            id = rs.getInt(1);
+	        else 
+	        	throw new IllegalArgumentException("Unable to insert new entry into expttarget table"); 
+	        rs.close();
+	        rs = null;
+	    } finally {
+	        if (rs != null) {
+	            try {
+	                rs.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+
+	        if (s != null) {
+	            try {
+	                s.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+	    }
+        return id;
+    }
+
+    //////////////////
+    // ExptType stuff
+    //////////////////
+    
+    public ExptType getExptType(String name) throws SQLException { 
+        synchronized (loadExptTypesByName) {
+            loadExptTypesByName.setString(1, name);
+            ResultSet rs = loadExptTypesByName.executeQuery();
+            
+            if(rs.next()) { 
+            	ExptType e = new ExptType(rs);
+                rs.close();
+                
+                if(!exptTypeIDs.containsKey(e.getDBID())) { 
+                    exptTypeIDs.put(e.getDBID(), e);
+                    exptTypeNames.put(e.getName(), e);
+                }
+                
+                return e;
+            }
+            rs.close();
+        }
+        int id = insertExptType(name);
+        return loadExptType(id);
+    }
+    
+    public ExptType findExptType(String name) throws SQLException { 
+        synchronized (loadExptTypesByName) {
+            loadExptTypesByName.setString(1, name);
+            ResultSet rs = loadExptTypesByName.executeQuery();
+            
+            if(rs.next()) { 
+            	ExptType e = new ExptType(rs);
+                rs.close();
+                
+                if(!exptTypeIDs.containsKey(e.getDBID())) { 
+                    exptTypeIDs.put(e.getDBID(), e);
+                    exptTypeNames.put(e.getName(), e);
+                }
+                return e;
+            }            
+            rs.close();
+            return null;
+        }
+    }
+    
+    public ExptType loadExptType(int dbid) throws SQLException { 
+        if(exptTypeIDs.containsKey(dbid)) { return exptTypeIDs.get(dbid); }
+
+        ExptType e = null;
+        synchronized(loadExptTypes) {
+            loadExptTypes.setInt(1, dbid);
+            ResultSet rs = loadExptTypes.executeQuery();
+            if(rs.next()) { 
+                e = new ExptType(rs);
+                rs.close();
+            } else {
+                rs.close();
+                throw new IllegalArgumentException("Unknown ExptType DBID: " + dbid);
             }
         }        
-        cellsIDs.put(dbid, c);
-        cellsNames.put(c.getName(), c);
-        return c;
+        exptTypeIDs.put(dbid, e);
+        exptTypeNames.put(e.getName(), e);
+        return e;
+    }
+    
+    public Collection<ExptType> loadAllExptTypes(Collection<Integer> dbids) throws SQLException {
+
+        LinkedList<ExptType> values = new LinkedList<ExptType>();
+        for(int dbid : dbids) { values.addLast(loadExptType(dbid)); }
+        return values;
     }
 
-    public Condition loadCondition(int dbid) throws SQLException { 
-        if(condIDs.containsKey(dbid)) {  return condIDs.get(dbid); }
+    public Collection<ExptType> loadAllExptTypes() throws SQLException {
         
-        Condition c = null;
-        synchronized(loadCond) {
-            loadCond.setInt(1, dbid);
-            ResultSet rs = loadCond.executeQuery();
+        HashSet<ExptType> values = new HashSet<ExptType>();
+        ResultSet rs = loadAllExptTypes.executeQuery();
+
+        while(rs.next()) { 
+        	ExptType e = new ExptType(rs);
+            values.add(e);
+            exptTypeNames.put(e.getName(), e);
+            exptTypeIDs.put(e.getDBID(),e);
+        }
+        rs.close();
+        return values;
+    }	
+	
+    private int insertExptType(String n) throws SQLException {
+    	Statement s = null;
+    	ResultSet rs = null;
+    	int id=-1;
+    	try{
+	    	s = cxn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+	    						    java.sql.ResultSet.CONCUR_UPDATABLE);
+	        s.executeUpdate("insert into expttype (name) values ('" + n + "')", Statement.RETURN_GENERATED_KEYS);
+	        rs = s.getGeneratedKeys();
+
+	        if (rs.next())
+	            id = rs.getInt(1);
+	        else 
+	        	throw new IllegalArgumentException("Unable to insert new entry into expttype table"); 
+	        rs.close();
+	        rs = null;
+	    } finally {
+	        if (rs != null) {
+	            try {
+	                rs.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+
+	        if (s != null) {
+	            try {
+	                s.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+	    }
+        return id;
+    }
+
+    //////////////////
+    // ReadType stuff
+    //////////////////
+    
+    public ReadType getReadType(String name) throws SQLException { 
+        synchronized (loadReadTypesByName) {
+            loadReadTypesByName.setString(1, name);
+            ResultSet rs = loadReadTypesByName.executeQuery();
             
             if(rs.next()) { 
-                c = new Condition(rs);
+            	ReadType r = new ReadType(rs);
+                rs.close();
+                
+                if(!readTypeIDs.containsKey(r.getDBID())) { 
+                    readTypeIDs.put(r.getDBID(), r);
+                    readTypeNames.put(r.getName(), r);
+                }
+                return r;
+            }
+            rs.close();
+        }
+        int id = insertReadType(name);
+        return loadReadType(id);
+    }
+    
+    public ReadType findReadType(String name) throws SQLException { 
+        synchronized (loadReadTypesByName) {
+            loadReadTypesByName.setString(1, name);
+            ResultSet rs = loadReadTypesByName.executeQuery();
+            
+            if(rs.next()) { 
+            	ReadType r = new ReadType(rs);
+                rs.close();
+                
+                if(!readTypeIDs.containsKey(r.getDBID())) { 
+                    readTypeIDs.put(r.getDBID(), r);
+                    readTypeNames.put(r.getName(), r);
+                }
+                return r;
+            }            
+            rs.close();
+            return null;
+        }
+    }
+    
+    public ReadType loadReadType(int dbid) throws SQLException { 
+        if(readTypeIDs.containsKey(dbid)) { return readTypeIDs.get(dbid); }
+
+        ReadType e = null;
+        synchronized(loadReadTypes) {
+            loadReadTypes.setInt(1, dbid);
+            ResultSet rs = loadReadTypes.executeQuery();
+            if(rs.next()) { 
+                e = new ReadType(rs);
                 rs.close();
             } else {
                 rs.close();
-                throw new IllegalArgumentException("Unknown Condition DBID: " + dbid);
+                throw new IllegalArgumentException("Unknown ReadType DBID: " + dbid);
             }
-        }
-        
-        condIDs.put(dbid, c);
-        condNames.put(c.getName(), c);
-        return c;
+        }        
+        readTypeIDs.put(dbid, e);
+        readTypeNames.put(e.getName(), e);
+        return e;
     }
+    
+    public Collection<ReadType> loadAllReadTypes(Collection<Integer> dbids) throws SQLException {
 
-    public Factor loadFactor(int dbid) throws SQLException { 
-        if(factorIDs.containsKey(dbid)) { return factorIDs.get(dbid); }
-        
-        
-        Factor c = null;
-        synchronized(loadFactor) {
-            loadFactor.setInt(1, dbid);
-            ResultSet rs = loadFactor.executeQuery();
-            
-            if(rs.next()) { 
-                c = new Factor(rs);
-                rs.close();
-            } else {
-                rs.close();
-                throw new IllegalArgumentException("Unknown Condition DBID: " + dbid);
-            }
-        }
-        
-        factorIDs.put(dbid, c);
-        factorNames.put(c.getName(), c);
-        return c;
-    }
-
-    public Collection<Cells> loadAllCells(Collection<Integer> dbids) throws SQLException {
-
-        LinkedList<Cells> values = new LinkedList<Cells>();
-        for(int dbid : dbids) { values.addLast(loadCells(dbid)); }
+        LinkedList<ReadType> values = new LinkedList<ReadType>();
+        for(int dbid : dbids) { values.addLast(loadReadType(dbid)); }
         return values;
     }
 
-    public Collection<Cells> loadAllCells() throws SQLException {
+    public Collection<ReadType> loadAllReadTypes() throws SQLException {
         
-        HashSet<Cells> values = new HashSet<Cells>();
-        ResultSet rs = loadAllCells.executeQuery();
+        HashSet<ReadType> values = new HashSet<ReadType>();
+        ResultSet rs = loadAllReadTypes.executeQuery();
 
         while(rs.next()) { 
-            Cells c = new Cells(rs);
-            values.add(c);
-            cellsNames.put(c.getName(), c);
-            cellsIDs.put(c.getDBID(),c);
+        	ReadType r = new ReadType(rs);
+            values.add(r);
+            readTypeNames.put(r.getName(), r);
+            readTypeIDs.put(r.getDBID(),r);
         }
         rs.close();
         return values;
     }	
 	
-    public Collection<Condition> loadAllConditions(Collection<Integer> dbids) throws SQLException {
+    private int insertReadType(String n) throws SQLException {
+    	Statement s = null;
+    	ResultSet rs = null;
+    	int id=-1;
+    	try{
+	    	s = cxn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+	    						    java.sql.ResultSet.CONCUR_UPDATABLE);
+	        s.executeUpdate("insert into readtype (name) values ('" + n + "')", Statement.RETURN_GENERATED_KEYS);
+	        rs = s.getGeneratedKeys();
 
-        LinkedList<Condition> values = new LinkedList<Condition>();
-        for(int dbid : dbids) { values.addLast(loadCondition(dbid)); }
-        return values;
-    }
+	        if (rs.next())
+	            id = rs.getInt(1);
+	        else 
+	        	throw new IllegalArgumentException("Unable to insert new entry into readtype table"); 
+	        rs.close();
+	        rs = null;
+	    } finally {
+	        if (rs != null) {
+	            try {
+	                rs.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
 
-    public Collection<Condition> loadAllConditions() throws SQLException { 
-        HashSet<Condition> values = new HashSet<Condition>();
-        ResultSet rs = loadAllCond.executeQuery();
-
-        while(rs.next()) { 
-            Condition c = new Condition(rs);
-            values.add(c);
-            condNames.put(c.getName(), c);
-            condIDs.put(c.getDBID(),c);
-        }
-        rs.close();
-
-        return values;
-    }	
-	
-    public Collection<Factor> loadAllFactors(Collection<Integer> dbids) throws SQLException {
-
-        LinkedList<Factor> values = new LinkedList<Factor>();
-        for(int dbid : dbids) { values.addLast(loadFactor(dbid)); }
-        return values;
-    }
-
-    public Collection<Factor> loadAllFactors() throws SQLException { 
-        HashSet<Factor> values = new HashSet<Factor>();
-        ResultSet rs = loadAllFactor.executeQuery();
-
-        while(rs.next()) { 
-            Factor f = new Factor(rs);
-            values.add(f);
-            factorNames.put(f.getName(), f);
-            factorIDs.put(f.getDBID(),f);
-        }
-        rs.close();
-        return values;
-    }	
-	
-    private int insertCells(String n) throws SQLException {
-        Statement s = cxn.createStatement();
-        
-        ResultSet rs = s.executeQuery("select cells_id.nextval from dual");
-        if(!rs.next()) { throw new IllegalArgumentException("cells_id sequence doesn't exist."); }
-        int id = rs.getInt(1);
-        rs.close();
-        
-        s.executeUpdate("insert into cells (id, name) values (" + id + ", '" + n + "')");
-        
-        s.close();
+	        if (s != null) {
+	            try {
+	                s.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+	    }
         return id;
     }
 
-    private int insertCondition(String n) throws SQLException {
-        Statement s = cxn.createStatement();
-        
-        ResultSet rs = s.executeQuery("select condition_id.nextval from dual");
-        if(!rs.next()) { throw new IllegalArgumentException("condition_id sequence doesn't exist."); }
-        int id = rs.getInt(1);
-        rs.close();
-        
-        s.executeUpdate("insert into conditions (id, name) values (" + id + ", '" + n + "')");
-        
-        s.close();
-        return id;
-    }
-
-    private int insertFactor(String n) throws SQLException {
-        Statement s = cxn.createStatement();
-        
-        ResultSet rs = s.executeQuery("select factors_id.nextval from dual");
-        if(!rs.next()) { throw new IllegalArgumentException("factors_id sequence doesn't exist."); }
-        int id = rs.getInt(1);
-        rs.close();
-        
-        s.executeUpdate("insert into factors (id, name) values (" + id + ", '" + n + "')");
-        
-        s.close();
-        return id;
-    }    
+    
 }

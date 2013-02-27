@@ -6,9 +6,9 @@ package edu.psu.compbio.seqcode.gse.datasets.chipchip;
 import java.util.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Factor;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.locators.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -38,7 +38,7 @@ public class LocatorLoader implements Closeable {
         return cxn == null;
     }
 
-    public Collection<ExptLocator> loadLocators(Cells cells, Condition cond, Factor factor) throws SQLException { 
+    public Collection<ExptLocator> loadLocators(CellLine cells, ExptCondition cond, ExptTarget factor) throws SQLException { 
         LinkedList<ExptLocator> locs = new LinkedList<ExptLocator>();
         Statement s = cxn.createStatement();
         String bayesquery = "select a.name, a.version from bayesanalysis a, bayesanalysisinputs inp, bayesToGenome b2g where " +

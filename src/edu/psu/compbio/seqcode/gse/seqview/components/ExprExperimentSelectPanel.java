@@ -21,8 +21,8 @@ import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ExperimentFilter;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ExpressionLoader;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ExpressionMetadataLoader;
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
@@ -43,10 +43,10 @@ public class ExprExperimentSelectPanel extends GenericSelectPanel<Experiment> {
     private JComboBox cellsBox, condBox;
     private JTextField regex;
     private ExperimentFilter filter;
-    private Wrapper<Cells> noCells;
-    private Wrapper<Condition> noCond;
-    private Collection<Cells> allCells;
-    private Collection<Condition> allConds;
+    private Wrapper<CellLine> noCells;
+    private Wrapper<ExptCondition> noCond;
+    private Collection<CellLine> allCells;
+    private Collection<ExptCondition> allConds;
 
     public ExprExperimentSelectPanel() {
         super();
@@ -57,8 +57,8 @@ public class ExprExperimentSelectPanel extends GenericSelectPanel<Experiment> {
 
         	selectedModel = new ExprExperimentTableModel();        
         	filteredModel = new ExprExperimentTableModel();
-        	noCells = new Wrapper<Cells>("<NONE>", null);
-        	noCond = new Wrapper<Condition>("<NONE>", null);
+        	noCells = new Wrapper<CellLine>("<NONE>", null);
+        	noCond = new Wrapper<ExptCondition>("<NONE>", null);
 
         	init(filteredModel,selectedModel);
         	
@@ -107,8 +107,8 @@ public class ExprExperimentSelectPanel extends GenericSelectPanel<Experiment> {
     public void clearSelected() { selectedModel.clear(); }
 
     public void filter() {
-        Cells cells = ((Wrapper<Cells>)(cellsModel.getSelectedItem())).value;
-        Condition cond = ((Wrapper<Condition>)(condModel.getSelectedItem())).value;
+        CellLine cells = ((Wrapper<CellLine>)(cellsModel.getSelectedItem())).value;
+        ExptCondition cond = ((Wrapper<ExptCondition>)(condModel.getSelectedItem())).value;
 
         String reg = regex.getText().trim();
         Pattern patt = null;
@@ -132,8 +132,8 @@ public class ExprExperimentSelectPanel extends GenericSelectPanel<Experiment> {
     }
     public void retrieveData() {
         try {
-            allCells = new TreeSet<Cells>(exprMetaLoader.getAllCells());
-            allConds = new TreeSet<Condition>(exprMetaLoader.getAllConditions());
+            allCells = new TreeSet<CellLine>(exprMetaLoader.getAllCells());
+            allConds = new TreeSet<ExptCondition>(exprMetaLoader.getAllConditions());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -146,14 +146,14 @@ public class ExprExperimentSelectPanel extends GenericSelectPanel<Experiment> {
 
         cellsModel.addElement(noCells);
         condModel.addElement(noCond);
-        for(Cells cells : allCells) { 
-            Wrapper<Cells> wrapper = new Wrapper<Cells>(cells.getName(), cells);
+        for(CellLine cells : allCells) { 
+            Wrapper<CellLine> wrapper = new Wrapper<CellLine>(cells.getName(), cells);
             cellsModel.addElement(wrapper);
         }
             
-        for(Condition cond : allConds) { 
-            Wrapper<Condition> wrapper = 
-                new Wrapper<Condition>(cond.getName(), cond);
+        for(ExptCondition cond : allConds) { 
+            Wrapper<ExptCondition> wrapper = 
+                new Wrapper<ExptCondition>(cond.getName(), cond);
             condModel.addElement(wrapper);
         }
             

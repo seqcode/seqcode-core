@@ -40,7 +40,7 @@ public class ExpressionMetadataLoader implements Closeable {
 		return loader == null || loader.isClosed();
 	}
 	
-	public Collection<Cells> getAllCells() throws SQLException { 
+	public Collection<CellLine> getAllCells() throws SQLException { 
 		LinkedList<Integer> cells = new LinkedList<Integer>();
 		Statement s = cxn.createStatement();
 		ResultSet rs = s.executeQuery("select distinct(e.cells) from experiment e");
@@ -52,10 +52,10 @@ public class ExpressionMetadataLoader implements Closeable {
 		rs.close();
 		s.close();
 		
-		return loader.loadAllCells(cells);
+		return loader.loadAllCellLines(cells);
 	}
 
-	public Collection<Condition> getAllConditions() throws SQLException { 
+	public Collection<ExptCondition> getAllConditions() throws SQLException { 
 		LinkedList<Integer> conds = new LinkedList<Integer>();
 		Statement s = cxn.createStatement();
 		ResultSet rs = s.executeQuery("select distinct(e.condition) from experiment e");
@@ -67,6 +67,6 @@ public class ExpressionMetadataLoader implements Closeable {
 		rs.close();
 		s.close();
 		
-		return loader.loadAllConditions(conds);
+		return loader.loadAllExptConditions(conds);
 	}
 }

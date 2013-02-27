@@ -104,3 +104,13 @@ CREATE TABLE expttarget (
 	PRIMARY KEY (name)
 ) Type=InnoDB;
 
+--
+-- Table: read type
+--
+CREATE TABLE readtype (
+	id int(10) NOT NULL auto_increment,
+	name varchar(50) NOT NULL,
+	UNIQUE (id),
+	PRIMARY KEY (name)
+) Type=InnoDB;
+

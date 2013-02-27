@@ -117,9 +117,9 @@ public class BlasttabOrPSLImporter {
             insert.setString(2, replicate);
             insert.setInt(3, species.getDBID());
             insert.setInt(4, readlength);
-            insert.setInt(5, core.getCells(cells).getDBID());
-            insert.setInt(6, core.getCondition(condition).getDBID());
-            insert.setInt(7, core.getFactor(factor).getDBID());
+            insert.setInt(5, core.getCellLine(cells).getDBID());
+            insert.setInt(6, core.getExptCondition(condition).getDBID());
+            insert.setInt(7, core.getExptTarget(factor).getDBID());
             insert.execute();
             try {
                 experiment = chipseq.loadExperiment(exptname, replicate);

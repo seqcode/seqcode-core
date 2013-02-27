@@ -101,9 +101,9 @@ public class PSLImporter {
 				e.printStackTrace();
 				throw new IllegalStateException("Couldn't find organism: " + g.getName());
 			}
-			Factor factor = ml.getFactor(factorName);
-			Condition condition = ml.getCondition(condName);
-			Cells cells = ml.getCells(cellsName);
+			ExptTarget factor = ml.getExptTarget(factorName);
+			ExptCondition condition = ml.getExptCondition(condName);
+			CellLine cells = ml.getCellLine(cellsName);
 
 			cxn = DatabaseFactory.getConnection("chipseq");		
 			cxn.setAutoCommit(false);

@@ -8,9 +8,9 @@ import java.util.logging.*;
 import java.io.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Cells;
-import edu.psu.compbio.seqcode.gse.datasets.general.Condition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Factor;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -144,9 +144,9 @@ public class ElandImporter {
                 e.printStackTrace();
                 throw new IllegalStateException("Couldn't find organism: " + g.getName());
             }
-            Factor factor = ml.getFactor(factorName);
-            Condition condition = ml.getCondition(condName);
-            Cells cells = ml.getCells(cellsName);
+            ExptTarget factor = ml.getExptTarget(factorName);
+            ExptCondition condition = ml.getExptCondition(condName);
+            CellLine cells = ml.getCellLine(cellsName);
 
             cxn = DatabaseFactory.getConnection("chipseq");     
             cxn.setAutoCommit(false);
@@ -290,9 +290,9 @@ public class ElandImporter {
                 e.printStackTrace();
                 throw new IllegalStateException("Couldn't find organism: " + g.getName());
             }
-            Factor factor = ml.getFactor(factorName);
-            Condition condition = ml.getCondition(condName);
-            Cells cells = ml.getCells(cellsName);
+            ExptTarget factor = ml.getExptTarget(factorName);
+            ExptCondition condition = ml.getExptCondition(condName);
+            CellLine cells = ml.getCellLine(cellsName);
 
             cxn = DatabaseFactory.getConnection("chipseq");     
             cxn.setAutoCommit(false);
