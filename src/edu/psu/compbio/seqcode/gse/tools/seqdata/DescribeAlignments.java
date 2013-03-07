@@ -46,12 +46,12 @@ public class DescribeAlignments {
             System.out.println("\tCollabID: "+expt.getCollabID());
             System.out.println("\tPublicSource: "+expt.getPublicSource());
             System.out.println("\tPublicDBID: "+expt.getPublicDBID());
-            System.out.println("\\FQFile: "+expt.getFQFile());
+            System.out.println("\tFQFile: "+expt.getFQFile());
             
             System.out.println("SeqAlignment info:");
             System.out.println("\tID: "+align.getDBID());
             System.out.println("\tName: "+align.getName());
-            System.out.println("\tGenome: "+align.getGenome().getName());
+            System.out.println("\tGenome: "+align.getGenome().getVersion());
             System.out.println("\tAlignType: "+align.getAlignType().getName());
             System.out.println("\tPermissions: "+align.getPermissions());
             System.out.println("\tNumHits: "+align.getNumHits());
