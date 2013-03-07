@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.tools.chipseq;
+package edu.psu.compbio.seqcode.gse.tools.seqdata;
 
 import java.io.*;
 import java.sql.*;
@@ -23,7 +23,7 @@ public class CreateAlignment {
     public static void main(String args[]) throws SQLException, IOException, NotFoundException {
 
     	if(args.length==0){
-    		System.out.println("CreateAlignment:" +
+    		System.out.println("CreateAlignment:\n" +
     				"\t--species <species;genome>\n" +
     				"\t--align <name;replicate;version>\n" +
     				"\t--expttype <CHIPSEQ/CHIPEXO/RNASEQ/etc>\n" +
@@ -121,7 +121,7 @@ public class CreateAlignment {
 	                insert.setFloat(7, totalweight);
 	                insert.setString(8, aligndir);
 	                insert.setString(9, collabalignid);
-	                insert.executeQuery();
+	                insert.execute();
 	                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
 	                cxn.commit();
 	                File f = null;

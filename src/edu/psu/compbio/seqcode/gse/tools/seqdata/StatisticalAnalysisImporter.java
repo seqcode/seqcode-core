@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.tools.chipseq;
+package edu.psu.compbio.seqcode.gse.tools.seqdata;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -11,10 +11,11 @@ import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 /**
  * See AnalysisImporter docs.  Command line options are the same; the only difference
- * is that DNASeqEnrichmentImporter parses output from DNASeqEnrichmentCaller
+ * is that StatisticalAnalysisImporter parses the statistical peak finder
+ * (ChipSeqPeakFinder) output.
  */
 
-public class DNASeqEnrichmentImporter extends AnalysisImporter {
+public class StatisticalAnalysisImporter extends AnalysisImporter {
 
     /* oracle complains about underflow if we don't limit the pvalues.  the actual 
        min value is somewhere between E-100 and E-200, but I didn't bother tracking 
@@ -25,14 +26,14 @@ public class DNASeqEnrichmentImporter extends AnalysisImporter {
     private int lineno = 0;
 
     public static void main(String args[]) throws NotFoundException, SQLException, DatabaseException, IOException {
-        DNASeqEnrichmentImporter importer = new DNASeqEnrichmentImporter();
+        StatisticalAnalysisImporter importer = new StatisticalAnalysisImporter();
         importer.parseArgs(args);
         importer.run(System.in);
         importer.close();
     }
     public SeqAnalysisResult parseLine(String line) {
         if (lineno++ == 0) {
-            if (!line.equals("Chrom\tStart\tEnd\tCenter\tFG\tBG\tRatio\tPvalue")) {
+            if (!line.equals("Region\tWidth\tPeak\tPeakOffset\tMaxSigHits\tMaxBackHits\tScore\tTotalSigHits\tTotalBackHits\tOverRep\tClosestGene\tTSSDist\tOtherAnnotations")) {
                 throw new RuntimeException("Invalid header line: " + line);
             }
             return null;
@@ -46,16 +47,16 @@ public class DNASeqEnrichmentImporter extends AnalysisImporter {
         }
 
         return new SeqAnalysisResult(getGenome(),
-                                         pieces[0],
-                                         Integer.parseInt(pieces[1]),
-                                         Integer.parseInt(pieces[2]),
-                                         Integer.parseInt(pieces[3]),
-                                         Double.parseDouble(pieces[4]),
-                                         Double.parseDouble(pieces[5]),
-                                         0.0,0.0,
+                                         pospieces[0],
+                                         Integer.parseInt(pospieces[1]),
+                                         Integer.parseInt(pospieces[2]),
+                                         Integer.parseInt(peakpieces[1]),
                                          Double.parseDouble(pieces[7]),
-                                         Double.parseDouble(pieces[6]));
-
+                                         Double.parseDouble(pieces[8]),
+                                         Double.parseDouble(pieces[9]),
+                                         0.0,
+                                         pval,
+                                         Double.parseDouble(pieces[9]));
     }
 
 

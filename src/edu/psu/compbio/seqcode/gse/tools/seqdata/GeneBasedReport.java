@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.tools.chipseq;
+package edu.psu.compbio.seqcode.gse.tools.seqdata;
 
 import java.util.*;
 import java.sql.*;

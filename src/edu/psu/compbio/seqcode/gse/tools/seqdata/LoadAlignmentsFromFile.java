@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.tools.chipseq;
+package edu.psu.compbio.seqcode.gse.tools.seqdata;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -150,7 +150,7 @@ public class LoadAlignmentsFromFile {
 		                insert.setFloat(8, totalweight);
 		                insert.setString(9, aligndir);
 		                insert.setString(10, collabalignid);
-		                insert.executeQuery();
+		                insert.execute();
 		                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
 		                cxn.commit();
 		                File f = null;

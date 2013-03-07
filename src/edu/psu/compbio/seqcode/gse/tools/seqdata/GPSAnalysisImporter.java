@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.tools.chipseq;
+package edu.psu.compbio.seqcode.gse.tools.seqdata;
 
 import java.io.IOException;
 import java.sql.SQLException;
