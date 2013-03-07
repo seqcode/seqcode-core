@@ -16,11 +16,11 @@ import java.util.TreeMap;
 import java.util.Collection;
 import java.util.ArrayList;
 
-import edu.psu.compbio.seqcode.gse.datasets.chippet.WeightedRunningOverlapSum;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAlignment;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqHit;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.WeightedRunningOverlapSum;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.Expander;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.Mapper;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.MapperIterator;
@@ -37,8 +37,8 @@ public class ChipSeqDataModel extends SeqViewModel implements RegionModel, Runna
     
     private Client client;
     private Collection<String> alignids;
-    private Collection<ChipSeqAlignment> alignments;
-    private ChipSeqAlignment align;
+    private Collection<SeqAlignment> alignments;
+    private SeqAlignment align;
 
     private WeightedRunningOverlapSum totalSum;
     private WeightedRunningOverlapSum watsonSum;
@@ -47,10 +47,10 @@ public class ChipSeqDataModel extends SeqViewModel implements RegionModel, Runna
     private int shift;
     private Region region;
     private boolean newinput, reloadInput, doSums, doHits;
-    private ArrayList<ChipSeqHit> results;
+    private ArrayList<SeqHit> results;
     private ChipSeqDataProperties props;
 
-    public ChipSeqDataModel(Client c, Collection<ChipSeqAlignment> alignments) {
+    public ChipSeqDataModel(Client c, Collection<SeqAlignment> alignments) {
         client = c;
         extension = 0;
         totalSum = null;
@@ -64,14 +64,14 @@ public class ChipSeqDataModel extends SeqViewModel implements RegionModel, Runna
         alignids = new ArrayList<String>();
         this.alignments = alignments;
         align = null;
-        for (ChipSeqAlignment a : alignments) {
+        for (SeqAlignment a : alignments) {
             alignids.add(Integer.toString(a.getDBID()));
             if (align == null) {
                 align = a;
             }
         }
 
-        results = new ArrayList<ChipSeqHit>();
+        results = new ArrayList<SeqHit>();
         props = new ChipSeqDataProperties();
     }
     public ChipSeqDataProperties getProperties() {return props;}
@@ -181,7 +181,7 @@ public class ChipSeqDataModel extends SeqViewModel implements RegionModel, Runna
     
 	public void setDoSums(boolean b) {doSums = b;}
     public void setDoHits(boolean b) {doHits = b;}
-    public Iterator<ChipSeqHit> getResults() {
+    public Iterator<SeqHit> getResults() {
         return results.iterator();
     }
     private void mapToSum(WeightedRunningOverlapSum sum, TreeMap<Integer,Float> map) {
@@ -190,23 +190,22 @@ public class ChipSeqDataModel extends SeqViewModel implements RegionModel, Runna
             sum.addWeightedInterval(i, i, map.get(i));
         }
     }
-    private ChipSeqHit convert(SingleHit hit) {
+    private SeqHit convert(SingleHit hit) {
         hit.length += extension;
         hit.pos += shift * (hit.strand ? 1 : -1);
-        ChipSeqHit out = new ChipSeqHit(region.getGenome(),
+        SeqHit out = new SeqHit(region.getGenome(),
                                         region.getChrom(),
                                         hit.strand ? hit.pos : hit.pos - hit.length + 1,
                                         hit.strand ? hit.pos + hit.length + 1 : hit.pos,
                                         hit.strand ? '+' : '-',
-                                        align,
                                         hit.weight);
         return out;
     }
     //Hack to allow de-duplication of reads when drawing all reads
-    private ArrayList<ChipSeqHit> deDuplicateSingleHits(ArrayList<ChipSeqHit> res, int deDup) {
-		ArrayList<ChipSeqHit> out = new ArrayList<ChipSeqHit>();
+    private ArrayList<SeqHit> deDuplicateSingleHits(ArrayList<SeqHit> res, int deDup) {
+		ArrayList<SeqHit> out = new ArrayList<SeqHit>();
 		HashMap<String, Integer> hitCounts = new HashMap<String, Integer>();
-		for(ChipSeqHit h : res){
+		for(SeqHit h : res){
 			if(hitCounts.containsKey(h.getLocationString())){
 				int c = hitCounts.get(h.getLocationString());
 				hitCounts.put(h.getLocationString(), c+1);

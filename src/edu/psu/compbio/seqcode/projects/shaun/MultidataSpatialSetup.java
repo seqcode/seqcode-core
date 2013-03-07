@@ -11,10 +11,10 @@ import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.ExonicGene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
@@ -39,7 +39,7 @@ public class MultidataSpatialSetup {
 	private HashMap<String, ArrayList<Region>> sites = new HashMap<String, ArrayList<Region>>();
 	private ArrayList<Pair<String, StrandedRegion>> motifs = new ArrayList<Pair<String, StrandedRegion>>();
 	private ArrayList<Region> lits = new ArrayList<Region>();
-	private HashMap<String, ChipSeqLocator> locs = new HashMap<String, ChipSeqLocator>();
+	private HashMap<String, SeqLocator> locs = new HashMap<String, SeqLocator>();
 	private int rstart=0;
 	private int rstop = 0;
 	private String chr;
@@ -146,7 +146,7 @@ public class MultidataSpatialSetup {
 						Region site = new Region(gen, tokens[3], new Integer(tokens[4]).intValue(), new Integer(tokens[5]).intValue());
 						lits.add(site);
 					}else if(tokens[0].equals("Expt")){//Experiments
-						ChipSeqLocator l = new ChipSeqLocator(tokens[2], tokens[3]);
+						SeqLocator l = new SeqLocator(tokens[2], tokens[3]);
 						locs.put(tokens[1], l);
 					}
 					

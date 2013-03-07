@@ -6,8 +6,8 @@ package edu.psu.compbio.seqcode.gse.ewok.verbs.sequence;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chippet.RunningOverlapSum;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.RunningOverlapSum;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.utils.iterators.EmptyIterator;
 

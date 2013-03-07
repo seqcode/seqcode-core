@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
@@ -62,8 +62,8 @@ public class BEDFileWriter{
 
         	if(name.length()>0)
         		System.out.println("Init loading condition: "+name);
-        	List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt"+name);
-        	List<ChipSeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl"+name);
+        	List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt"+name);
+        	List<SeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl"+name);
         	
         	if(rdbexpts.size()>0){
 	        	experiments.add(new Pair<DeepSeqExpt,DeepSeqExpt>(new DeepSeqExpt(gen, rdbexpts, "readdb", -1),new DeepSeqExpt(gen, rdbctrls, "readdb", -1)));

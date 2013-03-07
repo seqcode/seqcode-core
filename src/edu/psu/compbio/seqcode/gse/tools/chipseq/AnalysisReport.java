@@ -4,10 +4,10 @@ import java.util.*;
 import java.sql.*;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.function.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.projects.readdb.*;
@@ -38,7 +38,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 public class AnalysisReport {
 
     private Genome genome;
-    private ChipSeqAnalysis analysis;
+    private SeqAnalysis analysis;
     private Collection<WeightMatrix> matrices;
     private int up, down, topEvents, analysisdbid;
     private double eventthresh, gothresh, wmcutoff;
@@ -48,7 +48,7 @@ public class AnalysisReport {
     // these all get filled in by run() and
     // used by report() 
     private Collection<Region> regions;
-    private List<ChipSeqAnalysisResult> events;
+    private List<SeqAnalysisResult> events;
     private Set<Gene> boundGenes;
     private List<RefGeneGenerator> geneGenerators;
     private List<Enrichment> enrichments;
@@ -92,7 +92,7 @@ public class AnalysisReport {
         if (noGenes) {
             noGO = true;
         }
-        events = new ArrayList<ChipSeqAnalysisResult>();
+        events = new ArrayList<SeqAnalysisResult>();
 
         MarkovBackgroundModel bgModel = null;
         String bgmodelname = Args.parseString(args,"bgmodel","whole genome zero order");
@@ -118,7 +118,7 @@ public class AnalysisReport {
     }
     private void getEvents() throws SQLException {
         for (Region r : regions) {
-            for (ChipSeqAnalysisResult result : analysis.getResults(genome,r)) {
+            for (SeqAnalysisResult result : analysis.getResults(genome,r)) {
                 if (result.pvalue <= eventthresh) {
                     events.add(result);
                 }
@@ -127,10 +127,10 @@ public class AnalysisReport {
     }
     private void getBoundGenes() throws SQLException {
         boundGenes = new HashSet<Gene>();
-        Map<String,ArrayList<ChipSeqAnalysisResult>> map = new HashMap<String, ArrayList<ChipSeqAnalysisResult>>();
-        for (ChipSeqAnalysisResult event : events) {
+        Map<String,ArrayList<SeqAnalysisResult>> map = new HashMap<String, ArrayList<SeqAnalysisResult>>();
+        for (SeqAnalysisResult event : events) {
             if (!map.containsKey(event.getChrom())) {
-                map.put(event.getChrom(), new ArrayList<ChipSeqAnalysisResult>());
+                map.put(event.getChrom(), new ArrayList<SeqAnalysisResult>());
             }
             map.get(event.getChrom()).add(event);
         }        
@@ -142,7 +142,7 @@ public class AnalysisReport {
                 if (!map.containsKey(g.getChrom())) {
                     continue;
                 }
-                for (ChipSeqAnalysisResult event : map.get(g.getChrom())) {
+                for (SeqAnalysisResult event : map.get(g.getChrom())) {
                     if (event.overlaps(r)) {
                         boundGenes.add(g);
                         break;
@@ -244,7 +244,7 @@ public class AnalysisReport {
         bed = new PrintWriter(analysisdbid + ".bed");
         wiggle = new PrintWriter(analysisdbid + ".wig");
 
-        for (ChipSeqAnalysisResult a : events) {
+        for (SeqAnalysisResult a : events) {
             bed.println(String.format("chr%s\t%d\t%d\tbinding\t%d",
                                       a.getChrom(),
                                       a.getStart(),
@@ -252,9 +252,9 @@ public class AnalysisReport {
                                       (int)Math.round(a.foldEnrichment*10)));
         }
         bed.close();
-        Set<ChipSeqAlignment> fg = analysis.getForeground();
+        Set<SeqAlignment> fg = analysis.getForeground();
         Collection<String> alignids = new ArrayList<String>();
-        for (ChipSeqAlignment align : fg) {
+        for (SeqAlignment align : fg) {
             alignids.add(Integer.toString(align.getDBID()));
         }
         Client client = null;
@@ -320,7 +320,7 @@ public class AnalysisReport {
             return;
         }
         PrintWriter pw = new PrintWriter(outputBase + ".events");
-        for (ChipSeqAnalysisResult a : events) {
+        for (SeqAnalysisResult a : events) {
             pw.println(String.format("%s\t%.2f\t%.2e\t%.2f\t%.2f\t%.2f",
                                      a.toString(),
                                      a.strength,
@@ -401,7 +401,7 @@ public class AnalysisReport {
         SequenceGenerator seqgen = new SequenceGenerator();
         seqgen.useCache(true);
         seqgen.useLocalFiles(true);
-        for (ChipSeqAnalysisResult a : events) {
+        for (SeqAnalysisResult a : events) {
             Region toScan = a.expand(100,100);
             char[] seq = seqgen.execute(toScan).toCharArray();
             pw.print(String.format("%s\t%.2f\t%.2e\t%.2f\t%.2f\t%.2f",
@@ -432,16 +432,16 @@ public class AnalysisReport {
 
 }
 
-class ChipSeqAnalysisRatioComparator implements Comparator<ChipSeqAnalysisResult> {
-    public int compare(ChipSeqAnalysisResult a, ChipSeqAnalysisResult b) {
+class ChipSeqAnalysisRatioComparator implements Comparator<SeqAnalysisResult> {
+    public int compare(SeqAnalysisResult a, SeqAnalysisResult b) {
         return Double.compare(a.foldEnrichment,b.foldEnrichment);
     }
     public boolean equals(Object o) {
         return o instanceof ChipSeqAnalysisRatioComparator;
     }
 }
-class ChipSeqAnalysisPValueComparator implements Comparator<ChipSeqAnalysisResult> {
-    public int compare(ChipSeqAnalysisResult a, ChipSeqAnalysisResult b) {
+class ChipSeqAnalysisPValueComparator implements Comparator<SeqAnalysisResult> {
+    public int compare(SeqAnalysisResult a, SeqAnalysisResult b) {
         int r = Double.compare(b.pvalue,a.pvalue);
         if (r == 0) {
             r = Double.compare(a.foldEnrichment,b.foldEnrichment);

@@ -9,9 +9,9 @@ import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipData;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.GenericExperiment;
-import edu.psu.compbio.seqcode.gse.datasets.chippet.WeightedRunningOverlapSum;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqHit;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.WeightedRunningOverlapSum;
 import edu.psu.compbio.seqcode.gse.datasets.species.ExonicGene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
@@ -26,10 +26,10 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 public class SeqAboveBelowStrandPainter extends SeqPainter {
 
     private Color color;
-    protected Vector<ChipSeqHit> watsonLayoutHits = new Vector<ChipSeqHit>();
-    protected Vector<ChipSeqHit> crickLayoutHits = new Vector<ChipSeqHit>();
-    protected NonOverlappingLayout<ChipSeqHit> watsonLayout = new NonOverlappingLayout<ChipSeqHit>();
-    protected NonOverlappingLayout<ChipSeqHit> crickLayout = new NonOverlappingLayout<ChipSeqHit>();
+    protected Vector<SeqHit> watsonLayoutHits = new Vector<SeqHit>();
+    protected Vector<SeqHit> crickLayoutHits = new Vector<SeqHit>();
+    protected NonOverlappingLayout<SeqHit> watsonLayout = new NonOverlappingLayout<SeqHit>();
+    protected NonOverlappingLayout<SeqHit> crickLayout = new NonOverlappingLayout<SeqHit>();
     private Color plusHitColor = Color.blue;
     private Color minusHitColor = Color.blue;
 
@@ -43,12 +43,12 @@ public class SeqAboveBelowStrandPainter extends SeqPainter {
             if (getProperties().Overlapping) {
                 /* don't do anything.  The model can provide us with the RunningOverlapSums */
             } else {
-                Iterator<ChipSeqHit> itr = model.getResults();
-                watsonLayoutHits = new Vector<ChipSeqHit>();
-                crickLayoutHits = new Vector<ChipSeqHit>();
+                Iterator<SeqHit> itr = model.getResults();
+                watsonLayoutHits = new Vector<SeqHit>();
+                crickLayoutHits = new Vector<SeqHit>();
                 Region extended = null;
                 while (itr.hasNext()) {
-                    ChipSeqHit hit = itr.next();
+                    SeqHit hit = itr.next();
                     if(getProperties().DrawNonUnique || hit.getWeight()>=1.0){
                     	if (hit.getStrand() == '+') {
                     		watsonLayoutHits.add(hit);
@@ -200,7 +200,7 @@ public class SeqAboveBelowStrandPainter extends SeqPainter {
         Stroke oldStroke = g.getStroke();
         //g.setStroke(new BasicStroke((float)2.0));
 
-        for(ChipSeqHit watsonHit : watsonLayoutHits) {
+        for(SeqHit watsonHit : watsonLayoutHits) {
             int track = 0;
             if(getProperties().DrawNonUnique || watsonHit.getWeight()>=1.0){
 	            if(!watsonLayout.hasTrack(watsonHit)) { 
@@ -241,7 +241,7 @@ public class SeqAboveBelowStrandPainter extends SeqPainter {
         
         
         g.setColor(minusHitColor);        
-        for(ChipSeqHit crickHit : crickLayoutHits) {
+        for(SeqHit crickHit : crickLayoutHits) {
         	if(getProperties().DrawNonUnique || crickHit.getWeight()>=1.0){
 	        	int track = 0;
 	            

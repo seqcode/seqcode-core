@@ -7,13 +7,13 @@ import java.sql.SQLException;
 
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExptHandler;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqHit;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -65,8 +65,8 @@ public class ChipSeqPeakFinder {
 	protected double[] backPoissonThresholds;
 	protected double [] ipStackedHitCounts;
 	protected double[] backStackedHitCounts;
-	protected ArrayList<ChipSeqExptHandler> IPhandles;
-	protected ArrayList<ChipSeqExptHandler> backhandles;
+	protected ArrayList<SeqExptHandler> IPhandles;
+	protected ArrayList<SeqExptHandler> backhandles;
 	protected double iphittot;
 	protected double backhittot;
 	protected boolean towerfiltering=true, needlefiltering=false, peakTrimming=true;
@@ -86,14 +86,14 @@ public class ChipSeqPeakFinder {
 		boolean  metaPeak=false;
 		Pair<Organism,Genome> pair = Args.parseGenome(args);
 		if(pair==null){printError();return;}
-		List<ChipSeqLocator> expts = Args.parseChipSeq(args,"expt");
-        List<ChipSeqLocator> back = Args.parseChipSeq(args,"back");
+		List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
+        List<SeqLocator> back = Args.parseChipSeq(args,"back");
         if (expts.size() == 0) {
             printError();
             return;
         }
-        double rLen = Args.parseDouble(args,"readlen",ChipSeqExptHandler.defaultReadLength);
-        double rExt = Args.parseDouble(args,"readextend",ChipSeqExptHandler.defaultReadExtension);
+        double rLen = Args.parseDouble(args,"readlen",SeqExptHandler.defaultReadLength);
+        double rExt = Args.parseDouble(args,"readextend",SeqExptHandler.defaultReadExtension);
         double rShift =0;
         if(Args.parseArgs(args).contains("shifttags")){
         	rShift = Args.parseInteger(args,"shifttags", 0);
@@ -150,7 +150,7 @@ public class ChipSeqPeakFinder {
 		
 	}
 	/* Constructor requires a species, genome version and lists of ip and background solexa experiments */
-	public ChipSeqPeakFinder(Genome gen, List<ChipSeqLocator> ips, List<ChipSeqLocator> backs, double rLen, double rExt, double rShift) {
+	public ChipSeqPeakFinder(Genome gen, List<SeqLocator> ips, List<SeqLocator> backs, double rLen, double rExt, double rShift) {
 		System.out.println("Initializing the Peak Finder");
 		this.gen = gen;
         readLength = rLen;
@@ -164,15 +164,15 @@ public class ChipSeqPeakFinder {
         loadExperiments(ips, backs);
 	}
 	
-	protected void loadExperiments(List<ChipSeqLocator> ips, List<ChipSeqLocator> backs){
-	  IPhandles = new ArrayList<ChipSeqExptHandler>();
-	  backhandles = new ArrayList<ChipSeqExptHandler>();
+	protected void loadExperiments(List<SeqLocator> ips, List<SeqLocator> backs){
+	  IPhandles = new ArrayList<SeqExptHandler>();
+	  backhandles = new ArrayList<SeqExptHandler>();
 	  try {
 	    genomeLen = gen.getGenomeLength(); 
 
-	    for(ChipSeqLocator ip : ips){
+	    for(SeqLocator ip : ips){
 	      System.out.print(String.format("%s\t", ip.getExptName()));
-	      ChipSeqExptHandler curr = new ChipSeqExptHandler(gen, ip);
+	      SeqExptHandler curr = new SeqExptHandler(gen, ip);
 	      curr.setReadLength(readLength);
 	      if(shiftTags){
 	        curr.setReadExtension(readShift*2);
@@ -184,9 +184,9 @@ public class ChipSeqPeakFinder {
 	      IPhandles.add(curr);
 	    }
 
-	    for(ChipSeqLocator back : backs){
+	    for(SeqLocator back : backs){
 	      System.out.print(String.format("%s\t", back.getExptName()));
-	      ChipSeqExptHandler curr = new ChipSeqExptHandler(gen, back);
+	      SeqExptHandler curr = new SeqExptHandler(gen, back);
 	      curr.setReadLength(readLength);
 	      if(shiftTags){
 	        curr.setReadExtension(readShift*2);
@@ -288,13 +288,13 @@ public class ChipSeqPeakFinder {
 	
 	
 	private void weightHits() {
-	  for(ChipSeqExptHandler handler : IPhandles) {
+	  for(SeqExptHandler handler : IPhandles) {
       handler.weighHits();
       //iphittot += 20958530; 
       iphittot += handler.getHitWeight();
     }
     System.out.print(String.format("%.0f ip read weights loaded\n", iphittot));
-    for(ChipSeqExptHandler handler : backhandles) {
+    for(SeqExptHandler handler : backhandles) {
       System.out.print(String.format("%s\t", handler.getExptName()));
       handler.weighHits();
       //backhittot += 3072065;
@@ -304,7 +304,7 @@ public class ChipSeqPeakFinder {
 	}
 	
 	private void weightHitsByRegion(List<Region> regions) {
-	  for(ChipSeqExptHandler handler : IPhandles) {
+	  for(SeqExptHandler handler : IPhandles) {
 	    System.out.print(String.format("%s\t", handler.getExptName()));
 	    for (Region reg : regions) {
 
@@ -314,7 +314,7 @@ public class ChipSeqPeakFinder {
 	    }
 	  }
 	  System.out.print(String.format("%.0f ip read weights loaded\n", iphittot));
-	  for(ChipSeqExptHandler handler : backhandles) {
+	  for(SeqExptHandler handler : backhandles) {
 	    System.out.print(String.format("%s\t", handler.getExptName()));
 	    for (Region reg : regions) {
 	      //TODO
@@ -412,16 +412,16 @@ public class ChipSeqPeakFinder {
 				Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 				ArrayList<ChipSeqPeak> currres = new ArrayList<ChipSeqPeak>();
 				
-				LinkedList<ChipSeqHit> ipHits = new LinkedList<ChipSeqHit>();
-				LinkedList<ChipSeqHit> backHits = new LinkedList<ChipSeqHit>();
+				LinkedList<SeqHit> ipHits = new LinkedList<SeqHit>();
+				LinkedList<SeqHit> backHits = new LinkedList<SeqHit>();
 				
-				for(ChipSeqExptHandler IP: IPhandles){
+				for(SeqExptHandler IP: IPhandles){
 					if(shiftTags){
 						ipHits.addAll(IP.loadShiftedExtendedHits(currSubRegion));
 					}else
 						ipHits.addAll(IP.loadExtendedHits(currSubRegion));
 				}
-				for(ChipSeqExptHandler back: backhandles){
+				for(SeqExptHandler back: backhandles){
 					if(shiftTags)
 						backHits.addAll(back.loadShiftedExtendedHits(currSubRegion));
 					else
@@ -511,14 +511,14 @@ public class ChipSeqPeakFinder {
 	}
 	
 	/* Filter the tower; protected because this method only makes sense from within the callEnrichedRegions method */
-	protected ArrayList<ChipSeqPeak> filterTowers(ArrayList<ChipSeqPeak> curr, LinkedList<ChipSeqHit> ipHits, double [] backHitCounts, int chromOffset){
+	protected ArrayList<ChipSeqPeak> filterTowers(ArrayList<ChipSeqPeak> curr, LinkedList<SeqHit> ipHits, double [] backHitCounts, int chromOffset){
 		ArrayList<ChipSeqPeak> res = new ArrayList<ChipSeqPeak>();
 		Iterator<ChipSeqPeak> itr = curr.iterator();
 		while(itr.hasNext()){
 			ChipSeqPeak peak = itr.next();
 			boolean isTower=false; //innocent until proven guilty
 			
-			ArrayList<ChipSeqHit> winHits = overlappingHits(ipHits, peak.coords);
+			ArrayList<SeqHit> winHits = overlappingHits(ipHits, peak.coords);
 			
 			//Filter 1: remove things that are ridiculously one-stranded in the IP channel
 			double strandprop=forwardReadProportion(winHits);
@@ -540,7 +540,7 @@ public class ChipSeqPeakFinder {
 			
 			//Filter 3: Another class of tower are the needles that stack up over a very tight space. This isn't what we'd expect a TF binding site to look like.
 			double all=0, mid=0, num=0;
-			for(ChipSeqHit hit : winHits){ //get mid-point of all hit starts
+			for(SeqHit hit : winHits){ //get mid-point of all hit starts
 				if(hit.getStrand()=='+'){
 					all+=(double)hit.getStart();
 				}else{
@@ -550,7 +550,7 @@ public class ChipSeqPeakFinder {
 			}mid=all/num;
 			//if most of the hits are within one read-length of the mid-point, this is a needle
 			double needles=0;
-			for(ChipSeqHit hit : winHits){ //get mid-point of all hit starts
+			for(SeqHit hit : winHits){ //get mid-point of all hit starts
 				if(hit.getStrand()=='+' && Math.abs((double)hit.getStart()-mid)<=readLength){needles++;}
 				else if(hit.getStrand()=='-' && Math.abs((double)hit.getEnd()-mid)<=readLength){needles++;}
 			}if(needles/num>=0.95){isTower=true;}
@@ -668,20 +668,20 @@ public class ChipSeqPeakFinder {
 		return(Z0);
 	}
 	
-	protected ArrayList<ChipSeqHit> overlappingHits(LinkedList<ChipSeqHit> hits, Region window){
-		ArrayList<ChipSeqHit> sub = new ArrayList<ChipSeqHit>();
-		for(ChipSeqHit r : hits){
+	protected ArrayList<SeqHit> overlappingHits(LinkedList<SeqHit> hits, Region window){
+		ArrayList<SeqHit> sub = new ArrayList<SeqHit>();
+		for(SeqHit r : hits){
 			if(window.overlaps(r)){sub.add(r);}			
 		}
 		return(sub);
 	}
-	protected double [] makeHitLandscape(LinkedList<ChipSeqHit> hits, Region currReg, int perBaseMax){
+	protected double [] makeHitLandscape(LinkedList<SeqHit> hits, Region currReg, int perBaseMax){
 		int numBins = (int)(currReg.getWidth()/winStep);
 		double [] counts = new double[currReg.getWidth()+1];
 		double [] land = new double[numBins+1];
 		for(int i=0; i<=numBins; i++){land[i]=0;}
 		for(int i=0; i<=currReg.getWidth(); i++){counts[i]=0;}
-		for(ChipSeqHit r : hits){
+		for(SeqHit r : hits){
 			int offset=r.getStart()-currReg.getStart()<0 ? 0 : r.getStart()-currReg.getStart();
 			counts[offset] = counts[offset] + r.getWeight();
 			if(!needlefiltering || (counts[offset] <= perBaseMax)){
@@ -756,11 +756,11 @@ public class ChipSeqPeakFinder {
 		}
 	}
 	/* Add strandedness of peaks (useful for CLIP)*/
-	protected void addStrands(ArrayList<ChipSeqPeak> curr, LinkedList<ChipSeqHit> ipHits){
+	protected void addStrands(ArrayList<ChipSeqPeak> curr, LinkedList<SeqHit> ipHits){
 		Iterator<ChipSeqPeak> itr = curr.iterator();
 		while(itr.hasNext()){
 			ChipSeqPeak peak = itr.next();
-			ArrayList<ChipSeqHit> winHits = overlappingHits(ipHits, peak.coords);
+			ArrayList<SeqHit> winHits = overlappingHits(ipHits, peak.coords);
 			
 			//Filter 1: remove things that are ridiculously one-stranded in the IP channel
 			double strandprop=forwardReadProportion(winHits);
@@ -772,11 +772,11 @@ public class ChipSeqPeakFinder {
 		}
 	}
 	/* Trim the peaks back to the coordinates of the first & last read in the peak*/
-	protected void trimPeaks(ArrayList<ChipSeqPeak> curr, LinkedList<ChipSeqHit> ipHits){
+	protected void trimPeaks(ArrayList<ChipSeqPeak> curr, LinkedList<SeqHit> ipHits){
 		Iterator<ChipSeqPeak> itr = curr.iterator();
 		while(itr.hasNext()){
 			ChipSeqPeak peak = itr.next();
-			ArrayList<ChipSeqHit> winHits = overlappingHits(ipHits, peak.coords);
+			ArrayList<SeqHit> winHits = overlappingHits(ipHits, peak.coords);
 			StrandedRegion min=winHits.get(0);
 			StrandedRegion max=winHits.get(0);
 			for(StrandedRegion sr : winHits){
@@ -789,10 +789,10 @@ public class ChipSeqPeakFinder {
 		}
 	}
 	/* Returns the proportion of reads in the region that are in the forward direction*/
-	protected double forwardReadProportion(ArrayList<ChipSeqHit> winHits){
+	protected double forwardReadProportion(ArrayList<SeqHit> winHits){
 		double totalHits =(double)winHits.size();
 		double forwardHits =0;
-		for(ChipSeqHit s : winHits){
+		for(SeqHit s : winHits){
 			if(s.getStrand()=='+'){
 				forwardHits++;
 			}			
@@ -801,13 +801,13 @@ public class ChipSeqPeakFinder {
 	}
 	
 	/* Find the exact peak locations based on left-right balance of forward/reverse reads */
-	protected Point findPeakLRBalance(LinkedList<ChipSeqHit> ipHits, ChipSeqPeak reg){
-		ArrayList<ChipSeqHit> winHits = overlappingHits(ipHits, reg.coords);
+	protected Point findPeakLRBalance(LinkedList<SeqHit> ipHits, ChipSeqPeak reg){
+		ArrayList<SeqHit> winHits = overlappingHits(ipHits, reg.coords);
 		int [] forward = new int [reg.coords.getWidth()+1];
 		int [] reverse = new int [reg.coords.getWidth()+1];
 		for(int s=0; s<=reg.coords.getWidth(); s++){forward[s]=0; reverse[s]=0;}
 		
-		for(ChipSeqHit r : winHits){
+		for(SeqHit r : winHits){
 			int i;
 			if(r.getStrand()=='+'){
 				i=Math.max(0, r.getStart()-reg.coords.getStart());
@@ -832,12 +832,12 @@ public class ChipSeqPeakFinder {
 	}
 	
 	/* Find the exact peak locations based on maximum overlapping read counts. Careful; make sure the reads are extended... */
-	protected Point findPeakMaxHit(LinkedList<ChipSeqHit> ipHits, ChipSeqPeak reg){
-		ArrayList<ChipSeqHit> winHits = overlappingHits(ipHits, reg.coords);
+	protected Point findPeakMaxHit(LinkedList<SeqHit> ipHits, ChipSeqPeak reg){
+		ArrayList<SeqHit> winHits = overlappingHits(ipHits, reg.coords);
 		int [] sum = new int [reg.coords.getWidth()+1];
 		for(int s=0; s<sum.length; s++){sum[s]=0;}
 		
-		for(ChipSeqHit r : winHits){
+		for(SeqHit r : winHits){
 			int start = r.getStart()-reg.coords.getStart(); 
 			int stop= r.getEnd()-reg.coords.getStart();
 			
@@ -909,12 +909,12 @@ public class ChipSeqPeakFinder {
 				if(y>currentChrom.getEnd()){y=currentChrom.getEnd();}
 				Region currRegion = new Region(gen, currentChrom.getChrom(), x, y);
 				
-				LinkedList<ChipSeqHit> ipHits = new LinkedList<ChipSeqHit>();
-				LinkedList<ChipSeqHit> backHits = new LinkedList<ChipSeqHit>();
-				for(ChipSeqExptHandler IP: IPhandles){
+				LinkedList<SeqHit> ipHits = new LinkedList<SeqHit>();
+				LinkedList<SeqHit> backHits = new LinkedList<SeqHit>();
+				for(SeqExptHandler IP: IPhandles){
 					ipHits.addAll(IP.loadExtendedHits(currRegion));
 				}
-				for(ChipSeqExptHandler back: backhandles){
+				for(SeqExptHandler back: backhandles){
 					backHits.addAll(back.loadExtendedHits(currRegion));
 				}
 				double [] ipHitCounts=makeHitLandscape(ipHits, currRegion, (int)ipBasePoissonThres);
@@ -961,7 +961,7 @@ public class ChipSeqPeakFinder {
 			forward[w]=0; reverse[w]=0;
 		}
 		//Assuming the peaks are pre-sorted
-		for(ChipSeqExptHandler IP: IPhandles){
+		for(SeqExptHandler IP: IPhandles){
 			int count =0;
 			for(ChipSeqPeak p : peaks){
 				if(count<topX){

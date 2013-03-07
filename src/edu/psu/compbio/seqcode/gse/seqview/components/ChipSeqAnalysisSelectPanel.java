@@ -9,28 +9,28 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.components.GenericSelectPanel;
 
-public class ChipSeqAnalysisSelectPanel extends GenericSelectPanel<ChipSeqAnalysis> {
+public class ChipSeqAnalysisSelectPanel extends GenericSelectPanel<SeqAnalysis> {
 
-    TreeSet<ChipSeqAnalysis> analyses;
+    TreeSet<SeqAnalysis> analyses;
     private JTextField regex;
     private JCheckBox active;
     private ChipSeqAnalysisTableModel selectedModel, filteredModel;
 
     public ChipSeqAnalysisSelectPanel(Genome g) { 
         super(g);
-        analyses = new TreeSet<ChipSeqAnalysis>();
+        analyses = new TreeSet<SeqAnalysis>();
         selectedModel = new ChipSeqAnalysisTableModel();
         filteredModel = new ChipSeqAnalysisTableModel();
         init(filteredModel,selectedModel);
     }
     public ChipSeqAnalysisSelectPanel() { 
         super();
-        analyses = new TreeSet<ChipSeqAnalysis>();
+        analyses = new TreeSet<SeqAnalysis>();
         selectedModel = new ChipSeqAnalysisTableModel();
         filteredModel = new ChipSeqAnalysisTableModel();
         init(filteredModel,selectedModel);
@@ -50,8 +50,8 @@ public class ChipSeqAnalysisSelectPanel extends GenericSelectPanel<ChipSeqAnalys
         analyses.clear();
         try {
             synchronized(analyses) {
-                Collection<ChipSeqAnalysis> all = ChipSeqAnalysis.getAll(active.isSelected() ? true : null);
-                for(ChipSeqAnalysis a :all) { 
+                Collection<SeqAnalysis> all = SeqAnalysis.getAll(active.isSelected() ? true : null);
+                for(SeqAnalysis a :all) { 
                     analyses.add(a);
                 }
             }
@@ -63,7 +63,7 @@ public class ChipSeqAnalysisSelectPanel extends GenericSelectPanel<ChipSeqAnalys
         selectedModel.clear();
         filteredModel.clear();
         synchronized(analyses) {
-            for (ChipSeqAnalysis a : analyses) {
+            for (SeqAnalysis a : analyses) {
                 filteredModel.addObject(a);
             }
         }
@@ -77,13 +77,13 @@ public class ChipSeqAnalysisSelectPanel extends GenericSelectPanel<ChipSeqAnalys
         synchronized(analyses) {
             analyses.clear();
             try {
-                Collection<ChipSeqAnalysis> all = ChipSeqAnalysis.getAll(active.isSelected() ? true : null);
-                for (ChipSeqAnalysis a : all) {
+                Collection<SeqAnalysis> all = SeqAnalysis.getAll(active.isSelected() ? true : null);
+                for (SeqAnalysis a : all) {
                     if (patt == null || patt.matcher(a.toString()).find()) {
-                        Set<ChipSeqAlignment> fg = a.getForeground();
-                        Iterator<ChipSeqAlignment> i = fg.iterator();                        
+                        Set<SeqAlignment> fg = a.getForeground();
+                        Iterator<SeqAlignment> i = fg.iterator();                        
                         if (i.hasNext()) {
-                            ChipSeqAlignment align = i.next();
+                            SeqAlignment align = i.next();
                             if (!align.getGenome().equals(getGenome())) {
                                 continue;
                             }                            
@@ -95,7 +95,7 @@ public class ChipSeqAnalysisSelectPanel extends GenericSelectPanel<ChipSeqAnalys
                 throw new RuntimeException(e.toString(), e);
             }
             filteredModel.clear();
-            for (ChipSeqAnalysis a : analyses) {
+            for (SeqAnalysis a : analyses) {
                 filteredModel.addObject(a);
             }
         }

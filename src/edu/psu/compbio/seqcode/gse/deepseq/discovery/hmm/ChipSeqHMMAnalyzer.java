@@ -12,10 +12,10 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrixImport;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.BindingModel;
@@ -129,10 +129,6 @@ public class ChipSeqHMMAnalyzer {
     
     ArrayList<Region> selectedRegions = null;    
     if (regionFormat.equals("NONE")) {
-      if (signal.isFromDB()) {
-        logger.fatal("Cannot estimate restrict regions from DB.");
-        System.exit(1);
-      }
       selectedRegions = ChipSeqAnalysisUtils.selectEnrichedRegions(genome, model.getWidth(), model.getRange(), minReads, signal, control);
       ChipSeqAnalysisUtils.saveRestrictRegions(selectedRegions, true);
     }
@@ -256,10 +252,10 @@ public class ChipSeqHMMAnalyzer {
         logger.debug("Loading condition: " + name);
       }
 
-      List<ChipSeqLocator> dbexpts = Args.parseChipSeq(args, "dbexpt" + name);
-      List<ChipSeqLocator> dbctrls = Args.parseChipSeq(args, "dbctrl" + name);
-      List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args, "rdbexpt" + name);
-      List<ChipSeqLocator> rdbctrls = Args.parseChipSeq(args, "rdbctrl" + name);
+      List<SeqLocator> dbexpts = Args.parseChipSeq(args, "dbexpt" + name);
+      List<SeqLocator> dbctrls = Args.parseChipSeq(args, "dbctrl" + name);
+      List<SeqLocator> rdbexpts = Args.parseChipSeq(args, "rdbexpt" + name);
+      List<SeqLocator> rdbctrls = Args.parseChipSeq(args, "rdbctrl" + name);
       List<File> expts = Args.parseFileHandles(args, "expt" + name);
       List<File> ctrls = Args.parseFileHandles(args, "ctrl" + name);
       ArgParser ap = new ArgParser(args);

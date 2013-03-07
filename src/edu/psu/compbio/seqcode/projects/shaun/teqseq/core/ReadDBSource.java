@@ -7,10 +7,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAlignment;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLoader;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.projects.readdb.*;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -28,15 +28,15 @@ public class ReadDBSource{
 	private String condition="";
 	//Single-end
 	private List<String> singleExptNames =new ArrayList<String>();
-	private List<ChipSeqAlignment> singleAligns = new ArrayList<ChipSeqAlignment>();
+	private List<SeqAlignment> singleAligns = new ArrayList<SeqAlignment>();
 	private Collection<String> singleAlignIDs= new ArrayList<String>();
 	//Junctions
 	private List<String> junctExptNames =new ArrayList<String>();
-	private List<ChipSeqAlignment> junctAligns = new ArrayList<ChipSeqAlignment>();
+	private List<SeqAlignment> junctAligns = new ArrayList<SeqAlignment>();
 	private Collection<String> junctAlignIDs= new ArrayList<String>();
 	//Paired-end
 	private List<String> pairedExptNames =new ArrayList<String>();
-	private List<ChipSeqAlignment> pairedAligns = new ArrayList<ChipSeqAlignment>();
+	private List<SeqAlignment> pairedAligns = new ArrayList<SeqAlignment>();
 	private Collection<String> pairedAlignIDs= new ArrayList<String>();
 	
 	/**
@@ -44,16 +44,16 @@ public class ReadDBSource{
 	 * @param g Genome
 	 * @param locs List<ChipSeqLocator>
 	 */
-	public ReadDBSource(String name, Genome g, List<ChipSeqLocator> singleLocs, List<ChipSeqLocator> junctLocs, List<ChipSeqLocator> pairedLocs){
+	public ReadDBSource(String name, Genome g, List<SeqLocator> singleLocs, List<SeqLocator> junctLocs, List<SeqLocator> pairedLocs){
 		gen=g;
 		this.name = name;
 		try {
 			client = new Client();
 			
-			ChipSeqLoader loader = new ChipSeqLoader(false);
+			SeqDataLoader loader = new SeqDataLoader(false);
 			
 			//Initialize Single-end ChipSeqLoaders
-            for(ChipSeqLocator locator : singleLocs){
+            for(SeqLocator locator : singleLocs){
 				String exptName = locator.getExptName();
 				singleExptNames.add(exptName);
 				for (String replicate : locator.getReplicates()) {//Given alignment name, given replicate names
@@ -63,12 +63,12 @@ public class ReadDBSource{
         					g));
         		}
 			}
-	        for(ChipSeqAlignment alignment : singleAligns) {
+	        for(SeqAlignment alignment : singleAligns) {
 	            singleAlignIDs.add(Integer.toString(alignment.getDBID()));
 	        }
 	        
 	        //Initialize Junction ChipSeqLoaders
-            for(ChipSeqLocator locator : junctLocs){
+            for(SeqLocator locator : junctLocs){
 				String exptName = locator.getExptName();
 				junctExptNames.add(exptName);
 				for (String replicate : locator.getReplicates()) {//Given alignment name, given replicate names
@@ -78,12 +78,12 @@ public class ReadDBSource{
         					g));
         		}
 			}
-	        for(ChipSeqAlignment alignment : junctAligns) {
+	        for(SeqAlignment alignment : junctAligns) {
 	            junctAlignIDs.add(Integer.toString(alignment.getDBID()));
 	        }
 	        
 	        //Initialize Paired-end ChipSeqLoaders
-            for(ChipSeqLocator locator : pairedLocs){
+            for(SeqLocator locator : pairedLocs){
 				String exptName = locator.getExptName();
 				pairedExptNames.add(exptName);
 				for (String replicate : locator.getReplicates()) {//Given alignment name, given replicate names
@@ -93,7 +93,7 @@ public class ReadDBSource{
         					g));
         		}
 			}
-	        for(ChipSeqAlignment alignment : pairedAligns) {
+	        for(SeqAlignment alignment : pairedAligns) {
 	            pairedAlignIDs.add(Integer.toString(alignment.getDBID()));
 	        }
 		} catch (IOException e) {
@@ -118,7 +118,7 @@ public class ReadDBSource{
 	 */
 	public List<SingleHit> getSingleHits(Region r){
 		List<SingleHit> hits = new ArrayList<SingleHit>();
-		for(ChipSeqAlignment a : singleAligns){
+		for(SeqAlignment a : singleAligns){
 				try {
 					hits.addAll(client.getSingleHits(Integer.toString(a.getDBID()),
 					       r.getGenome().getChromID(r.getChrom()), r.getStart(), r.getEnd(), null, null));
@@ -139,7 +139,7 @@ public class ReadDBSource{
 	 */
 	public List<PairedHit> getJunctionHits(Region r){
 		List<PairedHit> hits = new ArrayList<PairedHit>();
-		for(ChipSeqAlignment a : junctAligns){
+		for(SeqAlignment a : junctAligns){
 				try {
 					hits.addAll(client.getPairedHits(Integer.toString(a.getDBID()),
 					       r.getGenome().getChromID(r.getChrom()), true, r.getStart(), r.getEnd(), null, null));
@@ -160,7 +160,7 @@ public class ReadDBSource{
 	 */
 	public List<PairedHit> getPairedHits(Region r){
 		List<PairedHit> hits = new ArrayList<PairedHit>();
-		for(ChipSeqAlignment a : pairedAligns){
+		for(SeqAlignment a : pairedAligns){
 				try {
 					hits.addAll(client.getPairedHits(Integer.toString(a.getDBID()),
 					       r.getGenome().getChromID(r.getChrom()), true, r.getStart(), r.getEnd(), null, null));
@@ -181,7 +181,7 @@ public class ReadDBSource{
 	public double getTotalSingleWeight(){
 		double w =0;
 		try {
-			for(ChipSeqAlignment alignment : singleAligns) { 
+			for(SeqAlignment alignment : singleAligns) { 
 				double currWeight =(double)client.getWeight(Integer.toString(alignment.getDBID()), false, null, null);
 				w +=currWeight;
 			}

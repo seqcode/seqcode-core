@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.BindingModel;
@@ -91,7 +91,7 @@ public class GPS_ReadDistribution {
 			chipSeqExpt = new DeepSeqExpt(genome, expts, false, fileFormat, -1);
 		}
 		else{
-			List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args,"rdb");
+			List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdb");
 			chipSeqExpt = new DeepSeqExpt(genome, rdbexpts, "readdb", -1);
 		}
 			

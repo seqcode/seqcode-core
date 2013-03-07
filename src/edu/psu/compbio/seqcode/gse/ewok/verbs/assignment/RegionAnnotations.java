@@ -6,9 +6,6 @@ package edu.psu.compbio.seqcode.gse.ewok.verbs.assignment;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.binding.*;
-import edu.psu.compbio.seqcode.gse.datasets.chippet.ChipPetDatum;
-import edu.psu.compbio.seqcode.gse.datasets.chippet.ChipPetExpt;
-import edu.psu.compbio.seqcode.gse.datasets.chippet.ChipPetLoader;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;

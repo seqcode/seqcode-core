@@ -2,39 +2,27 @@
 
 SET foreign_key_checks=0;
 
---
--- Table: genome
---
-CREATE TABLE genome (
-  id int(10) NOT NULL auto_increment,
-  species int(10) NOT NULL,
-  version varchar(100) NOT NULL,
-  INDEX (species),
-  UNIQUE (id),
-  FOREIGN KEY fk_genome_species (species) REFERENCES species (id),
-  PRIMARY KEY (species, version)
-) Type=InnoDB;
 
 --
 -- Table: sequencing experiment
 --
 create table seqexpt (
 	id int(10) not null auto_increment,
-	name varchar2(200) not null,
-	replicate varchar2(200) not null,
+	name varchar(200) not null,
+	replicate varchar(200) not null,
 	species int(10) not null,
 	expttype int(10) not null,
 	lab int(10) not null,
 	exptcondition int(10) not null,
 	expttarget int(10) not null,
-	celline int(10) not null,
+	cellline int(10) not null,
 	readtype int(10) not null,
 	readlength int(5) not null,
-	numreads number(12),
-	collabid varchar2(200),
-	publicsource varchar2(200),
-	publicdbid varchar2(200),
-	fqfile varchar2(200),
+	numreads int(12),
+	collabid varchar(200),
+	publicsource varchar(200),
+	publicdbid varchar(200),
+	fqfile varchar(200),
 	unique (id),
 	index (name, replicate),
 	primary key (name, replicate)
@@ -45,68 +33,99 @@ create table seqexpt (
 -- Table: sequencing alignment
 --
 create table seqalignment (
-	id int(10),
-	expt int(10), 
-	name varchar2(1000) not null,
+	id int(10) not null auto_increment,
+	expt int(10) not null,
+	name varchar(200) not null,
 	genome int(10) not null,
-	aligner varchar2(100) not null,
-	alignerargs varchar2(200),
+	permissions varchar(500) not null,
+	aligntype int(10) not null,
 	numhits int(15),
 	totalweight float(17,2),
-	collabid varchar2(200),
-	permissions varchar2(200),
-	aligndir varchar2(200),
+	aligndir varchar(200),
+	collabalignid varchar(200),
 	foreign key fk_seqalignment_expt (expt) references seqexpt(id),
 	index(name),
 	unique(id),
 	primary key(name)
-);
+)Type=InnoDB;
 
-create table aligners (
-
-);
-
+--
+-- Table: alignment parameters
+--
 create table alignmentparameters (
-	alignment constraint fk_alignparams_align references chipseqalignments(id) not null,
-	name varchar2(500) not null,
-	value varchar2(2000) not null);
-create index ix_alignparams on alignmentparameters(alignment);
+	alignment int(10) not null,
+	name varchar(500) not null,
+	value varchar(2000) not null,
+	foreign key fk_alignparams_align (alignment) references seqalignment(id),
+	index (alignment)
+)Type=InnoDB;
 
+--
+-- Table: analysis type
+-- 
+create table analysistype (
+       id int(10) not null,
+       name varchar(200) not null,
+       unique(id),
+       primary key(name)
+)Type=InnoDB;
 
-create sequence chipseqanalysis_id;
-create table chipseqanalysis (
-       id number(10) unique not null,
-       name varchar2(200) not null,
-       version varchar2(200) not null,
-       program varchar2(200),
+--
+-- Table: seq data analysis
+-- 
+create table seqdataanalysis (
+       id int(10) not null,
+       type int(10) not null,
+       name varchar(200) not null,
+       version varchar(200) not null,
+       program varchar(200),
        active int(1) default 1,
-       constraint csa_pk primary key(name,version)       	       
-);
+       foreign key fk_sa_type (type) references analysistype(id),
+       unique(id),
+       primary key(name, version)
+)Type=InnoDB;
 
+
+--
+-- Table: analysis inputs
+-- 
 create table analysisinputs (
-      analysis number(10) constraint fk_ai_analysis references chipseqanalysis(id) not null,
-      alignment number(10) constraint fk_ai_alignment references chipseqalignments(id) not null,
-      inputtype varchar2(100) constraint ai_type check (inputtype = 'foreground' or inputtype = 'background')
-);
+      analysis int(10) not null,
+      alignment int(10) not null,
+      inputtype varchar(20) not null,
+      foreign key fk_ai_analysis (analysis) references seqdataanalysis(id),
+      foreign key fk_ai_alignment (alignment) references seqalignment(id),
+      constraint ai_type check (inputtype = 'foreground' or inputtype = 'background'),
+      index(alignment)
+)Type=InnoDB;
 
+--
+-- Table: analysis parameters
+-- 
 create table analysisparameters (
-       analysis number(10) constraint fk_ap_analysis references chipseqanalysis(id) not null,
-       name varchar2(100),
-       value varchar2(1000)
-);
-create index ix_analysisparams on analysisparameters(analysis);
+       analysis int(10) not null,
+       name varchar(100),
+       value varchar(1000),
+       foreign key fk_ap_analysis (analysis) references seqdataanalysis(id),
+       index(analysis)
+)Type=InnoDB;
 
+
+--
+-- Table: analysis results
+-- 
 create table analysisresults (
-       analysis number(10) constraint fk_ar_analysis references chipseqanalysis(id) not null,
-       chromosome number(10) constraint analysisresults_chromosome not null,
-       startpos number(10),
-       stoppos number(10),
-       position number(10),
-       fgcount binary_double,
-       bgcount binary_double,
-       strength binary_double,
-       peak_shape binary_double,
-       pvalue binary_double,
-       fold_enrichment binary_double,
-       constraint analysisresults_pk primary key(analysis, chromosome, position,startpos,stoppos)
-) organization index compress 2;
+       analysis int(10) not null,
+       chromosome int(10) not null,
+       startpos int(10),
+       stoppos int(10),
+       position int(10),
+       fgcount double,
+       bgcount double,
+       strength double,
+       peakshape double,
+       pvalue double,
+       fold_enrichment double,
+       foreign key fk_ar_analysis (analysis) references seqdataanalysis(id),
+       primary key(analysis, chromosome, position, startpos,stoppos)
+)Type=InnoDB;

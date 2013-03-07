@@ -15,9 +15,9 @@ import cern.jet.random.Poisson;
 import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.*;
@@ -111,8 +111,8 @@ public class GPS {
         	if(name.length()>0)
         		System.out.println("    loading condition: "+name);
         	
-        	List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt"+name);
-        	List<ChipSeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl"+name);
+        	List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt"+name);
+        	List<SeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl"+name);
         	List<File> expts = Args.parseFileHandles(args, "expt"+name);
         	List<File> ctrls = Args.parseFileHandles(args, "ctrl"+name);  
         	boolean nonUnique = flags.contains("nonunique") ? true : false;

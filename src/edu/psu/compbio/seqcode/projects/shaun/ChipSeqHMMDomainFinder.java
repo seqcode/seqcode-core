@@ -22,12 +22,12 @@ import be.ac.ulg.montefiore.run.jahmm.io.OpdfGaussianWriter;
 import be.ac.ulg.montefiore.run.jahmm.io.OpdfReader;
 import be.ac.ulg.montefiore.run.jahmm.io.OpdfWriter;
 import be.ac.ulg.montefiore.run.jahmm.learn.*;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExptHandler;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
@@ -82,7 +82,7 @@ public class ChipSeqHMMDomainFinder {
 	private Organism org;
 	private Genome gen;
 	private double genomeLen=0;
-	private ArrayList<ChipSeqExptHandler> IPhandles;
+	private ArrayList<SeqExptHandler> IPhandles;
 	protected int ipBasePoissonThres=0;
 	private double iphittot;
 	private ArrayList<Region> trainSet = null;
@@ -170,7 +170,7 @@ public class ChipSeqHMMDomainFinder {
         this.setReadShift(rS);
 		System.out.println("Initializing the ChIP-Seq HMM Domain Finder");
         iphittot=0; 
-        IPhandles = new ArrayList<ChipSeqExptHandler>();
+        IPhandles = new ArrayList<SeqExptHandler>();
         if(numHMMStates==2 || numHMMStates==3){numStates = numHMMStates;}        
         trainFile = trainFileName;
         try {
@@ -181,17 +181,17 @@ public class ChipSeqHMMDomainFinder {
 			
 			for(String exptName : ips){
 				System.out.print(String.format("%s\t", exptName));
-				ChipSeqLocator curr=null;
+				SeqLocator curr=null;
 				if (exptName.indexOf(';') != -1) {
                     String[] pieces = exptName.split(";");
                     if(pieces.length==2)
-                    	curr = new ChipSeqLocator(pieces[0], pieces[1]);
+                    	curr = new SeqLocator(pieces[0], pieces[1]);
                     else if(pieces.length==3)
-                    	curr = new ChipSeqLocator(pieces[0], pieces[1], pieces[2]);
+                    	curr = new SeqLocator(pieces[0], pieces[1], pieces[2]);
                 }else{
                 	System.err.println("Experiment name incorrectly assigned");
                 }
-				ChipSeqExptHandler h = new ChipSeqExptHandler(gen, curr);
+				SeqExptHandler h = new SeqExptHandler(gen, curr);
 	            h.setReadLength(readLength);
                 if(shiftTags){
                 	h.setReadExtension(readShift*2);
@@ -344,7 +344,7 @@ public class ChipSeqHMMDomainFinder {
 				DataObs currData = new DataObs(currRegion, (int)winStep);
 				
 				LinkedList<StrandedRegion> ipHits = new LinkedList<StrandedRegion>();
-				for(ChipSeqExptHandler IP: IPhandles){
+				for(SeqExptHandler IP: IPhandles){
 					if(shiftTags)
 						ipHits.addAll(IP.loadShiftedExtendedHits(currRegion));
 					else

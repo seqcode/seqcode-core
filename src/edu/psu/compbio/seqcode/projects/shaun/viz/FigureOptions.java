@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.motifs.BackgroundModelIO;
@@ -193,10 +193,10 @@ public class FigureOptions {
                                      String[] pieces = tokens[2+t].split(";");
                                      if(pieces.length == 2){
                                           if(t==0){
-                                               experiments.get(oVal).expt = new ChipSeqLocator(pieces[0], pieces[1]);
+                                               experiments.get(oVal).expt = new SeqLocator(pieces[0], pieces[1]);
                                                exptNames.add(oVal);
                                           }else{
-                                               experiments.get(oVal).baseExpt = new ChipSeqLocator(pieces[0], pieces[1]);
+                                               experiments.get(oVal).baseExpt = new SeqLocator(pieces[0], pieces[1]);
                                           }
                                      }else if (pieces.length == 3){
                                           System.err.println(pieces[1]);
@@ -207,17 +207,17 @@ public class FigureOptions {
                                                     replist.add(reps[i]);
                                                }
                                                if(t==0){
-                                                    experiments.get(oVal).expt = new ChipSeqLocator(pieces[0],replist,pieces[2]);
+                                                    experiments.get(oVal).expt = new SeqLocator(pieces[0],replist,pieces[2]);
                                                     exptNames.add(oVal);
                                                }else{
-                                                    experiments.get(oVal).baseExpt = new ChipSeqLocator(pieces[0],replist,pieces[2]);
+                                                    experiments.get(oVal).baseExpt = new SeqLocator(pieces[0],replist,pieces[2]);
                                                }
                                           } else {
                                                if(t==0){
-                                                    experiments.get(oVal).expt = new ChipSeqLocator(pieces[0], pieces[1], pieces[2]);
+                                                    experiments.get(oVal).expt = new SeqLocator(pieces[0], pieces[1], pieces[2]);
                                                     exptNames.add(oVal);
                                                }else{
-                                                    experiments.get(oVal).baseExpt = new ChipSeqLocator(pieces[0], pieces[1], pieces[2]);
+                                                    experiments.get(oVal).baseExpt = new SeqLocator(pieces[0], pieces[1], pieces[2]);
                                                }
                                           }
                                      }else{
@@ -338,7 +338,7 @@ public class FigureOptions {
 	}
 
 	protected class SeqExperiment{
-		ChipSeqLocator expt = null;
+		SeqLocator expt = null;
 		int exptTrackHeight = defaultExptTrackHeight;
 		int yMax=100;
 		int pbMax=100;
@@ -360,7 +360,7 @@ public class FigureOptions {
         //Differential experiments
 		boolean isDiff=false;
         double scaling=1;
-        ChipSeqLocator baseExpt = null;
+        SeqLocator baseExpt = null;
     	File preFormattedDataFile = null;
         int diffWinWidth=500;
         int diffWinStep=100;

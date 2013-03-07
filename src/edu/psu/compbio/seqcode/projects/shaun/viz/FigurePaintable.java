@@ -18,8 +18,8 @@ import java.util.List;
 
 import javax.swing.Scrollable;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.ExonicGene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
@@ -38,9 +38,9 @@ public abstract class FigurePaintable extends AbstractPaintable{
 	protected int rstart, rstop;
 	protected String chr;
 	
-	protected List<Region> getReads(ChipSeqLocator loc, Region reg, int perBaseMax, boolean isPaired){
+	protected List<Region> getReads(SeqLocator loc, Region reg, int perBaseMax, boolean isPaired){
 		List<Region> reads = new ArrayList<Region>();
-		List<ChipSeqLocator> loclist = new ArrayList<ChipSeqLocator>();
+		List<SeqLocator> loclist = new ArrayList<SeqLocator>();
 		loclist.add(loc);
 		DeepSeqExpt dse = new DeepSeqExpt(options.genome, loclist, "readdb", -1);
 		dse.setPairedEnd(isPaired);
@@ -62,9 +62,9 @@ public abstract class FigurePaintable extends AbstractPaintable{
 		return reads;
 	}
 	
-	protected List<Region> getPairs(ChipSeqLocator loc, Region reg, int perBaseMax, boolean isPaired){
+	protected List<Region> getPairs(SeqLocator loc, Region reg, int perBaseMax, boolean isPaired){
 		List<Region> pairs = new ArrayList<Region>();
-		List<ChipSeqLocator> loclist = new ArrayList<ChipSeqLocator>();
+		List<SeqLocator> loclist = new ArrayList<SeqLocator>();
 		loclist.add(loc);
 		DeepSeqExpt dse = new DeepSeqExpt(options.genome, loclist, "readdb", -1);
 		dse.setPairedEnd(isPaired);

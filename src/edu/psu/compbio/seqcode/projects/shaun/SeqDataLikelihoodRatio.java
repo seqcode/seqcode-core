@@ -5,29 +5,29 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import edu.psu.compbio.seqcode.gse.datasets.binding.BindingEvent;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.RefGeneGenerator;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.ChipSeqBindingGenerator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.ChipSeqExpander;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.SeqExpander;
 
-public class SeqExptLikelihoodRatio {
+public class SeqDataLikelihoodRatio {
 	private Organism currentOrg;
 	private Genome currentGen;
-	private SeqExptHandler ipChannel;
-	private SeqExptHandler backChannel;
+	private SeqDataHandler ipChannel;
+	private SeqDataHandler backChannel;
 	private double maxLikelihood;
 	private int cdfMax = 100;
 	private int minPeakWidth=50;
 	private int geneWindowSize = 100000; 
 	private ArrayList<Peak> peaks=null;
 	
-	public SeqExptLikelihoodRatio(SeqExptHandler ip, SeqExptHandler back){
+	public SeqDataLikelihoodRatio(SeqDataHandler ip, SeqDataHandler back){
 		ipChannel=ip;
 		backChannel=back;
 		

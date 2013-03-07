@@ -6,8 +6,8 @@ import java.sql.SQLException;
 import cern.jet.random.Gamma;
 import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -30,8 +30,8 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class DifferentialExpression {
 
-    ChipSeqLoader loader;
-    List<ChipSeqAlignment> one, two;
+    SeqDataLoader loader;
+    List<SeqAlignment> one, two;
     RefGeneGenerator genes;
     Genome genome;
     boolean bothstrands, byweight, exons, lengthnorm;
@@ -44,18 +44,18 @@ public class DifferentialExpression {
     }
 
     public DifferentialExpression() throws SQLException, IOException {
-        loader = new ChipSeqLoader();
-        one = new ArrayList<ChipSeqAlignment>();
-        two = new ArrayList<ChipSeqAlignment>();
+        loader = new SeqDataLoader();
+        one = new ArrayList<SeqAlignment>();
+        two = new ArrayList<SeqAlignment>();
     }
     public void parseArgs(String args[]) throws SQLException, NotFoundException {
         genome = Args.parseGenome(args).cdr();
-        List<ChipSeqLocator> locators = Args.parseChipSeq(args,"one");
-        for (ChipSeqLocator locator : locators) {
+        List<SeqLocator> locators = Args.parseChipSeq(args,"one");
+        for (SeqLocator locator : locators) {
             one.addAll(loader.loadAlignments(locator,genome));
         }
         locators = Args.parseChipSeq(args,"two");
-        for (ChipSeqLocator locator : locators) {
+        for (SeqLocator locator : locators) {
             two.addAll(loader.loadAlignments(locator,genome));
         }
         // parseGenes returns a list of genes; just take the first one
@@ -165,16 +165,16 @@ public class DifferentialExpression {
         }
 
     }
-    private double getWeight(Collection<ChipSeqAlignment> alignments) throws SQLException, IOException {
+    private double getWeight(Collection<SeqAlignment> alignments) throws SQLException, IOException {
         double weight = 0;
-        for (ChipSeqAlignment a : alignments) {
+        for (SeqAlignment a : alignments) {
             weight += loader.weighAllHits(a);
         }
         return weight;
     }
-    private int getCount(Collection<ChipSeqAlignment> alignments) throws SQLException, IOException {
+    private int getCount(Collection<SeqAlignment> alignments) throws SQLException, IOException {
         int count = 0;
-        for (ChipSeqAlignment a : alignments) {
+        for (SeqAlignment a : alignments) {
             count += loader.countAllHits(a);
         }
         return count;

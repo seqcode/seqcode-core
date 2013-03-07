@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.PointParser;
@@ -37,7 +37,7 @@ public class ChipSeqMetaPeakMaker {
 		int readLen=26, readExt=0;
 		Pair<Organism,Genome> pair = Args.parseGenome(args);
 		if(pair==null){return;}
-		List<ChipSeqLocator> expts = Args.parseChipSeq(args,"expt");
+		List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
 		String peaks = Args.parseString(args,"peaks","error");
 		int histwin = Args.parseInteger(args,"histwin", 1000);
 		int histbins = Args.parseInteger(args,"bins", 2000);
@@ -89,19 +89,19 @@ public class ChipSeqMetaPeakMaker {
 		return(execute(exp, 26.0, 174.0));
 	}
 	public RealValuedHistogram execute(String [][] exp, double readLength, double readExtension){
-		ArrayList<ChipSeqLocator> locs = new ArrayList<ChipSeqLocator>();
+		ArrayList<SeqLocator> locs = new ArrayList<SeqLocator>();
 		for(String[] e : exp)
-			locs.add(new ChipSeqLocator(e[0], e[1]));
+			locs.add(new SeqLocator(e[0], e[1]));
 		return(execute(locs, readLength, readExtension));
 	}
-	public RealValuedHistogram execute(List<ChipSeqLocator> locs, double readLength, double readExtension){
+	public RealValuedHistogram execute(List<SeqLocator> locs, double readLength, double readExtension){
 		double hittot = 0;
-		ArrayList<SeqExpt> handles = new ArrayList<SeqExpt>();
+		ArrayList<SeqData> handles = new ArrayList<SeqData>();
 		try {
 			//Load experiments
-            for(ChipSeqLocator l : locs){
+            for(SeqLocator l : locs){
 				System.err.print(String.format("%s\t", l.getExptName()));
-				SeqExpt curr = new SeqExpt(gen, l);
+				SeqData curr = new SeqData(gen, l);
 			    curr.setReadLength(readLength);
                 curr.setReadExtension(readExtension);
 				handles.add(curr);
@@ -115,7 +115,7 @@ public class ChipSeqMetaPeakMaker {
 				int st = p.getLocation();
 				Region currRegion = new Region(gen, c, st-windowSize, st+windowSize);
 				LinkedList<StrandedRegion> ipHits = new LinkedList<StrandedRegion>();
-				for(SeqExpt IP: handles){
+				for(SeqData IP: handles){
 					ipHits.addAll(IP.loadExtendedHits(currRegion));									
 				}
 				for(StrandedRegion r : ipHits){

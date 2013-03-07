@@ -1,9 +1,5 @@
 --  -*- mode:sql  -*-
 
--- 
--- Created by SQL::Translator::Producer::MySQL
--- Created on Wed Jul 12 09:01:32 2006
--- 
 SET foreign_key_checks=0;
 
 --
@@ -108,6 +104,16 @@ CREATE TABLE expttarget (
 -- Table: read type
 --
 CREATE TABLE readtype (
+	id int(10) NOT NULL auto_increment,
+	name varchar(50) NOT NULL,
+	UNIQUE (id),
+	PRIMARY KEY (name)
+) Type=InnoDB;
+
+--
+-- Table: align type
+--
+CREATE TABLE aligntype (
 	id int(10) NOT NULL auto_increment,
 	name varchar(50) NOT NULL,
 	UNIQUE (id),

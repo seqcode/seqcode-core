@@ -4,8 +4,8 @@ import java.util.*;
 import java.sql.*;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -28,7 +28,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class GeneBasedBindingReport extends GeneBasedReport {
 
-    private ChipSeqAnalysis analysis;
+    private SeqAnalysis analysis;
     private double pvalthresh;
 
     public static void main(String args[]) throws Exception {
@@ -45,9 +45,9 @@ public class GeneBasedBindingReport extends GeneBasedReport {
         pvalthresh = Args.parseDouble(args,"thresh",.01);
     }
     public void getRegions(String args[]) {}
-    public Collection<ChipSeqAnalysisResult> getOverlappingRegions (Region wholeRegion) throws SQLException {
-        ArrayList<ChipSeqAnalysisResult> output = new ArrayList<ChipSeqAnalysisResult>();
-        for (ChipSeqAnalysisResult r : analysis.getResults(getGenome(), wholeRegion)) {
+    public Collection<SeqAnalysisResult> getOverlappingRegions (Region wholeRegion) throws SQLException {
+        ArrayList<SeqAnalysisResult> output = new ArrayList<SeqAnalysisResult>();
+        for (SeqAnalysisResult r : analysis.getResults(getGenome(), wholeRegion)) {
             if (!Double.isInfinite(r.pvalue) && r.pvalue > pvalthresh) {
                 continue;
             }

@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
@@ -111,7 +111,7 @@ public abstract class RNASeqAnalyzer {
 	        	if(name.length()>0)
 	        		System.out.println("    loading condition: "+name);
 	        	
-	        	List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt"+name);
+	        	List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt"+name);
 	        	List<File> expts = Args.parseFileHandles(args, "expt"+name);
 	        	boolean nonUnique = Args.parseFlags(args).contains("nonunique") ? true : false;
 	        	String fileFormat = Args.parseString(args, "f", "TOPSAM").toUpperCase();

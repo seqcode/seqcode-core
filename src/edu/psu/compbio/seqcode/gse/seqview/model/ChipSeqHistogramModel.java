@@ -8,10 +8,10 @@ import java.util.*;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.ProfileRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.projects.chiapet.Neighborhood;
 import edu.psu.compbio.seqcode.gse.projects.readdb.*;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
@@ -25,7 +25,7 @@ public class ChipSeqHistogramModel extends SeqViewModel implements RegionModel, 
     
     private Client client;
     private TreeMap<Integer,Float> resultsPlus, resultsMinus, resultsPval;
-    private Set<ChipSeqAlignment> alignments;
+    private Set<SeqAlignment> alignments;
     private Set<String> ids;
     private ChipSeqHistogramProperties props;
 
@@ -40,8 +40,8 @@ public class ChipSeqHistogramModel extends SeqViewModel implements RegionModel, 
 	private Map<Integer,String> revChromMap;
 	private Poisson poisson = new Poisson(1, new DRand());
 
-    public ChipSeqHistogramModel (ChipSeqAlignment a) throws IOException, ClientException {
-        alignments = new HashSet<ChipSeqAlignment>();
+    public ChipSeqHistogramModel (SeqAlignment a) throws IOException, ClientException {
+        alignments = new HashSet<SeqAlignment>();
         alignments.add(a);
         props = new ChipSeqHistogramProperties();
         region = null;
@@ -50,15 +50,15 @@ public class ChipSeqHistogramModel extends SeqViewModel implements RegionModel, 
         ids = new HashSet<String>();
         ids.add(Integer.toString(a.getDBID()));
     }
-    public ChipSeqHistogramModel (Collection<ChipSeqAlignment> a) throws IOException, ClientException {
-        alignments = new HashSet<ChipSeqAlignment>();
+    public ChipSeqHistogramModel (Collection<SeqAlignment> a) throws IOException, ClientException {
+        alignments = new HashSet<SeqAlignment>();
         alignments.addAll(a);
         props = new ChipSeqHistogramProperties();
         region = null;
         newinput = false;
         client = new Client();
         ids = new HashSet<String>();
-        for (ChipSeqAlignment align : alignments) {
+        for (SeqAlignment align : alignments) {
             ids.add(Integer.toString(align.getDBID()));
         }
     }    

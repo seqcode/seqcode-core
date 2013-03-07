@@ -7,15 +7,17 @@ import java.awt.font.TextLayout;
 import java.awt.font.LineMetrics;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqHit;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
 import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqDataModel;
 import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqScaleModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
-/* paints Seqeuncing data across a genomic region. */
-
+/**
+ *  Paints Sequencing data across a genomic region. 
+ *  
+ */
 public abstract class SeqPainter extends RegionPaintable  {
 
     protected ChipSeqDataModel model;
@@ -110,10 +112,10 @@ public abstract class SeqPainter extends RegionPaintable  {
     
     protected void setLayoutHits() {
         if (canPaint() && totalLayoutHits == null) {
-            Iterator<ChipSeqHit> itr = model.getResults();
+            Iterator<SeqHit> itr = model.getResults();
             totalLayoutHits = new Vector<Region>();
             while(itr.hasNext()) { 
-            	ChipSeqHit hit = itr.next();
+            	SeqHit hit = itr.next();
             	totalLayoutHits.add(hit); 
             }
             totalLayout.setRegions(totalLayoutHits); 

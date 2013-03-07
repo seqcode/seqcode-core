@@ -3,9 +3,9 @@ package edu.psu.compbio.seqcode.gse.projects.dnaseseq;
 import java.util.*;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.motifs.WeightMatrixScanner;
@@ -20,8 +20,8 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class PrintBindingCalls {
     private WeightMatrix motif;
-    private ChipSeqLoader loader;
-    private ChipSeqAnalysis binding, dnaseq;
+    private SeqDataLoader loader;
+    private SeqAnalysis binding, dnaseq;
     private Genome genome;
     private SequenceGenerator seqgen;
     private float motifCutoff;
@@ -71,21 +71,21 @@ public class PrintBindingCalls {
     public void run() throws SQLException {
 
         for (Region region : regions) {
-            List<ChipSeqAnalysisResult> dnaseqResults = null;
+            List<SeqAnalysisResult> dnaseqResults = null;
             if (dnaseq != null) {
-                dnaseqResults = new ArrayList<ChipSeqAnalysisResult>();
-                for (ChipSeqAnalysisResult r : dnaseq.getResults(genome, region)) {
+                dnaseqResults = new ArrayList<SeqAnalysisResult>();
+                for (SeqAnalysisResult r : dnaseq.getResults(genome, region)) {
                     dnaseqResults.add(r);
                 }
             }
             
 
             if (motif == null) {
-                for (ChipSeqAnalysisResult result : binding.getResults(genome, region)) {
+                for (SeqAnalysisResult result : binding.getResults(genome, region)) {
                     boolean print = true;
                     if (dnaseq != null) {
                         print = false;
-                        for (ChipSeqAnalysisResult d : dnaseqResults) {
+                        for (SeqAnalysisResult d : dnaseqResults) {
                             if (d.overlaps(result)) {
                                 print = true;
                                 break;
@@ -106,7 +106,7 @@ public class PrintBindingCalls {
                     System.err.println("Motif at " + motifHitStarts[i]);
                 }
                 List<Region> bindingEvents = new ArrayList<Region>();
-                for (ChipSeqAnalysisResult result : binding.getResults(genome, region)) {
+                for (SeqAnalysisResult result : binding.getResults(genome, region)) {
                     bindingEvents.add(result.expand(bindingDistance, bindingDistance));
                 }
                 System.err.println("Binding " + bindingEvents);
@@ -118,7 +118,7 @@ public class PrintBindingCalls {
                             boolean print = true;
                             if (dnaseq != null) {
                                 print = false;
-                                for (ChipSeqAnalysisResult d : dnaseqResults) {
+                                for (SeqAnalysisResult d : dnaseqResults) {
                                     if (d.overlaps(b)) {
                                         print = true;
                                         break;

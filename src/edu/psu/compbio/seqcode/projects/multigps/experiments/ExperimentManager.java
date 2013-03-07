@@ -9,8 +9,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
@@ -187,12 +187,12 @@ public class ExperimentManager {
 	 * @param locs List of ChipSeqLocators
 	 */
 	public HitLoader getReadDBHitLoader(String name){
-		List<ChipSeqLocator> locs = new ArrayList<ChipSeqLocator>();
+		List<SeqLocator> locs = new ArrayList<SeqLocator>();
 		String[] pieces = name.trim().split(";");
         if (pieces.length == 2) {
-            locs.add(new ChipSeqLocator(pieces[0], pieces[1]));
+            locs.add(new SeqLocator(pieces[0], pieces[1]));
         } else if (pieces.length == 3) {
-            locs.add(new ChipSeqLocator(pieces[0], pieces[1], pieces[2]));
+            locs.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
         } else {
             throw new RuntimeException("Couldn't parse a ChipSeqLocator from " + name);
         }

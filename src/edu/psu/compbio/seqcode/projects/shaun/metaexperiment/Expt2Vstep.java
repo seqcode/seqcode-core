@@ -10,11 +10,11 @@ import java.util.List;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExptHandler;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
@@ -25,8 +25,8 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 public class Expt2Vstep {
 	private Organism org;
 	private Genome gen;
-	protected ArrayList<ChipSeqExptHandler> IPhandles;
-	protected ArrayList<ChipSeqExptHandler> backhandles;
+	protected ArrayList<SeqExptHandler> IPhandles;
+	protected ArrayList<SeqExptHandler> backhandles;
 	protected int [] ipStackedHitCounts;
 	protected int [] backStackedHitCounts;
 	private int poissThres=-9;
@@ -45,10 +45,10 @@ public class Expt2Vstep {
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		Pair<Organism,Genome> pair = Args.parseGenome(args);
 		if(pair==null || !Args.parseArgs(args).contains("expt")){printError();return;}
-		List<ChipSeqLocator> expts = Args.parseChipSeq(args,"expt");
-		List<ChipSeqLocator> backs = Args.parseChipSeq(args,"back");
-		double rLen = Args.parseDouble(args,"readlen",ChipSeqExptHandler.defaultReadLength);
-        double rExt = Args.parseDouble(args,"readextend",ChipSeqExptHandler.defaultReadExtension);
+		List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
+		List<SeqLocator> backs = Args.parseChipSeq(args,"back");
+		double rLen = Args.parseDouble(args,"readlen",SeqExptHandler.defaultReadLength);
+        double rExt = Args.parseDouble(args,"readextend",SeqExptHandler.defaultReadExtension);
         double rShift =0;
         if(Args.parseArgs(args).contains("shifttags")){
         	rShift = Args.parseInteger(args,"shifttags", 0);
@@ -62,7 +62,7 @@ public class Expt2Vstep {
 	}
 	
 	
-	public Expt2Vstep(Genome gen, List<ChipSeqLocator> ips,List<ChipSeqLocator> backs, double rLen, double rExt, double rShift, int binW, int binStep) {
+	public Expt2Vstep(Genome gen, List<SeqLocator> ips,List<SeqLocator> backs, double rLen, double rExt, double rShift, int binW, int binStep) {
 		System.out.println("Initializing the Converter");
 		this.gen = gen;
         readLength = rLen;
@@ -112,13 +112,13 @@ public class Expt2Vstep {
 					LinkedList<StrandedRegion> ipHits = new LinkedList<StrandedRegion>();
 					LinkedList<StrandedRegion> backHits = new LinkedList<StrandedRegion>();
 					
-					for(ChipSeqExptHandler IP: IPhandles){
+					for(SeqExptHandler IP: IPhandles){
 						if(shiftTags){
 							ipHits.addAll(IP.loadShiftedExtendedHits(currSubRegion));
 						}else
 							ipHits.addAll(IP.loadExtendedHits(currSubRegion));
 					}
-					for(ChipSeqExptHandler back: backhandles){
+					for(SeqExptHandler back: backhandles){
 						if(shiftTags)
 							backHits.addAll(back.loadShiftedExtendedHits(currSubRegion));
 						else
@@ -194,15 +194,15 @@ public class Expt2Vstep {
 		return(Z0);
 	}
 	
-	protected void loadExperiments(List<ChipSeqLocator> ips, List<ChipSeqLocator> backs){
-		IPhandles = new ArrayList<ChipSeqExptHandler>();
-		backhandles = new ArrayList<ChipSeqExptHandler>();
+	protected void loadExperiments(List<SeqLocator> ips, List<SeqLocator> backs){
+		IPhandles = new ArrayList<SeqExptHandler>();
+		backhandles = new ArrayList<SeqExptHandler>();
 		try {
 			genomeLen = gen.getGenomeLength(); 
 			
-			for(ChipSeqLocator ip : ips){
+			for(SeqLocator ip : ips){
 				System.out.print(String.format("%s\t", ip.getExptName()));
-				ChipSeqExptHandler curr = new ChipSeqExptHandler(gen, ip);
+				SeqExptHandler curr = new SeqExptHandler(gen, ip);
                 curr.setReadLength(readLength);
                 if(shiftTags){
                 	curr.setReadExtension(readShift*2);
@@ -213,9 +213,9 @@ public class Expt2Vstep {
 				iphittot += curr.getHitCount();
 			}
             System.out.print(String.format("%.0f reads loaded\n", iphittot));
-			for(ChipSeqLocator back : backs){
+			for(SeqLocator back : backs){
 				System.out.print(String.format("%s\t", back.getExptName()));
-				ChipSeqExptHandler curr = new ChipSeqExptHandler(gen, back);
+				SeqExptHandler curr = new SeqExptHandler(gen, back);
                 curr.setReadLength(readLength);
                 if(shiftTags){
                 	curr.setReadExtension(readShift*2);

@@ -4,8 +4,8 @@ import java.util.*;
 import java.sql.*;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.seqview.components.Snapshot;
@@ -32,7 +32,7 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 public class GetBindingInRegion {
 
-    private ChipSeqLoader loader;
+    private SeqDataLoader loader;
     private Genome genome;
     private List<RefGeneGenerator> geneGenerators;
     private List<Region> regions;
@@ -43,7 +43,7 @@ public class GetBindingInRegion {
     public GetBindingInRegion() throws SQLException, IOException { 
         geneGenerators = new ArrayList<RefGeneGenerator>();
         regions = new ArrayList<Region>();
-        loader = new ChipSeqLoader();
+        loader = new SeqDataLoader();
         plots = false;
     }
     public void parseArgs(String[] args) throws NotFoundException, IOException{
@@ -81,18 +81,18 @@ public class GetBindingInRegion {
         Collections.sort(regions);
     }
     public List<Region> getRegions() {return regions;}
-    public Collection<ChipSeqAnalysis> getAnalysesForRegion(Region r) throws SQLException {
-        return ChipSeqAnalysis.withResultsIn(loader, r);
+    public Collection<SeqAnalysis> getAnalysesForRegion(Region r) throws SQLException {
+        return SeqAnalysis.withResultsIn(loader, r);
     }
     public void print(Region r) throws SQLException {
         System.out.print(r.toString());
-        for (ChipSeqAnalysis a : getAnalysesForRegion(r)) {
+        for (SeqAnalysis a : getAnalysesForRegion(r)) {
             System.out.print("\t" + a.getName() + ";" + a.getVersion());
         }
         System.out.println();
     }
     public void plot(Region r) throws SQLException, NotFoundException, IOException {
-        Collection<ChipSeqAnalysis> analyses = getAnalysesForRegion(r);
+        Collection<SeqAnalysis> analyses = getAnalysesForRegion(r);
         if (analyses.size() == 0) { return ;}
         r = r.expand(plotExpand,plotExpand);
         System.err.println("Doing plot for " + r);
@@ -107,10 +107,10 @@ public class GetBindingInRegion {
         args.add("--chrom");
         args.add(String.format("%s:%d-%d",r.getChrom(), r.getStart(),r.getEnd()));
         Map<Pair<String,String>, List<String>> chipseqtracks = new HashMap<Pair<String,String>, List<String>>();
-        for (ChipSeqAnalysis analysis : analyses) {
+        for (SeqAnalysis analysis : analyses) {
             args.add("--chipseqanalysis");
             args.add(analysis.getName() + ";" + analysis.getVersion());
-            for (ChipSeqAlignment align : analysis.getForeground()) {
+            for (SeqAlignment align : analysis.getForeground()) {
                 Pair<String,String> namever = new Pair<String,String>(align.getExpt().getName(),
                                                                       align.getName());
                 if (!chipseqtracks.containsKey(namever)) {

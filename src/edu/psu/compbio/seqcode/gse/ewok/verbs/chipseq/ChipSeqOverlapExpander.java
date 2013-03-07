@@ -4,9 +4,8 @@ import java.sql.*;
 import java.util.*;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chippet.RunningOverlapSum;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.Mapper;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
@@ -15,17 +14,17 @@ import edu.psu.compbio.seqcode.gse.utils.database.*;
 
 public class ChipSeqOverlapExpander implements Closeable, Mapper<StrandedRegion, RunningOverlapSum> {
 
-    private ChipSeqLoader loader;
-	private LinkedList<ChipSeqAlignment> alignments;
-    private ChipSeqLocator locator;
+    private SeqDataLoader loader;
+	private LinkedList<SeqAlignment> alignments;
+    private SeqLocator locator;
     private java.sql.Connection cxn;
     private PreparedStatement stmt;
     private int extension;
     private Genome lastGenome;
 
-    public ChipSeqOverlapExpander(ChipSeqLocator loc, int extension)  throws SQLException, IOException { 
+    public ChipSeqOverlapExpander(SeqLocator loc, int extension)  throws SQLException, IOException { 
         this.extension = extension;
-        loader = new ChipSeqLoader();
+        loader = new SeqDataLoader();
         alignments = null;
         stmt = null;
         locator = loc;
@@ -34,7 +33,7 @@ public class ChipSeqOverlapExpander implements Closeable, Mapper<StrandedRegion,
         if (alignments != null && genome.equals(lastGenome)) {
             return;
         }
-        alignments = new LinkedList<ChipSeqAlignment>();
+        alignments = new LinkedList<SeqAlignment>();
         try {
             alignments.addAll(locator.loadAlignments(loader, genome));
         } catch (SQLException e) {
@@ -42,7 +41,7 @@ public class ChipSeqOverlapExpander implements Closeable, Mapper<StrandedRegion,
         } catch (NotFoundException e) {
             e.printStackTrace();
         }
-        cxn = DatabaseFactory.getConnection("chipseq");
+        cxn = DatabaseFactory.getConnection("seqdata");
         StringBuffer alignIDs = new StringBuffer();
         if (alignments.size() == 1) {
             alignIDs.append("alignment = " + alignments.get(0).getDBID());

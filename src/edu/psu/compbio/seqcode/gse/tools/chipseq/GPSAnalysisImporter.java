@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAnalysisResult;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAnalysisResult;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSParser;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSPeak;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -32,7 +32,7 @@ public class GPSAnalysisImporter extends AnalysisImporter {
         importer.run(System.in);
         importer.close();
     }
-    public ChipSeqAnalysisResult parseLine(String line) {
+    public SeqAnalysisResult parseLine(String line) {
         if (line.matches("^Position.*")) {
             return null;
         }
@@ -47,7 +47,7 @@ public class GPSAnalysisImporter extends AnalysisImporter {
         }
         seenPositions.add(k);
 
-        return new ChipSeqAnalysisResult(getGenome(),
+        return new SeqAnalysisResult(getGenome(),
                                          p.getChrom(),
                                          p.getLocation(),
                                          p.getLocation()+1,

@@ -20,7 +20,7 @@ import java.io.*;
  *  <li>addtogroup username groupname
  *  <li>reindex alignname chromname
  * 
- * <p>The --paired flag can be provided to make getweight, getcount, and getchroms work on paire-end rather than
+ * <p>The --paired flag can be provided to make getweight, getcount, and getchroms work on paired-end rather than
  * single-end alignments
  *
  */
@@ -96,6 +96,7 @@ public class ReadDB {
         System.out.println("  getacl alignname");
         System.out.println("  getcount alignname");
         System.out.println("  getcount alignname chromnameStrand   (eg, 1+)");
+        System.out.println("  getweight alignname");
         System.out.println("  setacl alignname username|groupname add|delete write|read|admin ");
         System.out.println("  addtogroup username groupname");
     }

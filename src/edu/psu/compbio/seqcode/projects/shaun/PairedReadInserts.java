@@ -9,10 +9,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAlignment;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLoader;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
@@ -33,7 +33,7 @@ public class PairedReadInserts {
 	Genome gen;
 	private GenomeLoader genLoader;
 	private Client client;
-    private Set<ChipSeqAlignment> alignments;
+    private Set<SeqAlignment> alignments;
     private Set<String> ids;
     private AnnotationLoader annotLoader;
     private AnnotationFilter annotFilter= new AnnotationFilter();
@@ -42,7 +42,7 @@ public class PairedReadInserts {
     
 	public static void main(String[] args) throws SQLException, NotFoundException {
 	    Pair<Organism,Genome> pair = Args.parseGenome(args);
-        List<ChipSeqLocator> expts = Args.parseChipSeq(args,"expt");
+        List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
         String gtfFile = Args.parseString(args, "gtf", null);
         int minUTR = Args.parseInteger(args, "minutr", 5000);
         int maxFrag = Args.parseInteger(args, "maxfrag", 1000);
@@ -61,14 +61,14 @@ public class PairedReadInserts {
         pid.execute();
 	}
 	
-	public PairedReadInserts(Genome gen, List<ChipSeqLocator> expts, String gtfFile, int utr_min, int max_frag){
+	public PairedReadInserts(Genome gen, List<SeqLocator> expts, String gtfFile, int utr_min, int max_frag){
 		try {	
 			this.gen=gen;
 			genLoader = new GenomeLoader(gen);
 			this.client = new Client();
-			this.alignments = new HashSet<ChipSeqAlignment>();
-			ChipSeqLoader loader = new ChipSeqLoader(); 
-			for(ChipSeqLocator csl : expts){
+			this.alignments = new HashSet<SeqAlignment>();
+			SeqDataLoader loader = new SeqDataLoader(); 
+			for(SeqLocator csl : expts){
 				this.alignments.addAll(csl.loadAlignments(loader, gen));
 			}
 			this.minUTR = utr_min;
@@ -76,7 +76,7 @@ public class PairedReadInserts {
 			annotLoader = new GTFAnnotationLoader(new File(gtfFile), genLoader);
 			
 			ids = new HashSet<String>();
-	        for (ChipSeqAlignment a : alignments) {
+	        for (SeqAlignment a : alignments) {
 	            ids.add(Integer.toString(a.getDBID()));
 	        }
 		} catch (SQLException e) {

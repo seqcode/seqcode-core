@@ -5,15 +5,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExptHandler;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqHit;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.ChipSeqExpander;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.SeqExpander;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 
@@ -23,20 +23,20 @@ public class ChipSeqProfiler implements PointProfiler<Point, Profile>{
 	private BinningParameters params=null;
 	private int readLen=26, readExt=174;
 	private double totalHits=0, backTotalHits=0;
-	private ArrayList<ChipSeqLocator> locs;
-	private ArrayList<ChipSeqLocator> backlocs;
-	private ArrayList<ChipSeqExptHandler> handles;
-	private ArrayList<ChipSeqExptHandler> ctrl_handles;
+	private ArrayList<SeqLocator> locs;
+	private ArrayList<SeqLocator> backlocs;
+	private ArrayList<SeqExptHandler> handles;
+	private ArrayList<SeqExptHandler> ctrl_handles;
 	private boolean zScoring=false;
 
-	public ChipSeqProfiler(BinningParameters bp, Genome g, ArrayList<ChipSeqLocator> experiments, ArrayList<ChipSeqLocator> controls, int readLength, int readExtension, boolean z){
+	public ChipSeqProfiler(BinningParameters bp, Genome g, ArrayList<SeqLocator> experiments, ArrayList<SeqLocator> controls, int readLength, int readExtension, boolean z){
 		this(bp, g, experiments, controls, readLength, readExtension);
 		zScoring=z;
 	}
-	public ChipSeqProfiler(BinningParameters bp, Genome g, ArrayList<ChipSeqLocator> experiments, ArrayList<ChipSeqLocator> controls){
+	public ChipSeqProfiler(BinningParameters bp, Genome g, ArrayList<SeqLocator> experiments, ArrayList<SeqLocator> controls){
 		this(bp, g, experiments, controls, 26, 174);
 	}
-	public ChipSeqProfiler(BinningParameters bp, Genome g, ArrayList<ChipSeqLocator> experiments, ArrayList<ChipSeqLocator> controls, int readLength, int readExtension){
+	public ChipSeqProfiler(BinningParameters bp, Genome g, ArrayList<SeqLocator> experiments, ArrayList<SeqLocator> controls, int readLength, int readExtension){
 		gen=g;
 		params=bp; 
 		readLen =readLength;
@@ -45,13 +45,13 @@ public class ChipSeqProfiler implements PointProfiler<Point, Profile>{
 		locs = experiments;
 		backlocs = controls;
 		
-		handles = new ArrayList<ChipSeqExptHandler>();
-		ctrl_handles = new ArrayList<ChipSeqExptHandler>();
+		handles = new ArrayList<SeqExptHandler>();
+		ctrl_handles = new ArrayList<SeqExptHandler>();
 		try {
 			//Load experiments
-            for(ChipSeqLocator l : locs){
+            for(SeqLocator l : locs){
 				System.err.print(String.format("%s\t", l.getExptName()));
-				ChipSeqExptHandler curr = new ChipSeqExptHandler(gen, l);
+				SeqExptHandler curr = new SeqExptHandler(gen, l);
 				curr.setReadLength(readLen);
                 curr.setReadExtension(readExt);
 				handles.add(curr);
@@ -59,9 +59,9 @@ public class ChipSeqProfiler implements PointProfiler<Point, Profile>{
 			}System.err.print(String.format("%.0f reads loaded\n", totalHits));
 			//Load controls
 			if(backlocs!=null){
-	            for(ChipSeqLocator l : backlocs){
+	            for(SeqLocator l : backlocs){
 					System.err.print(String.format("%s\t", l.getExptName()));
-					ChipSeqExptHandler curr = new ChipSeqExptHandler(gen, l);
+					SeqExptHandler curr = new SeqExptHandler(gen, l);
 					curr.setReadLength(readLen);
 	                curr.setReadExtension(readExt);
 					ctrl_handles.add(curr);
@@ -102,11 +102,11 @@ public class ChipSeqProfiler implements PointProfiler<Point, Profile>{
 		
 		LinkedList<StrandedRegion> hits = new LinkedList<StrandedRegion>();
 		LinkedList<StrandedRegion> backhits = new LinkedList<StrandedRegion>();
-		for(ChipSeqExptHandler e: handles){
+		for(SeqExptHandler e: handles){
 			hits.addAll(e.loadExtendedHits(extQuery));
 		}
 		if(backTotalHits>0){
-			for(ChipSeqExptHandler e: ctrl_handles){
+			for(SeqExptHandler e: ctrl_handles){
 				backhits.addAll(e.loadExtendedHits(query));
 			}
 		}
@@ -220,7 +220,7 @@ public class ChipSeqProfiler implements PointProfiler<Point, Profile>{
 	
 	//No cleanup
 	public void cleanup(){
-		for(ChipSeqExptHandler h : handles)
+		for(SeqExptHandler h : handles)
 			h.close();
 	}
 }

@@ -2,8 +2,8 @@ package edu.psu.compbio.seqcode.gse.viz.metagenes;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 
 public class MetaProfileHandler<T extends Point, ProfileClass extends Profile> {

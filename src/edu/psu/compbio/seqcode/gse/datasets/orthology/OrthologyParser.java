@@ -23,8 +23,8 @@ public class OrthologyParser implements edu.psu.compbio.seqcode.gse.utils.Closea
     private PreparedStatement mappingInsert, pairInsert, mappingDelete, mappingPairDelete, pairDelete;
     private Map<String,Genome> genomeCache;
 
-    public OrthologyParser(String user, String pword) throws SQLException, UnknownRoleException {
-        cxn = DatabaseFactory.getConnection(OrthologyLoader.dbRole, user, pword);
+    public OrthologyParser() throws SQLException, UnknownRoleException {
+        cxn = DatabaseFactory.getConnection(OrthologyLoader.dbRole);
         mappingInsert = OrthologyMapping.prepareInsertStatement(cxn);
         pairInsert = OrthologyPair.prepareInsertStatement(cxn);
         mappingDelete = OrthologyMapping.prepareDeleteStatement(cxn);

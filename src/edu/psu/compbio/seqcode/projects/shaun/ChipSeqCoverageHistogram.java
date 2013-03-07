@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.BackgroundCollection;
@@ -51,7 +51,7 @@ public class ChipSeqCoverageHistogram {
 			ArgParser ap = new ArgParser(args);
 			Pair<Organism, Genome> pair = Args.parseGenome(args);
 			
-	        List<ChipSeqLocator> expts = Args.parseChipSeq(args,"expt");
+	        List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
 	        int rL = 36, rE=164, ws=50, wo=25;
 	        double cl=-1;
 	        if(ap.hasKey("readlen")){ rL = new Integer(ap.getKeyValue("readlen")).intValue();}
@@ -93,7 +93,7 @@ public class ChipSeqCoverageHistogram {
 		}
 	}
 
-	public ChipSeqCoverageHistogram(Genome g, List<ChipSeqLocator> e, int ws, int wo, int rL, int rE){
+	public ChipSeqCoverageHistogram(Genome g, List<SeqLocator> e, int ws, int wo, int rL, int rE){
 		gen = g;
 		signal = new DeepSeqExpt(gen, e, "readdb", readLen);
 		signal.setThreePrimeExt(rE);

@@ -13,9 +13,9 @@ import java.util.Random;
 
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
@@ -186,10 +186,10 @@ public class JointBindingEventSimulator {
 	}
 	
 	protected void loadExperiments(String [] args){
-		List<ChipSeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
-        List<ChipSeqLocator> dbctrls = Args.parseChipSeq(args,"dbctrl");
-        List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
-        List<ChipSeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl");
+		List<SeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
+        List<SeqLocator> dbctrls = Args.parseChipSeq(args,"dbctrl");
+        List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
+        List<SeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl");
         List<File> expts = Args.parseFileHandles(args, "expt");
         List<File> ctrls = Args.parseFileHandles(args, "ctrl");
         String fileFormat = Args.parseString(args, "format", "ELAND");

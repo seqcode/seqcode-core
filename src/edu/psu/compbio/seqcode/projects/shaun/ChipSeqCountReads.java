@@ -4,10 +4,10 @@ import java.util.*;
 import java.io.File;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExptHandler;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
@@ -22,14 +22,14 @@ public class ChipSeqCountReads {
 	
 	private Genome gen;
 	private double genomeLen=0;
-	private ArrayList<ChipSeqExptHandler> IPhandles;
+	private ArrayList<SeqExptHandler> IPhandles;
 	private double iphittot;
 		
 	/* command-line driver */
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		boolean  metaPeak=false;
         Pair<Organism,Genome> pair = Args.parseGenome(args);
-        List<ChipSeqLocator> expts = Args.parseChipSeq(args,"expt");
+        List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
         if (expts.size() == 0) {
             System.err.println("Usage:\n " +
                                "ChipSeqCountReads " +
@@ -44,11 +44,11 @@ public class ChipSeqCountReads {
 	}
 	
 	/* Constructor requires a species, genome version and lists of ip and background solexa experiments */
-	public ChipSeqCountReads(Genome gen, List<ChipSeqLocator> ips) throws SQLException, NotFoundException {
+	public ChipSeqCountReads(Genome gen, List<SeqLocator> ips) throws SQLException, NotFoundException {
         this.gen = gen;
       //  System.out.println("Initializing the ChIP-Seq Peak Finder");
         iphittot=0; 
-        IPhandles = new ArrayList<ChipSeqExptHandler>();
+        IPhandles = new ArrayList<SeqExptHandler>();
        // try {
 			genomeLen = gen.getGenomeLength(); 
 			

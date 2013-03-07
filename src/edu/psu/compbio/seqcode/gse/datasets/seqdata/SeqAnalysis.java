@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.datasets.chipseq;
+package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
 import java.util.*;
 import java.io.*;
@@ -11,9 +11,9 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.database.*;
 
 /**
- * A ChipSeqAnalysis represents the results of running some binding-call or 
- * peak finding program on a set of ChipSeqAlignments.  The name and version of 
- * the analysis are independent of the name and version of the alignments, thoug
+ * A SeqAnalysis represents the results of running some binding-call or 
+ * peak finding program on a set of SeqAlignments.  The name and version of 
+ * the analysis are independent of the name and version of the alignments, though
  * in practice they should be related; the name and version are
  * used as they DB key.
  *
@@ -21,18 +21,18 @@ import edu.psu.compbio.seqcode.gse.utils.database.*;
  * any relevant data about how the binding calls were generated.
  */
 
-public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
+public class SeqAnalysis implements Comparable<SeqAnalysis> {
 
     private Map<String,String> params;
-    private Set<ChipSeqAlignment> foreground, background;
+    private Set<SeqAlignment> foreground, background;
     private String name, version, program;
     private Integer dbid;
-    private List<ChipSeqAnalysisResult> results;
+    private List<SeqAnalysisResult> results;
     private boolean active;
 
     /* these methods (through store()) are primarily for constructing a 
        ChipSeqAnalysis and saving it to the DB */
-    public ChipSeqAnalysis (String name, String version, String program) {
+    public SeqAnalysis (String name, String version, String program) {
         this.name = name;
         this.version = version;
         this.program = program;
@@ -40,10 +40,10 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         params = null;
         foreground = null;
         background = null;
-        results = new ArrayList<ChipSeqAnalysisResult>();
+        results = new ArrayList<SeqAnalysisResult>();
         this.active = true;
     }
-    public ChipSeqAnalysis (String name, String version, String program, boolean active) {
+    public SeqAnalysis (String name, String version, String program, boolean active) {
         this.name = name;
         this.version = version;
         this.program = program;
@@ -51,19 +51,19 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         params = null;
         foreground = null;
         background = null;
-        results = new ArrayList<ChipSeqAnalysisResult>();
+        results = new ArrayList<SeqAnalysisResult>();
         this.active = active;
     }
     public void setActive(boolean b) {active = b;}
     public void setParameters(Map<String,String> params) {
         this.params = params;
     }
-    public void setInputs(Set<ChipSeqAlignment> foreground,
-                          Set<ChipSeqAlignment> background) {
+    public void setInputs(Set<SeqAlignment> foreground,
+                          Set<SeqAlignment> background) {
         this.foreground = foreground;
         this.background = background;
     }
-    public void addResult(ChipSeqAnalysisResult result) {
+    public void addResult(SeqAnalysisResult result) {
         results.add(result);
     }
     private void storeinputs(PreparedStatement ps,
@@ -77,7 +77,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
     }
                              
     public void store() throws SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(ChipSeqLoader.role);
+        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
         cxn.setAutoCommit(false);
         String q = "insert into chipseqanalysis (id, name, version, program, active) values (%s,?,?,?,?)";
         PreparedStatement ps = cxn.prepareStatement(String.format(q,edu.psu.compbio.seqcode.gse.utils.database.Sequence.getInsertSQL(cxn, "chipseqanalysis_id")));
@@ -109,7 +109,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         ps = null;
         if (foreground != null && foreground.size() > 0) {
             ps = cxn.prepareStatement("insert into analysisinputs(analysis, alignment, inputtype) values (?,?,?)");
-            for (ChipSeqAlignment a : foreground) {
+            for (SeqAlignment a : foreground) {
                 storeinputs(ps, "foreground", dbid, a.getDBID());
             }
         }
@@ -117,7 +117,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
             if (ps == null) {
                 ps = cxn.prepareStatement("insert into analysisinputs(analysis, alignment, inputtype) values (?,?,?)");
             }
-            for (ChipSeqAlignment a : background) {
+            for (SeqAlignment a : background) {
                 storeinputs(ps, "background", dbid, a.getDBID());
             }
         }
@@ -128,7 +128,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
             ps = cxn.prepareStatement("insert into analysisresults(analysis,chromosome,startpos,stoppos,position,fgcount,bgcount,strength,peak_shape,pvalue,fold_enrichment) " +
                                      " values (?,?,?,?,?,?,?,?,?,?,?)");
             ps.setInt(1,dbid);
-            for (ChipSeqAnalysisResult r : results) {
+            for (SeqAnalysisResult r : results) {
                 ps.setInt(2, r.getGenome().getChromID(r.getChrom()));
                 ps.setInt(3, r.getStart());
                 ps.setInt(4, r.getEnd());
@@ -181,7 +181,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
             throw new RuntimeException("Must have a dbid");
         }
         String sql = "update chipseqanalysis set active = ? where id = ?";
-        java.sql.Connection cxn = DatabaseFactory.getConnection(ChipSeqLoader.role);
+        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
         PreparedStatement ps = cxn.prepareStatement(sql);
         
         ps.setInt(1, active ? 1 : 0);
@@ -212,7 +212,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         }
         return params;
     }
-    public Set<ChipSeqAlignment> getForeground() {
+    public Set<SeqAlignment> getForeground() {
         if (foreground == null) {
             try {
                 loadInputs();
@@ -222,7 +222,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         }
         return foreground;
     }
-    public Set<ChipSeqAlignment> getBackground() {
+    public Set<SeqAlignment> getBackground() {
         if (background == null) {
             try {
                 loadInputs();
@@ -234,7 +234,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
     }
     /** fills in the parameters from the database */
     private void loadParams() throws SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(ChipSeqLoader.role);
+        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
         PreparedStatement ps = cxn.prepareStatement("select name,value from analysisparameters where analysis = ?");
         ps.setInt(1,dbid);
         ResultSet rs = ps.executeQuery();
@@ -249,14 +249,14 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
     }
     /** fills in the input experiment fields from the database */
     private void loadInputs() throws SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(ChipSeqLoader.role);
+        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
         PreparedStatement ps = cxn.prepareStatement("select alignment, inputtype from analysisinputs where analysis = ?");
         ps.setInt(1,dbid);
-        HashSet<ChipSeqAlignment> fg = new HashSet<ChipSeqAlignment>();
-        HashSet<ChipSeqAlignment> bg = new HashSet<ChipSeqAlignment>();
+        HashSet<SeqAlignment> fg = new HashSet<SeqAlignment>();
+        HashSet<SeqAlignment> bg = new HashSet<SeqAlignment>();
         ResultSet rs = ps.executeQuery();
         try {
-            ChipSeqLoader loader = new ChipSeqLoader(false);
+            SeqDataLoader loader = new SeqDataLoader(false);
             while (rs.next()) {
                 if (rs.getString(2).equals("foreground")) {
                     fg.add(loader.loadAlignment(rs.getInt(1)));
@@ -284,10 +284,10 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         }
         DatabaseFactory.freeConnection(cxn);
     }
-    public List<ChipSeqAnalysisResult> getResults(Genome g) throws SQLException {
+    public List<SeqAnalysisResult> getResults(Genome g) throws SQLException {
         return getResults(g,null);
     }
-    public List<ChipSeqAnalysisResult> getResults(Region queryRegion) throws SQLException {
+    public List<SeqAnalysisResult> getResults(Region queryRegion) throws SQLException {
         return getResults(queryRegion.getGenome(), queryRegion);
     }
     private Integer isnullint(ResultSet r, int index) throws SQLException {
@@ -306,9 +306,9 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
             return i;
         }
     }
-    public List<ChipSeqAnalysisResult> getResults(Genome genome, Region queryRegion) throws SQLException {
+    public List<SeqAnalysisResult> getResults(Genome genome, Region queryRegion) throws SQLException {
         
-        java.sql.Connection cxn = DatabaseFactory.getConnection(ChipSeqLoader.role);
+        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
         String query = "select chromosome, startpos, stoppos, position, fgcount, bgcount, strength, peak_shape, pvalue, fold_enrichment " +
             " from analysisresults where analysis = ? ";
         if (queryRegion != null) {
@@ -322,9 +322,9 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
             ps.setInt(4, queryRegion.getEnd());
         }
         ResultSet rs = ps.executeQuery();
-        List<ChipSeqAnalysisResult> result = new ArrayList<ChipSeqAnalysisResult>();
+        List<SeqAnalysisResult> result = new ArrayList<SeqAnalysisResult>();
         while (rs.next()) {
-            ChipSeqAnalysisResult r = new ChipSeqAnalysisResult(genome,
+            SeqAnalysisResult r = new SeqAnalysisResult(genome,
                                                                 genome.getChromName(rs.getInt(1)),
                                                                 rs.getInt(2),
                                                                 rs.getInt(3),
@@ -347,7 +347,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         return result;        
     }
     public int countResults(Genome genome) throws SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(ChipSeqLoader.role);
+        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
         String chrstring = "";
         Map<String,Integer> map = genome.getChromIDMap();
         Iterator<Integer> iter = map.values().iterator();
@@ -371,12 +371,12 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
     }
 
     /** retrieves all ChipSeqAnalysis objects from the database */
-    public static Collection<ChipSeqAnalysis> getAll() throws DatabaseException, SQLException {
+    public static Collection<SeqAnalysis> getAll() throws DatabaseException, SQLException {
         return getAll(true);
     }
-    public static Collection<ChipSeqAnalysis> getAll(Boolean active) throws DatabaseException, SQLException {
-        ArrayList<ChipSeqAnalysis> output = new ArrayList<ChipSeqAnalysis>();
-        java.sql.Connection cxn = DatabaseFactory.getConnection(ChipSeqLoader.role);
+    public static Collection<SeqAnalysis> getAll(Boolean active) throws DatabaseException, SQLException {
+        ArrayList<SeqAnalysis> output = new ArrayList<SeqAnalysis>();
+        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
         String sql = "select id, name, version, program, active from chipseqanalysis";
         if (active != null) {
             sql = sql + " where active = " + (active ? 1 : 0);
@@ -385,7 +385,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         PreparedStatement ps = cxn.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            ChipSeqAnalysis a = new ChipSeqAnalysis(rs.getString(2),
+            SeqAnalysis a = new SeqAnalysis(rs.getString(2),
                                                     rs.getString(3),
                                                     rs.getString(4),
                                                     rs.getInt(5) != 0 ? true : false);
@@ -399,11 +399,11 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         
     }
     /** Retrieves the ChipSeqAnalysis with the specified name and version */
-    public static ChipSeqAnalysis get(ChipSeqLoader loader, String name, String version) throws NotFoundException, DatabaseException, SQLException {
+    public static SeqAnalysis get(SeqDataLoader loader, String name, String version) throws NotFoundException, DatabaseException, SQLException {
         return get(loader,name,version,true);
     }
-    public static ChipSeqAnalysis get(ChipSeqLoader loader, String name, String version, Boolean active) throws NotFoundException, DatabaseException, SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(ChipSeqLoader.role);
+    public static SeqAnalysis get(SeqDataLoader loader, String name, String version, Boolean active) throws NotFoundException, DatabaseException, SQLException {
+        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
         String sql = "select id, program, active from chipseqanalysis where name = ? and version = ?";
         if (active != null) {
             sql = sql + " and active = " + (active ? 1 : 0);
@@ -415,7 +415,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         if (!rs.next()) {
             throw new NotFoundException("Couldn't find analysis " + name + "," + version);
         }
-        ChipSeqAnalysis result = new ChipSeqAnalysis(name,version, rs.getString(2), rs.getInt(3) != 0 ? true : false);
+        SeqAnalysis result = new SeqAnalysis(name,version, rs.getString(2), rs.getInt(3) != 0 ? true : false);
         result.dbid = rs.getInt(1);
         rs.close();
         ps.close();
@@ -424,17 +424,17 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
     }
     /** returns the collection of active analyses that have a result in the specified region
      */
-    public static Collection<ChipSeqAnalysis> withResultsIn(ChipSeqLoader loader, Region r) throws SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(ChipSeqLoader.role);
+    public static Collection<SeqAnalysis> withResultsIn(SeqDataLoader loader, Region r) throws SQLException {
+        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
         String sql = "select id, name, version, program, active from chipseqanalysis where id in (select unique(analysis) from analysisresults where chromosome = ? and startpos >= ? and stoppos <= ?) and active = 1";
-        ArrayList<ChipSeqAnalysis> output = new ArrayList<ChipSeqAnalysis>();
+        ArrayList<SeqAnalysis> output = new ArrayList<SeqAnalysis>();
         PreparedStatement ps = cxn.prepareStatement(sql);
         ps.setInt(1, r.getGenome().getChromID(r.getChrom()));
         ps.setInt(2, r.getStart());
         ps.setInt(3, r.getEnd());
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
-            ChipSeqAnalysis a = new ChipSeqAnalysis(rs.getString(2),
+            SeqAnalysis a = new SeqAnalysis(rs.getString(2),
                                                     rs.getString(3),
                                                     rs.getString(4),
                                                     rs.getInt(5) != 0 ? true : false);
@@ -448,7 +448,7 @@ public class ChipSeqAnalysis implements Comparable<ChipSeqAnalysis> {
         
     }
  
-    public int compareTo(ChipSeqAnalysis other) {
+    public int compareTo(SeqAnalysis other) {
         int c = name.compareTo(other.name);
         if (c == 0) {
             c = version.compareTo(other.version);

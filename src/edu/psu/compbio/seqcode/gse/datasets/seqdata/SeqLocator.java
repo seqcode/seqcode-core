@@ -1,7 +1,7 @@
 /*
- * Created on Jan 11, 2008
+ * Created as ChipSeqLocator on Jan 11, 2008
  */
-package edu.psu.compbio.seqcode.gse.datasets.chipseq;
+package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -15,16 +15,17 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 /**
  * @author tdanford
- *
- * ChipSeqLocator names a subset of the available ChipSeq experiments (rows from the 
- * chipseqexpts table), which satisfy the following conditions:
+ * @author mahony
+ * 
+ * SeqLocator names a subset of the available SeqExpt experiments (rows from the 
+ * seqexpt table), which satisfy the following conditions:
  *  
- * (1) the chipseqexpts.name matches the given exptName in the locator
+ * (1) the seqexpt.name matches the given exptName in the locator
  * (2) only the alignments with the given alignName are indicated
  * (3) if the locator's 'reps' field is non-empty, then only those replicates whose
  *     names appear in that set are indicated.
  */
-public class ChipSeqLocator implements Comparable<ChipSeqLocator> {
+public class SeqLocator implements Comparable<SeqLocator> {
 
     private String exptName, alignName;
     
@@ -35,26 +36,26 @@ public class ChipSeqLocator implements Comparable<ChipSeqLocator> {
     // available replicates for which the given alignment name is valid.
     private Set<String> reps;
     
-    public ChipSeqLocator(String ename, String aname) {
+    public SeqLocator(String ename, String aname) {
         exptName = ename;
         alignName = aname;
         reps = new TreeSet<String>();
     }
     
-    public ChipSeqLocator(String ename, String rname, String aname) {
+    public SeqLocator(String ename, String rname, String aname) {
         exptName = ename;
         alignName = aname;
         reps = new TreeSet<String>();
         reps.add(rname);
     }
 
-    public ChipSeqLocator(String ename, Collection<String> rnames, String aname) {
+    public SeqLocator(String ename, Collection<String> rnames, String aname) {
         exptName = ename;
         alignName = aname;
         reps = new TreeSet<String>(rnames);
     }
     
-    public boolean isSubset(ChipSeqLocator loc) { 
+    public boolean isSubset(SeqLocator loc) { 
         if(!exptName.equals(loc.exptName)) { return false; }
         if(!alignName.equals(loc.alignName)) { return false; }
         for(String rep : reps) { 
@@ -92,7 +93,7 @@ public class ChipSeqLocator implements Comparable<ChipSeqLocator> {
                 getReplicateString(), alignName); 
     }
 
-    public int compareTo(ChipSeqLocator other) {
+    public int compareTo(SeqLocator other) {
         int c = exptName.compareTo(other.exptName);
         if (c == 0) {
             c = alignName.compareTo(other.alignName);
@@ -118,8 +119,8 @@ public class ChipSeqLocator implements Comparable<ChipSeqLocator> {
     }
     
     public boolean equals(Object o) { 
-        if(!(o instanceof ChipSeqLocator)) { return false; }
-        ChipSeqLocator loc =(ChipSeqLocator)o;
+        if(!(o instanceof SeqLocator)) { return false; }
+        SeqLocator loc =(SeqLocator)o;
         if(!exptName.equals(loc.exptName)) { return false; }
         if(reps.size() != loc.reps.size()) { return false; }
         for(String rep : reps) { 
@@ -129,23 +130,23 @@ public class ChipSeqLocator implements Comparable<ChipSeqLocator> {
         return true;
     }
     
-    public Collection<ChipSeqAlignment> loadAlignments(ChipSeqLoader loader, Genome genome) 
+    public Collection<SeqAlignment> loadAlignments(SeqDataLoader loader, Genome genome) 
     	throws SQLException, NotFoundException {
     	
-        LinkedList<ChipSeqAlignment> alignments = new LinkedList<ChipSeqAlignment>();
+        LinkedList<SeqAlignment> alignments = new LinkedList<SeqAlignment>();
 
         if(getReplicates().isEmpty()) { 
-        	Collection<ChipSeqExpt> expts = loader.loadExperiments(getExptName());
-        	for(ChipSeqExpt expt : expts) { 
-        		ChipSeqAlignment alignment = loader.loadAlignment(expt, getAlignName(), genome);
+        	Collection<SeqExpt> expts = loader.loadExperiments(getExptName());
+        	for(SeqExpt expt : expts) { 
+        		SeqAlignment alignment = loader.loadAlignment(expt, getAlignName(), genome);
         		if(alignment != null) { 
         			alignments.add(alignment);
         		}
         	}
         } else {
         	for(String repName : getReplicates()) { 
-        		ChipSeqExpt expt = loader.loadExperiment(getExptName(), repName);
-        		ChipSeqAlignment alignment = loader.loadAlignment(expt, getAlignName(), genome);
+        		SeqExpt expt = loader.loadExperiment(getExptName(), repName);
+        		SeqAlignment alignment = loader.loadAlignment(expt, getAlignName(), genome);
         		if(alignment != null) { 
         			alignments.add(alignment);
         		}

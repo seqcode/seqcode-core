@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
@@ -20,7 +20,7 @@ public class InteractionArcModel extends SeqViewModel implements RegionModel,
 Runnable {
 
 	private Client client;
-	private Set<ChipSeqAlignment> alignments;
+	private Set<SeqAlignment> alignments;
 	private Set<String> ids;
 	private Region region;
 	private boolean newinput;
@@ -28,13 +28,13 @@ Runnable {
 	private Comparator<PairedHit> comparator;
 	private InteractionArcProperties props;
 
-	public InteractionArcModel(Collection<ChipSeqAlignment> alignments) throws IOException, ClientException {
+	public InteractionArcModel(Collection<SeqAlignment> alignments) throws IOException, ClientException {
 		client = new Client();
 		comparator = new PairedHitLeftComparator();
-		this.alignments = new HashSet<ChipSeqAlignment>();
+		this.alignments = new HashSet<SeqAlignment>();
 		this.alignments.addAll(alignments);
 		ids = new HashSet<String>();
-		for (ChipSeqAlignment a : alignments) {
+		for (SeqAlignment a : alignments) {
 			ids.add(Integer.toString(a.getDBID()));
 		}
 		results = null;

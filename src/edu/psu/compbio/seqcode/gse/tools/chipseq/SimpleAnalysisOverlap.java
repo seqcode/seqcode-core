@@ -3,8 +3,8 @@ package edu.psu.compbio.seqcode.gse.tools.chipseq;
 import java.sql.SQLException;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
@@ -21,17 +21,17 @@ public class SimpleAnalysisOverlap extends CompareTwoAnalyses {
         sao.printReport();
     }
     public void printReport() throws SQLException {
-        List<ChipSeqAnalysisResult> one = getResultsOne();
-        List<ChipSeqAnalysisResult> two = getResultsTwo();
+        List<SeqAnalysisResult> one = getResultsOne();
+        List<SeqAnalysisResult> two = getResultsTwo();
         Collections.sort(one);
         int onefound = 0, twofound = 0;
-        for (ChipSeqAnalysisResult r : two) {
+        for (SeqAnalysisResult r : two) {
             if (containsMatch(one, r)) {
                 twofound++;
             }
         }
         Collections.sort(two);
-        for (ChipSeqAnalysisResult r : one) {
+        for (SeqAnalysisResult r : one) {
             if (containsMatch(two, r)) {
                 onefound++;
             }
@@ -47,7 +47,7 @@ public class SimpleAnalysisOverlap extends CompareTwoAnalyses {
                                          onefound, one.size(), expone, onefound / expone,
                                          twofound, two.size(), exptwo, twofound / exptwo));
     }
-    public List<ChipSeqAnalysisResult> getOutputEvents() { return null;}
+    public List<SeqAnalysisResult> getOutputEvents() { return null;}
 
 
 }

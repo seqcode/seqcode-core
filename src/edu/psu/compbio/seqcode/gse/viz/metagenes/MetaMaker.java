@@ -13,12 +13,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.locators.ChipChipLocator;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.ChipSeqExpander;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.SeqExpander;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
@@ -66,34 +66,34 @@ public class MetaMaker {
 			PointProfiler profiler=null;
 			boolean normalizeProfile=false;
 			if(profilerType.equals("simplechipseq") || profilerType.equals("fiveprime")){
-				List<ChipSeqLocator> exptlocs = Args.parseChipSeq(args,"expt");
-				ArrayList<ChipSeqExpander> exptexps = new ArrayList<ChipSeqExpander>();
-				for(ChipSeqLocator loc : exptlocs){
+				List<SeqLocator> exptlocs = Args.parseChipSeq(args,"expt");
+				ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
+				for(SeqLocator loc : exptlocs){
 					System.out.println(loc.getExptName()+"\t"+loc.getAlignName());
-					exptexps.add(new ChipSeqExpander(loc));
+					exptexps.add(new SeqExpander(loc));
 				}
 				System.out.println("Loading data...");
 				if(profilerType.equals("fiveprime"))
 					readExt = -1;
 				profiler = new SimpleChipSeqProfiler(params, exptexps, readExt, pbMax,strand);
 			}else if(profilerType.equals("chipseq5prime")){
-				List<ChipSeqLocator> exptlocs = Args.parseChipSeq(args,"expt");
-				ArrayList<ChipSeqExpander> exptexps = new ArrayList<ChipSeqExpander>();
-				for(ChipSeqLocator loc : exptlocs){
-					exptexps.add(new ChipSeqExpander(loc));
+				List<SeqLocator> exptlocs = Args.parseChipSeq(args,"expt");
+				ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
+				for(SeqLocator loc : exptlocs){
+					exptexps.add(new SeqExpander(loc));
 				}
 				System.out.println("Loading data...");
 				profiler = new ChipSeq5PrimeProfiler(params, exptexps, strand);
 			}else if(profilerType.equals("chipseq")){
 				normalizeProfile=true;
-				ArrayList<ChipSeqLocator> exptlocs = (ArrayList<ChipSeqLocator>) Args.parseChipSeq(args,"expt");
-				ArrayList<ChipSeqLocator> backlocs = backs.size()==0 ? null : (ArrayList<ChipSeqLocator>) Args.parseChipSeq(args,"back");
+				ArrayList<SeqLocator> exptlocs = (ArrayList<SeqLocator>) Args.parseChipSeq(args,"expt");
+				ArrayList<SeqLocator> backlocs = backs.size()==0 ? null : (ArrayList<SeqLocator>) Args.parseChipSeq(args,"back");
 				System.out.println("Loading data...");
 				profiler = new ChipSeqProfiler(params, gen, exptlocs,backlocs, 32, readExt);
 			}else if(profilerType.equals("chipseqz")){
 				normalizeProfile=true;
-				ArrayList<ChipSeqLocator> exptlocs = (ArrayList<ChipSeqLocator>) Args.parseChipSeq(args,"expt");
-				ArrayList<ChipSeqLocator> backlocs = backs.size()==0 ? null : (ArrayList<ChipSeqLocator>) Args.parseChipSeq(args,"back");
+				ArrayList<SeqLocator> exptlocs = (ArrayList<SeqLocator>) Args.parseChipSeq(args,"expt");
+				ArrayList<SeqLocator> backlocs = backs.size()==0 ? null : (ArrayList<SeqLocator>) Args.parseChipSeq(args,"back");
 				System.out.println("Loading data...");
 				profiler = new ChipSeqProfiler(params, gen, exptlocs,backlocs, 32, readExt, true);
 			}else if(profilerType.equals("chipchip") || profilerType.equals("chipchipip") || profilerType.equals("chipchipwce")){

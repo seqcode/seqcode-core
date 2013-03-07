@@ -4,9 +4,9 @@ import java.sql.SQLException;
 import java.util.*;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.projects.readdb.*;
@@ -32,8 +32,8 @@ import edu.psu.compbio.seqcode.gse.utils.*;
 public class CentipedeFiles {
 
     private Genome genome;
-    private ChipSeqLoader loader;
-    private List<ChipSeqAlignment> alignments;
+    private SeqDataLoader loader;
+    private List<SeqAlignment> alignments;
     private List<RefGeneGenerator> refgenes;
     private SequenceGenerator seqgen;
     private PhastConsGenerator phastcons;
@@ -47,12 +47,12 @@ public class CentipedeFiles {
 
     public CentipedeFiles() {}
     public void parseArgs(String args[]) throws NotFoundException, IOException, ClientException, SQLException {
-        loader = new ChipSeqLoader();
+        loader = new SeqDataLoader();
         client = new Client();
         genome = Args.parseGenome(args).cdr();
-        List<ChipSeqLocator> cslocators = Args.parseChipSeq(args);       
-        alignments = new ArrayList<ChipSeqAlignment>();
-        for (ChipSeqLocator l : cslocators) {
+        List<SeqLocator> cslocators = Args.parseChipSeq(args);       
+        alignments = new ArrayList<SeqAlignment>();
+        for (SeqLocator l : cslocators) {
             alignments.addAll(loader.loadAlignments(l, genome));
         }
         refgenes = Args.parseGenes(args);
@@ -161,14 +161,14 @@ public class CentipedeFiles {
         System.err.println("Found " + motifCount + " motif examples");
     }
     private int[] getCounts(Region region,
-                            Collection<ChipSeqAlignment> alignments,
+                            Collection<SeqAlignment> alignments,
                             boolean plusStrand) throws IOException, ClientException {
         int[] output = new int[region.getWidth()];
         int regionstart = region.getStart();
         for (int i = 0; i < output.length; i++) {
             output[i] = 0;
         }
-        for (ChipSeqAlignment a : alignments) {
+        for (SeqAlignment a : alignments) {
             TreeMap<Integer,Integer> m = client.getHistogram(Integer.toString(a.getDBID()),
                                                              region.getGenome().getChromID(region.getChrom()),
                                                              false, // paired

@@ -20,8 +20,8 @@ public class SeqExptProbLandscapeKmers {
 
 	private static Organism org;
 	private static Genome gen;
-	private static SeqExptHandler IPhandle;
-	private static SeqExptHandler backhandle;
+	private static SeqDataHandler IPhandle;
+	private static SeqDataHandler backhandle;
 	private static int DEFT_K = 6;
 	private static int K;
 	private static BufferedReader regionReader;
@@ -74,7 +74,7 @@ public class SeqExptProbLandscapeKmers {
 		
 		//Get the likelihood ratios for the standard-sized regions.
 		printVecHeader();
-		SeqExptLikelihoodRatio selr = new SeqExptLikelihoodRatio(IPhandle, backhandle);
+		SeqDataLikelihoodRatio selr = new SeqDataLikelihoodRatio(IPhandle, backhandle);
 		Iterator<Region> rit = regList.iterator();
 		while(rit.hasNext()){
 			Region currR = rit.next();
@@ -95,8 +95,8 @@ public class SeqExptProbLandscapeKmers {
 			org = Organism.getOrganism(o);
 			gen = org.getGenome(g);
 			
-			IPhandle = new SeqExptHandler(org, gen, ex);
-			backhandle = new SeqExptHandler(org, gen, bk);
+			IPhandle = new SeqDataHandler(org, gen, ex);
+			backhandle = new SeqDataHandler(org, gen, bk);
 			
 			loadedRegList = new ArrayList <Region>();
 			

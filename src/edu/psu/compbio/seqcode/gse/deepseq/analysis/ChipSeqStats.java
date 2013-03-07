@@ -4,15 +4,15 @@ import java.awt.Color;
 import java.io.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.BindingModel;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.ChipSeqExpander;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.SeqExpander;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.MACSParser;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.MACSPeakRegion;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
@@ -302,12 +302,12 @@ public class ChipSeqStats {
 	private static MetaProfile buildMetaPeak (List<Point> points, String expt, String version, char strand){
 		BinningParameters params = new BinningParameters(WINDOW, BIN_NUM);
 		MetaProfile metaProfile=null;
-		ArrayList<ChipSeqLocator> exptlocs = new ArrayList<ChipSeqLocator>();
-		exptlocs.add(new ChipSeqLocator(expt, version));
+		ArrayList<SeqLocator> exptlocs = new ArrayList<SeqLocator>();
+		exptlocs.add(new SeqLocator(expt, version));
 		try{
-			ArrayList<ChipSeqExpander> exptexps = new ArrayList<ChipSeqExpander>();
-			for(ChipSeqLocator loc : exptlocs){
-				exptexps.add(new ChipSeqExpander(loc));
+			ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
+			for(SeqLocator loc : exptlocs){
+				exptexps.add(new SeqExpander(loc));
 			}
 			System.out.println("Loading data...");
 			ChipSeq5PrimeProfiler profiler = new ChipSeq5PrimeProfiler(params, exptexps, strand);

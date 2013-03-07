@@ -7,10 +7,10 @@ import java.io.*;
 import edu.psu.compbio.seqcode.gse.datasets.binding.BindingScan;
 import edu.psu.compbio.seqcode.gse.datasets.binding.BindingScanLoader;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipData;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ExpressionLoader;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.locators.ChipChipLocator;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.binding.BindingExpander;
@@ -153,23 +153,23 @@ public class PrintSmoothMarksByRegion {
 					double iphittot = 0, backhittot=0;
 					Organism org = Organism.getOrganism("Mus musculus");
 					Genome gen = org.getGenome("mm8");
-					ArrayList<ChipSeqLocator> iplocs = new ArrayList<ChipSeqLocator>();
+					ArrayList<SeqLocator> iplocs = new ArrayList<SeqLocator>();
 					for(String[] l : experiment){
-						iplocs.add(new ChipSeqLocator(l[0], l[1]));						
+						iplocs.add(new SeqLocator(l[0], l[1]));						
 					}
-					ArrayList<ChipSeqLocator> backlocs = new ArrayList<ChipSeqLocator>();
+					ArrayList<SeqLocator> backlocs = new ArrayList<SeqLocator>();
 					for(String[] l : background){
-						backlocs.add(new ChipSeqLocator(l[0], l[1]));
+						backlocs.add(new SeqLocator(l[0], l[1]));
 					}
 					
-					ArrayList<SeqExpt> IPhandles = new ArrayList<SeqExpt>();
-					ArrayList<SeqExpt> backhandles = new ArrayList<SeqExpt>();
+					ArrayList<SeqData> IPhandles = new ArrayList<SeqData>();
+					ArrayList<SeqData> backhandles = new ArrayList<SeqData>();
 					try {
 						double genomeLen = gen.getGenomeLength();
 						//Load background
-						for(ChipSeqLocator back : backlocs){
+						for(SeqLocator back : backlocs){
 							System.err.print(String.format("%s\t", back.getExptName()));
-							SeqExpt curr = new SeqExpt(gen, back);
+							SeqData curr = new SeqData(gen, back);
 			                curr.setReadLength(readLength);
 			                curr.setReadExtension(readExtension);
 							backhandles.add(curr);
@@ -178,10 +178,10 @@ public class PrintSmoothMarksByRegion {
 			            System.err.print(String.format("%.0f reads loaded\n", backhittot));
 						//Load experiments
 			            x=0;
-						for(ChipSeqLocator ip : iplocs){
-							IPhandles = new ArrayList<SeqExpt>();
+						for(SeqLocator ip : iplocs){
+							IPhandles = new ArrayList<SeqData>();
 							System.err.print(String.format("%s\t", ip.getExptName()));
-							SeqExpt curr = new SeqExpt(gen, ip);
+							SeqData curr = new SeqData(gen, ip);
 						    curr.setReadLength(readLength);
 			                curr.setReadExtension(readExtension);
 							IPhandles.add(curr);
@@ -197,10 +197,10 @@ public class PrintSmoothMarksByRegion {
 								int st = currRegion.getStart(), ed = currRegion.getEnd();							
 								LinkedList<StrandedRegion> ipHits = new LinkedList<StrandedRegion>();
 								LinkedList<StrandedRegion> backHits = new LinkedList<StrandedRegion>();
-								for(SeqExpt IP: IPhandles){
+								for(SeqData IP: IPhandles){
 									ipHits.addAll(IP.loadExtendedHits(currRegion));									
 								}
-								for(SeqExpt back: backhandles){
+								for(SeqData back: backhandles){
 									backHits.addAll(back.loadExtendedHits(currRegion));
 								}
 								int [] ipHitCounts = makeHitLandscape(ipHits, currRegion, smoothWin, smoothOff);

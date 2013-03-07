@@ -6,10 +6,10 @@ import java.io.*;
 import java.sql.SQLException;
 
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.*;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.locators.ChipChipLocator;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.MotifScanResultsGenerator;
@@ -336,25 +336,25 @@ public class Args {
      * parses ChipSeqLocators from the <tt>--chipseq</tt> parameters.  Takes
      * either "name;alignment" or "name;replicate;alignment"
      */
-    public static List<ChipSeqLocator> parseChipSeq(String args[]) {
+    public static List<SeqLocator> parseChipSeq(String args[]) {
         return parseChipSeq(args,"chipseq");
     }
     
     /**
      * parses ChipSeqLocators from the <tt>argname</tt> parameters.  Takes
      * either "name;alignment" or "name;replicate;alignment"
-     * @see edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator
+     * @see edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator
      */
-    public static List<ChipSeqLocator> parseChipSeq(String args[], String argname) {
+    public static List<SeqLocator> parseChipSeq(String args[], String argname) {
         argname = "--" + argname;
-        ArrayList<ChipSeqLocator> output = new ArrayList<ChipSeqLocator>();
+        ArrayList<SeqLocator> output = new ArrayList<SeqLocator>();
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals(argname)) {
                 String[] pieces = args[++i].trim().split(";");
                 if (pieces.length == 2) {
-                    output.add(new ChipSeqLocator(pieces[0], pieces[1]));
+                    output.add(new SeqLocator(pieces[0], pieces[1]));
                 } else if (pieces.length == 3) {
-                    output.add(new ChipSeqLocator(pieces[0], pieces[1], pieces[2]));
+                    output.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
                 } else {
                     throw new RuntimeException("Couldn't parse a ChipSeqLocator from " + args[i]);
                 }
@@ -363,20 +363,20 @@ public class Args {
         return output;
     }
 
-    public static Collection<ChipSeqAnalysis> parseChipSeqAnalyses(String args[], String argname) throws NotFoundException {
+    public static Collection<SeqAnalysis> parseChipSeqAnalyses(String args[], String argname) throws NotFoundException {
         Collection<String> bases = parseStrings(args,argname);
-        Collection<ChipSeqAnalysis> out = new ArrayList<ChipSeqAnalysis>();
-        ChipSeqLoader loader = null;
+        Collection<SeqAnalysis> out = new ArrayList<SeqAnalysis>();
+        SeqDataLoader loader = null;
         try {
             for (String base : bases) {
                 String pieces[] = base == null ? null : base.split(";");
                 if (pieces != null && pieces.length != 2 ) {
                     throw new RuntimeException("Invalid string for ChipSeqAnalysis " + base);
                 }
-                ChipSeqAnalysis a = null;
-                loader = new ChipSeqLoader(false);
+                SeqAnalysis a = null;
+                loader = new SeqDataLoader(false);
                 if (pieces != null) {
-                    a = ChipSeqAnalysis.get(loader,pieces[0],pieces[1]);
+                    a = SeqAnalysis.get(loader,pieces[0],pieces[1]);
                 }
                 out.add(a);
             }
@@ -393,7 +393,7 @@ public class Args {
         return out;
     }
 
-    public static ChipSeqAnalysis parseChipSeqAnalysis(String args[], String argname) {
+    public static SeqAnalysis parseChipSeqAnalysis(String args[], String argname) {
         String base = parseString(args,argname,null);
         String aname = parseString(args,"analysisname",null);
         String aversion = parseString(args,"analysisversion",null);
@@ -401,20 +401,20 @@ public class Args {
         if (pieces != null && pieces.length != 2 ) {
             throw new RuntimeException("Invalid string for ChipSeqAnalysis " + base);
         }
-        ChipSeqAnalysis a = null;
-        ChipSeqLoader loader = null;
+        SeqAnalysis a = null;
+        SeqDataLoader loader = null;
         try {
-            loader = new ChipSeqLoader(false);
+            loader = new SeqDataLoader(false);
             if (pieces != null) {
                 try {
-                    a = ChipSeqAnalysis.get(loader,pieces[0],pieces[1]);
+                    a = SeqAnalysis.get(loader,pieces[0],pieces[1]);
                 } catch (NotFoundException e) {
                     System.err.println("Couldn't find analysis from " + pieces[0] + " and " + pieces[1]);
                 }
             }
             if (a == null && aname != null && aversion != null) {
                 try {
-                    a = ChipSeqAnalysis.get(loader,aname,aversion);
+                    a = SeqAnalysis.get(loader,aname,aversion);
                 } catch (NotFoundException e) {}
             }
             if (a == null) {

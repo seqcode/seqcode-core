@@ -4,9 +4,9 @@ import java.io.*;
 import java.util.*;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
@@ -116,9 +116,9 @@ public abstract class HMMTrain extends DNASeqEnrichmentCaller {
         }
         System.err.println("Trained on " + trainedon + " hypersensitive regions");
     }
-    private List<ChipSeqAnalysisResult> filterSensitiveRegions(List<ChipSeqAnalysisResult> input) {
-        ArrayList<ChipSeqAnalysisResult> output = new ArrayList<ChipSeqAnalysisResult>();
-        for (ChipSeqAnalysisResult r : input) {
+    private List<SeqAnalysisResult> filterSensitiveRegions(List<SeqAnalysisResult> input) {
+        ArrayList<SeqAnalysisResult> output = new ArrayList<SeqAnalysisResult>();
+        for (SeqAnalysisResult r : input) {
             if (r.foregroundReadCount > 200 && Math.log(r.pvalue) < - 20) {
                 output.add(r);
             }

@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
@@ -116,13 +116,13 @@ public class DataSourceLoader {
 					dse.setThreePrimeExt(readExt);
 					experiments.put(eName, dse);
 				}else{
-					ArrayList<ChipSeqLocator> locs = new ArrayList<ChipSeqLocator>();
+					ArrayList<SeqLocator> locs = new ArrayList<SeqLocator>();
 					for(int i=6; i<words.length; i++){
 						String[] pieces = words[i].split(";");
 						if (pieces.length == 2) {
-		                    locs.add(new ChipSeqLocator(pieces[0], pieces[1]));
+		                    locs.add(new SeqLocator(pieces[0], pieces[1]));
 		                } else if (pieces.length == 3) {
-		                    locs.add(new ChipSeqLocator(pieces[0], pieces[1], pieces[2]));
+		                    locs.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
 		                } else {
 		                    System.err.println("Couldn't parse a ChipSeqLocator from " + words[i]);
 		                }

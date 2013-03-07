@@ -3,14 +3,10 @@ package edu.psu.compbio.seqcode.gse.tools.chipseq;
 import java.util.*;
 import java.io.*;
 import cern.jet.random.ChiSquare;
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.tools.motifs.CountKmers;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.FASTAStream;
-import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 
 /**

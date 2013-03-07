@@ -7,10 +7,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAlignment;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLoader;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
@@ -26,12 +26,12 @@ public class PairInsertDistribution {
 
 	Genome gen;
 	private Client client;
-    private Set<ChipSeqAlignment> alignments;
+    private Set<SeqAlignment> alignments;
     private Set<String> ids;
     
 	public static void main(String[] args) throws SQLException, NotFoundException {
 	    Pair<Organism,Genome> pair = Args.parseGenome(args);
-        List<ChipSeqLocator> expts = Args.parseChipSeq(args,"expt");
+        List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
         if (expts.size() == 0) {
             System.err.println("Usage:\n " +
                                "PairInsertDistribution " +
@@ -44,18 +44,18 @@ public class PairInsertDistribution {
         pid.execute();
 	}
 	
-	public PairInsertDistribution(Genome gen, List<ChipSeqLocator> expts){
+	public PairInsertDistribution(Genome gen, List<SeqLocator> expts){
 		try {	
 			this.gen=gen;
 			this.client = new Client();
-			this.alignments = new HashSet<ChipSeqAlignment>();
-			ChipSeqLoader loader = new ChipSeqLoader(); 
-			for(ChipSeqLocator csl : expts){
+			this.alignments = new HashSet<SeqAlignment>();
+			SeqDataLoader loader = new SeqDataLoader(); 
+			for(SeqLocator csl : expts){
 				this.alignments.addAll(csl.loadAlignments(loader, gen));
 			}
 			
 			ids = new HashSet<String>();
-	        for (ChipSeqAlignment a : alignments) {
+	        for (SeqAlignment a : alignments) {
 	            ids.add(Integer.toString(a.getDBID()));
 	        }
 		} catch (SQLException e) {

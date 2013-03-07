@@ -6,24 +6,24 @@ package edu.psu.compbio.seqcode.gse.viz.metagenes;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.*;
 
 public class ChipSeq5PrimeProfiler implements PointProfiler<Point,PointProfile> {
 	
 	private BinningParameters params;
-	private List<ChipSeqExpander> expanders;
+	private List<SeqExpander> expanders;
 	private char strand;
 	
-	public ChipSeq5PrimeProfiler(BinningParameters ps, ChipSeqExpander exp, char strand) {
+	public ChipSeq5PrimeProfiler(BinningParameters ps, SeqExpander exp, char strand) {
 		params = ps;
-		expanders = new ArrayList<ChipSeqExpander>(); 
+		expanders = new ArrayList<SeqExpander>(); 
 		expanders.add(exp);
 		this.strand = strand;
 	}
-	public ChipSeq5PrimeProfiler(BinningParameters ps, List<ChipSeqExpander> exps, char strand) {
+	public ChipSeq5PrimeProfiler(BinningParameters ps, List<SeqExpander> exps, char strand) {
 		params = ps;
 		expanders = exps;
 		this.strand = strand;
@@ -46,11 +46,11 @@ public class ChipSeq5PrimeProfiler implements PointProfiler<Point,PointProfile> 
 		double[] array = new double[params.getNumBins()];
 		for(int i = 0; i < array.length; i++) { array[i] = 0; }
 		
-		for(ChipSeqExpander expander : expanders){
-			Iterator<ChipSeqHit> hits = expander.execute(query);
-			List <ChipSeqHit> hitList =  filterDuplicateHits(hits);
+		for(SeqExpander expander : expanders){
+			Iterator<SeqHit> hits = expander.execute(query);
+			List <SeqHit> hitList =  filterDuplicateHits(hits);
 
-			for(ChipSeqHit hit : hitList) {
+			for(SeqHit hit : hitList) {
 				if (hit.getStrand()==this.strand){  //only count one strand
 					if ((start<=hit.getFivePrime() && this.strand=='+')
 							||(end>hit.getFivePrime() && this.strand=='-')){
@@ -67,12 +67,12 @@ public class ChipSeq5PrimeProfiler implements PointProfiler<Point,PointProfile> 
 	 * filter out duplicate reads (potential tower, needles, but could be real reads)
 	 * assuming the reads are sorted
 	 */
-	public List<ChipSeqHit> filterDuplicateHits(Iterator<ChipSeqHit> hits){
-		ChipSeqHit currentHit = hits.next();
+	public List<SeqHit> filterDuplicateHits(Iterator<SeqHit> hits){
+		SeqHit currentHit = hits.next();
 		int count=1;
-		List<ChipSeqHit> filteredReads = new ArrayList<ChipSeqHit>();
+		List<SeqHit> filteredReads = new ArrayList<SeqHit>();
 		while(hits.hasNext()) {
-			ChipSeqHit hit = hits.next();
+			SeqHit hit = hits.next();
 			// if read from a new position
 			if (!(currentHit.getStart()==hit.getStart())){
 				currentHit = hit;
@@ -90,7 +90,7 @@ public class ChipSeq5PrimeProfiler implements PointProfiler<Point,PointProfile> 
 	
 	//No cleanup
 	public void cleanup(){
-		for(ChipSeqExpander e : expanders)
+		for(SeqExpander e : expanders)
 			e.close();
 	}
 }

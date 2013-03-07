@@ -3,8 +3,8 @@ package edu.psu.compbio.seqcode.gse.tools.chipseq;
 import java.sql.SQLException;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
@@ -34,7 +34,7 @@ import edu.psu.compbio.seqcode.gse.utils.*;
 
 public abstract class CompareTwoAnalyses {
 
-    private ChipSeqAnalysis one, two;
+    private SeqAnalysis one, two;
     private int maxDistance = 20;
     private Genome genome;
     private List<Region> analysisRegions;
@@ -53,41 +53,41 @@ public abstract class CompareTwoAnalyses {
         genome = Args.parseGenome(args).cdr();
         analysisRegions = Args.parseRegionsOrDefault(args);
     }
-    public ChipSeqAnalysis getAnalysisOne() {return one;}
-    public ChipSeqAnalysis getAnalysisTwo() {return two;}
+    public SeqAnalysis getAnalysisOne() {return one;}
+    public SeqAnalysis getAnalysisTwo() {return two;}
     public int getMaxDistance() { return maxDistance;}
     public Genome getGenome() {return genome;}
-    public List<ChipSeqAnalysisResult> getResultsOne() throws SQLException {
-        List<ChipSeqAnalysisResult> output = new ArrayList<ChipSeqAnalysisResult>();
+    public List<SeqAnalysisResult> getResultsOne() throws SQLException {
+        List<SeqAnalysisResult> output = new ArrayList<SeqAnalysisResult>();
         for (Region r : getAnalysisRegions()) {
             output.addAll(getResultsOne(r));
         }
         return filterEvents(output);
     }
-    public List<ChipSeqAnalysisResult> filterEvents(List<ChipSeqAnalysisResult> input) {
+    public List<SeqAnalysisResult> filterEvents(List<SeqAnalysisResult> input) {
         if (topEvents < 1) {
             return input;
         } else {
             if (sortEventsByPval) {
-                Collections.sort(input,new ChipSeqAnalysisResultPvalueComparator());
+                Collections.sort(input,new SeqAnalysisResultPvalueComparator());
             } else {
-                Collections.sort(input,new ChipSeqAnalysisResultEnrichmentComparator());
+                Collections.sort(input,new SeqAnalysisResultEnrichmentComparator());
             }
         }
         return input.subList(0,Math.min(topEvents, input.size()));
 
     }
-    public List<ChipSeqAnalysisResult> getResultsTwo() throws SQLException {
-        List<ChipSeqAnalysisResult> output = new ArrayList<ChipSeqAnalysisResult>();
+    public List<SeqAnalysisResult> getResultsTwo() throws SQLException {
+        List<SeqAnalysisResult> output = new ArrayList<SeqAnalysisResult>();
         for (Region r : getAnalysisRegions()) {
             output.addAll(getResultsTwo(r));
         }
         return filterEvents(output);
     }
-    public List<ChipSeqAnalysisResult> getResultsOne(Region region) throws SQLException {
+    public List<SeqAnalysisResult> getResultsOne(Region region) throws SQLException {
         return one.getResults(region);
     }
-    public List<ChipSeqAnalysisResult> getResultsTwo(Region region) throws SQLException {
+    public List<SeqAnalysisResult> getResultsTwo(Region region) throws SQLException {
         return two.getResults(region);
     }
     public List<Region> getAnalysisRegions() {
@@ -96,8 +96,8 @@ public abstract class CompareTwoAnalyses {
     /** returns true if the sorted list contains r, according
         to whatever overlap criteria we're using
      */
-    public boolean containsMatch(List<ChipSeqAnalysisResult> list,
-                                 ChipSeqAnalysisResult r) {
+    public boolean containsMatch(List<SeqAnalysisResult> list,
+                                 SeqAnalysisResult r) {
         int i = Collections.binarySearch(list,r);
         if (i >= 0) {
             return true;
@@ -120,9 +120,9 @@ public abstract class CompareTwoAnalyses {
 
         return false;
     }
-    public abstract List<ChipSeqAnalysisResult> getOutputEvents() throws SQLException ;
+    public abstract List<SeqAnalysisResult> getOutputEvents() throws SQLException ;
     public void printOutputEvents() throws SQLException {
-        for (ChipSeqAnalysisResult r : getOutputEvents()) {
+        for (SeqAnalysisResult r : getOutputEvents()) {
             System.out.println(String.format("%s:%d-%d\t%d\t%.2f\t%.2f\t%.2f\t%.2f\t%.2e\t%.1f",
                                              r.getChrom(), r.getStart(), r.getEnd(),
                                              r.getPosition(),

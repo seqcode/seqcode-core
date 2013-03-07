@@ -5,20 +5,20 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import edu.psu.compbio.seqcode.gse.datasets.binding.BindingEvent;
-import edu.psu.compbio.seqcode.gse.datasets.chippet.RunningOverlapSum;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqHit;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.RunningOverlapSum;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.Expander;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 
 public class ChipSeqBindingGenerator 
 	implements Expander<Region,BindingEvent>, Closeable {
 	
-	private ChipSeqExpander expander;
+	private SeqExpander expander;
 	private int readExtension, threshold;
 	private String name;
 	
-	public ChipSeqBindingGenerator(ChipSeqExpander e, int ext, int thresh, String n) { 
+	public ChipSeqBindingGenerator(SeqExpander e, int ext, int thresh, String n) { 
 		expander = e;
 		readExtension = ext;
 		threshold = thresh;
@@ -39,10 +39,10 @@ public class ChipSeqBindingGenerator
 		int we = r.getEnd() + readExtension;
 		Region w = new Region(r.getGenome(), r.getChrom(), ws, we);
 		
-		Iterator<ChipSeqHit> hits = expander.execute(w);
+		Iterator<SeqHit> hits = expander.execute(w);
 		RunningOverlapSum summer = new RunningOverlapSum(r.getGenome(), r.getChrom());
 		while(hits.hasNext()) { 
-			ChipSeqHit hit = hits.next();
+			SeqHit hit = hits.next();
 			int ehs = hit.getStrand()=='+' ?
 					hit.getStart() : 
 					hit.getStart()-readExtension ;

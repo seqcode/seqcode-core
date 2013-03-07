@@ -4,10 +4,9 @@ import java.sql.*;
 import java.util.*;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chippet.WeightedRunningOverlapSum;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.Mapper;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
@@ -20,19 +19,19 @@ public class ChipSeqStrandedOverlapMapper implements Closeable, Mapper<Region, W
   public static final int POS_SUM_INDEX = 1;
   public static final int NEG_SUM_INDEX = 2;
   
-  private ChipSeqLoader loader;
-  private ChipSeqLocator locator;
+  private SeqDataLoader loader;
+  private SeqLocator locator;
   private Genome lastGenome;
-  private LinkedList<ChipSeqAlignment> alignments;
+  private LinkedList<SeqAlignment> alignments;
 
   private int extension;
   private int shift = 0;
   private boolean shifting = false;
 
 
-  public ChipSeqStrandedOverlapMapper(ChipSeqLocator loc, int extension)  throws SQLException, IOException {
+  public ChipSeqStrandedOverlapMapper(SeqLocator loc, int extension)  throws SQLException, IOException {
     this.extension = extension;
-    loader = new ChipSeqLoader();
+    loader = new SeqDataLoader();
     locator = loc;
     alignments = null;
     lastGenome = null;
@@ -41,7 +40,7 @@ public class ChipSeqStrandedOverlapMapper implements Closeable, Mapper<Region, W
       if (alignments != null && genome.equals(lastGenome)) {
           return;
       }
-      alignments = new LinkedList<ChipSeqAlignment>();
+      alignments = new LinkedList<SeqAlignment>();
       lastGenome = genome;
       try {
           alignments.addAll(locator.loadAlignments(loader, genome));
@@ -65,8 +64,8 @@ public class ChipSeqStrandedOverlapMapper implements Closeable, Mapper<Region, W
           new WeightedRunningOverlapSum(g, chrom), 
           new WeightedRunningOverlapSum(g, chrom) };
       
-      Collection<ChipSeqHit> hits = loader.loadByRegion(alignments, a);
-      for (ChipSeqHit hit : hits) {
+      Collection<SeqHit> hits = loader.loadByRegion(alignments, a);
+      for (SeqHit hit : hits) {
         if (hit.getStrand() == '+') {
           if (shifting) {
             int intervalStart = hit.getStart() + shift - (extension / 2);

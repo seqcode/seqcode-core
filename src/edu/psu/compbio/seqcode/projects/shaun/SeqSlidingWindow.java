@@ -10,8 +10,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
@@ -61,10 +61,10 @@ public class SeqSlidingWindow {
 			binWidth = Args.parseInteger(args,"binwidth",binWidth);
 	        binStep=Args.parseInteger(args,"binstep",binStep);
 	        regFile = Args.parseString(args, "regfile", "NONE");
-			List<ChipSeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
-	        List<ChipSeqLocator> dbctrls = Args.parseChipSeq(args,"dbctrl");
-	        List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
-	        List<ChipSeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl");
+			List<SeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
+	        List<SeqLocator> dbctrls = Args.parseChipSeq(args,"dbctrl");
+	        List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
+	        List<SeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl");
 	        List<File> expts = Args.parseFileHandles(args, "expt");
 	        List<File> ctrls = Args.parseFileHandles(args, "ctrl");
 	        boolean nonUnique = ap.hasKey("nonunique") ? true : false;

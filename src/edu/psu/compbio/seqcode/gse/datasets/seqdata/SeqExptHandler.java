@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.datasets.chipseq;
+package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -12,17 +12,17 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAlignment;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExpt;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqHit;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLoader;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
-public class ChipSeqExptHandler {
+public class SeqExptHandler {
 	
     public static final double defaultReadLength = 26.0, defaultReadExtension = 174.0;
     private double readLength = defaultReadLength;
@@ -33,45 +33,44 @@ public class ChipSeqExptHandler {
     private double hitCount = 0;
     private double hitWeight = 0;
     private double totalSeq = 0;
-    private double expect = 0;  
-  
-    private ChipSeqLocator loc = null;
-    private ChipSeqLoader loader;
-    private LinkedList<ChipSeqAlignment> alignments;
+    
+    private SeqLocator loc = null;
+    private SeqDataLoader loader;
+    private LinkedList<SeqAlignment> alignments;
 
 
-    public ChipSeqExptHandler(Genome g, String exptName) throws NotFoundException, IOException {
+    public SeqExptHandler(Genome g, String exptName) throws NotFoundException, IOException {
         this(g, exptName, "");
     }
 
 
-    public ChipSeqExptHandler(Genome g, String exptName, String replicate) throws NotFoundException, IOException {
+    public SeqExptHandler(Genome g, String exptName, String replicate) throws NotFoundException, IOException {
         currentGen = g;
         this.exptName = exptName;
 
-        ChipSeqLoader chipSeqLoader = null;
+        SeqDataLoader seqLoader = null;
         try {
-            chipSeqLoader = new ChipSeqLoader();
+            seqLoader = new SeqDataLoader();
         }
         catch (SQLException sqlex) {
             sqlex.printStackTrace();
         }
 
-        if (chipSeqLoader != null) {
+        if (seqLoader != null) {
             try {
                 if (replicate.equals("")) {
-                    List<ChipSeqLocator> locs = new Vector<ChipSeqLocator>();
+                    List<SeqLocator> locs = new Vector<SeqLocator>();
 
-                    List<ChipSeqExpt> expts = new Vector<ChipSeqExpt>();
-                    expts.addAll(chipSeqLoader.loadExperiments(exptName));
+                    List<SeqExpt> expts = new Vector<SeqExpt>();
+                    expts.addAll(seqLoader.loadExperiments(exptName));
 
-                    for (ChipSeqExpt expt : expts) {
-                        Collection<ChipSeqAlignment> aligns;
-                        aligns = chipSeqLoader.loadAllAlignments(expt);
+                    for (SeqExpt expt : expts) {
+                        Collection<SeqAlignment> aligns;
+                        aligns = seqLoader.loadAllAlignments(expt);
 
-                        for (ChipSeqAlignment currentAlign : aligns) {
+                        for (SeqAlignment currentAlign : aligns) {
                             if (currentAlign.getGenome().equals(g)) {
-                				ChipSeqLocator currentLoc = new ChipSeqLocator(expt.getName(), 
+                				SeqLocator currentLoc = new SeqLocator(expt.getName(), 
                                                                                expt.getReplicate(), currentAlign.getName());
                                 locs.add(currentLoc);
                                 break;
@@ -79,7 +78,7 @@ public class ChipSeqExptHandler {
                         }
                     }
 
-                    List<ChipSeqLocator> collapsedLocs = new Vector<ChipSeqLocator>(this.collapseLocatorsByName(locs));
+                    List<SeqLocator> collapsedLocs = new Vector<SeqLocator>(this.collapseLocatorsByName(locs));
                     if (collapsedLocs.size() != 1) {
                         System.err.println(collapsedLocs.size() + " collapsed locators");
                         System.exit(0);
@@ -87,37 +86,37 @@ public class ChipSeqExptHandler {
                     loc = collapsedLocs.get(0);
                 }
                 else {
-                    ChipSeqExpt expt = chipSeqLoader.loadExperiment(exptName, replicate);
+                    SeqExpt expt = seqLoader.loadExperiment(exptName, replicate);
 
-                    ChipSeqAlignment align = null;
-                    Collection<ChipSeqAlignment> aligns;
-                    aligns = chipSeqLoader.loadAllAlignments(expt);
+                    SeqAlignment align = null;
+                    Collection<SeqAlignment> aligns;
+                    aligns = seqLoader.loadAllAlignments(expt);
 
-                    for (ChipSeqAlignment currentAlign : aligns) {
+                    for (SeqAlignment currentAlign : aligns) {
                         if (currentAlign.getGenome().equals(g)) {
                             align = currentAlign;
                             break;
                         }
                     }
 
-                    loc = new ChipSeqLocator(expt.getName(), expt.getReplicate(), align.getName());
+                    loc = new SeqLocator(expt.getName(), expt.getReplicate(), align.getName());
                 }
 
-                loader = new ChipSeqLoader();
-                alignments = new LinkedList<ChipSeqAlignment>();
+                loader = new SeqDataLoader();
+                alignments = new LinkedList<SeqAlignment>();
 
                 if (loc.getReplicates().isEmpty()) {
-                    Collection<ChipSeqExpt> expts = loader.loadExperiments(loc.getExptName());
-                    for (ChipSeqExpt expt : expts) {
-                        ChipSeqAlignment alignment = loader.loadAlignment(expt, loc.getAlignName(), g);
+                    Collection<SeqExpt> expts = loader.loadExperiments(loc.getExptName());
+                    for (SeqExpt expt : expts) {
+                        SeqAlignment alignment = loader.loadAlignment(expt, loc.getAlignName(), g);
                         if (alignment != null) {
                             alignments.add(alignment);
                         }
                     }
                 } else {
                     for (String repName : loc.getReplicates()) {
-                        ChipSeqExpt expt = loader.loadExperiment(loc.getExptName(), repName);
-                        ChipSeqAlignment alignment = loader.loadAlignment(expt, loc.getAlignName(), g);
+                        SeqExpt expt = loader.loadExperiment(loc.getExptName(), repName);
+                        SeqAlignment alignment = loader.loadAlignment(expt, loc.getAlignName(), g);
                         if (alignment != null) {
                             alignments.add(alignment);
                         }
@@ -136,21 +135,21 @@ public class ChipSeqExptHandler {
     }
 
 
-    public ChipSeqExptHandler(Genome g, ChipSeqLocator locator) throws NotFoundException, SQLException, IOException {
+    public SeqExptHandler(Genome g, SeqLocator locator) throws NotFoundException, SQLException, IOException {
         currentGen = g;
         exptName = locator.getExptName();
-        loader = new ChipSeqLoader();
-        alignments = new LinkedList<ChipSeqAlignment>();
+        loader = new SeqDataLoader();
+        alignments = new LinkedList<SeqAlignment>();
         if (locator.getAlignName() == null) {
             if(locator.getReplicates().isEmpty()) { //No alignment name, no replicate names
-                Collection<ChipSeqExpt> expts = loader.loadExperiments(locator.getExptName());
-                List<ChipSeqLocator> locs = new Vector<ChipSeqLocator>();
-                for (ChipSeqExpt expt : expts) {
-                    Collection<ChipSeqAlignment> aligns;
+                Collection<SeqExpt> expts = loader.loadExperiments(locator.getExptName());
+                List<SeqLocator> locs = new Vector<SeqLocator>();
+                for (SeqExpt expt : expts) {
+                    Collection<SeqAlignment> aligns;
                     aligns = loader.loadAllAlignments(expt);
-                    for (ChipSeqAlignment currentAlign : aligns) {
+                    for (SeqAlignment currentAlign : aligns) {
                         if (currentAlign.getGenome().equals(g)) {
-            				ChipSeqLocator currentLoc = new ChipSeqLocator(expt.getName(), 
+            				SeqLocator currentLoc = new SeqLocator(expt.getName(), 
                                                                            expt.getReplicate(), currentAlign.getName());
                             locs.add(currentLoc);
                             alignments.add(currentAlign);
@@ -158,7 +157,7 @@ public class ChipSeqExptHandler {
                         }
                     }
                 }
-                List<ChipSeqLocator> collapsedLocs = new Vector<ChipSeqLocator>(this.collapseLocatorsByName(locs));
+                List<SeqLocator> collapsedLocs = new Vector<SeqLocator>(this.collapseLocatorsByName(locs));
                 if (collapsedLocs.size() != 1) {
                     System.err.println(collapsedLocs.size() + " collapsed locators");
                     System.exit(0);
@@ -167,10 +166,10 @@ public class ChipSeqExptHandler {
             }
             else { // No alignment name, given replicate names
                 for (String repName : locator.getReplicates()) {
-                    ChipSeqExpt expt = loader.loadExperiment(locator.getExptName(), repName);
-                    ChipSeqAlignment alignment = loader.loadAlignment(expt, locator.getAlignName(), g);
+                    SeqExpt expt = loader.loadExperiment(locator.getExptName(), repName);
+                    SeqAlignment alignment = loader.loadAlignment(expt, locator.getAlignName(), g);
                     if (alignment != null) {
-                        locator = new ChipSeqLocator(locator.getExptName(), locator.getReplicates(), alignment.getName());
+                        locator = new SeqLocator(locator.getExptName(), locator.getReplicates(), alignment.getName());
                         alignments.add(alignment);
                         break;
                     }
@@ -180,14 +179,14 @@ public class ChipSeqExptHandler {
         else {
             if (locator.getReplicates().isEmpty()) {// Given alignment name, no
                 // replicate names
-                Collection<ChipSeqExpt> expts = loader.loadExperiments(locator.getExptName());
-                List<ChipSeqLocator> locs = new Vector<ChipSeqLocator>();
-                for (ChipSeqExpt expt : expts) {
-                    Collection<ChipSeqAlignment> aligns;
+                Collection<SeqExpt> expts = loader.loadExperiments(locator.getExptName());
+                List<SeqLocator> locs = new Vector<SeqLocator>();
+                for (SeqExpt expt : expts) {
+                    Collection<SeqAlignment> aligns;
                     aligns = loader.loadAllAlignments(expt);
-                    for (ChipSeqAlignment currentAlign : aligns) {
+                    for (SeqAlignment currentAlign : aligns) {
                         if (currentAlign.getGenome().equals(g) && currentAlign.getName().equals(locator.getAlignName())) {
-            				ChipSeqLocator currentLoc = new ChipSeqLocator(expt.getName(), 
+            				SeqLocator currentLoc = new SeqLocator(expt.getName(), 
                                                                            expt.getReplicate(), currentAlign.getName());
                             locs.add(currentLoc);
                             alignments.add(currentAlign);
@@ -195,7 +194,7 @@ public class ChipSeqExptHandler {
                         }
                     }
                 }
-                List<ChipSeqLocator> collapsedLocs = new Vector<ChipSeqLocator>(this.collapseLocatorsByName(locs));
+                List<SeqLocator> collapsedLocs = new Vector<SeqLocator>(this.collapseLocatorsByName(locs));
                 if (collapsedLocs.size() != 1) {
                     System.err.println(collapsedLocs.size() + " collapsed locators");
                     System.exit(0);
@@ -270,7 +269,7 @@ public class ChipSeqExptHandler {
     }
 
 
-    public ChipSeqLocator getLocator() {
+    public SeqLocator getLocator() {
         return loc;
     }
 
@@ -278,7 +277,7 @@ public class ChipSeqExptHandler {
     public double countHits() {
         hitCount = 0;
         try {
-            for (ChipSeqAlignment alignment : alignments) {
+            for (SeqAlignment alignment : alignments) {
                 double currHits = (double) loader.countAllHits(alignment);
                 hitCount += currHits;
             }
@@ -287,10 +286,7 @@ public class ChipSeqExptHandler {
             e.printStackTrace();
             return 0;
         }
-        if (hitCount > 0) {
-            expect = ((readLength + readExtension) * (hitCount / totalSeq));
-        }
-
+     
         return hitCount;
     }
 
@@ -310,7 +306,7 @@ public class ChipSeqExptHandler {
     public double weighHits() {
 		hitWeight = 0;
 		try {
-			for (ChipSeqAlignment align : alignments) {
+			for (SeqAlignment align : alignments) {
 				double currWeight = loader.weighAllHits(align);
 				hitWeight += currWeight;
 			}
@@ -340,8 +336,8 @@ public class ChipSeqExptHandler {
     public LinkedList<StrandedRegion> loadHits(Region a) {
         try {
             LinkedList<StrandedRegion> total = new LinkedList<StrandedRegion>();
-            Collection<ChipSeqHit> hits = loader.loadByRegion(alignments, a);
-            for (ChipSeqHit curr : hits) {
+            Collection<SeqHit> hits = loader.loadByRegion(alignments, a);
+            for (SeqHit curr : hits) {
                 total.add(hit2region(0, curr));
             }
             return total;
@@ -353,34 +349,34 @@ public class ChipSeqExptHandler {
     }
 
 
-   public LinkedList<ChipSeqHit> loadExtendedHits(Region a) {
+   public LinkedList<SeqHit> loadExtendedHits(Region a) {
      try {
-       LinkedList<ChipSeqHit> total = new LinkedList<ChipSeqHit>();
-       Collection<ChipSeqHit> hits = loader.loadByRegion(alignments, a);
-       for (ChipSeqHit curr : hits) {
+       LinkedList<SeqHit> total = new LinkedList<SeqHit>();
+       Collection<SeqHit> hits = loader.loadByRegion(alignments, a);
+       for (SeqHit curr : hits) {
            total.add(curr.extendHit((int) readExtension));
        }
        return total;
      } catch (IOException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
-		return new LinkedList<ChipSeqHit>();
+		return new LinkedList<SeqHit>();
 	}
    }
 
 
-   public LinkedList<ChipSeqHit> loadShiftedExtendedHits(Region a) {
+   public LinkedList<SeqHit> loadShiftedExtendedHits(Region a) {
      try {
-       LinkedList<ChipSeqHit> total = new LinkedList<ChipSeqHit>();
-       Collection<ChipSeqHit> hits = loader.loadByRegion(alignments, a);
-       for (ChipSeqHit curr : hits) {
+       LinkedList<SeqHit> total = new LinkedList<SeqHit>();
+       Collection<SeqHit> hits = loader.loadByRegion(alignments, a);
+       for (SeqHit curr : hits) {
            total.add(curr.shiftExtendHit((int) readExtension, (int) readShift));
        }
        return total;
      } catch (IOException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
-		return new LinkedList<ChipSeqHit>();
+		return new LinkedList<SeqHit>();
 	}
    }
 
@@ -392,9 +388,9 @@ public class ChipSeqExptHandler {
         }
 
         try {
-            Iterator<ChipSeqHit> h = loader.loadByRegion(alignments, a).iterator();
+            Iterator<SeqHit> h = loader.loadByRegion(alignments, a).iterator();
             while (h.hasNext()) {
-                ChipSeqHit csh = h.next();
+                SeqHit csh = h.next();
                 int pos = csh.getStart() - a.getStart();
                 if (pos < 0) {
                     pos = 0;
@@ -419,9 +415,9 @@ public class ChipSeqExptHandler {
         for (int i = 0; i <= a.getWidth(); i++)
             hits[i] = 0;
         try {
-            Iterator<ChipSeqHit> h = loader.loadByRegion(alignments, a).iterator();
+            Iterator<SeqHit> h = loader.loadByRegion(alignments, a).iterator();
             while (h.hasNext()) {
-                ChipSeqHit csh = h.next();
+                SeqHit csh = h.next();
                 int start, end;
                 if (csh.getStrand() == '+') {
                     start = Math.max(0, csh.getStart() - a.getStart());
@@ -451,9 +447,9 @@ public class ChipSeqExptHandler {
 		for(int i=0; i<numBins; i++)
 			bins[i]=0;
 		try {
-			Iterator<ChipSeqHit> h = loader.loadByRegion(alignments, a).iterator();
+			Iterator<SeqHit> h = loader.loadByRegion(alignments, a).iterator();
 			while(h.hasNext()){
-				ChipSeqHit csh = h.next();
+				SeqHit csh = h.next();
 				int start, end;
 				if(csh.getStrand()=='+'){
 					start = Math.max(0, csh.getStart()-a.getStart());					
@@ -470,10 +466,10 @@ public class ChipSeqExptHandler {
 		return bins;
 	}
 
-    private Collection<ChipSeqLocator> collapseLocatorsByName(Collection<ChipSeqLocator> locs) {
+    private Collection<SeqLocator> collapseLocatorsByName(Collection<SeqLocator> locs) {
         LinkedHashMap<String, Map<String, Set<String>>> map = new LinkedHashMap<String, Map<String, Set<String>>>();
 
-        for (ChipSeqLocator loc : locs) {
+        for (SeqLocator loc : locs) {
             String exptName = loc.getExptName();
             String alignName = loc.getAlignName();
             if (!map.containsKey(exptName)) {
@@ -485,11 +481,11 @@ public class ChipSeqExptHandler {
             map.get(exptName).get(alignName).addAll(loc.getReplicates());
         }
 
-        LinkedList<ChipSeqLocator> collapsed = new LinkedList<ChipSeqLocator>();
+        LinkedList<SeqLocator> collapsed = new LinkedList<SeqLocator>();
 
         for (String exptName : map.keySet()) {
             for (String alignName : map.get(exptName).keySet()) {
-                ChipSeqLocator newloc = new ChipSeqLocator(exptName, map.get(exptName).get(alignName), alignName);
+                SeqLocator newloc = new SeqLocator(exptName, map.get(exptName).get(alignName), alignName);
                 collapsed.add(newloc);
             }
         }
@@ -498,7 +494,7 @@ public class ChipSeqExptHandler {
     }
 
 
-    private StrandedRegion hit2region(int ext, ChipSeqHit hit) {
+    private StrandedRegion hit2region(int ext, SeqHit hit) {
         if (hit.getStrand() == '+') {
             return new StrandedRegion(hit.getGenome(), hit.getChrom(), hit.getStart(), hit.getEnd() + ext, hit.getStrand());
         }
@@ -508,7 +504,7 @@ public class ChipSeqExptHandler {
     }
 
 
-    private StrandedRegion hit2region(int ext, ChipSeqHit hit, int shift) {
+    private StrandedRegion hit2region(int ext, SeqHit hit, int shift) {
         if (hit.getStrand() == '+') {
             return new StrandedRegion(hit.getGenome(), hit.getChrom(), hit.getStart() + shift - (ext / 2), hit.getEnd()
                                       + shift + (ext / 2), hit.getStrand());

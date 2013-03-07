@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
@@ -45,7 +45,7 @@ public class DNASeqEnrichmentCaller {
     protected HMMReads reads;    
     protected Genome genome;
     
-    protected ChipSeqLoader loader;
+    protected SeqDataLoader loader;
     private Poisson poisson;
     private int sensitiveRegionWindowSize = 40;
     private int sensitiveRegionWindowStep = 10;
@@ -53,12 +53,12 @@ public class DNASeqEnrichmentCaller {
     private int minimumRegionWidth = 60;
     private double totalFgReads, totalBgReads;
     private double channelScalingFactor, minFoldChange, subsample;
-    private List<ChipSeqAlignment> alignments, bgAlignments;
+    private List<SeqAlignment> alignments, bgAlignments;
 
     private List<Region> regionsToCall;
 
     public DNASeqEnrichmentCaller() throws IOException, ClientException, SQLException {
-        loader = new ChipSeqLoader();
+        loader = new SeqDataLoader();
         DRand re = new DRand();
 		poisson = new Poisson(0, re);
         reads = new HMMReads();
@@ -66,16 +66,16 @@ public class DNASeqEnrichmentCaller {
     public Genome getGenome() {return genome;}
     public HMMReads getReads() {return reads;}
     public List<Region> getRegionsToCall() {return regionsToCall;}
-    public List<ChipSeqAlignment> getAlignments() {return alignments;}
-    public List<ChipSeqAlignment> getBGAlignments() {return bgAlignments;}
-    public List<ChipSeqAlignment> getFGAlignments() {return alignments;}
+    public List<SeqAlignment> getAlignments() {return alignments;}
+    public List<SeqAlignment> getBGAlignments() {return bgAlignments;}
+    public List<SeqAlignment> getFGAlignments() {return alignments;}
     public void parseArgs(String args[]) throws NotFoundException, SQLException, IOException {
         genome = Args.parseGenome(args).cdr();
-        alignments = new ArrayList<ChipSeqAlignment>();
-        bgAlignments = new ArrayList<ChipSeqAlignment>();
+        alignments = new ArrayList<SeqAlignment>();
+        bgAlignments = new ArrayList<SeqAlignment>();
         if (Args.parseString(args,"dnaseq",null) != null) {
             try {
-                ChipSeqAnalysis dnaseq = Args.parseChipSeqAnalysis(args,"dnaseq");
+                SeqAnalysis dnaseq = Args.parseChipSeqAnalysis(args,"dnaseq");
                 alignments.addAll(dnaseq.getForeground());
                 bgAlignments.addAll(dnaseq.getBackground());
             } catch (Exception e) {
@@ -88,14 +88,14 @@ public class DNASeqEnrichmentCaller {
             reads.subSample(subsample);
         }
 
-        List<ChipSeqLocator> fg = Args.parseChipSeq(args,"dnaseqfg");
-        List<ChipSeqLocator> bg = Args.parseChipSeq(args,"dnaseqbg");
-        for (ChipSeqLocator locator : fg) {
+        List<SeqLocator> fg = Args.parseChipSeq(args,"dnaseqfg");
+        List<SeqLocator> bg = Args.parseChipSeq(args,"dnaseqbg");
+        for (SeqLocator locator : fg) {
             System.err.println("fg locator " + locator);
             alignments.addAll(loader.loadAlignments(locator,genome));
             System.err.println("Alignments now are " + alignments);
         }
-        for (ChipSeqLocator locator : bg) {
+        for (SeqLocator locator : bg) {
             bgAlignments.addAll(loader.loadAlignments(locator,genome));
         }
         if (alignments.size() == 0) {
@@ -112,7 +112,7 @@ public class DNASeqEnrichmentCaller {
         minFoldChange = Args.parseDouble(args,"minfold",1.5);
 
         totalFgReads = 0;
-        for (ChipSeqAlignment a : alignments) {
+        for (SeqAlignment a : alignments) {
             totalFgReads += loader.countAllHits(a);
             System.err.println(a.getDBID() + " -> " + totalFgReads);
         }
@@ -121,7 +121,7 @@ public class DNASeqEnrichmentCaller {
         }
 
         totalBgReads = 0;
-        for (ChipSeqAlignment a : bgAlignments) {
+        for (SeqAlignment a : bgAlignments) {
             totalBgReads += loader.countAllHits(a);
             System.err.println(a.getDBID() + " -> " + totalBgReads);
         }
@@ -129,11 +129,11 @@ public class DNASeqEnrichmentCaller {
         System.err.println(String.format("Channel scaling factor is %.0f/%.0f=%.2f", totalFgReads,totalBgReads,channelScalingFactor));
         regionsToCall = Args.parseRegionsOrDefault(args);
     }
-    public List<ChipSeqAnalysisResult> getHyperSensitiveRegions(Region queryRegion) throws ClientException, IOException {
+    public List<SeqAnalysisResult> getHyperSensitiveRegions(Region queryRegion) throws ClientException, IOException {
         return getHyperSensitiveRegions(queryRegion,
                                         reads.getReadCounts(queryRegion, alignments));
     }
-    public List<ChipSeqAnalysisResult> getHyperSensitiveRegions(Region queryRegion, ReadCounts fgReadCounts) throws ClientException, IOException {
+    public List<SeqAnalysisResult> getHyperSensitiveRegions(Region queryRegion, ReadCounts fgReadCounts) throws ClientException, IOException {
 
         reads.subSample(2);
         ReadCounts bgReadCounts = reads.getReadCounts(queryRegion,
@@ -176,8 +176,8 @@ public class DNASeqEnrichmentCaller {
         }
         return combineRegions(enriched, fgReadCounts, bgReadCounts);
     }
-    private List<ChipSeqAnalysisResult> combineRegions(List<Region> input, ReadCounts fgCounts, ReadCounts bgCounts) {
-        List<ChipSeqAnalysisResult> output = new ArrayList<ChipSeqAnalysisResult>();
+    private List<SeqAnalysisResult> combineRegions(List<Region> input, ReadCounts fgCounts, ReadCounts bgCounts) {
+        List<SeqAnalysisResult> output = new ArrayList<SeqAnalysisResult>();
         Collections.sort(input);
         int i = 0;
         Region accumulating = null;
@@ -207,7 +207,7 @@ public class DNASeqEnrichmentCaller {
         }
         return output;
     }
-    private ChipSeqAnalysisResult regionToDNASeq(Region r, ReadCounts fgCounts, ReadCounts bgCounts) {
+    private SeqAnalysisResult regionToDNASeq(Region r, ReadCounts fgCounts, ReadCounts bgCounts) {
         double fc = 0, bc = 0;
         for (int i = r.getStart(); i < r.getEnd(); i++) {
             fc += fgCounts.getCount(i);
@@ -222,7 +222,7 @@ public class DNASeqEnrichmentCaller {
         double fold = Math.min(fc / (bc * channelScalingFactor),
                                fc / (totalFgReads * sensitiveRegionWindowSize / 2080000000.0));
 
-        return new ChipSeqAnalysisResult(r.getGenome(), r.getChrom(), r.getStart(), r.getEnd(), 
+        return new SeqAnalysisResult(r.getGenome(), r.getChrom(), r.getStart(), r.getEnd(), 
                                          (r.getStart() + r.getEnd()) / 2,                                         
                                          fc, bc,
                                          0.0, //strength
@@ -236,7 +236,7 @@ public class DNASeqEnrichmentCaller {
         System.out.println("Chrom\tStart\tEnd\tCenter\tFG\tBG\tRatio\tPvalue");
         for (Region region : caller.getRegionsToCall()) {
             try {
-                for (ChipSeqAnalysisResult call : caller.getHyperSensitiveRegions(region)) {
+                for (SeqAnalysisResult call : caller.getHyperSensitiveRegions(region)) {
                     System.out.println(String.format("%s\t%d\t%d\t%d\t%.2f\t%.2f\t%.2f\t%f",
                                                      call.getChrom(),
                                                      call.getStart(),

@@ -3,8 +3,8 @@ package edu.psu.compbio.seqcode.gse.seqview.paintable;
 import java.awt.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqAnalysisModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
@@ -13,21 +13,21 @@ import edu.psu.compbio.seqcode.gse.viz.colors.ColorSet;
 public class SeqAnalysisPainter extends RegionPaintable {
 
 
-    private ChipSeqAnalysis analysis;
+    private SeqAnalysis analysis;
     private ChipSeqAnalysisModel model;
     private SeqAnalysisProperties props;
     private DynamicAttribute attrib;
-    private NonOverlappingLayout<ChipSeqAnalysisResult> layout;
+    private NonOverlappingLayout<SeqAnalysisResult> layout;
     private ColorSet cs;
 
-    public SeqAnalysisPainter(ChipSeqAnalysis a, ChipSeqAnalysisModel m) {
+    public SeqAnalysisPainter(SeqAnalysis a, ChipSeqAnalysisModel m) {
         super();
         analysis = a;
         model = m;
         model.addEventListener(this);
         props = new SeqAnalysisProperties();
         attrib = DynamicAttribute.getGlobalAttributes();
-        layout = new NonOverlappingLayout<ChipSeqAnalysisResult>();
+        layout = new NonOverlappingLayout<SeqAnalysisResult>();
         cs = new ColorSet();
         initLabels();
     }
@@ -60,7 +60,7 @@ public class SeqAnalysisPainter extends RegionPaintable {
         if (!canPaint()) {
             return;
         }
-        Collection<ChipSeqAnalysisResult> results = model.getResults();
+        Collection<SeqAnalysisResult> results = model.getResults();
 
         layout.setRegions(results);
 
@@ -73,7 +73,7 @@ public class SeqAnalysisPainter extends RegionPaintable {
 
         cs.reset();
         clearLabels();
-        for (ChipSeqAnalysisResult r : results) {
+        for (SeqAnalysisResult r : results) {
             int x1 = getXPos(r.getStart(),
                              region.getStart(),
                              region.getEnd(),

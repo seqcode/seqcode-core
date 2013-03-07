@@ -8,13 +8,13 @@ import java.sql.SQLException;
 import edu.psu.compbio.seqcode.gse.datasets.binding.BindingScan;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.AnalysisNameVersion;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ExptNameVersion;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAnalysis;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExpt;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLoader;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
 import edu.psu.compbio.seqcode.gse.datasets.locators.ExptLocator;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAnalysis;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -77,10 +77,10 @@ public class SeqViewOptions {
     public ArrayList<ExptNameVersion> peakCallers;
     public ArrayList<Experiment> exprExperiments;
     public HashMap<String,String> chiapetExpts;
-    public ArrayList<ChipSeqLocator> chipseqExpts;
-    public ArrayList<ChipSeqLocator> pairedChipseqExpts;
-    public ArrayList<ChipSeqLocator> chiapetArcs;
-    public ArrayList<ChipSeqAnalysis> chipseqAnalyses;
+    public ArrayList<SeqLocator> chipseqExpts;
+    public ArrayList<SeqLocator> pairedChipseqExpts;
+    public ArrayList<SeqLocator> chiapetArcs;
+    public ArrayList<SeqAnalysis> chipseqAnalyses;
     // filename to label mappings.  These are loaded from a file
     // and the data held statically
     public HashMap<String,String> regionTracks, regexes;
@@ -147,9 +147,9 @@ public class SeqViewOptions {
         otherannots = new ArrayList<String>();
         agilentdata= new ArrayList<ExptNameVersion>();
         chiapetExpts = new HashMap<String,String>();
-        chipseqExpts = new ArrayList<ChipSeqLocator>();
-        pairedChipseqExpts = new ArrayList<ChipSeqLocator>();
-        chiapetArcs = new ArrayList<ChipSeqLocator>();
+        chipseqExpts = new ArrayList<SeqLocator>();
+        pairedChipseqExpts = new ArrayList<SeqLocator>();
+        chiapetArcs = new ArrayList<SeqLocator>();
         agilentll = new ArrayList<AnalysisNameVersion>();
         bayesresults = new ArrayList<AnalysisNameVersion>();
         msp = new ArrayList<AnalysisNameVersion>();
@@ -159,7 +159,7 @@ public class SeqViewOptions {
         exprExperiments = new ArrayList<Experiment>();
         regionTracks = new HashMap<String,String>();
         regexes = new HashMap<String,String>();
-        chipseqAnalyses = new ArrayList<ChipSeqAnalysis>();
+        chipseqAnalyses = new ArrayList<SeqAnalysis>();
     }
 
     public SeqViewOptions() {
@@ -177,9 +177,9 @@ public class SeqViewOptions {
         otherannots = new ArrayList<String>();
         agilentdata= new ArrayList<ExptNameVersion>();
         chiapetExpts = new HashMap<String,String>();
-        chipseqExpts = new ArrayList<ChipSeqLocator>();
-        pairedChipseqExpts = new ArrayList<ChipSeqLocator>();
-        chiapetArcs = new ArrayList<ChipSeqLocator>();
+        chipseqExpts = new ArrayList<SeqLocator>();
+        pairedChipseqExpts = new ArrayList<SeqLocator>();
+        chiapetArcs = new ArrayList<SeqLocator>();
         agilentll = new ArrayList<AnalysisNameVersion>();
         bayesresults = new ArrayList<AnalysisNameVersion>();
         msp = new ArrayList<AnalysisNameVersion>();
@@ -189,7 +189,7 @@ public class SeqViewOptions {
         exprExperiments = new ArrayList<Experiment>();
         regionTracks = new HashMap<String,String>();
         regexes = new HashMap<String,String>();
-        chipseqAnalyses = new ArrayList<ChipSeqAnalysis>();
+        chipseqAnalyses = new ArrayList<SeqAnalysis>();
     }
 
     /* adds options from this into union.  For lists, it generates the 
@@ -340,9 +340,9 @@ public class SeqViewOptions {
         o.otherannots = (ArrayList<String>) otherannots.clone();
         o.agilentdata = (ArrayList<ExptNameVersion>)agilentdata.clone();
         o.chiapetExpts = (HashMap<String,String>)chiapetExpts.clone();
-        o.chipseqExpts = (ArrayList<ChipSeqLocator>)chipseqExpts.clone();
-        o.pairedChipseqExpts = (ArrayList<ChipSeqLocator>)pairedChipseqExpts.clone();
-        o.chiapetArcs = (ArrayList<ChipSeqLocator>)chiapetArcs.clone();
+        o.chipseqExpts = (ArrayList<SeqLocator>)chipseqExpts.clone();
+        o.pairedChipseqExpts = (ArrayList<SeqLocator>)pairedChipseqExpts.clone();
+        o.chiapetArcs = (ArrayList<SeqLocator>)chiapetArcs.clone();
         o.bayesresults = (ArrayList<AnalysisNameVersion>)bayesresults.clone();
         o.agilentll = (ArrayList<AnalysisNameVersion>)agilentll.clone();
         o.msp = (ArrayList<AnalysisNameVersion>)msp.clone();
@@ -352,7 +352,7 @@ public class SeqViewOptions {
         o.exprExperiments = (ArrayList<Experiment>)exprExperiments.clone();
         o.regionTracks = (HashMap<String,String>)regionTracks.clone();
         o.regexes = (HashMap<String,String>)regexes.clone();
-        o.chipseqAnalyses = (ArrayList<ChipSeqAnalysis>)chipseqAnalyses.clone();
+        o.chipseqAnalyses = (ArrayList<SeqAnalysis>)chipseqAnalyses.clone();
         return o;
     }
 
@@ -365,7 +365,7 @@ public class SeqViewOptions {
     	 */
         SeqViewOptions opts = new SeqViewOptions();
         WeightMatrixLoader wmloader = new WeightMatrixLoader();
-        ChipSeqLoader chipseqloader = new ChipSeqLoader();
+        SeqDataLoader chipseqloader = new SeqDataLoader();
 
 
         try {        
@@ -464,13 +464,13 @@ public class SeqViewOptions {
                 if (args[i].equals("--chipseq")) {
                     String pieces[] = args[++i].split(";");
                     if (pieces.length == 2) {
-                        opts.chipseqExpts.add(new ChipSeqLocator(pieces[0], pieces[1]));
+                        opts.chipseqExpts.add(new SeqLocator(pieces[0], pieces[1]));
                     } else if (pieces.length >= 3) {
                         Set<String> repnames = new HashSet<String>();
                         for (int j = 1; j < pieces.length - 1; j++) {
                             repnames.add(pieces[j]);
                         }
-                        opts.chipseqExpts.add(new ChipSeqLocator(pieces[0], repnames, pieces[pieces.length-1]));
+                        opts.chipseqExpts.add(new SeqLocator(pieces[0], repnames, pieces[pieces.length-1]));
                     } else {
                         System.err.println("Couldn't parse --chipseq " + args[i]);
                     }
@@ -478,9 +478,9 @@ public class SeqViewOptions {
                 if (args[i].equals("--pairedchipseq")) {
                     String pieces[] = args[++i].split(";");
                     if (pieces.length == 2) {
-                        opts.pairedChipseqExpts.add(new ChipSeqLocator(pieces[0], pieces[1]));
+                        opts.pairedChipseqExpts.add(new SeqLocator(pieces[0], pieces[1]));
                     } else if (pieces.length == 3) {
-                        opts.pairedChipseqExpts.add(new ChipSeqLocator(pieces[0], pieces[1], pieces[2]));
+                        opts.pairedChipseqExpts.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
                     } else {
                         System.err.println("Couldn't parse --pairedchipseq " + args[i]);
                     }
@@ -488,9 +488,9 @@ public class SeqViewOptions {
                 if (args[i].equals("--chiapetarc")) {
                     String pieces[] = args[++i].split(";");
                     if (pieces.length == 2) {
-                        opts.chiapetArcs.add(new ChipSeqLocator(pieces[0], pieces[1]));
+                        opts.chiapetArcs.add(new SeqLocator(pieces[0], pieces[1]));
                     } else if (pieces.length == 3) {
-                        opts.chiapetArcs.add(new ChipSeqLocator(pieces[0], pieces[1], pieces[2]));
+                        opts.chiapetArcs.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
                     } else {
                         System.err.println("Couldn't parse --chiapetarc " + args[i]);
                     }
@@ -498,7 +498,7 @@ public class SeqViewOptions {
                 if (args[i].equals("--chipseqanalysis")) {
                     String pieces[] = args[++i].split(";");
                     if (pieces.length == 2) {
-                        opts.chipseqAnalyses.add(ChipSeqAnalysis.get(chipseqloader, pieces[0], pieces[1]));
+                        opts.chipseqAnalyses.add(SeqAnalysis.get(chipseqloader, pieces[0], pieces[1]));
                     } else {
                         System.err.println("Couldn't parse --chipseqanalysis " + args[i]);
                     }                

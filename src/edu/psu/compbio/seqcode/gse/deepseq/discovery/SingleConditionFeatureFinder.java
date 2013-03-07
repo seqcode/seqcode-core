@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -50,10 +50,10 @@ public abstract class SingleConditionFeatureFinder extends FeatureFinder {
 
     ArgParser ap = new ArgParser(args);
     // Load the experiments
-    List<ChipSeqLocator> dbexpts = Args.parseChipSeq(args, "dbexpt");
-    List<ChipSeqLocator> dbctrls = Args.parseChipSeq(args, "dbctrl");
-        List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
-        List<ChipSeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl");
+    List<SeqLocator> dbexpts = Args.parseChipSeq(args, "dbexpt");
+    List<SeqLocator> dbctrls = Args.parseChipSeq(args, "dbctrl");
+        List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
+        List<SeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl");
     List<File> expts = Args.parseFileHandles(args, "expt");
     List<File> ctrls = Args.parseFileHandles(args, "ctrl");
     boolean nonUnique = ap.hasKey("nonunique") ? true : false;

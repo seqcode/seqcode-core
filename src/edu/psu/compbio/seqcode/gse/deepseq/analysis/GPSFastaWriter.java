@@ -10,8 +10,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
@@ -148,13 +148,13 @@ public class GPSFastaWriter{
 			}
 			
 		    // get the read data
-		    ArrayList<ChipSeqLocator> locators = new ArrayList<ChipSeqLocator>();
+		    ArrayList<SeqLocator> locators = new ArrayList<SeqLocator>();
 	        for (String dbStr: readDbStrings) {
 	            String[] pieces = dbStr.split(";");
 	            if (pieces.length == 2) {
-	            	locators.add(new ChipSeqLocator(pieces[0], pieces[1]));
+	            	locators.add(new SeqLocator(pieces[0], pieces[1]));
 	            } else if (pieces.length == 3) {
-	            	locators.add(new ChipSeqLocator(pieces[0], pieces[1], pieces[2]));
+	            	locators.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
 	            } else {
 	                throw new RuntimeException("Couldn't parse a ChipSeqLocator from " + dbStr);
 	            }

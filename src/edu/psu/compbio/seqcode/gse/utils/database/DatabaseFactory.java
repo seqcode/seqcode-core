@@ -69,29 +69,29 @@ public abstract class DatabaseFactory {
     }
 
     /**
-     * Returns a RW connection for the specified role using the specified username and password 
+     * Return the username associated with the role
+     * @param role
+     * @return
      */
-    public static Connection getConnection(String role, String uname, String passwd) throws SQLException, UnknownRoleException {
-        Properties props;
+    public static String getUsername(String role){
+    	Properties props = null;
         try {
             role = getRealRole(role);
-            props = getPropertiesForRole(role);
-            props.setProperty("user",uname);
-            props.setProperty("passwd",passwd);
-            String key = role + props.getProperty("user") + props.getProperty("schema");
-            if (!pools.containsKey(key)) {
-                addPool(key,props);
+            String user;
+            if (defaultUsers.containsKey(role) ) {
+                user = defaultUsers.get(role);
+            } else {
+                props = getPropertiesForRole(role);
+                user = props.getProperty("user");
+                defaultUsers.put(role,user);
             }
-            CxnPool pool = pools.get(key);
-            Connection cxn = pool.getConnection();
-            cxnSource.put(cxn,pool);
-            return cxn;
+            return user;
         } catch (IOException ex) {
             throw new RuntimeException("Couldn't read properties for " + role,ex);
         }
     }
-
-    /** for a given role name, eg chipchpi, look up
+    
+    /** for a given role name, eg chipchip, look up
      * CHIPCHIPROLE in the environment.  If it's set,
      * use its value as the return value which is the
      * actual role to use.
@@ -194,12 +194,6 @@ public abstract class DatabaseFactory {
         String line;
         Properties props = new Properties();
         BufferedReader reader = new BufferedReader(new InputStreamReader(propstream));        
-        
-        /**
-         * TODO
-         * What the hell?  Why is this parsing the thing line-by-line, and not using the PropertyResourceBundle implementation
-         * provided by Java itself?  Did *I* do this?  (If so, sorry.)  -Tim
-         */
         
         while ((line = reader.readLine()) != null) {
         	try { 

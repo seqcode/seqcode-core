@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 
@@ -26,15 +26,15 @@ public class ListChipSeqAnalyses {
     public static void main(String[] args) throws Exception {
         Genome genome = Args.parseGenome(args).cdr();
         boolean html = Args.parseFlags(args).contains("html");
-        ArrayList<ChipSeqAnalysis> all = new ArrayList<ChipSeqAnalysis>();
-        all.addAll(ChipSeqAnalysis.getAll());
+        ArrayList<SeqAnalysis> all = new ArrayList<SeqAnalysis>();
+        all.addAll(SeqAnalysis.getAll());
         Collections.sort(all);
         if (html) {
             System.out.println("<tr><th>Name</th><th>Version</th><th>Analysis Program</th><th>Number of Binding Events</th><th>IP Experiments</th><th>Control Experimentss</th><th>database id</th></tr>");
         } 
 
 
-        for (ChipSeqAnalysis a : all) {
+        for (SeqAnalysis a : all) {
             int count = a.countResults(genome);
             if (count == 0) {
                 continue;

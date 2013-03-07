@@ -19,8 +19,6 @@ import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipDataset;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipDifferenceData;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipMSP;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ExptNameVersion;
-import edu.psu.compbio.seqcode.gse.datasets.chippet.ChipPetDatum;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ExpressionLoader;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ProbePlatform;
@@ -36,6 +34,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.locators.ChipChipDifferenceLocator;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -389,10 +388,10 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 		if (opts.chipseqExpts.size() > 0) {
 			try {
-				ChipSeqLoader loader = new ChipSeqLoader();
+				SeqDataLoader loader = new SeqDataLoader();
 
 				for(int i = 0; i < opts.chipseqExpts.size(); i++) { 
-					Collection<ChipSeqAlignment> alignments = loader.loadAlignments(opts.chipseqExpts.get(i), genome);
+					Collection<SeqAlignment> alignments = loader.loadAlignments(opts.chipseqExpts.get(i), genome);
 
 					RegionModel m;
 					RegionPaintable p;
@@ -420,10 +419,10 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		}
 		if (opts.pairedChipseqExpts.size() > 0) {
 			try {
-				ChipSeqLoader loader = new ChipSeqLoader(true);
+				SeqDataLoader loader = new SeqDataLoader(true);
 				for(int i = 0; i < opts.pairedChipseqExpts.size(); i++) { 
 
-					Collection<ChipSeqAlignment> alignments = loader.loadAlignments(opts.pairedChipseqExpts.get(i), genome);
+					Collection<SeqAlignment> alignments = loader.loadAlignments(opts.pairedChipseqExpts.get(i), genome);
 					PairedEndModel m = new PairedEndModel(alignments);
 					PairedEndPainter p = new PairedEndPainter(m);
 					addModel(m);
@@ -441,10 +440,10 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		}
 		if (opts.chiapetArcs.size() > 0) {
 			try {
-				ChipSeqLoader loader = new ChipSeqLoader(true);
+				SeqDataLoader loader = new SeqDataLoader(true);
 				for(int i = 0; i < opts.chiapetArcs.size(); i++) { 
 
-					Collection<ChipSeqAlignment> alignments = loader.loadAlignments(opts.chiapetArcs.get(i), genome);
+					Collection<SeqAlignment> alignments = loader.loadAlignments(opts.chiapetArcs.get(i), genome);
 					InteractionArcModel m = new InteractionArcModel(alignments);
 					InteractionArcPainter p = new InteractionArcPainter(m);
 					addModel(m);
@@ -462,9 +461,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		}
 		if (opts.chipseqAnalyses.size() > 0) {
 			try {
-				ChipSeqLoader loader = new ChipSeqLoader(true);
+				SeqDataLoader loader = new SeqDataLoader(true);
 				for (int i = 0; i < opts.chipseqAnalyses.size(); i++) {
-					ChipSeqAnalysis a = opts.chipseqAnalyses.get(i);
+					SeqAnalysis a = opts.chipseqAnalyses.get(i);
 					ChipSeqAnalysisModel m = new ChipSeqAnalysisModel(a);
 					SeqAnalysisPainter p = new SeqAnalysisPainter(a,m);
 					addModel(m);
@@ -623,7 +622,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				addModel(m);
 				Thread t = new Thread(m);
 				t.start();
-				ChipChipMSPPainter p = new ChipChipMSPPainter(data,m);
+		/*		ChipChipMSPPainter p = new ChipChipMSPPainter(data,m);
 				scale.addModel(m);
 				p.setScaleModel(scale);
 				p.setLabel(label);
@@ -631,7 +630,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				p.setOption(SeqViewOptions.MSP,opts.msp.get(i));
 				addPainter(p);
 				addModelToPaintable(p, m);                
-				/* now add a scale if one doesn't already exist in this track */
+				// now add a scale if one doesn't already exist in this track 
 				boolean foundany = false;
 				for (RegionPaintable rp : painters.get(label)) {
 					if (rp instanceof ChipChipScalePainter) {
@@ -645,6 +644,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 					addPainter(s);        
 					addModelToPaintable(s, m);                
 				}                    
+		*/
 			} catch (NotFoundException ex) {
 				System.err.println("Couldn't find any dataset in " + genome + " for " + opts.msp.get(i));
 			}
@@ -663,7 +663,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				addModel(m);
 				Thread t = new Thread(m);
 				t.start();
-				ChipChipBayesPainter p = new ChipChipBayesPainter(data,m);
+			/*	ChipChipBayesPainter p = new ChipChipBayesPainter(data,m);
 				scale.addModel(m);
 				p.setScaleModel(scale);
 				p.setLabel(label);
@@ -671,7 +671,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				p.setOption(SeqViewOptions.BAYESRESULTS,opts.bayesresults.get(i));
 				addPainter(p);           
 				addModelToPaintable(p, m);     
-				/* now add a scale if one doesn't already exist in this track */
+				// now add a scale if one doesn't already exist in this track 
 				boolean foundany = false;
 				for (RegionPaintable rp : painters.get(label)) {
 					if (rp instanceof ChipChipBayesScalePainter) {
@@ -684,7 +684,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
 					s.setLabel(label);
 					addPainter(s);        
 					addModelToPaintable(s, m);            
-				}                    
+				}      
+				*/
 			} catch (NotFoundException ex) {
 				System.err.println("Couldn't find any dataset in " + genome + " for " + opts.bayesresults.get(i));
 			}
@@ -825,19 +826,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			} else if (factory.getProduct().equals("NamedRegion")) {
 				m = new RegionExpanderModel<NamedRegion>((Expander<Region,NamedRegion>)expander);
 				p = new NamedStrandedPainter((RegionExpanderModel<NamedRegion>)m); // yes, this works.  NamedStrandedPainter can handle non-stranded Regions
-			} else if (factory.getProduct().equals("HarbisonRegCodeRegion")) {
-				m = new RegionExpanderModel<HarbisonRegCodeRegion>((Expander<Region,HarbisonRegCodeRegion>)expander);
-				p = new HarbisonRegCodePainter((RegionExpanderModel<HarbisonRegCodeRegion>)m);
-			} else if (factory.getProduct().equals("HarbisonRegCodeProbes")) {
-				m = new RegionExpanderModel<HarbisonRegCodeProbe>((Expander<Region,HarbisonRegCodeProbe>)expander);
-				p = new HarbisonProbePainter((RegionExpanderModel<HarbisonRegCodeProbe>)m);
 			} else if (factory.getProduct().equals("SpottedProbe")) {
 				m = new RegionExpanderModel<SpottedProbe>((Expander<Region,SpottedProbe>)expander);
 				p = new SpottedProbePainter((RegionExpanderModel<SpottedProbe>)m);
-			} else if (factory.getProduct().equals("ChipPet")) { 
-				m = new ScoreTrackModel((Expander<Region,ChipPetDatum>)expander);
-				//p = new ScoreTrackPainter((ScoreTrackModel)m);
-				p = new IntervalPainter((ScoreTrackModel)m);
 			} else {
 				throw new RuntimeException("Don't understand product type " + factory.getProduct());
 			}

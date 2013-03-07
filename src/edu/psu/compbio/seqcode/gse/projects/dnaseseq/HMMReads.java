@@ -5,8 +5,8 @@ import java.util.*;
 import cern.jet.random.Binomial;
 import cern.jet.random.Normal;
 import cern.jet.random.engine.DRand;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
@@ -31,8 +31,8 @@ public class HMMReads implements Closeable {
         smooth = s;
     }
     public ReadCounts getReadCounts(Region region,
-                                    Collection<ChipSeqAlignment> fgalignments,
-                                    Collection<ChipSeqAlignment> bgalignments) throws IOException, ClientException {
+                                    Collection<SeqAlignment> fgalignments,
+                                    Collection<SeqAlignment> bgalignments) throws IOException, ClientException {
         ReadCounts fg = getReadCounts(region, fgalignments);
         ReadCounts bg = getReadCounts(region, bgalignments);
         int fgc[] = fg.getCounts();
@@ -45,13 +45,13 @@ public class HMMReads implements Closeable {
 
 
     public ReadCounts getReadCounts(Region region,
-                                    Collection<ChipSeqAlignment> alignments) throws IOException, ClientException {
+                                    Collection<SeqAlignment> alignments) throws IOException, ClientException {
         int output[] = new int[region.getWidth()];
         int regionstart = region.getStart();
         for (int i = 0; i < output.length; i++) {
             output[i] = 0;
         }
-        for (ChipSeqAlignment a : alignments) {
+        for (SeqAlignment a : alignments) {
             TreeMap<Integer,Integer> m = client.getHistogram(Integer.toString(a.getDBID()),
                                                              region.getGenome().getChromID(region.getChrom()),
                                                              false,

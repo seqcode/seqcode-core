@@ -13,8 +13,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.deepseq.ReadHit;
@@ -32,10 +32,10 @@ public class DiffSeqExptPaintable extends AbstractPaintable {
 
 			Region r = new Region(g, "6", 52000000, 52200000);
 			
-			List<ChipSeqLocator> expts = new ArrayList<ChipSeqLocator>();
-			List<ChipSeqLocator> bases = new ArrayList<ChipSeqLocator>();
-			expts.add(new ChipSeqLocator("PPG Day2+8h RAR HBG3", "bowtie_unique"));
-			bases.add(new ChipSeqLocator("PPG Day2 RAR HBG3", "bowtie_unique"));
+			List<SeqLocator> expts = new ArrayList<SeqLocator>();
+			List<SeqLocator> bases = new ArrayList<SeqLocator>();
+			expts.add(new SeqLocator("PPG Day2+8h RAR HBG3", "bowtie_unique"));
+			bases.add(new SeqLocator("PPG Day2 RAR HBG3", "bowtie_unique"));
 
 			DiffSeqExptPaintable p = new DiffSeqExptPaintable(g, r, expts, bases, 2000, 1000, 1);
 
@@ -67,7 +67,7 @@ public class DiffSeqExptPaintable extends AbstractPaintable {
 	private int[] dataProfile;  // y pixel values of where the data line is drawn.
 
 	//Load data from ReadDB sources
-	public DiffSeqExptPaintable(Genome gen, Region basereg, List<ChipSeqLocator> exptLocs, List<ChipSeqLocator> baseLocs, int win, int step, double scaling) { 
+	public DiffSeqExptPaintable(Genome gen, Region basereg, List<SeqLocator> exptLocs, List<SeqLocator> baseLocs, int win, int step, double scaling) { 
 		this.gen = gen;
 		region = basereg;
 		signal = new DeepSeqExpt(gen, exptLocs, "readdb", 1);

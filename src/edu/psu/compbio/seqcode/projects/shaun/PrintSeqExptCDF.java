@@ -34,7 +34,7 @@ public class PrintSeqExptCDF {
 			org = Organism.getOrganism(species);
 			gen = org.getGenome(genome);
 			
-			SeqExptHandler exHandle = new SeqExptHandler(org, gen, exptName);
+			SeqDataHandler exHandle = new SeqDataHandler(org, gen, exptName);
 			exHandle.compileCDF(cdfThres);
 			exHandle.printCDF(outName);
 			

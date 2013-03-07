@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.BindingModel;
@@ -229,8 +229,8 @@ public class EnhancerChromatinAnalysis {
 			if (!fromFile){
 				String expt = "Wysocka "+cellStr+" "+markNames.get(i)+" H9";
 				String align = "prealigned_unique";
-				List<ChipSeqLocator> locators = new ArrayList<ChipSeqLocator>();
-				locators.add(new ChipSeqLocator(expt, align));
+				List<SeqLocator> locators = new ArrayList<SeqLocator>();
+				locators.add(new SeqLocator(expt, align));
 				DeepSeqExpt ip = new DeepSeqExpt(genome, locators, "readdb", -1);
 	
 				// cache sorted start positions and counts of all positions

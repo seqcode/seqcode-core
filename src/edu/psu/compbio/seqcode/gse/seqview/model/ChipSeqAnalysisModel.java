@@ -2,20 +2,20 @@ package edu.psu.compbio.seqcode.gse.seqview.model;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
 public class ChipSeqAnalysisModel extends SeqViewModel implements RegionModel, Runnable {
 
-    private ChipSeqAnalysis analysis;
+    private SeqAnalysis analysis;
     private ChipSeqAnalysisProperties props;
 
-    private Collection<ChipSeqAnalysisResult> results;
+    private Collection<SeqAnalysisResult> results;
     private Region region;
     private boolean newinput;
 
-    public ChipSeqAnalysisModel(ChipSeqAnalysis a) {
+    public ChipSeqAnalysisModel(SeqAnalysis a) {
         analysis = a;
         props = new ChipSeqAnalysisProperties();
     }
@@ -34,7 +34,7 @@ public class ChipSeqAnalysisModel extends SeqViewModel implements RegionModel, R
         }
     }
     public boolean isReady() {return !newinput;}
-    public Collection<ChipSeqAnalysisResult> getResults() { return results;}
+    public Collection<SeqAnalysisResult> getResults() { return results;}
     public synchronized void run() {
         while(keepRunning()) {
             try {
@@ -49,7 +49,7 @@ public class ChipSeqAnalysisModel extends SeqViewModel implements RegionModel, R
                     results = analysis.getResults(region);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    results = new ArrayList<ChipSeqAnalysisResult>();
+                    results = new ArrayList<SeqAnalysisResult>();
                 }
                 newinput = false;
                 notifyListeners();

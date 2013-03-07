@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.RefGeneGenerator;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
@@ -64,7 +64,7 @@ public class ChipSeqFigurePaintable extends FigurePaintable{
 		//Initialize thin painters
 		for(String t : exptNames){
 			List<Pair<Point,Point>> inters = options.experiments.get(t).inters;
-			ChipSeqLocator loc = options.experiments.get(t).expt;
+			SeqLocator loc = options.experiments.get(t).expt;
 			ArrayList<Region> sites = options.experiments.get(t).peaks;
 			if(options.experiments.get(t).preFormattedDataFile != null){
 				//Initialize a DiffSeqExptPaintable, even for non-diff experiments
@@ -82,9 +82,9 @@ public class ChipSeqFigurePaintable extends FigurePaintable{
 				exptPainters.put(t, dp);
 			}else if(loc!=null){
 				if(options.experiments.get(t).isDiff && options.experiments.get(t).baseExpt != null){
-					ChipSeqLocator otherLoc = options.experiments.get(t).baseExpt;
-					List<ChipSeqLocator> locs = new ArrayList<ChipSeqLocator>(); locs.add(loc);
-					List<ChipSeqLocator> otherLocs = new ArrayList<ChipSeqLocator>(); otherLocs.add(otherLoc);
+					SeqLocator otherLoc = options.experiments.get(t).baseExpt;
+					List<SeqLocator> locs = new ArrayList<SeqLocator>(); locs.add(loc);
+					List<SeqLocator> otherLocs = new ArrayList<SeqLocator>(); otherLocs.add(otherLoc);
 					//Initialize a DiffSeqExptPaintable
 					DiffSeqExptPaintable dp = new DiffSeqExptPaintable(options.genome, options.gRegion, locs, otherLocs, options.experiments.get(t).diffWinWidth, options.experiments.get(t).diffWinStep, options.experiments.get(t).scaling );
 					dp.setSigPerBaseMax(options.experiments.get(t).pbMax);

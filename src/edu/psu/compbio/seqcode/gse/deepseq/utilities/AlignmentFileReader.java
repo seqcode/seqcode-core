@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.deepseq.Read;
 import edu.psu.compbio.seqcode.gse.deepseq.ReadHit;

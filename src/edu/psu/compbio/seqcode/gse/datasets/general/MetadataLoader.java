@@ -52,6 +52,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
     private Map<String,ExptTarget> targetNames;
     private Map<String,ExptType> exptTypeNames;
     private Map<String,ReadType> readTypeNames;
+    private Map<String,AlignType> alignTypeNames;
 	
     private Map<Integer,Lab> labIDs;
     private Map<Integer,CellLine> cellIDs;
@@ -59,12 +60,13 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
     private Map<Integer,ExptTarget> targetIDs;
     private Map<Integer,ExptType> exptTypeIDs;
     private Map<Integer,ReadType> readTypeIDs;
+    private Map<Integer,AlignType> alignTypeIDs;
 	
     private java.sql.Connection cxn;
     
-    private PreparedStatement loadLabs, loadCells, loadCond, loadTargets, loadExptTypes, loadReadTypes;
-    private PreparedStatement loadAllLabs, loadAllCells, loadAllCond, loadAllTargets, loadAllExptTypes, loadAllReadTypes;
-    private PreparedStatement loadLabsByName, loadCellsByName, loadCondByName, loadTargetsByName, loadExptTypesByName, loadReadTypesByName;
+    private PreparedStatement loadLabs, loadCells, loadCond, loadTargets, loadExptTypes, loadReadTypes, loadAlignTypes;
+    private PreparedStatement loadAllLabs, loadAllCells, loadAllCond, loadAllTargets, loadAllExptTypes, loadAllReadTypes, loadAllAlignTypes;
+    private PreparedStatement loadLabsByName, loadCellsByName, loadCondByName, loadTargetsByName, loadExptTypesByName, loadReadTypesByName, loadAlignTypesByName;
 	
     public MetadataLoader() throws SQLException { 
         try {
@@ -79,6 +81,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         loadTargets = cxn.prepareStatement("select id, name from expttarget where id=?");
         loadExptTypes = cxn.prepareStatement("select id, name from expttype where id=?");
         loadReadTypes = cxn.prepareStatement("select id, name from readtype where id=?");
+        loadAlignTypes = cxn.prepareStatement("select id, name from aligntype where id=?");
 
         loadAllLabs = cxn.prepareStatement("select id, name from lab");
         loadAllCells = cxn.prepareStatement("select id, name from cellline");
@@ -86,6 +89,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         loadAllTargets = cxn.prepareStatement("select id, name from expttarget");
         loadAllExptTypes = cxn.prepareStatement("select id, name from expttype");
         loadAllReadTypes = cxn.prepareStatement("select id, name from readtype");
+        loadAllAlignTypes = cxn.prepareStatement("select id, name from aligntype");
 
         loadLabsByName = cxn.prepareStatement("select id, name from lab where name=?");
         loadCellsByName = cxn.prepareStatement("select id, name from cellline where name=?");
@@ -93,6 +97,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         loadTargetsByName = cxn.prepareStatement("select id, name from expttarget where name=?");
         loadExptTypesByName = cxn.prepareStatement("select id, name from expttype where name=?");
         loadReadTypesByName = cxn.prepareStatement("select id, name from readtype where name=?");
+        loadAlignTypesByName = cxn.prepareStatement("select id, name from aligntype where name=?");
 
         labNames = new HashMap<String,Lab>();
         labIDs = new HashMap<Integer,Lab>();
@@ -106,6 +111,8 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         exptTypeIDs = new HashMap<Integer,ExptType>();
         readTypeNames = new HashMap<String,ReadType>();
         readTypeIDs = new HashMap<Integer,ReadType>();
+        alignTypeNames = new HashMap<String,AlignType>();
+        alignTypeIDs = new HashMap<Integer,AlignType>();
     }
 	
     public boolean isClosed() { return cxn==null; }
@@ -118,6 +125,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
             loadTargets.close(); loadTargets = null;
             loadExptTypes.close(); loadExptTypes = null;
             loadReadTypes.close(); loadReadTypes = null;
+            loadAlignTypes.close(); loadAlignTypes = null;
 
             loadAllLabs.close(); loadAllLabs = null;
             loadAllCells.close(); loadAllCells = null;
@@ -125,6 +133,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
             loadAllTargets.close(); loadAllTargets = null;
             loadAllExptTypes.close(); loadAllExptTypes = null;
             loadAllReadTypes.close(); loadAllReadTypes = null;
+            loadAllAlignTypes.close(); loadAllAlignTypes = null;
             
             loadLabsByName.close(); loadLabsByName=null;
             loadCellsByName.close();  loadCellsByName = null;
@@ -132,6 +141,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
             loadTargetsByName.close(); loadTargetsByName = null;
             loadExptTypesByName.close(); loadExptTypesByName = null;
             loadReadTypesByName.close(); loadReadTypesByName = null;
+            loadAlignTypesByName.close(); loadAlignTypesByName = null;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -896,5 +906,129 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         return id;
     }
 
+
+    //////////////////
+    // AlignType stuff
+    //////////////////
     
+    public AlignType getAlignType(String name) throws SQLException { 
+        synchronized (loadReadTypesByName) {
+            loadReadTypesByName.setString(1, name);
+            ResultSet rs = loadReadTypesByName.executeQuery();
+            
+            if(rs.next()) { 
+            	AlignType a = new AlignType(rs);
+                rs.close();
+                
+                if(!alignTypeIDs.containsKey(a.getDBID())) { 
+                    alignTypeIDs.put(a.getDBID(), a);
+                    alignTypeNames.put(a.getName(), a);
+                }
+                return a;
+            }
+            rs.close();
+        }
+        int id = insertAlignType(name);
+        return loadAlignType(id);
+    }
+    
+    public AlignType findAlignType(String name) throws SQLException { 
+        synchronized (loadAlignTypesByName) {
+            loadAlignTypesByName.setString(1, name);
+            ResultSet rs = loadAlignTypesByName.executeQuery();
+            
+            if(rs.next()) { 
+            	AlignType a = new AlignType(rs);
+                rs.close();
+                
+                if(!alignTypeIDs.containsKey(a.getDBID())) { 
+                    alignTypeIDs.put(a.getDBID(), a);
+                    alignTypeNames.put(a.getName(), a);
+                }
+                return a;
+            }            
+            rs.close();
+            return null;
+        }
+    }
+    
+    public AlignType loadAlignType(int dbid) throws SQLException { 
+        if(alignTypeIDs.containsKey(dbid)) { return alignTypeIDs.get(dbid); }
+
+        AlignType a = null;
+        synchronized(loadAlignTypes) {
+            loadAlignTypes.setInt(1, dbid);
+            ResultSet rs = loadAlignTypes.executeQuery();
+            if(rs.next()) { 
+                a = new AlignType(rs);
+                rs.close();
+            } else {
+                rs.close();
+                throw new IllegalArgumentException("Unknown AlignType DBID: " + dbid);
+            }
+        }        
+        alignTypeIDs.put(dbid, a);
+        alignTypeNames.put(a.getName(), a);
+        return a;
+    }
+    
+    public Collection<AlignType> loadAllAlignTypes(Collection<Integer> dbids) throws SQLException {
+
+        LinkedList<AlignType> values = new LinkedList<AlignType>();
+        for(int dbid : dbids) { values.addLast(loadAlignType(dbid)); }
+        return values;
+    }
+
+    public Collection<AlignType> loadAllAlignTypes() throws SQLException {
+        
+        HashSet<AlignType> values = new HashSet<AlignType>();
+        ResultSet rs = loadAllReadTypes.executeQuery();
+
+        while(rs.next()) { 
+        	AlignType a = new AlignType(rs);
+            values.add(a);
+            alignTypeNames.put(a.getName(), a);
+            alignTypeIDs.put(a.getDBID(),a);
+        }
+        rs.close();
+        return values;
+    }	
+	
+    private int insertAlignType(String n) throws SQLException {
+    	Statement s = null;
+    	ResultSet rs = null;
+    	int id=-1;
+    	try{
+	    	s = cxn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+	    						    java.sql.ResultSet.CONCUR_UPDATABLE);
+	        s.executeUpdate("insert into aligntype (name) values ('" + n + "')", Statement.RETURN_GENERATED_KEYS);
+	        rs = s.getGeneratedKeys();
+
+	        if (rs.next())
+	            id = rs.getInt(1);
+	        else 
+	        	throw new IllegalArgumentException("Unable to insert new entry into aligntype table"); 
+	        rs.close();
+	        rs = null;
+	    } finally {
+	        if (rs != null) {
+	            try {
+	                rs.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+
+	        if (s != null) {
+	            try {
+	                s.close();
+	            } catch (SQLException ex) {
+	                // ignore
+	            }
+	        }
+	    }
+        return id;
+    }
+
+
 }

@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExptHandler;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -26,10 +26,10 @@ public class SeqExptInfo {
 	private DeepSeqExpt dse;
 	private double totalReads=0;
 	private List<File> exptFiles =null;
-	private List<ChipSeqLocator> exptLocs =null;
+	private List<SeqLocator> exptLocs =null;
 	
 	//Constructor 
-	public SeqExptInfo(Genome gen, String eName, String eType, String eCtrl, double eReadLen, double eReadShift, List<ChipSeqLocator> expts){
+	public SeqExptInfo(Genome gen, String eName, String eType, String eCtrl, double eReadLen, double eReadShift, List<SeqLocator> expts){
 		usingFile=false;
 		useNonUnique=false;
 		exptLocs = expts;

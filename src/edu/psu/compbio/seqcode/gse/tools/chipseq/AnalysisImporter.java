@@ -4,8 +4,8 @@ import java.util.*;
 import java.io.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -54,7 +54,7 @@ public class AnalysisImporter {
         importer.close();
     }
 
-    private ChipSeqAnalysis analysis;
+    private SeqAnalysis analysis;
     private Genome genome;
     public AnalysisImporter() {}
     public void parseArgs(String args[]) throws NotFoundException, SQLException, DatabaseException, IOException {
@@ -62,15 +62,15 @@ public class AnalysisImporter {
         String version = Args.parseString(args,"version",null);
         String program = Args.parseString(args,"program",null);
         genome = Args.parseGenome(args).cdr();
-        ChipSeqLoader loader = new ChipSeqLoader();
-        analysis = new ChipSeqAnalysis(name,version,program, !Args.parseFlags(args).contains("inactive"));
+        SeqDataLoader loader = new SeqDataLoader();
+        analysis = new SeqAnalysis(name,version,program, !Args.parseFlags(args).contains("inactive"));
 
         String paramsfname = Args.parseString(args,"paramfile",null);
         if (paramsfname != null) {
-            analysis.setParameters(ChipSeqLoader.readParameters(new BufferedReader(new FileReader(paramsfname))));
+            analysis.setParameters(SeqDataLoader.readParameters(new BufferedReader(new FileReader(paramsfname))));
         }
-        Set<ChipSeqAlignment> fg = new HashSet<ChipSeqAlignment>();
-        Set<ChipSeqAlignment> bg = new HashSet<ChipSeqAlignment>();
+        Set<SeqAlignment> fg = new HashSet<SeqAlignment>();
+        Set<SeqAlignment> bg = new HashSet<SeqAlignment>();
         for (String s : Args.parseStrings(args,"foreground")) {
             String pieces[] = s.split(";");
             if (pieces.length == 2) {
@@ -79,10 +79,11 @@ public class AnalysisImporter {
                                                 null,
                                                 pieces[1],
                                                 null,null,null,
+                                                null,null,null,
                                                 genome));
             } else if (pieces.length == 3) {
                 System.err.println("fg 3");
-                fg.addAll(loader.loadAlignments(new ChipSeqLocator(pieces[0],pieces[1],pieces[2]),genome));
+                fg.addAll(loader.loadAlignments(new SeqLocator(pieces[0],pieces[1],pieces[2]),genome));
             } else {
                 System.err.println("Bad alignment spec: " + s);
             }
@@ -94,10 +95,11 @@ public class AnalysisImporter {
                                                 null,
                                                 pieces[1],
                                                 null,null,null,
+                                                null,null,null,
                                                 genome));
 
             } else if (pieces.length == 3) {
-                bg.addAll(loader.loadAlignments(new ChipSeqLocator(pieces[0],pieces[1],pieces[2]),genome));
+                bg.addAll(loader.loadAlignments(new SeqLocator(pieces[0],pieces[1],pieces[2]),genome));
             } else {
                 System.err.println("Bad alignment spec: " + s);
             }
@@ -109,7 +111,7 @@ public class AnalysisImporter {
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         String line;
         while ((line = reader.readLine()) != null) {
-            ChipSeqAnalysisResult r = null;
+            SeqAnalysisResult r = null;
             try {
                 r = parseLine(line);
             } catch (Exception e) {
@@ -126,9 +128,9 @@ public class AnalysisImporter {
         }
         analysis.store();
     }
-    public ChipSeqAnalysisResult parseLine(String line) {
+    public SeqAnalysisResult parseLine(String line) {
         String pieces[] = line.split("\\t");
-        return new ChipSeqAnalysisResult(getGenome(),
+        return new SeqAnalysisResult(getGenome(),
                                          pieces[0],
                                          Integer.parseInt(pieces[1]),
                                          Integer.parseInt(pieces[2]),

@@ -13,9 +13,8 @@ import java.io.IOException;
 
 
 
-import edu.psu.compbio.seqcode.gse.datasets.chippet.RunningOverlapSum;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.*;
@@ -35,7 +34,7 @@ public class ThinOverlapPaintable extends AbstractPaintable {
 
 			String chrom = r.getChrom();
 						
-			ChipSeqLocator loc = new ChipSeqLocator("PPG Day2+8h RAR HBG3", "bowtie_unique");
+			SeqLocator loc = new SeqLocator("PPG Day2+8h RAR HBG3", "bowtie_unique");
 
 			LinkedList<Region> highlights = new LinkedList<Region>();
 			highlights.add(new Region(g, chrom, 52030000, 52040000));
@@ -72,12 +71,12 @@ public class ThinOverlapPaintable extends AbstractPaintable {
 	private boolean[][] bgPoints;
 	private boolean[][] hlPoints;
 	
-	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, ChipSeqLocator loc) throws SQLException, IOException { 
-		this(basereg, hls, new ClosingRegionExpanderWrapper<ChipSeqHit>(new ChipSeqExpander(loc)));
+	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, SeqLocator loc) throws SQLException, IOException { 
+		this(basereg, hls, new ClosingRegionExpanderWrapper<SeqHit>(new SeqExpander(loc)));
 	}
 	
-	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, ChipSeqLocator loc, int extend) throws SQLException, IOException { 
-		this(basereg, hls, new ClosingRegionExpanderWrapper<ChipSeqHit>(new ChipSeqExpander(loc), new ChipSeqHitExtender(extend)));
+	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, SeqLocator loc, int extend) throws SQLException, IOException { 
+		this(basereg, hls, new ClosingRegionExpanderWrapper<SeqHit>(new SeqExpander(loc), new ChipSeqHitExtender(extend)));
 	}
 	
 	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, Expander<Region,? extends Region> exp) { 

@@ -4,9 +4,9 @@ import java.io.*;
 import java.util.*;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Aggregator;
@@ -28,31 +28,31 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
  */
 
 public class HMMTest {
-    private ChipSeqLoader loader;
+    private SeqDataLoader loader;
     private HMMReads reads;
     private Genome genome;
     private SequenceGenerator seqgen;
     private List<Region> testRegions;
-    private List<ChipSeqAlignment> alignments, bgAlignments;
+    private List<SeqAlignment> alignments, bgAlignments;
     private String modelFname;
 
     private HMM hmm;
 
     public HMMTest() throws IOException, ClientException, SQLException {
         reads = new HMMReads();
-        loader = new ChipSeqLoader();
+        loader = new SeqDataLoader();
     }
     public void parseArgs(String args[]) throws NotFoundException, SQLException, IOException {
         modelFname = Args.parseString(args,"modelfile","hmm.model");
         genome = Args.parseGenome(args).cdr();
         testRegions = Args.parseRegions(args);
-        ChipSeqAnalysis dnaseq = Args.parseChipSeqAnalysis(args,"dnaseq");
-        alignments = new ArrayList<ChipSeqAlignment>();
+        SeqAnalysis dnaseq = Args.parseChipSeqAnalysis(args,"dnaseq");
+        alignments = new ArrayList<SeqAlignment>();
         alignments.addAll(dnaseq.getForeground());
-        bgAlignments = new ArrayList<ChipSeqAlignment>();
+        bgAlignments = new ArrayList<SeqAlignment>();
         bgAlignments.addAll(dnaseq.getBackground());
-        List<ChipSeqLocator> bg = Args.parseChipSeq(args,"dnaseqbg");
-        for (ChipSeqLocator locator : bg) {
+        List<SeqLocator> bg = Args.parseChipSeq(args,"dnaseqbg");
+        for (SeqLocator locator : bg) {
             bgAlignments.addAll(loader.loadAlignments(locator,genome));
         }
         seqgen = new SequenceGenerator(genome);

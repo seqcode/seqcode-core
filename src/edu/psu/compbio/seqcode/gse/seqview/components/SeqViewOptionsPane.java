@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.io.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipDataset;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedTypedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.locators.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -474,13 +474,13 @@ public class SeqViewOptionsPane
         these.regexmatcher = regexmatcher.isSelected();
         
         chiapettracks.parse(these.chiapetExpts);
-        for(ChipSeqLocator loc : seqSelect.getSelected()) { 
+        for(SeqLocator loc : seqSelect.getSelected()) { 
             these.chipseqExpts.add(loc);
         }
-        for(ChipSeqLocator loc : pairedSeqSelect.getSelected()) { 
+        for(SeqLocator loc : pairedSeqSelect.getSelected()) { 
             these.pairedChipseqExpts.add(loc);
         }
-        for (ChipSeqLocator loc : interactionArcSelect.getSelected()) {
+        for (SeqLocator loc : interactionArcSelect.getSelected()) {
         	these.chiapetArcs.add(loc);
         }
         

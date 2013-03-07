@@ -6,8 +6,8 @@ import java.sql.SQLException;
 import cern.jet.random.Gamma;
 import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -26,8 +26,8 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class DumpExpression {
 
-    ChipSeqLoader loader;
-    List<ChipSeqAlignment> aligns;
+    SeqDataLoader loader;
+    List<SeqAlignment> aligns;
     RefGeneGenerator genes;
     Genome genome;
 
@@ -39,13 +39,13 @@ public class DumpExpression {
     }
 
     public DumpExpression() throws SQLException, IOException {
-        loader = new ChipSeqLoader();
-        aligns = new ArrayList<ChipSeqAlignment>();
+        loader = new SeqDataLoader();
+        aligns = new ArrayList<SeqAlignment>();
     }
     public void parseArgs(String args[]) throws SQLException, NotFoundException {
         genome = Args.parseGenome(args).cdr();
-        List<ChipSeqLocator> locators = Args.parseChipSeq(args,"align");
-        for (ChipSeqLocator locator : locators) {
+        List<SeqLocator> locators = Args.parseChipSeq(args,"align");
+        for (SeqLocator locator : locators) {
             aligns.addAll(loader.loadAlignments(locator,genome));
         }
         // parseGenes returns a list of genes; just take the first one

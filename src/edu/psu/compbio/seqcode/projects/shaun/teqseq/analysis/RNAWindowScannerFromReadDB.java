@@ -14,8 +14,8 @@ import java.util.Vector;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
@@ -1280,13 +1280,13 @@ public class RNAWindowScannerFromReadDB {
 			for(String name : conditionNames){
 				for(String s : expts.get(name)){
 					String[] parts = s.split(";");
-					List<ChipSeqLocator> singleLocs = new ArrayList<ChipSeqLocator>();
-					List<ChipSeqLocator> junctLocs = new ArrayList<ChipSeqLocator>();
-					List<ChipSeqLocator> pairedLocs = new ArrayList<ChipSeqLocator>();
+					List<SeqLocator> singleLocs = new ArrayList<SeqLocator>();
+					List<SeqLocator> junctLocs = new ArrayList<SeqLocator>();
+					List<SeqLocator> pairedLocs = new ArrayList<SeqLocator>();
 					
-					singleLocs.add(new ChipSeqLocator(parts[0], parts[1], "tophat_single"));
-					junctLocs.add(new ChipSeqLocator(parts[0], parts[1], "tophat_junctions"));
-					pairedLocs.add(new ChipSeqLocator(parts[0], parts[1], "tophat_paired"));
+					singleLocs.add(new SeqLocator(parts[0], parts[1], "tophat_single"));
+					junctLocs.add(new SeqLocator(parts[0], parts[1], "tophat_junctions"));
+					pairedLocs.add(new SeqLocator(parts[0], parts[1], "tophat_paired"));
 					
 					//ReadDBSource
 					ReadDBSource rl = new ReadDBSource(s, gLoad.getGenome(), singleLocs, junctLocs, pairedLocs);

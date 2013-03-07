@@ -9,8 +9,8 @@ import edu.psu.compbio.seqcode.gse.clustering.hierarchical.HierarchicalClusterin
 import edu.psu.compbio.seqcode.gse.clustering.pairedhitcluster.PairedHitClusterRepresentative;
 import edu.psu.compbio.seqcode.gse.clustering.pairedhitcluster.PairedHitClusterable;
 import edu.psu.compbio.seqcode.gse.clustering.vectorcluster.ChebyshevDistance;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
@@ -21,7 +21,7 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 public class PairedEndModel extends SeqViewModel implements RegionModel, Runnable {
 
     private Client client;
-    private Set<ChipSeqAlignment> alignments;
+    private Set<SeqAlignment> alignments;
     private Set<String> ids;
     private Region region;
     private boolean newinput;
@@ -31,13 +31,13 @@ public class PairedEndModel extends SeqViewModel implements RegionModel, Runnabl
     private HierarchicalClustering<PairedHitClusterable> clustering;
     private PairedHitClusterRepresentative repr = new PairedHitClusterRepresentative();
 
-    public PairedEndModel (Collection<ChipSeqAlignment> alignments) throws IOException, ClientException{
+    public PairedEndModel (Collection<SeqAlignment> alignments) throws IOException, ClientException{
         client = new Client();
         comparator = new PairedHitLeftComparator();
-        this.alignments = new HashSet<ChipSeqAlignment>();
+        this.alignments = new HashSet<SeqAlignment>();
         this.alignments.addAll(alignments);
         ids = new HashSet<String>();
-        for (ChipSeqAlignment a : alignments) {
+        for (SeqAlignment a : alignments) {
             ids.add(Integer.toString(a.getDBID()));
         }
         results = null;

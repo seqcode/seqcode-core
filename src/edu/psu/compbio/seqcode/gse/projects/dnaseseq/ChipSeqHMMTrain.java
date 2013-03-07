@@ -4,9 +4,9 @@ import java.io.*;
 import java.util.*;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
@@ -34,7 +34,7 @@ import cern.jet.random.engine.DRand;
 
 
 public class ChipSeqHMMTrain extends HMMTrain {
-    private ChipSeqAnalysis binding;
+    private SeqAnalysis binding;
     private int bindingDistance;
     public ChipSeqHMMTrain() throws IOException, ClientException, SQLException{
         super();
@@ -54,7 +54,7 @@ public class ChipSeqHMMTrain extends HMMTrain {
         super.newTrainingRegion(region);
         bindingEvents = new ArrayList<Region>();
         try {
-            for (ChipSeqAnalysisResult result : binding.getResults(genome, region)) {
+            for (SeqAnalysisResult result : binding.getResults(genome, region)) {
                 if (result.foldEnrichment > 3) {
                     bindingEvents.add(result.expand(bindingDistance, bindingDistance));
                 }

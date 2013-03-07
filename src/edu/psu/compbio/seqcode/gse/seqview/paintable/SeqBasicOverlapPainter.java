@@ -9,9 +9,9 @@ import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipData;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.GenericExperiment;
-import edu.psu.compbio.seqcode.gse.datasets.chippet.WeightedRunningOverlapSum;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqHit;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.WeightedRunningOverlapSum;
 import edu.psu.compbio.seqcode.gse.datasets.species.ExonicGene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.ewok.nouns.*;

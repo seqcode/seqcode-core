@@ -4,24 +4,24 @@ import java.sql.SQLException;
 import java.util.*;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.Expander;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
-public class ChipSeqExpander implements Expander<Region, ChipSeqHit>, Closeable {
+public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
 
-    private ChipSeqLoader loader;
+    private SeqDataLoader loader;
     private Genome lastGenome;
-    private LinkedList<ChipSeqAlignment> alignments;
-    private ChipSeqLocator locator;
+    private LinkedList<SeqAlignment> alignments;
+    private SeqLocator locator;
     private boolean closeLoader;
 
 
-    public ChipSeqExpander(ChipSeqLocator loc) throws SQLException, IOException {
-        loader = new ChipSeqLoader();
+    public SeqExpander(SeqLocator loc) throws SQLException, IOException {
+        loader = new SeqDataLoader();
         closeLoader = true;
         locator = loc;
         alignments = null;
@@ -31,7 +31,7 @@ public class ChipSeqExpander implements Expander<Region, ChipSeqHit>, Closeable 
         if (alignments != null && genome.equals(lastGenome)) {
             return;
         }
-        alignments = new LinkedList<ChipSeqAlignment>();
+        alignments = new LinkedList<SeqAlignment>();
         lastGenome = genome;
         try {
             alignments.addAll(locator.loadAlignments(loader, genome));
@@ -42,23 +42,23 @@ public class ChipSeqExpander implements Expander<Region, ChipSeqHit>, Closeable 
         }
     }
 
-    public ChipSeqExpander(ChipSeqLoader l, ChipSeqAlignment a, boolean closeLoader) {
+    public SeqExpander(SeqDataLoader l, SeqAlignment a, boolean closeLoader) {
         loader = l;
-        alignments = new LinkedList<ChipSeqAlignment>();
+        alignments = new LinkedList<SeqAlignment>();
         alignments.add(a);
         this.closeLoader = closeLoader;
     }
 
 
-    public Iterator<ChipSeqHit> execute(Region a) {
+    public Iterator<SeqHit> execute(Region a) {
         try {
             getAligns(a.getGenome());
-            Collection<ChipSeqHit> hits = loader.loadByRegion(alignments, a);
+            Collection<SeqHit> hits = loader.loadByRegion(alignments, a);
             return hits.iterator();
         }
         catch (Exception e) {
             e.printStackTrace();
-            return new LinkedList<ChipSeqHit>().iterator();
+            return new LinkedList<SeqHit>().iterator();
         }
     }
 
@@ -80,7 +80,7 @@ public class ChipSeqExpander implements Expander<Region, ChipSeqHit>, Closeable 
     public Collection<Genome> alignedGenomes() {
         LinkedList<Genome> genomes = new LinkedList<Genome>();
         if (alignments != null) {
-            for (ChipSeqAlignment align : alignments) {
+            for (SeqAlignment align : alignments) {
                 genomes.add(align.getGenome());
             }
         }

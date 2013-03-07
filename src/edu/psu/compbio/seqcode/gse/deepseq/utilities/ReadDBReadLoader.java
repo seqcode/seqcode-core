@@ -17,12 +17,12 @@ import java.util.Vector;
 
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAlignment;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExpt;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqHit;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLoader;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.deepseq.ExtReadHit;
 import edu.psu.compbio.seqcode.gse.deepseq.ReadHit;
@@ -34,11 +34,11 @@ public class ReadDBReadLoader extends ReadLoader{
 
 	private Client client=null;
 	private List<String> exptNames =new ArrayList<String>();
-	private List<ChipSeqAlignment> aligns = new ArrayList<ChipSeqAlignment>();
+	private List<SeqAlignment> aligns = new ArrayList<SeqAlignment>();
 	protected int currID=0;
 
-	public ReadDBReadLoader(Genome g, List<ChipSeqLocator> locs, int rLen){this(g, locs, rLen, false);}
-	public ReadDBReadLoader(Genome g, List<ChipSeqLocator> locs, int rLen, boolean pairedEnd){
+	public ReadDBReadLoader(Genome g, List<SeqLocator> locs, int rLen){this(g, locs, rLen, false);}
+	public ReadDBReadLoader(Genome g, List<SeqLocator> locs, int rLen, boolean pairedEnd){
 		super(g, rLen);
 
 		if (locs.size() == 0) {
@@ -48,17 +48,17 @@ public class ReadDBReadLoader extends ReadLoader{
 		currID=new Random(System.currentTimeMillis()).nextInt();
 		try {
 			//Initialize
-			ChipSeqLoader loader = new ChipSeqLoader(false); 
+			SeqDataLoader loader = new SeqDataLoader(false); 
 			try{
-				for(ChipSeqLocator locator : locs){
+				for(SeqLocator locator : locs){
 					String exptName = locator.getExptName(); exptNames.add(exptName);
 					if (locator.getAlignName() == null) {
 						if(locator.getReplicates().isEmpty()) { //No alignment name, no replicate names
-							Collection<ChipSeqExpt> expts = loader.loadExperiments(locator.getExptName());
-							for(ChipSeqExpt expt : expts) { 
-								Collection<ChipSeqAlignment> aligns;
+							Collection<SeqExpt> expts = loader.loadExperiments(locator.getExptName());
+							for(SeqExpt expt : expts) { 
+								Collection<SeqAlignment> aligns;
 								aligns = loader.loadAllAlignments(expt);
-								for (ChipSeqAlignment currentAlign : aligns) {
+								for (SeqAlignment currentAlign : aligns) {
 									if (currentAlign.getGenome().equals(g)) { 
 										aligns.add(currentAlign);
 										break;
@@ -67,8 +67,8 @@ public class ReadDBReadLoader extends ReadLoader{
 							}
 						} else { //No alignment name, given replicate names
 							for(String repName : locator.getReplicates()) { 
-								ChipSeqExpt expt = loader.loadExperiment(locator.getExptName(), repName);
-								ChipSeqAlignment alignment = 
+								SeqExpt expt = loader.loadExperiment(locator.getExptName(), repName);
+								SeqAlignment alignment = 
 									loader.loadAlignment(expt, locator.getAlignName(), g);
 								if(alignment != null) { 
 									aligns.add(alignment);
@@ -78,12 +78,12 @@ public class ReadDBReadLoader extends ReadLoader{
 						}
 					} else {
 						if(locator.getReplicates().isEmpty()) {//Given alignment name, no replicate names
-							Collection<ChipSeqExpt> expts = loader.loadExperiments(locator.getExptName());
+							Collection<SeqExpt> expts = loader.loadExperiments(locator.getExptName());
 							System.err.println("Have name but no replicates.  Got " + expts.size() + " experiments for " + locator.getExptName());
-							for(ChipSeqExpt expt : expts) { 
-								Collection<ChipSeqAlignment> alignments;
+							for(SeqExpt expt : expts) { 
+								Collection<SeqAlignment> alignments;
 								alignments = loader.loadAllAlignments(expt);
-								for (ChipSeqAlignment currentAlign : alignments) {
+								for (SeqAlignment currentAlign : alignments) {
 									System.err.println("  " + currentAlign);
 									if (currentAlign.getGenome().equals(g) && currentAlign.getName().equals(locator.getAlignName())) { 
 										aligns.add(currentAlign);
@@ -93,10 +93,9 @@ public class ReadDBReadLoader extends ReadLoader{
 							}
 						}else{
 							for (String replicate : locator.getReplicates()) {//Given alignment name, given replicate names
-								aligns.add(loader.loadAlignment(loader.loadExperiment(locator.getExptName(),
-										replicate), 
-										locator.getAlignName(),
-										g));
+								SeqAlignment a = loader.loadAlignment(loader.loadExperiment(locator.getExptName(),replicate),locator.getAlignName(),g);
+								if(a!=null)
+									aligns.add(a);
 							}
 						}
 					}
@@ -135,7 +134,7 @@ public class ReadDBReadLoader extends ReadLoader{
 		totalHits=0;
 		totalWeight=0;
 		try {
-			for(ChipSeqAlignment alignment : aligns) { 
+			for(SeqAlignment alignment : aligns) { 
 				double currHits = (double)client.getCount(Integer.toString(alignment.getDBID()), pairedEnd, pairedEnd?true:null, null);
 				totalHits+=currHits;
 				double currWeight =(double)client.getWeight(Integer.toString(alignment.getDBID()), pairedEnd, pairedEnd?true:null, null);
@@ -155,7 +154,7 @@ public class ReadDBReadLoader extends ReadLoader{
 	protected double countStrandedWeight(char strand) {
 		double strandWeight=0;
 		try {
-			for(ChipSeqAlignment alignment : aligns) {
+			for(SeqAlignment alignment : aligns) {
 				strandWeight += (double)client.getWeight(Integer.toString(alignment.getDBID()), 
 						pairedEnd, pairedEnd?true:false, null);
 			}
@@ -173,7 +172,7 @@ public class ReadDBReadLoader extends ReadLoader{
 	public List<ReadHit> loadHits(Region r) {
 		ArrayList<ReadHit> total = new ArrayList<ReadHit>();
 		try {
-			for(ChipSeqAlignment alignment : aligns) {
+			for(SeqAlignment alignment : aligns) {
 				if(!pairedEnd){
 					for (SingleHit h : client.getSingleHits(Integer.toString(alignment.getDBID()),
 							r.getGenome().getChromID(r.getChrom()),
@@ -211,7 +210,7 @@ public class ReadDBReadLoader extends ReadLoader{
 	public List<ReadHit> loadPairs(Region r) {
 		ArrayList<ReadHit> total = new ArrayList<ReadHit>();
 		try {
-			for(ChipSeqAlignment alignment : aligns) {
+			for(SeqAlignment alignment : aligns) {
 				if(pairedEnd){
 					for (PairedHit h : client.getPairedHits(Integer.toString(alignment.getDBID()),
 							r.getGenome().getChromID(r.getChrom()),
@@ -241,7 +240,7 @@ public class ReadDBReadLoader extends ReadLoader{
 	public List<PairedHit> loadPairsAsPairs(Region r) {
 		ArrayList<PairedHit> total = new ArrayList<PairedHit>();
 		try {
-			for(ChipSeqAlignment alignment : aligns) {
+			for(SeqAlignment alignment : aligns) {
 				if(pairedEnd){
 					for (PairedHit h : client.getPairedHits(Integer.toString(alignment.getDBID()),
 							r.getGenome().getChromID(r.getChrom()),
@@ -270,7 +269,7 @@ public class ReadDBReadLoader extends ReadLoader{
 	 */
 	public Pair<ArrayList<Integer>,ArrayList<Float>> loadStrandedBaseCounts(Region r, char strand){
 		Collection<String> alignids = new ArrayList<String>();
-		for(ChipSeqAlignment alignment : aligns) {
+		for(SeqAlignment alignment : aligns) {
 			alignids.add(Integer.toString(alignment.getDBID()));
 		}
 		TreeMap<Integer,Float> allHits = null;
@@ -311,7 +310,7 @@ public class ReadDBReadLoader extends ReadLoader{
 		String tail="\tU\t0\t"+strand;
 		StringBuilder sb = new StringBuilder();
 		try {
-			for(ChipSeqAlignment alignment : aligns) {
+			for(SeqAlignment alignment : aligns) {
 				for (SingleHit h : client.getSingleHits(Integer.toString(alignment.getDBID()),
 						r.getGenome().getChromID(r.getChrom()),
 						r.getStart(),
@@ -342,7 +341,7 @@ public class ReadDBReadLoader extends ReadLoader{
 	public List<ExtReadHit> loadExtHits(Region r, int startShift, int fivePrimeExt, int threePrimeExt) {
 		ArrayList<ExtReadHit> total = new ArrayList<ExtReadHit>();
 		try {
-			for(ChipSeqAlignment alignment : aligns) {
+			for(SeqAlignment alignment : aligns) {
 				if(!pairedEnd){
 					for (SingleHit h : client.getSingleHits(Integer.toString(alignment.getDBID()),
 							r.getGenome().getChromID(r.getChrom()),
@@ -378,7 +377,7 @@ public class ReadDBReadLoader extends ReadLoader{
 	public int countHits (Region r) {
 		int count = 0;
 		try {
-			for(ChipSeqAlignment alignment : aligns) { 
+			for(SeqAlignment alignment : aligns) { 
 				count += client.getCount(Integer.toString(alignment.getDBID()),
 						r.getGenome().getChromID(r.getChrom()),
 						pairedEnd,
@@ -400,7 +399,7 @@ public class ReadDBReadLoader extends ReadLoader{
 	public double sumWeights (Region r) {
 		double sum = 0;
 		try {
-			for(ChipSeqAlignment alignment : aligns) { 
+			for(SeqAlignment alignment : aligns) { 
 				sum += client.getWeight(Integer.toString(alignment.getDBID()),
 						r.getGenome().getChromID(r.getChrom()),
 						pairedEnd,

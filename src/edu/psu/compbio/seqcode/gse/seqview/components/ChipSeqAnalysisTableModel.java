@@ -5,11 +5,11 @@ import javax.swing.table.*;
 import javax.swing.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAnalysis;
 import edu.psu.compbio.seqcode.gse.datasets.locators.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAnalysis;
 import edu.psu.compbio.seqcode.gse.viz.components.ObjectTableModel;
 
-public class ChipSeqAnalysisTableModel extends ObjectTableModel<ChipSeqAnalysis> {
+public class ChipSeqAnalysisTableModel extends ObjectTableModel<SeqAnalysis> {
     
     private int compareNameVersions(String n1, String v1, String n2, String v2) { 
         int c = v1.compareTo(v2);
@@ -17,10 +17,10 @@ public class ChipSeqAnalysisTableModel extends ObjectTableModel<ChipSeqAnalysis>
         return n1.compareTo(n2);
     }
     
-    private int findNewIndex(ChipSeqAnalysis bs) {
+    private int findNewIndex(SeqAnalysis bs) {
         String n = bs.getName(), v = bs.getVersion();
         for(int i = 0; i < getSize(); i++) { 
-            ChipSeqAnalysis os = getObject(i);
+            SeqAnalysis os = getObject(i);
             String on = os.getName(), ov = os.getVersion();
             int c = compareNameVersions(n, v, on, ov);
             if(c <= 0) { return i; }

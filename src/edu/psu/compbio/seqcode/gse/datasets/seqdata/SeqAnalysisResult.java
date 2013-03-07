@@ -1,12 +1,12 @@
-package edu.psu.compbio.seqcode.gse.datasets.chipseq;
+package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 
-public class ChipSeqAnalysisResult extends Region {
+public class SeqAnalysisResult extends Region {
     public Integer position;
     public Double foregroundReadCount, backgroundReadCount, strength, shape, pvalue, foldEnrichment;
-    public ChipSeqAnalysisResult(Genome g,
+    public SeqAnalysisResult(Genome g,
                                  String chrom,
                                  int start,
                                  int end, 

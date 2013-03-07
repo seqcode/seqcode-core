@@ -13,11 +13,11 @@ import org.apache.log4j.Logger;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExptHandler;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
@@ -111,8 +111,8 @@ public class WIGExporter {
 	    winStep=winSize;
 	    		
 	    // Load the experiments
-	    List<ChipSeqLocator> dbexpts = Args.parseChipSeq(args, "dbexpt");
-	    List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
+	    List<SeqLocator> dbexpts = Args.parseChipSeq(args, "dbexpt");
+	    List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
 	    List<File> expts = Args.parseFileHandles(args, "expt");
 	    boolean nonUnique = ap.hasKey("nonunique") ? true : false;
 	    String fileFormat = Args.parseString(args, "format", "ELAND");

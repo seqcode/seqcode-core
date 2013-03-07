@@ -17,8 +17,6 @@ import java.util.Random;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExptHandler;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
@@ -26,6 +24,8 @@ import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.BackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
@@ -296,13 +296,13 @@ public class MultiHitCounter {
 	            	String name = words[0];
 	            	DeepSeqExpt exp=null;
 	            	if(exptType.equals("db")){
-		            	ArrayList<ChipSeqLocator> locs = new ArrayList<ChipSeqLocator>();
+		            	ArrayList<SeqLocator> locs = new ArrayList<SeqLocator>();
 		            	for(int e=1; e<words.length; e++){
 	        		        String[] pieces = words[e].split(";");
 	                        if (pieces.length == 2) {
-	                            locs.add(new ChipSeqLocator(pieces[0], pieces[1]));
+	                            locs.add(new SeqLocator(pieces[0], pieces[1]));
 	                        } else if (pieces.length == 3) {
-	                            locs.add(new ChipSeqLocator(pieces[0], pieces[1], pieces[2]));
+	                            locs.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
 	                        } else {
 	                            System.err.println("Couldn't parse a ChipSeqLocator from " + words[e]);
 	                        }	                    

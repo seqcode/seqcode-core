@@ -10,9 +10,9 @@ import java.util.List;
 import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -50,10 +50,10 @@ public class SeqEnrichmentByRegion {
 			e.printStackTrace();
 		}
 		
-		List<ChipSeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
-        List<ChipSeqLocator> dbctrls = Args.parseChipSeq(args,"dbctrl");
-        List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
-        List<ChipSeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl");
+		List<SeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
+        List<SeqLocator> dbctrls = Args.parseChipSeq(args,"dbctrl");
+        List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
+        List<SeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl");
         List<File> expts = Args.parseFileHandles(args, "expt");
         List<File> ctrls = Args.parseFileHandles(args, "ctrl");
         boolean nonUnique = ap.hasKey("nonunique") ? true : false;

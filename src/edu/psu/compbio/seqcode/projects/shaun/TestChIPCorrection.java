@@ -58,13 +58,13 @@ public class TestChIPCorrection {
 			Organism org = Organism.getOrganism(species);
 			Genome gen = org.getGenome(genome);
 				
-			SeqExptHandler IPhandle = new SeqExptHandler(org, gen, exptName);
-			SeqExptHandler backhandle = new SeqExptHandler(org, gen, backName);
+			SeqDataHandler IPhandle = new SeqDataHandler(org, gen, exptName);
+			SeqDataHandler backhandle = new SeqDataHandler(org, gen, backName);
 			
 			if(!ecdfFile.equals("NOFILE")){IPhandle.loadCDFFile(ecdfFile);}
 			if(!bcdfFile.equals("NOFILE")){backhandle.loadCDFFile(bcdfFile);}
 			
-			SeqExptLikelihoodRatio selr = new SeqExptLikelihoodRatio(IPhandle, backhandle);
+			SeqDataLikelihoodRatio selr = new SeqDataLikelihoodRatio(IPhandle, backhandle);
 			selr.calcPeaks(userT);
 			selr.printPeaks(annots);
 			

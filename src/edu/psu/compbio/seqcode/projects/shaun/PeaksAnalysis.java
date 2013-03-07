@@ -16,13 +16,13 @@ import java.util.List;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExptHandler;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.RepeatMaskedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
@@ -653,10 +653,10 @@ public class PeaksAnalysis {
 	}
 
 	protected void loadExperiments(String [] args){
-		List<ChipSeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
-        List<ChipSeqLocator> dbexpts2 = Args.parseChipSeq(args,"dbexpt2");
-        List<ChipSeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
-        List<ChipSeqLocator> rdbexpts2 = Args.parseChipSeq(args,"rdbexpt2");
+		List<SeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
+        List<SeqLocator> dbexpts2 = Args.parseChipSeq(args,"dbexpt2");
+        List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
+        List<SeqLocator> rdbexpts2 = Args.parseChipSeq(args,"rdbexpt2");
         List<File> expts = Args.parseFileHandles(args, "expt");
         List<File> expts2 = Args.parseFileHandles(args, "expt2");
         String fileFormat = Args.parseString(args, "format", "ELAND");

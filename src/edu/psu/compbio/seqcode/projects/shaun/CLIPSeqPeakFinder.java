@@ -6,8 +6,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqExptHandler;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -25,13 +25,13 @@ public class CLIPSeqPeakFinder extends ChipSeqPeakFinder{
 		boolean  metaPeak=false;
 		Pair<Organism,Genome> pair = Args.parseGenome(args);
 		if(pair==null){printError();return;}
-		List<ChipSeqLocator> expts = Args.parseChipSeq(args,"expt");
-        List<ChipSeqLocator> back = Args.parseChipSeq(args,"back");
+		List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
+        List<SeqLocator> back = Args.parseChipSeq(args,"back");
         if (expts.size() == 0) {
             printError();
             return;
         }
-        double rLen = Args.parseDouble(args,"readlen",ChipSeqExptHandler.defaultReadLength);
+        double rLen = Args.parseDouble(args,"readlen",SeqExptHandler.defaultReadLength);
         double rExt = Args.parseDouble(args,"readextend",0);
         double rShift=0;
         
@@ -76,8 +76,8 @@ public class CLIPSeqPeakFinder extends ChipSeqPeakFinder{
 		
 		System.out.println("Finished!");		
 	}
-	public CLIPSeqPeakFinder(Genome gen, List<ChipSeqLocator> ips,
-			List<ChipSeqLocator> backs, double len, double ext, double shift) {
+	public CLIPSeqPeakFinder(Genome gen, List<SeqLocator> ips,
+			List<SeqLocator> backs, double len, double ext, double shift) {
 		super();
 		winWidth=75;
 		winStep = 10;

@@ -9,7 +9,7 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
@@ -69,7 +69,7 @@ public class ChipSeqAnalysisFrame extends JFrame implements ActionListener {
     }
     public void actionPerformed (ActionEvent e) {
         if (e.getSource() == activeButton) {
-            for (ChipSeqAnalysis a : panel.getSelected()) {
+            for (SeqAnalysis a : panel.getSelected()) {
                 a.setActive(true);
                 try {
                     a.storeActiveDB();   
@@ -78,7 +78,7 @@ public class ChipSeqAnalysisFrame extends JFrame implements ActionListener {
                 }
             }
         } else if (e.getSource() == inactiveButton) {
-            for (ChipSeqAnalysis a : panel.getSelected()) {
+            for (SeqAnalysis a : panel.getSelected()) {
                 a.setActive(false);
                 try {
                     a.storeActiveDB();   

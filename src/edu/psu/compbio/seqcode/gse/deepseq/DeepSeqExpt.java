@@ -7,17 +7,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.deepseq.utilities.AlignmentFileReader;
-import edu.psu.compbio.seqcode.gse.deepseq.utilities.DBReadLoader;
 import edu.psu.compbio.seqcode.gse.deepseq.utilities.FileReadLoader;
 import edu.psu.compbio.seqcode.gse.deepseq.utilities.ReadDBReadLoader;
 import edu.psu.compbio.seqcode.gse.deepseq.utilities.ReadLoader;
@@ -47,28 +44,20 @@ public class DeepSeqExpt {
 	protected boolean pairedEndData = false;
 	
 	
-	public DeepSeqExpt(Genome g, List<ChipSeqLocator> locs, String db, int readLen){this(g,locs,db,readLen,false);}
-	public DeepSeqExpt(Genome g, List<ChipSeqLocator> locs, String db, int readLen, boolean pairedEnd){
+	public DeepSeqExpt(Genome g, List<SeqLocator> locs, String db, int readLen){this(g,locs,db,readLen,false);}
+	public DeepSeqExpt(Genome g, List<SeqLocator> locs, String db, int readLen, boolean pairedEnd){
 		if(g==null){
-			System.err.println("Error: the genome must be defined in order to use the Gifford Lab DB"); System.exit(1);
+			System.err.println("Error: the genome must be defined in order to use the SeqData DB"); System.exit(1);
 		}
 		pairedEndData = pairedEnd;
 		rLen = readLen;
 		gen = g;
-		try {
-			if(db.equals("db"))
-				loader = new DBReadLoader(gen, locs, rLen, pairedEndData);
-			else if(db.equals("readdb"))
-				loader = new ReadDBReadLoader(gen, locs, rLen, pairedEndData);
-			else{
-				System.err.println("Database tyep must be \"db\" or \"readdb\"");System.exit(1);
-			}
-		} catch (NotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
+			
+		if(db.equals("readdb"))
+			loader = new ReadDBReadLoader(gen, locs, rLen, pairedEndData);
+		else{
+			System.err.println("Database type must be \"readdb\"");System.exit(1);
 		}
-		
 		rLen = loader.getReadLen();
 		startShift=0;
 		fivePrimeExt=0;
@@ -108,9 +97,6 @@ public class DeepSeqExpt {
 	public void setScalingFactor(double sf){scalingFactor=sf;}
 	public void setPairedEnd(boolean pe){pairedEndData=pe; loader.setPairedEnd(pe);}
 	public boolean isPairedEnd(){return pairedEndData;}
-	public boolean isFromDB(){
-		return loader instanceof DBReadLoader;
-	}
 	public boolean isFromFile(){
 		return loader instanceof FileReadLoader;
 	}
@@ -120,11 +106,7 @@ public class DeepSeqExpt {
 	public int[] getStartCoords(String chrom){
 		if (loader instanceof FileReadLoader){
 			return ((FileReadLoader)loader).getStartCoords(chrom);
-		}
-		if (loader instanceof DBReadLoader){
-			return ((DBReadLoader)loader).getStartCoords(chrom);
-		}
-		else
+		}else
 			return null;
 	}
 	
@@ -188,7 +170,7 @@ public class DeepSeqExpt {
     	        }reader.close();
     	        
     	        if(ap.hasKey("expt")){
-    	        	List<ChipSeqLocator> expts =  Args.parseChipSeq(args,"expt");
+    	        	List<SeqLocator> expts =  Args.parseChipSeq(args,"expt");
     	        	dse = new DeepSeqExpt(gen, expts, "db", 32);
     	        }else if(ap.hasKey("eland")){
     	        	ArrayList<File> f = new ArrayList<File>();

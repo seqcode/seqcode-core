@@ -3,8 +3,8 @@ package edu.psu.compbio.seqcode.gse.tools.chipseq;
 import java.sql.SQLException;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
@@ -51,34 +51,34 @@ public class SortedAnalysisComparison extends CompareTwoAnalyses {
         }
 
     }
-    public List<ChipSeqAnalysisResult> getResultsOne(Region region) throws SQLException {
-        List<ChipSeqAnalysisResult> output = new ArrayList<ChipSeqAnalysisResult>();
-        for (ChipSeqAnalysisResult r : super.getResultsOne(region)) {
+    public List<SeqAnalysisResult> getResultsOne(Region region) throws SQLException {
+        List<SeqAnalysisResult> output = new ArrayList<SeqAnalysisResult>();
+        for (SeqAnalysisResult r : super.getResultsOne(region)) {
             if (r.getPValue() <= maxPvalueOne && r.getFoldEnrichment() >= minFoldChangeOne) {
                 output.add(r);
             }
         }
         return output;
     }
-    public List<ChipSeqAnalysisResult> getResultsTwo(Region region) throws SQLException {
-        List<ChipSeqAnalysisResult> output = new ArrayList<ChipSeqAnalysisResult>();
-        for (ChipSeqAnalysisResult r : super.getResultsTwo(region)) {
+    public List<SeqAnalysisResult> getResultsTwo(Region region) throws SQLException {
+        List<SeqAnalysisResult> output = new ArrayList<SeqAnalysisResult>();
+        for (SeqAnalysisResult r : super.getResultsTwo(region)) {
             if (r.getPValue() <= maxPvalueTwo && r.getFoldEnrichment() >= minFoldChangeTwo) {
                 output.add(r);
             }
         }
         return output;
     }
-    public List<ChipSeqAnalysisResult> getOutputEvents() throws SQLException {
-        List<ChipSeqAnalysisResult> listOne = getResultsOne();
+    public List<SeqAnalysisResult> getOutputEvents() throws SQLException {
+        List<SeqAnalysisResult> listOne = getResultsOne();
         Collections.sort(listOne);
 
-        List<ChipSeqAnalysisResult> listTwo = getResultsTwo();
+        List<SeqAnalysisResult> listTwo = getResultsTwo();
         System.err.println("There are " + listOne.size() + " events in analysis one and " + listTwo.size() + " events in analysis two");
         if (sortType.equals("pvalue")) {
-            Collections.sort(listTwo,new ChipSeqAnalysisResultPvalueComparator());
+            Collections.sort(listTwo,new SeqAnalysisResultPvalueComparator());
         } else if (sortType.equals("foldchange")) {
-            Collections.sort(listTwo,new ChipSeqAnalysisResultEnrichmentComparator());
+            Collections.sort(listTwo,new SeqAnalysisResultEnrichmentComparator());
         } else {
             throw new RuntimeException("Invalid sort type " + sortType);
         }
@@ -97,7 +97,7 @@ public class SortedAnalysisComparison extends CompareTwoAnalyses {
         if (overlap/i > overlapPercent) {
             return listTwo.subList(0,i+1);
         } else {
-            return new ArrayList<ChipSeqAnalysisResult>();
+            return new ArrayList<SeqAnalysisResult>();
         }
     }
     

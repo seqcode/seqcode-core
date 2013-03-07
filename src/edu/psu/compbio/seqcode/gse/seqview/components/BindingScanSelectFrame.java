@@ -11,8 +11,8 @@ import java.util.Iterator;
 import edu.psu.compbio.seqcode.gse.datasets.binding.BindingEvent;
 import edu.psu.compbio.seqcode.gse.datasets.binding.BindingScan;
 import edu.psu.compbio.seqcode.gse.datasets.binding.BindingScanLoader;
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.binding.BindingExpander;
@@ -91,7 +91,7 @@ public class BindingScanSelectFrame extends JFrame implements ActionListener {
     public void actionPerformed (ActionEvent e) {
         if (e.getSource() == ok) {
             Collection<BindingScan> scans = bssp.getObjects();
-            Collection<ChipSeqAnalysis> analyses = csasp.getObjects();
+            Collection<SeqAnalysis> analyses = csasp.getObjects();
             Populator p = new Populator(scans,analyses,genome);
             Thread t = new Thread(p);
             t.start();
@@ -104,10 +104,10 @@ public class BindingScanSelectFrame extends JFrame implements ActionListener {
     private class Populator implements Runnable {
         
         private Collection<BindingScan> scans;
-        private Collection<ChipSeqAnalysis> analyses;
+        private Collection<SeqAnalysis> analyses;
         private Genome genome;
         
-        public Populator(Collection<BindingScan> scans, Collection<ChipSeqAnalysis> analyses, Genome g) {
+        public Populator(Collection<BindingScan> scans, Collection<SeqAnalysis> analyses, Genome g) {
             this.scans = scans;
             this.analyses = analyses;
             genome = g;
@@ -132,8 +132,8 @@ public class BindingScanSelectFrame extends JFrame implements ActionListener {
                             list.addRegion(events.next());
                         }
                     }
-                    for (ChipSeqAnalysis analysis : analyses) {
-                        for (ChipSeqAnalysisResult r : analysis.getResults(genome, chrom)) {
+                    for (SeqAnalysis analysis : analyses) {
+                        for (SeqAnalysisResult r : analysis.getResults(genome, chrom)) {
                             list.addRegion(new BindingEvent(r,
                                                             r.foldEnrichment,
                                                             r.pvalue,

@@ -1,9 +1,9 @@
 package edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqHit;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.Mapper;
 
-public class ChipSeqHitExtender implements Mapper<ChipSeqHit,ChipSeqHit> {
+public class ChipSeqHitExtender implements Mapper<SeqHit,SeqHit> {
 	
 	private int extension;
 	
@@ -11,7 +11,7 @@ public class ChipSeqHitExtender implements Mapper<ChipSeqHit,ChipSeqHit> {
 		extension = ext;
 	}
 
-	public ChipSeqHit execute(ChipSeqHit a) {
+	public SeqHit execute(SeqHit a) {
         return a.extendHit(extension);
 	}
 }

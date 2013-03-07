@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.gse.tools.chipseq;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAnalysisResult;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAnalysisResult;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSParser;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSPeak;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -31,7 +31,7 @@ public class StatisticalAnalysisImporter extends AnalysisImporter {
         importer.run(System.in);
         importer.close();
     }
-    public ChipSeqAnalysisResult parseLine(String line) {
+    public SeqAnalysisResult parseLine(String line) {
         if (lineno++ == 0) {
             if (!line.equals("Region\tWidth\tPeak\tPeakOffset\tMaxSigHits\tMaxBackHits\tScore\tTotalSigHits\tTotalBackHits\tOverRep\tClosestGene\tTSSDist\tOtherAnnotations")) {
                 throw new RuntimeException("Invalid header line: " + line);
@@ -46,7 +46,7 @@ public class StatisticalAnalysisImporter extends AnalysisImporter {
             pval = minpval;
         }
 
-        return new ChipSeqAnalysisResult(getGenome(),
+        return new SeqAnalysisResult(getGenome(),
                                          pospieces[0],
                                          Integer.parseInt(pospieces[1]),
                                          Integer.parseInt(pospieces[2]),

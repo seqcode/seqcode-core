@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.gse.tools.chipseq;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqAnalysisResult;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAnalysisResult;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSParser;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSPeak;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -30,7 +30,7 @@ public class DNASeqEnrichmentImporter extends AnalysisImporter {
         importer.run(System.in);
         importer.close();
     }
-    public ChipSeqAnalysisResult parseLine(String line) {
+    public SeqAnalysisResult parseLine(String line) {
         if (lineno++ == 0) {
             if (!line.equals("Chrom\tStart\tEnd\tCenter\tFG\tBG\tRatio\tPvalue")) {
                 throw new RuntimeException("Invalid header line: " + line);
@@ -45,7 +45,7 @@ public class DNASeqEnrichmentImporter extends AnalysisImporter {
             pval = minpval;
         }
 
-        return new ChipSeqAnalysisResult(getGenome(),
+        return new SeqAnalysisResult(getGenome(),
                                          pieces[0],
                                          Integer.parseInt(pieces[1]),
                                          Integer.parseInt(pieces[2]),

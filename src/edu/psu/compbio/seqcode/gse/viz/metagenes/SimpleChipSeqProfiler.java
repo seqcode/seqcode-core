@@ -6,26 +6,26 @@ package edu.psu.compbio.seqcode.gse.viz.metagenes;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.*;
 
 public class SimpleChipSeqProfiler implements PointProfiler<Point,PointProfile> {
 	
 	private BinningParameters params;
-	private List<ChipSeqExpander> expanders;
+	private List<SeqExpander> expanders;
 	private int extension; 
 	private double perBaseMax=100;
 	private boolean useFivePrime = false;
 	private char readStrand ='/';
 	
-	public SimpleChipSeqProfiler(BinningParameters ps, ChipSeqExpander exp) { 
+	public SimpleChipSeqProfiler(BinningParameters ps, SeqExpander exp) { 
 		this(ps, exp, 175, 100, '/');
 	}
-	public SimpleChipSeqProfiler(BinningParameters ps, ChipSeqExpander exp, int ext, double pbMax, char strand) {
+	public SimpleChipSeqProfiler(BinningParameters ps, SeqExpander exp, int ext, double pbMax, char strand) {
 		params = ps;
-		expanders = new ArrayList<ChipSeqExpander>(); 
+		expanders = new ArrayList<SeqExpander>(); 
 		expanders.add(exp);
 		extension=ext;
 		if(extension==-1)
@@ -33,7 +33,7 @@ public class SimpleChipSeqProfiler implements PointProfiler<Point,PointProfile> 
 		perBaseMax = pbMax;
 		readStrand = strand;
 	}
-	public SimpleChipSeqProfiler(BinningParameters ps, List<ChipSeqExpander> exps, int ext, double pbMax, char strand) {
+	public SimpleChipSeqProfiler(BinningParameters ps, List<SeqExpander> exps, int ext, double pbMax, char strand) {
 		params = ps;
 		expanders = exps;
 		extension=ext;
@@ -66,12 +66,12 @@ public class SimpleChipSeqProfiler implements PointProfiler<Point,PointProfile> 
 		double[] array = new double[params.getNumBins()];
 		for(int i = 0; i < array.length; i++) { array[i] = 0; }
 		
-		for(ChipSeqExpander expander : expanders){
-			Iterator<ChipSeqHit> hits = expander.execute(extQuery);
+		for(SeqExpander expander : expanders){
+			Iterator<SeqHit> hits = expander.execute(extQuery);
 			HashMap<Region, Double> readFilter = new HashMap<Region, Double>();
 			
 			while(hits.hasNext()) {
-				ChipSeqHit hit=null;
+				SeqHit hit=null;
 				if(useFivePrime)
 					hit = hits.next().fivePrime();
 				else
@@ -111,7 +111,7 @@ public class SimpleChipSeqProfiler implements PointProfiler<Point,PointProfile> 
 	}
 	
 	public void cleanup(){
-		for(ChipSeqExpander e : expanders)
+		for(SeqExpander e : expanders)
 			e.close();
 	}
 }

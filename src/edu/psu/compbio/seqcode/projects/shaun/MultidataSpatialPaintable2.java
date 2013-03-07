@@ -17,10 +17,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 
-import edu.psu.compbio.seqcode.gse.datasets.chipseq.ChipSeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.ExonicGene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -60,11 +60,11 @@ public class MultidataSpatialPaintable2 extends AbstractPaintable{
 	private Region gRegion;
 	private int rstart, rstop, rwidth;
 	private String chr;
-	private HashMap<String, ChipSeqLocator> locs;
+	private HashMap<String, SeqLocator> locs;
 	private HashMap<String, ThinOverlapPaintable> exptPainters = new HashMap<String, ThinOverlapPaintable>();
 	private ArrayList<ThinOverlapPaintable> thinpaints = new ArrayList<ThinOverlapPaintable>();
 	
-	public MultidataSpatialPaintable2(ArrayList<String> timepoints, Region genomeRegion, ArrayList<ExonicGene> genes, HashMap<String, ArrayList<Double>> expression, HashMap<String, ArrayList<Region>> sites, ArrayList<Pair<String, StrandedRegion>> mHits, ArrayList<Region> lits, HashMap<String, ChipSeqLocator> l){
+	public MultidataSpatialPaintable2(ArrayList<String> timepoints, Region genomeRegion, ArrayList<ExonicGene> genes, HashMap<String, ArrayList<Double>> expression, HashMap<String, ArrayList<Region>> sites, ArrayList<Pair<String, StrandedRegion>> mHits, ArrayList<Region> lits, HashMap<String, SeqLocator> l){
 		times = timepoints;
 		rstart = genomeRegion.getStart();
 		rstop = genomeRegion.getEnd();
@@ -80,7 +80,7 @@ public class MultidataSpatialPaintable2 extends AbstractPaintable{
 		
 		try {
 			for(String t : times){
-				ChipSeqLocator loc = locs.get(t);
+				SeqLocator loc = locs.get(t);
 				ThinOverlapPaintable tp = new ThinOverlapPaintable(gRegion, sites.get(t),loc, 200);
 				tp.setReverse(reverseIt);
 				tp.setMaxOverlap(maxOverlap);
