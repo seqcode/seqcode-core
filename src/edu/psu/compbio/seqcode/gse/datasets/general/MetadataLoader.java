@@ -912,9 +912,9 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
     //////////////////
     
     public AlignType getAlignType(String name) throws SQLException { 
-        synchronized (loadReadTypesByName) {
-            loadReadTypesByName.setString(1, name);
-            ResultSet rs = loadReadTypesByName.executeQuery();
+        synchronized (loadAlignTypesByName) {
+            loadAlignTypesByName.setString(1, name);
+            ResultSet rs = loadAlignTypesByName.executeQuery();
             
             if(rs.next()) { 
             	AlignType a = new AlignType(rs);
