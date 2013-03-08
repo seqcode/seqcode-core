@@ -91,7 +91,7 @@ public class LoadAlignmentsFromFile {
 				String numreadsStr = new String(fields[17]);
 				Integer numreads;//Paired reads are counted as one
 				if(numreadsStr.contains("+")){
-					String[] tmp = numreadsStr.split("+");
+					String[] tmp = numreadsStr.split("\\+");
 					numreads = new Integer(tmp[0]);
 				}else
 					numreads = new Integer(numreadsStr);
