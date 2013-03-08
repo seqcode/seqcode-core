@@ -29,7 +29,7 @@ import java.util.*;
  * 	foreign key fk_seqalignment_expt (expt) references seqexpt(id),
  * 	index(name),
  * 	unique(id),
- * 	primary key(name)
+ * 	primary key(id)
  * );
  */
 public class SeqAlignment {

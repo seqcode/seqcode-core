@@ -248,7 +248,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 			align = new SeqAlignment(rs, expt, getMetadataLoader().loadAlignType(rs.getInt(6)));
             if (!align.getGenome().equals(g))
                 align = null;
-            if(!align.getPermissions().contains("public") && !align.getPermissions().contains(myusername))
+            if(align!=null && !align.getPermissions().contains("public") && !align.getPermissions().contains(myusername))
 				align=null;
 		}
 		rs.close();
