@@ -88,7 +88,13 @@ public class LoadAlignmentsFromFile {
 				String rtypestring = fields[14];
 				String atypestring = fields[15];
 				Integer readlength = new Integer(fields[16]);
-				Integer numreads = new Integer(fields[17]);
+				String numreadsStr = new String(fields[17]);
+				Integer numreads;//Paired reads are counted as one
+				if(numreadsStr.contains("+")){
+					String[] tmp = numreadsStr.split("+");
+					numreads = new Integer(tmp[0]);
+				}else
+					numreads = new Integer(numreadsStr);
 				Integer numhits = new Integer(fields[20]);
 				Float totalweight = new Float(fields[21]);
 				String permissions = fields[9];
