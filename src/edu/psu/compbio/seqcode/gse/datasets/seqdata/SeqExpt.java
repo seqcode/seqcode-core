@@ -50,7 +50,7 @@ public class SeqExpt {
     private ReadType readType;
     private Organism species;
     private int readlength, numReads;
-    private String collabID, publicSource, publicDBID, fqFile;
+    private String collabID, publicSource, publicDBID, fqFile, exptNote;
     
     public SeqExpt(ResultSet rs, SeqDataLoader loader) throws SQLException { 
         dbid = rs.getInt(1);
@@ -83,6 +83,7 @@ public class SeqExpt {
         publicSource = rs.getString(14);
         publicDBID = rs.getString(15);
         fqFile = rs.getString(16);
+        exptNote = rs.getString(17);
     }
     
     public int getDBID() { return dbid; }
@@ -101,6 +102,7 @@ public class SeqExpt {
     public String getPublicSource() {return publicSource;}
     public String getPublicDBID() {return publicDBID;}
     public String getFQFile() {return fqFile;}
+    public String getExptNote(){return exptNote;}
     
     public String toString() { 
     	return String.format("%s (%s)", name, replicate);
@@ -120,35 +122,35 @@ public class SeqExpt {
     }
     
     public static PreparedStatement createLoadAll(java.sql.Connection c) throws SQLException { 
-        return c.prepareStatement("select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile from seqexpt");
+        return c.prepareStatement("select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote from seqexpt");
     }
     
     public static PreparedStatement createLoadByDBID(java.sql.Connection c) throws SQLException { 
-        return c.prepareStatement("select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile from seqexpt where id=?");
+        return c.prepareStatement("select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote from seqexpt where id=?");
     }
     
     public static PreparedStatement createLoadByName(java.sql.Connection c) throws SQLException { 
         return c.prepareStatement(
-        		"select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile " +
+        		"select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote " +
         		"from seqexpt where name=?");
     }
     
     public static PreparedStatement createLoadByNameReplicate(java.sql.Connection c) throws SQLException { 
         return c.prepareStatement(
-        		"select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile " +
+        		"select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote " +
         		"from seqexpt where name=? and replicate=?");
     }
     
     public static PreparedStatement createInsert(java.sql.Connection c) throws SQLException { 
     	String query = String.format(
-                "insert into seqexpt (name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile) " +
-                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "insert into seqexpt (name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote) " +
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     	return c.prepareStatement(query);
     }
     public static PreparedStatement createInsertWithID(java.sql.Connection c) throws SQLException { 
     	String query = String.format(
-                "insert into seqexpt (id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile) " +
-                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                "insert into seqexpt (id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote) " +
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     	return c.prepareStatement(query);
     }
 }

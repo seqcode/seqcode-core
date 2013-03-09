@@ -43,6 +43,7 @@ public class CreateAlignment {
     				"\t--publicsource <PMID/UNPUB>\n" +
     				"\t--publicdbid <GEO ID>\n" +
     				"\t--fqfile <FQ filename>\n" +
+    				"\t--exptnote <notes about expt>\n" +
     				"\t--permissions <mahony;mahonylab;etc>\n" +
     				"\t--aligndir <directory name>\n");
     	}else{
@@ -66,6 +67,7 @@ public class CreateAlignment {
 	        String publicsource = Args.parseString(args,"publicsource",null);
 	        String publicdbid = Args.parseString(args,"publicdbid",null);
 	        String fqfile = Args.parseString(args,"fqfile",null);
+	        String exptnote = Args.parseString(args,"exptnote",null);
 	        String permissions = Args.parseString(args,"permissions",null);
 	        int numhits = Args.parseInteger(args,"numhits",0);
 	        float totalweight = Args.parseFloat(args,"totalweight",0);
@@ -96,6 +98,7 @@ public class CreateAlignment {
 	            insert.setString(13, publicsource);
 	            insert.setString(14, publicdbid);
 	            insert.setString(15, fqfile);
+	            insert.setString(16, exptnote);
 	            insert.execute();
 	            try {
 	                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);

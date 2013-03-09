@@ -55,8 +55,9 @@ import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
  *22) ReadsFile
  *23) AlignDir
  *24) AlignParamFile
- *25) LoadDate
- *26) ExptName
+ *25) ExptNote
+ *26) LoadDate
+ *27) ExptName
  * 
  */
 public class LoadAlignmentsFromFile {
@@ -78,7 +79,7 @@ public class LoadAlignmentsFromFile {
 				
 				//Variables
 				Integer dbid = new Integer(fields[0]);
-				String alignpieces[] = fields[26].split(";");
+				String alignpieces[] = fields[27].split(";");
 				Genome genome = Organism.findGenome(fields[8]);
 				String etypestring = fields[1];
 				String labstring = fields[2];
@@ -105,7 +106,7 @@ public class LoadAlignmentsFromFile {
 				String fqfile = fields[22];
 				String aligndir = fields[23];
 				String paramsfname = fields[24];
-				
+				String exptnote = fields[25];
 				
 				//From here on out, it's similar to CreateAlignment
 				SeqExpt expt = null;
@@ -130,6 +131,7 @@ public class LoadAlignmentsFromFile {
 		            insert.setString(13, publicsource);
 		            insert.setString(14, publicdbid);
 		            insert.setString(15, fqfile);
+		            insert.setString(16, exptnote);
 		            insert.execute();
 		            try {
 		                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);

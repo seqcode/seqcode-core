@@ -23,6 +23,7 @@ create table seqexpt (
 	publicsource varchar(200),
 	publicdbid varchar(200),
 	fqfile varchar(200),
+	exptnote longtext,
 	unique (id),
 	index (name, replicate),
 	primary key (name, replicate)
