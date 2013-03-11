@@ -72,12 +72,15 @@ public class AddChromosomes {
         PreparedStatement getChromID = 
             cxn.prepareStatement("select id from chromosome where genome = ? and name = ?");
         
-        PreparedStatement insertSequence = 
-        	cxn.prepareStatement("insert into chromsequence(id,sequence) values (?,'')");
+        PreparedStatement insertEmptySequence = 
+        	cxn.prepareStatement("insert into chromsequence(id,len,sequence) values (?,0,'')");
         
         PreparedStatement appendSequence = 
         	cxn.prepareStatement("update chromsequence " +
         			"set sequence=CONCAT(sequence,?) where id=?");
+        PreparedStatement updateLength = 
+            	cxn.prepareStatement("update chromsequence " +
+            			"set len=length(sequence) where id=?");
 
         String line = null;
         int lastChromID = -1;
@@ -106,8 +109,8 @@ public class AddChromosomes {
             		lastChromID = rs.getInt(1);
             		rs.close();
 
-            		insertSequence.setInt(1,lastChromID);
-            		insertSequence.execute();
+            		insertEmptySequence.setInt(1,lastChromID);
+            		insertEmptySequence.execute();
             		
             		length = 0;
             		nextHash = hashTick;
@@ -118,9 +121,15 @@ public class AddChromosomes {
         		} else { 
         			String seq = line;
 
+        			//Append sequence and update length
+        			//I could probably do both in one update, 
+        			//but I got worried about whether the sequence 
+        			//would be set by the time the length() operation executes 
         			appendSequence.setString(1, seq);
         			appendSequence.setInt(2, lastChromID);
         			appendSequence.executeUpdate();
+        			updateLength.setInt(1, lastChromID);
+        			updateLength.executeUpdate();
         			
         			length += seq.length();
         			
@@ -160,7 +169,7 @@ public class AddChromosomes {
                                                     Sequence.getInsertSQL(cxn, "chromosome_id") + "," +
                                                     genome.getDBID() + ",?)");
         PreparedStatement getChromID = cxn.prepareStatement("select id from chromosome where genome = ? and name = ?");
-        PreparedStatement insertSequence = cxn.prepareStatement("insert into chromsequence(id,sequence) values (?,?)");
+        PreparedStatement insertSequence = cxn.prepareStatement("insert into chromsequence(id,len,sequence) values (?,?,?)");
         PreparedStatement getSequence = cxn.prepareStatement("select sequence from chromsequence where id = ?");
         while (fasta.hasNext()) {
             Pair<String,String> next = fasta.next();
@@ -180,7 +189,8 @@ public class AddChromosomes {
             int id = rs.getInt(1);
             rs.close();
             insertSequence.setInt(1,id);
-            edu.psu.compbio.seqcode.gse.utils.database.ClobHandler.setClob(cxn, insertSequence, 2, seq);
+            insertSequence.setInt(2,seq.length());
+            edu.psu.compbio.seqcode.gse.utils.database.ClobHandler.setClob(cxn, insertSequence, 3, seq);
             insertSequence.execute();
         }                
         cxn.commit();

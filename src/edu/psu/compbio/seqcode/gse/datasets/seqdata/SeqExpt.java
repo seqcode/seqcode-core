@@ -16,27 +16,28 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
  * Represents a row in the seqexpts table, from the *seqdata schema.
  * 
  * 
- * create table seqexpt (
- * 		id int(10) not null auto_increment,
- * 		name varchar(200) not null,
- * 		replicate varchar(200) not null,
- * 		species int(10) not null,
- * 		expttype int(10) not null,
- * 		lab int(10) not null,
- * 		exptcondition int(10) not null,
- * 		expttarget int(10) not null,
- * 		cellline int(10) not null,
- * 		readtype int(10) not null,
- * 		readlength int(5) not null,
- * 		numreads int(12),
- * 		collabid varchar(200),
- * 		publicsource varchar(200),
- * 		publicdbid varchar(200),
- * 		fqfile varchar(200),
- * 		unique (id),
- * 		index (name, replicate),
- * 		primary key (name, replicate)
- * )Type=InnoDB;
+	 create table seqexpt (
+		id int(10) not null auto_increment,
+		name varchar(200) not null,
+		replicate varchar(200) not null,
+		species int(10) not null,
+		expttype int(10) not null,
+		lab int(10) not null,
+		exptcondition int(10) not null,
+		expttarget int(10) not null,
+		cellline int(10) not null,
+		readtype int(10) not null,
+		readlength int(5) not null,
+		numreads int(12),
+		collabid varchar(200),
+		publicsource varchar(200),
+		publicdbid varchar(200),
+		fqfile varchar(200),
+		exptnote longtext,
+		unique (id),
+		index (name, replicate, expttype, lab, exptcondition, expttarget, cellline),
+		primary key (name, replicate)
+	)Type=InnoDB;
  */
 public class SeqExpt {
     

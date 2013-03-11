@@ -15,22 +15,22 @@ import java.util.*;
  *
  * Represents a row from the seqalignment table, in the *seqdata schemas.
  * 
- * create table seqalignment (
- * 	id int(10) not null auto_increment,
- * 	expt int(10) not null,
- * 	name varchar(200) not null,
- * 	genome int(10) not null,
- * 	permissions varchar(500),
- *  aligntype int(10) not null,
- * 	numhits int(15),
- * 	totalweight float(17,2),
- * 	aligndir varchar(200),
- * 	collabalignid varchar(200),
- * 	foreign key fk_seqalignment_expt (expt) references seqexpt(id),
- * 	index(name),
- * 	unique(id),
- * 	primary key(id)
- * );
+	create table seqalignment (
+		id int(10) not null auto_increment,
+		expt int(10) not null,
+		name varchar(200) not null,
+		genome int(10) not null,
+		permissions varchar(500) not null,
+		aligntype int(10) not null,
+		numhits int(15),
+		totalweight float(17,2),
+		aligndir varchar(200),
+		collabalignid varchar(200),
+		foreign key fk_seqalignment_expt (expt) references seqexpt(id),
+		index(name, genome),
+		unique(id),
+		primary key(id)
+	)Type=InnoDB;
  */
 public class SeqAlignment {
 	

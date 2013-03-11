@@ -9,7 +9,8 @@ CREATE TABLE species (
   id int(10) NOT NULL auto_increment,
   name varchar(80) NOT NULL,
   UNIQUE (id),
-  PRIMARY KEY (name)
+  PRIMARY KEY (name),
+  INDEX (name)
 ) Type=InnoDB;
 
 --
@@ -43,6 +44,7 @@ CREATE TABLE chromosome (
 --
 CREATE TABLE chromsequence (
   id int(10) NOT NULL auto_increment,
+  len int(20),
   sequence longtext,
   INDEX (id),
   FOREIGN KEY fk_chromseq_id (id) REFERENCES chromosome (id),

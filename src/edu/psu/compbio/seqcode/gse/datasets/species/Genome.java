@@ -1,6 +1,5 @@
 package edu.psu.compbio.seqcode.gse.datasets.species;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipDataset;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
@@ -207,10 +206,11 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     public Genome(int speciesid, String version) throws NotFoundException {
         this.speciesid = speciesid;
         this.version = version;
-        try {
-            cxn = DatabaseFactory.getConnection("core");           
+        try {System.out.println("Establishing core connection");
+            cxn = DatabaseFactory.getConnection("core");    System.out.println("Established");       
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select name from species where id = " + speciesid);
+            System.out.println("Species queried");
             if (rs.next()) {
                 this.species = rs.getString(1);
             } else {
@@ -219,6 +219,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             rs.close();
             rs = stmt.executeQuery("select id from genome where species = " + speciesid + 
                                              " and version ='" + version + "'");
+            System.out.println("Genome queried");
             if (rs.next()) {
                 dbid = rs.getInt(1);
             } else {
@@ -226,9 +227,9 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             }
             rs.close();
             stmt.close();
-
+            System.out.println("Filling chroms");
             fillChroms();
-        
+            System.out.println("Filled");
         } catch (SQLException ex) {
             ex.printStackTrace();
             throw new DatabaseException("Couldn't find " + species + ": "+ ex.toString(),ex);
@@ -257,7 +258,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         
         Statement s = cxn.createStatement();
         
-        ResultSet rs = s.executeQuery("select c.id, c.name, length(cs.sequence) from chromosome c, chromsequence cs " +
+        ResultSet rs = s.executeQuery("select c.id, c.name, cs.len from chromosome c, chromsequence cs " +
                 "where c.id=cs.id and c.genome=" + dbid);
         while(rs.next()) { 
             int dbid = rs.getInt(1);

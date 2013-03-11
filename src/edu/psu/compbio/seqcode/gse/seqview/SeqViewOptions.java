@@ -358,15 +358,13 @@ public class SeqViewOptions {
 
     /* Fills in a WarpOptions from command line arguments */
     public static SeqViewOptions parseCL(String[] args) throws NotFoundException, SQLException, IOException {
-    	/**
-    	 * TODO add a restore defaults option and an import option so that if 
-    	 * someone screws up the warp drive options that are maintained with 
-    	 * java.util.prefs.Preferences reasonable values can be restored  
-    	 */
         SeqViewOptions opts = new SeqViewOptions();
-        WeightMatrixLoader wmloader = new WeightMatrixLoader();
-        SeqDataLoader chipseqloader = new SeqDataLoader();
-
+        
+        //TODO: restore weight matrices
+        //WeightMatrixLoader wmloader = new WeightMatrixLoader();
+        
+        SeqDataLoader seqloader = new SeqDataLoader();
+        System.out.println("1");
 
         try {        
             ResourceBundle res = ResourceBundle.getBundle("defaultgenome");
@@ -377,8 +375,7 @@ public class SeqViewOptions {
         } catch (Exception e) {
             // ditto
         }
-        
-
+        System.out.println("2");
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--species")) {
                 opts.species = args[++i];
@@ -396,14 +393,14 @@ public class SeqViewOptions {
                 System.err.println("Will use old ChipSeq painters");
             }
 
-        }            
+        }
         try {
             Genome genome = null; Organism organism = null;
             if (opts.species != null && opts.genome != null) {
                 organism = new Organism(opts.species);
+                System.out.println("3: "+organism.getName());
                 genome = organism.getGenome(opts.genome);
-            }
-
+            }System.out.println("4: "+genome.getVersion());
             for (int i = 0; i < args.length; i++) {
                 if (args[i].equals("--chrom") || args[i].equals("--region")) {
                     if (args[i+1].matches(".+:.+\\-.+")) {
@@ -498,59 +495,13 @@ public class SeqViewOptions {
                 if (args[i].equals("--chipseqanalysis")) {
                     String pieces[] = args[++i].split(";");
                     if (pieces.length == 2) {
-                        opts.chipseqAnalyses.add(SeqAnalysis.get(chipseqloader, pieces[0], pieces[1]));
+                        opts.chipseqAnalyses.add(SeqAnalysis.get(seqloader, pieces[0], pieces[1]));
                     } else {
                         System.err.println("Couldn't parse --chipseqanalysis " + args[i]);
                     }                
                 }
 
-                if (args[i].equals("--agilent") || args[i].equals("--chipchip")) {                
-                    System.err.println("Parsing AGILENT option");
-                    System.err.println("args[i+1] = " + args[i+1]);
-                    String pieces[] = args[++i].split(";");
-                    ExptNameVersion env = null;
-                    if (pieces.length == 2) {
-                        env = new ExptNameVersion(pieces[0],pieces[1]);
-                    } else if (pieces.length == 3) {
-                        env = new ExptNameVersion(pieces[0],pieces[1], pieces[2]);
-                    }
-                    if (i < args.length - 2 && args[i + 1].equals("--label")) {
-                        i += 2;
-                        env.setLabel(args[i]);
-                    }
-                    opts.agilentdata.add(env);
-                }
-                if (args[i].equals("--ll") ||
-                    args[i].equals("--mle")) {
-                    String pieces[] = args[++i].split(";");
-                    AnalysisNameVersion env = null;
-                    env = new AnalysisNameVersion(pieces[0],pieces[1]);
-                    if (i < args.length - 2 && args[i + 1].equals("--label")) {
-                        i += 2;
-                        env.setLabel(args[i]);
-                    }
-                    opts.agilentll.add(env);
-                }            
-                if (args[i].equals("--bayes")) {
-                    String pieces[] = args[++i].split(";");
-                    AnalysisNameVersion env = null;
-                    env = new AnalysisNameVersion(pieces[0],pieces[1]);
-                    if (i < args.length - 2 && args[i + 1].equals("--label")) {
-                        i += 2;
-                        env.setLabel(args[i]);
-                    }
-                    opts.bayesresults.add(env);
-                }
-                if (args[i].equals("--msp")) {
-                    String pieces[] = args[++i].split(";");
-                    AnalysisNameVersion env = null;
-                    env = new AnalysisNameVersion(pieces[0],pieces[1]);
-                    if (i < args.length - 2 && args[i + 1].equals("--label")) {
-                        i += 2;
-                        env.setLabel(args[i]);
-                    }
-                    opts.msp.add(env);             
-                }
+                
                 if (args[i].equals("--sgdOther")) {
                     opts.otherannots.add("sgdOther");
                 }
@@ -560,6 +511,7 @@ public class SeqViewOptions {
                 if (args[i].equals("--otherannot")) {
                     opts.otherannots.add(args[++i]);
                 }
+                /*
                 if (args[i].equals("--wmscan")) {
                     String[] pieces = args[++i].split(";");
                     Organism thisorg = organism;
@@ -578,7 +530,7 @@ public class SeqViewOptions {
                     }                
                     WeightMatrix matrix = wmloader.query(thisorg.getDBID(),pieces[0],pieces[1]);
                     opts.motifs.add(matrix);
-                }
+                }*/
                 if (args[i].equals("--regex")) {
                     opts.regexmatcher = true;
                     String[] pieces = args[++i].split(";");
@@ -600,10 +552,10 @@ public class SeqViewOptions {
 
             }
         } finally {
-            wmloader.close();
-            chipseqloader.close();
+            //wmloader.close();
+            seqloader.close();
         }
-
+System.out.println("Got here");
 
         return opts;
     }

@@ -56,10 +56,7 @@ public class SeqViewOptionsPane
     private DefaultListModel genesmodel, ncrnasmodel, otherfeatsmodel;
     private JCheckBox polyA, gccontent, pyrpurcontent, cpg, regexmatcher;
     private JLabel geneslabel, ncrnaslabel, otherfeatslabel;
-    
-    //private ExptTreeSelectPanel exptSelect;
-    private ChipChipExptSelectPanel exptSelect;
-    
+        
     // file-based tracks
     private FileBasedTracksPanel filetracks, chiapettracks;
 
@@ -117,7 +114,6 @@ public class SeqViewOptionsPane
     public boolean isClosed() { return closed; }
     
     public void close() { 
-        exptSelect.close();
         seqSelect.close();
         pairedSeqSelect.close();
         interactionArcSelect.close();
@@ -195,8 +191,6 @@ public class SeqViewOptionsPane
         speciesLocationPanel.add(gene);
         species.addItemListener(this);
         genome.addItemListener(this);        
-        
-        exptSelect = new ChipChipExptSelectPanel(null);
         
         //chiapet tab
         chiapettracks = new FileBasedTracksPanel();
@@ -347,33 +341,6 @@ public class SeqViewOptionsPane
         }
         otherfeats.setSelectedIndices(selected);
         
-        try {
-            Genome g = loadGenome();
-            if (g != null) {
-                ChipChipDataset ds = new ChipChipDataset(g);
-                for (int i = 0; i < opts.agilentdata.size(); i++) {
-                    exptSelect.addToSelected(new ChipChipLocator(ds,
-                                                                 opts.agilentdata.get(i).name,
-                                                                 opts.agilentdata.get(i).version,
-                                                                 opts.agilentdata.get(i).replicate));
-                }
-                for (int i = 0; i < opts.bayesresults.size(); i++) {
-                    exptSelect.addToSelected(new BayesLocator(ds,
-                                                              opts.bayesresults.get(i).name,
-                                                              opts.bayesresults.get(i).version));
-                }
-                for (int i = 0; i < opts.msp.size(); i++) {
-                    exptSelect.addToSelected(new MSPLocator(ds,
-                                                            opts.msp.get(i).name,
-                                                            opts.msp.get(i).version));
-                }
-            }
-        } catch (NullPointerException ex) {
-            /* this doesn't work if we can't get a genome object.  Just ignore
-               the exception.  It only means that we can't fill in the
-               selected experiments and the user will have to do it again */
-            ex.printStackTrace();
-        }
         if (opts.position != null &&
             !opts.position.equals("")) {
             position.setText(opts.position);
@@ -484,24 +451,7 @@ public class SeqViewOptionsPane
         	these.chiapetArcs.add(loc);
         }
         
-        // parse the exptSelect panel selections.
-        for(ExptLocator loc : exptSelect.getSelected()) { 
-            
-            if(loc instanceof ChipChipLocator) { 
-                ChipChipLocator aloc = (ChipChipLocator)loc;
-                these.agilentdata.add(aloc);
-            }
-            
-            if(loc instanceof BayesLocator) { 
-                BayesLocator bloc = (BayesLocator)loc;
-                these.bayesresults.add(bloc);
-            }
-            
-            if(loc instanceof MSPLocator) {
-                MSPLocator mloc = (MSPLocator)loc;
-                these.msp.add(mloc);
-            }
-        }
+       
         filetracks.parse(these.regionTracks);
         these.regexes = regexes;
         return these;
@@ -528,7 +478,6 @@ public class SeqViewOptionsPane
         
         System.err.println("UPDATING EXPERIMENT SELECTION FOR GENOME: " + g);
 
-        exptSelect.setGenome(lg);
         seqSelect.setGenome(lg);
         pairedSeqSelect.setGenome(lg);
         interactionArcSelect.setGenome(lg);

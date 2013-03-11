@@ -48,7 +48,7 @@ public class SeqView extends JFrame implements ActionListener {
     
     public SeqView(SeqViewOptions opts) throws NotFoundException {
         super();
-        setTitle("SeqView"); 
+        setTitle("SeqView");
         pcs = new ArrayList<PainterContainer>();
         pane = new SeqViewOptionsPane(opts);
         init();
@@ -257,8 +257,7 @@ public class SeqView extends JFrame implements ActionListener {
     public static void main(String args[]) {        
         try {
         	SeqView.configureLogging();
-        	
-            SeqViewOptions opts = SeqViewOptions.parseCL(args);
+        	SeqViewOptions opts = SeqViewOptions.parseCL(args);
 			new SeqView(opts);
 		} catch (Exception e) {
 			e.printStackTrace();

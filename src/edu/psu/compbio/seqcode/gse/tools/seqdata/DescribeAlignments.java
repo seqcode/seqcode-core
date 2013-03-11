@@ -47,6 +47,7 @@ public class DescribeAlignments {
             System.out.println("\tPublicSource: "+expt.getPublicSource());
             System.out.println("\tPublicDBID: "+expt.getPublicDBID());
             System.out.println("\tFQFile: "+expt.getFQFile());
+            System.out.println("\tExptNote: "+expt.getExptNote());
             
             System.out.println("SeqAlignment info:");
             System.out.println("\tID: "+align.getDBID());
