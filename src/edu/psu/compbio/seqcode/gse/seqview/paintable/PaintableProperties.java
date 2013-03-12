@@ -26,5 +26,5 @@ public class PaintableProperties extends SeqViewProperties {
         TrackLabel = origTrackLabel;
     }
     
-    public String fileSuffix() {return "wdpp";}
+    public String fileSuffix() {return "svpp";}
 }

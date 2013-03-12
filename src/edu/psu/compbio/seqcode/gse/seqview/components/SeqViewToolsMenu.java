@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.event.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.function.*;
-import edu.psu.compbio.seqcode.gse.seqview.SeqView;
 import edu.psu.compbio.seqcode.gse.tools.sequence.*;
 
 public class SeqViewToolsMenu extends JMenu {
@@ -19,7 +18,7 @@ public class SeqViewToolsMenu extends JMenu {
         add(item);
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    SeqView.main(new String[0]);
+                    SeqViewOptionsFrame.main(new String[0]);
                 }
             });
         item = new JMenuItem("Browse Weight Matrices");

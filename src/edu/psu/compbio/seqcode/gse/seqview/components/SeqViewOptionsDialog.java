@@ -28,7 +28,7 @@ public class SeqViewOptionsDialog extends JDialog {
 
 	static Logger logger = Logger.getLogger(SeqViewOptionsDialog.class);
 	
-	private SeqView optionsFrame;
+	private SeqViewOptionsFrame optionsFrame;
 	private SeqViewOptions options;
 	
 	private JPanel mainPanel = new JPanel();
@@ -85,7 +85,7 @@ public class SeqViewOptionsDialog extends JDialog {
 	 * Construct the dialog box
 	 * @param owner This will typically be the WarpOptionsFrame
 	 */
-	public SeqViewOptionsDialog(JFrame owner, SeqView wof, SeqViewOptions options) {
+	public SeqViewOptionsDialog(JFrame owner, SeqViewOptionsFrame wof, SeqViewOptions options) {
 		super(owner, true);
 		this.optionsFrame = wof;
 		this.options = options;

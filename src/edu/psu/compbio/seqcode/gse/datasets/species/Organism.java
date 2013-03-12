@@ -30,11 +30,11 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     public Organism(String species) throws NotFoundException {
         this.species = species;
         java.sql.Connection cxn = null;
-        try {System.out.println("Establishing core connection");
-            cxn = DatabaseFactory.getConnection("core");System.out.println("Established");
+        try {
+            cxn = DatabaseFactory.getConnection("core");
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select id from species where name = '" + species + "'");
-            System.out.println("DB Queried");
+            
             if (rs.next()) {
                 dbid = rs.getInt(1);
                 rs.close();

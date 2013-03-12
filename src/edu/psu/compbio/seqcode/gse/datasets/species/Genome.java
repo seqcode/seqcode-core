@@ -206,11 +206,11 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     public Genome(int speciesid, String version) throws NotFoundException {
         this.speciesid = speciesid;
         this.version = version;
-        try {System.out.println("Establishing core connection");
-            cxn = DatabaseFactory.getConnection("core");    System.out.println("Established");       
+        try {
+            cxn = DatabaseFactory.getConnection("core");       
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select name from species where id = " + speciesid);
-            System.out.println("Species queried");
+            
             if (rs.next()) {
                 this.species = rs.getString(1);
             } else {
@@ -219,7 +219,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             rs.close();
             rs = stmt.executeQuery("select id from genome where species = " + speciesid + 
                                              " and version ='" + version + "'");
-            System.out.println("Genome queried");
+            
             if (rs.next()) {
                 dbid = rs.getInt(1);
             } else {
@@ -227,9 +227,9 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             }
             rs.close();
             stmt.close();
-            System.out.println("Filling chroms");
+            
             fillChroms();
-            System.out.println("Filled");
+            
         } catch (SQLException ex) {
             ex.printStackTrace();
             throw new DatabaseException("Couldn't find " + species + ": "+ ex.toString(),ex);

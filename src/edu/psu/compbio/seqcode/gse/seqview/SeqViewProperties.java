@@ -147,7 +147,7 @@ public abstract class SeqViewProperties extends Model {
      * FOO.defaults.wdpp (warp drive paintable properties) where FOO is the runtime class name in
      * - current directory
      * - home directory
-     * edu.psu.compbio.seqcode.gse.warpdrive.paintable in the classpath
+     * edu.psu.compbio.seqcode.gse.seqview.paintable in the classpath
      */
     public void loadDefaults() {
         File name = currentFile();
@@ -160,7 +160,7 @@ public abstract class SeqViewProperties extends Model {
                     loadFromFile(name);
                 } else {
                     ClassLoader cl = ClassLoader.getSystemClassLoader();
-                    URL url = cl.getResource("edu/mit/csail/cgs/warpdrive/paintable/" + defaultName());
+                    URL url = cl.getResource("edu/psu/compbio/seqcode/gse/seqview/paintable/" + defaultName());
                     if (url != null) {
                         loadFromStream(new InputStreamReader(url.openStream()));
                     }

@@ -200,7 +200,7 @@ public class SeqViewOptions {
         if (genome == null) {throw new NullPointerException("Tried to call mergeInto when gnome is null");}
         if (!(species.equals(union.species) &&
               genome.equals(union.genome))) {
-            throw new IllegalArgumentException("Species and Genome version must match in WarpOptions.mergeInto");
+            throw new IllegalArgumentException("Species and Genome version must match in SeqViewOptions.mergeInto");
         }
         if (chrom != null) {
             union.chrom = chrom;
@@ -364,7 +364,6 @@ public class SeqViewOptions {
         //WeightMatrixLoader wmloader = new WeightMatrixLoader();
         
         SeqDataLoader seqloader = new SeqDataLoader();
-        System.out.println("1");
 
         try {        
             ResourceBundle res = ResourceBundle.getBundle("defaultgenome");
@@ -375,7 +374,7 @@ public class SeqViewOptions {
         } catch (Exception e) {
             // ditto
         }
-        System.out.println("2");
+        
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--species")) {
                 opts.species = args[++i];
@@ -398,9 +397,8 @@ public class SeqViewOptions {
             Genome genome = null; Organism organism = null;
             if (opts.species != null && opts.genome != null) {
                 organism = new Organism(opts.species);
-                System.out.println("3: "+organism.getName());
                 genome = organism.getGenome(opts.genome);
-            }System.out.println("4: "+genome.getVersion());
+            }
             for (int i = 0; i < args.length; i++) {
                 if (args[i].equals("--chrom") || args[i].equals("--region")) {
                     if (args[i+1].matches(".+:.+\\-.+")) {
@@ -555,7 +553,6 @@ public class SeqViewOptions {
             //wmloader.close();
             seqloader.close();
         }
-System.out.println("Got here");
 
         return opts;
     }
@@ -629,7 +626,7 @@ System.out.println("Got here");
     
     /**
      * Checks whether the specified width is within the allowable range for
-     * the Warp Drive Main Frame Width
+     * the SeqView Main Frame Width
      * @param testWidth the width to test
      */
     public boolean checkPreferredWindowWidth(int testWidth) {
@@ -639,7 +636,7 @@ System.out.println("Got here");
     
     /**
      * Checks whether the specified height is within the allowable range for
-     * the Warp Drive Main Frame Height
+     * the SeqView Main Frame Height
      * @param testHeight the height to test
      */
     public boolean checkPreferredWindowHeight(int testHeight) {
@@ -649,7 +646,7 @@ System.out.println("Got here");
     
     /**
      * Checks whether the specified X coordinate is within the allowable range
-     * for the location of the top left corner of the Warp Drive Main Frame
+     * for the location of the top left corner of the SeqView Main Frame
      * @param testX the x-coord to test
      */
     public boolean checkPreferredTopLeftX(int testX) {
@@ -659,7 +656,7 @@ System.out.println("Got here");
     
     /**
      * Checks whether the specified Y coordinate is within the allowable range
-     * for the location of the top left corner of the Warp Drive Main Frame
+     * for the location of the top left corner of the SeqView Main Frame
      * @param the y-coord to test
      */
     public boolean checkPreferredTopLeftY(int testY) {
@@ -668,8 +665,8 @@ System.out.println("Got here");
  
     
     /**
-     * Returns the preferred width for the Warp Drive Main Frame
-     * @return the preferred width for the Warp Drive Main Frame
+     * Returns the preferred width for the SeqView Main Frame
+     * @return the preferred width for the SeqView Main Frame
      */
     public int getPreferredWindowWidth() {
     	return preferredWindowWidth;
@@ -677,8 +674,8 @@ System.out.println("Got here");
     
     
     /**
-     * Sets the preferred width for the Warp Drive Main Frame
-     * @param newWidth the preferred width for the Warp Drive Main Frame
+     * Sets the preferred width for the SeqView Main Frame
+     * @param newWidth the preferred width for the SeqView Main Frame
      */
     public boolean setPreferredWindowWidth(int newWidth) {
     	if (this.checkPreferredWindowWidth(newWidth)) {
@@ -692,8 +689,8 @@ System.out.println("Got here");
     
     
     /**
-     * Returns the preferred height for the Warp Drive Main Frame
-     * @return the preferred height for the Warp Drive Main Frame
+     * Returns the preferred height for the SeqView Main Frame
+     * @return the preferred height for the SeqView Main Frame
      */
     public int getPreferredWindowHeight() {
     	return preferredWindowHeight;
@@ -701,8 +698,8 @@ System.out.println("Got here");
     
     
     /**
-     * Sets the preferred height for the Warp Drive Main Frame
-     * @param newHeight the preferred height for the Warp Drive Main Frame
+     * Sets the preferred height for the SeqView Main Frame
+     * @param newHeight the preferred height for the SeqView Main Frame
      */
     public boolean setPreferredWindowHeight(int newHeight) {
     	if (this.checkPreferredWindowHeight(newHeight)) {
@@ -717,8 +714,8 @@ System.out.println("Got here");
 
     
     /**
-     * Returns whether the Warp Drive Main Frame should be centered on the screen
-     * @return true if the Warp Drive Main Frame should be centered on the screen
+     * Returns whether the SeqView Main Frame should be centered on the screen
+     * @return true if the SeqView Main Frame should be centered on the screen
      */
     public boolean isWindowCentered() {
     	return isWindowCentered;
@@ -726,8 +723,8 @@ System.out.println("Got here");
     
     
     /**
-     * Sets whether the Warp Drive Main Frame should be centered on the screen
-     * @param isCentered true causes the Warp Drive Main Frame to be centered on the screen
+     * Sets whether the SeqView Main Frame should be centered on the screen
+     * @param isCentered true causes the SeqView Main Frame to be centered on the screen
      */
     public void setWindowCentered(boolean isCentered) {
     	this.isWindowCentered = isCentered;
@@ -736,9 +733,8 @@ System.out.println("Got here");
     
     /**
      * Returns the x-coord of the top left corner of the preferred location for 
-     * the Warp Drive Main Frame
-     * @return the x-coord of the top left corner of the preferred location for 
-     * the Warp Drive Main Frame
+     * the SeqView Main Frame
+     * @return the x-coord of the top left corner of the preferred location 
      */
     public int getPreferredTopLeftX() {
     	return preferredWindowTopLeftX;
@@ -747,9 +743,8 @@ System.out.println("Got here");
     
     /**
      * Sets the x-coord of the top left corner of the preferred location for 
-     * the Warp Drive Main Frame
-     * @param newX the x-coord of the top left corner of the preferred location for 
-     * the Warp Drive Main Frame
+     * the SeqView Main Frame
+     * @param newX the x-coord of the top left corner of the preferred location
      */
     public boolean setPreferredTopLeftX(int newX) {
     	if (this.checkPreferredTopLeftX(newX)) {
@@ -764,9 +759,8 @@ System.out.println("Got here");
    
     /**
      * Returns the y-coord of the top left corner of the preferred location for 
-     * the Warp Drive Main Frame
-     * @return the y-coord of the top left corner of the preferred location for 
-     * the Warp Drive Main Frame
+     * the SeqView Main Frame
+     * @return the y-coord of the top left corner of the preferred location 
      */
     public int getPreferredTopLeftY() {
     	return preferredWindowTopLeftY;
@@ -775,9 +769,8 @@ System.out.println("Got here");
     
     /**
      * Sets the y-coord of the top left corner of the preferred location for 
-     * the Warp Drive Main Frame
-     * @param newY the y-coord of the top left corner of the preferred location for 
-     * the Warp Drive Main Frame
+     * the SeqView Main Frame
+     * @param newY the y-coord of the top left corner of the preferred location 
      */
     public boolean setPreferredTopLeftY(int newY) {
     	if (this.checkPreferredTopLeftY(newY)) {

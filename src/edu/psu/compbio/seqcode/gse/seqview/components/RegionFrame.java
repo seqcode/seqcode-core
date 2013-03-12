@@ -97,9 +97,9 @@ public class RegionFrame extends JFrame {
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {                    
                     SeqViewOptions current = panel.getCurrentOptions();
-                    SeqView frame;
+                    SeqViewOptionsFrame frame;
                     try {
-                        frame = new SeqView(panel.getCurrentOptions());
+                        frame = new SeqViewOptionsFrame(panel.getCurrentOptions());
                         frame.addPainterContainer(panel);
                     } catch (NotFoundException e1) {
                         e1.printStackTrace();

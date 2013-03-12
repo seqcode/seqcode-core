@@ -16,7 +16,7 @@ public abstract class RegionPaintable extends WarpPaintable {
        This is returned in pixels and basically assumes screen
        resolution.  -1 means "give me as much space as possible".
     */
-    public int getMaxVertSpace () {return 800;}
+    public int getMaxVertSpace () {return -1;}
     public Region getRegion() {return region;}
     /* Sets the genomic region that this Paintable will display.
        The Paintable should  set canPaint() to false

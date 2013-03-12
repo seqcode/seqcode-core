@@ -177,8 +177,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		for(RegionPaintable rp : allPainters) { 
 			rp.cleanup();
 		}
-
-		System.out.println("RegionPanel finished cleanup.");
 	}
 
 	public void init(Genome g) {
@@ -252,8 +250,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		mainPanel.addKeyListener(this);    
 		scrollPane.addKeyListener(this);
 		setBackground(Color.WHITE);
-		//add(mainPanel,BorderLayout.CENTER);
-		add(scrollPane,BorderLayout.CENTER);
+		add(mainPanel,BorderLayout.CENTER);
+		//add(scrollPane,BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
@@ -1419,11 +1417,11 @@ Listener<EventObject>, PainterContainer, MouseListener {
        }
 
        public void paintComponent(Graphics g) {
-    	   scrollPane.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
+    	   //scrollPane.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
+    	   mainPanel.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
     	   System.out.println("WxH="+getWidth()+"\t"+getHeight());
     	   System.out.println("SP1 ="+scrollPane.getWidth()+"\t"+scrollPane.getHeight());
-    	   paintComponent(g,getX(),getY(),
-    			   getWidth(),getHeight());
+    	   paintComponent(g,getX(),getY(), getWidth(),getHeight());
        }
 
        public void paintComponent(Graphics g, int x, int y, int width, int height) {
