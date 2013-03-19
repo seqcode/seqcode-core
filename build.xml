@@ -112,11 +112,20 @@
     <mkdir dir="${build.unjar.dir}.tmp" />
     <unjar dest="${build.unjar.dir}.tmp">
       <fileset dir="${lib.dir}">
-	<include name="batik/batik-1.7/*.jar"/>
-	<include name="jfreechart/jfreechar-1.0.6/*.jar"/>
-	<include name="ojdbc/ojdbc14.jar"/>
-	<include name="mysql-connector/mysql-connector-java-3.1.12-bin.jar"/>
-	<include name="log4j/*.jar"/>
+    	<include name="ApacheCommons/*.jar"/>
+      	<include name="batik/batik-1.7/*.jar"/>
+    	<include name="biojava/biojava-1.5/*.jar"/>
+   	 	<include name="colt/*.jar"/>
+    	<include name="flanagan/*.jar"/>
+      	<include name="jahmm/*.jar"/>
+      	<include name="jfreechart/jfreechar-1.0.6/*.jar"/>
+      	<include name="junit/*.jar"/>
+      	<include name="libsvm/*.jar"/>
+      	<include name="pal-1.5.1/*.jar"/>
+      	<include name="picard/*.jar"/>
+		<include name="ojdbc/ojdbc14.jar"/>
+		<include name="mysql-connector/mysql-connector-java-3.1.12-bin.jar"/>
+		<include name="log4j/*.jar"/>
       </fileset>
     </unjar>
     <move file="${build.unjar.dir}.tmp" tofile="${build.unjar.dir}" />
