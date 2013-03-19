@@ -424,16 +424,13 @@ public class SeqViewOptionsPane
         these.seqHistogramPainter = !oldchipseq.isSelected();
 
         // parse the annotations tab
-        List selected = genes.getSelectedValuesList();
-        for (Object o : selected) {
+        for (Object o : genes.getSelectedValuesList()) {
             these.genes.add(o.toString());
         }
-        selected = ncrnas.getSelectedValuesList();
-        for (Object o : selected) {
+        for (Object o : ncrnas.getSelectedValuesList()) {
             these.ncrnas.add(o.toString());
         }
-        selected = otherfeats.getSelectedValuesList();
-        for (Object o : selected) {
+        for (Object o : otherfeats.getSelectedValuesList()) {
             these.otherannots.add(o.toString());
         }
         these.gccontent = gccontent.isSelected();
