@@ -6,7 +6,7 @@ import java.util.Iterator;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.GenericExperiment;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.SQLData;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.seqview.paintable.WarpPaintable;
+import edu.psu.compbio.seqcode.gse.seqview.paintable.SeqViewPaintable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 /* database thread for GenericExperiment (parent of ChipChipData, ChipChipMSP, ChipChipMLE, ChipChipBayes.

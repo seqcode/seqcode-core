@@ -4,13 +4,9 @@
 package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
 import java.awt.*;
-import java.util.*;
 import java.text.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
-import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
 /**
  * @author tdanford
@@ -95,7 +91,7 @@ public class HashMarkPaintable extends RegionPaintable {
         }
         g.setColor(Color.white);
         g.fillRect(x1, my, w, hh);
-        g.setColor(Color.black);
+        g.setColor(Color.DARK_GRAY);
         g.drawRect(x1, my, w, hh);
         
         int bpStart = tickSize * (int)Math.ceil((double)rs / (double)tickSize);

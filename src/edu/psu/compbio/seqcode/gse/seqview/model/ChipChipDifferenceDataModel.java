@@ -7,7 +7,7 @@ import java.util.Vector;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipData;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.GenericExperiment;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.seqview.paintable.WarpPaintable;
+import edu.psu.compbio.seqcode.gse.seqview.paintable.SeqViewPaintable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 

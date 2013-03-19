@@ -5,20 +5,17 @@ import java.util.prefs.*;
 import java.io.*;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.binding.BindingScan;
-import edu.psu.compbio.seqcode.gse.datasets.chipchip.AnalysisNameVersion;
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ExptNameVersion;
 import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
-import edu.psu.compbio.seqcode.gse.datasets.locators.ExptLocator;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAnalysis;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedExpt;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 public class SeqViewOptions {
 
@@ -34,7 +31,7 @@ public class SeqViewOptions {
 	/**
 	 * Constants for default values and limits on settings
 	 */
-	public static final int DEFAULT_WINDOW_WIDTH = 500;
+	public static final int DEFAULT_WINDOW_WIDTH = 900;
 	public static final int DEFAULT_WINDOW_HEIGHT = 650;
 	public static final int MIN_WINDOW_WIDTH = 400;
 	public static final int MAX_WINDOW_WIDTH = 2400;
@@ -47,6 +44,7 @@ public class SeqViewOptions {
 	public static final int MAX_TOP_LEFT_X = 1000;
 	public static final int MIN_TOP_LEFT_Y = 0;
 	public static final int MAX_TOP_LEFT_Y = 700;
+	public static final int STATUS_BAR_HEIGHT=16;
 	
 	// General display settings
 	private int preferredWindowWidth;
@@ -55,10 +53,8 @@ public class SeqViewOptions {
 	private int preferredWindowTopLeftX;
 	private int preferredWindowTopLeftY;
 	
-	
-	
-    // General connection info
-    public String species, genome;
+	// General connection info
+    public Genome genome;
 
     // where to start the display.
     // Either use (chrom,start,stop), gene, position (which will be parsed
@@ -67,22 +63,13 @@ public class SeqViewOptions {
     public int start, stop;
 
     // tracks to paint and their options
-    public boolean hash, relative, seqletters, gccontent, pyrpurcontent, cpg, regexmatcher;
-    public ArrayList<BindingScan> bindingScans;
+    public boolean hash=true, relative=false, seqletters=true, gccontent=false, pyrpurcontent=false, cpg=false, regexmatcher=false;
     public ArrayList<String> genes, ncrnas, otherannots;
     public ArrayList<ExptNameVersion> agilentdata;
-    public ArrayList<AnalysisNameVersion> bayesresults, agilentll, msp;
     public ArrayList<WeightMatrix> motifs;
-    public ArrayList<WeightMatrixScan> motifscans;
-    public ArrayList<ExptNameVersion> peakCallers;
     public ArrayList<Experiment> exprExperiments;
-    public HashMap<String,String> chiapetExpts;
-    public ArrayList<SeqLocator> chipseqExpts;
-    public ArrayList<SeqLocator> pairedChipseqExpts;
-    public ArrayList<SeqLocator> chiapetArcs;
-    public ArrayList<SeqAnalysis> chipseqAnalyses;
-    // filename to label mappings.  These are loaded from a file
-    // and the data held statically
+    public ArrayList<SeqLocatorMatchedExpt> seqExpts;
+    // filename to label mappings.  These are loaded from a file and the data held statically
     public HashMap<String,String> regionTracks, regexes;
     
     // options for saving image to a file
@@ -90,23 +77,18 @@ public class SeqViewOptions {
     public String filename;
 
     // startup-only options
-    public boolean chipseqHistogramPainter = true;
+    public boolean seqHistogramPainter = true;
 
     /* These constants correspond to the different input arrays.  They are used
        in WarpPaintable to store the type of input that created the paintable 
        (this must be set by the creator, currently done in RegionPanel).  This information
        is useful for removing a painter because it lets you figure out which field of
-       the WarpOptions class should be modified */
+       the SeqViewOptions class should be modified */
     public static final int BINDINGSCAN = 1,
         GENES = 2,
         NCRNAS = 3,
         OTHERANNOTS = 4,
         AGILENTDATA = 5,
-        RULERPROBES = 6,
-        RULERINTERVALS = 7,
-        BAYESRESULTS = 8,
-        AGILENTLL = 9,
-        MSP = 10,
         MOTIFS = 11,
         PEAKS = 12,
         SEQLETTERS = 13,
@@ -124,42 +106,30 @@ public class SeqViewOptions {
         
     	this.loadOptions();
     	
-        genome = gname;
-        Genome g;
         try {
-            g = Organism.findGenome(genome);
-            species = g.getSpecies();
-            
+        	genome = Organism.findGenome(gname);
         } catch (NotFoundException e) {
             e.printStackTrace();
             throw new IllegalArgumentException(gname);
         }
         
+        List<String> chroms = genome.getChromList();
+        java.util.Collections.sort(chroms);
+        chrom = chroms.get(0);
         start = 10000;
-        stop = 20000;        
-        chrom = g.getChromList().get(0);
+        stop = 20000;     
         gene = null;
         hash = true;
-        chipseqHistogramPainter = true;
+        seqHistogramPainter = true;
         genes = new ArrayList<String>();
         ncrnas = new ArrayList<String>();
-        bindingScans = new ArrayList<BindingScan>();
         otherannots = new ArrayList<String>();
         agilentdata= new ArrayList<ExptNameVersion>();
-        chiapetExpts = new HashMap<String,String>();
-        chipseqExpts = new ArrayList<SeqLocator>();
-        pairedChipseqExpts = new ArrayList<SeqLocator>();
-        chiapetArcs = new ArrayList<SeqLocator>();
-        agilentll = new ArrayList<AnalysisNameVersion>();
-        bayesresults = new ArrayList<AnalysisNameVersion>();
-        msp = new ArrayList<AnalysisNameVersion>();
+        seqExpts = new ArrayList<SeqLocatorMatchedExpt>();
         motifs = new ArrayList<WeightMatrix>();
-        motifscans = new ArrayList<WeightMatrixScan>();
-        peakCallers = new ArrayList<ExptNameVersion>();
         exprExperiments = new ArrayList<Experiment>();
         regionTracks = new HashMap<String,String>();
         regexes = new HashMap<String,String>();
-        chipseqAnalyses = new ArrayList<SeqAnalysis>();
     }
 
     public SeqViewOptions() {
@@ -170,38 +140,23 @@ public class SeqViewOptions {
         chrom = null;
         gene = null;
         hash = true;
-        chipseqHistogramPainter = true;
+        seqHistogramPainter = true;
         genes = new ArrayList<String>();
         ncrnas = new ArrayList<String>();
-        bindingScans = new ArrayList<BindingScan>();
         otherannots = new ArrayList<String>();
         agilentdata= new ArrayList<ExptNameVersion>();
-        chiapetExpts = new HashMap<String,String>();
-        chipseqExpts = new ArrayList<SeqLocator>();
-        pairedChipseqExpts = new ArrayList<SeqLocator>();
-        chiapetArcs = new ArrayList<SeqLocator>();
-        agilentll = new ArrayList<AnalysisNameVersion>();
-        bayesresults = new ArrayList<AnalysisNameVersion>();
-        msp = new ArrayList<AnalysisNameVersion>();
+        seqExpts = new ArrayList<SeqLocatorMatchedExpt>();
         motifs = new ArrayList<WeightMatrix>();
-        motifscans = new ArrayList<WeightMatrixScan>();
-        peakCallers = new ArrayList<ExptNameVersion>();
         exprExperiments = new ArrayList<Experiment>();
         regionTracks = new HashMap<String,String>();
         regexes = new HashMap<String,String>();
-        chipseqAnalyses = new ArrayList<SeqAnalysis>();
     }
 
     /* adds options from this into union.  For lists, it generates the 
        union.  For other settings, this takes priority */
     public void mergeInto(SeqViewOptions union) throws IllegalArgumentException {
         if (union == null) {throw new NullPointerException("Must supply options to mergeInto");}
-        if (species == null) {throw new NullPointerException("Tried to call mergeInto when species is null");}
-        if (genome == null) {throw new NullPointerException("Tried to call mergeInto when gnome is null");}
-        if (!(species.equals(union.species) &&
-              genome.equals(union.genome))) {
-            throw new IllegalArgumentException("Species and Genome version must match in SeqViewOptions.mergeInto");
-        }
+        if (genome == null) {throw new NullPointerException("Tried to call mergeInto when genome is null");}
         if (chrom != null) {
             union.chrom = chrom;
             union.start = start;
@@ -218,26 +173,16 @@ public class SeqViewOptions {
         union.gene = gene;
         union.regexmatcher = regexmatcher;
         union.seqletters = seqletters;
-        union.chipseqHistogramPainter = (chipseqHistogramPainter && union.chipseqHistogramPainter);
-        mergeInto(bindingScans,union.bindingScans);
+        union.seqHistogramPainter = (seqHistogramPainter && union.seqHistogramPainter);
         mergeInto(genes,union.genes);
         mergeInto(ncrnas,union.ncrnas);
         mergeInto(otherannots,union.otherannots);
         mergeInto(agilentdata,union.agilentdata);
-        mergeInto(chiapetExpts,union.chiapetExpts);
-        mergeInto(chipseqExpts,union.chipseqExpts);
-        mergeInto(pairedChipseqExpts,union.pairedChipseqExpts);
-        mergeInto(chiapetArcs,union.chiapetArcs);
-        mergeInto(bayesresults,union.bayesresults);
-        mergeInto(agilentll,union.agilentll);
-        mergeInto(msp,union.msp);
+        mergeInto(seqExpts,union.seqExpts);
         mergeInto(motifs,union.motifs);
-        mergeInto(motifscans,union.motifscans);
-        mergeInto(peakCallers,union.peakCallers);
         mergeInto(exprExperiments,union.exprExperiments);
         mergeInto(regionTracks,union.regionTracks);
         mergeInto(regexes, union.regexes);
-        mergeInto(chipseqAnalyses, union.chipseqAnalyses);
     }
 
     public void mergeInto(ArrayList source, ArrayList target) {
@@ -259,15 +204,10 @@ public class SeqViewOptions {
        Doesn't mess with chrom, start, stop, or gene 
      */
     public void differenceOf(SeqViewOptions other) {
-        if (species != null &&
-            other.species != null &&
-            !other.species.equals(species)) {
-            throw new IllegalArgumentException("Species must match in WarpOptions.mergeInto");
-        }
         if (genome != null &&
             other.genome != null &&
             !other.genome.equals(genome)) {
-            throw new IllegalArgumentException("Genome must match in WarpOptions.mergeInto");
+            throw new IllegalArgumentException("Genome must match in SeqViewOptions.mergeInto");
         }
         if (other.position != null && !other.gene.equals("")) {
             position = other.position;
@@ -284,27 +224,17 @@ public class SeqViewOptions {
         pyrpurcontent = pyrpurcontent && (!other.pyrpurcontent);
         cpg = cpg && (!other.cpg);
         regexmatcher = regexmatcher && (!other.regexmatcher);        
-        seqletters = seqletters && (!other.seqletters);
-        chipseqHistogramPainter = (chipseqHistogramPainter && other.chipseqHistogramPainter);
-        differenceOf(bindingScans,other.bindingScans);
+        seqletters = seqletters || other.seqletters;
+        seqHistogramPainter = (seqHistogramPainter && other.seqHistogramPainter);
         differenceOf(genes,other.genes);
         differenceOf(ncrnas,other.ncrnas);
         differenceOf(otherannots,other.otherannots);
         differenceOf(agilentdata,other.agilentdata);
-        differenceOf(chiapetExpts,other.chiapetExpts);
-        differenceOf(chipseqExpts,other.chipseqExpts);
-        differenceOf(pairedChipseqExpts,other.pairedChipseqExpts);
-        differenceOf(chiapetArcs,other.chiapetArcs);
-        differenceOf(bayesresults,other.bayesresults);
-        differenceOf(agilentll,other.agilentll);
-        differenceOf(msp,other.msp);
+        differenceOf(seqExpts,other.seqExpts);
         differenceOf(motifs,other.motifs);
-        differenceOf(motifscans,other.motifscans);
-        differenceOf(peakCallers,other.peakCallers);
         differenceOf(exprExperiments, other.exprExperiments);
         differenceOf(regionTracks,other.regionTracks);
         differenceOf(regexes,other.regexes);
-        differenceOf(chipseqAnalyses, other.chipseqAnalyses);
     }
 
     public void differenceOf(ArrayList removeFrom, ArrayList other) {
@@ -318,7 +248,6 @@ public class SeqViewOptions {
 
     public SeqViewOptions clone() {
         SeqViewOptions o = new SeqViewOptions();
-        o.species = species;
         o.genome = genome;
         o.chrom = chrom;
         o.gene = gene;
@@ -333,32 +262,23 @@ public class SeqViewOptions {
         o.relative = relative;
         o.seqletters = seqletters;
         o.regexmatcher = regexmatcher;
-        o.chipseqHistogramPainter = chipseqHistogramPainter;
-        o.bindingScans = (ArrayList<BindingScan>)bindingScans.clone();
+        o.seqHistogramPainter = seqHistogramPainter;
         o.genes = (ArrayList<String>) genes.clone();
         o.ncrnas = (ArrayList<String>) ncrnas.clone();
         o.otherannots = (ArrayList<String>) otherannots.clone();
         o.agilentdata = (ArrayList<ExptNameVersion>)agilentdata.clone();
-        o.chiapetExpts = (HashMap<String,String>)chiapetExpts.clone();
-        o.chipseqExpts = (ArrayList<SeqLocator>)chipseqExpts.clone();
-        o.pairedChipseqExpts = (ArrayList<SeqLocator>)pairedChipseqExpts.clone();
-        o.chiapetArcs = (ArrayList<SeqLocator>)chiapetArcs.clone();
-        o.bayesresults = (ArrayList<AnalysisNameVersion>)bayesresults.clone();
-        o.agilentll = (ArrayList<AnalysisNameVersion>)agilentll.clone();
-        o.msp = (ArrayList<AnalysisNameVersion>)msp.clone();
+        o.seqExpts = (ArrayList<SeqLocatorMatchedExpt>)seqExpts.clone();
         o.motifs = (ArrayList<WeightMatrix>)motifs.clone();
-        o.motifscans = (ArrayList<WeightMatrixScan>)motifscans.clone();
-        o.peakCallers = (ArrayList<ExptNameVersion>)peakCallers.clone();
         o.exprExperiments = (ArrayList<Experiment>)exprExperiments.clone();
         o.regionTracks = (HashMap<String,String>)regionTracks.clone();
         o.regexes = (HashMap<String,String>)regexes.clone();
-        o.chipseqAnalyses = (ArrayList<SeqAnalysis>)chipseqAnalyses.clone();
         return o;
     }
 
-    /* Fills in a WarpOptions from command line arguments */
+    /* Fills in a SeqViewOptions from command line arguments */
     public static SeqViewOptions parseCL(String[] args) throws NotFoundException, SQLException, IOException {
         SeqViewOptions opts = new SeqViewOptions();
+        String genomeStr=null, speciesStr=null;
         
         //TODO: restore weight matrices
         //WeightMatrixLoader wmloader = new WeightMatrixLoader();
@@ -367,8 +287,8 @@ public class SeqViewOptions {
 
         try {        
             ResourceBundle res = ResourceBundle.getBundle("defaultgenome");
-            opts.species = res.getString("species");
-            opts.genome = res.getString("genome"); 
+            speciesStr = res.getString("species"); 
+            genomeStr = res.getString("genome"); 
         } catch (MissingResourceException e) {
             // who cares, we're just getting defaults
         } catch (Exception e) {
@@ -377,27 +297,27 @@ public class SeqViewOptions {
         
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--species")) {
-                opts.species = args[++i];
-                if (opts.species.indexOf(';') != -1) {
-                    String[] pieces = opts.species.split(";");
-                    opts.species = pieces[0];
-                    opts.genome = pieces[1];
+                speciesStr = args[++i];
+                if (speciesStr.indexOf(';') != -1) {
+                    String[] pieces = speciesStr.split(";");
+                    speciesStr = pieces[0];
+                    genomeStr = pieces[1];
                 }
             }        
             if (args[i].equals("--genome") || args[i].equals("--genomeversion")) {
-                opts.genome = args[++i];
+                genomeStr = args[++i];
             }
             if (args[i].equals("--oldchipseq")) {
-                opts.chipseqHistogramPainter = false;
+                opts.seqHistogramPainter = false;
                 System.err.println("Will use old ChipSeq painters");
             }
 
         }
         try {
-            Genome genome = null; Organism organism = null;
-            if (opts.species != null && opts.genome != null) {
-                organism = new Organism(opts.species);
-                genome = organism.getGenome(opts.genome);
+        	Organism organism = null;
+            if (speciesStr != null && genomeStr != null) {
+                organism = new Organism(speciesStr);
+                opts.genome = organism.getGenome(genomeStr);
             }
             for (int i = 0; i < args.length; i++) {
                 if (args[i].equals("--chrom") || args[i].equals("--region")) {
@@ -448,58 +368,39 @@ public class SeqViewOptions {
                 if (args[i].equals("--genes")) {
                     opts.genes.add(args[++i]);;
                 }            
-                if (args[i].equals("--chiapet")) {
-                	String pieces[] = args[++i].split(";");
-                    if (pieces.length == 1) {
-                        opts.chiapetExpts.put(pieces[0],pieces[0]);
-                    } else {
-                        opts.chiapetExpts.put(pieces[0],pieces[1]);
-                    }
-                }
-                if (args[i].equals("--chipseq")) {
+                
+                if (args[i].equals("--seqexpt")) {
+                	//This is a really awkward (and possibly bug-filled) way to load experiments, 
+                	//but hopefully loading from command-line is rare anyway
                     String pieces[] = args[++i].split(";");
+                    SeqLocator loc=null;
                     if (pieces.length == 2) {
-                        opts.chipseqExpts.add(new SeqLocator(pieces[0], pieces[1]));
+                        loc = new SeqLocator(pieces[0], pieces[1]);
                     } else if (pieces.length >= 3) {
                         Set<String> repnames = new HashSet<String>();
                         for (int j = 1; j < pieces.length - 1; j++) {
                             repnames.add(pieces[j]);
                         }
-                        opts.chipseqExpts.add(new SeqLocator(pieces[0], repnames, pieces[pieces.length-1]));
+                        loc = new SeqLocator(pieces[0], repnames, pieces[pieces.length-1]);
                     } else {
-                        System.err.println("Couldn't parse --chipseq " + args[i]);
+                        System.err.println("Couldn't parse --seqexpt " + args[i]);
+                    }
+                    if(loc!=null){
+                    	SeqDataLoader loader = new SeqDataLoader();
+                    	Collection<SeqAlignment> aligns = loader.loadAlignments(loc, opts.genome);
+                    	SeqExpt expt = null;
+                    	for(SeqAlignment a : aligns){
+                    		if(expt==null)
+                    			expt = a.getExpt();
+                    		else if(!expt.equals(a.getExpt()))
+                    			System.err.println("SeqLocator "+loc.toString()+" returned multiple SeqExpts.\tUsing: "+expt.getDBID()+" but something needs to be fixed!");
+                    	}
+                    	List<SeqExpt> expts = new ArrayList<SeqExpt>();
+                    	expts.add(expt);
+                    	opts.seqExpts.add(new SeqLocatorMatchedExpt(expts, loc));
                     }
                 }
-                if (args[i].equals("--pairedchipseq")) {
-                    String pieces[] = args[++i].split(";");
-                    if (pieces.length == 2) {
-                        opts.pairedChipseqExpts.add(new SeqLocator(pieces[0], pieces[1]));
-                    } else if (pieces.length == 3) {
-                        opts.pairedChipseqExpts.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
-                    } else {
-                        System.err.println("Couldn't parse --pairedchipseq " + args[i]);
-                    }
-                }
-                if (args[i].equals("--chiapetarc")) {
-                    String pieces[] = args[++i].split(";");
-                    if (pieces.length == 2) {
-                        opts.chiapetArcs.add(new SeqLocator(pieces[0], pieces[1]));
-                    } else if (pieces.length == 3) {
-                        opts.chiapetArcs.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
-                    } else {
-                        System.err.println("Couldn't parse --chiapetarc " + args[i]);
-                    }
-                }
-                if (args[i].equals("--chipseqanalysis")) {
-                    String pieces[] = args[++i].split(";");
-                    if (pieces.length == 2) {
-                        opts.chipseqAnalyses.add(SeqAnalysis.get(seqloader, pieces[0], pieces[1]));
-                    } else {
-                        System.err.println("Couldn't parse --chipseqanalysis " + args[i]);
-                    }                
-                }
-
-                
+                                
                 if (args[i].equals("--sgdOther")) {
                     opts.otherannots.add("sgdOther");
                 }
@@ -510,16 +411,6 @@ public class SeqViewOptions {
                     opts.otherannots.add(args[++i]);
                 }
                 /*
-                if (args[i].equals("--wmscan")) {
-                    String[] pieces = args[++i].split(";");
-                    Organism thisorg = organism;
-                    if (pieces.length == 4) {
-                        thisorg = new Organism(pieces[3]);
-                    }                
-                    WeightMatrix matrix = wmloader.query(thisorg.getDBID(),pieces[0],pieces[1]);
-                    WeightMatrixScan scan = WeightMatrixScan.getScanForMatrix(matrix.dbid, pieces[2]);
-                    opts.motifscans.add(scan);
-                }
                 if (args[i].equals("--wm")) {
                     String[] pieces = args[++i].split(";");
                     Organism thisorg = organism;

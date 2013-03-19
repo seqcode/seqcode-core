@@ -190,7 +190,7 @@ public class ChipChipScatterFrame extends JFrame {
 
     public static void main(String args[]) throws Exception {
         SeqViewOptions options = SeqViewOptions.parseCL(args);
-        Genome g = new Genome(options.species,options.genome);
+        Genome g = options.genome;
         ChipChipDataset agilent = new ChipChipDataset(g);        
         Set<String> flags = Args.parseFlags(args);        
         for (ExptNameVersion env : options.agilentdata) {

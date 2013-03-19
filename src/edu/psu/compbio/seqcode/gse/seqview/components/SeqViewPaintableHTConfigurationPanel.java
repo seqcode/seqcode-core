@@ -4,13 +4,13 @@ import java.util.*;
 import java.awt.*;
 import javax.swing.*;
 
-import edu.psu.compbio.seqcode.gse.seqview.paintable.WarpPaintable;
+import edu.psu.compbio.seqcode.gse.seqview.paintable.SeqViewPaintable;
 
 public class SeqViewPaintableHTConfigurationPanel extends HashtableConfigurationPanel {
 
-    private WarpPaintable wp;
+    private SeqViewPaintable wp;
     private Hashtable<String,Object> table;
-    public SeqViewPaintableHTConfigurationPanel (Hashtable<String,Object> table, WarpPaintable w) {
+    public SeqViewPaintableHTConfigurationPanel (Hashtable<String,Object> table, SeqViewPaintable w) {
         super(table,w.configurationKeyOrder());
         this.table = table;
         wp = w;

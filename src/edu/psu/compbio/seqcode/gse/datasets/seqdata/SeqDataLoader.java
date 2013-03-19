@@ -8,7 +8,14 @@ import java.sql.*;
 import java.io.*;
 
 
+import edu.psu.compbio.seqcode.gse.datasets.general.AlignType;
+import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
+import edu.psu.compbio.seqcode.gse.datasets.general.ExptType;
+import edu.psu.compbio.seqcode.gse.datasets.general.Lab;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.general.ReadType;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
@@ -59,6 +66,22 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	private String myusername = "";
     private Client client=null;
     
+    //Experiment descriptors
+    private Collection<ExptType> exptTypes = null;
+    private Collection<Lab> labs=null;
+    private Collection<ExptTarget> exptTargets = null;
+    private Collection<ExptCondition> exptConditions = null;
+    private Collection<CellLine> celllines = null;
+    private Collection<ReadType> readTypes = null;
+    private Collection<AlignType> alignTypes = null;
+    public Collection<ExptType> getExptTypes() throws SQLException {if(exptTypes==null){exptTypes=getMetadataLoader().loadAllExptTypes();} return exptTypes;}
+    public Collection<Lab> getLabs() throws SQLException {if(labs==null){labs=getMetadataLoader().loadAllLabs();} return labs;}
+    public Collection<ExptTarget> getExptTargets() throws SQLException {if(exptTargets==null){exptTargets = getMetadataLoader().loadAllExptTargets();} return exptTargets;}
+    public Collection<ExptCondition> getExptConditions() throws SQLException {if(exptConditions==null){exptConditions = getMetadataLoader().loadAllExptConditions();} return exptConditions;} 
+    public Collection<CellLine> getCellLines() throws SQLException {if(celllines==null){celllines = getMetadataLoader().loadAllCellLines();} return celllines;}
+	public Collection<ReadType> getReadTypes() throws SQLException {if(readTypes==null){readTypes = getMetadataLoader().loadAllReadTypes();} return readTypes;}
+	public Collection<AlignType> getAlignTypes() throws SQLException {if(alignTypes==null){alignTypes = getMetadataLoader().loadAllAlignTypes();} return alignTypes;}
+        
     public SeqDataLoader() throws SQLException, IOException{this(true);}
 	public SeqDataLoader(boolean openClient) throws SQLException, IOException {
 		if(openClient){
@@ -117,13 +140,13 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 	public Collection<SeqExpt> loadAllExperiments() throws SQLException {
 		System.err.println("Loading core experiment metadata...");
-		getMetadataLoader().loadAllLabs();
-		getMetadataLoader().loadAllExptTypes();
-		getMetadataLoader().loadAllExptTargets();
-		getMetadataLoader().loadAllExptConditions();
-        getMetadataLoader().loadAllCellLines();
-        getMetadataLoader().loadAllReadTypes();
-        getMetadataLoader().loadAllAlignTypes();
+		labs=getMetadataLoader().loadAllLabs();
+		exptTypes=getMetadataLoader().loadAllExptTypes();
+		exptTargets = getMetadataLoader().loadAllExptTargets();
+		exptConditions = getMetadataLoader().loadAllExptConditions();
+        celllines = getMetadataLoader().loadAllCellLines();
+        readTypes = getMetadataLoader().loadAllReadTypes();
+        alignTypes = getMetadataLoader().loadAllAlignTypes();
         System.err.println("Loading seqdata experiment info...");
         PreparedStatement ps = SeqExpt.createLoadAll(getConnection());
         ps.setFetchSize(1000);

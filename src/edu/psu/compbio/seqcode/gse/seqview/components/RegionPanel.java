@@ -86,7 +86,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	private JTextField status;
 	// maps a track name to its coordinates in the current layout
 	private Hashtable<String,Integer> ulx, uly, lrx, lry;
-	// maps a track name to the set of painters int hat track
+	// maps a track name to the set of painters in that track
 	private Hashtable<String,ArrayList<RegionPaintable>> painters;
 	// keeps track of the order in which painters are to be drawn
 	private ArrayList<RegionPaintable> allPainters;
@@ -113,6 +113,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	// and this is an easy way to keep track of it.
 	//private MultiGenePainter mgp = null;
 	private ExonGenePainter egp = null;
+	private CDSGenePainter cgp = null;
 	private static Color transparentWhite = new Color(255,255,255,80);
 	private boolean forceupdate = false, firstconfig = true;
 
@@ -127,17 +128,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 	public RegionPanel(SeqViewOptions opts) {
 		super();
-		Organism organism = null;
-		Genome g = null;
-		try {
-			organism = Organism.getOrganism(opts.species);
-			g = organism.getGenome(opts.genome);
-		} catch (NotFoundException ex) {
-			System.err.println("Fatal Error in RegionPanel(WarpOptions)");
-			ex.printStackTrace();
-			// a little weird, but it'd happen anyway in init();
-			throw new NullPointerException("Fatal Error in RegionPanel(WarpOptions)");
-		}
+		Genome g = opts.genome;
+		
 		init(g);
 		currentOptions = opts;
 		addPaintersFromOpts(opts);
@@ -257,8 +249,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 	public void addPaintersFromOpts(SeqViewOptions opts) {        
 
-		if (!(opts.species.equals(genome.getSpecies()) &&
-				opts.genome.equals(genome.getVersion()))) {
+		if (!(opts.genome.equals(genome))){
 			// if someone tries to add painters from a different species,
 			// create a new frame for them instead.
 			// this will probably get changed later if we have multi-species
@@ -266,14 +257,12 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			RegionFrame frame = new RegionFrame(opts);
 			return;
 		}
-
-
 		opts.mergeInto(currentOptions);
-		ChipChipDataset dataset = new ChipChipDataset(genome);
+		//ChipChipDataset dataset = new ChipChipDataset(genome);
 		// there should be one scale model for each chip-chip track.  We need to keep them
 		// here because multiple chipchip datasets (ie painters) may be on the same track (ie piece
 		// of screen real-estate)
-		Hashtable<String,ChipChipScaleModel> scalemodels = new Hashtable<String,ChipChipScaleModel>();
+		//Hashtable<String,ChipChipScaleModel> scalemodels = new Hashtable<String,ChipChipScaleModel>();
 		if (opts.hash) {
 			HashMarkPaintable p = new HashMarkPaintable();
 			//SimpleHashMarkPaintable p = new SimpleHashMarkPaintable();
@@ -336,7 +325,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			addModelToPaintable(p,seqmodel);
 		}
 
-		if (opts.chiapetExpts.size() > 0) {
+		/*if (opts.chiapetExpts.size() > 0) {
 			try {
 				for (String k : opts.chiapetExpts.keySet()) {
 					SortedMap<Pair<Point,Point>,Float> interactions = new TreeMap<Pair<Point,Point>,Float>(new Comparator<Pair<Point,Point>>() {
@@ -382,18 +371,17 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
-
-		if (opts.chipseqExpts.size() > 0) {
+		}*/
+		if (opts.seqExpts.size() > 0) {
 			try {
 				SeqDataLoader loader = new SeqDataLoader();
 
-				for(int i = 0; i < opts.chipseqExpts.size(); i++) { 
-					Collection<SeqAlignment> alignments = loader.loadAlignments(opts.chipseqExpts.get(i), genome);
+				for(int i = 0; i < opts.seqExpts.size(); i++) { 
+					Collection<SeqAlignment> alignments = loader.loadAlignments(opts.seqExpts.get(i).locator, genome);
 
 					RegionModel m;
 					RegionPaintable p;
-					if (opts.chipseqHistogramPainter) {
+					if (opts.seqHistogramPainter) {
 						m = new ChipSeqHistogramModel(alignments);
 						p = new SeqHistogramPainter((ChipSeqHistogramModel)m);
 					} else {
@@ -404,7 +392,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 					}
 					addModel(m);
 					Thread t = new Thread((Runnable)m); t.start();
-					p.setLabel(opts.chipseqExpts.get(i).toString());
+					p.setLabel(opts.seqExpts.get(i).toString());
 
 					p.addEventListener(this);
 					addPainter(p);
@@ -415,6 +403,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				e.printStackTrace();
 			}
 		}
+		/*
 		if (opts.pairedChipseqExpts.size() > 0) {
 			try {
 				SeqDataLoader loader = new SeqDataLoader(true);
@@ -476,10 +465,11 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
 
 
-		// agilentdata, msp, and bayes are all nearly identical.
+		/*
+		// agilentdata
 		for (int i = 0; i < opts.agilentdata.size(); i++) {     
 
 			if(opts.agilentdata.get(i) instanceof ChipChipDifferenceLocator) {
@@ -530,7 +520,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				//                 p.setOption(WarpOptions.AGILENTDATA,opts.agilentdata.get(i));
 
 				//                 addPainter(p);
-
+			/*	
 				System.err.println("NO DIFFERENCE PAINTING RIGHT NOW.  BUG ALEX TO FIX IT");
 
 			} else {
@@ -584,7 +574,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 					addPainter(p);
 					addModelToPaintable(p, m);
-					/* now add a scale if one doesn't already exist in this track */
+					// now add a scale if one doesn't already exist in this track 
 					boolean foundany = false;
 					for (RegionPaintable rp : painters.get(envstr)) {
 						if (rp instanceof ChipChipScalePainter) {
@@ -604,143 +594,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
 							" for " + opts.agilentdata.get(i));
 				}
 			}
-		}
-		for (int i = 0; i < opts.msp.size(); i++) {            
-			try {
-				String label = opts.msp.get(i).toString();
-				if (scalemodels.get(label) == null) {
-					scalemodels.put(label,new ChipChipScaleModel());
-				}                
-
-				ChipChipScaleModel scale = scalemodels.get(label);
-				addModel(scale);
-
-				ChipChipMSP data = dataset.getMSP(opts.msp.get(i));
-				ChipChipDataModel m = new ChipChipDataModel(data);
-				addModel(m);
-				Thread t = new Thread(m);
-				t.start();
-		/*		ChipChipMSPPainter p = new ChipChipMSPPainter(data,m);
-				scale.addModel(m);
-				p.setScaleModel(scale);
-				p.setLabel(label);
-				p.addEventListener(this);
-				p.setOption(SeqViewOptions.MSP,opts.msp.get(i));
-				addPainter(p);
-				addModelToPaintable(p, m);                
-				// now add a scale if one doesn't already exist in this track 
-				boolean foundany = false;
-				for (RegionPaintable rp : painters.get(label)) {
-					if (rp instanceof ChipChipScalePainter) {
-						foundany = true;
-						break;
-					}
-				}                    
-				if (!foundany) {
-					ChipChipScalePainter s = new ChipChipScalePainter(scale,this,(ChipChipProperties)p.getProperties());
-					s.setLabel(label);
-					addPainter(s);        
-					addModelToPaintable(s, m);                
-				}                    
-		*/
-			} catch (NotFoundException ex) {
-				System.err.println("Couldn't find any dataset in " + genome + " for " + opts.msp.get(i));
-			}
-		}
-		for (int i = 0; i < opts.bayesresults.size(); i++) {            
-			try {
-				String label = opts.bayesresults.get(i).toString();
-				if (scalemodels.get(label) == null) {
-					scalemodels.put(label,new ChipChipScaleModel());
-				}                
-				ChipChipScaleModel scale = scalemodels.get(label);
-				addModel(scale);
-
-				ChipChipBayes data = dataset.getBayes(opts.bayesresults.get(i));
-				ChipChipDataModel m = new ChipChipDataModel(data);
-				addModel(m);
-				Thread t = new Thread(m);
-				t.start();
-			/*	ChipChipBayesPainter p = new ChipChipBayesPainter(data,m);
-				scale.addModel(m);
-				p.setScaleModel(scale);
-				p.setLabel(label);
-				p.addEventListener(this);
-				p.setOption(SeqViewOptions.BAYESRESULTS,opts.bayesresults.get(i));
-				addPainter(p);           
-				addModelToPaintable(p, m);     
-				// now add a scale if one doesn't already exist in this track 
-				boolean foundany = false;
-				for (RegionPaintable rp : painters.get(label)) {
-					if (rp instanceof ChipChipBayesScalePainter) {
-						foundany = true;
-						break;
-					}
-				}                    
-				if (!foundany) {
-					ChipChipScalePainter s = new ChipChipBayesScalePainter(scale,this,(ChipChipBayesProperties)p.getProperties());
-					s.setLabel(label);
-					addPainter(s);        
-					addModelToPaintable(s, m);            
-				}      
-				*/
-			} catch (NotFoundException ex) {
-				System.err.println("Couldn't find any dataset in " + genome + " for " + opts.bayesresults.get(i));
-			}
-		}
-
-		if (opts.bindingScans.size() > 0) {
-			try {            
-
-				/*
-                BindingScanLoader loader = new BindingScanLoader();
-                BindingExpander expander = new BindingExpander(loader, opts.bindingScans);
-                BindingEventModel model = new BindingEventModel(expander);
-
-                addModel(model);
-
-                Thread t = new Thread(model);
-                t.start();
-
-                BindingEventPaintable p = new BindingEventPaintable(model);
-                p.setLibrary(library);
-                p.setLabel("Binding Events");
-                p.setPropertyKey("BindingEvents");
-                p.addEventListener(this);
-                p.setOption(WarpOptions.BINDINGSCAN,null);
-                addPainter(p);
-				 */
-
-				for(int i = 0; i < opts.bindingScans.size(); i++) { 
-					BindingScan scan = opts.bindingScans.get(i);
-					BindingScanLoader loader = new BindingScanLoader();
-					BindingExpander expander = new BindingExpander(loader, scan);
-					BindingEventModel model = new BindingEventModel(expander);
-
-					addModel(model);
-
-					Thread t = new Thread(model);
-					t.start();
-
-					SingleBindingEventPaintable p = 
-							new SingleBindingEventPaintable(model);
-					String lbl = scan.getVersion() + "," + scan.getType();
-					p.setLabel(lbl);
-
-					p.addEventListener(this);
-					p.setOption(SeqViewOptions.BINDINGSCAN,null);
-					addPainter(p);
-					addModelToPaintable(p, model);
-
-				}
-
-			} catch (SQLException e) {
-				e.printStackTrace();
-			} catch (UnknownRoleException e) {
-				e.printStackTrace();
-			}
-		}
-
+		}*/
+		
 		if (opts.exprExperiments.size() > 0) {
 			try {
 
@@ -778,24 +633,40 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		gfLoader = new RegionExpanderFactoryLoader<Gene>("gene");
 		annotLoader = new RegionExpanderFactoryLoader<NamedTypedRegion>("annots");
 
-		if(opts.genes.size() > 0 && egp == null) {
+		if(opts.genes.size() > 0 && (egp == null || cgp == null)) {
+			int gCount=0, cCount=0;
 			GeneModel geneModel = new GeneModel();
-
+			GeneModel cdsModel = new GeneModel();
+			
 			for(int i = 0; i < opts.genes.size(); i++) {
 				RegionExpanderFactory<Gene> genefactory = gfLoader.getFactory(genome,
 						opts.genes.get(i).toString());
 				Expander<Region,Gene> expander = genefactory.getExpander(genome);
-				geneModel.addExpander(expander);
+				if (genefactory.getProduct().equals("Gene")) {
+					geneModel.addExpander(expander); gCount++;
+				}else if (genefactory.getProduct().equals("CDS")) {
+					cdsModel.addExpander(expander); cCount++;
+				}
 			}        
 
-			addModel(geneModel);
-			Thread t = new Thread(geneModel); t.start();
-
-			egp = new ExonGenePainter(geneModel);
-			egp.setLabel("genes");
-			egp.addEventListener(this);
-			addPainter(egp);
-			addModelToPaintable(egp, geneModel);                            
+			if(gCount>0){
+				addModel(geneModel);
+				Thread t = new Thread(geneModel); t.start();
+				egp = new ExonGenePainter(geneModel);
+				egp.setLabel("genes");
+				egp.addEventListener(this);
+				addPainter(egp);
+				addModelToPaintable(egp, geneModel);
+			}
+			if(cCount>0){
+				addModel(cdsModel);
+				Thread t = new Thread(cdsModel); t.start();
+				cgp = new CDSGenePainter(cdsModel);
+				cgp.setLabel("CDS");
+				cgp.addEventListener(this);
+				addPainter(cgp);
+				addModelToPaintable(cgp, cdsModel);
+			}
 		}
 
 		for (int i = 0; i < opts.otherannots.size(); i++) {
@@ -878,25 +749,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			addModelToPaintable(p, m);
 		}
 
-		for (int i = 0; i < opts.motifscans.size(); i++) {            
-			try {
-				MotifScanResultsGenerator g = new MotifScanResultsGenerator(opts.motifscans.get(i));
-				RegionExpanderModel<ScoredStrandedRegion> m = new RegionExpanderModel<ScoredStrandedRegion>(g);
-				addModel(m);
-				Thread t = new Thread(m);
-				t.start();
-				MotifScanPainter p = new MotifScanPainter(m);
-				String trackname = opts.motifscans.get(i).matrix.name;
-				p.setLabel(trackname);
-				p.addEventListener(this);
-				p.setOption(SeqViewOptions.MOTIFSCANS,opts.motifscans.get(i));
-				addPainter(p);
-				addModelToPaintable(p, m);
-			} catch (NotFoundException ex) {
-				System.err.println("Couldn't find any such motif scan : " + opts.motifscans.get(i));
-				ex.printStackTrace();
-			}
-		}
+		
 		for (String k : opts.regionTracks.keySet()) {
 			addTrackFromFile(k,opts.regionTracks.get(k));
 		}
@@ -919,8 +772,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
        will remove it from the new options and it won't be re-added) */
 	public void removePainterFromOpts(RegionPaintable p) {
 		switch (p.getOptionKey()) {
-		case SeqViewOptions.BINDINGSCAN:
-			currentOptions.bindingScans.clear();
 		case SeqViewOptions.GENES:
 			currentOptions.genes.remove(p.getOptionInfo());
 		case SeqViewOptions.NCRNAS:
@@ -929,16 +780,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			currentOptions.otherannots.remove(p.getOptionInfo());
 		case SeqViewOptions.AGILENTDATA:
 			currentOptions.agilentdata.remove(p.getOptionInfo());
-		case SeqViewOptions.BAYESRESULTS:
-			currentOptions.bayesresults.remove(p.getOptionInfo());
-		case SeqViewOptions.AGILENTLL:
-			currentOptions.agilentll.remove(p.getOptionInfo());
-		case SeqViewOptions.MSP:
-			currentOptions.msp.remove(p.getOptionInfo());
-		case SeqViewOptions.MOTIFSCANS:
-			currentOptions.motifscans.remove(p.getOptionInfo());
-		case SeqViewOptions.PEAKS:
-			currentOptions.peakCallers.remove(p.getOptionInfo());
 		case SeqViewOptions.SEQLETTERS:
 			currentOptions.seqletters = false;
 		case SeqViewOptions.GCCONTENT:
@@ -1419,8 +1260,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
        public void paintComponent(Graphics g) {
     	   //scrollPane.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
     	   mainPanel.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
-    	   System.out.println("WxH="+getWidth()+"\t"+getHeight());
-    	   System.out.println("SP1 ="+scrollPane.getWidth()+"\t"+scrollPane.getHeight());
     	   paintComponent(g,getX(),getY(), getWidth(),getHeight());
        }
 
@@ -1450,8 +1289,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   public void paintComponent(Graphics g) {
     		   paintComponent(g,mainPanel.getX(),mainPanel.getY(),
     				   mainPanel.getWidth(),mainPanel.getHeight());
-    		   System.out.println("SP2 ="+scrollPane.getWidth()+"\t"+scrollPane.getHeight());
-    		   System.out.println("RCP ="+mainPanel.getWidth()+"\t"+mainPanel.getHeight());
     	   }
 
     	   public void paintComponent(Graphics g, int x, int y, int width, int height) {

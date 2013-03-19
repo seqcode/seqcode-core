@@ -17,8 +17,8 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
  * @author tdanford
  * @author mahony
  * 
- * SeqLocator names a subset of the available SeqExpt experiments (rows from the 
- * seqexpt table), which satisfy the following conditions:
+ * SeqLocator names a subset of the available SeqAlignments (rows from the 
+ * seqalignment table), which satisfy the following conditions:
  *  
  * (1) the seqexpt.name matches the given exptName in the locator
  * (2) only the alignments with the given alignName are indicated
@@ -28,13 +28,13 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 public class SeqLocator implements Comparable<SeqLocator> {
 
     private String exptName, alignName;
-    
-    // This field has a particular semantics -- if it contains any entries, then 
+    // The reps field has a particular semantics -- if it contains any entries, then 
     // the locator designates *only* those replicates (of the named experiment) 
     // that have the given alignment name too.
     // On the other hand, if "reps" is empty, then the locator designates *all* 
     // available replicates for which the given alignment name is valid.
     private Set<String> reps;
+    
     
     public SeqLocator(String ename, String aname) {
         exptName = ename;
@@ -133,7 +133,7 @@ public class SeqLocator implements Comparable<SeqLocator> {
     public Collection<SeqAlignment> loadAlignments(SeqDataLoader loader, Genome genome) 
     	throws SQLException, NotFoundException {
     	
-        LinkedList<SeqAlignment> alignments = new LinkedList<SeqAlignment>();
+    	LinkedList<SeqAlignment> alignments = new LinkedList<SeqAlignment>();
 
         if(getReplicates().isEmpty()) { 
         	Collection<SeqExpt> expts = loader.loadExperiments(getExptName());

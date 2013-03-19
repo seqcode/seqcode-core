@@ -36,7 +36,7 @@ However, the Model/Paintable system is not specific to that case.
 Each model is typically run in a separate thread to improve the overall response time and to prevent the UI
 thread from hanging on reltaively long-running database queries.  */
 
-public abstract class WarpPaintable implements VizPaintable, Listener<EventObject>, EventSource<EventObject>, MouseListener {
+public abstract class SeqViewPaintable implements VizPaintable, Listener<EventObject>, EventSource<EventObject>, MouseListener {
 
     /* Listeners are objects that are waiting on the paintable.  When the
        paintable is ready to paint (usually because its underlying model
@@ -50,7 +50,7 @@ public abstract class WarpPaintable implements VizPaintable, Listener<EventObjec
     private int optionKey;
     private Object optionInfo;
 
-    public WarpPaintable () {
+    public SeqViewPaintable () {
         listeners = new HashSet<Listener<EventObject>>();
         labels = new RectangleLookup<String>();
     }
@@ -160,7 +160,7 @@ public abstract class WarpPaintable implements VizPaintable, Listener<EventObjec
         if (labels != null && e.getButton() == MouseEvent.BUTTON1) {
             int xpos = e.getX();
             int ypos = e.getY();
-            final WarpPaintable wp = this;
+            final SeqViewPaintable wp = this;
             boolean any = false;
             Collection<String> labelStrings = labels.getAllValues(new Point(xpos, ypos));
             for(String s : labelStrings) { 

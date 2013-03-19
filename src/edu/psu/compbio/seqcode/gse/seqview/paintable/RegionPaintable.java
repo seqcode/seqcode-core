@@ -5,7 +5,7 @@ import edu.psu.compbio.seqcode.gse.seqview.*;
 
 /* A RegionPaintable displays some dataset across a genomic region */
 
-public abstract class RegionPaintable extends WarpPaintable {
+public abstract class RegionPaintable extends SeqViewPaintable {
 
     private Region region;
 

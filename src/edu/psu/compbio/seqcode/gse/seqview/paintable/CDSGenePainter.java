@@ -23,7 +23,7 @@ import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
-public class ExonGenePainter extends RegionPaintable {
+public class CDSGenePainter extends RegionPaintable {
     
     private GeneModel model;
     private NonOverlappingLayout<Gene> layout;
@@ -35,7 +35,7 @@ public class ExonGenePainter extends RegionPaintable {
     private double htRat, wdRat;
     private Vector<Gene> genes;    
     
-    public ExonGenePainter(GeneModel model) {
+    public CDSGenePainter(GeneModel model) {
         super();
         layout = new NonOverlappingLayout<Gene>();
         this.model = model;
@@ -167,11 +167,14 @@ public class ExonGenePainter extends RegionPaintable {
         
         Font oldFont = g.getFont();
         g.setFont(attrib.getRegionLabelFont(w,h));
+        Font labelFont = g.getFont(); 
+        g.setFont(labelFont);
         FontMetrics fontmetrics = g.getFontMetrics();
+        HashSet<String> labels = new HashSet<String>();
+        Stroke chevStroke = new BasicStroke(2.0f);
         //--------------------------------------------------
         
-        HashSet<String> labels = new HashSet<String>();
-
+        		
         for(Gene gene : genes) {
             int track = 0;
             
@@ -191,6 +194,7 @@ public class ExonGenePainter extends RegionPaintable {
             int halfGeneHeight = geneHeight / 2;
             
             int gtop = gmy - (halfGeneHeight/2), gbottom = gtop + (geneHeight/2);
+            int gmid = (gtop+gbottom)/2, ghalfdiff = (gbottom - gtop)/2;
             int rectheight = gbottom - gtop;
             
             int geneStart = gene.getStart(), geneEnd = gene.getEnd();
@@ -202,8 +206,6 @@ public class ExonGenePainter extends RegionPaintable {
 
             g.setColor(Color.black);
             g.drawLine(gx1, gmy, gx2, gmy);
-            arrangeArrow(a, b, strand, trackHeight, gx1, gx2, gmy);
-            g.drawPolyline(a, b, 7);
             
             if(gene instanceof ExonicGene) { 
                 ExonicGene exonGene = (ExonicGene)gene;
@@ -218,11 +220,27 @@ public class ExonGenePainter extends RegionPaintable {
 
                     int rectwidth = eright - eleft + 1;
 
+                    //Boxes
                     g.setColor(Color.GRAY);
                     g.fillRect(eleft, gtop, rectwidth, gbottom - gtop);
+                    //Direction chevrons
+                    g.setColor(Color.white);
+                    Stroke oldStroke = g.getStroke();
+                    g.setStroke(chevStroke);
+                    for(int c=2; c<rectwidth-2; c+=(ghalfdiff*2)){
+                    	if(strand){
+                    		g.drawLine(eleft+c, gtop, eleft+c+ghalfdiff, gmid);
+                    		g.drawLine(eleft+c, gbottom, eleft+c+ghalfdiff, gmid);
+                    	}else{
+                    		g.drawLine(eleft+c, gmid, eleft+c+ghalfdiff, gtop);
+                    		g.drawLine(eleft+c, gmid, eleft+c+ghalfdiff, gbottom);
+                    	}
+                    }
+                    //Box
+                    g.setStroke(oldStroke);
                     g.setColor(Color.black);
                     g.drawRect(eleft, gtop, rectwidth, gbottom - gtop);
-
+                    
                     drewAnything = true;
                 }
                 
@@ -237,7 +255,6 @@ public class ExonGenePainter extends RegionPaintable {
                 drewAnything = true;
             }
             
-                
             boolean alwaysDrawNames = props.AlwaysDrawNames;
             // Somewhat prettier gene-name output
 

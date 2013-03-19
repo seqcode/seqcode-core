@@ -195,7 +195,7 @@ public class GenePainter extends RegionPaintable {
 
             //g.setColor(Color.white);
             //g.fillRect(gx1, my - (halfGeneHeight / 2), gxw, geneHeight / 2);
-            g.setColor(Color.pink);
+            g.setColor(Color.GRAY);
             int rectwidth = gright - gleft;
             int rectheight = gbottom - gtop;
             g.fillRect(gleft, gtop, rectwidth, gbottom - gtop);                      

@@ -11,17 +11,18 @@ public class SeqViewToolsMenu extends JMenu {
     private final RegionPanel panel;
 
     public SeqViewToolsMenu(RegionPanel p) {
-        super("WarpDrive");
+        super("Tools");
         panel = p;
         final RegionPanel thispanel = panel;
-        JMenuItem item = new JMenuItem("Genome Browser");
+        /*JMenuItem item = new JMenuItem("Genome Browser");
         add(item);
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     SeqViewOptionsFrame.main(new String[0]);
                 }
             });
-        item = new JMenuItem("Browse Weight Matrices");
+        */
+        JMenuItem item = new JMenuItem("Browse Weight Matrices");
         add(item);
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

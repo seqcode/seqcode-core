@@ -2,6 +2,7 @@ package edu.psu.compbio.seqcode.gse.seqview;
 
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -38,6 +39,7 @@ import edu.psu.compbio.seqcode.gse.seqview.components.RegionListPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.SaveRegionsAsFasta;
 import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsFrame;
+import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewStatusBar;
 import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewToolsMenu;
 import edu.psu.compbio.seqcode.gse.seqview.components.SpeciesAlignFrame;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -55,30 +57,41 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
  */
 public class SeqView extends JFrame {
 	protected SeqViewOptions options;
+	protected SeqViewStatusBar statusBar;
 	protected SeqViewOptionsFrame optionsFrame;
 	protected Genome selectedGenome; 
 	protected RegionPanel panel=null;
 	protected boolean imageraster;
 	protected int imageheight = 1200, imagewidth = 1600;
 
-    public SeqView(SeqViewOptions opt) {
-    	options = opt;
-    	selectedGenome = options;
-        setTitle(options.species + " " + options.genome);
+    public SeqView(String[] args) throws NotFoundException, SQLException, IOException {
+    	//Set up the browser window
+    	setSize(600,400);
+        setLocation(50,50);
+        statusBar = new SeqViewStatusBar();
+    	setJMenuBar(createDefaultJMenuBar());
+    	add(statusBar, BorderLayout.SOUTH);
+    	statusBar.setPreferredSize(new Dimension(getWidth(), SeqViewOptions.STATUS_BAR_HEIGHT));
+        setVisible(true);
+        imageraster = true;
+        statusBar.updateStatus("Loading genome", Color.orange);
+        setTitle("Loading genome information...");
+    	
+        //Load command-line options
+        options = SeqViewOptions.parseCL(args);
+        selectedGenome = options.genome;
+        setTitle(selectedGenome.getSpecies() + " " + selectedGenome.getVersion());
+        statusBar.updateStatus("Genome loaded", Color.green);
         
+        //Add panels
         //panel = new RegionPanel(opts);
         //getContentPane().add(new ImageCachingPanel(panel));
         //getContentPane().add(panel);
-        setJMenuBar(createDefaultJMenuBar(options));
-        setSize(600,400);
-        setLocation(50,50);
-        setVisible(true);
-        imageraster = true;
-
+        
         this.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent arg0) {
                 System.out.println("WindowClosing: " + arg0.toString());
-                if(panel==null)
+                if(panel!=null)
                 	panel.handleWindowClosing();
                 System.exit(0);
             }
@@ -87,7 +100,7 @@ public class SeqView extends JFrame {
     
     public RegionPanel getRegionPanel() { return panel; }
     
-    private JMenuBar createDefaultJMenuBar(SeqViewOptions opts) { 
+    private JMenuBar createDefaultJMenuBar() { 
         JMenuBar jmb = new JMenuBar();
         JMenu filemenu, imagemenu, navigationmenu, displaymenu, toolsmenu; 
         JMenuItem item;
@@ -178,16 +191,7 @@ public class SeqView extends JFrame {
             });
 
 
-        navigationmenu.add((item = new JMenuItem("Binding Scan Annotation")));
-        item.addActionListener(new ActionListener()  {
-                public void actionPerformed(ActionEvent e) {
-                    BindingEventAnnotationPanel beap = new BindingEventAnnotationPanel(thispanel, new ArrayList<BindingEvent>());
-                    JFrame f = new BindingEventAnnotationPanel.Frame(beap);
-                    f.pack();
-                    new BindingScanSelectFrame(thispanel.getGenome(),beap);
-                }
-            });
-
+        
         navigationmenu.add((item = new JMenuItem("Binding Event List")));
         item.addActionListener(new ActionListener()  {
                 public void actionPerformed(ActionEvent e) {
@@ -197,7 +201,7 @@ public class SeqView extends JFrame {
                 }
             });               
 
-        navigationmenu.add((item = new JMenuItem("Array Tiled Regions")));
+        /*navigationmenu.add((item = new JMenuItem("Array Tiled Regions")));
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     RegionListPanel rlp = new RegionListPanel(thispanel,null);
@@ -205,17 +209,8 @@ public class SeqView extends JFrame {
                     new ArrayDesignSelectFrame(thispanel.getGenome(),rlp);
                 }
             });
-
-        navigationmenu.add((item = new JMenuItem("Array Tiled Regions and Genes")));
-        item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    RegionAnnotationPanel beap = new RegionAnnotationPanel(thispanel,null);
-                    JFrame f = new RegionAnnotationPanel.Frame(beap);
-                    f.pack();
-                    new ArrayDesignSelectFrame(thispanel.getGenome(),beap);
-                }
-            });
-
+		*/
+        
         navigationmenu.add((item = new JMenuItem("Open Region List")));
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -268,7 +263,9 @@ public class SeqView extends JFrame {
                 }
             });
         group.add(item);
-        jmb.add(new SeqViewToolsMenu(panel));
+        
+        //TODO: uncomment this to bring back the WeightMatrix browser option
+        //jmb.add(new SeqViewToolsMenu(panel));
 
         return jmb;
     }
@@ -343,7 +340,6 @@ public class SeqView extends JFrame {
 
 	
 	public static void main(String args[]) throws NotFoundException, SQLException, IOException {
-        SeqViewOptions opts = SeqViewOptions.parseCL(args);
-        SeqView frame = new SeqView(opts);
+        SeqView frame = new SeqView(args);
     }
 }

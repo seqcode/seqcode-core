@@ -63,7 +63,7 @@ public class RegionFrame extends JFrame {
     private int imageheight = 1200, imagewidth = 1600;
 
     public RegionFrame(SeqViewOptions opts) {
-        setTitle(opts.species + " " + opts.genome);
+    	setTitle(opts.genome.getSpecies() + " " + opts.genome.getVersion());
         panel = new RegionPanel(opts);
         //getContentPane().add(new ImageCachingPanel(panel));
         getContentPane().add(panel);

@@ -5,14 +5,17 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.HashMap;
 import java.io.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipDataset;
+import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedTypedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.locators.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedExpt;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -35,13 +38,11 @@ public class SeqViewOptionsPane
     private JPanel speciesLocationPanel,
         annotationsPanel,
         seqPanel,
-        pairedSeqPanel,
-        interactionArcPanel,
         optionsPanel;
     private SeqViewOptions createdFrom;
     
     // species/location tab
-    private JComboBox species, genome;
+    private JComboBox speciesCBox, genomeCBox;
     private JTextField position, gene;
     private JLabel specieslabel, genomelabel, positionlabel, genelabel;
 
@@ -49,7 +50,7 @@ public class SeqViewOptionsPane
     private JCheckBox relative, hash, common, seqletters, oldchipseq;
     
     // chipseq tab
-    private SeqSelectPanel seqSelect, pairedSeqSelect, interactionArcSelect;
+    private SeqSelectPanel seqSelect;
 
     // annotations tab
     private JList genes, ncrnas, otherfeats;
@@ -58,7 +59,7 @@ public class SeqViewOptionsPane
     private JLabel geneslabel, ncrnaslabel, otherfeatslabel;
         
     // file-based tracks
-    private FileBasedTracksPanel filetracks, chiapettracks;
+    private FileBasedTracksPanel filetracks;
 
     public SeqViewOptionsPane () throws NotFoundException {
         super();
@@ -84,16 +85,16 @@ public class SeqViewOptionsPane
                so that we don't trigger two updates for experiment selection
                and such.  Everything will be updated when we set the genome
             */
-            this.genome.removeItemListener(this);
-            this.species.removeItemListener(this);
-            this.species.setSelectedItem(species);
+            this.genomeCBox.removeItemListener(this);
+            this.speciesCBox.removeItemListener(this);
+            this.speciesCBox.setSelectedItem(species);
             updateGenomeSelection();
-            this.genome.setSelectedItem(genome);
+            this.genomeCBox.setSelectedItem(genome);
             updateExptSelection();
-            this.species.addItemListener(this);
-            this.genome.addItemListener(this);
+            this.speciesCBox.addItemListener(this);
+            this.genomeCBox.addItemListener(this);
         } else if (species != null) {
-            this.species.setSelectedItem(species);
+            this.speciesCBox.setSelectedItem(species);
         }
 
         regexes = null;
@@ -115,14 +116,12 @@ public class SeqViewOptionsPane
     
     public void close() { 
         seqSelect.close();
-        pairedSeqSelect.close();
-        interactionArcSelect.close();
-    	closed = true; 
+        closed = true; 
     }
     
     private Genome loadGenome() { 
-        String orgName = (String)species.getSelectedItem();
-        String genName = (String)genome.getSelectedItem();
+        String orgName = (String)speciesCBox.getSelectedItem();
+        String genName = (String)genomeCBox.getSelectedItem();
         if(orgName != null && genName != null) { 
             Organism org;
             try {
@@ -141,8 +140,6 @@ public class SeqViewOptionsPane
         speciesLocationPanel = new JPanel();
         annotationsPanel = new JPanel();
         seqPanel = new JPanel();
-        pairedSeqPanel = new JPanel();
-        interactionArcPanel = new JPanel();
         optionsPanel = new JPanel();
 
         // First tab lets the user select the species, genome version,
@@ -151,8 +148,8 @@ public class SeqViewOptionsPane
         genomelabel = new JLabel("Genome Version");
         positionlabel = new JLabel("Genome position\nto view");
         genelabel = new JLabel("Gene to view");
-        species = new JComboBox();
-        genome = new JComboBox();
+        speciesCBox = new JComboBox();
+        genomeCBox = new JComboBox();
         position = new JTextField();
         position.setText("1:100-200");
         gene = new JTextField();
@@ -160,21 +157,21 @@ public class SeqViewOptionsPane
         /* need to fill the species and genome boxes here */
         Collection<String> organisms = Organism.getOrganismNames();
         for (String o : organisms) {
-            species.addItem(o);
+            speciesCBox.addItem(o);
         }
 
-        species.setSelectedIndex(0);
+        speciesCBox.setSelectedIndex(0);
         updateGenomeSelection();
-        Organism org = new Organism(species.getSelectedItem().toString());
+        Organism org = new Organism(speciesCBox.getSelectedItem().toString());
         Collection<String> genomes = org.getGenomeNames();
-        genome.removeAllItems();
+        genomeCBox.removeAllItems();
         for (String o : genomes) {
-            genome.addItem(o);
+            genomeCBox.addItem(o);
         }
         Genome g = null;
-        if(genome.getModel().getSize() > 0) { 
-            genome.setSelectedIndex(0);
-            String gname = (String)genome.getSelectedItem();
+        if(genomeCBox.getModel().getSize() > 0) { 
+            genomeCBox.setSelectedIndex(0);
+            String gname = (String)genomeCBox.getSelectedItem();
             g = Organism.findGenome(gname);
         } else {
             // umm, no genomes is bad and will break other stuff
@@ -182,24 +179,25 @@ public class SeqViewOptionsPane
 
         speciesLocationPanel.setLayout(new GridLayout(4,2));
         speciesLocationPanel.add(specieslabel);
-        speciesLocationPanel.add(species);
+        speciesLocationPanel.add(speciesCBox);
         speciesLocationPanel.add(genomelabel);
-        speciesLocationPanel.add(genome);
+        speciesLocationPanel.add(genomeCBox);
         speciesLocationPanel.add(positionlabel);
         speciesLocationPanel.add(position);
         speciesLocationPanel.add(genelabel);
         speciesLocationPanel.add(gene);
-        species.addItemListener(this);
-        genome.addItemListener(this);        
+        speciesCBox.addItemListener(this);
+        genomeCBox.addItemListener(this);        
         
         //chiapet tab
-        chiapettracks = new FileBasedTracksPanel();
+        //chiapettracks = new FileBasedTracksPanel();
         
-        // chipseq tab
+        // seqdata tab
         seqSelect = new SeqSelectPanel();        
         seqPanel.setLayout(new BorderLayout());
         seqPanel.add(seqSelect, BorderLayout.CENTER);
 
+        /*
         pairedSeqSelect = new SeqSelectPanel();
         pairedSeqPanel.setLayout(new BorderLayout());
         pairedSeqPanel.add(pairedSeqSelect, BorderLayout.CENTER);
@@ -207,6 +205,7 @@ public class SeqViewOptionsPane
         interactionArcSelect = new SeqSelectPanel();
         interactionArcPanel.setLayout(new BorderLayout());
         interactionArcPanel.add(interactionArcSelect, BorderLayout.CENTER);
+        */
         
         // Options tab
         optionsPanel.setLayout(new GridLayout(4,1));
@@ -216,6 +215,7 @@ public class SeqViewOptionsPane
         seqletters = new JCheckBox("Show sequence");
         oldchipseq = new JCheckBox("Use old ChipSeq painter");
         hash.setSelected(true);
+        seqletters.setSelected(true);
         optionsPanel.add(hash);
         optionsPanel.add(seqletters);
         optionsPanel.add(relative);
@@ -275,10 +275,10 @@ public class SeqViewOptionsPane
         addTab("Annotations",new JScrollPane(dummy));
 
         addTab("Seq Data", seqPanel);
-        addTab("Paired Seq", pairedSeqPanel);
-        addTab("Interactions", interactionArcPanel);
+        //addTab("Paired Seq", pairedSeqPanel);
+        //addTab("Interactions", interactionArcPanel);
 
-        dummy = new JPanel(); dummy.add(chiapettracks); dummy.add(new JPanel());
+        //dummy = new JPanel(); dummy.add(chiapettracks); dummy.add(new JPanel());
 
         dummy = new JPanel();  dummy.add(filetracks); dummy.add(new JPanel());
         addTab("File Tracks",new JScrollPane(dummy));
@@ -296,19 +296,16 @@ public class SeqViewOptionsPane
         createdFrom = opts;      
         
         if (opts.genome != null) {
-            this.species.removeItemListener(this);
-            this.genome.removeItemListener(this);
-            this.species.setSelectedItem(opts.species);
+            this.speciesCBox.removeItemListener(this);
+            this.genomeCBox.removeItemListener(this);
+            this.speciesCBox.setSelectedItem(opts.genome.getSpecies());
             updateGenomeSelection();
-            this.genome.setSelectedItem(opts.genome);            
+            this.genomeCBox.setSelectedItem(opts.genome.getVersion());            
             updateExptSelection();
-            this.genome.addItemListener(this);
-            this.species.addItemListener(this);
-        } else if (opts.species != null) {
-            this.species.setSelectedItem(opts.species);
-            updateGenomeSelection();
+            this.genomeCBox.addItemListener(this);
+            this.speciesCBox.addItemListener(this);
         } else {
-            this.species.setSelectedIndex(0);
+            this.speciesCBox.setSelectedIndex(0);
             updateGenomeSelection();
         }
         handlingChange = false;        
@@ -323,7 +320,7 @@ public class SeqViewOptionsPane
         cpg.setSelected(opts.cpg);
         regexmatcher.setSelected(opts.regexmatcher);
         seqletters.setSelected(opts.seqletters);
-        oldchipseq.setSelected(!opts.chipseqHistogramPainter);
+        oldchipseq.setSelected(!opts.seqHistogramPainter);
 
         int[] selected = new int[opts.genes.size()];
         for (int i = 0; i < opts.genes.size(); i++) {
@@ -350,10 +347,7 @@ public class SeqViewOptionsPane
                 position.setText(opts.chrom + ":" + opts.start + "-" + opts.stop);
             }
         }       
-        chiapettracks.fill(opts.chiapetExpts);
-        seqSelect.addToSelected(opts.chipseqExpts);
-        pairedSeqSelect.addToSelected(opts.pairedChipseqExpts);
-        interactionArcSelect.addToSelected(opts.chiapetArcs);
+        seqSelect.addToSelected(opts.seqExpts);
         filetracks.fill(opts.regionTracks);
     }
 
@@ -399,20 +393,27 @@ public class SeqViewOptionsPane
 
         }
         if (species == null || genome == null) {
-            species = (String)this.species.getSelectedItem();
-            genome = (String)this.genome.getSelectedItem();
+            species = (String)this.speciesCBox.getSelectedItem();
+            genome = (String)this.genomeCBox.getSelectedItem();
         }
-        this.species.setSelectedItem(species);
-        this.genome.setSelectedItem(genome);
+        this.speciesCBox.setSelectedItem(species);
+        this.genomeCBox.setSelectedItem(genome);
     }
 
-    /* fills in and returns a WarpOptions object based on the current selections 
+    /* fills in and returns a SeqViewOptions object based on the current selections 
      */
     public SeqViewOptions parseOptions() {
         SeqViewOptions these = new SeqViewOptions();
         // parse the species and location tab
-        these.species = species.getSelectedItem().toString();
-        these.genome = genome.getSelectedItem().toString();
+        String speciesStr = speciesCBox.getSelectedItem().toString();
+        String genomeStr = genomeCBox.getSelectedItem().toString();
+        try {
+        	Organism org = new Organism(speciesStr);
+        	these.genome = org.findGenome(genomeStr);
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException(genomeStr);
+        }
         these.position = position.getText();
         these.gene = gene.getText();
 
@@ -420,38 +421,44 @@ public class SeqViewOptionsPane
         these.hash = hash.isSelected();
         these.relative = relative.isSelected();
         these.seqletters = seqletters.isSelected();
-        these.chipseqHistogramPainter = !oldchipseq.isSelected();
+        these.seqHistogramPainter = !oldchipseq.isSelected();
 
         // parse the annotations tab
-        Object[] selected = genes.getSelectedValues();
-        for (int i = 0; i < selected.length; i++) {
-            these.genes.add(selected[i].toString());
+        List selected = genes.getSelectedValuesList();
+        for (Object o : selected) {
+            these.genes.add(o.toString());
         }
-        selected = ncrnas.getSelectedValues();
-        for (int i = 0; i < selected.length; i++) {
-            these.ncrnas.add(selected[i].toString());
+        selected = ncrnas.getSelectedValuesList();
+        for (Object o : selected) {
+            these.ncrnas.add(o.toString());
         }
-        selected = otherfeats.getSelectedValues();
-        for (int i = 0; i < selected.length; i++) {
-            these.otherannots.add(selected[i].toString());
+        selected = otherfeats.getSelectedValuesList();
+        for (Object o : selected) {
+            these.otherannots.add(o.toString());
         }
         these.gccontent = gccontent.isSelected();
         these.pyrpurcontent = pyrpurcontent.isSelected();
         these.cpg = cpg.isSelected();
         these.regexmatcher = regexmatcher.isSelected();
+
+        // parse the expression tab
+        //Collection<Experiment> expts = exprSelect.getSelected();
+        //these.exprExperiments.addAll(expts);
         
-        chiapettracks.parse(these.chiapetExpts);
-        for(SeqLocator loc : seqSelect.getSelected()) { 
-            these.chipseqExpts.add(loc);
-        }
-        for(SeqLocator loc : pairedSeqSelect.getSelected()) { 
-            these.pairedChipseqExpts.add(loc);
-        }
-        for (SeqLocator loc : interactionArcSelect.getSelected()) {
-        	these.chiapetArcs.add(loc);
+        //Parse sequencing experiments
+        for(SeqLocatorMatchedExpt lme : seqSelect.getSelected()) {
+        	these.seqExpts.add(lme);
         }
         
-       
+        
+        /*// parse the ChIP-chip exptSelect panel selections.
+        for(ExptLocator loc : exptSelect.getSelected()) { 
+            if(loc instanceof ChipChipLocator) { 
+                ChipChipLocator aloc = (ChipChipLocator)loc;
+                these.agilentdata.add(aloc);
+            }
+        }*/
+        
         filetracks.parse(these.regionTracks);
         these.regexes = regexes;
         return these;
@@ -463,7 +470,6 @@ public class SeqViewOptionsPane
         // if they are, return the difference.  Otherwise, return the complete
         // options.
         if (createdFrom != null &&
-            these.species.equals(createdFrom.species) &&
             these.genome.equals(createdFrom.genome)) {
             these.differenceOf(createdFrom);
         }
@@ -479,8 +485,8 @@ public class SeqViewOptionsPane
         System.err.println("UPDATING EXPERIMENT SELECTION FOR GENOME: " + g);
 
         seqSelect.setGenome(lg);
-        pairedSeqSelect.setGenome(lg);
-        interactionArcSelect.setGenome(lg);
+        //pairedSeqSelect.setGenome(lg);
+        //interactionArcSelect.setGenome(lg);
 
         // update the set of Gene annotations
         genesmodel.clear();
@@ -493,10 +499,11 @@ public class SeqViewOptionsPane
             for(String type : annotLoader.getTypes(g)) {
                 otherfeatsmodel.addElement(type);
             }
-            java.util.List<String> chroms = g.getChromList();
+            List<String> chroms = g.getChromList();
             if (chroms.size() == 0) {
                 throw new RuntimeException("EMPTY CHROMOSOME LIST for " + g);
             }
+            java.util.Collections.sort(chroms);
 
             position.setText(chroms.get(0) + ":10000-20000");
         }
@@ -504,15 +511,15 @@ public class SeqViewOptionsPane
 
     private void updateGenomeSelection () {
         try {
-            Organism org = new Organism(species.getSelectedItem().toString());
+            Organism org = new Organism(speciesCBox.getSelectedItem().toString());
             Collection<String> genomes = org.getGenomeNames();
-            genome.removeAllItems();
+            genomeCBox.removeAllItems();
             for (String o : genomes) {
-                genome.addItem(o);
+                genomeCBox.addItem(o);
             }
-            genome.setSelectedIndex(0);                
+            genomeCBox.setSelectedIndex(0);                
         } catch (NotFoundException ex) {
-            System.err.println("Couldn't find species " + species.getSelectedItem());
+            System.err.println("Couldn't find species " + speciesCBox.getSelectedItem());
             ex.printStackTrace();
         }
     }
@@ -520,11 +527,11 @@ public class SeqViewOptionsPane
     public void itemStateChanged(ItemEvent e) {
         if (handlingChange) {return;}
         Object source = e.getItemSelectable();
-        if (source == species) {
+        if (source == speciesCBox) {
             updateGenomeSelection();
         }
-        if (source == genome ||
-            source == species) {
+        if (source == genomeCBox ||
+            source == speciesCBox) {
             synchronized(this) {
                 if (!handlingChange) {
                     handlingChange = true;
