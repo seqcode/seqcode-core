@@ -8,7 +8,7 @@
   <property name="build.dist.dir" location="${build.dir}/dist" />
   <property name="build.unjar.dir" location="${build.dir}/unjar" />
   <property name="build.compiler" value="javac1.6"/>
-  <property name="pwfiles.basepath"  value="passwords"/>
+  <property name="pwfiles.basepath"  value="/gpfs/group/mahony/code/pwfiles"/>
   <path id="compile.classpath">
     <pathelement location="${build.classes.dir}"/>
      <fileset dir="${lib.dir}">
