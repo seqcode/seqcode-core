@@ -39,7 +39,7 @@ public class StrandedPointParser implements Mapper<String,Point> {
             chrom = m.group(1);
             int start = Integer.parseInt(m.group(2));
             char strand = '?';
-            String strandstr = m.group(4);
+            String strandstr = m.group(3);
 			if(strandstr.length() > 0) { strand = strandstr.charAt(0); }
             return new StrandedPoint(genome, chrom, start, strand);
         } else { 
