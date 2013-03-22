@@ -42,6 +42,7 @@ public class StrandedRegionParser implements Mapper<String,Region> {
         Matcher m = regPatt.matcher(chrom);
         if(m.matches()) { 
             chrom = m.group(1);
+            chrom = chrom.replaceFirst("chr", "");
             int start = Integer.parseInt(m.group(2));
             int end = Integer.parseInt(m.group(3));
             char strand = '?';

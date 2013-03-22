@@ -37,6 +37,7 @@ public class StrandedPointParser implements Mapper<String,Point> {
         Matcher m = regPatt.matcher(chrom);
         if(m.matches()) { 
             chrom = m.group(1);
+            chrom = chrom.replaceFirst("chr", "");
             int start = Integer.parseInt(m.group(2));
             char strand = '?';
             String strandstr = m.group(3);

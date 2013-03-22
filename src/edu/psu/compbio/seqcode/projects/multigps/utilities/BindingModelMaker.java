@@ -38,7 +38,6 @@ public class BindingModelMaker {
 				
 				//Iterate through points
 				for(StrandedPoint pt : points){
-					System.err.println(pt.getLocationString());
 					//Load reads
 					List<StrandedBaseCount> wReads = r.getSignal().getStrandedBases(pt.expand(win), pt.getStrand());
 					List<StrandedBaseCount> cReads = r.getSignal().getStrandedBases(pt.expand(win), pt.getStrand()=='+' ? '-' : '+');
@@ -78,14 +77,14 @@ public class BindingModelMaker {
 	
 	//Main
 	public static void main(String[] args){
-		Config config = new Config(args);
+		Config config = new Config(args); 
 		if(config.helpWanted()){
 			System.err.println("BindingModelMaker:");
 			System.err.println("\t--points <stranded point file>");
 			System.err.println("\t--win <window around points>");
 			System.err.println(config.getArgsList());			
 		}else{
-			ExperimentManager manager = new ExperimentManager(config, false);
+			ExperimentManager manager = new ExperimentManager(config);
 			ExperimentSet eset = manager.getExperimentSet();
 			
 			int w = Args.parseInteger(args, "win", 400);
