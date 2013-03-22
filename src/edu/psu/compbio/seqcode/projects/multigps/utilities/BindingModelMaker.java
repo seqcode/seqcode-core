@@ -38,6 +38,7 @@ public class BindingModelMaker {
 				
 				//Iterate through points
 				for(StrandedPoint pt : points){
+					System.err.println(pt.getLocationString());
 					//Load reads
 					List<StrandedBaseCount> wReads = r.getSignal().getStrandedBases(pt.expand(win), pt.getStrand());
 					List<StrandedBaseCount> cReads = r.getSignal().getStrandedBases(pt.expand(win), pt.getStrand()=='+' ? '-' : '+');
