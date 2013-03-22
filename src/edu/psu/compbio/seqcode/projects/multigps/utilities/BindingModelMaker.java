@@ -22,6 +22,7 @@ public class BindingModelMaker {
 		experiments = e;
 		config = c;
 		win = w;
+		points = p;
 	}
 	
 	public void execute(){
