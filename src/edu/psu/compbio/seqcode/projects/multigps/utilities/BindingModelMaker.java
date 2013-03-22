@@ -18,9 +18,10 @@ public class BindingModelMaker {
 	protected Integer win;
 	
 	
-	public BindingModelMaker(List<StrandedPoint> p, ExperimentSet e, Config c, int win){
+	public BindingModelMaker(List<StrandedPoint> p, ExperimentSet e, Config c, int w){
 		experiments = e;
 		config = c;
+		win = w;
 	}
 	
 	public void execute(){
