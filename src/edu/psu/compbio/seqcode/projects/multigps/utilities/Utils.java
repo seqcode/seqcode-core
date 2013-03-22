@@ -10,9 +10,13 @@ import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
+import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.PointParser;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.RegionParser;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.StrandedPointParser;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.StrandedRegionParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 /**
@@ -153,4 +157,41 @@ public class Utils {
 		return(regs);
 	}
 
+	//Load a set of stranded points from a file (stranded point in first column)
+	public static List<StrandedPoint> loadStrandedPointsFromFile(Genome gen, String filename){
+		List<StrandedPoint> points = new ArrayList<StrandedPoint>();
+		try{
+			File pFile = new File(filename);
+			if(!pFile.isFile()){System.err.println("Invalid file name: "+filename);System.exit(1);}
+	        BufferedReader reader = new BufferedReader(new FileReader(pFile));
+	        String line;
+	        while ((line = reader.readLine()) != null) {
+	            line = line.trim();
+	            String[] words = line.split("\\s+");
+	            char strand = '+';
+	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
+	                if(words.length>=1 && words[0].contains(":")){
+		            	if(words[0].split(":").length>2){
+		            		StrandedPointParser pparser = new StrandedPointParser(gen);
+		            		StrandedPoint sq = pparser.execute(words[0]);
+			            	if(sq!=null){points.add(sq);}
+			                
+		            	}else{
+		            		PointParser pparser = new PointParser(gen);
+			            	Point p = pparser.execute(words[0]);
+			            	StrandedPoint sp = new StrandedPoint(p, strand);
+			            	points.add(sp);
+		            	}
+		            }
+                }
+	        }reader.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return(points);
+	}
 }
