@@ -58,7 +58,7 @@ public class MotifAnalysisSandbox {
 	
 	public static void main(String[] args) throws IOException, ParseException {
 		boolean havePeaks=false;
-		boolean printHits=false, printBestHits=false, printPeakClosestHits=false, printSeqs=false, printSeqsNoMotifs=false;
+		boolean printHits=false, printBestHits=false, printHitInfo=false, printPeakClosestHits=false, printSeqs=false, printSeqsNoMotifs=false;
 		boolean printSeqsWithMotifs=false, printPeakInfo=false, printPeaksWithMotifs=false, printPeaksNoMotifs=false;
 		boolean printMotifScore=false, printMotifPerc=false, motifDistHist=false, screenMotifs=false, scoreSeqs=false;
 		boolean motifDensity=false, pocc=false, wholeGenome=false, printprofiles=false, motifHisto=false;;
@@ -84,6 +84,7 @@ public class MotifAnalysisSandbox {
                                "\nOPTIONS:\n" +
                                "--printhits " +
                                "--printbesthits " +
+                               "--printhitinfo " +
                                "--printpeakclosesthits " +
                                "--printseqs " +
                                "--printseqsnomotifs " +
@@ -128,6 +129,7 @@ public class MotifAnalysisSandbox {
         genomeSequencePath = ap.hasKey("seq") ? ap.getKeyValue("seq") : null;
         printHits = ap.hasKey("printhits");
         printBestHits = ap.hasKey("printbesthits");
+        printHitInfo = ap.hasKey("printhitinfo");
         printPeakClosestHits = ap.hasKey("printpeakclosesthits");
         printSeqs = ap.hasKey("printseqs");
         printSeqsNoMotifs = ap.hasKey("printseqsnomotifs");
@@ -264,6 +266,8 @@ public class MotifAnalysisSandbox {
 	        	tools.printBestMotifHits();
 	        if(printPeakClosestHits)
 	        	tools.printPeakClosestMotifHits();
+	        if(printHitInfo)
+	        	tools.printHitInfo();
 	        if(printSeqs)
 	        	tools.printPeakSeqs();
 	        if(printSeqsNoMotifs)
@@ -538,6 +542,40 @@ public class MotifAnalysisSandbox {
 			//System.out.println(hits.get(h)+"\t"+hitseqs.get(h)+"\t"+SequenceUtils.reverseComplement(hitseqs.get(h)));
 			System.out.println(hits.get(h).toTabString()+"\t"+hitseqs.get(h));
 		}
+	}
+	//printing hit info:
+	// best hit score
+	// num hits over threshold
+	// pOcc
+	public void printHitInfo(){
+		ArrayList<ScoredStrandedRegion> hits = new ArrayList<ScoredStrandedRegion>();
+		ArrayList<String> hitseqs = new ArrayList<String>();
+		double conc = Math.exp(-1*motif.getMaxScore());
+		
+		for(int i=0; i<regions.size(); i++){
+			Region r = regions.get(i);
+			String seq = seqgen.execute(r);
+			int numHits=0;
+			
+			WeightMatrixScoreProfile profiler = scorer.execute(r);
+			int bestMotifIndex = profiler.getMaxIndex();
+			double bestMotifScore = profiler.getMaxScore(bestMotifIndex);
+			for(int z=0; z<r.getWidth()-motif.length()+1; z++){
+				double currScore= profiler.getMaxScore(z);
+				if(currScore>=motifThres){
+					numHits++;
+					String subseq = seq.substring(z, z+motif.length());
+					Region hitreg =new Region(gen, r.getChrom(), r.getStart()+z, r.getStart()+z+motif.length()-1);
+					hits.add(new ScoredStrandedRegion(gen, r.getChrom(), hitreg.getStart(), hitreg.getEnd(), currScore, profiler.getMaxStrand(z)));
+					if(profiler.getMaxStrand(z)=='+'){hitseqs.add(subseq);
+					}else{hitseqs.add(SequenceUtils.reverseComplement(subseq));}
+					
+				}
+			}
+			double pOcc = profiler2ProbOcc(profiler, conc);
+			//Print info
+			System.out.println(peaks.get(i).getLocationString() +"\t"+ bestMotifScore +"\t"+ numHits +"\t"+ pOcc);
+        }
 	}
 	//printing the hit closest to the peak
 	public void printPeakClosestMotifHits(){
