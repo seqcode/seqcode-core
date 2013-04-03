@@ -58,6 +58,8 @@ public class DescribeAlignments {
             System.out.println("\tNumHits: "+align.getNumHits());
             System.out.println("\tTotalWeight: "+align.getTotalWeight());
             System.out.println("\tAlignDir: "+align.getAlignDir());
+            System.out.println("\tAlignFile: "+align.getAlignFile());
+            System.out.println("\tIDXFile: "+align.getIDXFile());
             System.out.println("\tCollabAlignID: "+align.getCollabAlignID());
             
         }

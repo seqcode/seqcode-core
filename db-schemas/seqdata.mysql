@@ -43,6 +43,8 @@ create table seqalignment (
 	numhits int(15),
 	totalweight float(17,2),
 	aligndir varchar(200),
+	alignfile varchar(200),
+	idxfile varchar(200),
 	collabalignid varchar(200),
 	foreign key fk_seqalignment_expt (expt) references seqexpt(id),
 	index(name, genome),

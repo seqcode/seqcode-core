@@ -54,10 +54,12 @@ import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
  *21) DBLoadedWeight
  *22) ReadsFile
  *23) AlignDir
- *24) AlignParamFile
- *25) ExptNote
- *26) LoadDate
- *27) ExptName
+ *24) AlignFile
+ *25) IDXFile
+ *26) AlignParamFile
+ *27) ExptNote
+ *28) LoadDate
+ *29) ExptName
  * 
  */
 public class LoadAlignmentsFromFile {
@@ -79,7 +81,7 @@ public class LoadAlignmentsFromFile {
 				
 				//Variables
 				Integer dbid = new Integer(fields[0]);
-				String alignpieces[] = fields[27].split(";");
+				String alignpieces[] = fields[29].split(";");
 				Genome genome = Organism.findGenome(fields[8]);
 				String etypestring = fields[1];
 				String labstring = fields[2];
@@ -105,8 +107,10 @@ public class LoadAlignmentsFromFile {
 				String publicdbid = fields[11];
 				String fqfile = fields[22];
 				String aligndir = fields[23];
-				String paramsfname = fields[24];
-				String exptnote = fields[25];
+				String alignfile = fields[24];
+				String idxfile = fields[25];
+				String paramsfname = fields[26];
+				String exptnote = fields[27];
 				
 				//From here on out, it's similar to CreateAlignment
 				SeqExpt expt = null;
@@ -157,7 +161,9 @@ public class LoadAlignmentsFromFile {
 		                insert.setInt(7, numhits);
 		                insert.setFloat(8, totalweight);
 		                insert.setString(9, aligndir);
-		                insert.setString(10, collabalignid);
+		                insert.setString(10, alignfile);
+		                insert.setString(11, idxfile);
+		                insert.setString(12, collabalignid);
 		                insert.execute();
 		                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
 		                cxn.commit();

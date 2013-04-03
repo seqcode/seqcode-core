@@ -45,7 +45,9 @@ public class CreateAlignment {
     				"\t--fqfile <FQ filename>\n" +
     				"\t--exptnote <notes about expt>\n" +
     				"\t--permissions <mahony;mahonylab;etc>\n" +
-    				"\t--aligndir <directory name>\n");
+    				"\t--aligndir <directory name>\n" +
+    				"\t--alignfile <file name>\n" +
+    				"\t--idxfile <file name>\n");
     	}else{
 
 	    	java.sql.Connection cxn = DatabaseFactory.getConnection("seqdata");
@@ -72,6 +74,8 @@ public class CreateAlignment {
 	        int numhits = Args.parseInteger(args,"numhits",0);
 	        float totalweight = Args.parseFloat(args,"totalweight",0);
 	        String aligndir = Args.parseString(args,"aligndir",null);
+	        String alignfile = Args.parseString(args,"alignfile",null);
+	        String idxfile = Args.parseString(args,"idxfile",null);
 	        String collabalignid = Args.parseString(args,"collabalignid",null);
 	        
 	        SeqExpt expt = null;
@@ -123,7 +127,9 @@ public class CreateAlignment {
 	                insert.setInt(6, numhits);
 	                insert.setFloat(7, totalweight);
 	                insert.setString(8, aligndir);
-	                insert.setString(9, collabalignid);
+	                insert.setString(9, alignfile);
+	                insert.setString(10, idxfile);
+	                insert.setString(11, collabalignid);
 	                insert.execute();
 	                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
 	                cxn.commit();
