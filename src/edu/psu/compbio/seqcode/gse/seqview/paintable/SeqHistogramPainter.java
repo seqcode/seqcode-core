@@ -39,6 +39,7 @@ public class SeqHistogramPainter extends RegionPaintable {
 		if(alignPaired){
 			props.Stranded=false;
 			props.DrawPairedCurves=true;
+			props.MaxReadCount = 100;
 		}
 	}
 	public SeqHistogramProperties getProperties() {return props;}
@@ -316,7 +317,6 @@ public class SeqHistogramPainter extends RegionPaintable {
 		//Draw pairing arcs
 		if(props.DrawPairedCurves && alignPaired && !stranded){
 			List<PairedHit> pairs = arcmodel.getResults();
-			System.out.println("Pairs "+pairs.size());
 			for(PairedHit pair : pairs){
 				if(pair.leftContainedIn(arcmodel.getRegion()) && pair.rightContainedIn(arcmodel.getRegion())){
 					int xA =getXPos(pair.lesserPos(), regionStart, regionEnd, x1, x2);
