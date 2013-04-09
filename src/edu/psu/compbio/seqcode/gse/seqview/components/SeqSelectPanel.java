@@ -19,6 +19,7 @@ import java.sql.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.ExptType;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
+import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.components.GenericSelectPanel;
 
@@ -152,6 +153,64 @@ public class SeqSelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
             for (SeqLocatorMatchedExpt l : lme) {
                 filteredModel.addObject(l);
             }
+        }
+    }
+    public void info() {
+    	ArrayList<SeqLocator> locs = new ArrayList<SeqLocator>();
+    	int[] inds = filteredList.getSelectedRows();
+        for (int i = 0; i < inds.length; i++) {
+        	SeqLocatorMatchedExpt o = filteredModel.getObject(inds[i]);
+        	locs.add(o.locator);
+        }
+        for(SeqLocator loc : locs){
+        	try {
+				Collection<SeqAlignment> aligns = seqLoader.loadAlignments(loc, getGenome());
+				for(SeqAlignment align : aligns){
+					SeqExpt expt = align.getExpt();
+					String info=" "+expt.getName()+";"+expt.getReplicate()+";"+align.getName();
+					info = info+ "\n\n SeqExpt info:\n";
+					info = info+ "\tID: "+expt.getDBID()+"\n";
+					info = info+ "\tName: "+expt.getName()+"\n";
+					info = info+ "\tRep: "+expt.getReplicate()+"\n";
+					info = info+ "\tSpecies: "+expt.getOrganism().getName()+"\n";
+					info = info+ "\tLab: "+expt.getLab().getName()+"\n";
+					info = info+ "\tExptType: "+expt.getExptType().getName()+"\n";
+					info = info+ "\tExptCondition: "+expt.getExptCondition().getName()+"\n";
+					info = info+ "\tExptTarget: "+expt.getExptTarget().getName()+"\n";
+					info = info+ "\tExptCellLine: "+expt.getCellLine().getName()+"\n";
+					info = info+ "\tReadType: "+expt.getReadType().getName()+"\n";
+					info = info+ "\tReadLen: "+expt.getReadLength()+"\n";
+					info = info+ "\tNumRead: "+expt.getNumRead()+"\n";
+					info = info+ "\tCollabID: "+expt.getCollabID()+"\n";
+					info = info+ "\tPublicSource: "+expt.getPublicSource()+"\n";
+					info = info+ "\tPublicDBID: "+expt.getPublicDBID()+"\n";
+					info = info+ "\tFQFile: "+expt.getFQFile()+"\n";
+					info = info+ "\tExptNote: "+expt.getExptNote()+"\n";
+		            info = info+ " SeqAlignment info:\n";
+					info = info+ "\tID: "+align.getDBID()+"\n";
+					info = info+ "\tName: "+align.getName()+"\n";
+					info = info+ "\tGenome: "+align.getGenome().getVersion()+"\n";
+					info = info+ "\tAlignType: "+align.getAlignType().getName()+"\n";
+					info = info+ "\tPermissions: "+align.getPermissions()+"\n";
+					info = info+ "\tNumHits: "+align.getNumHits()+"\n";
+					info = info+ "\tTotalWeight: "+align.getTotalWeight()+"\n";
+					info = info+ "\tAlignDir: "+align.getAlignDir()+"\n";
+					info = info+ "\tAlignFile: "+align.getAlignFile()+"\n";
+					info = info+ "\tIDXFile: "+align.getIDXFile()+"\n";
+					info = info+ "\tCollabAlignID: "+align.getCollabAlignID()+"\n";
+					
+					JFrame frame = new JFrame();
+					JTextArea textArea = new JTextArea(info);
+					frame.add(textArea);
+					frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+					frame.pack();
+					frame.setVisible(true);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} catch (NotFoundException e) {
+				e.printStackTrace();
+			}
         }
     }
     public void filter() {

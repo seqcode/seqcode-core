@@ -325,53 +325,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			addModelToPaintable(p,seqmodel);
 		}
 
-		/*if (opts.chiapetExpts.size() > 0) {
-			try {
-				for (String k : opts.chiapetExpts.keySet()) {
-					SortedMap<Pair<Point,Point>,Float> interactions = new TreeMap<Pair<Point,Point>,Float>(new Comparator<Pair<Point,Point>>() {
-
-						public int compare(Pair<Point,Point> arg0,
-								Pair<Point, Point> arg1) {
-							int tor = arg0.car().compareTo(arg1.car());
-							if (tor==0) {
-								return arg0.cdr().compareTo(arg1.cdr());
-							} else {
-								return tor;
-							}
-						}
-
-					});
-					System.err.println("parsing "+k);
-					BufferedReader r = new BufferedReader(new FileReader(k));
-					String s;
-					String[] split;
-					r.readLine();
-					while ((s = r.readLine()) != null) {
-						split = s.split("\t");
-						if (!(split[0].equals("noise") || split[1].equals("noise"))) {
-							try {
-								interactions.put(new Pair<Point,Point>(Point.fromString(genome, split[0]), Point.fromString(genome, split[1])),Float.valueOf(split[2]));
-							} catch (Exception e) {
-								System.err.println(s);
-								throw e;
-							}
-						}
-					}
-					RegionModel m = new InteractionAnalysisModel(new TreeMap<Point,Float>(), interactions);
-					RegionPaintable p = new InteractionAnalysisPainter((InteractionAnalysisModel)m);
-					addModel(m);
-					Thread t = new Thread((Runnable)m); t.start();
-					p.setLabel(k);
-					p.addEventListener(this);
-					addPainter(p);
-					addModelToPaintable(p,m);
-				}
-
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}*/
+		//Loading experiment painters
 		if (opts.seqExpts.size() > 0) {
 			try {
 				SeqDataLoader loader = new SeqDataLoader();
@@ -379,24 +333,41 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				for(int i = 0; i < opts.seqExpts.size(); i++) { 
 					Collection<SeqAlignment> alignments = loader.loadAlignments(opts.seqExpts.get(i).locator, genome);
 
-					RegionModel m;
+					boolean allPaired = true;
+			    	for(SeqAlignment a : alignments){
+			    		allPaired = allPaired && a.getAlignType().getName().equals("PAIRED");
+			    	}
+			    	
+					RegionModel histomod, arcmod=null;
 					RegionPaintable p;
 					if (opts.seqHistogramPainter) {
-						m = new ChipSeqHistogramModel(alignments);
-						p = new SeqHistogramPainter((ChipSeqHistogramModel)m);
+						histomod = new SeqHistogramModel(alignments);
+						if(allPaired){
+							arcmod = new InteractionArcModel(alignments);
+							p = new SeqHistogramPainter((SeqHistogramModel)histomod, (InteractionArcModel)arcmod);
+						}else{
+							p = new SeqHistogramPainter((SeqHistogramModel)histomod, null);
+						}
 					} else {
 						System.err.println("Using old ChipSeq painters");
-						m = new ChipSeqDataModel(new edu.psu.compbio.seqcode.gse.projects.readdb.Client(),
+						histomod = new ChipSeqDataModel(new edu.psu.compbio.seqcode.gse.projects.readdb.Client(),
 								alignments);
-						p = new SeqAboveBelowStrandPainter((ChipSeqDataModel)m);
+						p = new SeqAboveBelowStrandPainter((ChipSeqDataModel)histomod);
 					}
-					addModel(m);
-					Thread t = new Thread((Runnable)m); t.start();
+					addModel(histomod);
+					Thread t1 = new Thread((Runnable)histomod); t1.start();
+					if(arcmod!=null){
+						addModel(arcmod);
+						Thread t2 = new Thread((Runnable)arcmod); t2.start();
+					}
 					p.setLabel(opts.seqExpts.get(i).toString());
 
 					p.addEventListener(this);
 					addPainter(p);
-					addModelToPaintable(p,m);
+					addModelToPaintable(p,histomod);
+					if(arcmod!=null){
+						addModelToPaintable(p,arcmod);
+					}
 				}
 				loader.close();
 			} catch (Exception e) {

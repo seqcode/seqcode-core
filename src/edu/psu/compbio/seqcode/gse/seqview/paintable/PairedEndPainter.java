@@ -8,7 +8,7 @@ import java.util.*;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
-import edu.psu.compbio.seqcode.gse.seqview.model.PairedEndModel;
+import edu.psu.compbio.seqcode.gse.seqview.model.SeqPairedEndModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
@@ -16,11 +16,11 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
 public class PairedEndPainter extends RegionPaintable {
 
-	private PairedEndModel model;
+	private SeqPairedEndModel model;
 	private PairedEndProperties props;
 	private DynamicAttribute attrib;
 
-	public PairedEndPainter (PairedEndModel model) {
+	public PairedEndPainter (SeqPairedEndModel model) {
 		super();
 		this.model = model;
 		props = new PairedEndProperties();

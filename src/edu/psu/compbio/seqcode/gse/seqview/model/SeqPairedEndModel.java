@@ -18,7 +18,7 @@ import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHitLeftComparator;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
-public class PairedEndModel extends SeqViewModel implements RegionModel, Runnable {
+public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runnable {
 
     private Client client;
     private Set<SeqAlignment> alignments;
@@ -27,11 +27,11 @@ public class PairedEndModel extends SeqViewModel implements RegionModel, Runnabl
     private boolean newinput;
     private List<PairedHit> results, otherchrom;
     private Comparator<PairedHit> comparator;
-    private PairedEndProperties props;
+    private SeqPairedEndModelProperties props;
     private HierarchicalClustering<PairedHitClusterable> clustering;
     private PairedHitClusterRepresentative repr = new PairedHitClusterRepresentative();
 
-    public PairedEndModel (Collection<SeqAlignment> alignments) throws IOException, ClientException{
+    public SeqPairedEndModel (Collection<SeqAlignment> alignments) throws IOException, ClientException{
         client = new Client();
         comparator = new PairedHitLeftComparator();
         this.alignments = new HashSet<SeqAlignment>();
@@ -42,10 +42,10 @@ public class PairedEndModel extends SeqViewModel implements RegionModel, Runnabl
         }
         results = null;
         otherchrom = null;
-        props = new PairedEndProperties();
+        props = new SeqPairedEndModelProperties();
         clustering = new HierarchicalClustering<PairedHitClusterable>(repr, new ChebyshevDistance<PairedHitClusterable>());
     }
-    public PairedEndProperties getProperties() {return props;}
+    public SeqPairedEndModelProperties getProperties() {return props;}
 
     public void clearValues() {
         results = null;
@@ -92,7 +92,6 @@ public class PairedEndModel extends SeqViewModel implements RegionModel, Runnabl
                     results = new ArrayList<PairedHit>();
                     otherchrom = new ArrayList<PairedHit>();
                     double mindist = getProperties().MinimumDistance;
-                    boolean showself = getProperties().ShowSelfLigation;
                     if (mindist < 1) {
                         mindist = mindist * region.getWidth();
                     }
@@ -108,8 +107,7 @@ public class PairedEndModel extends SeqViewModel implements RegionModel, Runnabl
                             if (h.leftChrom == h.rightChrom) { 
                                 if (h.rightPos >= region.getStart() &&
                                     h.rightPos <= region.getEnd() && 
-                                    Math.abs(h.leftPos - h.rightPos) > mindist &&
-                                    (showself || !isSelfLigation(h))) {
+                                    Math.abs(h.leftPos - h.rightPos) > mindist) {
                                     results.add(h);
                                 }
                             } else {
@@ -119,13 +117,7 @@ public class PairedEndModel extends SeqViewModel implements RegionModel, Runnabl
                     }
                     Collections.sort(results, comparator);
                     Collections.sort(otherchrom, comparator);
-                    if (getProperties().PrintData) {
-                        for (PairedHit h : results) {
-                            System.out.println(h.toString());
-                        }
-
-                    }
-
+                    
                     if (getProperties().DeDuplicateByPosition && results.size() > 0) {
                         results = dedup(results);
                         if (otherchrom.size() > 0) {
@@ -196,15 +188,4 @@ public class PairedEndModel extends SeqViewModel implements RegionModel, Runnabl
 			}
 		}
     }
-
-    public boolean isSelfLigation(PairedHit p) {
-    	if (getProperties().RightFlipped) {
-    		return (p.leftChrom == p.rightChrom) && (Math.abs(p.leftPos-p.rightPos) <= getProperties().SelfLigationCutoff) && (p.leftPos < p.rightPos ? p.leftStrand : p.rightStrand)
-    		&& (p.leftPos < p.rightPos ? p.rightStrand : p.leftStrand);
-    	} else {
-    		return (p.leftChrom == p.rightChrom) && (Math.abs(p.leftPos-p.rightPos) <= getProperties().SelfLigationCutoff) && !(p.leftPos < p.rightPos ? p.leftStrand : p.rightStrand)
-    		&& (p.leftPos < p.rightPos ? p.rightStrand : p.leftStrand);
-    	}
-    }
-
 }

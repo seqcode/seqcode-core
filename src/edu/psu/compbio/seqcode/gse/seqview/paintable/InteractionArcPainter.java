@@ -12,7 +12,7 @@ import java.util.HashMap;
 import edu.psu.compbio.seqcode.gse.deepseq.ReadHit;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.seqview.model.InteractionArcModel;
-import edu.psu.compbio.seqcode.gse.seqview.model.PairedEndModel;
+import edu.psu.compbio.seqcode.gse.seqview.model.SeqPairedEndModel;
 import edu.psu.compbio.seqcode.gse.utils.Listener;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 

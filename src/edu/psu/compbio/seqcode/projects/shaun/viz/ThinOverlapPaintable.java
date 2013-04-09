@@ -5,15 +5,26 @@
 package edu.psu.compbio.seqcode.projects.shaun.viz;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.awt.*;
+import java.util.Vector;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.QuadCurve2D;
 import java.io.IOException;
 
 
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
@@ -57,7 +68,7 @@ public class ThinOverlapPaintable extends AbstractPaintable {
 	private boolean filledColumns=false;
 	private Region region;
 	private Vector<Region> highlighted;
-	private List<Pair<edu.psu.compbio.seqcode.gse.datasets.general.Point,edu.psu.compbio.seqcode.gse.datasets.general.Point>> inters = new ArrayList<Pair<edu.psu.compbio.seqcode.gse.datasets.general.Point,edu.psu.compbio.seqcode.gse.datasets.general.Point>>();
+	private List<Pair<Point,Point>> inters = new ArrayList<Pair<Point, Point>>();
 	
 	private Color bgColor, highlightColor, loopColor, interColor;
 	private int bgThick, highlightThick;
@@ -106,7 +117,7 @@ public class ThinOverlapPaintable extends AbstractPaintable {
 			pairedRegs = pairedHits;			
 		}
 	}
-	public ThinOverlapPaintable(Region basereg,Collection<Region> hls, Iterator<? extends Region> hits, List<Region> pairedHits, List<Pair<edu.psu.compbio.seqcode.gse.datasets.general.Point,edu.psu.compbio.seqcode.gse.datasets.general.Point>> inters) { 
+	public ThinOverlapPaintable(Region basereg,Collection<Region> hls, Iterator<? extends Region> hits, List<Region> pairedHits, List<Pair<Point,Point>> inters) { 
 		this(basereg, hls, hits, pairedHits);
 		this.inters = inters;
 	}
@@ -262,7 +273,7 @@ public class ThinOverlapPaintable extends AbstractPaintable {
 		    		g2.draw(loop);
 				}
 			}
-			for(Pair<edu.psu.compbio.seqcode.gse.datasets.general.Point,edu.psu.compbio.seqcode.gse.datasets.general.Point> inter : inters){
+			for(Pair<Point,Point> inter : inters){
 				if(region.contains(inter.car()) && region.contains(inter.cdr())){
 					int xA = x1+Math.min(Math.max(getX(inter.car().getLocation(), w), 0), w);
 					int xB = x1+Math.min(Math.max(getX(inter.cdr().getLocation(), w), 0), w);
@@ -333,7 +344,7 @@ public class ThinOverlapPaintable extends AbstractPaintable {
 	}
 	
 	private void strokeLine(Graphics2D g2, 
-				Point p1, Point p2, 
+				java.awt.Point p1, java.awt.Point p2, 
 				int thick1, int thick2, 
 				Color c1, Color c2) { 
 		

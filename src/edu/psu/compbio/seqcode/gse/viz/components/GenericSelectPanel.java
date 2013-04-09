@@ -12,7 +12,7 @@ import edu.psu.compbio.seqcode.gse.utils.*;
 
 public abstract class GenericSelectPanel<X> extends JSplitPane implements Closeable, Runnable {
 
-    private JButton addButton, removeButton, filterButton;
+    private JButton addButton, removeButton, infoButton, filterButton;
     
     protected JTable filteredList, selectedList;
     protected ObjectTableModel<X> filteredModel, selectedModel;
@@ -112,6 +112,7 @@ public abstract class GenericSelectPanel<X> extends JSplitPane implements Closea
         this.selectedModel = selectedModel;
         addButton = new JButton("Add");
         removeButton = new JButton("Remove");
+        infoButton = new JButton("Info");
         filterButton = new JButton("Filter");
         final GenericSelectPanel panel = this;
         addButton.addActionListener(new ActionListener() {
@@ -124,6 +125,11 @@ public abstract class GenericSelectPanel<X> extends JSplitPane implements Closea
                     panel.remove();
                 }
             });
+        infoButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                panel.info();
+            }
+        });
         filterButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     panel.filter();
@@ -147,6 +153,7 @@ public abstract class GenericSelectPanel<X> extends JSplitPane implements Closea
         buttonPanel.setLayout(new GridBagLayout());
         buttonPanel.add(addButton);
         buttonPanel.add(removeButton);
+        buttonPanel.add(infoButton);
         buttonPanel.add(filterButton);
         JPanel inputsPanel = getInputsPanel();
         JPanel allInputsPanel = new JPanel(); allInputsPanel.setLayout(new BorderLayout());
@@ -168,6 +175,7 @@ public abstract class GenericSelectPanel<X> extends JSplitPane implements Closea
     
     public abstract JPanel getInputsPanel();
     public abstract void filter();
+    public void info(){};
     public Collection<X> getObjects() {
         ArrayList<X> out = new ArrayList<X>();
         for (int i = 0; i < selectedModel.getRowCount(); i++) {

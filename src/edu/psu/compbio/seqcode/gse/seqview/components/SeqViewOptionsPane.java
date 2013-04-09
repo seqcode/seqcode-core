@@ -189,24 +189,11 @@ public class SeqViewOptionsPane
         speciesCBox.addItemListener(this);
         genomeCBox.addItemListener(this);        
         
-        //chiapet tab
-        //chiapettracks = new FileBasedTracksPanel();
-        
         // seqdata tab
         seqSelect = new SeqSelectPanel();        
         seqPanel.setLayout(new BorderLayout());
         seqPanel.add(seqSelect, BorderLayout.CENTER);
 
-        /*
-        pairedSeqSelect = new SeqSelectPanel();
-        pairedSeqPanel.setLayout(new BorderLayout());
-        pairedSeqPanel.add(pairedSeqSelect, BorderLayout.CENTER);
-        
-        interactionArcSelect = new SeqSelectPanel();
-        interactionArcPanel.setLayout(new BorderLayout());
-        interactionArcPanel.add(interactionArcSelect, BorderLayout.CENTER);
-        */
-        
         // Options tab
         optionsPanel.setLayout(new GridLayout(4,1));
         relative = new JCheckBox("Relative vertical scale");

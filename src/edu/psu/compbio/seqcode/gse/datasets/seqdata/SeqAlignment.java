@@ -74,7 +74,7 @@ public class SeqAlignment {
 		expt = ex;  // exptID is still in position #2, we just don't need it.
 		name = rs.getString(3);
 		int genomeID = rs.getInt(4);
-		atype =  a;
+		atype =  a; 
 		try {
 			genome = Organism.findGenome(genomeID);
 		} catch (NotFoundException e) {

@@ -143,6 +143,13 @@
     <chmod file="${build.dist.dir}/seqview.${pwset}.jar}" perm="755"/>
   </target>
 
+	<!-- ======================================================================= -->
+	<!-- Target: makeseqcodejar                                                  -->
+	<!-- Depends: build, unjarall                                          		 -->
+	<!-- Description: Compiles all the client source files and builds the jar    -->
+	<!--              for the seqview browser. ant -Dpwset=mahony makeseqviewjar     -->
+	<!-- ======================================================================= -->
+	
   <target name="makeseqcodejar" depends="build, unjarall">
     <delete dir="${build.unjar.dir}/META-INF"/>
     <jar destfile="${build.dist.dir}/seqcode.jar" >	    

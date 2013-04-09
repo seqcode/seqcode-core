@@ -1418,6 +1418,7 @@ public class StatUtil {
 		return yy;
 	}	
 	
+	
 	// K-L divergence for discrete probability distributions P and Q 
 	//	http://en.wikipedia.org/wiki/Kullback-Leibler_divergence
 	public static double KL_Divergence( double[]P, double[]Q){

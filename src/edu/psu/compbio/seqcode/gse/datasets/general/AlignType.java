@@ -31,7 +31,7 @@ public class AlignType implements Comparable<AlignType>{
 	public String getName() { return name; }
 	public int getDBID() { return dbid; }
     
-    public String toString() { return name + " (#" + dbid + ")"; }
+    public String toString() { return name; }
 	
 	public int hashCode() { 
 		int code = 17;
