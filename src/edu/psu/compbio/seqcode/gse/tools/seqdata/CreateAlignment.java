@@ -67,7 +67,7 @@ public class CreateAlignment {
 	        int numreads = Args.parseInteger(args,"numreads",0);
 	        String collabid = Args.parseString(args,"collabid",null);
 	        String publicsource = Args.parseString(args,"publicsource","UNPUB");
-	        String publicdbid = Args.parseString(args,"publicdbid","UNPUB");
+	        String publicdbid = Args.parseString(args,"publicdbid","NA");
 	        String fqfile = Args.parseString(args,"fqfile",null);
 	        String exptnote = Args.parseString(args,"exptnote",null);
 	        String permissions = Args.parseString(args,"permissions",null);
