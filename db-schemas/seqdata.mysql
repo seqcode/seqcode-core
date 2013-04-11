@@ -42,6 +42,8 @@ create table seqalignment (
 	aligntype int(10) not null,
 	numhits int(15),
 	totalweight float(17,2),
+	numpairs int(15),
+	totalpairweight float(17,2),
 	aligndir varchar(200),
 	alignfile varchar(200),
 	idxfile varchar(200),
