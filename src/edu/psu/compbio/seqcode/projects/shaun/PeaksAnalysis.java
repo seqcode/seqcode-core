@@ -38,6 +38,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 public class PeaksAnalysis {
 	private Organism org=null;
@@ -85,6 +86,7 @@ public class PeaksAnalysis {
                                " Options: \n" +
                                "  --out output filename\n" +
                                "  --printseqs [flag to print sequences under peaks] \n" +
+                               "  --printseqkmers [flag to print k-mer counts for sequences under peaks] \n" +
                                "  --printxy [flag to print hit counts under peaks for two expts]\n" +
                                "  --readlen <rlen>\n" +
                                "  --fixedpb <cutoff>\n" +
@@ -125,6 +127,8 @@ public class PeaksAnalysis {
 	     	
 	        //options
 	        boolean printSeqs = ap.hasKey("printseqs");
+	        boolean printSeqKmers = ap.hasKey("printseqkmers");
+	        int printSeqKmersK = ap.hasKey("printseqkmers") ? new Integer(ap.getKeyValue("printseqkmers")).intValue():4;;
 	        boolean printMeta = ap.hasKey("metapeak");
 	        boolean weightedCounts = ap.hasKey("weightcount");
 	        boolean normCounts = ap.hasKey("normcounts");
@@ -152,6 +156,8 @@ public class PeaksAnalysis {
 			//Options
 			if(printSeqs)
 				analyzer.printPeakSeqs(repeatScreen);
+			if(printSeqKmers)
+				analyzer.printPeakSeqKmers(printSeqKmersK);
 			
 			//analyzer.printMotifInfo();
 			
@@ -217,6 +223,36 @@ public class PeaksAnalysis {
 			}
 		}
 	}
+	
+	//Print the k-mers in the sequences for each peak 
+	public void printPeakSeqKmers(int k){
+		SequenceGenerator seqgen = new SequenceGenerator();
+		int numK = (int)Math.pow(4, k);
+		int [] kmerCounts = new int[numK];
+		System.out.print("Region");
+		for(int i=0; i<numK; i++)
+			System.out.print(Utilities.int2seq(i, k));
+		System.out.println("");
+		for(Region r : posSet){
+			for(int i=0; i<numK; i++)
+				kmerCounts[i]=0;
+			
+			String seq = seqgen.execute(r);
+			for(int i=0; i<(seq.length()-k+1); i++){
+				String currK = seq.substring(i, i+k);
+				String revCurrK =SequenceUtils.reverseComplement(currK);
+				int  currKInt = Utilities.seq2int(currK);
+				int  revCurrKInt = Utilities.seq2int(revCurrK);
+				int kmer = currKInt>revCurrKInt ? currKInt : revCurrKInt;
+				kmerCounts[kmer]++;
+			}
+			System.out.print(r.getLocationString());
+			for(int i=0; i<numK; i++)
+				System.out.print("\t"+kmerCounts[i]);
+			System.out.println("");
+		}
+	}
+	
 	
 	///////////////////////////////////////////////////////////////////////
 	
