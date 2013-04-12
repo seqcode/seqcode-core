@@ -231,13 +231,13 @@ public class PeaksAnalysis {
 		int [] kmerCounts = new int[numK];
 		System.out.print("Region");
 		for(int i=0; i<numK; i++)
-			System.out.print(Utilities.int2seq(i, k));
+			System.out.print("\t"+Utilities.int2seq(i, k));
 		System.out.println("");
 		for(Region r : posSet){
 			for(int i=0; i<numK; i++)
 				kmerCounts[i]=0;
 			
-			String seq = seqgen.execute(r);
+			String seq = seqgen.execute(r).toUpperCase();
 			for(int i=0; i<(seq.length()-k+1); i++){
 				String currK = seq.substring(i, i+k);
 				String revCurrK =SequenceUtils.reverseComplement(currK);
