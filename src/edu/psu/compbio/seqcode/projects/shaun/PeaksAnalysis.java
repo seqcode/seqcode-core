@@ -243,7 +243,7 @@ public class PeaksAnalysis {
 				String revCurrK =SequenceUtils.reverseComplement(currK);
 				int  currKInt = Utilities.seq2int(currK);
 				int  revCurrKInt = Utilities.seq2int(revCurrK);
-				int kmer = currKInt>revCurrKInt ? currKInt : revCurrKInt;
+				int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
 				kmerCounts[kmer]++;
 			}
 			System.out.print(r.getLocationString());
