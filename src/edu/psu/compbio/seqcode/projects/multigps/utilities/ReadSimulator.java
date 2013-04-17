@@ -136,10 +136,12 @@ public class ReadSimulator {
 			int winEnd = chromOff+pos+modelRange;	
 
 			for(int i=winStart; i<winEnd; i++){
-				int forDist  = i-(chromOff+pos);
-				int revDist  = (chromOff+pos)-i;
-				forProbLand[i]+=strength*model.probability(forDist);
-				revProbLand[i]+=strength*model.probability(revDist);
+				if(i<genomeLength){
+					int forDist  = i-(chromOff+pos);
+					int revDist  = (chromOff+pos)-i;
+					forProbLand[i]+=strength*model.probability(forDist);
+					revProbLand[i]+=strength*model.probability(revDist);
+				}
 			}
 		}
 		
