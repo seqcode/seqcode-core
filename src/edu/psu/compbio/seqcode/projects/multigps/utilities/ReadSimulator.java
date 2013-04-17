@@ -306,7 +306,7 @@ public class ReadSimulator {
 				
 				for(int x=0; x<chrLen; x++){
 					if(posCounts[x]>0 || negCounts[x]>0)
-						fout.write(chr+"\t"+x+"\t"+posCounts[x]+"\t"+negCounts[x]+"\t"+(posCounts[x]+negCounts[x])+"\n");
+						fout.write("chr"+chr+"\t"+x+"\t"+posCounts[x]+"\t"+negCounts[x]+"\t"+(posCounts[x]+negCounts[x])+"\n");
 				}
 			}
 			fout.close();
