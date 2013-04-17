@@ -53,7 +53,7 @@ public class ReadSimulator {
 	private Genome fakeGen;
 	private int[] chromLens;
 	private HashMap<String, Integer> chromOffsets = new HashMap<String, Integer>();
-	private List<Pair<Point, Integer>> events; //Pair : Position / Strength(read count)
+	private List<Pair<Point, Double>> events; //Pair : Position / Strength(read count)
 	private double[] forProbLand;
 	private double[] revProbLand;
 	private double[] forProbCumul;
@@ -86,7 +86,7 @@ public class ReadSimulator {
 				
 		//Load the file
 		try {
-			events = new LinkedList<Pair<Point,Integer>>(); 			
+			events = new LinkedList<Pair<Point,Double>>(); 			
 			BufferedReader reader = new BufferedReader(new FileReader(sFile));
 	        String line;
 
@@ -97,11 +97,11 @@ public class ReadSimulator {
 	            if(words.length >= 2){
 	            	String chr = words[0]; chr = chr.replaceFirst("chr", "");
 	            	int pos = Integer.parseInt(words[1]);
-	            	int strength =100;
+	            	double strength =100;
 	            	if(words.length >= 2)
-	            		strength = Integer.parseInt(words[2]);
+	            		strength = Double.parseDouble(words[2]);
 	            	Point pt = new Point(fakeGen, chr, pos);
-	            	Pair<Point,Integer> p = new Pair<Point,Integer>(pt, strength);
+	            	Pair<Point,Double> p = new Pair<Point,Double>(pt, strength);
 	            	events.add(p);
 	            }
 	        }
@@ -126,11 +126,11 @@ public class ReadSimulator {
 		
 		int modelRange = Math.max(Math.abs(model.getMin()), Math.abs(model.getMax()));
 		//Impose the binding events on the probability landscape
-		for(Pair<Point,Integer> e : events){
+		for(Pair<Point,Double> e : events){
 			Point pt =  e.car();		// read position
 			String chr = pt.getChrom();
 			int pos = pt.getLocation(); 
-			int strength = e.cdr();		// event strength
+			double strength = e.cdr();		// event strength
 			int chromOff = chromOffsets.get(chr); 
 			int winStart = chromOff+pos-modelRange; 
 			int winEnd = chromOff+pos+modelRange;	
@@ -313,7 +313,7 @@ public class ReadSimulator {
 		}
 	}
 	
-	public List<Pair<Point, Integer>> getEvents() { return events; }
+	public List<Pair<Point, Double>> getEvents() { return events; }
 	
 	
 	/**
