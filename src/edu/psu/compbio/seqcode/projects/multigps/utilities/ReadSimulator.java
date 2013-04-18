@@ -296,7 +296,7 @@ public class ReadSimulator {
 				for(int x=0; x<chrLen; x++){ posCounts[x]=0; negCounts[x]=0;}
 				
 				for(ReadHit r : reads){
-					if(r.getChrom().equals(chr)){ 
+					if(r.getChrom().equals(chr) && r.getStart()<chrLen && r.getEnd()<chrLen){ 
 						if(r.getStrand()=='+')
 							posCounts[r.getStart()]++;
 						else
@@ -367,8 +367,8 @@ public class ReadSimulator {
 	        
 	        if(printIDX)
 	        	sim.printToIDX(outPath + "_reads" + ".idx");
-	        else
-	        	sim.printToBED(outPath + "_reads" + ".bed");
+	        
+	        sim.printToBED(outPath + "_reads" + ".bed");
 		}else{
 			System.err.println("Usage: ReadSimulator \n--model bindingmodel \n--sites file \n--numreads numReads"+
 								"\n--out outfile\n--noise noiseProb\n--geninfo <genome info file>" +
