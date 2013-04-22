@@ -132,9 +132,18 @@ public class RealValuedHistogram {
         return new Pair<Double,Double>(left, right);
     }
     
+    public void addHistogram(RealValuedHistogram h){
+    	if(getNumBins() != h.getNumBins()){
+    		System.err.println("Bin numbers not the same; cannot add histograms");
+    	}else{
+    		for(int x=0; x<bins.length; x++){
+    			bins[x]+=h.getBin(x);
+    		}
+    	}
+    }
     public void subtractHistogram(RealValuedHistogram h){
     	if(getNumBins() != h.getNumBins()){
-    		System.err.println("Bin numbers not the same; cannot divide histograms");
+    		System.err.println("Bin numbers not the same; cannot subtract histograms");
     	}else{
     		for(int x=0; x<bins.length; x++){
     			bins[x]-=h.getBin(x);
