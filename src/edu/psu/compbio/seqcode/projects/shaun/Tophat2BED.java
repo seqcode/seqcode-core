@@ -9,15 +9,16 @@ import net.sf.samtools.SAMFileReader.ValidationStringency;
 import net.sf.samtools.util.CloseableIterator;
 
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.projects.multigps.framework.*;
 
 
 public class Tophat2BED {
 
 	protected File samFile;
+	protected boolean useNonUnique=false;
 	
-    public Tophat2BED(File f) {
+    public Tophat2BED(File f, boolean nonUnique) {
     	samFile = f;
+    	useNonUnique=nonUnique;
     }
 
     /**
@@ -33,26 +34,29 @@ public class Tophat2BED {
 		    if (record.getReadUnmappedFlag()) {continue; }
 		    float weight = 1/(float)record.getIntegerAttribute("NH");
 		    
-		    List<AlignmentBlock> blocks = record.getAlignmentBlocks();
-		    for(int a=0; a<blocks.size(); a++){ //Iterate over alignment blocks
-		    	AlignmentBlock currBlock = blocks.get(a);
-		    	int aStart = currBlock.getReferenceStart();
-		    	int aEnd = aStart + currBlock.getLength()-1;
-		    	int aLen = currBlock.getLength();
-		    	
-		    	/*boolean nearbyBlocks=true;
-		    	while(nearbyBlocks && a<blocks.size()-1){
-		    		if(blocks.get(a+1).getReferenceStart() - currBlock.getReferenceStart() < record.getReadLength()){
-		    			aEnd = blocks.get(a+1).getReferenceStart() + blocks.get(a+1).getLength()-1;
-		    			aLen += blocks.get(a+1).getLength();
-		    			a++;
-		    		}else{
-		    			nearbyBlocks=false;
-		    		}
-		    	}*/
-		    	
-		    	System.out.println(record.getReferenceName()+"\t"+aStart+"\t"+aEnd+"\t"+record.getReadName()+"\t"+weight+"\t"+(record.getReadNegativeStrandFlag() ? '-' : '+'));
-			}
+		    if(useNonUnique || weight ==1){
+			    
+			    List<AlignmentBlock> blocks = record.getAlignmentBlocks();
+			    for(int a=0; a<blocks.size(); a++){ //Iterate over alignment blocks
+			    	AlignmentBlock currBlock = blocks.get(a);
+			    	int aStart = currBlock.getReferenceStart();
+			    	int aEnd = aStart + currBlock.getLength()-1;
+			    	int aLen = currBlock.getLength();
+			    	
+			    	/*boolean nearbyBlocks=true;
+			    	while(nearbyBlocks && a<blocks.size()-1){
+			    		if(blocks.get(a+1).getReferenceStart() - currBlock.getReferenceStart() < record.getReadLength()){
+			    			aEnd = blocks.get(a+1).getReferenceStart() + blocks.get(a+1).getLength()-1;
+			    			aLen += blocks.get(a+1).getLength();
+			    			a++;
+			    		}else{
+			    			nearbyBlocks=false;
+			    		}
+			    	}*/
+			    	
+			    	System.out.println(record.getReferenceName()+"\t"+aStart+"\t"+aEnd+"\t"+record.getReadName()+"\t"+String.format("%.4f", weight)+"\t"+(record.getReadNegativeStrandFlag() ? '-' : '+'));
+				}
+		    }
 		}
 		iter.close();
 		reader.close();
@@ -67,11 +71,13 @@ public class Tophat2BED {
         if(!ap.hasKey("bam")) { 
             System.err.println("Tophat2BED:\n" +
                                "\tUsage:\n" +
-                               "\t--bam <BAM/SAM file>\n");
+                               "\t--bam <BAM/SAM file>\n" +
+                               "\t--nonunique [optional flag to use non-uniquely mapped reads]");
         }else{
         	String bamFile = ap.getKeyValue("bam");
+        	boolean nonUniq = ap.hasKey("nonunique");
         	
-        	Tophat2BED converter = new Tophat2BED(new File (bamFile));
+        	Tophat2BED converter = new Tophat2BED(new File (bamFile),nonUniq);
         	converter.convert();
         	
         }
