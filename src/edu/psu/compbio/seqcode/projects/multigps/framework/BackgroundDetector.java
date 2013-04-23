@@ -36,10 +36,13 @@ public class BackgroundDetector {
 	protected Config config;
 	protected Genome gen;
 	protected float binWidth=0, binStep, winExt;
-	protected boolean loadControl=true; 
 	protected boolean stranded=false;
-	protected HashMap<Sample, RealValuedHistogram> sampleHistos =new HashMap<Sample, RealValuedHistogram>(); 
-	protected int poissUpperBound = 10;
+	protected HashMap<Sample, RealValuedHistogram> sampleHistos =new HashMap<Sample, RealValuedHistogram>();
+	protected double[] sampleTotals;
+	protected int histoMax = 500;
+	protected int poissUpperBound = 50;
+	protected int poissUpperBoundMin = 10;
+	protected double cdfPercOfUniform = 0.9; //Percentage of uniform-assumption CDF - used to set upper bound on truncated Poisson
 	
 	public BackgroundDetector(Config c, ExperimentManager man, float binW, float binS){
 		manager = man;
@@ -47,12 +50,21 @@ public class BackgroundDetector {
 		gen = config.getGenome();
 		binWidth = binW;
 		binStep = binS;
+		winExt = binWidth/2;
+		
+		sampleTotals =new double[manager.getExperimentSet().getSamples().size()];
+		for(int s=0; s<sampleTotals.length; s++)
+    		sampleTotals[s]=0;
 		
 		//Initialize histograms
-		for(Sample samp : manager.getExperimentSet().getSamples()){
-    		sampleHistos.put(samp, new RealValuedHistogram(0,100,100));
-    	}
-		winExt = binWidth/2;
+		for(Sample samp : manager.getExperimentSet().getSamples())
+    		sampleHistos.put(samp, new RealValuedHistogram(0,histoMax,histoMax));
+    	
+		for(Sample s : manager.getExperimentSet().getSamples())
+			if(s!=null){
+				System.err.println("Sample "+s.getName()+"\t"+s.getHitCount());
+				System.err.println("Mean if uniform: "+s.getHitCount()/(gen.getGenomeLength()/binWidth));
+			}
 	}
 	
 	
@@ -119,22 +131,44 @@ public class BackgroundDetector {
 	 *
 	 */
 	public double fitPoisson(RealValuedHistogram h, Sample samp){
-		int left=0, right=10;
+		DRand re = new DRand();
+		//Heuristic to find the upper bound for the truncated Poisson
+		int pUpper = poissUpperBound;
+		double uniformMean = samp.getHitCount()/(gen.getGenomeLength()/binWidth);
+		if(cdfPercOfUniform>0 && cdfPercOfUniform<=1){
+			Poisson uniPoiss = new Poisson(uniformMean, re);
+			double tmpProp=0;
+			int i=0;
+			while(tmpProp<cdfPercOfUniform){
+				tmpProp = uniPoiss.cdf(i);
+				i++;
+			}
+			pUpper=Math.max(i,poissUpperBoundMin);
+		}
+		System.out.println("Truncated Poisson Upper Bound:\t"+pUpper);
+		
+		//Fit the Poisson
+		int left=0, right=pUpper;
 		double xsum=0, xcount=0;
 		for(double i=left; i<=right; i++){
 			xsum += i*h.getBin( h.getBinContainingVal(i));
 			xcount += h.getBin( h.getBinContainingVal(i));
 		}
 		double xavg = xsum/xcount;
-		
 		UnivariateFunction func = new truncPoisson(xavg, left, right);
 		double relativeAccuracy = 1.0e-6;
 		double absoluteAccuracy = 1.0e-4;
 		UnivariateOptimizer solver = new BrentOptimizer(relativeAccuracy, absoluteAccuracy);
 		UnivariatePointValuePair pvp = solver.optimize(100, func, GoalType.MINIMIZE, 0.001, 50.0, xavg);
 		double lambda = pvp.getPoint();
-		
 		System.out.println("xavg: "+ xavg+"\tlambda: "+lambda);
+		
+		//Calculate the background proportion
+		Poisson poiss = new Poisson(lambda, re);
+		double backsize = xsum / (poiss.cdf(right) - poiss.cdf(left - 1));
+		double backprop = Math.min(backsize / sampleTotals[samp.getIndex()], 1.0);
+		System.out.println("BackSize "+ backsize+"=\t"+backprop);
+		
 		return lambda;
 	}
 	
@@ -152,7 +186,7 @@ public class BackgroundDetector {
 		public double value(double L){
 			return -(-Math.log(K(L, left, right, true)) - L + xavg * Math.log(L));		
 		}
-		private double K(double L, int left, int right, boolean out){
+		public double K(double L, int left, int right, boolean out){
 			Poisson poiss = new Poisson(L, re); 
 		    if(out)
 		        System.out.println("K: "+poiss.cdf(right)+" "+poiss.cdf(left - 1)+" "+ L+" "+ left+" "+ right);
@@ -171,9 +205,12 @@ public class BackgroundDetector {
         
         public void run() {
         	HashMap<Sample, RealValuedHistogram> tmpSampleHistos =new HashMap<Sample, RealValuedHistogram>();
+        	double[] tmpSampleTotals =new double[manager.getExperimentSet().getSamples().size()];
         	for(Sample samp : manager.getExperimentSet().getSamples())
-        		if(samp!=null)
-        			tmpSampleHistos.put(samp, new RealValuedHistogram(0,100,100));
+        		if(samp!=null){
+        			tmpSampleHistos.put(samp, new RealValuedHistogram(0,histoMax,histoMax));
+        			tmpSampleTotals[samp.getIndex()]=0;
+        		}
         	
         	int expansion = (int)winExt;
         	for (Region currentRegion : regions) {
@@ -213,6 +250,7 @@ public class BackgroundDetector {
                         		if(samp!=null){
                         			double winHits=binnedStarts[samp.getIndex()][currBin];
                         			tmpSampleHistos.get(samp).addValue(winHits);
+                        			tmpSampleTotals[samp.getIndex()]+=winHits;
                         		}
                         	}
                             currBin++;
@@ -226,6 +264,12 @@ public class BackgroundDetector {
         				sampleHistos.get(samp).addHistogram(tmpSampleHistos.get(samp));
         		}
         	}	
+        	synchronized(sampleTotals){
+        		for(Sample samp : manager.getExperimentSet().getSamples()){
+        			if(samp!=null)
+        				sampleTotals[samp.getIndex()]+=tmpSampleTotals[samp.getIndex()];
+        		}
+        	}
         }
         
 
@@ -242,8 +286,8 @@ public class BackgroundDetector {
 		    		for(StrandedBaseCount r : currHits){
 		    			if(strand=='.' || r.getStrand()==strand){
 		    				int offset=inBounds(r.getCoordinate()-currReg.getStart(),0,currReg.getWidth());
-		    				int binstart = inBounds((int)((double)(offset-halfWidth)/binStep), 0, numBins);
-		    				int binend = inBounds((int)((double)(offset+halfWidth)/binStep), 0, numBins);
+		    				int binstart = inBounds((int)((double)offset/binStep)-1, 0, numBins);
+		    				int binend = inBounds((int)((double)offset/binStep), 0, numBins);
 		    				for(int b=binstart; b<=binend; b++)
 		    					starts[samp.getIndex()][b]+=r.getCount();
 		    			}
@@ -290,13 +334,10 @@ public class BackgroundDetector {
 			ExperimentManager manager = new ExperimentManager(config);
 			ExperimentSet eset = manager.getExperimentSet();
 			System.err.println("Samples:\t"+eset.getSamples().size());
-			for(Sample s : eset.getSamples())
-				if(s!=null)
-					System.err.println("Sample "+s.getName()+"\t"+s.getHitCount());
 			
 			BackgroundDetector detector = new BackgroundDetector(config, manager, binW, binS);
 			detector.execute();
-			detector.print();
+			//detector.print();
 			
 			manager.close();
 		}
