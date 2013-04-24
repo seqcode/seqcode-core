@@ -54,7 +54,7 @@ public class Tophat2BED {
 			    		}
 			    	}*/
 			    	
-			    	System.out.println(record.getReferenceName()+"\t"+aStart+"\t"+aEnd+"\t"+record.getReadName()+"\t"+String.format("%.4f", weight)+"\t"+(record.getReadNegativeStrandFlag() ? '-' : '+'));
+			    	System.out.println(record.getReferenceName()+"\t"+(aStart-1)+"\t"+aEnd+"\t"+record.getReadName()+"\t"+String.format("%.4f", weight)+"\t"+(record.getReadNegativeStrandFlag() ? '-' : '+'));
 				}
 		    }
 		}
