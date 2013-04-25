@@ -169,6 +169,13 @@ public class SeqAlignment {
 		return c.prepareStatement(query);
 	}
 	
+	public static PreparedStatement updateStatementWithID(java.sql.Connection c) throws SQLException { 
+		String query = String.format(
+				"update seqalignment set expt=?, name=?, genome=?, permissions=?, aligntype=?, numhits=?, totalweight=?, numpairs=?, totalpairweight=?, aligndir=?, alignfile=?, idxfile=?, collabalignid=? " +
+				" where id=?");
+		return c.prepareStatement(query);
+	}
+	
 	public static PreparedStatement updateHitsAndWeights(java.sql.Connection c) throws SQLException { 
 		String query = "update seqalignment set numhits=?, totalweight=?, numpairs=?, totalpairweight=? where id=?";
 		return c.prepareStatement(query);

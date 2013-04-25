@@ -154,4 +154,10 @@ public class SeqExpt {
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     	return c.prepareStatement(query);
     }
+    public static PreparedStatement updateWithID(java.sql.Connection c) throws SQLException { 
+    	String query = String.format(
+                "update seqexpt set name=?, replicate=?, species=?, expttype=?, lab=?, exptcondition=?, expttarget=?, cellline=?, readtype=?, readlength=?, numreads=?, collabid=?, publicsource=?, publicdbid=?, fqfile=?, exptnote=? " +
+                " where id=?");
+    	return c.prepareStatement(query);
+    }
 }

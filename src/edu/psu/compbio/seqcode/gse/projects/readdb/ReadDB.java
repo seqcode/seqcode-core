@@ -91,12 +91,16 @@ public class ReadDB {
     public void printHelp() {
         System.out.println("Administrative client for ReadDB");
         System.out.println("usage: java edu.psu.compbio.seqcode.gse.projects.readdb.ReadDB command args...");
+        System.out.println("  isalive");
+        System.out.println("  shutdown");
         System.out.println("  exists alignname");
         System.out.println("  getchroms alignname");
         System.out.println("  getacl alignname");
         System.out.println("  getcount alignname");
         System.out.println("  getcount alignname chromnameStrand   (eg, 1+)");
         System.out.println("  getweight alignname");
+        System.out.println("  deletesinglealign alignname");
+        System.out.println("  deletepairedalign alignname");
         System.out.println("  setacl alignname username|groupname add|delete write|read|admin ");
         System.out.println("  addtogroup username groupname");
     }
@@ -105,7 +109,9 @@ public class ReadDB {
         String cmd = otherargs[0];
         if (cmd.equals("shutdown")) {
             client.shutdown();
-        } else if (cmd.equals("addtogroup")) {
+        }else if (cmd.equals("isalive")) {
+            System.out.println("TRUE");;
+        }  else if (cmd.equals("addtogroup")) {
             // username, groupname
             client.addToGroup(otherargs[1], otherargs[2]);
 
