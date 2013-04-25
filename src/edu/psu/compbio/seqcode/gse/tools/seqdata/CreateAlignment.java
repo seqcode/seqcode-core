@@ -86,9 +86,14 @@ public class CreateAlignment {
 	        SeqAlignment alignment = null;
 	        SeqDataLoader loader = new SeqDataLoader();
 	        MetadataLoader core = new MetadataLoader();
+	        boolean newExpt=false;
+	        
+	        //SEQEXPERIMENT
 	        try {
 	            expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
 	        } catch (NotFoundException e) {
+	        	//NotFound = create new experiment
+	        	newExpt=true;
 	            System.err.println("Creating experiment " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
 	            PreparedStatement insert = SeqExpt.createInsert(cxn);
 	            insert.setString(1, alignpieces[0]);
@@ -116,8 +121,40 @@ public class CreateAlignment {
 	                throw new DatabaseException("Couldn't create " + alignpieces[0] + "," + alignpieces[1]);
 	            }
 	        }
+	        if(!newExpt){
+	        	//Experiment exists: Update the old experiment
+	        	int eID = expt.getDBID();
+	        	System.err.println("Updating experiment "+eID+" " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
+	            PreparedStatement insert = SeqExpt.createInsertWithID(cxn);
+	            insert.setInt(1, eID);
+	            insert.setString(2, alignpieces[0]);
+	            insert.setString(3, alignpieces[1]);
+	            insert.setInt(4, genome.getSpeciesDBID());
+	            insert.setInt(5, core.getExptType(etypestring).getDBID());
+	            insert.setInt(6, core.getLab(labstring).getDBID());
+	            insert.setInt(7, core.getExptCondition(conditionstring).getDBID());
+	            insert.setInt(8, core.getExptTarget(targetstring).getDBID());
+	            insert.setInt(9, core.getCellLine(cellsstring).getDBID());
+	            insert.setInt(10, core.getReadType(rtypestring).getDBID());
+	            insert.setInt(11, readlength);
+	            insert.setInt(12, numreads);
+	            insert.setString(13, collabid);
+	            insert.setString(14, publicsource);
+	            insert.setString(15, publicdbid);
+	            insert.setString(16, fqfile);
+	            insert.setString(17, exptnote);
+	            insert.execute();
+	            try {
+	                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
+	            } catch (NotFoundException e2) {
+	                /* failed again means the insert failed.  you lose */
+	                cxn.rollback();
+	                throw new DatabaseException("Something went wrong when updating " + alignpieces[0] + "," + alignpieces[1]);
+	            }
+	        }
+	        
+	        //SEQALIGNMENT
 	        alignment = loader.loadAlignment(expt, alignpieces[2], genome);
-	
 	        if (alignment == null) {
 	            try {
 	                PreparedStatement insert = SeqAlignment.createInsertStatement(cxn);
@@ -153,13 +190,51 @@ public class CreateAlignment {
 	                System.err.println("Couldn't add alignment parameters");
 	                e.printStackTrace();
 	            }
+	        }else{
+	        	try {
+	        		int aID = alignment.getDBID();
+	                PreparedStatement insert = SeqAlignment.createInsertStatementWithID(cxn);
+	                System.err.println("Updating alignment "+aID+" " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
+	                System.err.println("Updating alignment for experiment " + expt.getDBID());
+	                insert.setInt(1, aID);
+	                insert.setInt(2, expt.getDBID());
+	                insert.setString(3, alignpieces[2]);
+	                insert.setInt(4, genome.getDBID());
+	                insert.setString(5, permissions);
+	                insert.setInt(6, core.getAlignType(atypestring).getDBID());
+	                insert.setInt(7, numhits);
+	                insert.setFloat(8, totalweight);
+	                insert.setInt(9, numpairs);
+	                insert.setFloat(10, totalpairweight);
+	                insert.setString(11, aligndir);
+	                insert.setString(12, alignfile);
+	                insert.setString(13, idxfile);
+	                insert.setString(14, collabalignid);
+	                insert.execute();
+	                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
+	                cxn.commit();
+	                File f = null;
+	                if (paramsfname != null) {
+	                    f = new File(paramsfname);
+	                }
+	                if (f != null && f.exists()) {
+	                    System.err.println("Reading alignment parameters from " + f);
+	                    loader.addAlignmentParameters(alignment, f);
 	
+	                }
+				} catch (IOException e) {
+	                cxn.rollback();
+	                System.err.println("Couldn't add alignment parameters");
+	                e.printStackTrace();
+	            }
 	        }
+	        
+	        
 	        core.close();
 	        loader.close();
 	        if (alignment == null) {
 	            cxn.rollback();
-	            throw new DatabaseException("Couldn't create alignment " + alignpieces[2] + " for " + alignpieces[0]);
+	            throw new DatabaseException("Couldn't create/update alignment " + alignpieces[2] + " for " + alignpieces[0]);
 	        }
 	        System.out.println(alignment.getDBID());
 	        cxn.commit();

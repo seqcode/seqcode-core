@@ -131,6 +131,12 @@
     <move file="${build.unjar.dir}.tmp" tofile="${build.unjar.dir}" />
   </target>
 
+	<!-- ======================================================================= -->
+	<!-- Target: makeseqviewjar                                                  -->
+	<!-- Depends: build, unjarwd, setpwfilespath                         		 -->
+	<!-- Description: Compiles all the client source files and builds the jar    -->
+	<!--              for the seqview browser. ant -Dpwset=mahony makeseqviewjar     -->
+	<!-- ======================================================================= -->
   <target name="makeseqviewjar" depends="build, unjarwd, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
     <jar destfile="${build.dist.dir}/seqview.${pwset}.jar" manifest="manifests/seqview_manifest.txt">	    
@@ -147,7 +153,7 @@
 	<!-- Target: makeseqcodejar                                                  -->
 	<!-- Depends: build, unjarall                                          		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
-	<!--              for the seqview browser. ant -Dpwset=mahony makeseqviewjar     -->
+	<!--              for the seqcode jar. ant makeseqcodejar                    -->
 	<!-- ======================================================================= -->
 	
   <target name="makeseqcodejar" depends="build, unjarall">
