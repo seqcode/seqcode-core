@@ -66,7 +66,7 @@ public class AnalysisReport {
     public void parseArgs(String args[]) throws SQLException, NotFoundException, IOException {
         genome = Args.parseGenome(args).cdr();
         analysis = null;
-        analysis = Args.parseChipSeqAnalysis(args,"analysis");                                                
+        analysis = Args.parseSeqAnalysis(args,"analysis");                                                
         analysisdbid = analysis.getDBID();
         regions = Args.parseRegionsOrDefault(args);
         geneGenerators = Args.parseGenes(args);

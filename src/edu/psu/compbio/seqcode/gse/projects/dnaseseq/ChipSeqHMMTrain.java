@@ -41,7 +41,7 @@ public class ChipSeqHMMTrain extends HMMTrain {
     }
     public void parseArgs(String args[]) throws NotFoundException, SQLException, IOException {
         super.parseArgs(args);
-        binding = Args.parseChipSeqAnalysis(args,"chipseq");
+        binding = Args.parseSeqAnalysis(args,"chipseq");
         bindingDistance = Args.parseInteger(args,"distance",10);
     }
 

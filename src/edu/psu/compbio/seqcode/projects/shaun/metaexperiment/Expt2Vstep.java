@@ -45,8 +45,8 @@ public class Expt2Vstep {
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		Pair<Organism,Genome> pair = Args.parseGenome(args);
 		if(pair==null || !Args.parseArgs(args).contains("expt")){printError();return;}
-		List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
-		List<SeqLocator> backs = Args.parseChipSeq(args,"back");
+		List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
+		List<SeqLocator> backs = Args.parseSeqExpt(args,"back");
 		double rLen = Args.parseDouble(args,"readlen",SeqExptHandler.defaultReadLength);
         double rExt = Args.parseDouble(args,"readextend",SeqExptHandler.defaultReadExtension);
         double rShift =0;

@@ -46,7 +46,7 @@ public class TatsuReadExperiment {
 		}    
 		boolean  metaPeak=false;
         pair = Args.parseGenome(args);
-        expts = Args.parseChipSeq(args,"expt");
+        expts = Args.parseSeqExpt(args,"expt");
         if (expts.size() == 0) {
             System.err.println("Usage:\n " +
                                "ChipSeqCountReads " +

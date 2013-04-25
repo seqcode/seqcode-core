@@ -62,8 +62,8 @@ public class BEDFileWriter{
 
         	if(name.length()>0)
         		System.out.println("Init loading condition: "+name);
-        	List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt"+name);
-        	List<SeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl"+name);
+        	List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt"+name);
+        	List<SeqLocator> rdbctrls = Args.parseSeqExpt(args,"rdbctrl"+name);
         	
         	if(rdbexpts.size()>0){
 	        	experiments.add(new Pair<DeepSeqExpt,DeepSeqExpt>(new DeepSeqExpt(gen, rdbexpts, "readdb", -1),new DeepSeqExpt(gen, rdbctrls, "readdb", -1)));

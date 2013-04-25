@@ -111,7 +111,7 @@ public abstract class RNASeqAnalyzer {
 	        	if(name.length()>0)
 	        		System.out.println("    loading condition: "+name);
 	        	
-	        	List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt"+name);
+	        	List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt"+name);
 	        	List<File> expts = Args.parseFileHandles(args, "expt"+name);
 	        	boolean nonUnique = Args.parseFlags(args).contains("nonunique") ? true : false;
 	        	String fileFormat = Args.parseString(args, "f", "TOPSAM").toUpperCase();

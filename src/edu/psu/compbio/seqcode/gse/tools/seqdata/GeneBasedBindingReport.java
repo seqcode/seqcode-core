@@ -41,7 +41,7 @@ public class GeneBasedBindingReport extends GeneBasedReport {
     public void parseArgs(String args[]) throws SQLException, NotFoundException {
         super.parseArgs(args);
         analysis = null;
-        analysis = Args.parseChipSeqAnalysis(args,"analysis");                                                        
+        analysis = Args.parseSeqAnalysis(args,"analysis");                                                        
         pvalthresh = Args.parseDouble(args,"thresh",.01);
     }
     public void getRegions(String args[]) {}

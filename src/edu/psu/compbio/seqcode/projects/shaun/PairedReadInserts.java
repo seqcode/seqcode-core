@@ -42,7 +42,7 @@ public class PairedReadInserts {
     
 	public static void main(String[] args) throws SQLException, NotFoundException {
 	    Pair<Organism,Genome> pair = Args.parseGenome(args);
-        List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
+        List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
         String gtfFile = Args.parseString(args, "gtf", null);
         int minUTR = Args.parseInteger(args, "minutr", 5000);
         int maxFrag = Args.parseInteger(args, "maxfrag", 1000);

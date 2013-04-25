@@ -61,10 +61,10 @@ public class SeqSlidingWindow {
 			binWidth = Args.parseInteger(args,"binwidth",binWidth);
 	        binStep=Args.parseInteger(args,"binstep",binStep);
 	        regFile = Args.parseString(args, "regfile", "NONE");
-			List<SeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
-	        List<SeqLocator> dbctrls = Args.parseChipSeq(args,"dbctrl");
-	        List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
-	        List<SeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl");
+			List<SeqLocator> dbexpts = Args.parseSeqExpt(args,"dbexpt");
+	        List<SeqLocator> dbctrls = Args.parseSeqExpt(args,"dbctrl");
+	        List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt");
+	        List<SeqLocator> rdbctrls = Args.parseSeqExpt(args,"rdbctrl");
 	        List<File> expts = Args.parseFileHandles(args, "expt");
 	        List<File> ctrls = Args.parseFileHandles(args, "ctrl");
 	        boolean nonUnique = ap.hasKey("nonunique") ? true : false;

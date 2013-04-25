@@ -72,8 +72,8 @@ public class BindingModelGenerator {
     	int bin = ap.hasKey("bin") ? new Integer(ap.getKeyValue("bin")).intValue():5;
     	double p = ap.hasKey("p") ? new Double(ap.getKeyValue("p")):0.0001;
     	double or = ap.hasKey("or") ? new Double(ap.getKeyValue("or")):5;
-        List<SeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
-        List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
+        List<SeqLocator> dbexpts = Args.parseSeqExpt(args,"dbexpt");
+        List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt");
         List<File> expts = Args.parseFileHandles(args, "expt");
         String fileFormat = Args.parseString(args, "format", "ELAND");
         String outName = Args.parseString(args, "out", "out.model");

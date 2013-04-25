@@ -25,8 +25,8 @@ public class CLIPSeqPeakFinder extends ChipSeqPeakFinder{
 		boolean  metaPeak=false;
 		Pair<Organism,Genome> pair = Args.parseGenome(args);
 		if(pair==null){printError();return;}
-		List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
-        List<SeqLocator> back = Args.parseChipSeq(args,"back");
+		List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
+        List<SeqLocator> back = Args.parseSeqExpt(args,"back");
         if (expts.size() == 0) {
             printError();
             return;

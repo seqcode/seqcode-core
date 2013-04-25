@@ -33,11 +33,11 @@ public class PrintBindingCalls {
         hitcomp = new WMHitStartComparator();
     }
     public void parseArgs(String args[]) throws SQLException, NotFoundException {
-        binding = Args.parseChipSeqAnalysis(args,"chipseq");
+        binding = Args.parseSeqAnalysis(args,"chipseq");
         bindingDistance = Args.parseInteger(args,"distance",10);
         dnaseq = null;
         try {
-            dnaseq = Args.parseChipSeqAnalysis(args,"dnaseq");
+            dnaseq = Args.parseSeqAnalysis(args,"dnaseq");
         } catch (RuntimeException e) {
             // don't worry, this just means none was specified
         }

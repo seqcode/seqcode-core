@@ -689,10 +689,10 @@ public class PeaksAnalysis {
 	}
 
 	protected void loadExperiments(String [] args){
-		List<SeqLocator> dbexpts = Args.parseChipSeq(args,"dbexpt");
-        List<SeqLocator> dbexpts2 = Args.parseChipSeq(args,"dbexpt2");
-        List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
-        List<SeqLocator> rdbexpts2 = Args.parseChipSeq(args,"rdbexpt2");
+		List<SeqLocator> dbexpts = Args.parseSeqExpt(args,"dbexpt");
+        List<SeqLocator> dbexpts2 = Args.parseSeqExpt(args,"dbexpt2");
+        List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt");
+        List<SeqLocator> rdbexpts2 = Args.parseSeqExpt(args,"rdbexpt2");
         List<File> expts = Args.parseFileHandles(args, "expt");
         List<File> expts2 = Args.parseFileHandles(args, "expt2");
         String fileFormat = Args.parseString(args, "format", "ELAND");

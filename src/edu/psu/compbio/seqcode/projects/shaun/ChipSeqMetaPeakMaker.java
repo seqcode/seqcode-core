@@ -37,7 +37,7 @@ public class ChipSeqMetaPeakMaker {
 		int readLen=26, readExt=0;
 		Pair<Organism,Genome> pair = Args.parseGenome(args);
 		if(pair==null){return;}
-		List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
+		List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
 		String peaks = Args.parseString(args,"peaks","error");
 		int histwin = Args.parseInteger(args,"histwin", 1000);
 		int histbins = Args.parseInteger(args,"bins", 2000);

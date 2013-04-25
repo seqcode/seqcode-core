@@ -75,7 +75,7 @@ public class DNASeqEnrichmentCaller {
         bgAlignments = new ArrayList<SeqAlignment>();
         if (Args.parseString(args,"dnaseq",null) != null) {
             try {
-                SeqAnalysis dnaseq = Args.parseChipSeqAnalysis(args,"dnaseq");
+                SeqAnalysis dnaseq = Args.parseSeqAnalysis(args,"dnaseq");
                 alignments.addAll(dnaseq.getForeground());
                 bgAlignments.addAll(dnaseq.getBackground());
             } catch (Exception e) {
@@ -88,8 +88,8 @@ public class DNASeqEnrichmentCaller {
             reads.subSample(subsample);
         }
 
-        List<SeqLocator> fg = Args.parseChipSeq(args,"dnaseqfg");
-        List<SeqLocator> bg = Args.parseChipSeq(args,"dnaseqbg");
+        List<SeqLocator> fg = Args.parseSeqExpt(args,"dnaseqfg");
+        List<SeqLocator> bg = Args.parseSeqExpt(args,"dnaseqbg");
         for (SeqLocator locator : fg) {
             System.err.println("fg locator " + locator);
             alignments.addAll(loader.loadAlignments(locator,genome));

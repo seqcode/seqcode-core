@@ -170,7 +170,7 @@ public class DeepSeqExpt {
     	        }reader.close();
     	        
     	        if(ap.hasKey("expt")){
-    	        	List<SeqLocator> expts =  Args.parseChipSeq(args,"expt");
+    	        	List<SeqLocator> expts =  Args.parseSeqExpt(args,"expt");
     	        	dse = new DeepSeqExpt(gen, expts, "db", 32);
     	        }else if(ap.hasKey("eland")){
     	        	ArrayList<File> f = new ArrayList<File>();

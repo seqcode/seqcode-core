@@ -28,7 +28,7 @@ public class GuessControlExpt {
     private static Genome genome;
     public static void main(String args[]) throws Exception {
         genome = Args.parseGenome(args).cdr();
-        List<SeqLocator> locators = Args.parseChipSeq(args);
+        List<SeqLocator> locators = Args.parseSeqExpt(args);
         loader = new SeqDataLoader(false);
         core = new MetadataLoader();
         controlTypeNames = new ArrayList<String>();

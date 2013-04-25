@@ -29,7 +29,7 @@ public class ChipSeqCountReads {
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		boolean  metaPeak=false;
         Pair<Organism,Genome> pair = Args.parseGenome(args);
-        List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
+        List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
         if (expts.size() == 0) {
             System.err.println("Usage:\n " +
                                "ChipSeqCountReads " +

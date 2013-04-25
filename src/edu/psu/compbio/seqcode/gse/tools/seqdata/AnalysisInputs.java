@@ -13,7 +13,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 public class AnalysisInputs {
     
     public static void main(String[] args) throws Exception {
-        Collection<SeqAnalysis> analyses = Args.parseChipSeqAnalyses(args,"chipseqanalysis");
+        Collection<SeqAnalysis> analyses = Args.parseSeqAnalyses(args,"chipseqanalysis");
         for (SeqAnalysis analysis : analyses) {
             for (SeqAlignment align : analysis.getForeground()) {
                 SeqExpt expt = align.getExpt();

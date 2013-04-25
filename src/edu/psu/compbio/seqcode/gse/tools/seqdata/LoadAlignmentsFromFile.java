@@ -52,14 +52,16 @@ import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
  *19) UniquelyAlignedHits
  *20) DBLoadedHits
  *21) DBLoadedWeight
- *22) ReadsFile
- *23) AlignDir
- *24) AlignFile
- *25) IDXFile
- *26) AlignParamFile
- *27) ExptNote
- *28) LoadDate
- *29) ExptName
+ *22) DBLoadedPairs
+ *23) DBLoadedPairWeight
+ *24) ReadsFile
+ *25) AlignDir
+ *26) AlignFile
+ *27) IDXFile
+ *28) AlignParamFile
+ *29) ExptNote
+ *30) LoadDate
+ *31) ExptName
  * 
  */
 public class LoadAlignmentsFromFile {
@@ -81,7 +83,7 @@ public class LoadAlignmentsFromFile {
 				
 				//Variables
 				Integer dbid = new Integer(fields[0]);
-				String alignpieces[] = fields[29].split(";");
+				String alignpieces[] = fields[31].split(";");
 				Genome genome = Organism.findGenome(fields[8]);
 				String etypestring = fields[1];
 				String labstring = fields[2];
@@ -100,17 +102,19 @@ public class LoadAlignmentsFromFile {
 					numreads = new Integer(numreadsStr);
 				Integer numhits = new Integer(fields[20]);
 				Float totalweight = new Float(fields[21]);
+				Integer numpairs = new Integer(fields[22]);
+				Float totalpairweight = new Float(fields[23]);
 				String permissions = fields[9];
 				String collabexptid = fields[12];
 				String collabalignid = fields[13];
 				String publicsource = fields[10];
 				String publicdbid = fields[11];
-				String fqfile = fields[22];
-				String aligndir = fields[23];
-				String alignfile = fields[24];
-				String idxfile = fields[25];
-				String paramsfname = fields[26];
-				String exptnote = fields[27];
+				String fqfile = fields[24];
+				String aligndir = fields[25];
+				String alignfile = fields[26];
+				String idxfile = fields[27];
+				String paramsfname = fields[28];
+				String exptnote = fields[29];
 				
 				//From here on out, it's similar to CreateAlignment
 				SeqExpt expt = null;
@@ -160,10 +164,12 @@ public class LoadAlignmentsFromFile {
 		                insert.setInt(6, core.getAlignType(atypestring).getDBID());
 		                insert.setInt(7, numhits);
 		                insert.setFloat(8, totalweight);
-		                insert.setString(9, aligndir);
-		                insert.setString(10, alignfile);
-		                insert.setString(11, idxfile);
-		                insert.setString(12, collabalignid);
+		                insert.setInt(9, numpairs);
+		                insert.setFloat(10, totalpairweight);
+		                insert.setString(11, aligndir);
+		                insert.setString(12, alignfile);
+		                insert.setString(13, idxfile);
+		                insert.setString(14, collabalignid);
 		                insert.execute();
 		                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
 		                cxn.commit();

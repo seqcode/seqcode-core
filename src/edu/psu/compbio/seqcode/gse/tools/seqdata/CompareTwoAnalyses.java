@@ -44,8 +44,8 @@ public abstract class CompareTwoAnalyses {
     public CompareTwoAnalyses() {}
 
     public void parseArgs(String args[]) throws NotFoundException, SQLException {
-        one = Args.parseChipSeqAnalysis(args,"one");
-        two = Args.parseChipSeqAnalysis(args,"two");
+        one = Args.parseSeqAnalysis(args,"one");
+        two = Args.parseSeqAnalysis(args,"two");
         maxDistance = Args.parseInteger(args,"maxdist",maxDistance);
         topEvents = Args.parseInteger(args,"topevents",-1);
         sortEventsByPval = Args.parseFlags(args).contains("sortbypval");

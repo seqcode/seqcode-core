@@ -44,7 +44,7 @@ public class DumpExpression {
     }
     public void parseArgs(String args[]) throws SQLException, NotFoundException {
         genome = Args.parseGenome(args).cdr();
-        List<SeqLocator> locators = Args.parseChipSeq(args,"align");
+        List<SeqLocator> locators = Args.parseSeqExpt(args,"align");
         for (SeqLocator locator : locators) {
             aligns.addAll(loader.loadAlignments(locator,genome));
         }

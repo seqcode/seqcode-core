@@ -51,7 +51,7 @@ public class ChipSeqCoverageHistogram {
 			ArgParser ap = new ArgParser(args);
 			Pair<Organism, Genome> pair = Args.parseGenome(args);
 			
-	        List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
+	        List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
 	        int rL = 36, rE=164, ws=50, wo=25;
 	        double cl=-1;
 	        if(ap.hasKey("readlen")){ rL = new Integer(ap.getKeyValue("readlen")).intValue();}

@@ -46,12 +46,12 @@ public class HMMTest {
         modelFname = Args.parseString(args,"modelfile","hmm.model");
         genome = Args.parseGenome(args).cdr();
         testRegions = Args.parseRegions(args);
-        SeqAnalysis dnaseq = Args.parseChipSeqAnalysis(args,"dnaseq");
+        SeqAnalysis dnaseq = Args.parseSeqAnalysis(args,"dnaseq");
         alignments = new ArrayList<SeqAlignment>();
         alignments.addAll(dnaseq.getForeground());
         bgAlignments = new ArrayList<SeqAlignment>();
         bgAlignments.addAll(dnaseq.getBackground());
-        List<SeqLocator> bg = Args.parseChipSeq(args,"dnaseqbg");
+        List<SeqLocator> bg = Args.parseSeqExpt(args,"dnaseqbg");
         for (SeqLocator locator : bg) {
             bgAlignments.addAll(loader.loadAlignments(locator,genome));
         }

@@ -333,19 +333,19 @@ public class Args {
         return output;
     }
     /**
-     * parses ChipSeqLocators from the <tt>--chipseq</tt> parameters.  Takes
+     * parses SeqLocators from the <tt>--seqexpt</tt> parameters.  Takes
      * either "name;alignment" or "name;replicate;alignment"
      */
-    public static List<SeqLocator> parseChipSeq(String args[]) {
-        return parseChipSeq(args,"chipseq");
+    public static List<SeqLocator> parseSeqExpt(String args[]) {
+        return parseSeqExpt(args,"seqexpt");
     }
     
     /**
-     * parses ChipSeqLocators from the <tt>argname</tt> parameters.  Takes
+     * parses SeqLocators from the <tt>argname</tt> parameters.  Takes
      * either "name;alignment" or "name;replicate;alignment"
      * @see edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator
      */
-    public static List<SeqLocator> parseChipSeq(String args[], String argname) {
+    public static List<SeqLocator> parseSeqExpt(String args[], String argname) {
         argname = "--" + argname;
         ArrayList<SeqLocator> output = new ArrayList<SeqLocator>();
         for (int i = 0; i < args.length; i++) {
@@ -363,7 +363,7 @@ public class Args {
         return output;
     }
 
-    public static Collection<SeqAnalysis> parseChipSeqAnalyses(String args[], String argname) throws NotFoundException {
+    public static Collection<SeqAnalysis> parseSeqAnalyses(String args[], String argname) throws NotFoundException {
         Collection<String> bases = parseStrings(args,argname);
         Collection<SeqAnalysis> out = new ArrayList<SeqAnalysis>();
         SeqDataLoader loader = null;
@@ -393,7 +393,7 @@ public class Args {
         return out;
     }
 
-    public static SeqAnalysis parseChipSeqAnalysis(String args[], String argname) {
+    public static SeqAnalysis parseSeqAnalysis(String args[], String argname) {
         String base = parseString(args,argname,null);
         String aname = parseString(args,"analysisname",null);
         String aversion = parseString(args,"analysisversion",null);

@@ -50,11 +50,11 @@ public class DifferentialExpression {
     }
     public void parseArgs(String args[]) throws SQLException, NotFoundException {
         genome = Args.parseGenome(args).cdr();
-        List<SeqLocator> locators = Args.parseChipSeq(args,"one");
+        List<SeqLocator> locators = Args.parseSeqExpt(args,"one");
         for (SeqLocator locator : locators) {
             one.addAll(loader.loadAlignments(locator,genome));
         }
-        locators = Args.parseChipSeq(args,"two");
+        locators = Args.parseSeqExpt(args,"two");
         for (SeqLocator locator : locators) {
             two.addAll(loader.loadAlignments(locator,genome));
         }

@@ -50,7 +50,7 @@ public class CentipedeFiles {
         loader = new SeqDataLoader();
         client = new Client();
         genome = Args.parseGenome(args).cdr();
-        List<SeqLocator> cslocators = Args.parseChipSeq(args);       
+        List<SeqLocator> cslocators = Args.parseSeqExpt(args);       
         alignments = new ArrayList<SeqAlignment>();
         for (SeqLocator l : cslocators) {
             alignments.addAll(loader.loadAlignments(l, genome));

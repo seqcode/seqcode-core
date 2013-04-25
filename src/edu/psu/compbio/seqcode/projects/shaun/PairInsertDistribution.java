@@ -31,7 +31,7 @@ public class PairInsertDistribution {
     
 	public static void main(String[] args) throws SQLException, NotFoundException {
 	    Pair<Organism,Genome> pair = Args.parseGenome(args);
-        List<SeqLocator> expts = Args.parseChipSeq(args,"expt");
+        List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
         if (expts.size() == 0) {
             System.err.println("Usage:\n " +
                                "PairInsertDistribution " +

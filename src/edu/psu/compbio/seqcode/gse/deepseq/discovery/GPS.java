@@ -111,8 +111,8 @@ public class GPS {
         	if(name.length()>0)
         		System.out.println("    loading condition: "+name);
         	
-        	List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt"+name);
-        	List<SeqLocator> rdbctrls = Args.parseChipSeq(args,"rdbctrl"+name);
+        	List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt"+name);
+        	List<SeqLocator> rdbctrls = Args.parseSeqExpt(args,"rdbctrl"+name);
         	List<File> expts = Args.parseFileHandles(args, "expt"+name);
         	List<File> ctrls = Args.parseFileHandles(args, "ctrl"+name);  
         	boolean nonUnique = flags.contains("nonunique") ? true : false;

@@ -38,6 +38,8 @@ public class CreateAlignment {
     				"\t--numreads <int>\n" +
     				"\t--numhits <int>\n" +
     				"\t--totalweight <float>\n" +
+    				"\t--numpairs <int>\n" +
+    				"\t--totalpairweight <float>\n" +
     				"\t--collabid <expt ID>\n" +
     				"\t--collabalignid <align ID>\n" +
     				"\t--publicsource <PMID/UNPUB>\n" +
@@ -73,6 +75,8 @@ public class CreateAlignment {
 	        String permissions = Args.parseString(args,"permissions",null);
 	        int numhits = Args.parseInteger(args,"numhits",0);
 	        float totalweight = Args.parseFloat(args,"totalweight",0);
+	        int numpairs = Args.parseInteger(args,"numpairs",0);
+	        float totalpairweight = Args.parseFloat(args,"totalpairweight",0);
 	        String aligndir = Args.parseString(args,"aligndir",null);
 	        String alignfile = Args.parseString(args,"alignfile",null);
 	        String idxfile = Args.parseString(args,"idxfile",null);
@@ -126,10 +130,12 @@ public class CreateAlignment {
 	                insert.setInt(5, core.getAlignType(atypestring).getDBID());
 	                insert.setInt(6, numhits);
 	                insert.setFloat(7, totalweight);
-	                insert.setString(8, aligndir);
-	                insert.setString(9, alignfile);
-	                insert.setString(10, idxfile);
-	                insert.setString(11, collabalignid);
+	                insert.setInt(8, numpairs);
+	                insert.setFloat(9, totalpairweight);
+	                insert.setString(10, aligndir);
+	                insert.setString(11, alignfile);
+	                insert.setString(12, idxfile);
+	                insert.setString(13, collabalignid);
 	                insert.execute();
 	                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
 	                cxn.commit();

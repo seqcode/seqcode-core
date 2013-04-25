@@ -252,10 +252,10 @@ public class ChipSeqHMMAnalyzer {
         logger.debug("Loading condition: " + name);
       }
 
-      List<SeqLocator> dbexpts = Args.parseChipSeq(args, "dbexpt" + name);
-      List<SeqLocator> dbctrls = Args.parseChipSeq(args, "dbctrl" + name);
-      List<SeqLocator> rdbexpts = Args.parseChipSeq(args, "rdbexpt" + name);
-      List<SeqLocator> rdbctrls = Args.parseChipSeq(args, "rdbctrl" + name);
+      List<SeqLocator> dbexpts = Args.parseSeqExpt(args, "dbexpt" + name);
+      List<SeqLocator> dbctrls = Args.parseSeqExpt(args, "dbctrl" + name);
+      List<SeqLocator> rdbexpts = Args.parseSeqExpt(args, "rdbexpt" + name);
+      List<SeqLocator> rdbctrls = Args.parseSeqExpt(args, "rdbctrl" + name);
       List<File> expts = Args.parseFileHandles(args, "expt" + name);
       List<File> ctrls = Args.parseFileHandles(args, "ctrl" + name);
       ArgParser ap = new ArgParser(args);

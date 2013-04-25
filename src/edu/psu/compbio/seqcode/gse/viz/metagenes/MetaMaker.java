@@ -66,7 +66,7 @@ public class MetaMaker {
 			PointProfiler profiler=null;
 			boolean normalizeProfile=false;
 			if(profilerType.equals("simplechipseq") || profilerType.equals("fiveprime")){
-				List<SeqLocator> exptlocs = Args.parseChipSeq(args,"expt");
+				List<SeqLocator> exptlocs = Args.parseSeqExpt(args,"expt");
 				ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
 				for(SeqLocator loc : exptlocs){
 					System.out.println(loc.getExptName()+"\t"+loc.getAlignName());
@@ -77,7 +77,7 @@ public class MetaMaker {
 					readExt = -1;
 				profiler = new SimpleChipSeqProfiler(params, exptexps, readExt, pbMax,strand);
 			}else if(profilerType.equals("chipseq5prime")){
-				List<SeqLocator> exptlocs = Args.parseChipSeq(args,"expt");
+				List<SeqLocator> exptlocs = Args.parseSeqExpt(args,"expt");
 				ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
 				for(SeqLocator loc : exptlocs){
 					exptexps.add(new SeqExpander(loc));
@@ -86,14 +86,14 @@ public class MetaMaker {
 				profiler = new ChipSeq5PrimeProfiler(params, exptexps, strand);
 			}else if(profilerType.equals("chipseq")){
 				normalizeProfile=true;
-				ArrayList<SeqLocator> exptlocs = (ArrayList<SeqLocator>) Args.parseChipSeq(args,"expt");
-				ArrayList<SeqLocator> backlocs = backs.size()==0 ? null : (ArrayList<SeqLocator>) Args.parseChipSeq(args,"back");
+				ArrayList<SeqLocator> exptlocs = (ArrayList<SeqLocator>) Args.parseSeqExpt(args,"expt");
+				ArrayList<SeqLocator> backlocs = backs.size()==0 ? null : (ArrayList<SeqLocator>) Args.parseSeqExpt(args,"back");
 				System.out.println("Loading data...");
 				profiler = new ChipSeqProfiler(params, gen, exptlocs,backlocs, 32, readExt);
 			}else if(profilerType.equals("chipseqz")){
 				normalizeProfile=true;
-				ArrayList<SeqLocator> exptlocs = (ArrayList<SeqLocator>) Args.parseChipSeq(args,"expt");
-				ArrayList<SeqLocator> backlocs = backs.size()==0 ? null : (ArrayList<SeqLocator>) Args.parseChipSeq(args,"back");
+				ArrayList<SeqLocator> exptlocs = (ArrayList<SeqLocator>) Args.parseSeqExpt(args,"expt");
+				ArrayList<SeqLocator> backlocs = backs.size()==0 ? null : (ArrayList<SeqLocator>) Args.parseSeqExpt(args,"back");
 				System.out.println("Loading data...");
 				profiler = new ChipSeqProfiler(params, gen, exptlocs,backlocs, 32, readExt, true);
 			}else if(profilerType.equals("chipchip") || profilerType.equals("chipchipip") || profilerType.equals("chipchipwce")){

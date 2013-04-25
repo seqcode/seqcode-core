@@ -111,8 +111,8 @@ public class WIGExporter {
 	    winStep=winSize;
 	    		
 	    // Load the experiments
-	    List<SeqLocator> dbexpts = Args.parseChipSeq(args, "dbexpt");
-	    List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdbexpt");
+	    List<SeqLocator> dbexpts = Args.parseSeqExpt(args, "dbexpt");
+	    List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt");
 	    List<File> expts = Args.parseFileHandles(args, "expt");
 	    boolean nonUnique = ap.hasKey("nonunique") ? true : false;
 	    String fileFormat = Args.parseString(args, "format", "ELAND");

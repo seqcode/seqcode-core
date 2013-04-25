@@ -91,7 +91,7 @@ public class GPS_ReadDistribution {
 			chipSeqExpt = new DeepSeqExpt(genome, expts, false, fileFormat, -1);
 		}
 		else{
-			List<SeqLocator> rdbexpts = Args.parseChipSeq(args,"rdb");
+			List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdb");
 			chipSeqExpt = new DeepSeqExpt(genome, rdbexpts, "readdb", -1);
 		}
 			
