@@ -68,6 +68,11 @@ public class LoadAlignmentsFromFile {
 
     public static void main(String args[]) throws SQLException, IOException, NotFoundException {
     	String filename = Args.parseString(args,"list",null);
+    	if(filename==null){
+    		System.err.println("LoadAlignmentsFromFile:\n" +
+    				"\t--list <deepseq.list format file>\n");
+    		System.exit(1);
+    	}
         java.sql.Connection cxn = DatabaseFactory.getConnection("seqdata");
         cxn.setAutoCommit(false);
         

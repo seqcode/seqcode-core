@@ -68,6 +68,11 @@ public class UpdateAlignmentsFromFile {
 
     public static void main(String args[]) throws SQLException, IOException, NotFoundException {
     	String filename = Args.parseString(args,"list",null);
+    	if(filename==null){
+    		System.err.println("UpdateAlignmentsFromFile:\n" +
+    				"\t--list <deepseq.list format file>\n");
+    		System.exit(1);
+    	}
         java.sql.Connection cxn = DatabaseFactory.getConnection("seqdata");
         cxn.setAutoCommit(false);
         
@@ -116,54 +121,56 @@ public class UpdateAlignmentsFromFile {
 				String paramsfname = fields[28];
 				String exptnote = fields[29];
 				
-				//From here on out, it's similar to CreateAlignment
+				//Have to load alignment and experiment by DBID since the naming may change
 				SeqExpt expt = null;
-		        SeqAlignment alignment = null;
-		        boolean exptExists=false;
-		        try {
-		            expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
-		            exptExists=true;
-		        } catch (NotFoundException e) {
-		        	cxn.rollback();
-		            System.err.println("No experiment found for " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
-		            System.exit(1);
-		        }
-		        if(exptExists){
-		        	System.err.println("Updating experiment " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
-		            PreparedStatement update = SeqExpt.updateWithID(cxn);
-		            update.setString(1, alignpieces[0]);
-		            update.setString(2, alignpieces[1]);
-		            update.setInt(3, genome.getSpeciesDBID());
-		            update.setInt(4, core.getExptType(etypestring).getDBID());
-		            update.setInt(5, core.getLab(labstring).getDBID());
-		            update.setInt(6, core.getExptCondition(conditionstring).getDBID());
-		            update.setInt(7, core.getExptTarget(targetstring).getDBID());
-		            update.setInt(8, core.getCellLine(cellsstring).getDBID());
-		            update.setInt(9, core.getReadType(rtypestring).getDBID());
-		            update.setInt(10, readlength);
-		            update.setInt(11, numreads);
-		            update.setString(12, collabexptid);
-		            update.setString(13, publicsource);
-		            update.setString(14, publicdbid);
-		            update.setString(15, fqfile);
-		            update.setString(16, exptnote);
-		            update.setInt(17, expt.getDBID());
-		            update.execute();
-		            try {
-		                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
-		            } catch (NotFoundException e2) {
-		                /* failed again means the insert failed.  you lose */
-		                cxn.rollback();
-		                throw new DatabaseException("Couldn't update experiment for " + alignpieces[0] + "," + alignpieces[1]);
-		            }
-		        }
-		        
-		        alignment = loader.loadAlignment(expt, alignpieces[2], genome);
-
+		        SeqAlignment alignment = loader.loadAlignment(dbid);
 		        if (alignment == null) {
 		        	cxn.rollback();
-		            throw new DatabaseException("Couldn't update alignment " + alignpieces[2] + " for " + alignpieces[0]);
+		            throw new DatabaseException("Can't find alignment "+dbid+" for " + alignpieces[2] + " for " + alignpieces[0]);
 		        }else{
+		        	//Update experiment
+		        	int exptID = alignment.getExpt().getDBID();
+			        boolean exptExists=false;
+			        try {
+			            expt = loader.loadExperiment(exptID);
+			            exptExists=true;
+			        } catch (NotFoundException e) {
+			        	cxn.rollback();
+			            System.err.println("No experiment found for " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
+			            System.exit(1);
+			        }
+			        if(exptExists){
+			        	System.err.println("Updating experiment " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
+			            PreparedStatement update = SeqExpt.updateWithID(cxn);
+			            update.setString(1, alignpieces[0]);
+			            update.setString(2, alignpieces[1]);
+			            update.setInt(3, genome.getSpeciesDBID());
+			            update.setInt(4, core.getExptType(etypestring).getDBID());
+			            update.setInt(5, core.getLab(labstring).getDBID());
+			            update.setInt(6, core.getExptCondition(conditionstring).getDBID());
+			            update.setInt(7, core.getExptTarget(targetstring).getDBID());
+			            update.setInt(8, core.getCellLine(cellsstring).getDBID());
+			            update.setInt(9, core.getReadType(rtypestring).getDBID());
+			            update.setInt(10, readlength);
+			            update.setInt(11, numreads);
+			            update.setString(12, collabexptid);
+			            update.setString(13, publicsource);
+			            update.setString(14, publicdbid);
+			            update.setString(15, fqfile);
+			            update.setString(16, exptnote);
+			            update.setInt(17, expt.getDBID());
+			            update.execute();
+			            try {
+			                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
+			            } catch (NotFoundException e2) {
+			                /* failed again means the insert failed.  you lose */
+			                cxn.rollback();
+			                throw new DatabaseException("Couldn't update experiment for " + alignpieces[0] + "," + alignpieces[1]);
+			            }
+			        }
+			       
+			        
+			        //Alignment already loaded above
 		            try {
 		                PreparedStatement update = SeqAlignment.updateStatementWithID(cxn);
 		                System.err.println("Updating alignment " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
