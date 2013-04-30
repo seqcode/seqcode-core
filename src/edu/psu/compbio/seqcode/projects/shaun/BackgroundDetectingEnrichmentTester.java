@@ -57,6 +57,8 @@ public class BackgroundDetectingEnrichmentTester {
 		
 		//Set background rates
 		for(BindingEvent ev : events){
+			ev.setRepCtrlHits(experiments.getIndexedCondition(0).getIndexedReplicate(0), expectedBack);
+			ev.setRepSigVCtrlFold(experiments.getIndexedCondition(0).getIndexedReplicate(0), ev.getRepSigHits(experiments.getIndexedCondition(0).getIndexedReplicate(0))/expectedBack);
 			ev.setCondCtrlHits(experiments.getIndexedCondition(0), expectedBack);
 			ev.setCondSigVCtrlFold(experiments.getIndexedCondition(0), ev.getCondSigHits(experiments.getIndexedCondition(0))/expectedBack);
 		}
