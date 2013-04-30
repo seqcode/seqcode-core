@@ -71,17 +71,13 @@ public class EnrichmentSignificanceTesting {
 				double ctrlCountScaled = cf.getCondCtrlHitsScaledFromReps(c1);
 				
 				//Weighted fold difference, signal vs control
-				double sigCtrlFold = 0;
-				for(ControlledExperiment r : c1.getReplicates()){
-					double repFold = cf.getRepCtrlHits(r)>1 ? cf.getRepSigHits(r)/(cf.getRepCtrlHits(r)*r.getControlScaling()) : cf.getRepSigHits(r);
-					sigCtrlFold += repFold * repWeights[r.getIndex()];
-				}
+				double sigCtrlFold = c1Sig / ctrlCountScaled;
 				
 				//P-value, signal vs control
 				double sigCtrlP = evaluateSignificance(c1Sig, ctrlCountScaled);
 				cf.setCondSigVCtrlFold(c1, sigCtrlFold);
 				cf.setCondSigVCtrlP(c1, sigCtrlP);
-				System.out.println(c1.getName()+"\t"+c1Sig+"\t"+ctrlCountScaled+"\t"+sigCtrlFold+"\t"+sigCtrlP);
+				//System.out.println(c1.getName()+"\t"+c1Sig+"\t"+ctrlCountScaled+"\t"+sigCtrlFold+"\t"+sigCtrlP);
 			}
 		}
 		// calculate q-values, correction for multiple testing
