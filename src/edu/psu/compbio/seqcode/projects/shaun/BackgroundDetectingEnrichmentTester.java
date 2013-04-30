@@ -48,7 +48,7 @@ public class BackgroundDetectingEnrichmentTester {
 		
 		//Calculate the expected number of background reads in a binWidth window
 		double expectedBack = manager.getExperimentSet().getIndexedCondition(0).getTotalSignalCount() * 
-								backgroundProportion / (config.getGenome().getGenomeLength()/binWidth);
+								backgroundProportion / config.getGenome().getGenomeLength() * binWidth;
 		System.err.println("Expected number of background reads in "+binWidth+"bp window = "+expectedBack);
 		
 		//Quantify each of the potential events
