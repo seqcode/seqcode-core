@@ -81,7 +81,7 @@ public class EnrichmentSignificanceTesting {
 				double sigCtrlP = evaluateSignificance(c1Sig, ctrlCountScaled);
 				cf.setCondSigVCtrlFold(c1, sigCtrlFold);
 				cf.setCondSigVCtrlP(c1, sigCtrlP);
-				
+				System.out.println(c1.getName()+"\t"+sigCtrlFold+"\t"+sigCtrlP);
 			}
 		}
 		// calculate q-values, correction for multiple testing
