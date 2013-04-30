@@ -75,7 +75,7 @@ public class BackgroundDetectingEnrichmentTester {
     		
 	    	try {
 	    		//Full output table (all non-zero components)
-	    		String filename = config.getOutputParentDir()+File.separator+config.getOutBase()+".all.events.table";
+	    		String filename = config.getOutBase()+".all.events.table";
 	    		FileWriter fout = new FileWriter(filename);
 	    		fout.write(BindingEvent.fullHeadString()+"\n");
 	    		for(BindingEvent e : events)
@@ -92,7 +92,7 @@ public class BackgroundDetectingEnrichmentTester {
 	    			//Print
 	    			String condName = cond.getName(); 
 	    			condName = condName.replaceAll("/", "-");
-	    			filename = config.getOutputParentDir()+File.separator+config.getOutBase()+"_"+condName+".events";
+	    			filename = config.getOutBase()+"_"+condName+".events";
 					fout = new FileWriter(filename);
 					fout.write(BindingEvent.conditionHeadString(cond)+"\n");
 			    	for(BindingEvent e : events){
