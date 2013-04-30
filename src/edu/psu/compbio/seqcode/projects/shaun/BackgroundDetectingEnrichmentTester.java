@@ -102,7 +102,6 @@ public class BackgroundDetectingEnrichmentTester {
 					fout.write(BindingEvent.conditionHeadString(cond)+"\n");
 			    	for(BindingEvent e : events){
 			    		double Q = e.getCondSigVCtrlP(cond);
-			    		System.out.println(e.toString()+"\t"+ Q +"\t"+ config.getQMinThres());
 			    		//Because of the ML step and component sharing, I think that an event could be assigned a significant number of reads without being "present" in the condition's EM model.
 			    		if( Q <=config.getQMinThres())
 			    			fout.write(e.getConditionString(cond)+"\n");
