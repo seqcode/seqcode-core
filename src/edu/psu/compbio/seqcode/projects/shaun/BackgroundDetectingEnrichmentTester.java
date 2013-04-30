@@ -118,7 +118,7 @@ public class BackgroundDetectingEnrichmentTester {
 	        	line = line.trim();
 	            String[] words = line.split("\\t");
 	            
-	            if(words[0].startsWith("#")){  //Header
+	            if(words[0].startsWith("#") || words[0].equals("chrom")){  //Header
 	            	
 	            }else{ //Events
 	            	String chrom = words[0];
