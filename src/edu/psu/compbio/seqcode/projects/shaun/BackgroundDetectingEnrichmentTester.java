@@ -56,8 +56,10 @@ public class BackgroundDetectingEnrichmentTester {
 		events = eventConvertor.execute();
 		
 		//Set background rates
-		for(BindingEvent ev : events)
+		for(BindingEvent ev : events){
 			ev.setCondCtrlHits(experiments.getIndexedCondition(0), expectedBack);
+			ev.setCondSigVCtrlFold(experiments.getIndexedCondition(0), ev.getCondSigHits(experiments.getIndexedCondition(0))/expectedBack);
+		}
 		
 		//EnrichmentSignificance
 		EnrichmentSignificance signifTester = new EnrichmentSignificance(config, experiments, events, 1, config.getGenome().getGenomeLength());

@@ -170,7 +170,7 @@ public class BackgroundDetector {
 		Poisson poiss = new Poisson(lambda, re);
 		double backsize = xsum / (poiss.cdf(right) - poiss.cdf(left - 1));
 		double backprop = Math.min(backsize / sampleTotals[samp.getIndex()], 1.0);
-		System.out.println("BackSize "+ backsize+"=\t"+backprop);
+		System.out.println("BackSize "+ backsize+" / "+sampleTotals[samp.getIndex()]+" =\t"+backprop);
 		
 		return backprop;
 	}
