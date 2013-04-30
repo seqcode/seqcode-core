@@ -64,7 +64,7 @@ public class BackgroundDetectingEnrichmentTester {
 		}
 		
 		//EnrichmentSignificance
-		EnrichmentSignificance signifTester = new EnrichmentSignificance(config, experiments, events, 1, config.getGenome().getGenomeLength());
+		EnrichmentSignificanceTesting signifTester = new EnrichmentSignificanceTesting(config, experiments, events, 1, config.getGenome().getGenomeLength());
 		signifTester.execute();
 		
 		//Write files
