@@ -81,7 +81,7 @@ public class EnrichmentSignificanceTesting {
 				double sigCtrlP = evaluateSignificance(c1Sig, ctrlCountScaled);
 				cf.setCondSigVCtrlFold(c1, sigCtrlFold);
 				cf.setCondSigVCtrlP(c1, sigCtrlP);
-				System.out.println(c1.getName()+"\t"+sigCtrlFold+"\t"+sigCtrlP);
+				System.out.println(c1.getName()+"\t"+c1Sig+"\t"+ctrlCountScaled+"\t"+sigCtrlFold+"\t"+sigCtrlP);
 			}
 		}
 		// calculate q-values, correction for multiple testing
@@ -129,23 +129,6 @@ public class EnrichmentSignificanceTesting {
 			for(BindingEvent cf : features){
 				cf.setCondSigVCtrlP(c, Math.min(1.0, cf.getCondSigVCtrlP(c)*(total/rank)));
 				rank++;
-			}
-		}
-		
-		//LL p-value corrections by condition
-		if(config.CALC_COMP_LL){
-			for(ExperimentCondition c : exptSet.getConditions()){
-				BindingEvent.setSortingCond(c);
-				Collections.sort(features, new Comparator<BindingEvent>(){
-		            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareByLLPvalue(o2);}
-		        });
-				
-				
-				double rank =1.0;
-				for(BindingEvent cf : features){
-					cf.setCondSigVCtrlP(c, Math.min(1.0, cf.getCondSigVCtrlP(c)*(total/rank)));
-					rank++;
-				}
 			}
 		}
 		
