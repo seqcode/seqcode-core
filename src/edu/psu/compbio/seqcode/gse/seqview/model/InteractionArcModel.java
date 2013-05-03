@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +27,7 @@ Runnable {
 	private boolean newinput;
 	private List<PairedHit> results, otherchrom;
 	private Comparator<PairedHit> comparator;
-	private InteractionArcProperties props;
+	private InteractionArcModelProperties props;
 
 	public InteractionArcModel(Collection<SeqAlignment> alignments) throws IOException, ClientException {
 		client = new Client();
@@ -39,10 +40,10 @@ Runnable {
 		}
 		results = null;
 		otherchrom = null;
-		props = new InteractionArcProperties();
+		props = new InteractionArcModelProperties();
 	}
 
-	public InteractionArcProperties getProperties() {return props;}
+	public InteractionArcModelProperties getProperties() {return props;}
 
 	public void clearValues() {
 		results = null;
@@ -60,6 +61,7 @@ Runnable {
 			} catch (InterruptedException ex) { }
 			if (newinput) {
 				try {
+					HashMap<PairedHit, Float> deduper = new HashMap<PairedHit, Float>();  
 					results = new ArrayList<PairedHit>();
 					otherchrom = new ArrayList<PairedHit>();
 					for (String alignid : ids) {
@@ -71,13 +73,18 @@ Runnable {
 								null,
 								null);
 						for (PairedHit h : r) {
-							if (h.leftChrom == h.rightChrom) { 
-								if (h.rightPos >= region.getStart() &&
-										h.rightPos <= region.getEnd()) {
-									results.add(h);
+							if(!deduper.containsKey(h)){ deduper.put(h, h.weight);
+							}else{float currw = deduper.get(h); deduper.put(h, currw+h.weight);} 
+								
+							if(deduper.get(h)<=props.DeDuplicate){
+								if (h.leftChrom == h.rightChrom) { 
+									if (h.rightPos >= region.getStart() &&
+											h.rightPos <= region.getEnd()) {
+										results.add(h);
+									}
+								} else {
+									otherchrom.add(h);
 								}
-							} else {
-								otherchrom.add(h);
 							}
 						}
 					}

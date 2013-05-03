@@ -132,6 +132,24 @@
   </target>
 
 	<!-- ======================================================================= -->
+	<!-- Target: makemultigpsjar                                                  -->
+	<!-- Depends: build, unjarwd, setpwfilespath                         		 -->
+	<!-- Description: Compiles all the client source files and builds the jar    -->
+	<!--              for MultiGPS. ant -Dpwset=mahony makemultigpsjar     -->
+	<!-- ======================================================================= -->
+  <target name="makemultigpsjar" depends="build, unjarwd, setpwfilespath">
+    <delete dir="${build.unjar.dir}/META-INF"/>
+    <jar destfile="${build.dist.dir}/seqview.${pwset}.jar" manifest="manifests/multigps_manifest.txt">	    
+      <fileset dir="${build.classes.dir}" includes="**/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="**/*.properties"/>
+      <fileset dir="${build.classes.dir}" includes="**/*.txt"/>
+      <fileset dir="${pwfiles.path}" includes="*"/>
+      <fileset dir="${build.unjar.dir}"/>	    
+    </jar>  
+    <chmod file="${build.dist.dir}/multigps.${pwset}.jar}" perm="755"/>
+  </target>
+
+	<!-- ======================================================================= -->
 	<!-- Target: makeseqviewjar                                                  -->
 	<!-- Depends: build, unjarwd, setpwfilespath                         		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
