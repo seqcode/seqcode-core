@@ -69,15 +69,17 @@ public class PointsToEvents {
 				for(ControlledExperiment r : c.getReplicates()){
 					//Get the hits for this replicate in this region
 					List<StrandedBaseCount> sigHits = r.getSignal().getUnstrandedBases(potentialReg);
-					List<StrandedBaseCount> ctrlHits = r.getControl().getUnstrandedBases(potentialReg);
+					List<StrandedBaseCount> ctrlHits=null;
+					if(r.getControl()!=null)
+						ctrlHits = r.getControl().getUnstrandedBases(potentialReg);
 					
 					//Scan region with binding distribution to find ML position
 					Point maxSigPoint = findMaxWithBindingModel(sigHits, potentialReg, r.getBindingModel());
-					Point maxCtrlPoint = findMaxWithBindingModel(ctrlHits, potentialReg, r.getBindingModel());
+					Point maxCtrlPoint = ctrlHits==null ? null : findMaxWithBindingModel(ctrlHits, potentialReg, r.getBindingModel());
 					
 					//ML assign reads (single binding event)
 					double sigResp = assignReadsSingleEvent(sigHits, maxSigPoint, r.getBindingModel());
-					double ctrlResp = assignReadsSingleEvent(ctrlHits, maxCtrlPoint, r.getBindingModel()); 
+					double ctrlResp = ctrlHits==null ? 0 : assignReadsSingleEvent(ctrlHits, maxCtrlPoint, r.getBindingModel()); 
 					
 					//Set the replicate responsibilities
 					e.setRepSigHits(r, sigResp);
@@ -89,9 +91,13 @@ public class PointsToEvents {
 						e.setCondSigHits(c, e.getCondSigHits(c)+sigResp);
 					addedToCond[r.getSignal().getIndex()]=true;
 					
-					if(!addedToCond[r.getControl().getIndex()])
-						e.setCondCtrlHits(c, e.getCondCtrlHits(c)+ctrlResp);
-					addedToCond[r.getControl().getIndex()]=true;
+					if(r.getControl()!=null){
+						if(!addedToCond[r.getControl().getIndex()])
+							e.setCondCtrlHits(c, e.getCondCtrlHits(c)+ctrlResp);
+						addedToCond[r.getControl().getIndex()]=true;
+					}else{
+						e.setCondCtrlHits(c, 0.0);
+					}
 				}
 			}
 			if(config.isAddingAnnotations())

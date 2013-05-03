@@ -70,10 +70,10 @@ public class BackgroundDetector {
 	
 
 	/**
-	 * Calculate binned coverage histograms for each sample and fit truncated Poissons to the lower end of the histograms 
+	 * Calculate binned coverage histograms for each sample and fit truncated Poissons to the lower end of the histograms
+	 * Returns a hash map of samples to background proportions. 
 	 */
-	public void execute(){
-		//TODO: check config for defined subset of regions
+	public HashMap<Sample, Double> execute(){
 		Iterator<Region> testRegions = new ChromosomeGenerator().execute(config.getGenome());
 		
 		Thread[] threads = new Thread[config.getMaxThreads()];
@@ -107,11 +107,13 @@ public class BackgroundDetector {
         }
         
         //Fit the Poissons
+        HashMap<Sample, Double> backProps = new HashMap<Sample, Double>();
         for(Sample samp : manager.getExperimentSet().getSamples()){
         	if(samp!=null){
-        		fitPoisson(sampleHistos.get(samp), samp);
+        		backProps.put(samp, fitPoisson(sampleHistos.get(samp), samp));
         	}
         }
+        return backProps;
 	}
 	
 	/**
@@ -127,7 +129,8 @@ public class BackgroundDetector {
 	}
 	
 	/**
-	 * Fit a truncated Poisson to the contents of a histogram
+	 * Fit a truncated Poisson to the contents of a histogram.
+	 * Returns the background proportion in the sample
 	 *
 	 */
 	public double fitPoisson(RealValuedHistogram h, Sample samp){
@@ -167,9 +170,9 @@ public class BackgroundDetector {
 		Poisson poiss = new Poisson(lambda, re);
 		double backsize = xsum / (poiss.cdf(right) - poiss.cdf(left - 1));
 		double backprop = Math.min(backsize / sampleTotals[samp.getIndex()], 1.0);
-		System.out.println("BackSize "+ backsize+"=\t"+backprop);
+		System.out.println("BackSize "+ backsize+" / "+sampleTotals[samp.getIndex()]+" =\t"+backprop);
 		
-		return lambda;
+		return backprop;
 	}
 	
 	
