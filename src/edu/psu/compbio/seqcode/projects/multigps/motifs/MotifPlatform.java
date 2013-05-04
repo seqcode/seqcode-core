@@ -147,7 +147,7 @@ public class MotifPlatform {
 			int refOffset = (int)(refMotif.length()/2);
 			manager.getExperimentSet().getIndexedCondition(refCondIndex).setMotifOffset(refOffset);
 			for(int e=0; e<manager.getNumConditions(); e++){
-				if(e!=refCondIndex){
+				if(e!=refCondIndex && manager.getExperimentSet().getIndexedCondition(e).getFreqMatrix()!=null){
 					Pair<Integer,Double> forAlignment = aligner.align(refMotif, manager.getExperimentSet().getIndexedCondition(e).getFreqMatrix());
 					Pair<Integer,Double> revAlignment = aligner.align(refMotif, WeightMatrix.reverseComplement(manager.getExperimentSet().getIndexedCondition(e).getFreqMatrix()));
 					
@@ -158,6 +158,8 @@ public class MotifPlatform {
 					}else{
 						manager.getExperimentSet().getIndexedCondition(e).setMotifOffset(refOffset+forAlignment.car());
 					}
+				}else if (manager.getExperimentSet().getIndexedCondition(e).getFreqMatrix()==null){
+					manager.getExperimentSet().getIndexedCondition(e).setMotifOffset(0);
 				}
 			}
 		}
