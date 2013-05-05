@@ -116,6 +116,10 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
     		        while ((line = reader.readLine()) != null) {
     		            line = line.trim();
     		            String[] words = line.split("\\s+");
+    		            //Edit for Double correctness
+    		            if(words[1].equals("Inf")){words[1]="Infinite";} if(words[1].equals("-Inf")){words[1]="-Infinite";}
+    		            if(words[2].equals("Inf")){words[2]="Infinite";} if(words[2].equals("-Inf")){words[2]="-Infinite";}
+    		            if(words[5].equals("Inf")){words[5]="Infinite";} if(words[5].equals("-Inf")){words[5]="-Infinite";}
     		            //Format: 
     		            //Point logFC logCPM LR PValue FDR
     		            String pointStr = words[0].replaceAll("\"", "");

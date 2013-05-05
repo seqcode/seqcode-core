@@ -290,11 +290,21 @@ public class BindingMLAssignment {
 	            if(config.CALC_COMP_LL)
 	            	event.setLLd(cond, compLL[c][j]);
 	    	}
-    		events.add(event);
+    		if(nonZeroInAny(event))
+    			events.add(event);
         }        
         return events;
     }//end of EMTrain method
 
+    private boolean nonZeroInAny(BindingEvent ev){
+    	boolean nonZero=false;
+    	for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+    		for(ControlledExperiment rep : cond.getReplicates()){
+    			nonZero = nonZero || ev.getRepSigHits(rep)>=1;
+    		}
+    	}
+    	return nonZero;
+    }
 
     /**
      * Core EM iterations with sparse prior (component elimination) & multi-condition positional priors.
