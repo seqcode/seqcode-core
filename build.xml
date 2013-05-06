@@ -174,7 +174,7 @@
 	<!--              for the seqcode jar. ant -Dpwset=mahony  makeseqcodejar    -->
 	<!-- ======================================================================= -->
 	
-  <target name="makeseqcodejar" depends="build, unjarall">
+  <target name="makeseqcodejar" depends="build, unjarall, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
     <jar destfile="${build.dist.dir}/seqcode.${pwset}.jar" >	    
       <fileset dir="${build.classes.dir}" includes="**/*.class"/>
