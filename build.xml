@@ -171,19 +171,19 @@
 	<!-- Target: makeseqcodejar                                                  -->
 	<!-- Depends: build, unjarall                                          		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
-	<!--              for the seqcode jar. ant makeseqcodejar                    -->
+	<!--              for the seqcode jar. ant -Dpwset=mahony  makeseqcodejar    -->
 	<!-- ======================================================================= -->
 	
   <target name="makeseqcodejar" depends="build, unjarall">
     <delete dir="${build.unjar.dir}/META-INF"/>
-    <jar destfile="${build.dist.dir}/seqcode.jar" >	    
+    <jar destfile="${build.dist.dir}/seqcode.${pwset}.jar" >	    
       <fileset dir="${build.classes.dir}" includes="**/*.class"/>
       <fileset dir="${build.classes.dir}" includes="**/*.properties"/>
       <fileset dir="${build.classes.dir}" includes="**/*.txt"/>
-      <fileset dir="${pwfiles.basepath}" includes="*"/>
+      <fileset dir="${pwfiles.path}" includes="*"/>
       <fileset dir="${build.unjar.dir}"/>	    
     </jar>  
-    <chmod file="${build.dist.dir}/seqcode.jar}" perm="755"/>
+    <chmod file="${build.dist.dir}/seqcode.${pwset}.jar}" perm="755"/>
   </target>
 
   <target name="unjarcli" unless="build.unjar.dir.present">
