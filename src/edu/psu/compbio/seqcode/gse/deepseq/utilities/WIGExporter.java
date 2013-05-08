@@ -41,7 +41,7 @@ public class WIGExporter {
 	protected DeepSeqExpt expt;
 	protected int [] stackedHitCounts;
 	private int winSize=20, winStep=20;
-	private int readLength=26, read5PrimeExt=0, read3PrimeExt=200;
+	private int readLength=1, read5PrimeExt=0, read3PrimeExt=200;
 	private String outName="out";
 	private String trackName="out";
 	private String trackDesc="out";
@@ -65,8 +65,8 @@ public class WIGExporter {
 			System.err.println("WIGExporter usage:\n" +
 					"\t--species <organism;genome>\n" +
 					"\t--(rdb)expt <experiment names>\n" +
-					"\t--read5ext <5' extension>\n" +
-					"\t--read3ext <3' extension>\n" +
+					"\t--read5ext <Extension on the 5' end>\n" +
+					"\t--read3ext <Extension on the 3' end>\n" +
 					"\t--pbmax <max read count per base>\n" +
 					"\t--winsize <window size/step in WIG file>\n" +
 					"\t--name <string to use as track name>\n" +
