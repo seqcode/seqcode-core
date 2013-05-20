@@ -76,6 +76,29 @@ public class SiteQuantifier {
 	}
 	
 	/**
+	 * Parse a set of region files
+	 * @param files
+	 * @param win
+	 * @return
+	 */
+	public List<Region> parseRegions(Collection<String> files, int win){
+		List<Region> regs = new ArrayList<Region>();
+		
+		for(String f : files){
+			regs.addAll(Utils.loadRegionsFromFile(f, config.getGenome(), win));
+		}
+		
+		//Simple stats
+		int totalLen = 0;
+		for(Region r : regs)
+			totalLen += r.getWidth();
+		System.out.println(regs.size()+" regions with "+totalLen+"bp total length.");
+		
+		return regs;
+	}
+	
+	
+	/**
 	 * Count reads in the peakRegions for all given replicates
 	 * @param peakRegions
 	 */
@@ -97,7 +120,28 @@ public class SiteQuantifier {
 				System.out.println("\tSignal proportion = "+sig/total);
 			}
 		}
-		
+	}
+	/**
+	 * Count reads in the peakRegions for all given replicates
+	 * @param peakRegions
+	 */
+	public void countSignal(List<Region> peakRegions){
+		ExperimentSet eset = manager.getExperimentSet();
+		if(eset.getConditions().size()==0){
+			System.out.println("No experiments specified."); System.exit(1);
+		}
+		for(ExperimentCondition c : eset.getConditions()){
+			for(ControlledExperiment r : c.getReplicates()){
+				double total = r.getSignal().getHitCount();
+				System.out.println("Condition "+c.getName()+":\tRep "+r.getName());
+				System.out.println("\tTotal Hit Count:\t"+total);
+				
+				for(Region pr : peakRegions){
+					double currSig = r.getSignal().countHits(pr);
+					System.out.println(pr.getLocationString()+"\t"+currSig);
+				}
+			}
+		}
 	}
 	
 	/**
@@ -169,8 +213,11 @@ public class SiteQuantifier {
 			System.err.println("SiteQuantifier:");
 			System.err.println("\tArgs:\n" +
 					"\t--peaks <peaks file(s)>\n" +
+					"\tOR\n" +
+					"\t--regions <region file(s)>\n" +
 					"\t--win <window size to take around each peak point>\n" +
 					"\t--signalnoise [flag to print signal/noise stats]\n" +
+					"\t--count [flag to count reads in signal regions]\n" +
 					"\t--motifhits <motif hit file(s)>\n" +
 					"\t--quadrants <intervals for upstream of site, comma-separated>\n" +
 					"");
@@ -181,14 +228,25 @@ public class SiteQuantifier {
 			
 			//Load peak files if present and do signal/noise stats
 			int win = Args.parseInteger(args,"win",200);
-			if(ap.hasKey("peaks")){
-				Collection<String> peakFiles = Args.parseStrings(args, "peaks");
-				List<Region> peakRegions = quant.parsePeaksToRegions(peakFiles, win);
+			if(ap.hasKey("peaks") || ap.hasKey("regions")){
+				List<Region> peakRegions =null;
+				if(ap.hasKey("peaks")){
+					Collection<String> peakFiles = Args.parseStrings(args, "peaks");
+					peakRegions = quant.parsePeaksToRegions(peakFiles, win);
+				}
+				if(ap.hasKey("regions")){
+					Collection<String> peakFiles = Args.parseStrings(args, "regions");
+					peakRegions = quant.parseRegions(peakFiles, -1);
+				}
 				
 				if(Args.parseFlags(args).contains("signalnoise")){
 					quant.calcSigNoiseRatios(peakRegions);
 				}
+				if(Args.parseFlags(args).contains("count")){
+					quant.countSignal(peakRegions);
+				}
 			}
+			
 			
 			//Load motif hit file
 			if(ap.hasKey("motifhits")){
