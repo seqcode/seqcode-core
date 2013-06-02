@@ -69,16 +69,24 @@ public class MetaMaker {
 			PointProfiler profiler=null;
 			boolean normalizeProfile=false;
 			if(profilerType.equals("simplechipseq") || profilerType.equals("fiveprime")){
-				List<SeqLocator> exptlocs = Args.parseSeqExpt(args,"expt");
-				ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
-				for(SeqLocator loc : exptlocs){
-					System.out.println(loc.getExptName()+"\t"+loc.getAlignName());
-					exptexps.add(new SeqExpander(loc));
-				}
-				System.out.println("Loading data...");
 				if(profilerType.equals("fiveprime"))
 					readExt = -1;
-				profiler = new SimpleChipSeqProfiler(params, exptexps, readExt, pbMax,strand);
+				List<SeqLocator> exptlocs = Args.parseSeqExpt(args,"expt");
+				if(exptlocs.size()>0){
+					ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
+					for(SeqLocator loc : exptlocs){
+						System.out.println(loc.getExptName()+"\t"+loc.getAlignName());
+						exptexps.add(new SeqExpander(loc));
+					}
+					System.out.println("Loading data...");
+					profiler = new SimpleChipSeqProfiler(params, exptexps, readExt, pbMax,strand);
+				}else{
+					List<File> exptFiles = new ArrayList<File>();
+					for(String s : exptFilenames)
+						exptFiles.add(new File(s));
+					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, "SAM", 1);
+					profiler = new SimpleChipSeqProfilerBAM(params, dse, readExt, pbMax,strand);
+				}
 			}else if(profilerType.equals("chipseq5prime")){
 				List<SeqLocator> exptlocs = Args.parseSeqExpt(args,"expt");
 				if(exptlocs.size()>0){
