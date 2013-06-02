@@ -42,6 +42,9 @@ public class MetaNonFrame{
 		saveSVG = svg;
 		panel = new ProfilePanel(profile, peakScale);
 	}
+	public void setStyle(String s){
+		panel.setStyle(s);
+	}
 	public void setColor(Color c){
 		panel.updateColor(c);
 		linePanel.updateColor(c);

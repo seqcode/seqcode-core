@@ -48,6 +48,7 @@ public class MetaMaker {
 			boolean saveSVG = Args.parseFlags(args).contains("svg");
 			boolean transparent = Args.parseFlags(args).contains("transparent");
 			String profilerType = Args.parseString(args, "profiler", "simplechipseq");	
+			String profileStyle = Args.parseString(args, "style", "Line");	
 			List<String> expts = (List<String>) Args.parseStrings(args,"expt");
 			Collection<String> exptFilenames = Args.parseStrings(args, "exptfile");
 			String format = Args.parseString(args, "format","SAM");
@@ -163,11 +164,12 @@ public class MetaMaker {
 					if(cluster)
 						nonframe.clusterLinePanel();
 					//Set the panel sizes here...
+					nonframe.setStyle(profileStyle);
 					nonframe.setLineMin(lineMin);
 					nonframe.setLineMax(lineMax);
 					nonframe.setLineThick(lineThick);
 					nonframe.saveImages(outName);
-					nonframe.savePointsToFile(outName);					
+					nonframe.savePointsToFile(outName);
 				}else if(peakFiles.size()>1){
 					System.out.println("Multiple set mode...");
 					MetaNonFrameMultiSet multinonframe = new MetaNonFrameMultiSet(peakFiles, gen, params, profiler, true);
@@ -228,6 +230,7 @@ public class MetaMaker {
 				"--batch [a flag to run without displaying the window]\n" +
 				"--nocolorbar [flag to turn off colorbar in batch mode]\n" +
 				"--transparent [flag for transparent background]\n" +
+				"--style <Line/Histo>\n" +
 				"--svg [flag to save an SVG image]\n");
 		System.exit(1);
 	}
