@@ -45,6 +45,7 @@ public class MetaMaker {
 			double pbMax = Args.parseDouble(args,"pbMax", 100);
 			char strand = Args.parseString(args, "strand", "/").charAt(0);
 			boolean drawColorBar = !Args.parseFlags(args).contains("nocolorbar");
+			boolean saveSVG = Args.parseFlags(args).contains("svg");
 			String profilerType = Args.parseString(args, "profiler", "simplechipseq");	
 			List<String> expts = (List<String>) Args.parseStrings(args,"expt");
 			Collection<String> exptFilenames = Args.parseStrings(args, "exptfile");
@@ -133,7 +134,7 @@ public class MetaMaker {
 				System.out.println("Batch running...");
 				
 				if(peakFiles.size()==1 || peakFiles.size()==0){
-					MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile);
+					MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile, saveSVG);
 					nonframe.setColor(c);
 					nonframe.setDrawColorBar(drawColorBar);
 					MetaProfileHandler handler = nonframe.getHandler();
@@ -214,7 +215,8 @@ public class MetaMaker {
 				"--strand <+-/>\n" +
 				"--cluster [flag to cluster in batch mode] \n" +
 				"--batch [a flag to run without displaying the window]\n" +
-				"--nocolorbar [flag to turn off colorbar in batch mode]\n");
+				"--nocolorbar [flag to turn off colorbar in batch mode]\n" +
+				"--svg [flag to save an SVG image]\n");
 		System.exit(1);
 	}
 }

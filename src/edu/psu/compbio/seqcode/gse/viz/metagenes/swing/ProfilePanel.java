@@ -7,17 +7,26 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
 
 import edu.psu.compbio.seqcode.gse.viz.metagenes.BinningParameters;
 import edu.psu.compbio.seqcode.gse.viz.metagenes.Profile;
@@ -83,7 +92,7 @@ public class ProfilePanel extends JPanel implements PaintableChangedListener {
                 if(v == JFileChooser.APPROVE_OPTION) { 
                     File f = chooser.getSelectedFile();
                     try {
-                        saveImage(f, getWidth(), getHeight());
+                        saveImage(f, getWidth(), getHeight(), true);
                         //System.out.println("Saved Image [" + sImageWidth + " by " + sImageHeight +  "]");
                     } catch(IOException ie) {
                         ie.printStackTrace(System.err);
@@ -93,17 +102,40 @@ public class ProfilePanel extends JPanel implements PaintableChangedListener {
             }
         };
 	}
-	public void saveImage(File f, int w, int h) 
+	public void saveImage(File f, int w, int h, boolean raster) 
     throws IOException { 
-		this.setSize(new Dimension(w, h));
-		repaint();
-        BufferedImage im = 
-            new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics g = im.getGraphics();
-        Graphics2D g2 = (Graphics2D)g;
-        g2.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
-        this.paint(g);
-        ImageIO.write(im, "png", f);
+		if(raster){
+			this.setSize(new Dimension(w, h));
+			repaint();
+	        BufferedImage im = 
+	            new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+	        Graphics g = im.getGraphics();
+	        Graphics2D g2 = (Graphics2D)g;
+	        g2.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+	        this.paint(g);
+	        ImageIO.write(im, "png", f);
+		}else{
+	        DOMImplementation domImpl =
+	            GenericDOMImplementation.getDOMImplementation();
+	        // Create an instance of org.w3c.dom.Document
+	        Document document = domImpl.createDocument(null, "svg", null);
+	        // Create an instance of the SVG Generator
+	        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+	        svgGenerator.setSVGCanvasSize(new Dimension(w,h));
+	        // Ask the test to render into the SVG Graphics2D implementation
+	        svgGenerator.setColor(Color.white);        
+	        svgGenerator.fillRect(0,0,w,h);
+	        this.paintComponent(svgGenerator);
+	
+	        // Finally, stream out SVG to the standard output using UTF-8
+	        // character to byte encoding
+	        boolean useCSS = true; // we want to use CSS style attribute
+	        FileOutputStream outStream = new FileOutputStream(f);
+	        Writer out = new OutputStreamWriter(outStream, "UTF-8");
+	        svgGenerator.stream(out, useCSS);
+	        outStream.flush();
+	        outStream.close();
+		}
 	}
 	
 	public Color getPeakColor(){return peakColor;}
