@@ -85,7 +85,7 @@ public class MetaMaker {
 					List<File> exptFiles = new ArrayList<File>();
 					for(String s : exptFilenames)
 						exptFiles.add(new File(s));
-					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, "SAM", 1);
+					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, "SAM", 40);
 					profiler = new SimpleChipSeqProfilerBAM(params, dse, readExt, pbMax,strand);
 				}
 			}else if(profilerType.equals("chipseq5prime")){
@@ -100,7 +100,7 @@ public class MetaMaker {
 					List<File> exptFiles = new ArrayList<File>();
 					for(String s : exptFilenames)
 						exptFiles.add(new File(s));
-					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, format, 1);
+					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, format, 40);
 					profiler = new ChipSeq5PrimeProfilerBAM(params, dse, strand, pbMax);
 				}
 			}else if(profilerType.equals("chipseq")){
