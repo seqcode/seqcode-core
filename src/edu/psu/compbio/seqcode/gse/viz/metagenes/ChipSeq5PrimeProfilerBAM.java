@@ -12,6 +12,7 @@ import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.deepseq.ReadHit;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.*;
+import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 public class ChipSeq5PrimeProfilerBAM implements PointProfiler<Point,PointProfile> {
 	
@@ -43,19 +44,15 @@ public class ChipSeq5PrimeProfilerBAM implements PointProfiler<Point,PointProfil
 		double[] array = new double[params.getNumBins()];
 		for(int i = 0; i < array.length; i++) { array[i] = 0; }
 		
-	
-		List<ReadHit> hits = expt.loadHits(query);
 		double[] exparray = new double[params.getNumBins()];
 		for(int i = 0; i < exparray.length; i++) { exparray[i] = 0; }
 		
-		for(ReadHit hit : hits){
-			if (hit.getStrand()==this.strand){  //only count one strand
-				if ((start<=hit.getFivePrime() && this.strand=='+')
-						||(end>hit.getFivePrime() && this.strand=='-')){
-					int hit5Prime = hit.getFivePrime()-start;
-					exparray[params.findBin(hit5Prime)]+=hit.getWeight();
-				}
-			}				
+		Pair<ArrayList<Integer>, ArrayList<Float>> sbc = expt.loadStrandedBaseCounts(query, this.strand);
+		for(int x=0; x<sbc.car().size(); x++){
+			int pos = sbc.car().get(x);
+			float weight = sbc.cdr().get(x);
+			int hit5Prime = pos-start;
+			exparray[params.findBin(hit5Prime)]+=weight;
 		}
 		for(int i = 0; i < array.length; i++) { 
 			if(exparray[i]<=pbMax)
