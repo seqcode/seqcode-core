@@ -47,6 +47,7 @@ public class MetaMaker {
 			boolean drawColorBar = !Args.parseFlags(args).contains("nocolorbar");
 			String profilerType = Args.parseString(args, "profiler", "simplechipseq");	
 			List<String> expts = (List<String>) Args.parseStrings(args,"expt");
+			Collection<String> exptFilenames = Args.parseStrings(args, "bam");
 			List<String> backs = (List<String>) Args.parseStrings(args,"back");
 			List<String> peakFiles = (List<String>)Args.parseStrings(args, "peaks");
 			String outName = Args.parseString(args, "out", "meta");
@@ -60,7 +61,7 @@ public class MetaMaker {
 				c=Color.green;
 		
 			
-			if(gen==null || expts.size()==0){printError();}
+			if(gen==null || (expts.size()==0 && exptFilenames.size()==0)){printError();}
 	
 			BinningParameters params = new BinningParameters(winLen, bins);
 			System.out.println("Binding Parameters:\tWindow size: "+params.getWindowSize()+"\tBins: "+params.getNumBins());
@@ -87,7 +88,6 @@ public class MetaMaker {
 					System.out.println("Loading data...");
 					profiler = new ChipSeq5PrimeProfiler(params, exptexps, strand, pbMax);
 				}else{
-					Collection<String> exptFilenames = Args.parseStrings(args, "bam");
 					List<File> exptFiles = new ArrayList<File>();
 					for(String s : exptFilenames)
 						exptFiles.add(new File(s));
