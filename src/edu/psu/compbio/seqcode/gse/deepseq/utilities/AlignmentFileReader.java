@@ -167,7 +167,10 @@ public abstract class AlignmentFileReader {
 					char str = j == 0 ? '+' : '-';			
 					for(int k = start_ind; k <= end_ind; k++) {
 						double weight = 1/(double)hitCounts[chrID][j][k];
-						hits.add(new ReadHit(gen, hitIDs[chrID][j][k], chr, tempStarts[k], tempStarts[k]+readLength-1, str, weight ));
+						if(str=='+')
+							hits.add(new ReadHit(gen, hitIDs[chrID][j][k], chr, tempStarts[k], tempStarts[k]+readLength-1, str, weight ));
+						else
+							hits.add(new ReadHit(gen, hitIDs[chrID][j][k], chr, tempStarts[k]-readLength, tempStarts[k], str, weight ));
 					}	
 				}						
 			}
