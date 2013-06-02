@@ -63,7 +63,7 @@ public class MetaMaker {
 			if(newCol.equals("green"))
 				c=Color.green;
 			for(int s=0; s<args.length; s++){
-				if(args[s].equals("color4")){
+				if(args[s].equals("--color4")){
 					Integer R = new Integer(args[s+1]);
 					Integer G = new Integer(args[s+2]);
 					Integer B = new Integer(args[s+3]);
