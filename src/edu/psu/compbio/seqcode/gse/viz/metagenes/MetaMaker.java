@@ -18,11 +18,13 @@ import edu.psu.compbio.seqcode.gse.datasets.locators.ChipChipLocator;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.SeqExpander;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.metagenes.swing.MetaFrame;
+import edu.psu.compbio.seqcode.projects.multigps.experiments.Sample;
 
 public class MetaMaker {
 	private static boolean batchRun = false;
@@ -78,12 +80,20 @@ public class MetaMaker {
 				profiler = new SimpleChipSeqProfiler(params, exptexps, readExt, pbMax,strand);
 			}else if(profilerType.equals("chipseq5prime")){
 				List<SeqLocator> exptlocs = Args.parseSeqExpt(args,"expt");
-				ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
-				for(SeqLocator loc : exptlocs){
-					exptexps.add(new SeqExpander(loc));
+				if(exptlocs.size()>0){
+					ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
+					for(SeqLocator loc : exptlocs)
+						exptexps.add(new SeqExpander(loc));
+					System.out.println("Loading data...");
+					profiler = new ChipSeq5PrimeProfiler(params, exptexps, strand, pbMax);
+				}else{
+					Collection<String> exptFilenames = Args.parseStrings(args, "bam");
+					List<File> exptFiles = new ArrayList<File>();
+					for(String s : exptFilenames)
+						exptFiles.add(new File(s));
+					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, "SAM", 1);
+					profiler = new ChipSeq5PrimeProfilerBAM(params, dse, strand, pbMax);
 				}
-				System.out.println("Loading data...");
-				profiler = new ChipSeq5PrimeProfiler(params, exptexps, strand);
 			}else if(profilerType.equals("chipseq")){
 				normalizeProfile=true;
 				ArrayList<SeqLocator> exptlocs = (ArrayList<SeqLocator>) Args.parseSeqExpt(args,"expt");
@@ -188,7 +198,8 @@ public class MetaMaker {
 				"--linemin <min>  --linemax <max> \n" +
 				"--pbmax <per base max>\n" +
 				"--profiler <simplechipseq/fiveprime/chipseq/chipseqz/chipchip> \n" +
-				"--expt <experiment names> --back <control experiment names (only applies to chipseq)> \n" +
+				"--expt <experiment names> OR --bam <file names> \n" +
+				"--back <control experiment names (only applies to chipseq)> \n" +
 				"--peaks <peaks file name> --out <output root name> \n" +
 				"--color <red/green/blue> \n" +
 				"--strand <+-/>\n" +
