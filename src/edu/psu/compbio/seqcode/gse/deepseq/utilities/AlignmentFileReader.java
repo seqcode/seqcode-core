@@ -183,18 +183,17 @@ public abstract class AlignmentFileReader {
 		if(chrom2ID.containsKey(chr)){
 			int chrID = chrom2ID.get(chr);
 			int j = strand == '+'?0:1;	// j = 0 <=> strand = '+', j = 1 <=> strand = '-'
-			int shift = strand=='+'?0:readLength-1; 		// shift for minus strand
 			int[] tempStarts = starts[chrID][j];	//assumes tempStarts is sorted	
 			if(tempStarts.length != 0) {
-				int start_ind = Arrays.binarySearch(tempStarts, coords.getStart()-shift);
-				int end_ind   = Arrays.binarySearch(tempStarts, coords.getEnd()-shift);
+				int start_ind = Arrays.binarySearch(tempStarts, coords.getStart());
+				int end_ind   = Arrays.binarySearch(tempStarts, coords.getEnd());
 				if( start_ind < 0 ) { start_ind = -start_ind - 1; }
 				if( end_ind < 0 )   { end_ind   = -end_ind - 1; }
-				start_ind = StatUtil.searchFrom(tempStarts, ">=", coords.getStart()-shift, start_ind);
-				end_ind   = StatUtil.searchFrom(tempStarts, "<=",   coords.getEnd()-shift, end_ind);
+				start_ind = StatUtil.searchFrom(tempStarts, ">=", coords.getStart(), start_ind);
+				end_ind   = StatUtil.searchFrom(tempStarts, "<=",   coords.getEnd(), end_ind);
 					
 				for(int k = start_ind; k <= end_ind; k++) {
-					hits.add(tempStarts[k]+shift);
+					hits.add(tempStarts[k]);
 					counts.add((float)hitCounts[chrID][j][k]);
 				}
 			}
