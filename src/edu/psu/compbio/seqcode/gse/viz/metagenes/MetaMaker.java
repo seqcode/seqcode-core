@@ -47,7 +47,8 @@ public class MetaMaker {
 			boolean drawColorBar = !Args.parseFlags(args).contains("nocolorbar");
 			String profilerType = Args.parseString(args, "profiler", "simplechipseq");	
 			List<String> expts = (List<String>) Args.parseStrings(args,"expt");
-			Collection<String> exptFilenames = Args.parseStrings(args, "bam");
+			Collection<String> exptFilenames = Args.parseStrings(args, "exptfile");
+			String format = Args.parseString(args, "format","SAM");
 			List<String> backs = (List<String>) Args.parseStrings(args,"back");
 			List<String> peakFiles = (List<String>)Args.parseStrings(args, "peaks");
 			String outName = Args.parseString(args, "out", "meta");
@@ -99,7 +100,7 @@ public class MetaMaker {
 					List<File> exptFiles = new ArrayList<File>();
 					for(String s : exptFilenames)
 						exptFiles.add(new File(s));
-					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, "SAM", 1);
+					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, format, 1);
 					profiler = new ChipSeq5PrimeProfilerBAM(params, dse, strand, pbMax);
 				}
 			}else if(profilerType.equals("chipseq")){
@@ -206,7 +207,7 @@ public class MetaMaker {
 				"--linemin <min>  --linemax <max> \n" +
 				"--pbmax <per base max>\n" +
 				"--profiler <simplechipseq/fiveprime/chipseq/chipseqz/chipchip> \n" +
-				"--expt <experiment names> OR --bam <file names> \n" +
+				"--expt <experiment names> OR --exptfile <file names> AND --format <SAM> \n" +
 				"--back <control experiment names (only applies to chipseq)> \n" +
 				"--peaks <peaks file name> --out <output root name> \n" +
 				"--color <red/green/blue> \n" +
