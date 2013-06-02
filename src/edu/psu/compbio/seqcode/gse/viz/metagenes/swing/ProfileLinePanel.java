@@ -39,6 +39,7 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
 	private double [] colorQuantaLimits=null;
 	private boolean drawColorBar=true;
 	private boolean drawBorder = true;
+	private boolean transparent = false;
 
 	public ProfileLinePanel(BinningParameters bps, PaintableScale s) { 
 		params = bps;
@@ -133,7 +134,9 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
 		else
 			colorbarHeight=50;
 	}
-	
+	public void setTransparent(boolean c){
+		transparent = c;
+	}
 	public void setLineColorQuanta(double[] q){
 		if(q!=null){
 			colorQuantaLimits=q;
@@ -145,8 +148,10 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
 		super.paintComponent(g);
 		int w = getWidth(), h = getHeight();
 		
-		g.setColor(Color.white);
-		g.fillRect(0, 0, w, h);
+		if(!transparent){
+			g.setColor(Color.white);
+			g.fillRect(0, 0, w, h);
+		}
 
 		//Colorbar
 		if(drawColorBar)
@@ -252,8 +257,10 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
 	        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 	        svgGenerator.setSVGCanvasSize(new Dimension(w,h));
 	        // Ask the test to render into the SVG Graphics2D implementation
-	        svgGenerator.setColor(Color.white);        
-	        svgGenerator.fillRect(0,0,w,h);
+	        if(!transparent){
+	        	svgGenerator.setColor(Color.white);
+	        	svgGenerator.fillRect(0,0,w,h);
+	        }
 	        this.paintComponent(svgGenerator);
 	
 	        // Finally, stream out SVG to the standard output using UTF-8

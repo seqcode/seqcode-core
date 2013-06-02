@@ -46,6 +46,7 @@ public class ProfilePanel extends JPanel implements PaintableChangedListener {
 	private Color fontColor=Color.black;
 	private Color peakColor=Color.blue;
 	private String style = "Line";
+	private boolean transparent = false;
 	
 	public ProfilePanel(Profile p, PaintableScale sc) { 
 		profile = p;
@@ -69,6 +70,9 @@ public class ProfilePanel extends JPanel implements PaintableChangedListener {
 	public void setStyle(String s) {
 		style = s; 
 		repaint();
+	}
+	public void setTransparent(boolean c){
+		transparent = c;
 	}
 	
 	public Action createSaveImageAction() { 
@@ -123,8 +127,10 @@ public class ProfilePanel extends JPanel implements PaintableChangedListener {
 	        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 	        svgGenerator.setSVGCanvasSize(new Dimension(w,h));
 	        // Ask the test to render into the SVG Graphics2D implementation
-	        svgGenerator.setColor(Color.white);        
-	        svgGenerator.fillRect(0,0,w,h);
+	        if(!transparent){
+	        	svgGenerator.setColor(Color.white);        
+	        	svgGenerator.fillRect(0,0,w,h);
+	        }
 	        this.paintComponent(svgGenerator);
 	
 	        // Finally, stream out SVG to the standard output using UTF-8
@@ -144,8 +150,10 @@ public class ProfilePanel extends JPanel implements PaintableChangedListener {
 		int w = getWidth(), h = getHeight();
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D)g;
-		g2.setColor(Color.white);
-		g2.fillRect(0, 0, w, h);
+		if(!transparent){
+			g2.setColor(Color.white);
+			g2.fillRect(0, 0, w, h);
+		}
 		profilePainter.setColor(peakColor);
 		profilePainter.setStyle(style);
 		profilePainter.paintItem(g, border, 0, w, h-border);

@@ -46,6 +46,7 @@ public class MetaMaker {
 			char strand = Args.parseString(args, "strand", "/").charAt(0);
 			boolean drawColorBar = !Args.parseFlags(args).contains("nocolorbar");
 			boolean saveSVG = Args.parseFlags(args).contains("svg");
+			boolean transparent = Args.parseFlags(args).contains("transparent");
 			String profilerType = Args.parseString(args, "profiler", "simplechipseq");	
 			List<String> expts = (List<String>) Args.parseStrings(args,"expt");
 			Collection<String> exptFilenames = Args.parseStrings(args, "exptfile");
@@ -137,6 +138,7 @@ public class MetaMaker {
 					MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile, saveSVG);
 					nonframe.setColor(c);
 					nonframe.setDrawColorBar(drawColorBar);
+					nonframe.setTransparent(transparent);
 					MetaProfileHandler handler = nonframe.getHandler();
 					if(peakFiles.size()==1){
 						System.out.println("Single set mode...");
@@ -216,6 +218,7 @@ public class MetaMaker {
 				"--cluster [flag to cluster in batch mode] \n" +
 				"--batch [a flag to run without displaying the window]\n" +
 				"--nocolorbar [flag to turn off colorbar in batch mode]\n" +
+				"--transparent [flag for transparent background]\n" +
 				"--svg [flag to save an SVG image]\n");
 		System.exit(1);
 	}

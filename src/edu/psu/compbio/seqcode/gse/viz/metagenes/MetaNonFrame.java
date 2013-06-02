@@ -52,11 +52,15 @@ public class MetaNonFrame{
 	public void setDrawColorBar(boolean c){
 		linePanel.setDrawColorBar(c);
 	}
+	public void setTransparent(boolean c){
+		linePanel.setTransparent(c);
+		panel.setTransparent(c);
+	}
 	public void saveImages(String root){
 		try {
 			System.out.println("Saving images with root name: "+root);
-			panel.saveImage(new File(root+"_profile.png"), 1200, 700, !saveSVG);
-			linePanel.saveImage(new File(root+"_lines.png"), linePanel.getPanelWidth(), linePanel.getPanelLength(), !saveSVG);
+			panel.saveImage(saveSVG ? new File(root+"_profile.svg") : new File(root+"_profile.png"), 1200, 700, !saveSVG);
+			linePanel.saveImage(saveSVG ? new File(root+"_lines.svg") : new File(root+"_lines.png"), linePanel.getPanelWidth(), linePanel.getPanelLength(), !saveSVG);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
