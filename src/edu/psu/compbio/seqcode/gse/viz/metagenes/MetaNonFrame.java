@@ -55,8 +55,8 @@ public class MetaNonFrame{
 	public void saveImages(String root){
 		try {
 			System.out.println("Saving images with root name: "+root);
-			panel.saveImage(new File(root+"_profile.png"), 1200, 700, saveSVG);
-			linePanel.saveImage(new File(root+"_lines.png"), linePanel.getPanelWidth(), linePanel.getPanelLength(), saveSVG);
+			panel.saveImage(new File(root+"_profile.png"), 1200, 700, !saveSVG);
+			linePanel.saveImage(new File(root+"_lines.png"), linePanel.getPanelWidth(), linePanel.getPanelLength(), !saveSVG);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
