@@ -62,6 +62,15 @@ public class MetaMaker {
 				c=Color.red;
 			if(newCol.equals("green"))
 				c=Color.green;
+			for(int s=0; s<args.length; s++){
+				if(args[s].equals("color4")){
+					Integer R = new Integer(args[s+1]);
+					Integer G = new Integer(args[s+2]);
+					Integer B = new Integer(args[s+3]);
+					Integer A = new Integer(args[s+4]);
+					c= new Color(R,G,B,A);
+				}
+			}
 		
 			
 			if(gen==null || (expts.size()==0 && exptFilenames.size()==0)){printError();}
@@ -213,7 +222,7 @@ public class MetaMaker {
 				"--expt <experiment names> OR --exptfile <file names> AND --format <SAM> \n" +
 				"--back <control experiment names (only applies to chipseq)> \n" +
 				"--peaks <peaks file name> --out <output root name> \n" +
-				"--color <red/green/blue> \n" +
+				"--color <red/green/blue> or --color4 <R G B A>\n" +
 				"--strand <+-/>\n" +
 				"--cluster [flag to cluster in batch mode] \n" +
 				"--batch [a flag to run without displaying the window]\n" +
