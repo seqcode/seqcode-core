@@ -241,12 +241,14 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
 	public void saveImage(File f, int w, int h, boolean raster) 
     throws IOException { 
 		if(raster){
+			if(transparent)
+				this.setOpaque(false);
 	        BufferedImage im = 
-	            new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-	        Graphics g = im.getGraphics();
-	        Graphics2D g2 = (Graphics2D)g;
-	        g2.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
-	        this.paint(g);
+	            new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+	        Graphics2D graphics = im.createGraphics();
+	        graphics.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+	        this.print(graphics);
+	        graphics.dispose();
 	        ImageIO.write(im, "png", f);
 		}else{
 	        DOMImplementation domImpl =
