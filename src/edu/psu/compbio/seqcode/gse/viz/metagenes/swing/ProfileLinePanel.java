@@ -1,7 +1,10 @@
 package edu.psu.compbio.seqcode.gse.viz.metagenes.swing;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -9,6 +12,11 @@ import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
 
 import edu.psu.compbio.seqcode.gse.viz.metagenes.*;
 import edu.psu.compbio.seqcode.gse.viz.paintable.PaintableScale;
@@ -31,6 +39,7 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
 	private double [] colorQuantaLimits=null;
 	private boolean drawColorBar=true;
 	private boolean drawBorder = true;
+	private boolean transparent = false;
 
 	public ProfileLinePanel(BinningParameters bps, PaintableScale s) { 
 		params = bps;
@@ -125,7 +134,9 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
 		else
 			colorbarHeight=50;
 	}
-	
+	public void setTransparent(boolean c){
+		transparent = c;
+	}
 	public void setLineColorQuanta(double[] q){
 		if(q!=null){
 			colorQuantaLimits=q;
@@ -137,8 +148,10 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
 		super.paintComponent(g);
 		int w = getWidth(), h = getHeight();
 		
-		g.setColor(Color.white);
-		g.fillRect(0, 0, w, h);
+		if(!transparent){
+			g.setColor(Color.white);
+			g.fillRect(0, 0, w, h);
+		}
 
 		//Colorbar
 		if(drawColorBar)
@@ -215,7 +228,7 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
                 if(v == JFileChooser.APPROVE_OPTION) { 
                     File f = chooser.getSelectedFile();
                     try {
-                        saveImage(f, getWidth(), colorbarHeight+(linePainters.size()*lineWeight)+lineWeight+1);
+                        saveImage(f, getWidth(), colorbarHeight+(linePainters.size()*lineWeight)+lineWeight+1, true);
                         //System.out.println("Saved Image [" + sImageWidth + " by " + sImageHeight +  "]");
                     } catch(IOException ie) {
                         ie.printStackTrace(System.err);
@@ -225,15 +238,42 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
             }
         };
 	}
-	public void saveImage(File f, int w, int h) 
+	public void saveImage(File f, int w, int h, boolean raster) 
     throws IOException { 
-        BufferedImage im = 
-            new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics g = im.getGraphics();
-        Graphics2D g2 = (Graphics2D)g;
-        g2.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
-        this.paint(g);
-        ImageIO.write(im, "png", f);
+		if(raster){
+			if(transparent)
+				this.setOpaque(false);
+	        BufferedImage im = 
+	            new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+	        Graphics2D graphics = im.createGraphics();
+	        graphics.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+	        this.print(graphics);
+	        graphics.dispose();
+	        ImageIO.write(im, "png", f);
+		}else{
+	        DOMImplementation domImpl =
+	            GenericDOMImplementation.getDOMImplementation();
+	        // Create an instance of org.w3c.dom.Document
+	        Document document = domImpl.createDocument(null, "svg", null);
+	        // Create an instance of the SVG Generator
+	        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+	        svgGenerator.setSVGCanvasSize(new Dimension(w,h));
+	        // Ask the test to render into the SVG Graphics2D implementation
+	        if(!transparent){
+	        	svgGenerator.setColor(Color.white);
+	        	svgGenerator.fillRect(0,0,w,h);
+	        }
+	        this.paintComponent(svgGenerator);
+	
+	        // Finally, stream out SVG to the standard output using UTF-8
+	        // character to byte encoding
+	        boolean useCSS = true; // we want to use CSS style attribute
+	        FileOutputStream outStream = new FileOutputStream(f);
+	        Writer out = new OutputStreamWriter(outStream, "UTF-8");
+	        svgGenerator.stream(out, useCSS);
+	        outStream.flush();
+	        outStream.close();
+		}
 	}
    
 	private void drawSiteColorBar(Graphics2D g2d, int x, int y){

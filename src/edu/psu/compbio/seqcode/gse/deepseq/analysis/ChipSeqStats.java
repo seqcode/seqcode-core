@@ -310,7 +310,7 @@ public class ChipSeqStats {
 				exptexps.add(new SeqExpander(loc));
 			}
 			System.out.println("Loading data...");
-			ChipSeq5PrimeProfiler profiler = new ChipSeq5PrimeProfiler(params, exptexps, strand);
+			ChipSeq5PrimeProfiler profiler = new ChipSeq5PrimeProfiler(params, exptexps, strand, 2);
 			MetaNonFrame nonframe = new MetaNonFrame(g, params, profiler, false);
 			nonframe.setColor(Color.blue);
 			MetaProfileHandler handler = nonframe.getHandler();

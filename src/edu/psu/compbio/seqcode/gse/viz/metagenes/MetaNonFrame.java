@@ -26,8 +26,9 @@ public class MetaNonFrame{
 	private PaintableScale peakScale, lineScale;
 	private ProfileLinePanel linePanel;
 	private ProfilePanel panel;
+	private boolean saveSVG;
 	
-	public MetaNonFrame(Genome g, BinningParameters bps, PointProfiler pp, boolean normalizedMeta) {
+	public MetaNonFrame(Genome g, BinningParameters bps, PointProfiler pp, boolean normalizedMeta, boolean svg) {
 		peakScale = new PaintableScale(0.0, 1.0);
 		lineScale = new PaintableScale(0.0, 1.0);
 		
@@ -38,8 +39,11 @@ public class MetaNonFrame{
 		linePanel = new ProfileLinePanel(params, lineScale);
 		profile.addProfileListener(linePanel);
 		utils = new MetaUtils(genome);
-		
+		saveSVG = svg;
 		panel = new ProfilePanel(profile, peakScale);
+	}
+	public void setStyle(String s){
+		panel.setStyle(s);
 	}
 	public void setColor(Color c){
 		panel.updateColor(c);
@@ -51,11 +55,15 @@ public class MetaNonFrame{
 	public void setDrawColorBar(boolean c){
 		linePanel.setDrawColorBar(c);
 	}
+	public void setTransparent(boolean c){
+		linePanel.setTransparent(c);
+		panel.setTransparent(c);
+	}
 	public void saveImages(String root){
 		try {
 			System.out.println("Saving images with root name: "+root);
-			panel.saveImage(new File(root+"_profile.png"), 1200, 700);
-			linePanel.saveImage(new File(root+"_lines.png"), linePanel.getPanelWidth(), linePanel.getPanelLength());
+			panel.saveImage(saveSVG ? new File(root+"_profile.svg") : new File(root+"_profile.png"), 1200, 700, !saveSVG);
+			linePanel.saveImage(saveSVG ? new File(root+"_lines.svg") : new File(root+"_lines.png"), linePanel.getPanelWidth(), linePanel.getPanelLength(), !saveSVG);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
