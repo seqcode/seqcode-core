@@ -93,11 +93,9 @@ public class SAMReader extends AlignmentFileReader{
 			//int start =  record.getAlignmentStart();
 		    //int end =  record.getAlignmentEnd();
 			//Inefficiency to get around some buggy ENCODE BAM files
-		    int fivePrime = record.getReadNegativeStrandFlag() ? record.getAlignmentEnd() : record.getAlignmentStart();
-		    int start =  record.getReadNegativeStrandFlag() ? fivePrime-readLength+1 : fivePrime;
-		    int end =  record.getReadNegativeStrandFlag() ? fivePrime : fivePrime+readLength-1;
-		    ReadHit currHit = new ReadHit(gen,
-						  currID,
+			int start = record.getAlignmentStart();
+		    int end = record.getAlignmentEnd();
+		    ReadHit currHit = new ReadHit(gen, currID,
 						  record.getReferenceName().replaceFirst("^chr", ""), 
 						  start, end, 
 						  record.getReadNegativeStrandFlag() ? '-' : '+',

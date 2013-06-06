@@ -65,9 +65,11 @@ public class ProfileLinePaintable extends AbstractPaintable implements ProfileLi
 				yf = scale.fractionalOffset(value);
 			}
 			
-			Color c = calcFracColor(col, yf);
-			g2.setColor(c);
-			g2.fillRect(x, y1, binPix, h);
+			if(yf>0){
+				Color c = calcFracColor(col, yf);
+				g2.setColor(c);
+				g2.fillRect(x, y1, binPix, h);
+			}
 		}
 	}
 	
@@ -80,7 +82,7 @@ public class ProfileLinePaintable extends AbstractPaintable implements ProfileLi
 		int red = (int)(maxColor.getRed() * sVal + minColor.getRed() * (1 - sVal));
 	    int green = (int)(maxColor.getGreen() * sVal + minColor.getGreen() * (1 - sVal));
 	    int blue = (int)(maxColor.getBlue() *sVal + minColor.getBlue() * (1 - sVal));
-	    c = new Color(red, green, blue);
+	    c = new Color(red, green, blue, col.getAlpha());
 		return(c);
 	}
 	
