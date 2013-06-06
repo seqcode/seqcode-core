@@ -24,49 +24,38 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 /**
- * Outputs a fixed-step WIG format file for a deep-seq experiment.
+ * Outputs a GeneTrack index format file for a deep-seq experiment.
  * 
  * @author Shaun Mahony
  * @version	%I%, %G%
  */
-public class WIGExporter {
+public class IDXExporter {
 	private Organism org;
 	private Genome gen;
 	protected DeepSeqExpt expt;
-	protected int [] stackedHitCounts;
-	private int winSize=20, winStep=20;
-	private int readLength=1, read5PrimeExt=0, read3PrimeExt=200;
+	protected int [] stackedHitCountsPos;
+	protected int [] stackedHitCountsNeg;
+	private int readLength=1;
 	private String outName="out";
-	private String trackName="out";
-	private String trackDesc="out";
-	private String trackColor="0,0,255";
-	private int trackYMax=-1;
 	private boolean dbconnected=false;
-	private int perBaseMax=10;
+	private int perBaseMax=-1;
 	private boolean needlefiltering=false;
 	private static final Logger logger = Logger.getLogger(SingleConditionFeatureFinder.class);
 	
 	
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		
-		WIGExporter wig = new WIGExporter(args);
+		IDXExporter wig = new IDXExporter(args);
 		wig.execute();
 	}
 	
 	
-	public WIGExporter(String [] args) {
+	public IDXExporter(String [] args) {
 		if(args.length==0){
-			System.err.println("WIGExporter usage:\n" +
+			System.err.println("IDXExporter usage:\n" +
 					"\t--species <organism;genome>\n" +
 					"\t--(rdb)expt <experiment names>\n" +
-					"\t--read5ext <Extension on the 5' end>\n" +
-					"\t--read3ext <Extension on the 3' end>\n" +
 					"\t--pbmax <max read count per base>\n" +
-					"\t--winsize <window size/step in WIG file>\n" +
-					"\t--name <string to use as track name>\n" +
-					"\t--description <string to use as track description>\n" +
-					"\t--ylimit <default track y max>\n" +
-					"\t--color <R,G,B>\n" +
 					"\t--out <output file name>");
 			System.exit(1);
 		}
@@ -92,17 +81,8 @@ public class WIGExporter {
 		}
 		
 		outName = Args.parseString(args,"out",outName);
-		trackName = Args.parseString(args,"name",trackName);
-		trackDesc = Args.parseString(args,"description",trackDesc);
-		trackColor = Args.parseString(args,"color",trackColor);
-		read5PrimeExt = Args.parseInteger(args,"read5ext",read5PrimeExt);
-		read3PrimeExt = Args.parseInteger(args,"read3ext",read3PrimeExt);
-		readLength = Args.parseInteger(args,"readlen",readLength);
-		winSize = Args.parseInteger(args,"winsize",winSize);
 		perBaseMax = Args.parseInteger(args,"pbmax",perBaseMax);
 		if(ap.hasKey("pbmax")){needlefiltering=true;}
-		if(ap.hasKey("ylimit")){trackYMax=Args.parseInteger(args,"ylimit",-1);}
-	    winStep=winSize;
 	    		
 	    // Load the experiments
 	    List<SeqLocator> dbexpts = Args.parseSeqExpt(args, "dbexpt");
@@ -123,28 +103,15 @@ public class WIGExporter {
 	      System.exit(1);
 	    }
 	    logger.info("Expt hit count: " + (int) expt.getHitCount() + ", weight: " + (int) expt.getWeightTotal());
-	    
-	    read3PrimeExt = Math.max(0, read3PrimeExt-readLength);
-	    expt.setFivePrimeExt(read5PrimeExt);
-	    expt.setThreePrimeExt(read3PrimeExt);
 	}
 	
 	public void execute(){
 		try {
-			FileWriter fw = new FileWriter(outName+".wig");
+			FileWriter fw = new FileWriter(outName);
+			fw.write("chrom\tindex\tforward\treverse\tvalue\n");
 			
 			double basesDone=0, printStep=10000000,  numPrint=0;
-			if(trackName.equals("out"))
-				trackName=outName;
-			if(trackDesc.equals("out"))
-				trackDesc=outName;
-			
-			//Print the header
-			fw.write("track type=wiggle_0 name=\""+trackName+"\" description=\""+trackDesc+" summary\""+" visibility=full color="+trackColor+" ");
-			if(trackYMax >0)
-				fw.write("autoScale=off viewLimits=0:"+trackYMax+" ");
-			fw.write("\n");
-			       			
+						       			
 			ChromRegionIterator chroms = new ChromRegionIterator(gen);
 			while(chroms.hasNext()){
 				NamedRegion currentRegion = chroms.next();
@@ -156,29 +123,22 @@ public class WIGExporter {
 					Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 					
 					ArrayList<ReadHit> hits = new ArrayList<ReadHit>();
-                    hits.addAll(expt.loadExtHits(currSubRegion));
-                    double stackedHitCounts[] = makeHitLandscape(hits, currSubRegion, perBaseMax, '.');
+                    hits.addAll(expt.loadHits(currSubRegion));
+                    double stackedHitCountsPos[] = make5PrimeLandscape(hits, currSubRegion, perBaseMax, '+');
+                    double stackedHitCountsNeg[] = make5PrimeLandscape(hits, currSubRegion, perBaseMax, '-');
                     
-                    boolean recording=false;
-	                //Scan regions
-					for(int i=currSubRegion.getStart(); i<currSubRegion.getEnd()-(int)winSize; i+=(int)winStep){
-						Region currWin = new Region(gen, currentRegion.getChrom(), i, (int)(i+winSize-1));
+                    //Scan regions
+					for(int i=currSubRegion.getStart(); i<currSubRegion.getEnd(); i++){
+						int offset = i-currSubRegion.getStart();
+						double posHits=stackedHitCountsPos[offset];
+						double negHits=stackedHitCountsNeg[offset];
+						double sum = posHits+negHits;
 						
-						int binid = (int)Math.max(0, ((double)(currWin.getStart()-currSubRegion.getStart())/winStep));
-						double winHits=(double)stackedHitCounts[binid];
-						
-						if(winHits>0){
-							if(!recording){
-								fw.write("fixedStep chrom=chr"+currSubRegion.getChrom()+" start="+(i+1)+" step="+winStep+" span="+winSize+"\n");
-								recording=true;
-							}
-							fw.write(String.format("%.1f\n", winHits));
-						}else{
-							recording=false;
+						if(posHits>0 || negHits>0){
+							fw.write("chr"+currSubRegion.getChrom()+"\t"+i+"\t"+String.format("%.1f\t%.1f\t%.1f", posHits, negHits, sum) +"\n");
 						}
-						
 						//Print out progress
-						basesDone+=winStep;
+						basesDone++;
 						if(basesDone > numPrint*printStep){
 							if(numPrint%10==0){System.out.print(String.format("(%.0f)", (numPrint*printStep)));}
 							else{System.out.print(".");}
@@ -196,29 +156,23 @@ public class WIGExporter {
 		}
 	}
 	
-	protected double[] makeHitLandscape(ArrayList<ReadHit> hits, Region currReg, int perBaseMax, char strand){
-        int numBins = (int)(currReg.getWidth()/winStep);
-        double[] landscape = new double[numBins+1];
-        double[] startcounts = new double[(int)currReg.getWidth()];
-        for(int i=0; i<=numBins; i++){landscape[i]=0;}
+	protected double[] make5PrimeLandscape(ArrayList<ReadHit> hits, Region currReg, int perBaseMax, char strand){
+		double[] startcounts = new double[(int)currReg.getWidth()+1];
         for(int i=0; i<=currReg.getWidth(); i++){startcounts[i]=0;}
         for(ReadHit r : hits){
             if(strand=='.' || r.getStrand()==strand){
-                int offset5=inBounds(r.getFivePrime()-currReg.getStart(),0,currReg.getWidth());
-                if(!needlefiltering || (startcounts[offset5] <= perBaseMax)){
-                    int binstart = inBounds((int)((double)(r.getStart()-currReg.getStart())/winStep), 0, numBins);
-                    int binend =  inBounds((int)((double)(r.getEnd()-currReg.getStart())/winStep), 0, numBins);
-                    for(int i=binstart; i<=binend; i++){
-                        landscape[i]+=r.getWeight();
-                    }
-                    if(needlefiltering && (startcounts[offset5]+r.getWeight() > perBaseMax))
-                    	startcounts[offset5]=perBaseMax;
-                    else
-                    	startcounts[offset5]+=r.getWeight();
-                }
+            	if(r.getFivePrime()>=currReg.getStart() && r.getFivePrime()<=currReg.getEnd()){
+	                int offset5=inBounds(r.getFivePrime()-currReg.getStart(),0,currReg.getWidth());
+	                if(!needlefiltering || (startcounts[offset5] <= perBaseMax)){
+	                    if(needlefiltering && (startcounts[offset5]+r.getWeight() > perBaseMax))
+	                    	startcounts[offset5]=perBaseMax;
+	                    else
+	                    	startcounts[offset5]+=r.getWeight();
+	                }
+            	}
             }
         }
-        return(landscape);
+        return(startcounts);
     }
 	//keep the number in bounds
 	protected final double inBounds(double x, double min, double max){
