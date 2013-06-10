@@ -92,7 +92,7 @@ public class MotifMetaMaker {
 			
 			if(batchRun){
 				System.out.println("Batch running...");
-				MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile);
+				MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile, false);
 				if(usingColorQuanta)
 					nonframe.setLinePanelColorQuanta(colorQuanta);
 				nonframe.setColor(c);

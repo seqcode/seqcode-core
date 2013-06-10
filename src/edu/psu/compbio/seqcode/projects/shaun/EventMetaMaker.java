@@ -74,7 +74,7 @@ public class EventMetaMaker {
 			
 			if(batchRun){
 				System.out.println("Batch running...");
-				MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile);
+				MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile, false);
 				nonframe.setColor(c);
 				MetaProfileHandler handler = nonframe.getHandler();
 				if(peakFile != null){
