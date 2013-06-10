@@ -39,7 +39,7 @@ public class UpdateHitCounts {
 	        Float pairweight = Args.parseFloat(args,"pairweight", oldpairweight);
 	        
 	        
-	        PreparedStatement update = SeqAlignment.updateHitsAndWeights(cxn);
+	        PreparedStatement update = SeqAlignment.createUpdateHitsAndWeights(cxn);
 	        System.err.println("Updating counts for alignment: "+id+" ("+align.getName()+")");
 	        System.err.println("\tnumhits="+singlecount);
 	        System.err.println("\ttotalweight="+singleweight);

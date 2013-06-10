@@ -76,4 +76,6 @@ public class CellLine implements Comparable<CellLine> {
         return cxn.prepareStatement("select e.id, e.name, e.version from experiment e, exptToGenome e2g " +
                 "where e.id=e2g.experiment and e2g.genome=? and e.active=1 and (e.cellsone=? or e.cellstwo=?)");
     }
+    
+    
 }

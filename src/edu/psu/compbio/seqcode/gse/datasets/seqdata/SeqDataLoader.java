@@ -194,7 +194,66 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 		return expts;
 	}
+	
+	public Collection<SeqExpt> loadExperiments(Lab lab) throws SQLException {
+		PreparedStatement ps = SeqExpt.createLoadByLab(getConnection());
+		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
+		ps.setInt(1, lab.getDBID());
+		ResultSet rs = ps.executeQuery();
+		SeqExpt expt = null;
+		while (rs.next()) {
+			expt = new SeqExpt(rs, this);
+			expts.add(expt);
+		}
+		rs.close();
+		ps.close();
+		return expts;
+	}
+	
+	public Collection<SeqExpt> loadExperiments(ExptCondition cond) throws SQLException {
+		PreparedStatement ps = SeqExpt.createLoadByCondition(getConnection());
+		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
+		ps.setInt(1, cond.getDBID());
+		ResultSet rs = ps.executeQuery();
+		SeqExpt expt = null;
+		while (rs.next()) {
+			expt = new SeqExpt(rs, this);
+			expts.add(expt);
+		}
+		rs.close();
+		ps.close();
+		return expts;
+	}
+	
+	public Collection<SeqExpt> loadExperiments(ExptTarget target) throws SQLException {
+		PreparedStatement ps = SeqExpt.createLoadByTarget(getConnection());
+		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
+		ps.setInt(1, target.getDBID());
+		ResultSet rs = ps.executeQuery();
+		SeqExpt expt = null;
+		while (rs.next()) {
+			expt = new SeqExpt(rs, this);
+			expts.add(expt);
+		}
+		rs.close();
+		ps.close();
+		return expts;
+	}
 
+	public Collection<SeqExpt> loadExperiments(CellLine cell) throws SQLException {
+		PreparedStatement ps = SeqExpt.createLoadByCellline(getConnection());
+		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
+		ps.setInt(1, cell.getDBID());
+		ResultSet rs = ps.executeQuery();
+		SeqExpt expt = null;
+		while (rs.next()) {
+			expt = new SeqExpt(rs, this);
+			expts.add(expt);
+		}
+		rs.close();
+		ps.close();
+		return expts;
+	}
 
 	public SeqExpt loadExperiment(int dbid) throws NotFoundException, SQLException {
 		PreparedStatement ps = SeqExpt.createLoadByDBID(getConnection());
@@ -258,7 +317,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 		ps.close();
 		return filterAlignmentsByPermission(aligns);
 	}
-
+	
 
 	public SeqAlignment loadAlignment(SeqExpt expt, String n, Genome g) throws SQLException {
 		SeqAlignment align = null;
@@ -444,6 +503,10 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 	}
 
+	public void deleteAlignmentParameters(SeqAlignment align) throws SQLException {
+		Statement del = getConnection().createStatement();
+		del.executeQuery("delete from alignmentparameters where alignment = " + align.getDBID());
+	}
     
 	
 	/*

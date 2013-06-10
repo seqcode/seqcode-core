@@ -141,7 +141,7 @@ public class UpdateAlignmentsFromFile {
 			        }
 			        if(exptExists){
 			        	System.err.println("Updating experiment " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
-			            PreparedStatement update = SeqExpt.updateWithID(cxn);
+			            PreparedStatement update = SeqExpt.createUpdateWithID(cxn);
 			            update.setString(1, alignpieces[0]);
 			            update.setString(2, alignpieces[1]);
 			            update.setInt(3, genome.getSpeciesDBID());
@@ -172,7 +172,7 @@ public class UpdateAlignmentsFromFile {
 			        
 			        //Alignment already loaded above
 		            try {
-		                PreparedStatement update = SeqAlignment.updateStatementWithID(cxn);
+		                PreparedStatement update = SeqAlignment.createUpdateStatementWithID(cxn);
 		                System.err.println("Updating alignment " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
 		                update.setInt(1, expt.getDBID());
 		                update.setString(2, alignpieces[2]);

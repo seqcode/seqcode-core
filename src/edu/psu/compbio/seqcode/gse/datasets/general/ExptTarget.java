@@ -72,9 +72,5 @@ public class ExptTarget implements Comparable<ExptTarget> {
     public static PreparedStatement prepareLoadExperimentsByGenome(java.sql.Connection cxn) throws SQLException { 
         return cxn.prepareStatement("select e.id, e.name, e.version from experiment e, exptToGenome e2g " +
                 "where e.id=e2g.experiment and e2g.genome=? and e.active=1 and (e.factorone=? or e.factortwo=?)");
-    }
-
-    public static PreparedStatement prepareLoadStatement(java.sql.Connection cxn) throws SQLException { 
-        return cxn.prepareStatement("select name from factors where id=?");
     }    
 }

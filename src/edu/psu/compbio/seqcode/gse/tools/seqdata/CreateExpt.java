@@ -116,7 +116,7 @@ public class CreateExpt {
 	        		
 		        	int eID = expt.getDBID();
 		        	System.err.println("Updating experiment "+eID+" " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
-		            PreparedStatement update = SeqExpt.updateWithID(cxn);
+		            PreparedStatement update = SeqExpt.createUpdateWithID(cxn);
 		            update.setString(1, alignpieces[0]);
 		            update.setString(2, alignpieces[1]);
 		            update.setInt(3, genome.getSpeciesDBID());

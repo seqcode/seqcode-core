@@ -136,6 +136,30 @@ public class SeqExpt {
         		"from seqexpt where name=?");
     }
     
+    public static PreparedStatement createLoadByLab(java.sql.Connection c) throws SQLException { 
+        return c.prepareStatement(
+        		"select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote " +
+        		"from seqexpt where lab=?");
+    }
+    
+    public static PreparedStatement createLoadByCondition(java.sql.Connection c) throws SQLException { 
+        return c.prepareStatement(
+        		"select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote " +
+        		"from seqexpt where exptcondition=?");
+    }
+    
+    public static PreparedStatement createLoadByTarget(java.sql.Connection c) throws SQLException { 
+        return c.prepareStatement(
+        		"select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote " +
+        		"from seqexpt where expttarget=?");
+    }
+    
+    public static PreparedStatement createLoadByCellline(java.sql.Connection c) throws SQLException { 
+        return c.prepareStatement(
+        		"select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote " +
+        		"from seqexpt where cellline=?");
+    }
+    
     public static PreparedStatement createLoadByNameReplicate(java.sql.Connection c) throws SQLException { 
         return c.prepareStatement(
         		"select id, name, replicate, species, expttype, lab, exptcondition, expttarget, cellline, readtype, readlength, numreads, collabid, publicsource, publicdbid, fqfile, exptnote " +
@@ -154,10 +178,13 @@ public class SeqExpt {
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     	return c.prepareStatement(query);
     }
-    public static PreparedStatement updateWithID(java.sql.Connection c) throws SQLException { 
+    public static PreparedStatement createUpdateWithID(java.sql.Connection c) throws SQLException { 
     	String query = String.format(
                 "update seqexpt set name=?, replicate=?, species=?, expttype=?, lab=?, exptcondition=?, expttarget=?, cellline=?, readtype=?, readlength=?, numreads=?, collabid=?, publicsource=?, publicdbid=?, fqfile=?, exptnote=? " +
                 " where id=?");
     	return c.prepareStatement(query);
+    }
+    public static PreparedStatement createDeleteByDBID(java.sql.Connection c) throws SQLException { 
+        return c.prepareStatement("delete from seqexpt where id=?");
     }
 }

@@ -154,7 +154,7 @@ public class SeqAlignment {
 		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where expt=? and genome=?";
 		return c.prepareStatement(query);
 	}
-
+	
 	public static PreparedStatement createInsertStatement(java.sql.Connection c) throws SQLException { 
 		String query = String.format(
 				"insert into seqalignment (expt, name, genome, permissions, aligntype, numhits, totalweight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid) " +
@@ -169,15 +169,20 @@ public class SeqAlignment {
 		return c.prepareStatement(query);
 	}
 	
-	public static PreparedStatement updateStatementWithID(java.sql.Connection c) throws SQLException { 
+	public static PreparedStatement createUpdateStatementWithID(java.sql.Connection c) throws SQLException { 
 		String query = String.format(
 				"update seqalignment set expt=?, name=?, genome=?, permissions=?, aligntype=?, numhits=?, totalweight=?, numpairs=?, totalpairweight=?, aligndir=?, alignfile=?, idxfile=?, collabalignid=? " +
 				" where id=?");
 		return c.prepareStatement(query);
 	}
 	
-	public static PreparedStatement updateHitsAndWeights(java.sql.Connection c) throws SQLException { 
+	public static PreparedStatement createUpdateHitsAndWeights(java.sql.Connection c) throws SQLException { 
 		String query = "update seqalignment set numhits=?, totalweight=?, numpairs=?, totalpairweight=? where id=?";
+		return c.prepareStatement(query);
+	}
+	
+	public static PreparedStatement createDeleteByIDStatement(java.sql.Connection c) throws SQLException { 
+		String query = "delete from seqalignment where id=?";
 		return c.prepareStatement(query);
 	}
 	

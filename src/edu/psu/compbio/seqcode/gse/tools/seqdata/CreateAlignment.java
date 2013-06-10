@@ -137,7 +137,7 @@ public class CreateAlignment {
 	        		alignment.getIDXFile().equals(idxfile) && alignment.getCollabAlignID().equals(collabalignid))){
 		        	try {
 		        		int aID = alignment.getDBID();
-		                PreparedStatement update = SeqAlignment.updateStatementWithID(cxn);
+		                PreparedStatement update = SeqAlignment.createUpdateStatementWithID(cxn);
 		                System.err.println("Updating alignment "+aID+" " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
 		                System.err.println("Updating alignment for experiment " + expt.getDBID());
 		                update.setInt(1, expt.getDBID());
