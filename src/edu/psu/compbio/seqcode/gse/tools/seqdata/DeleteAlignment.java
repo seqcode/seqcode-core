@@ -43,9 +43,11 @@ public class DeleteAlignment {
 	        //Find and delete Analysis entries (if exist)
 	        
 	        //Find and delete the AlignmentParameters (if exist)
+	        System.err.println("Deleting alignment parameters for: "+align.getName());
 	        loader.deleteAlignmentParameters(align);
 	        
 	        //Delete the SeqAlignment
+	        System.err.println("Deleting alignment: "+align.getName()+"\t"+align.getDBID());
 	        PreparedStatement deleteAlign = SeqAlignment.createDeleteByIDStatement(cxn);
 	        deleteAlign.setInt(1, align.getDBID());
 	        deleteAlign.execute();
@@ -53,27 +55,35 @@ public class DeleteAlignment {
 	        
 	        //Delete the SeqExpt if no other SeqAlignments depend
 	        if(loader.loadAllAlignments(expt).size()==0){
+	        	System.err.println("Deleting experiment: "+expt.getName()+"\t"+expt.getDBID());
 	        	PreparedStatement deleteExpt = SeqExpt.createDeleteByDBID(cxn);
 	        	deleteExpt.setInt(1, expt.getDBID());
 	        	deleteExpt.execute();
 	        	cxn.commit();
 	        	
 	        	//Delete core.lab if no other SeqExpts depend
-	        	if(loader.loadExperiments(lab).size()==0)
+	        	if(loader.loadExperiments(lab).size()==0){
+	        		System.err.println("Deleting lab: "+lab.getName()+"\t"+lab.getDBID());
 	        		metaDeleter.deleteLab(lab.getDBID());
+	        	}
 	        	
 		        //Delete core.exptcondition if no other SeqExpts depend
-	        	if(loader.loadExperiments(cond).size()==0)
+	        	if(loader.loadExperiments(cond).size()==0){
+	        		System.err.println("Deleting condition: "+cond.getName()+"\t"+cond.getDBID());
 	        		metaDeleter.deleteCond(cond.getDBID());
+	        	}
 	        	
 		        //Delete core.expttarget if no other SeqExpts depend
-	        	if(loader.loadExperiments(target).size()==0)
+	        	if(loader.loadExperiments(target).size()==0){
+	        		System.err.println("Deleting target: "+target.getName()+"\t"+target.getDBID());
 	        		metaDeleter.deleteTarget(target.getDBID());
+	        	}
 	        	
 		        //Delete core.cellline if no other SeqExpts depend
-	        	if(loader.loadExperiments(cells).size()==0)
+	        	if(loader.loadExperiments(cells).size()==0){
+	        		System.err.println("Deleting cell-line: "+cells.getName()+"\t"+cells.getDBID());
 	        		metaDeleter.deleteCell(cells.getDBID());
-	        	
+	        	}
 	        }
         }
         loader.close();
