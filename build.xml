@@ -135,7 +135,7 @@
 	<!-- Target: makemultigpsjar                                                  -->
 	<!-- Depends: build, unjarwd, setpwfilespath                         		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
-	<!--              for MultiGPS. ant -Dpwset=mahony makemultigpsjar     -->
+	<!--              for MultiGPS. ant -Dpwset=mahonylab makemultigpsjar     -->
 	<!-- ======================================================================= -->
   <target name="makemultigpsjar" depends="build, unjarwd, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
@@ -153,7 +153,7 @@
 	<!-- Target: makeseqviewjar                                                  -->
 	<!-- Depends: build, unjarwd, setpwfilespath                         		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
-	<!--              for the seqview browser. ant -Dpwset=mahony makeseqviewjar     -->
+	<!--              for the seqview browser. ant -Dpwset=mahonylab makeseqviewjar     -->
 	<!-- ======================================================================= -->
   <target name="makeseqviewjar" depends="build, unjarwd, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
@@ -171,7 +171,7 @@
 	<!-- Target: makeseqcodejar                                                  -->
 	<!-- Depends: build, unjarall                                          		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
-	<!--              for the seqcode jar. ant -Dpwset=mahony  makeseqcodejar    -->
+	<!--              for the seqcode jar. ant -Dpwset=mahonylab  makeseqcodejar    -->
 	<!-- ======================================================================= -->
 	
   <target name="makeseqcodejar" depends="build, unjarall, setpwfilespath">
