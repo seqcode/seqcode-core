@@ -50,7 +50,7 @@ public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closea
     public void deleteLab(int dbid) throws SQLException { 
     	synchronized(deleteLabs) {
     		deleteLabs.setInt(1, dbid);
-            deleteLabs.executeQuery();
+            deleteLabs.execute();
             cxn.commit();
         }        
     }
@@ -58,7 +58,7 @@ public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closea
     public void deleteCell(int dbid) throws SQLException { 
     	synchronized(deleteCells) {
     		deleteCells.setInt(1, dbid);
-            deleteCells.executeQuery();
+            deleteCells.execute();
             cxn.commit();
         }        
     }
@@ -66,7 +66,7 @@ public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closea
     public void deleteCond(int dbid) throws SQLException { 
     	synchronized(deleteCond) {
     		deleteCond.setInt(1, dbid);
-            deleteCond.executeQuery();
+            deleteCond.execute();
             cxn.commit();
         }        
     }
@@ -74,7 +74,7 @@ public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closea
     public void deleteTarget(int dbid) throws SQLException { 
     	synchronized(deleteTargets) {
     		deleteTargets.setInt(1, dbid);
-            deleteTargets.executeQuery();
+            deleteTargets.execute();
             cxn.commit();
         }        
     }

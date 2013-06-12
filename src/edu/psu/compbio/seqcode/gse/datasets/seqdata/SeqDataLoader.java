@@ -505,7 +505,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 	public void deleteAlignmentParameters(SeqAlignment align) throws SQLException {
 		Statement del = getConnection().createStatement();
-		del.executeQuery("delete from alignmentparameters where alignment = " + align.getDBID());
+		del.execute("delete from alignmentparameters where alignment = " + align.getDBID());
 	}
     
 	
