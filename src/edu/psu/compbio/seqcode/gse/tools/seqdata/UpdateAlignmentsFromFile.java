@@ -214,6 +214,7 @@ public class UpdateAlignmentsFromFile {
 		loader.close();
         core.close();
 		reader.close();
+		cxn.close();
     }
     
 }

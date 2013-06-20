@@ -50,6 +50,9 @@ public class UpdateHitCounts {
 	        update.setInt(3, paircount);
 	        update.setFloat(4, pairweight);
 	        update.setInt(5, id);
+	        update.execute();
+	        update.close();
+	        cxn.close();
         }else{
         	System.err.println("UpdateHitCounts:\n" +
         			"\t--id <ReadDB ID>\n" +

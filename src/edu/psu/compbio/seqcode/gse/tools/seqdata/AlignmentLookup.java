@@ -15,8 +15,9 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 public class AlignmentLookup {
 
 	public static void main(String[] args) {
-        try {
-        	if(Args.parseArgs(args).contains("expt") && Args.parseArgs(args).contains("species")){
+		if(Args.parseArgs(args).contains("expt") && Args.parseArgs(args).contains("species")){
+			SeqDataLoader loader=null;
+			try {		
 				Pair<Organism,Genome> pair = Args.parseGenome(args);
 				Genome gen = pair.cdr();
 				List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
@@ -25,25 +26,29 @@ public class AlignmentLookup {
 					System.exit(1);
 				}
 				SeqLocator expt = expts.get(0);
-				
-				SeqDataLoader loader = new SeqDataLoader(false);
-				
+				loader = new SeqDataLoader(false);
+			
 				if(loader.loadAlignments(expt, gen).size()>0)
 					System.out.println("FOUND");
 				else
 					System.out.println("NOTFOUND");
-        	}else{
-        		System.err.println("AlignmentLookup:\n" +
-        				"\t--species <species;genome>\n" +
-        				"\t--expt <expt;rep;align>\n");
-        	}
-			
-		} catch (NotFoundException e) {
-			System.out.println("NOTFOUND");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		
+				gen.close();
+			} catch (NotFoundException e) {
+				System.out.println("NOTFOUND");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if(loader!=null)
+					loader.close();
+			}
+
+    	}else{
+    		System.err.println("AlignmentLookup:\n" +
+    				"\t--species <species;genome>\n" +
+    				"\t--expt <expt;rep;align>\n");
+    	}
 	}
 }

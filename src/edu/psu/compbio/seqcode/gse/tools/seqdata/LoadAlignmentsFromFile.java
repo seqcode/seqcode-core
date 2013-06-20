@@ -205,6 +205,7 @@ public class LoadAlignmentsFromFile {
 		loader.close();
         core.close();
 		reader.close();
+		cxn.close();
     }
     
 }

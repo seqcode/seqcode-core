@@ -63,5 +63,6 @@ public class DescribeAlignments {
             System.out.println("\tCollabAlignID: "+align.getCollabAlignID());
             
         }
+        cxn.close();
     }
 }

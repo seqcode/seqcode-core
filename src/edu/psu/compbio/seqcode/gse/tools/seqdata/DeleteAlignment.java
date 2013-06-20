@@ -51,6 +51,7 @@ public class DeleteAlignment {
 	        PreparedStatement deleteAlign = SeqAlignment.createDeleteByIDStatement(cxn);
 	        deleteAlign.setInt(1, align.getDBID());
 	        deleteAlign.execute();
+	        deleteAlign.close();
 	        cxn.commit();
 	        
 	        //Delete the SeqExpt if no other SeqAlignments depend
@@ -59,6 +60,7 @@ public class DeleteAlignment {
 	        	PreparedStatement deleteExpt = SeqExpt.createDeleteByDBID(cxn);
 	        	deleteExpt.setInt(1, expt.getDBID());
 	        	deleteExpt.execute();
+	        	deleteExpt.close();
 	        	cxn.commit();
 	        	
 	        	//Delete core.lab if no other SeqExpts depend
@@ -88,5 +90,6 @@ public class DeleteAlignment {
         }
         loader.close();
         metaDeleter.close();
+        cxn.close();
     }
 }

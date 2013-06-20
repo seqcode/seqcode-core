@@ -91,6 +91,7 @@ public class CreateExpt {
 	            insert.setString(15, fqfile);
 	            insert.setString(16, exptnote);
 	            insert.execute();
+	            insert.close();
 	            try {
 	                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
 	            } catch (NotFoundException e2) {
@@ -135,6 +136,7 @@ public class CreateExpt {
 		            update.setString(16, exptnote);
 		            update.setInt(17, eID);
 		            update.execute();
+		            update.close();
 		            try {
 		                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
 		            } catch (NotFoundException e2) {
@@ -153,7 +155,9 @@ public class CreateExpt {
 	            throw new DatabaseException("Couldn't create/update seqexpt " + alignpieces[2] + " for " + alignpieces[0]);
 	        }
 	        System.out.println(expt.getDBID());
+	        genome.close();
 	        cxn.commit();
+	        cxn.close();
     	}        
     }
 }

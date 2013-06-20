@@ -73,5 +73,10 @@ public class GetAlignments {
                 System.out.println(a.getDBID());
             }
         }
+        
+        loader.close();
+        core.close();
+        genome.close();
+        cxn.close();
     }
 }

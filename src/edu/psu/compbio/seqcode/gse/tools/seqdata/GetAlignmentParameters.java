@@ -28,5 +28,6 @@ public class GetAlignmentParameters {
         		System.out.println(s+"="+params.get(s));
         	}
         }
+        loader.close();
     }
 }

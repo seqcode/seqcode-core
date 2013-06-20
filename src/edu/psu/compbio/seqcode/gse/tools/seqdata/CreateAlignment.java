@@ -112,6 +112,7 @@ public class CreateAlignment {
 	                insert.setString(12, idxfile);
 	                insert.setString(13, collabalignid);
 	                insert.execute();
+	                insert.close();
 	                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
 	                cxn.commit();
 	                File f = null;
@@ -155,6 +156,7 @@ public class CreateAlignment {
 		                update.setString(13, collabalignid);
 		                update.setInt(14, aID);
 		                update.execute();
+		                update.close();
 		                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
 		                cxn.commit();
 		                File f = null;
@@ -181,7 +183,9 @@ public class CreateAlignment {
 	            throw new DatabaseException("Couldn't create/update alignment " + alignpieces[2] + " for " + alignpieces[0]);
 	        }
 	        System.out.println(alignment.getDBID());
+	        genome.close();
 	        cxn.commit();
+	        cxn.close();
     	}        
     }
 }

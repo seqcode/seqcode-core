@@ -51,6 +51,7 @@ public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closea
     	synchronized(deleteLabs) {
     		deleteLabs.setInt(1, dbid);
             deleteLabs.execute();
+            deleteLabs.close();
             cxn.commit();
         }        
     }
@@ -59,6 +60,7 @@ public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closea
     	synchronized(deleteCells) {
     		deleteCells.setInt(1, dbid);
             deleteCells.execute();
+            deleteCells.close();
             cxn.commit();
         }        
     }
@@ -67,6 +69,7 @@ public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closea
     	synchronized(deleteCond) {
     		deleteCond.setInt(1, dbid);
             deleteCond.execute();
+            deleteCond.close();
             cxn.commit();
         }        
     }
@@ -75,6 +78,7 @@ public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closea
     	synchronized(deleteTargets) {
     		deleteTargets.setInt(1, dbid);
             deleteTargets.execute();
+            deleteTargets.close();
             cxn.commit();
         }        
     }
