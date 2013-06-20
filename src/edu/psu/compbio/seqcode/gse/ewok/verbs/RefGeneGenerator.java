@@ -18,7 +18,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.*;
  *   for the genes and the second contains a mapping from gene name to aliases.
  *   
  *   reads the properties file edu.psu.compbio.seqcode.gse.ewok.verbs.gene_names which is formatted as 
- *     genomeversion=tablename,symboltablename,namecolumn,symbolcolumn
+ *     genomeversion,tablename=symboltablename,namecolumn,symbolcolumn
  *
  *     namecolumn is the column in the symboltable that should match the name.  aliascolumn
  *     is the column in the alias table that contains the alias
