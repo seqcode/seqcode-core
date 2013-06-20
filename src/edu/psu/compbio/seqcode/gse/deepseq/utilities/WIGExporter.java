@@ -199,7 +199,7 @@ public class WIGExporter {
 	protected double[] makeHitLandscape(ArrayList<ReadHit> hits, Region currReg, int perBaseMax, char strand){
         int numBins = (int)(currReg.getWidth()/winStep);
         double[] landscape = new double[numBins+1];
-        double[] startcounts = new double[(int)currReg.getWidth()];
+        double[] startcounts = new double[(int)currReg.getWidth()+1];
         for(int i=0; i<=numBins; i++){landscape[i]=0;}
         for(int i=0; i<=currReg.getWidth(); i++){startcounts[i]=0;}
         for(ReadHit r : hits){
