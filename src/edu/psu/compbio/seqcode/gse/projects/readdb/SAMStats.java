@@ -27,7 +27,7 @@ public class SAMStats {
 	private Double weight=0.0, weightBP=0.0;;
 	private Double pairedEndSameChr=0.0, pairedEndDiffChr=0.0;
 	private Double pairedEndSameChrBP=0.0, pairedEndDiffChrBP=0.0;
-	private Boolean bowtie2=false;
+	private Boolean bowtie1=false, bowtie2=false;
 	private RealValuedHistogram histo;
 	
 	public static void main(String args[]) throws IOException, ParseException {
@@ -35,17 +35,19 @@ public class SAMStats {
         options.addOption("i","insdist",false,"print insert size distribution");
         options.addOption("s","stats",false,"print mapping stats");
         options.addOption("bt2",false,"input is from bowtie2");
+        options.addOption("bt1",false,"input is from bowtie1 (tested for --best --strata -m 1)");
         CommandLineParser parser = new GnuParser();
         CommandLine cl = parser.parse( options, args, false );       
         
-        SAMStats s = new SAMStats(cl.hasOption("bt2"));
+        SAMStats s = new SAMStats(cl.hasOption("bt1"), cl.hasOption("bt2"));
         if(cl.hasOption("insdist"))
         	s.printInsertDistrib();
         if(cl.hasOption("stats"))
         	s.printStats();
     }
 	
-	public SAMStats(boolean bowtie2){
+	public SAMStats(boolean bowtie1, boolean bowtie2){
+		this.bowtie1 = bowtie1;
 		this.bowtie2 = bowtie2;
 		histo = new RealValuedHistogram(0, 1000, 100);
 		SAMFileReader reader = new SAMFileReader(System.in);
@@ -53,7 +55,9 @@ public class SAMStats {
         CloseableIterator<SAMRecord> iter = reader.iterator();
         while (iter.hasNext()) {
             SAMRecord record = iter.next();
-            if(bowtie2)
+            if(bowtie1)
+            	processBT1SAMRecord(record);
+            else if(bowtie2)
             	processBT2SAMRecord(record);
             else
             	processSAMRecord(record);
@@ -104,6 +108,86 @@ public class SAMStats {
     			junctions++;
     			junctionsBP+=dlen;
     		}
+			
+			if(!r.getNotPrimaryAlignmentFlag()){
+				if(!r.getReadPairedFlag() || r.getFirstOfPairFlag()){
+					LHits++;
+					LHitBP+=len;
+					if(r.getReadPairedFlag() && r.getProperPairFlag()){
+						properPairL++;
+						properPairLBP+=dlen;
+						properPair++;
+						properPairBP+=dlen;
+						if(!r.getReadNegativeStrandFlag() && r.getMateNegativeStrandFlag()){
+							double dist = (r.getMateAlignmentStart()+r.getReadLength())-r.getAlignmentStart();
+							histo.addValue(dist);
+						}
+					}
+				}else if(r.getSecondOfPairFlag()){
+					RHits++;
+					RHitBP+=dlen;
+					if(r.getProperPairFlag()){
+						properPairR++;
+						properPairRBP+=dlen;
+						properPair++;
+						properPairBP+=dlen;
+					}
+				}
+			}else{
+				notPrimary++;
+				notPrimaryBP+=dlen;
+			}
+		}
+	}
+	
+	public void processBT1SAMRecord(SAMRecord r){
+		totalHits++;
+		int len = r.getReadLength();
+		double dlen = (double)len;
+		totalHitBP+=dlen;
+		if(r.getReadUnmappedFlag())
+			if(r.getIntegerAttribute("XM")!=null){
+				int xm = r.getIntegerAttribute("XM");
+				if(xm==0)
+					unMapped++;
+				else{
+					weight++;
+					weightBP += dlen;
+				}
+			}else{
+				unMapped++;
+			}
+		else{
+			int count =1; //TODO: Fix this if using bowtie for multi-mapping reads
+			boolean currUnique = true;
+	    	
+			if(count==1 && currUnique){
+				uniquelyMapped++;
+				uniquelyMappedBP+=dlen;
+			}
+			
+			weight += 1/(float)count;
+			weightBP += (1/(float)count)*dlen;
+			
+			if(r.getReadPairedFlag()){
+				if(r.getMateUnmappedFlag()){
+					singleEnd++;
+					singleEndBP+=dlen;
+				}else{
+					pairMapped++;
+					pairMappedBP+=dlen;
+					if(r.getMateReferenceName().equals(r.getReferenceName())){
+						pairedEndSameChr++;
+						pairedEndSameChrBP+=dlen;
+					}else{
+						pairedEndDiffChr++;
+						pairedEndDiffChrBP+=dlen;
+					}
+				}
+			}else{
+				singleEnd++;
+				singleEndBP+=dlen;
+			}
 			
 			if(!r.getNotPrimaryAlignmentFlag()){
 				if(!r.getReadPairedFlag() || r.getFirstOfPairFlag()){
