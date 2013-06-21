@@ -141,10 +141,8 @@ public class SAMStats {
 	}
 	
 	public void processBT1SAMRecord(SAMRecord r){
-		totalHits++;
 		int len = r.getReadLength();
 		double dlen = (double)len;
-		totalHitBP+=dlen;
 		if(r.getReadUnmappedFlag())
 			if(r.getIntegerAttribute("XM")!=null){
 				int xm = r.getIntegerAttribute("XM");
@@ -158,6 +156,8 @@ public class SAMStats {
 				unMapped++;
 			}
 		else{
+			totalHits++;
+			totalHitBP+=dlen;
 			int count =1; //TODO: Fix this if using bowtie for multi-mapping reads
 			boolean currUnique = true;
 	    	
