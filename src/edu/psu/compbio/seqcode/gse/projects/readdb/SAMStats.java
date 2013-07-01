@@ -67,8 +67,12 @@ public class SAMStats {
 	public void processSAMRecord(SAMRecord r){
 		if(!r.getReadUnmappedFlag()){
 			totalHits++;
-			int count = r.getIntegerAttribute("NH");
-			if(count==1)
+			int count = 1;
+			if(r.getIntegerAttribute("NH")!=null)
+				count = r.getIntegerAttribute("NH");
+			else if(r.getIntegerAttribute("X0")!=null)
+				count = r.getIntegerAttribute("X0");
+			if(count==1 && r.getMappingQuality()!=0) //Second clause for BWA
 				uniquelyMapped++;
 			
 			weight += 1/(float)count;
@@ -105,9 +109,6 @@ public class SAMStats {
 					}
 				}else if(r.getSecondOfPairFlag()){
 					RHits++;
-					if(r.getProperPairFlag()){
-						properPair++;
-					}
 				}
 			}else{
 				notPrimary++;
@@ -221,9 +222,6 @@ public class SAMStats {
 					}
 				}else if(r.getSecondOfPairFlag()){
 					RHits++;
-					if(r.getProperPairFlag()){
-						properPair++;
-					}
 				}
 			}else{
 				notPrimary++;

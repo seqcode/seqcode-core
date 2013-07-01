@@ -39,8 +39,6 @@ public class SAMToReadDB {
     	filterSubOpt = cl.hasOption("nosuboptimal");
     	inclPairedEnd = cl.hasOption("pairedend");
     	inclJunction = cl.hasOption("junctions");
-        String line;
-        String lastRead = "";        
         SAMFileReader reader = new SAMFileReader(System.in);
         CloseableIterator<SAMRecord> iter = reader.iterator();
         Collection<SAMRecord> byRead = new ArrayList<SAMRecord>();
@@ -53,7 +51,8 @@ public class SAMToReadDB {
                 byRead.clear();
             }
             lastread = record.getReadName();
-            byRead.add(record);
+            if(!inclPairedEnd || record.getFirstOfPairFlag())
+            	byRead.add(record);
             
         }
         dumpRecords(byRead);
@@ -85,26 +84,28 @@ public class SAMToReadDB {
             }
         }
         Collection<SAMRecord> output = new ArrayList<SAMRecord>();
-        for (SAMRecord r : input) {
-            if (maxqual == r.getMappingQuality()) {
-                output.add(r);
-            }
+        if(maxqual>SAMRecord.NO_MAPPING_QUALITY){ //BWA multi-mapping filter
+	        for (SAMRecord r : input) {
+	            if (maxqual == r.getMappingQuality()) {
+	                output.add(r);
+	            }
+	        }
         }
         return output;
     }
     public static void dumpRecords(Collection<SAMRecord> records) {
         
+        if (filterSubOpt) {
+            records = filterSubOpt(records);
+        }        
         int mapcount = records.size();
         if (mapcount == 0) {
             return;
         }
-        if (filterSubOpt) {
-            records = filterSubOpt(records);
-        }        
         if (uniqueOnly && mapcount > 1) {
             return;
         }
-
+        
         float weight = 1 / ((float)mapcount);
         for (SAMRecord record : records) {
 		
