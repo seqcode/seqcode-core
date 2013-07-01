@@ -24,6 +24,8 @@ public class PairedHits extends Hits {
     private IntBP chroms;
     /* stores the position of the other side of the pair */
     private IntBP otherPositions;
+    /* stores the pair code (e.g. whether the pair comes from mates) */
+    private IntBP pairCode;
 
     public PairedHits(String prefix, int chrom, boolean isLeft) throws FileNotFoundException, SecurityException, IOException {
         super(chrom,
@@ -33,10 +35,12 @@ public class PairedHits extends Hits {
         this.isLeft = isLeft;
         chroms = openIntBP(getChromsFname(prefix,chrom,isLeft));
         otherPositions = openIntBP(getOtherPosFname(prefix,chrom,isLeft));
+        pairCode = openIntBP(getPairCodeFname(prefix,chrom,isLeft));
     }
     public boolean isLeft () {return isLeft;}
     public IntBP getChromsBuffer() {return chroms;}
     public IntBP getOtherPosBuffer() {return otherPositions;}
+    public IntBP getPairCodeBuffer() {return pairCode;}
     public IntBP getOtherChromsBetween(int firstindex,
                                        int lastindex,
                                        int start,
@@ -45,6 +49,14 @@ public class PairedHits extends Hits {
                                        Boolean isPlus) throws IOException {
         return getIntsBetween(chroms,firstindex,lastindex,start,stop,minweight,isPlus);
     }
+	public IntBP getPairCodesBetween(int firstindex,
+	            						int lastindex,
+	            						int start,
+	            						int stop,
+	            						Float minweight,
+	            						Boolean isPlus) throws IOException {
+	    return getIntsBetween(pairCode,firstindex,lastindex,start,stop,minweight,isPlus);
+	}
     public IntBP getOtherPositionsBetween(int firstindex,
                                           int lastindex,
                                           int start,
@@ -66,11 +78,13 @@ public class PairedHits extends Hits {
                                        boolean isLeft) throws IOException {
         String postmp = getPositionsFname(prefix,chrom,isLeft) + ".tmp";
         String weightstmp = getWeightsFname(prefix,chrom,isLeft) + ".tmp";
+        String paircodetmp = getPairCodeFname(prefix,chrom,isLeft) + ".tmp";
         String lastmp = getLaSFname(prefix,chrom,isLeft) + ".tmp";
         String chrtmp = getChromsFname(prefix,chrom,isLeft) + ".tmp";
         String optmp = getOtherPosFname(prefix,chrom,isLeft) + ".tmp";
         DataOutputStream positionsf = dos(postmp);
         DataOutputStream weightsf = dos(weightstmp);
+        DataOutputStream paircodef = dos(paircodetmp);
         DataOutputStream lasf = dos(lastmp);
         DataOutputStream chrf = dos(chrtmp);
         DataOutputStream opf = dos(optmp);
@@ -80,6 +94,7 @@ public class PairedHits extends Hits {
                 PairedHit h = hits.get(i);
                 positionsf.writeInt(h.leftPos);
                 weightsf.writeFloat(h.weight);
+                paircodef.writeInt(h.pairCode);
                 lasf.writeInt(makeLAS(h.leftLength, h.leftStrand, h.rightLength, h.rightStrand));
                 chrf.writeInt(h.rightChrom);
                 opf.writeInt(h.rightPos);
@@ -89,6 +104,7 @@ public class PairedHits extends Hits {
                 PairedHit h = hits.get(i);
                 positionsf.writeInt(h.rightPos);
                 weightsf.writeFloat(h.weight);
+                paircodef.writeInt(h.pairCode);
                 lasf.writeInt(makeLAS(h.rightLength, h.rightStrand, h.leftLength, h.leftStrand));
                 chrf.writeInt(h.leftChrom);
                 opf.writeInt(h.leftPos);
@@ -96,12 +112,14 @@ public class PairedHits extends Hits {
         }
         positionsf.close();
         weightsf.close();
+        paircodef.close();
         lasf.close();
         chrf.close();
         opf.close();
         /* ideally this part with the renames would atomic... */
         (new File(postmp)).renameTo(new File(getPositionsFname(prefix,chrom,isLeft)));
         (new File(weightstmp)).renameTo(new File(getWeightsFname(prefix,chrom,isLeft)));
+        (new File(paircodetmp)).renameTo(new File(getPairCodeFname(prefix,chrom,isLeft)));
         (new File(lastmp)).renameTo(new File(getLaSFname(prefix,chrom,isLeft)));
         (new File(chrtmp)).renameTo(new File(getChromsFname(prefix,chrom,isLeft)));
         (new File(optmp)).renameTo(new File(getOtherPosFname(prefix,chrom,isLeft)));                
@@ -124,8 +142,9 @@ public class PairedHits extends Hits {
                                        !isLeft ? getPositionsBuffer().get(s) : otherPositions.get(s),
                                        !isLeft ? getStrandOne(getLASBuffer().get(s)) : getStrandTwo(getLASBuffer().get(s)),
                                        !isLeft ? getLengthOne(getLASBuffer().get(s)) : getLengthTwo(getLASBuffer().get(s)),
-                                       
-                                       getWeightsBuffer().get(s));
+                                       	
+                                       getWeightsBuffer().get(s),
+                                       getPairCodeBuffer().get(s));
         Comparator<PairedHit> comparator = isLeft? new PairedHitLeftComparator() : new PairedHitRightComparator();
         if (comparator.compare(hits.get(0), last) > 0) {
             append(hits,prefix,chrom,isLeft);
@@ -139,11 +158,13 @@ public class PairedHits extends Hits {
                                  boolean isLeft) throws IOException {
         RandomAccessFile positionsRAF = new RandomAccessFile(getPositionsFname(prefix,chrom,isLeft),"rw");
         RandomAccessFile weightsRAF = new RandomAccessFile(getWeightsFname(prefix,chrom,isLeft),"rw");
+        RandomAccessFile paircodeRAF = new RandomAccessFile(getPairCodeFname(prefix,chrom,isLeft),"rw");
         RandomAccessFile lasRAF = new RandomAccessFile(getLaSFname(prefix,chrom,isLeft),"rw");
         RandomAccessFile chromsRAF = new RandomAccessFile(getChromsFname(prefix,chrom,isLeft),"rw");
         RandomAccessFile otherposRAF = new RandomAccessFile(getOtherPosFname(prefix,chrom,isLeft),"rw");
         positionsRAF.seek(positionsRAF.length());
         weightsRAF.seek(weightsRAF.length());
+        paircodeRAF.seek(paircodeRAF.length());
         lasRAF.seek(lasRAF.length());
         chromsRAF.seek(chromsRAF.length());
         otherposRAF.seek(otherposRAF.length());
@@ -152,6 +173,7 @@ public class PairedHits extends Hits {
                 PairedHit h = hits.get(i);
                 positionsRAF.writeInt(h.leftPos);
                 weightsRAF.writeFloat(h.weight);
+                paircodeRAF.writeInt(h.pairCode);
                 lasRAF.writeInt(makeLAS(h.leftLength, h.leftStrand, h.rightLength, h.rightStrand));
                 chromsRAF.writeInt(h.rightChrom);
                 otherposRAF.writeInt(h.rightPos);
@@ -162,6 +184,7 @@ public class PairedHits extends Hits {
                 PairedHit h = hits.get(i);
                 positionsRAF.writeInt(h.leftPos);
                 weightsRAF.writeFloat(h.weight);
+                paircodeRAF.writeInt(h.pairCode);
                 lasRAF.writeInt(makeLAS(h.leftLength, h.leftStrand, h.rightLength, h.rightStrand));
                 chromsRAF.writeInt(h.rightChrom);
                 otherposRAF.writeInt(h.rightPos);
@@ -169,6 +192,7 @@ public class PairedHits extends Hits {
         }
         positionsRAF.close();
         weightsRAF.close();
+        paircodeRAF.close();
         lasRAF.close();
         chromsRAF.close();
         otherposRAF.close();
@@ -179,17 +203,20 @@ public class PairedHits extends Hits {
                         boolean isLeft) throws IOException {
         String postmp = getPositionsFname(prefix,chrom,isLeft) + ".tmp";
         String weightstmp = getWeightsFname(prefix,chrom,isLeft) + ".tmp";
+        String paircodetmp = getPairCodeFname(prefix,chrom,isLeft) + ".tmp";
         String lastmp = getLaSFname(prefix,chrom,isLeft) + ".tmp";
         String chrtmp = getChromsFname(prefix,chrom,isLeft) + ".tmp";
         String optmp = getOtherPosFname(prefix,chrom,isLeft) + ".tmp";
         DataOutputStream positionsf = dos(postmp);
         DataOutputStream weightsf = dos(weightstmp);
+        DataOutputStream paircodef = dos(paircodetmp);
         DataOutputStream lasf = dos(lastmp);
         DataOutputStream chrf = dos(chrtmp);
         DataOutputStream opf = dos(optmp);
 
         IntBP positions = getPositionsBuffer();
         FloatBP weights = getWeightsBuffer();
+        IntBP paircodes = getPairCodeBuffer();
         IntBP lenAndStrand = getLASBuffer();
 
         int oldpos = 0;
@@ -202,6 +229,7 @@ public class PairedHits extends Hits {
                          Hits.getLengthOne(lenAndStrand.get(oldpos)) < h.leftLength))) {
                     positionsf.writeInt(positions.get(oldpos));
                     weightsf.writeFloat(weights.get(oldpos));
+                    paircodef.writeInt(paircodes.get(oldpos));
                     lasf.writeInt(lenAndStrand.get(oldpos));
                     chrf.writeInt(chroms.get(oldpos));
                     opf.writeInt(otherPositions.get(oldpos));
@@ -209,6 +237,7 @@ public class PairedHits extends Hits {
                 }
                 positionsf.writeInt(h.leftPos);
                 weightsf.writeFloat(h.weight);
+                paircodef.writeInt(h.pairCode);
                 lasf.writeInt(makeLAS(h.leftLength, h.leftStrand, h.rightLength, h.rightStrand));
                 chrf.writeInt(h.rightChrom);
                 opf.writeInt(h.rightPos);
@@ -222,6 +251,7 @@ public class PairedHits extends Hits {
                          Hits.getLengthOne(lenAndStrand.get(oldpos)) < h.rightLength))) {
                     positionsf.writeInt(positions.get(oldpos));
                     weightsf.writeFloat(weights.get(oldpos));
+                    paircodef.writeInt(paircodes.get(oldpos));
                     lasf.writeInt(lenAndStrand.get(oldpos));
                     chrf.writeInt(chroms.get(oldpos));
                     opf.writeInt(otherPositions.get(oldpos));
@@ -229,6 +259,7 @@ public class PairedHits extends Hits {
                 }                
                 positionsf.writeInt(h.rightPos);
                 weightsf.writeFloat(h.weight);
+                paircodef.writeInt(h.pairCode);
                 lasf.writeInt(makeLAS(h.rightLength, h.rightStrand, h.leftLength, h.leftStrand));
                 chrf.writeInt(h.leftChrom);
                 opf.writeInt(h.leftPos);
@@ -237,6 +268,7 @@ public class PairedHits extends Hits {
         while (oldpos < positions.limit()) {
             positionsf.writeInt(positions.get(oldpos));
             weightsf.writeFloat(weights.get(oldpos));
+            paircodef.writeInt(paircodes.get(oldpos));
             lasf.writeInt(lenAndStrand.get(oldpos));
             chrf.writeInt(chroms.get(oldpos));
             opf.writeInt(otherPositions.get(oldpos));
@@ -245,12 +277,14 @@ public class PairedHits extends Hits {
 
         positionsf.close();
         weightsf.close();
+        paircodef.close();
         lasf.close();
         chrf.close();
         opf.close();
         /* ideally this part with the renames would atomic... */
         (new File(postmp)).renameTo(new File(getPositionsFname(prefix,chrom,isLeft)));
         (new File(weightstmp)).renameTo(new File(getWeightsFname(prefix,chrom,isLeft)));
+        (new File(paircodetmp)).renameTo(new File(getPairCodeFname(prefix,chrom,isLeft)));
         (new File(lastmp)).renameTo(new File(getLaSFname(prefix,chrom,isLeft)));
         (new File(chrtmp)).renameTo(new File(getChromsFname(prefix,chrom,isLeft)));
         (new File(optmp)).renameTo(new File(getOtherPosFname(prefix,chrom,isLeft)));                               
@@ -263,6 +297,9 @@ public class PairedHits extends Hits {
     }
     private static String getWeightsFname(String prefix, int chrom, boolean isLeft) {
         return prefix + chrom + getLeftRightSuffix(isLeft) + ".weights";
+    }
+    private static String getPairCodeFname(String prefix, int chrom, boolean isLeft) {
+        return prefix + chrom + getLeftRightSuffix(isLeft) + ".paircode";
     }
     private static String getLaSFname(String prefix, int chrom, boolean isLeft) {
         return prefix + chrom + getLeftRightSuffix(isLeft) + ".las";

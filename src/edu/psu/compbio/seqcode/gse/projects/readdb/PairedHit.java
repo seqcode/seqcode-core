@@ -12,10 +12,11 @@ public class PairedHit implements Comparable<PairedHit> {
     public float weight;
     public boolean leftStrand, rightStrand;
     public short leftLength, rightLength;
+    public int pairCode;
 
     public PairedHit(int leftchrom, int leftpos, boolean leftstrand, short leftlen, 
                      int rightchrom, int rightpos, boolean rightstrand, short rightlen,
-                     float weight) {
+                     float weight, int paircode) {
         leftChrom = leftchrom;
         rightChrom = rightchrom;
         leftPos = leftpos;
@@ -25,6 +26,7 @@ public class PairedHit implements Comparable<PairedHit> {
         rightStrand = rightstrand;
         leftLength = leftlen;
         rightLength = rightlen;            
+        this.pairCode = paircode;
     }
 
     public boolean equals(Object o) {
@@ -36,6 +38,7 @@ public class PairedHit implements Comparable<PairedHit> {
                     rightPos == other.rightPos &&
                     leftStrand == other.leftStrand &&
                     rightStrand == other.rightStrand &&
+                    pairCode == other.pairCode &&
                     Math.abs(weight - other.weight) < .001);
         } else {
             return false;
@@ -128,7 +131,7 @@ public class PairedHit implements Comparable<PairedHit> {
     }
     
     public PairedHit flippedCopy() {
-    	return new PairedHit(rightChrom, rightPos, rightStrand, rightLength, leftChrom, leftPos, leftStrand, leftLength, weight);
+    	return new PairedHit(rightChrom, rightPos, rightStrand, rightLength, leftChrom, leftPos, leftStrand, leftLength, weight, pairCode);
     }
 
 	public void flipSides() {
@@ -149,10 +152,11 @@ public class PairedHit implements Comparable<PairedHit> {
         rightLength = s;
     }
     public String toString() {
-        return String.format("%d:%d,%d:%c and %d:%d,%d:%c weight %.2f",
+        return String.format("%d:%d,%d:%c and %d:%d,%d:%c weight %.2f paircode %d",
                              leftChrom, leftPos, leftLength, leftStrand ? '+' : '-',
                              rightChrom, rightPos, rightLength, rightStrand ? '+' : '-',
-                             weight);
+                             weight,
+                             pairCode);
     }
 
 }

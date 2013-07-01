@@ -17,6 +17,7 @@ public class PairedHitClusterRepresentative implements
 		long rightpos = 0;
 		short rightlen = 0;
 		float weight = 0f;
+		int paircode = 0;
 		Genome g = null;
 		for (PairedHitClusterable phc : c.getElements()) {
 			PairedHit hit = phc.getHit();
@@ -27,13 +28,14 @@ public class PairedHitClusterRepresentative implements
 			rightpos += hit.rightPos;
 			rightlen = hit.rightLength;
 			weight = hit.weight;
+			paircode = hit.pairCode;
 			g = phc.getGenome();
 		}
 		int avgleftpos = (int)(leftpos / c.size());
 		int avgrightpos = (int)(rightpos / c.size());
 		//leftpos /= c.size();
 		//rightpos /= c.size();
-		return new PairedHitClusterable(new PairedHit(leftchrom, avgleftpos, true, leftlen, rightchrom, avgrightpos, true, rightlen, c.getElements().size()),g);
+		return new PairedHitClusterable(new PairedHit(leftchrom, avgleftpos, true, leftlen, rightchrom, avgrightpos, true, rightlen, c.getElements().size(),paircode),g);
 	}
 
 }

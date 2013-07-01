@@ -39,6 +39,7 @@ import net.sf.samtools.util.CloseableIterator;
  * 7) right strand
  * 8) right length
  * 9) weight
+ * 10) paircode
  */
 
 
@@ -84,7 +85,8 @@ public class PairedSAMToReadDB {
                                                  right.getReadNegativeStrandFlag() ? "-" : "+",
                                                  right.getReadLength(),
 
-                                                 weight));                
+                                                 weight,
+                                                 1));                
             }
         }
     }

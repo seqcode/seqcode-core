@@ -580,7 +580,8 @@ public class TestReadDB {
                                    i + 0xffff,
                                    i % 3 == 1,
                                    (short)(Math.random()*100+1),
-                                   (float)Math.random() * 10));
+                                   (float)Math.random() * 10,
+                                   i % 3));
         }        
         Client c = new Client(hostname, portnum, user, passwd);
         String name = "testPairedReads";        
@@ -650,7 +651,8 @@ public class TestReadDB {
                                    i + 0xffff,
                                    i % 3 == 1,
                                    (short)20,
-                                   (float)Math.random()));
+                                   (float)Math.random(),
+                                   i % 3));
         }        
         Client c = new Client(hostname, portnum, user, passwd);
         String name = "testSecondStorePairedReads";        
@@ -666,7 +668,8 @@ public class TestReadDB {
                                       i + 0xffff,
                                       i % 3 == 1,
                                       (short)40,
-                                      (float)Math.random()));
+                                      (float)Math.random(),
+                                      i % 3));
         }        
         c.storePaired(name, newhits);
         hits.addAll(newhits);
@@ -821,7 +824,8 @@ public class TestReadDB {
                                    i + 0xffff,
                                    i % 3 == 1,
                                    (short)(Math.random()*100+1),
-                                   (float)Math.random() * 10));
+                                   (float)Math.random() * 10,
+                                   i % 3));
         }        
         c.storePaired(name, phits);
 

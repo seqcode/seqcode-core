@@ -83,8 +83,8 @@ public class TophatSAMToReadDB {
                          record.getMateAlignmentStart()) + "\t" +
                         (mateneg ? "-\t" : "+\t") +
                         len + 
-
-                        weight);
+                        weight +"\t"+
+                        1);
     		}
     	}else if(junctionOnly){
     		/*
@@ -112,7 +112,8 @@ public class TophatSAMToReadDB {
                                    (neg ? rEnd : rStart) + "\t" +
                                    (neg ? "-\t" : "+\t") +
                                    rLen + "\t" +
-                                   weight);
+                                   weight +"\t"+
+                                   0);
     		}
     	}else{ //Just output reads (or read parts)
     		List<AlignmentBlock> blocks = record.getAlignmentBlocks();

@@ -92,7 +92,8 @@ public class Bowtie2SAMToReadDB {
 	                        (neg ? "-\t" : "+\t") + 
 	                        len +
 	                        
-	                        weight);
+	                        weight +"\t"+
+	                        1);
     			}
     		}
     	}else{ //Just output reads (ignore alignment blocks for now)

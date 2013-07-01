@@ -27,7 +27,8 @@ public class TestPairedHits {
                                    (int)(Math.random() * 100000000),
                                    i % 3 == 1,
                                    (short)(Math.random()*100+1),
-                                   (float)Math.random()));
+                                   (float)Math.random(),
+                                   i % 3));
         }        
         Collections.sort(hits, isLeft ? new PairedHitLeftComparator() : new PairedHitRightComparator());
         PairedHits.writePairedHits(hits, prefix, chrom, isLeft);
@@ -53,7 +54,8 @@ public class TestPairedHits {
                                  (int)(Math.random() * 100000000),
                                  i % 3 == 1,
                                  (short)(Math.random()*100+1),
-                                 (float)Math.random()));
+                                 (float)Math.random(),
+                                 i % 3));
         }        
         Collections.sort(ph, new PairedHitLeftComparator());
         for (int i = 1; i < hits.size(); i++) {
@@ -113,7 +115,8 @@ public class TestPairedHits {
                                    (int)(Math.random() * 100000000),
                                    i % 3 == 1,
                                    (short)(Math.random()*100+1),
-                                   (float)Math.random()));
+                                   (float)Math.random(),
+                                   i % 3));
         }        
         for (int i = 0; i < len; i++) {
             newhits.add(new PairedHit(isLeft ? chrom : (int)(Math.random() * 1000),
@@ -124,7 +127,8 @@ public class TestPairedHits {
                                    (int)(Math.random() * 100000000),
                                    i % 3 == 1,
                                    (short)(Math.random()*100+1),
-                                   (float)Math.random()));
+                                   (float)Math.random(),
+                                   i % 3));
         }      
         Collections.sort(orighits, isLeft ? new PairedHitLeftComparator() : new PairedHitRightComparator());
         Collections.sort(newhits, isLeft ? new PairedHitLeftComparator() : new PairedHitRightComparator());

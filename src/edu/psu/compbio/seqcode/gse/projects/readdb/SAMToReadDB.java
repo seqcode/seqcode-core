@@ -100,9 +100,7 @@ public class SAMToReadDB {
         for (SAMRecord record : records) {
             System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
                                              record.getReferenceName(),
-                                             record.getReadNegativeStrandFlag() ? 
-                                             record.getAlignmentEnd() : 
-                                             record.getAlignmentStart(),
+                                             record.getReadNegativeStrandFlag() ? record.getAlignmentEnd() : record.getAlignmentStart(),
                                              record.getReadNegativeStrandFlag() ? "-" : "+",
                                              record.getReadLength(),
                                              weight));

@@ -630,6 +630,7 @@ public class Client implements ReadOnlyClient {
         request.isPaired = true;
         request.map.put("wantpositions","1");
         request.map.put("wantweights","1");
+        request.map.put("wantpaircodes","1");
         request.map.put("wantlengthsandstrands","1");
         request.map.put("wantotherchroms","1");
         request.map.put("wantotherpositions","1");
@@ -646,7 +647,7 @@ public class Client implements ReadOnlyClient {
         int numhits = Integer.parseInt(readLine());
         for (int i = 0; i < numhits; i++) {
             output.add(new PairedHit(chromid,0,false,(short)0,
-                                     chromid,0,false,(short)0,(float)0));
+                                     chromid,0,false,(short)0,(float)0,0));
         }
         IntBP ints = new IntBP(numhits);
         ReadableByteChannel rbc = Channels.newChannel(instream);
@@ -666,6 +667,11 @@ public class Client implements ReadOnlyClient {
             output.get(i).weight = floats.get(i);
         }
 
+        Bits.readBytes(ints.bb, rbc);
+        for (int i = 0; i < numhits; i++) {
+            output.get(i).pairCode = ints.get(i);
+        }
+        
         Bits.readBytes(ints.bb, rbc);
         if (isLeft) {
             for (int i = 0; i < numhits; i++) {

@@ -923,12 +923,14 @@ public class ServerTask {
         PairedHit[] hits = new PairedHit[numHits];
         IntBP positions = new IntBP(numHits);
         FloatBP weights = new FloatBP(numHits);
+        IntBP paircodes = new IntBP(numHits);
         IntBP las = new IntBP(numHits);
         IntBP otherchrom = new IntBP(numHits);
         IntBP otherpos = new IntBP(numHits);
         ReadableByteChannel rbc = Channels.newChannel(instream);
         Bits.readBytes(positions.bb, rbc);
         Bits.readBytes(weights.bb, rbc);
+        Bits.readBytes(paircodes.bb, rbc);
         Bits.readBytes(las.bb, rbc);
         Bits.readBytes(otherchrom.bb,rbc);
         Bits.readBytes(otherpos.bb,rbc);
@@ -941,10 +943,12 @@ public class ServerTask {
                                     otherpos.get(i),
                                     Hits.getStrandTwo(las.get(i)),
                                     Hits.getLengthTwo(las.get(i)),
-                                    weights.get(i));
+                                    weights.get(i),
+                                    paircodes.get(i));
         }
         positions = null;
         weights = null;
+        paircodes=null;
         las = null;
         otherchrom = null;
         otherpos = null;
@@ -1062,7 +1066,8 @@ public class ServerTask {
         int count;
         if (!(hits instanceof PairedHits)) {
             if (request.map.containsKey("wantotherchroms") ||
-                request.map.containsKey("wantotherpositions")) {
+                request.map.containsKey("wantotherpositions") ||
+                request.map.containsKey("wantpaircodes")) {
                 printString("invalid columns requested for single-ended data\n");
                 return;
             }
@@ -1088,6 +1093,10 @@ public class ServerTask {
         }
         if (request.map.containsKey("wantweights")) {
             FloatBP p = hits.getWeightsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+            Bits.sendBytes(p.bb, outchannel);
+        }
+        if (request.map.containsKey("wantpaircodes")) {
+        	IntBP p = ((PairedHits)hits).getPairCodesBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
             Bits.sendBytes(p.bb, outchannel);
         }
         if (request.map.containsKey("wantlengthsandstrands")) {

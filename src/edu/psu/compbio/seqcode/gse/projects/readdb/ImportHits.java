@@ -12,11 +12,12 @@ import java.io.*;
  * <p>Lines in the input must be of the form<br>
  * <pre>chromosome\tstart\tstrand\tlength\tweight</pre><br>
  *  or
- * <pre>chromosomeone\tstartone\tstrandone\tlengthone\tchromosometwo\tstarttwo\tstrandtwo\tlengthtwo\tweight</pre>
+ * <pre>chromosomeone\tstartone\tstrandone\tlengthone\tchromosometwo\tstarttwo\tstrandtwo\tlengthtwo\tweight\tpairCode</pre>
  *
  * <p>where start is the position of the 5' end of the read.
+ * <p>and where pairCode is 1 if the pair represents a link between two mated reads, and 0 otherwise (e.g. if the pair represents two sections of the same gapped read alignment).
  *
- * <p>For CSAIL use:
+ * <p>For Mahony lab use:
  * <ul>
  * <li> The chromosome must be numeric and should be the chromosome id from core.  
  * <li> The alignment should be numeric and should the alignment identifier from the chipseq schema
@@ -110,12 +111,12 @@ public class ImportHits {
         System.out.println(" --align alignmentname");
         System.out.println(" [--help] print usage");
         System.out.println("");
-        System.out.println("Input format is tab delimited with either five or nine fields per line.");
+        System.out.println("Input format is tab delimited with either five or ten fields per line.");
         System.out.println("For single-ended reads, fields are ");
         System.out.println("  (1) chromosome (2) position of 5' end of read (3) strand (4) length (5) weight");
         System.out.println("For paired-end reads, fields are ");
         System.out.println("  (1) L chromosome (2) position of 5' end of L read (3) L strand (4) L length ");
-        System.out.println("  (5) R chromosome (6) position of 5' end of R read (7) R strand (8) R length (9) weight");
+        System.out.println("  (5) R chromosome (6) position of 5' end of R read (7) R strand (8) R length (9) weight (10) pair between mates indicator");
     }
 
     public void run(InputStream instream) throws IOException, ClientException {
@@ -141,7 +142,7 @@ public class ImportHits {
                                        Float.parseFloat(pieces[4]),
                                        pieces[2].equals("+"),
                                        Short.parseShort(pieces[3])));
-            } else if (pieces.length == 9) {
+            } else if (pieces.length == 10) {
                 paired.add(new PairedHit(Integer.parseInt(pieces[0]),
                                          Integer.parseInt(pieces[1]),
                                          pieces[2].equals("+"),
@@ -150,7 +151,8 @@ public class ImportHits {
                                          Integer.parseInt(pieces[5]),
                                          pieces[6].equals("+"),
                                          Short.parseShort(pieces[7]),
-                                         Float.parseFloat(pieces[8])));
+                                         Float.parseFloat(pieces[8]),
+                                         Integer.parseInt(pieces[9])));
             } else {
                 System.err.println("Bad line size " + line);
             }

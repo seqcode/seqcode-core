@@ -176,12 +176,12 @@ public class PairedStorage {
 	}
 
 	public Set<PairedHit> getHitSet(Region r) {
-		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), r.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), r.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 0);
+		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 0);
 		Set<PairedHit> subset = new HashSet<PairedHit>();
 		subset.addAll(leftset.subSet(from, to));
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), r.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), r.getStart(), true, (short)0,  0f, 0);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0f, 0);
 		subset.addAll(rightset.subSet(from, to));
 		return subset;
 	}
@@ -312,7 +312,7 @@ public class PairedStorage {
 			split = s.split("\t");
 			PairedHit hit = new PairedHit(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Boolean.parseBoolean(split[2]), 
 					Short.parseShort(split[3]), Integer.parseInt(split[4]), Integer.parseInt(split[5]), Boolean.parseBoolean(split[6]), 
-					Short.parseShort(split[7]), Float.parseFloat(split[8]));
+					Short.parseShort(split[7]), Float.parseFloat(split[8]), Integer.parseInt(split[9]));
 			if (removeArtifact && isArtifact(hit)) {
 				continue;
 			}
@@ -407,7 +407,7 @@ public class PairedStorage {
 			split = s.split("\t");
 			PairedHit hit = new PairedHit(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Boolean.parseBoolean(split[2]), 
 					Short.parseShort(split[3]), Integer.parseInt(split[4]), Integer.parseInt(split[5]), Boolean.parseBoolean(split[6]), 
-					Short.parseShort(split[7]), Float.parseFloat(split[8]));
+					Short.parseShort(split[7]), Float.parseFloat(split[8]), Integer.parseInt(split[9]));
 			if (removeArtifact && isArtifact(hit)) {
 				continue;
 			}
@@ -488,7 +488,7 @@ public class PairedStorage {
 			Point right = Point.fromString(g, split[1]);
 			PairedHit hit = new PairedHit(g.getChromID(left.getChrom()), left.getLocation(), true, 
 					Short.valueOf("20"), g.getChromID(right.getChrom()), right.getLocation(), true, 
-					Short.valueOf("20"), 1f);
+					Short.valueOf("20"), 1f, 1);
 			if (removeArtifact && isArtifact(hit)) {
 				continue;
 			}
@@ -566,7 +566,7 @@ public class PairedStorage {
 			if (Integer.parseInt(split[9])==subclass) {
 				PairedHit hit = new PairedHit(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Boolean.parseBoolean(split[2]), 
 						Short.parseShort(split[3]), Integer.parseInt(split[4]), Integer.parseInt(split[5]), Boolean.parseBoolean(split[6]), 
-						Short.parseShort(split[7]), Float.parseFloat(split[8]));
+						Short.parseShort(split[7]), Float.parseFloat(split[8]), Integer.parseInt(split[9]));
 				if (removeArtifact && isArtifact(hit)) {
 					continue;
 				}
@@ -644,7 +644,7 @@ public class PairedStorage {
 			split = s.split("\t");
 			PairedHit hit = new PairedHit(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Boolean.parseBoolean(split[2]), 
 					Short.parseShort(split[3]), Integer.parseInt(split[4]), Integer.parseInt(split[5]), Boolean.parseBoolean(split[6]), 
-					Short.parseShort(split[7]), Float.parseFloat(split[8]));
+					Short.parseShort(split[7]), Float.parseFloat(split[8]),Integer.parseInt(split[9]));
 			if (removeArtifact && isArtifact(hit)) {
 				continue;
 			}
@@ -723,7 +723,7 @@ public class PairedStorage {
 			split = s.split("\t");
 			PairedHit hit = new PairedHit(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Boolean.parseBoolean(split[2]), 
 					Short.parseShort(split[3]), Integer.parseInt(split[4]), Integer.parseInt(split[5]), Boolean.parseBoolean(split[6]), 
-					Short.parseShort(split[7]), Float.parseFloat(split[8]));
+					Short.parseShort(split[7]), Float.parseFloat(split[8]), Integer.parseInt(split[9]));
 			if (removeArtifact && isArtifact(hit)) {
 				continue;
 			}
@@ -764,8 +764,8 @@ public class PairedStorage {
 		System.err.println(leftset.size());
 		System.err.println(g.getChromID(r2.getChrom()));
 		PrintStream out = new PrintStream(file);
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), r2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), r2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), r2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), r2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		Set<PairedHit> goodset = new HashSet<PairedHit>();
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		for (PairedHit p : subset) {
@@ -777,8 +777,8 @@ public class PairedStorage {
 			}
 
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), r2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), r2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), r2.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), r2.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (r1.contains(p.leftPointRegion(g)) && !goodset.contains(p)) {
@@ -795,8 +795,8 @@ public class PairedStorage {
 		double[][] tor = new double[r1.getWidth()/binsize+1][r2.getWidth()/binsize+1];
 		Region e1 = r1.expand((lik.size()-1)*binsize, (lik.size()-1)*binsize);
 		Region e2 = r2.expand((lik.size()-1)*binsize, (lik.size()-1)*binsize);
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		Set<PairedHit> goodset = new HashSet<PairedHit>();
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		for (PairedHit p : subset) {
@@ -815,8 +815,8 @@ public class PairedStorage {
 				goodset.add(p);
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		double norm = 0;
 		for (PairedHit p : subset) {
@@ -840,8 +840,8 @@ public class PairedStorage {
 		double[][] tor = new double[r1.getWidth()/binsize+1][r2.getWidth()/binsize+1];
 		Region e1 = r1.expand((lik.size()-1)*binsize, (lik.size()-1)*binsize);
 		Region e2 = r2.expand((lik.size()-1)*binsize, (lik.size()-1)*binsize);
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f,1 );
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		Set<PairedHit> goodset = new HashSet<PairedHit>();
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		for (PairedHit p : subset) {
@@ -881,8 +881,8 @@ public class PairedStorage {
 				goodset.add(p);
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f,1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		double norm = 0;
 		for (PairedHit p : subset) {
@@ -927,8 +927,8 @@ public class PairedStorage {
 		double[][] tor = new double[r1.getWidth()/binsize+1][r2.getWidth()/binsize+1];
 		Region e1 = r1.expand((lik.size()-1)*binsize, (lik.size()-1)*binsize);
 		Region e2 = r2.expand((lik.size()-1)*binsize, (lik.size()-1)*binsize);
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f,1 );
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		Set<PairedHit> goodset = new HashSet<PairedHit>();
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		for (PairedHit p : subset) {
@@ -968,8 +968,8 @@ public class PairedStorage {
 				goodset.add(p);
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f,1 );
 		subset = rightset.subSet(from, to);
 		double norm = 0;
 		for (PairedHit p : subset) {
@@ -1013,8 +1013,8 @@ public class PairedStorage {
 	public double[] getForwardProfile(Region r) {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(kernel.size(), kernel.size());
-		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f,1 );
+		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (!p.leftStrand) {
@@ -1025,8 +1025,8 @@ public class PairedStorage {
 				}
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (!p.rightStrand) {
@@ -1044,11 +1044,11 @@ public class PairedStorage {
 	}
 
 	public double fracLessThan(Region r) {
-		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), 0, true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), 0, true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		double count = (double)leftset.subSet(from, to).size();
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), 0, true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), 0, true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0f, 1);
 		count += (double) rightset.subSet(from, to).size();
 		return count / (2d*((double)leftset.size()));
 	}
@@ -1056,8 +1056,8 @@ public class PairedStorage {
 	public double[] getUnnormForwardProfile(Region r) {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(otherkernel.size(), otherkernel.size());
-		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (!p.leftStrand) {
@@ -1072,8 +1072,8 @@ public class PairedStorage {
 				}
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (!p.rightStrand) {
@@ -1097,8 +1097,8 @@ public class PairedStorage {
 	public double[] getForwardWeightedProfile(Region r, double[] z) {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(kernel.size(), kernel.size());
-		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (!p.leftStrand) {
@@ -1110,8 +1110,8 @@ public class PairedStorage {
 				}
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (!p.rightStrand) {
@@ -1135,8 +1135,8 @@ public class PairedStorage {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(halfkern, otherkernel.size());
 		Region e2 = r2.expand(halfkern, otherkernel.size());
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		double norm = 0;
 		for (PairedHit p : subset) {
@@ -1177,8 +1177,8 @@ public class PairedStorage {
 
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			double mult;
@@ -1234,8 +1234,8 @@ public class PairedStorage {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(halfkern, otherkernel.size());
 		Region e2 = r2.expand(otherkernel.size()-1, halfkern);
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		double norm = 0;
 		for (PairedHit p : subset) {
@@ -1275,8 +1275,8 @@ public class PairedStorage {
 
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			double mult;
@@ -1327,8 +1327,8 @@ public class PairedStorage {
 	public double[] getReverseProfile(Region r) {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(kernel.size(), kernel.size());
-		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (p.leftStrand) {
@@ -1339,8 +1339,8 @@ public class PairedStorage {
 				}
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (p.rightStrand) {
@@ -1360,8 +1360,8 @@ public class PairedStorage {
 	public double[] getUnnormReverseProfile(Region r) {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(otherkernel.size(), otherkernel.size());
-		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (p.leftStrand) {
@@ -1376,8 +1376,8 @@ public class PairedStorage {
 				}
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f,1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (p.rightStrand) {
@@ -1398,8 +1398,8 @@ public class PairedStorage {
 	public double[] getUnnormSymProfile(Region r) {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(kernel.size()/2, kernel.size()/2);
-		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		//System.err.println(subset.size()+" in subset");
 		for (PairedHit p : subset) {
@@ -1409,8 +1409,8 @@ public class PairedStorage {
 				tor[i-r.getStart()] += kernel.get(p.leftPos-i+halfkern);
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		//System.err.println(subset.size()+" in subset");
 		for (PairedHit p : subset) {
@@ -1426,8 +1426,8 @@ public class PairedStorage {
 	public double[] getUnnormSymProfile(Region r, int window) {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(window/2, window/2);
-		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		//System.err.println(subset.size()+" in subset");
 		double inwin = 1d / ((double)window);
@@ -1438,8 +1438,8 @@ public class PairedStorage {
 				tor[i-r.getStart()] += inwin;
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		//System.err.println(subset.size()+" in subset");
 		for (PairedHit p : subset) {
@@ -1455,8 +1455,8 @@ public class PairedStorage {
 	public double[] getReverseWeightedProfile(Region r, double[] z) {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(kernel.size(), kernel.size());
-		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r.getChrom()), e.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (p.leftStrand) {
@@ -1468,8 +1468,8 @@ public class PairedStorage {
 				}
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), e.getEnd(), true, (short)0, 0f,1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			if (p.rightStrand) {
@@ -1495,8 +1495,8 @@ public class PairedStorage {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(otherkernel.size(), halfkern);
 		Region e2 = r2.expand(halfkern, otherkernel.size());
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		double norm = 0;
 		for (PairedHit p : subset) {
@@ -1533,8 +1533,8 @@ public class PairedStorage {
 
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			double mult;
@@ -1590,8 +1590,8 @@ public class PairedStorage {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(otherkernel.size(), halfkern);
 		Region e2 = r2.expand(otherkernel.size()-1, halfkern);
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		double norm = 0;
 		for (PairedHit p : subset) {
@@ -1628,8 +1628,8 @@ public class PairedStorage {
 
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			double mult;
@@ -1681,8 +1681,8 @@ public class PairedStorage {
 		double[] tor = new double[r.getWidth()];
 		Region e = r.expand(halfkern, halfkern);
 		Region e2 = r2.expand(halfkern, halfkern);
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		double norm = 0;
 		for (PairedHit p : subset) {
@@ -1702,8 +1702,8 @@ public class PairedStorage {
 
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			double rightdist = Math.abs(p.rightPos-r2.getStart());
@@ -1743,8 +1743,8 @@ public class PairedStorage {
 		int halfwin = window/2;
 		Region e = r.expand(halfwin, halfwin);
 		Region e2 = r2.expand(halfwin, halfwin);
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		double norm = 0;
 		double numer = 0;
@@ -1758,8 +1758,8 @@ public class PairedStorage {
 
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			double rightdist = Math.abs(p.rightPos-r2.getStart());
@@ -1788,8 +1788,8 @@ public class PairedStorage {
 		int halfwin = window/2;
 		Region e = r.expand(halfwin, halfwin);
 		Region e2 = r2.expand(halfwin, halfwin);
-		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
+		PairedHit from = new PairedHit(g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit to = new PairedHit(g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
 		SortedSet<PairedHit> subset = leftset.subSet(from, to);
 		double norm = 0;
 		double numer = 0;
@@ -1803,8 +1803,8 @@ public class PairedStorage {
 
 			}
 		}
-		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f);
-		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f);
+		from = new PairedHit(0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getStart(), true, (short)0,  0f, 1);
+		to = new PairedHit( 0, 0, true, (short)0, g.getChromID(r2.getChrom()), e2.getEnd(), true, (short)0, 0f, 1);
 		subset = rightset.subSet(from, to);
 		for (PairedHit p : subset) {
 			double rightdist = Math.abs(p.rightPos-r2.getStart());
@@ -1863,10 +1863,10 @@ public class PairedStorage {
 	 */
 
 	public int getMarginalCount(Region r) {
-		PairedHit leftfrom = new PairedHit(g.getChromID(r.getChrom()), r.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit leftto = new PairedHit(g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), r.getStart(), true, (short)0,  0f);
-		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0f);
+		PairedHit leftfrom = new PairedHit(g.getChromID(r.getChrom()), r.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit leftto = new PairedHit(g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(r.getChrom()), r.getStart(), true, (short)0,  0f, 1);
+		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(r.getChrom()), r.getEnd(), true, (short)0, 0f, 1);
 		Set<PairedHit> pointset = new HashSet<PairedHit>();
 		SortedSet<PairedHit> subset = leftset.subSet(leftfrom, leftto);
 		for (PairedHit hit : subset) {
@@ -1881,10 +1881,10 @@ public class PairedStorage {
 
 	public int getCount(Region anchor, Region region) {
 		int regionchrom = region.getGenome().getChromID(region.getChrom());
-		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f);
-		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f);
+		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f, 1);
+		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f, 1);
 		Set<PairedHit> pointset = new HashSet<PairedHit>();
 		SortedSet<PairedHit> subset = leftset.subSet(leftfrom, leftto);
 		for (PairedHit p : subset) {
@@ -1905,10 +1905,10 @@ public class PairedStorage {
 	
 	public Set<PairedHit> getHitSet(Region anchor, Region region) {
 		int regionchrom = region.getGenome().getChromID(region.getChrom());
-		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f);
-		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f);
+		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f, 1);
+		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f, 1);
 		Set<PairedHit> pointset = new HashSet<PairedHit>();
 		SortedSet<PairedHit> subset = leftset.subSet(leftfrom, leftto);
 		for (PairedHit p : subset) {
@@ -1955,10 +1955,10 @@ public class PairedStorage {
 
 	public double getCount(Region anchor, Region region, double[] z) {
 		int regionchrom = region.getGenome().getChromID(region.getChrom());
-		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f);
-		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f);
+		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f, 1);
+		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f, 1);
 		Set<PairedHit> pointset = new HashSet<PairedHit>();
 		SortedSet<PairedHit> subset = leftset.subSet(leftfrom, leftto);
 		for (PairedHit p : subset) {
@@ -1983,10 +1983,10 @@ public class PairedStorage {
 
 	public int getCount(Region anchor, int anchorcenter, Region region) {
 		int regionchrom = region.getGenome().getChromID(region.getChrom());
-		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f);
-		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f);
+		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f,1 );
+		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f, 1);
+		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f, 1);
 		SortedSet<Point> pointset = new TreeSet<Point>();
 		SortedSet<PairedHit> subset = leftset.subSet(leftfrom, leftto);
 		for (PairedHit p : subset) {
@@ -2009,10 +2009,10 @@ public class PairedStorage {
 
 	public SortedSet<Point> getStrandedPointSet(Region anchor, int anchorcenter, Region region) {
 		int regionchrom = region.getGenome().getChromID(region.getChrom());
-		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f);
-		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f);
+		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f, 1);
+		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f, 1);
 		SortedSet<Point> pointset = new TreeSet<Point>();
 		SortedSet<PairedHit> subset = leftset.subSet(leftfrom, leftto);
 		for (PairedHit p : subset) {
@@ -2036,10 +2036,10 @@ public class PairedStorage {
 	public Map<Region,Double> test(Region anchor, Region region) {
 		int anchorchrom = anchor.getGenome().getChromID(anchor.getChrom());
 		int regionchrom = region.getGenome().getChromID(region.getChrom());
-		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f);
-		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f);
-		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f);
+		PairedHit leftfrom = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit leftto = new PairedHit(g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0, 0, true, (short)0, 0f, 1);
+		PairedHit rightfrom = new PairedHit(0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getStart(), true, (short)0,  0f, 1);
+		PairedHit rightto = new PairedHit( 0, 0, true, (short)0, g.getChromID(anchor.getChrom()), anchor.getEnd(), true, (short)0, 0f, 1);
 		SortedSet<Point> pointset = new TreeSet<Point>();
 		SortedSet<PairedHit> subset = leftset.subSet(leftfrom, leftto);
 		for (PairedHit p : subset) {
