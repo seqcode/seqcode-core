@@ -52,7 +52,8 @@ public class SAMToReadDB {
             }
             lastread = record.getReadName();
             if(!inclPairedEnd || record.getFirstOfPairFlag())
-            	byRead.add(record);
+            	if(uniqueOnly && record.getMappingQuality()!=SAMRecord.NO_MAPPING_QUALITY) //BWA multi-mapping filter)
+            		byRead.add(record);
             
         }
         dumpRecords(byRead);
@@ -84,11 +85,9 @@ public class SAMToReadDB {
             }
         }
         Collection<SAMRecord> output = new ArrayList<SAMRecord>();
-        if(maxqual>SAMRecord.NO_MAPPING_QUALITY){ //BWA multi-mapping filter
-	        for (SAMRecord r : input) {
-	            if (maxqual == r.getMappingQuality()) {
-	                output.add(r);
-	            }
+        for (SAMRecord r : input) {
+        	if (maxqual == r.getMappingQuality()) {
+        		output.add(r);
 	        }
         }
         return output;
