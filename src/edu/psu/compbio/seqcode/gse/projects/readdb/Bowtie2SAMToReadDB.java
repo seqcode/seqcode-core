@@ -91,7 +91,38 @@ public class Bowtie2SAMToReadDB {
 	                        1);
     			}
     			
-    			
+    			/*
+        		 * Outputs as paired alignments those reads that are aligned in >2 blocks
+        		 * Note: if you change this, you may have to change the SAMStats output also
+        		 */
+        		if(inclJunction){
+    	    		List<AlignmentBlock> blocks = record.getAlignmentBlocks();
+    	    		if(blocks.size()>=2){
+    	    			for(int ab=0; ab<blocks.size()-1; ab++){
+    		    			AlignmentBlock lBlock = blocks.get(ab);
+    		    		   	int lStart = lBlock.getReferenceStart();
+    		    		   	int lEnd = lStart + lBlock.getLength()-1;
+    		    		   	int lLen = lBlock.getLength();
+    		    		   	AlignmentBlock rBlock = blocks.get(ab+1);
+    		    		   	int rStart = rBlock.getReferenceStart();
+    		    		   	int rEnd = rStart + rBlock.getLength()-1;
+    		    		   	int rLen = rBlock.getLength();
+    		                boolean neg = record.getReadNegativeStrandFlag();
+    		                String refname = record.getReferenceName() + "\t";
+    		    		   	System.out.println(
+    		                                   refname +
+    		                                   (neg ? lEnd : lStart) + "\t" +
+    		                                   (neg ? "-\t" : "+\t") +
+    		                                   lLen + "\t" +
+    		                                   refname + 
+    		                                   (neg ? rEnd : rStart) + "\t" +
+    		                                   (neg ? "-\t" : "+\t") +
+    		                                   rLen + "\t" +
+    		                                   weight +"\t"+
+    		                                   0);
+    	    			}
+    	    		}
+        		}
     		}
     	}else{ //Just output reads (ignore alignment blocks for now)
     		
