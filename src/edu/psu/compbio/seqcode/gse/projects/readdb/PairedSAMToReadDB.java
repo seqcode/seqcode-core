@@ -2,6 +2,7 @@ package edu.psu.compbio.seqcode.gse.projects.readdb;
 
 import java.io.*;
 import java.util.*;
+
 import org.apache.commons.cli.*;
 import net.sf.samtools.*;
 import net.sf.samtools.util.CloseableIterator;
@@ -53,11 +54,11 @@ public class PairedSAMToReadDB {
     public static void dumpRecords(Collection<SAMRecord> lefts,
                                    Collection<SAMRecord> rights) {
         if (filterSubOpt) {
-            lefts = SAMToReadDB.filterSubOpt(SAMToReadDB.filterNoChrom(lefts));
-            rights = SAMToReadDB.filterSubOpt(SAMToReadDB.filterNoChrom(rights));
+            lefts = filterSubOpt(filterNoChrom(lefts));
+            rights = filterSubOpt(filterNoChrom(rights));
         } else {
-            lefts = SAMToReadDB.filterNoChrom(lefts);
-            rights = SAMToReadDB.filterNoChrom(rights);
+            lefts = filterNoChrom(lefts);
+            rights = filterNoChrom(rights);
         }
 
         int mapcount = lefts.size() * rights.size();
@@ -91,6 +92,38 @@ public class PairedSAMToReadDB {
         }
     }
 
+    public static Collection<SAMRecord> filterNoChrom(Collection<SAMRecord> input) {
+        if (input.size() == 0) {
+            return input;
+        }
+        Collection<SAMRecord> output = new ArrayList<SAMRecord>();
+        for (SAMRecord r : input) {
+            if (!r.getReferenceName().equals("*")) {
+                output.add(r);
+            }
+        }
+        return output;
+    }
+
+    public static Collection<SAMRecord> filterSubOpt(Collection<SAMRecord> input) {
+        if (input == null || input.size() < 2) {
+            return input;
+        }
+        int maxqual = SAMRecord.NO_MAPPING_QUALITY;
+        for (SAMRecord r : input) {
+            if (r.getMappingQuality() > maxqual) {
+                maxqual = r.getMappingQuality();
+            }
+        }
+        Collection<SAMRecord> output = new ArrayList<SAMRecord>();
+        for (SAMRecord r : input) {
+        	if (maxqual == r.getMappingQuality()) {
+        		output.add(r);
+	        }
+        }
+        return output;
+    }
+    
     public static boolean fillLeft(int n) {
         boolean filled = false;
         for (int i = 0; i < n; i++) {

@@ -12,18 +12,15 @@ import net.sf.samtools.util.CloseableIterator;
  * Reads SAM or BAM data on stdin.
  * Produces a file on stdout in the format expected by ImportHits.
  * 
- * Options:	--nosuboptimal (flag to only take the hits with the minimum number of mismatches)
- * 			--uniquehits (flag to only print 1:1 read to hit mappings)
+ * Options:	--uniquehits (flag to only print 1:1 read to hit mappings)
  * 			--pairedend (flag to print pairs)
  * 			--junctions (flag to print junction mapping reads as pairs)
  * 
- * nosuboptimal is applied before uniquehits
  */
 
 public class Bowtie2SAMToReadDB {
 
     public static boolean uniqueOnly;
-    public static boolean filterSubOpt;
     public static boolean inclPairedEnd;
     public static boolean inclJunction;
     
@@ -32,13 +29,11 @@ public class Bowtie2SAMToReadDB {
     public static void main(String args[]) throws IOException, ParseException {
         Options options = new Options();
         options.addOption("u","uniquehits",false,"only output hits with a single mapping");
-        options.addOption("s","nosuboptimal",false,"do not include hits whose score is not equal to the best score for the read");
         options.addOption("p","pairedend",false,"output paired-end hits");
         options.addOption("j","junctions",false,"output junction mapping reads (reads with a single gap)");
         CommandLineParser parser = new GnuParser();
         CommandLine cl = parser.parse( options, args, false );            
     	uniqueOnly = cl.hasOption("uniquehits");
-    	filterSubOpt = cl.hasOption("nosuboptimal");
     	inclPairedEnd = cl.hasOption("pairedend");
     	inclJunction = cl.hasOption("junctions");
         SAMFileReader reader = new SAMFileReader(System.in);
