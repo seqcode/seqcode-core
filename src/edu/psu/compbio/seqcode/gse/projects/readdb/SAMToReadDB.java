@@ -52,7 +52,7 @@ public class SAMToReadDB {
             }
             lastread = record.getReadName();
             if(!inclPairedEnd || record.getFirstOfPairFlag())
-            	if(uniqueOnly && record.getMappingQuality()!=SAMRecord.NO_MAPPING_QUALITY) //BWA multi-mapping filter)
+            	if(!uniqueOnly || record.getMappingQuality()!=SAMRecord.NO_MAPPING_QUALITY) //BWA multi-mapping filter)
             		byRead.add(record);
             
         }
