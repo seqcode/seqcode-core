@@ -67,11 +67,9 @@ public class SAMStats {
 	public void processSAMRecord(SAMRecord r){
 		if(!r.getReadUnmappedFlag()){
 			totalHits++;
-			int count = 1;
+			int count = 1;  //Have to figure out something for BWA when reporting multiple alignments
 			if(r.getIntegerAttribute("NH")!=null)
 				count = r.getIntegerAttribute("NH");
-			else if(r.getIntegerAttribute("X0")!=null)
-				count = r.getIntegerAttribute("X0");
 			if(count==1 && r.getMappingQuality()!=0) //Second clause for BWA
 				uniquelyMapped++;
 			
