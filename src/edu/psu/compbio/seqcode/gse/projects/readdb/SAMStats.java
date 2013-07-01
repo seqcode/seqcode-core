@@ -165,9 +165,6 @@ public class SAMStats {
 					}
 				}else if(r.getSecondOfPairFlag()){
 					RHits++;
-					if(r.getProperPairFlag()){
-						properPair++;
-					}
 				}
 			}else{
 				notPrimary++;

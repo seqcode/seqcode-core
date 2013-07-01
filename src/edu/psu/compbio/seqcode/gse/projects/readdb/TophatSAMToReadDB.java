@@ -15,8 +15,8 @@ import net.sf.samtools.util.CloseableIterator;
  * 
  * Options:	--nosuboptimal (flag to only take the hits with the minimum number of mismatches)
  * 			--uniquehits (flag to only print 1:1 read to hit mappings)
- * 			--pairedend (flag to only print pairs)
- * 			--junctions (flag to only print junction mapping reads as pairs)
+ * 			--pairedend (flag to print pairs)
+ * 			--junctions (flag to print junction mapping reads as pairs)
  * 
  * nosuboptimal is applied before uniquehits
  */
@@ -25,21 +25,21 @@ public class TophatSAMToReadDB {
 
     public static boolean uniqueOnly;
     public static boolean filterSubOpt;
-    public static boolean pairedEndOnly;
-    public static boolean junctionOnly;
+    public static boolean inclPairedEnd;
+    public static boolean inclJunction;
 
     public static void main(String args[]) throws IOException, ParseException {
         Options options = new Options();
         options.addOption("u","uniquehits",false,"only output hits with a single mapping");
         options.addOption("s","nosuboptimal",false,"do not include hits whose score is not equal to the best score for the read");
-        options.addOption("p","pairedend",false,"only output paired-end hits");
-        options.addOption("j","junctions",false,"only output junction mapping reads (reads with a single gap)");
+        options.addOption("p","pairedend",false,"output paired-end hits");
+        options.addOption("j","junctions",false,"output junction mapping reads (reads with gaps)");
         CommandLineParser parser = new GnuParser();
         CommandLine cl = parser.parse( options, args, false );            
     	uniqueOnly = cl.hasOption("uniquehits");
     	filterSubOpt = cl.hasOption("nosuboptimal");
-    	pairedEndOnly = cl.hasOption("pairedend");
-    	junctionOnly = cl.hasOption("junctions");
+    	inclPairedEnd = cl.hasOption("pairedend");
+    	inclJunction = cl.hasOption("junctions");
         SAMFileReader reader = new SAMFileReader(System.in);
         CloseableIterator<SAMRecord> iter = reader.iterator();
         while (iter.hasNext()) {
@@ -57,7 +57,7 @@ public class TophatSAMToReadDB {
         }
     	float weight = 1/(float)record.getIntegerAttribute("NH");
 	    
-    	if(pairedEndOnly){
+    	if(inclPairedEnd){
     		/*
     		 * Okay, so the paired-end part is just hacked together for now.
     		 * It only accepts true pairs.
@@ -86,34 +86,38 @@ public class TophatSAMToReadDB {
                         weight +"\t"+
                         1);
     		}
-    	}else if(junctionOnly){
+    		
     		/*
-    		 * Outputs as paired alignments those reads that are aligned in TWO blocks
+    		 * Outputs as paired alignments those reads that are aligned in >2 blocks
     		 * Note: if you change this, you may have to change the SAMStats output also
     		 */
-    		List<AlignmentBlock> blocks = record.getAlignmentBlocks();
-    		if(blocks.size()==2){
-    			AlignmentBlock lBlock = blocks.get(0);
-    		   	int lStart = lBlock.getReferenceStart();
-    		   	int lEnd = lStart + lBlock.getLength()-1;
-    		   	int lLen = lBlock.getLength();
-    		   	AlignmentBlock rBlock = blocks.get(1);
-    		   	int rStart = rBlock.getReferenceStart();
-    		   	int rEnd = rStart + rBlock.getLength()-1;
-    		   	int rLen = rBlock.getLength();
-                boolean neg = record.getReadNegativeStrandFlag();
-                String refname = record.getReferenceName() + "\t";
-    		   	System.out.println(
-                                   refname +
-                                   (neg ? lEnd : lStart) + "\t" +
-                                   (neg ? "-\t" : "+\t") +
-                                   lLen + "\t" +
-                                   refname + 
-                                   (neg ? rEnd : rStart) + "\t" +
-                                   (neg ? "-\t" : "+\t") +
-                                   rLen + "\t" +
-                                   weight +"\t"+
-                                   0);
+    		if(inclJunction){
+	    		List<AlignmentBlock> blocks = record.getAlignmentBlocks();
+	    		if(blocks.size()>=2){
+	    			for(int ab=0; ab<blocks.size()-1; ab++){
+		    			AlignmentBlock lBlock = blocks.get(ab);
+		    		   	int lStart = lBlock.getReferenceStart();
+		    		   	int lEnd = lStart + lBlock.getLength()-1;
+		    		   	int lLen = lBlock.getLength();
+		    		   	AlignmentBlock rBlock = blocks.get(ab+1);
+		    		   	int rStart = rBlock.getReferenceStart();
+		    		   	int rEnd = rStart + rBlock.getLength()-1;
+		    		   	int rLen = rBlock.getLength();
+		                boolean neg = record.getReadNegativeStrandFlag();
+		                String refname = record.getReferenceName() + "\t";
+		    		   	System.out.println(
+		                                   refname +
+		                                   (neg ? lEnd : lStart) + "\t" +
+		                                   (neg ? "-\t" : "+\t") +
+		                                   lLen + "\t" +
+		                                   refname + 
+		                                   (neg ? rEnd : rStart) + "\t" +
+		                                   (neg ? "-\t" : "+\t") +
+		                                   rLen + "\t" +
+		                                   weight +"\t"+
+		                                   0);
+	    			}
+	    		}
     		}
     	}else{ //Just output reads (or read parts)
     		List<AlignmentBlock> blocks = record.getAlignmentBlocks();

@@ -14,8 +14,8 @@ import net.sf.samtools.util.CloseableIterator;
  * 
  * Options:	--nosuboptimal (flag to only take the hits with the minimum number of mismatches)
  * 			--uniquehits (flag to only print 1:1 read to hit mappings)
- * 			--pairedend (flag to only print pairs)
- * 			--junctions (flag to only print junction mapping reads as pairs)
+ * 			--pairedend (flag to print pairs)
+ * 			--junctions (flag to print junction mapping reads as pairs)
  * 
  * nosuboptimal is applied before uniquehits
  */
@@ -24,8 +24,8 @@ public class Bowtie2SAMToReadDB {
 
     public static boolean uniqueOnly;
     public static boolean filterSubOpt;
-    public static boolean pairedEndOnly;
-    public static boolean junctionOnly;
+    public static boolean inclPairedEnd;
+    public static boolean inclJunction;
     
     public static boolean lastFirstMateUnique=false; 
 
@@ -33,14 +33,14 @@ public class Bowtie2SAMToReadDB {
         Options options = new Options();
         options.addOption("u","uniquehits",false,"only output hits with a single mapping");
         options.addOption("s","nosuboptimal",false,"do not include hits whose score is not equal to the best score for the read");
-        options.addOption("p","pairedend",false,"only output paired-end hits");
-        options.addOption("j","junctions",false,"only output junction mapping reads (reads with a single gap)");
+        options.addOption("p","pairedend",false,"output paired-end hits");
+        options.addOption("j","junctions",false,"output junction mapping reads (reads with a single gap)");
         CommandLineParser parser = new GnuParser();
         CommandLine cl = parser.parse( options, args, false );            
     	uniqueOnly = cl.hasOption("uniquehits");
     	filterSubOpt = cl.hasOption("nosuboptimal");
-    	pairedEndOnly = cl.hasOption("pairedend");
-    	junctionOnly = cl.hasOption("junctions");
+    	inclPairedEnd = cl.hasOption("pairedend");
+    	inclJunction = cl.hasOption("junctions");
         SAMFileReader reader = new SAMFileReader(System.in);
         CloseableIterator<SAMRecord> iter = reader.iterator();
         while (iter.hasNext()) {
@@ -58,7 +58,7 @@ public class Bowtie2SAMToReadDB {
     	if(record.getIntegerAttribute("XS")!=null)
     		secAScore = record.getIntegerAttribute("XS");
     	
-    	if(pairedEndOnly){
+    	if(inclPairedEnd){
     		boolean currUnique = primAScore > secAScore ? true : false;
         	float weight = 1;  //Fix this if using bowtie2 to produce multiple mappings for each read
     	    
@@ -95,6 +95,8 @@ public class Bowtie2SAMToReadDB {
 	                        weight +"\t"+
 	                        1);
     			}
+    			
+    			
     		}
     	}else{ //Just output reads (ignore alignment blocks for now)
     		

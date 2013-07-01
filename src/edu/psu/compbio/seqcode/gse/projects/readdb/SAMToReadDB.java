@@ -2,6 +2,7 @@ package edu.psu.compbio.seqcode.gse.projects.readdb;
 
 import java.io.*;
 import java.util.*;
+
 import org.apache.commons.cli.*;
 import net.sf.samtools.*;
 import net.sf.samtools.util.CloseableIterator;
@@ -13,6 +14,8 @@ import net.sf.samtools.util.CloseableIterator;
  * 
  * Options:	--nosuboptimal (flag to only take the hits with the minimum number of mismatches)
  * 			--uniquehits (flag to only print 1:1 read to hit mappings)
+ * 			--pairedend (flag to print pairs)
+ * 			--junctions (flag to print junction mapping reads as pairs)
  * 
  * nosuboptimal is applied before uniquehits
  */
@@ -21,15 +24,21 @@ public class SAMToReadDB {
 
     public static boolean uniqueOnly;
     public static boolean filterSubOpt;
+    public static boolean inclPairedEnd;
+    public static boolean inclJunction;
 
     public static void main(String args[]) throws IOException, ParseException {
         Options options = new Options();
         options.addOption("u","uniquehits",false,"only output hits with a single mapping");
         options.addOption("s","nosuboptimal",false,"do not include hits whose score is not equal to the best score for the read");
+        options.addOption("p","pairedend",false,"output paired-end hits");
+        options.addOption("j","junctions",false,"output junction mapping reads (reads with gaps)");
         CommandLineParser parser = new GnuParser();
         CommandLine cl = parser.parse( options, args, false );            
     	uniqueOnly = cl.hasOption("uniquehits");
     	filterSubOpt = cl.hasOption("nosuboptimal");
+    	inclPairedEnd = cl.hasOption("pairedend");
+    	inclJunction = cl.hasOption("junctions");
         String line;
         String lastRead = "";        
         SAMFileReader reader = new SAMFileReader(System.in);
@@ -51,6 +60,7 @@ public class SAMToReadDB {
         iter.close();
         reader.close();
     }       
+    
     public static Collection<SAMRecord> filterNoChrom(Collection<SAMRecord> input) {
         if (input.size() == 0) {
             return input;
@@ -96,14 +106,78 @@ public class SAMToReadDB {
         }
 
         float weight = 1 / ((float)mapcount);
-
         for (SAMRecord record : records) {
-            System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
-                                             record.getReferenceName(),
-                                             record.getReadNegativeStrandFlag() ? record.getAlignmentEnd() : record.getAlignmentStart(),
-                                             record.getReadNegativeStrandFlag() ? "-" : "+",
-                                             record.getReadLength(),
-                                             weight));
-        }                                             
+		
+		    if(inclPairedEnd){
+				/*
+				 * Okay, so the paired-end part is just hacked together for now.
+				 * It only accepts true pairs.
+				 * It also assumes that the left and right mates have the same length, 
+				 * and that there are no gaps in the second mate alignment (SAM doesn't store the paired read's end)
+				 * Note: if you change this, you may have to change the SAMStats output also
+				 */
+				if(record.getFirstOfPairFlag() && record.getProperPairFlag()){
+		            boolean neg = record.getReadNegativeStrandFlag();
+		            boolean mateneg = record.getMateNegativeStrandFlag();
+		            String len = record.getReadLength() + "\t";
+		            System.out.println(
+		                    record.getReferenceName() + "\t" +
+		                    (neg ? 
+		                     record.getAlignmentEnd() : 
+		                     record.getAlignmentStart()) + "\t" +
+		                    (neg ? "-\t" : "+\t") + 
+		                    len +
+		                    
+		                    record.getMateReferenceName() + "\t" +
+		                    (mateneg ? 
+		                     record.getMateAlignmentStart()+record.getReadLength()-1 : 
+		                     record.getMateAlignmentStart()) + "\t" +
+		                    (mateneg ? "-\t" : "+\t") +
+		                    len + 
+		                    weight +"\t"+
+		                    1);
+				}
+				
+				/*
+				 * Outputs as paired alignments those reads that are aligned in >2 blocks
+				 * Note: if you change this, you may have to change the SAMStats output also
+				 */
+				if(inclJunction){
+		    		List<AlignmentBlock> blocks = record.getAlignmentBlocks();
+		    		if(blocks.size()>=2){
+		    			for(int ab=0; ab<blocks.size()-1; ab++){
+			    			AlignmentBlock lBlock = blocks.get(ab);
+			    		   	int lStart = lBlock.getReferenceStart();
+			    		   	int lEnd = lStart + lBlock.getLength()-1;
+			    		   	int lLen = lBlock.getLength();
+			    		   	AlignmentBlock rBlock = blocks.get(ab+1);
+			    		   	int rStart = rBlock.getReferenceStart();
+			    		   	int rEnd = rStart + rBlock.getLength()-1;
+			    		   	int rLen = rBlock.getLength();
+			                boolean neg = record.getReadNegativeStrandFlag();
+			                String refname = record.getReferenceName() + "\t";
+			    		   	System.out.println(
+			                                   refname +
+			                                   (neg ? lEnd : lStart) + "\t" +
+			                                   (neg ? "-\t" : "+\t") +
+			                                   lLen + "\t" +
+			                                   refname + 
+			                                   (neg ? rEnd : rStart) + "\t" +
+			                                   (neg ? "-\t" : "+\t") +
+			                                   rLen + "\t" +
+			                                   weight +"\t"+
+			                                   0);
+		    			}
+		    		}
+				}
+			}else{ //Just output reads 
+		            System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
+		                                             record.getReferenceName(),
+		                                             record.getReadNegativeStrandFlag() ? record.getAlignmentEnd() : record.getAlignmentStart(),
+		                                             record.getReadNegativeStrandFlag() ? "-" : "+",
+		                                             record.getReadLength(),
+		                                             weight));
+			}
+        }
     }
 }

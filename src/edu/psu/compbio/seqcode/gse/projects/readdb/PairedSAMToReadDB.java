@@ -70,7 +70,7 @@ public class PairedSAMToReadDB {
         float weight = 1 / ((float)mapcount);
         for (SAMRecord left : lefts) {
             for (SAMRecord right : rights) {
-                System.out.println(String.format("%s\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%f",
+                System.out.println(String.format("%s\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%f\t,%d",
                                                  left.getReferenceName(),
                                                  left.getReadNegativeStrandFlag() ? 
                                                  left.getAlignmentEnd() : 
