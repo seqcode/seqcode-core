@@ -118,7 +118,8 @@ public class PairedSAMToReadDB {
         Collection<SAMRecord> output = new ArrayList<SAMRecord>();
         for (SAMRecord r : input) {
         	if (maxqual == r.getMappingQuality()) {
-        		output.add(r);
+        		if(!uniqueOnly || r.getMappingQuality()!=0) //For BWA
+        			output.add(r);
 	        }
         }
         return output;
@@ -156,7 +157,6 @@ public class PairedSAMToReadDB {
     public static void makePairs() {
         ArrayList<SAMRecord> leftrecords = new ArrayList<SAMRecord>();
         ArrayList<SAMRecord> rightrecords = new ArrayList<SAMRecord>();
-        int loop = 0;
         while (fill(chunksize) || leftbuffer.size() > 0) {
             int clearL = 0, clearR = 0;
             int lbs = Math.min(leftbuffer.size(),10000);
