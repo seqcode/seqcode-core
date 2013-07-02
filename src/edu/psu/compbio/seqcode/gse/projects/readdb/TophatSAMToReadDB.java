@@ -65,7 +65,7 @@ public class TophatSAMToReadDB {
     		 * and that there are no gaps in the second mate alignment (SAM doesn't store the paired read's end)
     		 * Note: if you change this, you may have to change the SAMStats output also
     		 */
-    		if(record.getFirstOfPairFlag() && record.getProperPairFlag()){
+    		if(!record.getNotPrimaryAlignmentFlag() && record.getFirstOfPairFlag() && record.getProperPairFlag() && record.getReadPairedFlag()){
                 boolean neg = record.getReadNegativeStrandFlag();
                 boolean mateneg = record.getMateNegativeStrandFlag();
                 String len = record.getReadLength() + "\t";
