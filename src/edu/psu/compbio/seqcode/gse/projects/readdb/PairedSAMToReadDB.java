@@ -99,14 +99,15 @@ public class PairedSAMToReadDB {
         Collection<SAMRecord> output = new ArrayList<SAMRecord>();
         for (SAMRecord r : input) {
             if (!r.getReferenceName().equals("*")) {
-                output.add(r);
+            	if(!uniqueOnly || r.getMappingQuality()!=0) //For BWA
+            		output.add(r);
             }
         }
         return output;
     }
 
     public static Collection<SAMRecord> filterSubOpt(Collection<SAMRecord> input) {
-        if (input == null || input.size() < 2) {
+        if (input == null || input.size() ==0) {
             return input;
         }
         int maxqual = SAMRecord.NO_MAPPING_QUALITY;
