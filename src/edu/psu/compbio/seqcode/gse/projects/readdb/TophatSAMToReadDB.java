@@ -57,7 +57,7 @@ public class TophatSAMToReadDB {
         }
     	float weight = 1/(float)record.getIntegerAttribute("NH");
 	    
-    	if(inclPairedEnd){
+    	if(inclPairedEnd || inclJunction){
     		/*
     		 * Okay, so the paired-end part is just hacked together for now.
     		 * It only accepts true pairs.
@@ -65,26 +65,28 @@ public class TophatSAMToReadDB {
     		 * and that there are no gaps in the second mate alignment (SAM doesn't store the paired read's end)
     		 * Note: if you change this, you may have to change the SAMStats output also
     		 */
-    		if(!record.getNotPrimaryAlignmentFlag() && record.getFirstOfPairFlag() && record.getProperPairFlag() && record.getReadPairedFlag()){
-                boolean neg = record.getReadNegativeStrandFlag();
-                boolean mateneg = record.getMateNegativeStrandFlag();
-                String len = record.getReadLength() + "\t";
-                System.out.println(
-                        record.getReferenceName() + "\t" +
-                        (neg ? 
-                         record.getAlignmentEnd() : 
-                         record.getAlignmentStart()) + "\t" +
-                        (neg ? "-\t" : "+\t") + 
-                        len +
-                        
-                        record.getMateReferenceName() + "\t" +
-                        (mateneg ? 
-                         record.getMateAlignmentStart()+record.getReadLength()-1 : 
-                         record.getMateAlignmentStart()) + "\t" +
-                        (mateneg ? "-\t" : "+\t") +
-                        len + 
-                        weight +"\t"+
-                        1);
+    		if(inclPairedEnd){
+	    		if(!record.getNotPrimaryAlignmentFlag() && record.getFirstOfPairFlag() && record.getProperPairFlag() && record.getReadPairedFlag()){
+	                boolean neg = record.getReadNegativeStrandFlag();
+	                boolean mateneg = record.getMateNegativeStrandFlag();
+	                String len = record.getReadLength() + "\t";
+	                System.out.println(
+	                        record.getReferenceName() + "\t" +
+	                        (neg ? 
+	                         record.getAlignmentEnd() : 
+	                         record.getAlignmentStart()) + "\t" +
+	                        (neg ? "-\t" : "+\t") + 
+	                        len +
+	                        
+	                        record.getMateReferenceName() + "\t" +
+	                        (mateneg ? 
+	                         record.getMateAlignmentStart()+record.getReadLength()-1 : 
+	                         record.getMateAlignmentStart()) + "\t" +
+	                        (mateneg ? "-\t" : "+\t") +
+	                        len + 
+	                        weight +"\t"+
+	                        1);
+	    		}
     		}
     		
     		/*
