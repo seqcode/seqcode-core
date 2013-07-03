@@ -704,7 +704,8 @@ public class ServerTask {
                 boolean pairedfile = name.indexOf(".prleft.") > 0 ||
                     name.indexOf(".prright.") > 0 ||
                     name.indexOf(".pairedleftindex") > 0 ||
-                    name.indexOf(".pairedrightindex") > 0;
+                    name.indexOf(".pairedrightindex") > 0 ||
+                    name.indexOf(".paircode") > 0;  
                 boolean singlefile = name.indexOf("singleindex") > 0||
                     name.indexOf("spositions") > 0 ||
                     name.indexOf("sweights") > 0 ||
