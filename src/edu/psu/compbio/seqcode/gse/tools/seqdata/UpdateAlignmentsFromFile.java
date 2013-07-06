@@ -84,7 +84,7 @@ public class UpdateAlignmentsFromFile {
         String line = null;
 		while ((line = reader.readLine()) != null) {
 			String[] fields = line.split("\t");
-			if(!fields[0].equals("ReadDBID")){//skip the first line in the deepseq.list file
+			if(!fields[0].equals("ReadDBID") && !fields[0].startsWith("#")){//skip the first line in the deepseq.list file
 				
 				//Variables
 				Integer dbid = new Integer(fields[0]);

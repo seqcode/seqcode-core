@@ -1,9 +1,7 @@
 package edu.psu.compbio.seqcode.gse.tools.core;
 
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
-import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 import java.io.*;
 import java.util.Collection;

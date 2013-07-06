@@ -32,7 +32,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 		collabid varchar(200),
 		publicsource varchar(200),
 		publicdbid varchar(200),
-		fqfile varchar(200),
+		fqfile varchar(500),
 		exptnote longtext,
 		unique (id),
 		index (name, replicate, expttype, lab, exptcondition, expttarget, cellline),

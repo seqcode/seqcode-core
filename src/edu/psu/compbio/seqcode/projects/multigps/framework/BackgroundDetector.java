@@ -21,7 +21,6 @@ import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentSet;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.Sample;
 
 /**
@@ -281,7 +280,6 @@ public class BackgroundDetector {
     	protected void makeStartLandscape(List<List<StrandedBaseCount>> hits, Region currReg, float binWidth, float binStep, char strand){
     		int numBins = (int)(currReg.getWidth()/binStep);
     		starts = new double[hits.size()][numBins+1];
-    		float halfWidth = binWidth/2;
     		for(Sample samp : manager.getExperimentSet().getSamples()){
     			if(samp!=null){
 	            	List<StrandedBaseCount> currHits = hits.get(samp.getIndex());
@@ -335,8 +333,6 @@ public class BackgroundDetector {
 			int binW = Args.parseInteger(args,"binwidth", 50);
 			int binS = Args.parseInteger(args,"binstep", 25);
 			ExperimentManager manager = new ExperimentManager(config);
-			ExperimentSet eset = manager.getExperimentSet();
-			System.err.println("Samples:\t"+eset.getSamples().size());
 			
 			BackgroundDetector detector = new BackgroundDetector(config, manager, binW, binS);
 			detector.execute();
