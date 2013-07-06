@@ -1,21 +1,14 @@
 package edu.psu.compbio.seqcode.gse.seqview.model;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.ProfileRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.projects.chiapet.Neighborhood;
 import edu.psu.compbio.seqcode.gse.projects.readdb.*;
-import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
-import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 /**
  * Data model for chipseq histogram.  Separate methods for retrieving
@@ -32,14 +25,6 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
     private Region region;
     private boolean newinput;
     
-    private double[] kernel;
-    private double[] readdist;
-	private double[] eventdist;
-	private double[] condist;
-	private int cutoff;
-	private Map<Integer,String> revChromMap;
-	private Poisson poisson = new Poisson(1, new DRand());
-
     public SeqHistogramModel (SeqAlignment a) throws IOException, ClientException {
         alignments = new HashSet<SeqAlignment>();
         alignments.add(a);

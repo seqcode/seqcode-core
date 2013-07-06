@@ -3,20 +3,12 @@ package edu.psu.compbio.seqcode.gse.seqview.model;
 import java.io.IOException;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.clustering.Cluster;
-import edu.psu.compbio.seqcode.gse.clustering.hierarchical.ClusterNode;
-import edu.psu.compbio.seqcode.gse.clustering.hierarchical.HierarchicalClustering;
-import edu.psu.compbio.seqcode.gse.clustering.pairedhitcluster.PairedHitClusterRepresentative;
-import edu.psu.compbio.seqcode.gse.clustering.pairedhitcluster.PairedHitClusterable;
-import edu.psu.compbio.seqcode.gse.clustering.vectorcluster.ChebyshevDistance;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHitLeftComparator;
-import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
-import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runnable {
 
@@ -28,9 +20,7 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
     private List<PairedHit> results, otherchrom;
     private Comparator<PairedHit> comparator;
     private SeqPairedEndModelProperties props;
-    private HierarchicalClustering<PairedHitClusterable> clustering;
-    private PairedHitClusterRepresentative repr = new PairedHitClusterRepresentative();
-
+    
     public SeqPairedEndModel (Collection<SeqAlignment> alignments) throws IOException, ClientException{
         client = new Client();
         comparator = new PairedHitLeftComparator();
@@ -43,7 +33,6 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
         results = null;
         otherchrom = null;
         props = new SeqPairedEndModelProperties();
-        clustering = new HierarchicalClustering<PairedHitClusterable>(repr, new ChebyshevDistance<PairedHitClusterable>());
     }
     public SeqPairedEndModelProperties getProperties() {return props;}
 
@@ -132,32 +121,6 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
                         }
                         Collections.sort(results, comparator);
                     }
-                    if (props.Cluster) {
-                    	Vector<PairedHitClusterable> clusterables = new Vector<PairedHitClusterable>();
-                    	for (PairedHit hit : results) {
-                    		clusterables.add(new PairedHitClusterable(hit, region.getGenome()));
-                    	}
-                    	if (props.MaxClusterDistance>=0) {
-                    		clustering.setMaxDistanceToAccept(props.MaxClusterDistance);
-                    	}
-                    	Collection<Cluster<PairedHitClusterable>> clustertree = clustering.clusterElements(clusterables);
-                    	results = new ArrayList<PairedHit>();
-                    	for(Cluster<PairedHitClusterable> tree : clustertree) {
-                    		if (props.MaxClusterDistance>=0) {
-                    			PairedHit tmphit = repr.getRepresentative(tree).getHit();
-                    			if (tmphit.leftPos<0 || tmphit.rightPos<0) {
-                    				System.err.println(tmphit);
-                    				for (PairedHitClusterable phc : tree.getElements()) {
-                    					System.err.println("\t"+phc.getHit());
-                    				}
-                    			}
-                    			results.add(tmphit);
-                    		} else {
-                    			appendIndices(results, tree);
-                    		}
-                    		
-                		}
-                    }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     // assign empty output.  This is useful because Client
@@ -170,22 +133,5 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
             }
         }
         client.close();
-    }
-    
-    private void appendIndices(List<PairedHit> hits, Cluster<PairedHitClusterable> tree) {
-    	if(tree instanceof ClusterNode) { 
-			ClusterNode<PairedHitClusterable> treeNode = (ClusterNode<PairedHitClusterable>)tree;
-			appendIndices(hits, treeNode.getLeft());
-			appendIndices(hits, treeNode.getRight());
-		} else { 
-			for(PairedHitClusterable pc : tree.getElements()) { 
-				PairedHit hit = pc.getHit();
-				if(hit != null) { 
-					hits.add(hit);
-				} else { 
-					System.err.println("Null hit encountered...");
-				}
-			}
-		}
     }
 }

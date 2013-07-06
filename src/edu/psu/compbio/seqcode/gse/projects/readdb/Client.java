@@ -354,7 +354,7 @@ public class Client implements ReadOnlyClient {
                 float[] floats = new float[count];
                 int[] codes = new int[count];
                 for (int i = startindex; i < startindex + count; i++) {
-                    floats[i-startindex] = hits.get(i).weight;
+                	floats[i-startindex] = hits.get(i).weight;
                     codes[i-startindex] = hits.get(i).pairCode;
                     ints[i-startindex] = Hits.makeLAS(hits.get(i).leftLength, hits.get(i).leftStrand,
                                                       hits.get(i).rightLength, hits.get(i).rightStrand);

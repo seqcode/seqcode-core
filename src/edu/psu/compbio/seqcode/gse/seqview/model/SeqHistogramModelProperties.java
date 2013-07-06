@@ -8,6 +8,6 @@ public class SeqHistogramModelProperties extends ModelProperties {
     public Boolean UseWeights = Boolean.TRUE;
     public Integer GaussianKernelVariance = 0;
     public Boolean ReadExtension = Boolean.FALSE;
-    public Boolean ShowPairedReads = Boolean.TRUE;
+    public Boolean ShowPairedReads = Boolean.FALSE;
     public Boolean ShowSingleReads = Boolean.TRUE;
 }

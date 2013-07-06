@@ -5,13 +5,9 @@ import java.awt.*;
 import java.util.*;
 
 
-import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
-import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.seqview.model.SeqPairedEndModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
-import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
 public class PairedEndPainter extends RegionPaintable {
@@ -62,7 +58,6 @@ public class PairedEndPainter extends RegionPaintable {
 		}
 		if(!model.isReady()) { return; }
 
-		boolean clusterrepr = model.getProperties().Cluster && (model.getProperties().MaxClusterDistance>=0);
 		int width = x2 - x1;
 		int height = Math.max(y2 - y1,1);
 		int regionStart = model.getRegion().getStart();
@@ -79,9 +74,6 @@ public class PairedEndPainter extends RegionPaintable {
 		//        int alphastep = Math.min(255, Math.max(255 / (height / (hits.size() * linewidth)), 4));
 		int alphastep = 255;
 		int h = height;
-		int scan = 0;
-		Color plusColor = new Color(0, 0, 255, alphastep);
-		Color minusColor = new Color(255, 0, 0, alphastep);
 		Color plusplus = new Color(0, 0, 255, alphastep / 2);
 		Color minusminus = new Color(255,0,0,alphastep/2);
 		Color plusminus = new Color(100,0,255,alphastep/2);
@@ -89,12 +81,7 @@ public class PairedEndPainter extends RegionPaintable {
 
 		for (int i = 0; i < hits.size(); i++) {
 			PairedHit hit = hits.get(i);
-			if (clusterrepr && hit.weight<props.MinClusterSizeToDraw) continue;
-			if (clusterrepr) {
-				linewidth = hit.weight >= props.MinClusterSizeToDraw ? Math.min(50,(int)hit.weight) : 0;
-				g.setStroke(new BasicStroke((float)linewidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL));
-			}
-
+			
 			int leftx1 = getXPos(hit.leftPos, regionStart, regionEnd, x1, x2);
 			int leftx2 = getXPos(hit.leftStrand ? hit.leftPos + hit.leftLength : hit.leftPos - hit.leftLength,
 					regionStart, regionEnd, x1, x2);
@@ -122,24 +109,9 @@ public class PairedEndPainter extends RegionPaintable {
 			if (leftx2 < rightx1) {
 				//g.setColor(hit.leftStrand ? (hit.rightStrand ? plusplus : plusminus) : (hit.rightStrand ? minusplus : minusminus));
 				g.drawLine(leftx2, y1+h, rightx1, y1+h);
-				if (props.DrawClusterSize) {
-					g.drawString(""+((int)hit.weight),rightx1 + 1,y1 + h);
-				}
 			} else {
 				//g.setColor(hit.rightStrand ? (hit.leftStrand ? plusplus : plusminus) : (hit.leftStrand ? minusplus : minusminus));
 				g.drawLine(rightx2, y1+h, leftx1, y1+h);
-				if (props.DrawClusterSize) {
-					g.drawString(""+((int)hit.weight),leftx1 + 1,y1 + h);
-				}
-			}
-
-			if (!clusterrepr) {
-				if (leftx2 == leftx1) {leftx2++;}
-				g.setColor(hit.leftStrand ? plusColor : minusColor);
-				g.drawLine(leftx1, y1 + h, leftx2, y1+h);
-				if (rightx2 == rightx1) {rightx2++;}
-				g.setColor(hit.rightStrand ? plusColor : minusColor);
-				g.drawLine(rightx1, y1+h, rightx2, y1+h);
 			}
 
 			h -= (linewidth == 1 ? 2 : linewidth);

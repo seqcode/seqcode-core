@@ -318,7 +318,9 @@ public class SeqHistogramPainter extends RegionPaintable {
 		if(props.DrawPairedCurves && alignPaired && !stranded){
 			List<PairedHit> pairs = arcmodel.getResults();
 			for(PairedHit pair : pairs){
-				if(pair.leftContainedIn(arcmodel.getRegion()) && pair.rightContainedIn(arcmodel.getRegion())){
+				if(pair.leftChrom==pair.rightChrom && 
+						pair.leftPos>=arcmodel.getRegion().getStart() && pair.leftPos<=arcmodel.getRegion().getEnd() &&
+						pair.rightPos>=arcmodel.getRegion().getStart() && pair.rightPos<=arcmodel.getRegion().getEnd() ){
 					int xA =getXPos(pair.lesserPos(), regionStart, regionEnd, x1, x2);
 					int xB =getXPos(pair.greaterPos(), regionStart, regionEnd, x1, x2);
 					double pwidth = pair.greaterPos()-pair.lesserPos();
