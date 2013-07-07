@@ -299,7 +299,7 @@ public class ExperimentManager {
     	if(events.size()>0){
     		try {
 	    		//Full dataset table
-		    	String filename = File.separator+config.getOutName()+".all.events.table";
+		    	String filename = config.getOutputParentDir()+File.separator+config.getOutBase()+".all.events.table";
 		    	FileWriter fout = new FileWriter(filename);
 		    	fout.write(BindingEvent.fullHeadString()+"\n");
 		    	for(BindingEvent e : events)

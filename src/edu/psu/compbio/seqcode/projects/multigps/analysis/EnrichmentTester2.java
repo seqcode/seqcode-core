@@ -36,6 +36,7 @@ public class EnrichmentTester2 {
 		this.potentialSites = cleanPotentialSites(potentialSites, siteJoinWin);
 		this.scalingSites = cleanPotentialSites(scalingSites, siteJoinWin);
 		normalizer = new MedianRatiosNormalization(manager.getExperimentSet().getReplicates().size());
+		config.makeGPSOutputDirs();
 	}
 	
 	
