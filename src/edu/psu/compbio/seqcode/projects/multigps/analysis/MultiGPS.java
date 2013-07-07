@@ -39,7 +39,7 @@ public class MultiGPS {
 	public MultiGPS(Config c, ExperimentManager eMan){
 		manager = eMan;
 		config = c;
-		config.makeGPSOutputDirs();
+		config.makeGPSOutputDirs(true);
 		outFormatter = new OutputFormatter(config);
 		
 		//Initialize the binding model record

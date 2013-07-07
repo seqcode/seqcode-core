@@ -36,7 +36,7 @@ public class ReplicateDataExporter {
 	 */
 	public void execute(){
 		//Convert our points to events
-		PointsToEvents p2e = new PointsToEvents(config, manager, potentialSites, searchRegionWin);
+		PointsToEvents p2e = new PointsToEvents(config, manager, potentialSites, searchRegionWin, true);
 		List<BindingEvent> events = p2e.execute();
 		
 		//Estimate signal-noise ratios

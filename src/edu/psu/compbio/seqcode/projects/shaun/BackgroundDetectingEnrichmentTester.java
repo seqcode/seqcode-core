@@ -52,7 +52,7 @@ public class BackgroundDetectingEnrichmentTester {
 		System.err.println("Expected number of background reads in "+binWidth+"bp window = "+expectedBack);
 		
 		//Quantify each of the potential events
-		PointsToEvents eventConvertor = new PointsToEvents(config, manager, pts, binWidth);
+		PointsToEvents eventConvertor = new PointsToEvents(config, manager, pts, binWidth, true);
 		events = eventConvertor.execute();
 		
 		//Set background rates

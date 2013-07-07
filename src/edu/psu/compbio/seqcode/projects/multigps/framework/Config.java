@@ -484,7 +484,7 @@ public class Config {
 	/**
 	 * Make some output directories used by multiGPS
 	 */
-	public void makeGPSOutputDirs(){
+	public void makeGPSOutputDirs(boolean makeInterAndImageDirs){
 		//Test if output directory already exists. If it does,  recursively delete contents
 		outDir =  new File(outName);
 		if(outDir.exists())
@@ -492,12 +492,14 @@ public class Config {
 		outBase = outDir.getName();
 		//(re)make the output directory
 		outDir.mkdirs();
-		//Make the gps intermediate results output directory
-		interDir = new File(outDir.getAbsolutePath()+File.separator+"intermediate-results");
-		interDir.mkdirs();
-		//Make the image results output directory
-		imagesDir = new File(outDir.getAbsolutePath()+File.separator+"images");
-		imagesDir.mkdirs();
+		if(makeInterAndImageDirs){
+			//Make the gps intermediate results output directory
+			interDir = new File(outDir.getAbsolutePath()+File.separator+"intermediate-results");
+			interDir.mkdirs();
+			//Make the image results output directory
+			imagesDir = new File(outDir.getAbsolutePath()+File.separator+"images");
+			imagesDir.mkdirs();
+		}
 	}
 	public String getOutName(){return outName;}
 	public String getOutBase(){return outBase;}

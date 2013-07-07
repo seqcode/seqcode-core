@@ -26,6 +26,7 @@ public class PointsToEvents {
 	private ExperimentManager manager;
 	private List<Point> points;
 	private int regionWin;
+	private boolean assignReadsWithModel=true;
 	
 	/**
 	 * Constructor
@@ -34,11 +35,12 @@ public class PointsToEvents {
 	 * @param p
 	 * @param win
 	 */
-	public PointsToEvents(Config c, ExperimentManager man, List<Point> p, int win){
+	public PointsToEvents(Config c, ExperimentManager man, List<Point> p, int win, boolean assignWithModel){
 		config = c;
 		manager = man;
 		points = p;
 		regionWin = win;
+		assignReadsWithModel=assignWithModel;
 	}
 	
 	/**
@@ -73,13 +75,20 @@ public class PointsToEvents {
 					if(r.getControl()!=null)
 						ctrlHits = r.getControl().getUnstrandedBases(potentialReg);
 					
-					//Scan region with binding distribution to find ML position
-					Point maxSigPoint = findMaxWithBindingModel(sigHits, potentialReg, r.getBindingModel());
-					Point maxCtrlPoint = ctrlHits==null ? null : findMaxWithBindingModel(ctrlHits, potentialReg, r.getBindingModel());
+					double sigResp=0.0, ctrlResp=0.0;
 					
-					//ML assign reads (single binding event)
-					double sigResp = assignReadsSingleEvent(sigHits, maxSigPoint, r.getBindingModel());
-					double ctrlResp = ctrlHits==null ? 0 : assignReadsSingleEvent(ctrlHits, maxCtrlPoint, r.getBindingModel()); 
+					if(assignReadsWithModel){
+						//Scan region with binding distribution to find ML position
+						Point maxSigPoint = findMaxWithBindingModel(sigHits, potentialReg, r.getBindingModel());
+						Point maxCtrlPoint = ctrlHits==null ? null : findMaxWithBindingModel(ctrlHits, potentialReg, r.getBindingModel());
+						
+						//ML assign reads (single binding event)
+						sigResp = assignReadsSingleEvent(sigHits, maxSigPoint, r.getBindingModel());
+						ctrlResp = ctrlHits==null ? 0 : assignReadsSingleEvent(ctrlHits, maxCtrlPoint, r.getBindingModel()); 
+					}else{
+						sigResp = simpleAssignReadsToEvent(sigHits, e.getPoint(), potentialReg);
+						ctrlResp = ctrlHits==null ? 0 : simpleAssignReadsToEvent(ctrlHits, e.getPoint(), potentialReg);
+					}
 					
 					//Set the replicate responsibilities
 					e.setRepSigHits(r, sigResp);
@@ -145,6 +154,24 @@ public class PointsToEvents {
 		for(StrandedBaseCount x : hits){
 			int readStart = x.getCoordinate();
 			if(readStart>=point.getLocation()-model.getMax() && readStart<=point.getLocation()+model.getMax()){
+				count += x.getCount();
+			}
+		}
+		return count;
+	}
+	
+	/**
+	 * Assign all reads in the list that are within the region to the event at point
+	 * @param hits
+	 * @param point
+	 * @param region
+	 * @return
+	 */
+	protected double simpleAssignReadsToEvent(List<StrandedBaseCount> hits, Point point, Region reg){
+		double count =0;
+		for(StrandedBaseCount x : hits){
+			int readStart = x.getCoordinate();
+			if(readStart>=reg.getStart() && readStart<=reg.getEnd()){
 				count += x.getCount();
 			}
 		}

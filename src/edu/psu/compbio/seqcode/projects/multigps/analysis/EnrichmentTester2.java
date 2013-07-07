@@ -28,15 +28,15 @@ public class EnrichmentTester2 {
 	protected List<Point> scalingSites;
 	protected int siteJoinWin = 200;
 	protected int searchRegionWin = 500;
+	protected boolean simpleReadAssignment=false;
 	
 	//Constructor
 	public EnrichmentTester2(Config config, ExperimentManager manager, List<Point> potentialSites, List<Point> scalingSites) {
 		this.config = config;
 		this.manager = manager;
-		this.potentialSites = cleanPotentialSites(potentialSites, siteJoinWin);
-		this.scalingSites = cleanPotentialSites(scalingSites, siteJoinWin);
-		normalizer = new MedianRatiosNormalization(manager.getExperimentSet().getReplicates().size());
-		config.makeGPSOutputDirs();
+		this.potentialSites = potentialSites;
+		this.scalingSites = scalingSites;
+		config.makeGPSOutputDirs(false);
 	}
 	
 	
@@ -44,8 +44,13 @@ public class EnrichmentTester2 {
 	 * Execute the enrichment tester
 	 */
 	public void execute(){
+		potentialSites = cleanPotentialSites(potentialSites, siteJoinWin);
+		scalingSites = cleanPotentialSites(scalingSites, siteJoinWin);
+		normalizer = new MedianRatiosNormalization(manager.getExperimentSet().getReplicates().size());
+		
+		
 		//Convert our points to events
-		PointsToEvents p2e = new PointsToEvents(config, manager, potentialSites, searchRegionWin);
+		PointsToEvents p2e = new PointsToEvents(config, manager, potentialSites, searchRegionWin,simpleReadAssignment);
 		List<BindingEvent> events = p2e.execute();
 		
 		//Estimate signal fraction
@@ -53,7 +58,7 @@ public class EnrichmentTester2 {
 		
 		//Get the scaling ratio from the scaling events if appropriate
 		if(scalingSites.size()>0){
-			PointsToEvents p2e_scaling = new PointsToEvents(config, manager, scalingSites, searchRegionWin);
+			PointsToEvents p2e_scaling = new PointsToEvents(config, manager, scalingSites, searchRegionWin, simpleReadAssignment);
 			List<BindingEvent> scalingEvents = p2e_scaling.execute();
 			//Convert events to a CountsDataset for the normalizer
 			CountsDataset data = new CountsDataset(manager, scalingEvents, 0);
@@ -70,6 +75,8 @@ public class EnrichmentTester2 {
 		manager.setEvents(events);
 		
 		manager.writeFullEventFile();
+		manager.writeReplicateCounts();
+		manager.writeBindingEventFiles();
 	}
 	
 	
@@ -103,6 +110,11 @@ public class EnrichmentTester2 {
 		return(cleanSites);
 	}
 	
+	//Accessors
+	void setSiteJoinWin(int sjw){siteJoinWin = sjw;}
+	void setSearchRegionWin(int srw){searchRegionWin = srw;}
+	void setSimpleReadAssignment(boolean sra){simpleReadAssignment = sra;}
+	
 	//Main
 	public static void main(String[] args){
 		List<Point> potentialSites = new ArrayList<Point>();
@@ -111,7 +123,10 @@ public class EnrichmentTester2 {
 		if(config.helpWanted()){
 			System.err.println("EnrichmentTester:");
 			System.err.println("\t--sites <potential site coords>\n" +
-					"\t--scalingset <optional set in which to est. scaling ratio>");
+					"\t--scalingset <optional set in which to est. scaling ratio>\n" +
+					"\t--win <window around events>\n" +
+					"\t--joinwin <window to join sites>\n" +
+					"\t--simple [assign all reads in window to event]\n");
 			System.err.println(config.getArgsList());			
 		}else{
 			ExperimentManager manager = new ExperimentManager(config);
@@ -142,7 +157,15 @@ public class EnrichmentTester2 {
 			for(String sf : scalingFiles)
 				scalingSites.addAll(Utils.loadPointsFromFile(sf, config.getGenome()));
 			
+			int win = Args.parseInteger(args, "win", 200);
+			int joinWin = Args.parseInteger(args, "joinwin", 500);
+			boolean useSimpleAssignment = Args.parseFlags(args).contains("simple");
+			
 			EnrichmentTester2 tester = new EnrichmentTester2(config, manager, potentialSites, scalingSites);
+			tester.setSiteJoinWin(joinWin);
+			tester.setSearchRegionWin(win);
+			tester.setSimpleReadAssignment(useSimpleAssignment);
+			
 			tester.execute();
 			
 			manager.close();
