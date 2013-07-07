@@ -108,6 +108,7 @@ public class PointsToEvents {
 						e.setCondCtrlHits(c, 0.0);
 					}
 				}
+				e.setIsFoundInCondition(c,true);
 			}
 			if(config.isAddingAnnotations())
 				e.addClosestGenes();

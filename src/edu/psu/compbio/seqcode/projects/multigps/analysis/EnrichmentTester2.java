@@ -46,7 +46,7 @@ public class EnrichmentTester2 {
 	public void execute(){
 		potentialSites = cleanPotentialSites(potentialSites, siteJoinWin);
 		scalingSites = cleanPotentialSites(scalingSites, siteJoinWin);
-		normalizer = new MedianRatiosNormalization(manager.getExperimentSet().getReplicates().size());
+		//normalizer = new MedianRatiosNormalization(manager.getExperimentSet().getReplicates().size());
 		
 		
 		//Convert our points to events
@@ -56,7 +56,7 @@ public class EnrichmentTester2 {
 		//Estimate signal fraction
 		manager.estimateSignalProportion(events);
 		
-		//Get the scaling ratio from the scaling events if appropriate
+		/*//Get the scaling ratio from the scaling events if appropriate
 		if(scalingSites.size()>0){
 			PointsToEvents p2e_scaling = new PointsToEvents(config, manager, scalingSites, searchRegionWin, simpleReadAssignment);
 			List<BindingEvent> scalingEvents = p2e_scaling.execute();
@@ -67,7 +67,7 @@ public class EnrichmentTester2 {
 			//Convert events to a CountsDataset for the normalizer
 			CountsDataset data = new CountsDataset(manager, events, 0);
 			normalizer.normalize(data);
-		}
+		}*/
 		
 		EnrichmentSignificance tester = new EnrichmentSignificance(config, manager.getExperimentSet(), events, config.getMinEventFoldChange(), config.getMappableGenomeLength());
 		tester.execute();
