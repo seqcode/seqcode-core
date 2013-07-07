@@ -337,7 +337,7 @@ public class Config {
 				DateFormat df = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");  
 			    df.setTimeZone(TimeZone.getTimeZone("EST"));
 				outName = Args.parseString(args, "out", outName+"_"+df.format(new Date()));
-				outDir =  new File(outName); //Outpur directory
+				outDir =  new File(outName); //Output directory
 				outBase = outDir.getName(); //Last part of name
 				//Non-unique flag
 				nonUnique = Args.parseFlags(args).contains("nonunique") ? true : false;

@@ -317,7 +317,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 					boolean allPaired = true;
 			    	for(SeqAlignment a : alignments){
-			    		allPaired = allPaired && a.getAlignType().getName().equals("PAIRED");
+			    		allPaired = allPaired && (a.getAlignType().getName().equals("PAIRED") || a.getAlignType().getName().equals("MIXED"));
 			    	}
 			    	
 					RegionModel histomod, arcmod=null;

@@ -106,7 +106,7 @@ public class EnrichmentTester2 {
 	public static void main(String[] args){
 		List<Point> potentialSites = new ArrayList<Point>();
 		List<Point> scalingSites = new ArrayList<Point>();
-		Config config = new Config(args);
+		Config config = new Config(args, false);
 		if(config.helpWanted()){
 			System.err.println("EnrichmentTester:");
 			System.err.println("\t--sites <potential site coords>\n" +

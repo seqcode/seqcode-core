@@ -42,6 +42,7 @@ public class BackgroundDetector {
 	protected int poissUpperBound = 50;
 	protected int poissUpperBoundMin = 10;
 	protected double cdfPercOfUniform = 0.9; //Percentage of uniform-assumption CDF - used to set upper bound on truncated Poisson
+	protected List<Region> regionsToIgnore;
 	
 	public BackgroundDetector(Config c, ExperimentManager man, float binW, float binS){
 		manager = man;
@@ -50,6 +51,8 @@ public class BackgroundDetector {
 		binWidth = binW;
 		binStep = binS;
 		winExt = binWidth/2;
+		
+		regionsToIgnore = config.getRegionsToIgnore();
 		
 		sampleTotals =new double[manager.getExperimentSet().getSamples().size()];
 		for(int s=0; s<sampleTotals.length; s++)
@@ -169,7 +172,7 @@ public class BackgroundDetector {
 		Poisson poiss = new Poisson(lambda, re);
 		double backsize = xsum / (poiss.cdf(right) - poiss.cdf(left - 1));
 		double backprop = Math.min(backsize / sampleTotals[samp.getIndex()], 1.0);
-		System.out.println("BackSize "+ backsize+" / "+sampleTotals[samp.getIndex()]+" =\t"+backprop);
+		System.out.println("Background= "+ backsize+" / "+sampleTotals[samp.getIndex()]+" =\t"+backprop);
 		
 		return backprop;
 	}
@@ -312,6 +315,7 @@ public class BackgroundDetector {
 	public static void main(String[] args){
 		
 		Config config = new Config(args, false);
+		
 		if(config.helpWanted()){
 			System.err.println("BackgroundDetector:");
 			System.err.println("Genome:" +
