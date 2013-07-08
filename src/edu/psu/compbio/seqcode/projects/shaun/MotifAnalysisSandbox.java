@@ -60,7 +60,7 @@ public class MotifAnalysisSandbox {
 		boolean havePeaks=false;
 		boolean printHits=false, printBestHits=false, printHitInfo=false, printPeakClosestHits=false, printSeqs=false, printSeqsNoMotifs=false;
 		boolean printSeqsWithMotifs=false, printPeakInfo=false, printPeaksWithMotifs=false, printPeaksNoMotifs=false;
-		boolean printMotifScore=false, printMotifPerc=false, motifDistHist=false, screenMotifs=false, scoreSeqs=false;
+		boolean printMotifScore=false, printMotifPerc=false, printRankMotifPerc=false, motifDistHist=false, screenMotifs=false, scoreSeqs=false;
 		boolean motifDensity=false, pocc=false, wholeGenome=false, printprofiles=false, motifHisto=false;;
 		String seqFile=null;
 		String genomeSequencePath=null;
@@ -95,6 +95,7 @@ public class MotifAnalysisSandbox {
                                "--printpeakinfo " +
                                "--printmotifscore " +
                                "--printmotifperc " +
+                               "--printrankmotifperc " +
                                "--motifdensity " +
                                "--motifdisthist \n" +
                                "--motifhisto \n" +
@@ -139,6 +140,7 @@ public class MotifAnalysisSandbox {
         printPeakInfo = ap.hasKey("printpeakinfo");
         printMotifScore = ap.hasKey("printmotifscore");
         printMotifPerc = ap.hasKey("printmotifperc");
+        printRankMotifPerc = ap.hasKey("printrankmotifperc");
         motifDistHist= ap.hasKey("motifdisthist");
         motifHisto= ap.hasKey("motifhisto");
         motifDensity= ap.hasKey("motifdensity");
@@ -284,6 +286,8 @@ public class MotifAnalysisSandbox {
 	        	tools.motifScoreThreshold();
 	        if(printMotifPerc)
 	        	tools.motifPercThreshold();
+	        if(printRankMotifPerc)
+	        	tools.rankMotifPerc(200);
 	        if(motifDistHist)
 	        	tools.peak2ClosestMotifHisto(binsize);
 	        if(motifHisto)
@@ -837,6 +841,29 @@ public class MotifAnalysisSandbox {
 				System.out.println(words[0]+"\t"+words[1]+"\t"+words[2]+"\t"+words[3]+"\t"+motif.getMinScore()+"\t"+bestSeq);
 			else
 				System.out.println(words[0]+"\t"+words[1]+"\t"+words[2]+"\t"+words[3]+"\t"+maxScore+"\t"+bestSeq);
+		}
+	}
+	
+	//Simple printing of peak lines that contain the motif
+	public void rankMotifPerc(int stepSize){
+		double hasMotif=0;
+		for(int i=0; i<regions.size(); i++){
+			Region r = regions.get(i);
+			WeightMatrixScoreProfile profiler = scorer.execute(r);
+			boolean goodMotif=false;
+			for(int z=0; z<r.getWidth(); z++){
+				double currScore= profiler.getMaxScore(z);
+				if(currScore>=motifThres)
+					goodMotif=true;				
+			}
+			if(goodMotif)
+				hasMotif++;
+			
+			if(i%stepSize==0){
+				double perc = hasMotif/stepSize;
+				System.out.println((i*stepSize)+"-"+((i+1)*stepSize)+"\t"+perc);
+				hasMotif=0;
+			}
 		}
 	}
 	
