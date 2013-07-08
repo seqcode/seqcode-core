@@ -859,9 +859,9 @@ public class MotifAnalysisSandbox {
 			if(goodMotif)
 				hasMotif++;
 			
-			if(i%stepSize==0){
+			if(i>0 && i%stepSize==0){
 				double perc = hasMotif/stepSize;
-				System.out.println((i*stepSize)+"-"+((i+1)*stepSize)+"\t"+perc);
+				System.out.println((i-stepSize)+"-"+(i)+"\t"+perc);
 				hasMotif=0;
 			}
 		}
