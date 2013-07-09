@@ -22,11 +22,11 @@ public class StrandedSequenceGenerator {
 	}
 	
 	public List<String> generateSequences(List<StrandedRegion> regs){
-		return Utilities.getSequencesForStrandedRegions(regs);
+		return Utilities.getSequencesForStrandedRegions(regs,null);
 	}
 	
 	public List<String> generateFASTA(List<StrandedRegion> regs){
-		List<String> seqs = Utilities.getSequencesForStrandedRegions(regs);
+		List<String> seqs = Utilities.getSequencesForStrandedRegions(regs,null);
 		List<String> fasta = new ArrayList<String>();
 		for(int i=0; i<regs.size(); i++){
 			fasta.add(new String(">seq_"+regs.get(i).toString()+"\n"+seqs.get(i)));

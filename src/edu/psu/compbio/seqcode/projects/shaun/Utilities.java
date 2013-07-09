@@ -247,18 +247,20 @@ public class Utilities {
 	
 	
 	//Get sequences for a set of regions
-	public static List<String> getSequencesForRegions(List<Region> regions){
+	public static List<String> getSequencesForRegions(List<Region> regions, SequenceGenerator seqgen){
 		ArrayList<String> seqs = new ArrayList<String>(); 
-		SequenceGenerator seqgen = new SequenceGenerator();
+		if(seqgen==null)
+			seqgen = new SequenceGenerator();
 		for(Region r : regions){
 			seqs.add(seqgen.execute(r).toUpperCase());
 		}return(seqs);
 	}
 	
 	//Get sequences for a set of regions
-	public static List<String> getSequencesForStrandedRegions(List<StrandedRegion> regions){
+	public static List<String> getSequencesForStrandedRegions(List<StrandedRegion> regions, SequenceGenerator seqgen){
 		ArrayList<String> seqs = new ArrayList<String>(); 
-		SequenceGenerator seqgen = new SequenceGenerator();
+		if(seqgen==null)
+			seqgen = new SequenceGenerator();
 		for(StrandedRegion r : regions){
 			String seq = seqgen.execute(r).toUpperCase();
 			if(r.getStrand()=='-')

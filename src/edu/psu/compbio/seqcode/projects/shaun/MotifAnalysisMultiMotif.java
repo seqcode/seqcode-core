@@ -522,13 +522,13 @@ public class MotifAnalysisMultiMotif {
 		posSet = Utilities.loadRegionsFromPeakFile(gen, fname, window);
 		posPeaks = Utilities.loadPeaksFromPeakFile(gen, fname, window);
 		posLines = Utilities.loadLinesFromFile(fname);
-		posSeq = Utilities.getSequencesForRegions(posSet);
+		posSeq = Utilities.getSequencesForRegions(posSet, null);
 	}
 	//load negative
 	public void loadNegative(String name){
 		if(name==null || name.equals("random")){
 			negSet = Utilities.randomRegionPick(gen, posSet, numRand, window);
-			negSeq = Utilities.getSequencesForRegions(negSet);
+			negSeq = Utilities.getSequencesForRegions(negSet, null);
 		}else if(name.equals("markov")){
 			negSet = null;
 			negSeq = new ArrayList<String>();
@@ -538,7 +538,7 @@ public class MotifAnalysisMultiMotif {
 			}
 		}else{
 			negSet = Utilities.loadRegionsFromPeakFile(gen, name, window);
-			negSeq = Utilities.getSequencesForRegions(negSet);
+			negSeq = Utilities.getSequencesForRegions(negSet, null);
 		}
 	}
 	

@@ -15,6 +15,7 @@ import javax.imageio.ImageIO;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.FASTALoader;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -102,7 +103,7 @@ public class SequenceAlignmentFigure {
             System.err.println("Usage:\n " +
                                "SequenceAlignmentFigure \n" +
                                " Required: \n" +
-                               "  --species <species;version> " +
+                               "  --species <species;version> AND --gen <sequence directory> AND" +
                                "  --peaks <file containing stranded coordinates> OR" +
                                "  --seq <FASTA file>\n" +
                                "  --win <window of sequence around peaks> \n"+
@@ -119,10 +120,17 @@ public class SequenceAlignmentFigure {
         	List<String> seqs = null;
         	
         	if(ap.hasKey("peaks")){
+        		String genomeSequencePath = ap.hasKey("gen") ? ap.getKeyValue("gen") : null;
+        		SequenceGenerator seqgen = new SequenceGenerator(currgen);
+        		if(genomeSequencePath != null){
+        			seqgen.useCache(true);
+        			seqgen.useLocalFiles(true);
+        			seqgen.setGenomePath(genomeSequencePath);
+        		}
 		        String peaksFile = ap.getKeyValue("peaks");
 		    	int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():-1;
 		    	List<StrandedRegion> regions = Utilities.loadStrandedRegionsFromMotifFile(currgen, peaksFile, win);
-		    	seqs = Utilities.getSequencesForStrandedRegions(regions);
+		    	seqs = Utilities.getSequencesForStrandedRegions(regions, seqgen);
         	}else if(ap.hasKey("seq")){
         		String seqsFile = ap.getKeyValue("seq");
         		FASTALoader loader = new FASTALoader();

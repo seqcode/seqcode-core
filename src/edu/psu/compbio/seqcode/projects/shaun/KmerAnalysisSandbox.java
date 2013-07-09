@@ -125,7 +125,7 @@ public class KmerAnalysisSandbox {
 		posRegions = Utilities.loadRegionsFromPeakFile(gen, pFile, win);
 		posPeaks = Utilities.loadPeaksFromPeakFile(gen, pFile, win);
 		posLines = Utilities.loadLinesFromFile(pFile);
-		posSeq = Utilities.getSequencesForRegions(posRegions);
+		posSeq = Utilities.getSequencesForRegions(posRegions, null);
 	}
 	
 	//Accessors
@@ -492,11 +492,11 @@ public class KmerAnalysisSandbox {
 			if(negative==null || negative.equals("random")){
 				negRegions = Utilities.randomRegionPick(gen, posRegions, numRand, win);
 				negPeaks = Utilities.regions2midpoints(negRegions);
-				negSeq = Utilities.getSequencesForRegions(negRegions);
+				negSeq = Utilities.getSequencesForRegions(negRegions, null);
 			}else{
 				negRegions = Utilities.loadRegionsFromPeakFile(gen, negative, win);
 				negPeaks = Utilities.loadPeaksFromPeakFile(gen, negative, win);
-				negSeq = Utilities.getSequencesForRegions(negRegions);
+				negSeq = Utilities.getSequencesForRegions(negRegions, null);
 			}
 			negLoaded=true;
 		}
