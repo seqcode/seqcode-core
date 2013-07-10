@@ -46,17 +46,19 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 		int window = params.getWindowSize();
 		int left = window/2;
 		int right = window-left-1;
-		
-		int start = Math.max(0, a.getLocation()-left);
-		int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom())-1);
-		Region query = new Region(a.getGenome(), a.getChrom(), start, end);
 		char pointStrand = '+';
+		
 		if(a instanceof StrandedPoint)
 			pointStrand = ((StrandedPoint)a).getStrand();
 		boolean wantPosStrandReads = this.strand=='+';
 		if(pointStrand == '-')
 			wantPosStrandReads = !wantPosStrandReads;
 		char wantedStrand = wantPosStrandReads?'+':'-';
+		
+		int start = Math.max(0, a.getLocation()-left);
+		int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom())-1);
+		Region query = new Region(a.getGenome(), a.getChrom(), start, end);
+		
 		
 		double[] array = new double[params.getNumBins()];
 		for(int i = 0; i < array.length; i++) { array[i] = 0; }
@@ -69,6 +71,8 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 				int pos = sbc.car().get(x);
 				float weight = sbc.cdr().get(x);
 				int hit5Prime = pos-start;
+				if(pointStrand=='-')
+					hit5Prime = end-pos;
 				exparray[params.findBin(hit5Prime)]+=weight;
 			}
 		}else if (expanders!=null){
@@ -79,6 +83,8 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 					if (hit.getStrand()==wantedStrand){  //only count one strand
 						if (start<=hit.getFivePrime() && end>hit.getFivePrime()){
 							int hit5Prime = hit.getFivePrime()-start;
+							if(pointStrand=='-')
+								hit5Prime = end-hit.getFivePrime();
 							exparray[params.findBin(hit5Prime)]+=hit.getWeight();
 						}
 					}				
@@ -89,12 +95,7 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 		for(int i = 0; i < array.length; i++) { 
 			if(exparray[i]>pbMax)
 				exparray[i]=pbMax;
-		}
-		for(int i = 0; i < array.length; i++) {
-			if(pointStrand == '+')
-				array[i] += exparray[i];
-			else
-				array[i] += exparray[params.getNumBins()-i-1];
+			array[i] += exparray[i];
 		}
 		return new PointProfile(a, params, array, (a instanceof StrandedPoint));
 	}
