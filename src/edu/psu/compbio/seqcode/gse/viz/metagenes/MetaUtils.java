@@ -72,7 +72,7 @@ public class MetaUtils {
 					int start = new Integer(currC[0]);
 					int stop = new Integer(currC[1]);
 					location = (start+stop)/2;
-					if(strand=='-' && (stop-start)%2==0)
+					if(strand=='-' && (stop-start)%2==1)
 						location+=1;
 				}else{
 					location = new Integer(currB[1]);
