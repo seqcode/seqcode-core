@@ -89,7 +89,8 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 		for(int i = 0; i < array.length; i++) { 
 			if(exparray[i]>pbMax)
 				exparray[i]=pbMax;
-
+		}
+		for(int i = 0; i < array.length; i++) {
 			if(pointStrand == '+')
 				array[i] += exparray[i];
 			else
