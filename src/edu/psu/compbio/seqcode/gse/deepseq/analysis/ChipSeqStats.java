@@ -20,7 +20,7 @@ import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScorer;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.metagenes.BinningParameters;
-import edu.psu.compbio.seqcode.gse.viz.metagenes.ChipSeq5PrimeProfiler;
+import edu.psu.compbio.seqcode.gse.viz.metagenes.Stranded5PrimeProfiler;
 import edu.psu.compbio.seqcode.gse.viz.metagenes.MetaNonFrame;
 import edu.psu.compbio.seqcode.gse.viz.metagenes.MetaProfile;
 import edu.psu.compbio.seqcode.gse.viz.metagenes.MetaProfileHandler;
@@ -310,7 +310,7 @@ public class ChipSeqStats {
 				exptexps.add(new SeqExpander(loc));
 			}
 			System.out.println("Loading data...");
-			ChipSeq5PrimeProfiler profiler = new ChipSeq5PrimeProfiler(params, exptexps, strand, 2);
+			Stranded5PrimeProfiler profiler = new Stranded5PrimeProfiler(params, exptexps, strand, 2);
 			MetaNonFrame nonframe = new MetaNonFrame(g, params, profiler, false, false);
 			nonframe.setColor(Color.blue);
 			MetaProfileHandler handler = nonframe.getHandler();

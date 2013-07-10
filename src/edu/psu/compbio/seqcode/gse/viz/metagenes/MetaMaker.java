@@ -81,8 +81,7 @@ public class MetaMaker {
 		
 			PointProfiler profiler=null;
 			boolean normalizeProfile=false;
-			if(profilerType.equals("simplechipseq") || profilerType.equals("fiveprime")){
-				if(profilerType.equals("fiveprime"))
+			if(profilerType.equals("simplechipseq")){
 					readExt = -1;
 				List<SeqLocator> exptlocs = Args.parseSeqExpt(args,"expt");
 				if(exptlocs.size()>0){
@@ -92,52 +91,28 @@ public class MetaMaker {
 						exptexps.add(new SeqExpander(loc));
 					}
 					System.out.println("Loading data...");
-					profiler = new SimpleChipSeqProfiler(params, exptexps, readExt, pbMax,strand);
+					profiler = new ChipSeqProfiler(params, exptexps, readExt, pbMax,strand);
 				}else{
 					List<File> exptFiles = new ArrayList<File>();
 					for(String s : exptFilenames)
 						exptFiles.add(new File(s));
-					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, "SAM", 40);
-					profiler = new SimpleChipSeqProfilerBAM(params, dse, readExt, pbMax,strand);
+					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, format, 40);
+					profiler = new ChipSeqProfiler(params, dse, readExt, pbMax,strand);
 				}
-			}else if(profilerType.equals("chipseq5prime")){
+			}else if(profilerType.equals("fiveprime")){
 				List<SeqLocator> exptlocs = Args.parseSeqExpt(args,"expt");
 				if(exptlocs.size()>0){
 					ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
 					for(SeqLocator loc : exptlocs)
 						exptexps.add(new SeqExpander(loc));
 					System.out.println("Loading data...");
-					profiler = new ChipSeq5PrimeProfiler(params, exptexps, strand, pbMax);
+					profiler = new Stranded5PrimeProfiler(params, exptexps, strand, pbMax);
 				}else{
 					List<File> exptFiles = new ArrayList<File>();
 					for(String s : exptFilenames)
 						exptFiles.add(new File(s));
 					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, format, 40);
-					profiler = new ChipSeq5PrimeProfilerBAM(params, dse, strand, pbMax);
-				}
-			}else if(profilerType.equals("chipseq")){
-				normalizeProfile=true;
-				ArrayList<SeqLocator> exptlocs = (ArrayList<SeqLocator>) Args.parseSeqExpt(args,"expt");
-				ArrayList<SeqLocator> backlocs = backs.size()==0 ? null : (ArrayList<SeqLocator>) Args.parseSeqExpt(args,"back");
-				System.out.println("Loading data...");
-				profiler = new ChipSeqProfiler(params, gen, exptlocs,backlocs, 32, readExt);
-			}else if(profilerType.equals("chipseqz")){
-				normalizeProfile=true;
-				ArrayList<SeqLocator> exptlocs = (ArrayList<SeqLocator>) Args.parseSeqExpt(args,"expt");
-				ArrayList<SeqLocator> backlocs = backs.size()==0 ? null : (ArrayList<SeqLocator>) Args.parseSeqExpt(args,"back");
-				System.out.println("Loading data...");
-				profiler = new ChipSeqProfiler(params, gen, exptlocs,backlocs, 32, readExt, true);
-			}else if(profilerType.equals("chipchip") || profilerType.equals("chipchipip") || profilerType.equals("chipchipwce")){
-				normalizeProfile=true;
-				ArrayList<ChipChipLocator> exptlocs = (ArrayList<ChipChipLocator>) Args.parseChipChip(gen, args, "expt");
-				if(exptlocs.size()>0){
-					System.out.println("Loading data...");
-					if(profilerType.equals("chipchipip"))
-						profiler = new ChipChipProfiler(params, gen, exptlocs.get(0), true, false);
-					else if(profilerType.equals("chipchipwce"))
-						profiler = new ChipChipProfiler(params, gen, exptlocs.get(0), false, true);
-					else
-						profiler = new ChipChipProfiler(params, gen, exptlocs.get(0));
+					profiler = new Stranded5PrimeProfiler(params, dse, strand, pbMax);
 				}
 			}
 			
@@ -220,7 +195,7 @@ public class MetaMaker {
 				"--readext <read extension> \n" +
 				"--linemin <min>  --linemax <max> \n" +
 				"--pbmax <per base max>\n" +
-				"--profiler <simplechipseq/fiveprime/chipseq/chipseqz/chipchip> \n" +
+				"--profiler <chipseq/fiveprime> \n" +
 				"--expt <experiment names> OR --exptfile <file names> AND --format <SAM> \n" +
 				"--back <control experiment names (only applies to chipseq)> \n" +
 				"--peaks <peaks file name> --out <output root name> \n" +

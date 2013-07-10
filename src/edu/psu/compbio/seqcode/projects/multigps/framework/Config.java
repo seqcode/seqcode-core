@@ -550,7 +550,7 @@ public class Config {
 				"Experiment Design File:\n" +
 				"\t--design <file name>\n" +
 				"Miscellaneous:\n" +
-				"\t--q <Q-value minimum (negative log of corrected p-value)>\n" +
+				"\t--q <Q-value minimum (corrected p-value)>\n" +
 				"\t--minfold <min event fold-change>\n" +
 				"\t--fixedpb <fixed per base limit>\n" +
 				"\t--poissongausspb <filter per base using Poisson Gaussian sliding window>\n" +
