@@ -79,6 +79,8 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 					if (hit.getStrand()==wantedStrand){  //only count one strand
 						if (start<=hit.getFivePrime() && end>hit.getFivePrime()){
 							int hit5Prime = hit.getFivePrime()-start;
+							if(pointStrand == '-')
+								hit5Prime = end - hit.getFivePrime();
 							exparray[params.findBin(hit5Prime)]+=hit.getWeight();
 						}
 					}				
