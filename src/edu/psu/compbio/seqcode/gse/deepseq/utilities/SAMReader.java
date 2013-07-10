@@ -90,9 +90,6 @@ public class SAMReader extends AlignmentFileReader{
         float weight = 1 / ((float)mapcount);
         Read currRead = new Read((int)totalWeight);
 		for (SAMRecord record : records) {
-			//int start =  record.getAlignmentStart();
-		    //int end =  record.getAlignmentEnd();
-			//Inefficiency to get around some buggy ENCODE BAM files
 			int start = record.getAlignmentStart();
 		    int end = record.getAlignmentEnd();
 		    ReadHit currHit = new ReadHit(gen, currID,

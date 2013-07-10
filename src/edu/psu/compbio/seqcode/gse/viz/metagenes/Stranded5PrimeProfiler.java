@@ -72,7 +72,7 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 				float weight = sbc.cdr().get(x);
 				int hit5Prime = pos-start;
 				if(pointStrand=='-')
-					hit5Prime = end-pos-1;
+					hit5Prime = end-pos;
 				exparray[params.findBin(hit5Prime)]+=weight;
 			}
 		}else if (expanders!=null){
@@ -84,7 +84,7 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 						if (start<=hit.getFivePrime() && end>=hit.getFivePrime()){
 							int hit5Prime = hit.getFivePrime()-start;
 							if(pointStrand=='-')
-								hit5Prime = end-hit.getFivePrime()-1;
+								hit5Prime = end-hit.getFivePrime();
 							exparray[params.findBin(hit5Prime)]+=hit.getWeight();
 						}
 					}				
