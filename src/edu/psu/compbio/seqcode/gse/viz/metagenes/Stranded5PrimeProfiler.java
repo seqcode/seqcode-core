@@ -79,8 +79,6 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 					if (hit.getStrand()==wantedStrand){  //only count one strand
 						if (start<=hit.getFivePrime() && end>hit.getFivePrime()){
 							int hit5Prime = hit.getFivePrime()-start;
-							if(pointStrand == '-')
-								hit5Prime = end - hit.getFivePrime();
 							exparray[params.findBin(hit5Prime)]+=hit.getWeight();
 						}
 					}				
@@ -91,7 +89,12 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 		for(int i = 0; i < array.length; i++) { 
 			if(exparray[i]>pbMax)
 				exparray[i]=pbMax;
-			array[i] += exparray[i];
+		}
+		for(int i = 0; i < array.length; i++) {
+			if(pointStrand == '+')
+				array[i] += exparray[i];
+			else
+				array[i] += exparray[params.getNumBins()-i-1];
 		}
 		return new PointProfile(a, params, array, (a instanceof StrandedPoint));
 	}
