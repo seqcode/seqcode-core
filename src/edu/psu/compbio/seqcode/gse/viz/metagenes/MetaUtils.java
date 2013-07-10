@@ -69,7 +69,9 @@ public class MetaUtils {
 				int location=-1;
 				if(currB[1].contains("-")){
 					String [] currC = currB[1].split("-");
-					location = (new Integer(currC[0])+new Integer(currC[1]))/2; 
+					location = new Integer(currC[0]);
+					if(strand=='-')
+						location = new Integer(currC[1]);
 				}else{
 					location = new Integer(currB[1]);
 				}
