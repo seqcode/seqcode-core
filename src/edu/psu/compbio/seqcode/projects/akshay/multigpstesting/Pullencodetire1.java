@@ -16,10 +16,19 @@ public class Pullencodetire1 {
 	private Map<String,String> FacNames = new HashMap<String,String>();
 	public Map<String,List<String>> Exptrecords = new HashMap<String,List<String>>();
 	
+	/*
+	 * the constructor class established connections to the core and seqdata databases
+	 */
+	
 	public Pullencodetire1() throws SQLException {
 		cxnSeqdata = DatabaseFactory.getConnection(seqdata);
 		cxnCore = DatabaseFactory.getConnection(core);
 	}
+	
+	/*
+	 * looks at the entire expttarget SQL table for factor aliases for an input list of factors
+	 * return a hash map with keys as readdb id (expttarget) in string format and value as the fator name 
+	 */
 	
 	public void getFactorAliases(Map<String,String[]> input) throws SQLException{
 		for (String facname: input.keySet()){
@@ -31,6 +40,8 @@ public class Pullencodetire1 {
 			}
 		}
 	}
+	
+	
 	
 	public void getExperiments() throws SQLException{
 		String queryexpt = "select * from seqexpt where cellline regexp "+'"'+celllineIds+'"';

@@ -30,6 +30,9 @@ public class Pullexpttable {
 	public MetadataLoader core = new MetadataLoader();
 	public PreparedStatement psexpt=null;
 	
+	/* * command is a list of strings that is generally returned by a scanner class
+	 * The following constructor class connects to the core SQL data base and initialises the different classes (celline, expttarget .. etc)
+	 */
 	
 	public Pullexpttable(String[] command) throws SQLException{
 		
@@ -73,6 +76,10 @@ public class Pullexpttable {
         }
 	}
 	
+	/* * Prepares and executes the SQL command based on the input options
+	 * Also populates the resultset object
+	 */
+	
 	public void executeSQLExptCommand() throws SQLException{
 		if((lab != null) || (expttype != null) || (expttarget != null) || (exptcondition != null) || (celline != null) || (readtype != null) || (species != null)){
 			queryexpt += " where";
@@ -103,9 +110,11 @@ public class Pullexpttable {
 		
 		rsexpt = psexpt.executeQuery();
 		/*psexpt.clearParameters();*/
-		
-			
-		}
+	}
+	
+	/* * Iterates the resultset object. 
+	 *  populates the List: table
+	 */
 	
 	public void getTableFromRS() throws SQLException, NotFoundException{ 
 		try{
@@ -129,6 +138,9 @@ public class Pullexpttable {
 		
 	}
 	
+	/* * Prints the table
+	 *  Make sure to populate the table before calling this method
+	 */
 	public void printTable(){
 		try{
 			for(int i=0; i<table.size(); i++){
@@ -141,6 +153,10 @@ public class Pullexpttable {
 			
 		}
 	}
+	
+	/* Makes sure all the databse connections are closed.
+	 * 
+	 */
 	
 	public void closeConnection() throws SQLException{
 		core.close();

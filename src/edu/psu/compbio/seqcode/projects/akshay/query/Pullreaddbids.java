@@ -15,7 +15,10 @@ public class Pullreaddbids extends Pullexpttable {
 	public AlignType aligntype=null;
 	public PreparedStatement psalign=null;
 	public ResultSet rsalign=null;
-	
+	/*
+	 * extends to the seqalignmetn SQL table from the seqexpt SQL table
+	 * genome and alignmentype are the extra options
+	 */
 	public Pullreaddbids(String[] command) throws SQLException,NotFoundException{
 		super(command);
 		try{
@@ -33,6 +36,9 @@ public class Pullreaddbids extends Pullexpttable {
 			throw new NullPointerException("Cannot use genome parameter without a specie parameter");
 		}
 	}
+	/*
+	 * Prepares and executes the SQL command and populates the resultset
+	 */
 	
 	public void executeSQLAlignCommand() throws SQLException, NotFoundException{
 		try{
@@ -61,12 +67,19 @@ public class Pullreaddbids extends Pullexpttable {
 		
 	}
 	
+	/*
+	 * iterates over the resultser and generates a table from it
+	 */
+	
 	public void getTableFromRS() throws SQLException, NotFoundException{
 		while(rsalign.next()){
 			table.add(rsalign.getString("id"));
 		}
 	}
 	
+	/*
+	 * prints the list: table
+	 */
 	public void printTable(){
 		try{
 			for(int i=0; i<table.size(); i++){
@@ -80,6 +93,10 @@ public class Pullreaddbids extends Pullexpttable {
 		}
 		
 	}
+	
+	/*
+	 * Checks if all the connections to the database are closed
+	 */
 	
 	public void closeConnection() throws SQLException{
 		core.close();

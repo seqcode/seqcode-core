@@ -8,7 +8,7 @@ public class Printencodetire1 {
 
 	public static void main(String[] args) throws SQLException, IOException{
 		Pullencodetire1 getlist = new Pullencodetire1();
-		Scanner sc = new Scanner("/Users/akshaykakumanu/Desktop/tt");
+		Scanner sc = new Scanner("/Users/akshaykakumanu/PSU/multigpstesting/encode_tf_list");
 		getlist.getFactorAliases(sc.getMap());
 		getlist.getExperiments();
 		getlist.printExptMap();
