@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.multigps.analysis;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -74,9 +75,9 @@ public class EnrichmentTester2 {
 		
 		manager.setEvents(events);
 		
-		manager.writeFullEventFile();
-		manager.writeReplicateCounts();
-		manager.writeBindingEventFiles();
+		manager.writeFullEventFile(config.getOutputParentDir()+File.separator+config.getOutBase()+".all.events.table");
+		manager.writeReplicateCounts(config.getOutputParentDir()+File.separator+config.getOutBase()+".replicates.counts");
+		manager.writeBindingEventFiles(config.getOutputParentDir()+File.separator+config.getOutBase());
 	}
 	
 	

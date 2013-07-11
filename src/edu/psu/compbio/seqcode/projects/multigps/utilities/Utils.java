@@ -18,6 +18,8 @@ import edu.psu.compbio.seqcode.gse.ewok.verbs.RegionParser;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.StrandedPointParser;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.StrandedRegionParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.parsing.GFFEntry;
+import edu.psu.compbio.seqcode.gse.utils.io.parsing.ParseGFF;
 
 /**
  * Utils: a collection of general methods
@@ -30,7 +32,7 @@ public class Utils {
 
 	/**
 	 * Loads a set of points from the third or first column of a file
-	 * (Suitable for GPS & StatisticalPeakFinder files
+	 * (Suitable for GPS & StatisticalPeakFinder files)
 	 * @param filename
 	 * @return
 	 */
@@ -77,6 +79,30 @@ public class Utils {
 		return(points);
 	}
 
+	/**
+	 * Loads a set of points from GFF file
+	 * @param filename
+	 * @return
+	 */
+	public static List<Point> loadPointsFromGFFFile(String filename, Genome gen){
+		List<Point> points = new ArrayList<Point>();
+		try {
+			ParseGFF parser = new ParseGFF(new File(filename));
+			while(parser.hasNext()){
+				GFFEntry site = parser.next();
+				Point currPt = new Point(gen, site.getChr(), site.getMidPoint());
+				points.add(currPt);
+			}
+		} catch (IOException e) {
+			//Silent exceptions
+		}
+		
+		System.err.println("Loaded "+points.size()+" points from "+filename);
+
+		return(points);
+	}
+
+	
 	public static List<Pair<Point,Point>> loadIntersFromFile(String filename, Genome gen) {
 		List<Pair<Point,Point>> inters = new ArrayList<Pair<Point,Point>>();
 		BufferedReader r;

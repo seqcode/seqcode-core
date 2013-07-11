@@ -514,7 +514,7 @@ public class Region implements Comparable<Region>, Saveable {
    * @return A string with the format, "chrom:start-end"
    */
   public String regionString() {
-    return String.format("%s:%d-%d", chrom, start, end);
+    return String.format("chr%s:%d-%d", chrom, start, end);
   }
 
 

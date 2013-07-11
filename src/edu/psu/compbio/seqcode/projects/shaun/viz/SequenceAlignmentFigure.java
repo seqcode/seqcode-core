@@ -66,7 +66,7 @@ public class SequenceAlignmentFigure {
         		switch(letters[j]){
         		case 'A':
         		case 'a':
-        			g.setColor(Color.GREEN);
+        			g.setColor(Color.RED);
         			break;
         		case 'C':
         		case 'c':
@@ -78,7 +78,7 @@ public class SequenceAlignmentFigure {
         			break;
         		case 'T':
         		case 't':
-                    g.setColor(Color.RED);
+                    g.setColor(Color.GREEN);
         			break;
         		case '-':
                     g.setColor(Color.WHITE);

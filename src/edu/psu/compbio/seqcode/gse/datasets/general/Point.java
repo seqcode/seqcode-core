@@ -89,7 +89,7 @@ public class Point implements Comparable<Point> {
 
 
   public String getLocationString() {
-    return chrom + ":" + location;
+    return "chr"+chrom + ":" + location;
   }
 
 
