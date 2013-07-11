@@ -1,14 +1,11 @@
-package edu.psu.compbio.seqcode.projects.akshay.Querying;
+package edu.psu.compbio.seqcode.projects.akshay.query;
 
 import java.util.*;
 import java.io.*;
 
-
 public class Scanner {
-	
+
 	public Map<String,String[]> queries = new HashMap<String,String[]>();
-	
-	
 	
 	public Scanner(String filename) throws IOException {
 		BufferedReader br = null;
@@ -36,7 +33,7 @@ public class Scanner {
 			}
 			
 		}
-		}
+	}
 	
 	
 	
@@ -47,14 +44,9 @@ public class Scanner {
 	
 	
 	public static void main(String [ ] args) throws IOException {
-		Scanner sc = new Scanner("/Users/akshaykakumanu/Desktop/temp");
+		Scanner sc = new Scanner("/Users/akshaykakumanu/Desktop/tt");
 		Map<String,String[]> queries = sc.getMap();
 		/*System.out.println(queries);*/
 		System.out.println(queries.get("kkkk	sasda")[1]);
-		
-		
-		
 	}
-		
-	}
-	
+}

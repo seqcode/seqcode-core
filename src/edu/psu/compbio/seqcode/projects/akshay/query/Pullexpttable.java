@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.Querying;
+package edu.psu.compbio.seqcode.projects.akshay.query;
 
 import java.sql.*;
 import java.util.*;
@@ -9,7 +9,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.*;
 
-public class getExpt{
+public class Pullexpttable {
 	
 	public ExptType expttype=null;
 	public Lab lab=null;
@@ -30,8 +30,11 @@ public class getExpt{
 	public MetadataLoader core = new MetadataLoader();
 	public PreparedStatement psexpt=null;
 	
+	/* * command is a list of strings that is generally returned by a scanner class
+	 * The following constructor class connects to the core SQL data base and initialises the different classes (celline, expttarget .. etc)
+	 */
 	
-	public getExpt(String[] command) throws SQLException{
+	public Pullexpttable(String[] command) throws SQLException{
 		
 		try{
 		
@@ -73,6 +76,10 @@ public class getExpt{
         }
 	}
 	
+	/* * Prepares and executes the SQL command based on the input options
+	 * Also populates the resultset object
+	 */
+	
 	public void executeSQLExptCommand() throws SQLException{
 		if((lab != null) || (expttype != null) || (expttarget != null) || (exptcondition != null) || (celline != null) || (readtype != null) || (species != null)){
 			queryexpt += " where";
@@ -87,6 +94,9 @@ public class getExpt{
 		if (species != null){queryexpt += (and ? " and ": " ")+"species = ?"; and = true;}
 		
 		psexpt = cxn.prepareStatement(queryexpt);
+		System.out.println(queryexpt);
+		System.out.println(expttarget.getDBID());
+		System.out.println(celline.getDBID());
 		Integer count = 1;
 		
 		if (lab != null){ psexpt.setInt(count, lab.getDBID()); count += 1;}
@@ -96,12 +106,15 @@ public class getExpt{
 		if (celline != null){psexpt.setInt(count, celline.getDBID()); count += 1;}
 		if (readtype != null){psexpt.setInt(count, readtype.getDBID()); count+=1;}
 		if (species != null){ psexpt.setInt(count, species.getDBID()); count +=1;}
+	
 		
 		rsexpt = psexpt.executeQuery();
-		psexpt.clearParameters();
-		
-			
-		}
+		/*psexpt.clearParameters();*/
+	}
+	
+	/* * Iterates the resultset object. 
+	 *  populates the List: table
+	 */
 	
 	public void getTableFromRS() throws SQLException, NotFoundException{ 
 		try{
@@ -109,7 +122,9 @@ public class getExpt{
 			Organism org=null;
 		
 			while(rsexpt.next()){
+				System.out.println(rsexpt.getString(1));
 				org = new Organism(Integer.parseInt(rsexpt.getString("species")));
+				
 				table.add(rsexpt.getString(1)+"\t"+rsexpt.getString(1) + "\t"+rsexpt.getString(2)+"\t"+org.getName()+"\t"+
 						trackback.loadExptType(Integer.parseInt(rsexpt.getString("expttype"))).getName()+"\t"+trackback.loadLab(Integer.parseInt(rsexpt.getString("lab"))).getName()+"\t"+
 						trackback.loadExptCondition(Integer.parseInt(rsexpt.getString("exptcondition"))).getName()+"\t"+trackback.loadExptTarget(Integer.parseInt(rsexpt.getString("expttarget"))).getName()+"\t"+
@@ -123,6 +138,9 @@ public class getExpt{
 		
 	}
 	
+	/* * Prints the table
+	 *  Make sure to populate the table before calling this method
+	 */
 	public void printTable(){
 		try{
 			for(int i=0; i<table.size(); i++){
@@ -136,6 +154,10 @@ public class getExpt{
 		}
 	}
 	
+	/* Makes sure all the databse connections are closed.
+	 * 
+	 */
+	
 	public void closeConnection() throws SQLException{
 		core.close();
 		if (cxn != null){
@@ -146,12 +168,5 @@ public class getExpt{
 		if (rsexpt != null){rsexpt.close();}
 		
 	}
-		
-	}
-	
-	
-	
-	
-	
-	
 
+}

@@ -1,4 +1,5 @@
-package edu.psu.compbio.seqcode.projects.akshay.Querying;
+package edu.psu.compbio.seqcode.projects.akshay.query;
+
 import java.sql.*;
 import java.util.*;
 
@@ -7,14 +8,18 @@ import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 
-public class getAlign extends getExpt{
+
+public class Pullreaddbids extends Pullexpttable {
 	public Genome genome;
 	public String queryalign = "select id from seqalignment where expt=?";
 	public AlignType aligntype=null;
 	public PreparedStatement psalign=null;
 	public ResultSet rsalign=null;
-	
-	public getAlign(String[] command) throws SQLException,NotFoundException{
+	/*
+	 * extends to the seqalignmetn SQL table from the seqexpt SQL table
+	 * genome and alignmentype are the extra options
+	 */
+	public Pullreaddbids(String[] command) throws SQLException,NotFoundException{
 		super(command);
 		try{
 			for(int i=0; i < command.length-1; i++){
@@ -31,6 +36,9 @@ public class getAlign extends getExpt{
 			throw new NullPointerException("Cannot use genome parameter without a specie parameter");
 		}
 	}
+	/*
+	 * Prepares and executes the SQL command and populates the resultset
+	 */
 	
 	public void executeSQLAlignCommand() throws SQLException, NotFoundException{
 		try{
@@ -59,12 +67,19 @@ public class getAlign extends getExpt{
 		
 	}
 	
+	/*
+	 * iterates over the resultser and generates a table from it
+	 */
+	
 	public void getTableFromRS() throws SQLException, NotFoundException{
 		while(rsalign.next()){
 			table.add(rsalign.getString("id"));
 		}
 	}
 	
+	/*
+	 * prints the list: table
+	 */
 	public void printTable(){
 		try{
 			for(int i=0; i<table.size(); i++){
@@ -79,6 +94,10 @@ public class getAlign extends getExpt{
 		
 	}
 	
+	/*
+	 * Checks if all the connections to the database are closed
+	 */
+	
 	public void closeConnection() throws SQLException{
 		core.close();
 		if (cxn != null){
@@ -92,9 +111,5 @@ public class getAlign extends getExpt{
 	
 	
 	}
-	
-	
-		
-}
-		
 
+}
