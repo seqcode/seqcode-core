@@ -1,8 +1,11 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -80,7 +83,7 @@ public class SignificanceTester {
 			//Silent exceptions
 		}
 		
-		outDirName = gffDir+"signif_w"+searchRegionWin+"_q"+String.format("%e", qThres)+"_minfold"+String.format("%.1f", minFold);
+		outDirName = gffDir+"signif_w"+searchRegionWin+"_q"+String.format("%.2e", qThres)+"_minfold"+String.format("%.1f", minFold);
 		outDir = new File(outDirName);
 		outDir.mkdir();
 	}
@@ -96,7 +99,10 @@ public class SignificanceTester {
 		//Convert our points to events
 		PointsToEvents p2e = new PointsToEvents(config, manager, potentialSites, searchRegionWin,simpleReadAssignment);
 		List<BindingEvent> events = p2e.execute();
-				
+		
+		//Estimate signal fraction (necessary for calculating statistics)
+		manager.estimateSignalProportion(events);
+		
 		/*//Get the scaling ratio from the scaling events if appropriate
 		if(scalingSites.size()>0){
 			PointsToEvents p2e_scaling = new PointsToEvents(config, manager, scalingSites, searchRegionWin, simpleReadAssignment);
@@ -114,16 +120,73 @@ public class SignificanceTester {
 		tester.execute();
 		
 		manager.setEvents(events);
-		
 		manager.writeReplicateCounts(outDirName+File.separator+outFileBase+"_replicatecounts.txt");
+		writeBindingEventGFFFiles(outDirName+File.separator+outFileBase, events);
+		
+		System.out.println("Output files written to: "+outDirName);
 	}
 	
+	/**
+     * Print all binding events to files
+     */
+    public void writeBindingEventGFFFiles(String filePrefix, List<BindingEvent> events){
+    	if(events.size()>0){
+    		try {
+	    		//Per-condition event files
+	    		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+	    			//Sort on the current condition
+	    			BindingEvent.setSortingCond(cond);
+	    			Collections.sort(events, new Comparator<BindingEvent>(){
+	    	            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
+	    	        });
+	    			//Print
+	    			String condName = cond.getName(); 
+	    			condName = condName.replaceAll("/", "-");
+	    			String allFilename = filePrefix+"_all_"+condName+".gff";
+	    			FileWriter allFout = new FileWriter(allFilename);
+	    			String signifFilename = filePrefix+"_signif_"+condName+".gff";
+	    			FileWriter signifFout = new FileWriter(signifFilename);
+					for(BindingEvent e : events){
+						Point currPt = e.getPoint();
+		    			GFFEntry origGFF = siteToGFFEntry.get(currPt);
+			    		double P = e.getCondSigVCtrlP(cond);
+						double logP = Math.log(e.getCondSigVCtrlP(cond))/config.LOG2;
+						double logF = Math.log(e.getCondSigVCtrlFold(cond))/config.LOG2;
+						double sigHits = e.getCondSigHits(cond);
+						double ctrlHits = e.getCondCtrlHits(cond);
+						String attrib = origGFF.getAttribString()+String.format(";sig_tags=%.1f;ctrl_tags=%.1f;log2_fold_sigctrl=%.3f;log2_qval_sigctrl=%.3f", sigHits, ctrlHits, logF, logP);
+			    		
+			    		if(e.isFoundInCondition(cond) && P <=config.getQMinThres()){
+			    			signifFout.write(origGFF.getChr()+"\t"+origGFF.getSource()+"\t"+origGFF.getFeature()+"\t"+origGFF.getStart()+"\t"
+			    	    			+origGFF.getEnd()+"\t"+sigHits+"\t"+origGFF.getStrand()+"\t"+origGFF.getFrame()
+			    	    			+"\t"+attrib+"\n");
+			    		}
+			    		allFout.write(origGFF.getChr()+"\t"+origGFF.getSource()+"\t"+origGFF.getFeature()+"\t"+origGFF.getStart()+"\t"
+		    	    			+origGFF.getEnd()+"\t"+sigHits+"\t"+origGFF.getStrand()+"\t"+origGFF.getFrame()
+		    	    			+"\t"+attrib+"\n");
+			    	}
+					signifFout.close();
+					allFout.close();
+	    		}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+    }
 		
 	//Main
 	public static void main(String[] args){
-		Config config = new Config(args, false);
+		//Hack to set a default fixedpb limit. Need a better way to set per-application defaults
+		String [] newargs = new String[args.length+2];
+		for(int a=0; a<args.length; a++)
+			newargs[a] = args[a];
+		newargs[newargs.length-2] = "--fixedpb";
+		newargs[newargs.length-1] = "1000";
+		
+		//Initialize Config
+		Config config = new Config(newargs, false);
 		config.setMedianScaling(true);
-
+		
 		if(config.helpWanted()){
 			printHelp();	
 		}else{
@@ -180,6 +243,13 @@ public class SignificanceTester {
 				"\t--fixedpb <fixed per base limit>\n" +
 				"\n" +
 				"\t--design <experiment design file>  optional: can use design file instead of --expt, --ctrl and --format\n");
+		System.err.println("\tOutput:\n" +
+				"\t- GFF file containing all significant peak-pairs (i.e. passing Q-value and fold thresholds) with annotation.\n" +
+				"\t- GFF file containing all input peak-pairs with annotation.\n" +
+				"\t- Text file containing per-replicate signal tag counts for all peak-pairs.\n");
+		System.err.println("\tExample Usage:\n" +
+				"\tjava -Xmx2G edu.psu.compbio.seqcode.projects.chexmix.SignificanceTester --gen mm10 --format IDX --exptFoxa2-r1 FoxA2_07-633_liver_-_-_-_XO111_kaz1-S001_Pugh40203mm10.tab --exptFoxa2-r2 FoxA2_07-633_liver_-_-_-_XO211_kaz1-S001_Pugh40205mm10.tab --ctrlFoxa2 IgG_12-370_liver_-_-_-_XO_kaz1-S001_Pugh4020mm10.idx --gff genetrack_s5e10F1/cwpair_output_mode_f0u5d25b1/S_FoxA2_07-633_liver_-_-_-_XO_kaz1-S001_Pugh4020mm10_s5e10F1.gff --win 50 --q 0.01 --minfold 2\n" +
+				"");
 	}
 
 }

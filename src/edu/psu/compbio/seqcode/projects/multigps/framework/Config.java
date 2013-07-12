@@ -484,7 +484,6 @@ public class Config {
 	//Some accessors to allow modification of options after config .
 	public void setMedianScaling(boolean ms){scalingByMedian = ms;}
 	
-	
 	/**
 	 * Make some output directories used by multiGPS
 	 */
