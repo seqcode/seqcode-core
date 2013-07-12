@@ -253,12 +253,12 @@ public class ExperimentManager {
     /**
      * Print all binding events to files
      */
-    public void writeBindingEventFiles(){
+    public void writeBindingEventFiles(String filePrefix){
     	if(events.size()>0){
     		
 	    	try {
 	    		//Full output table (all non-zero components)
-	    		String filename = config.getOutputParentDir()+File.separator+config.getOutBase()+".all.events.table";
+	    		String filename = filePrefix+".all.events.table";
 	    		FileWriter fout = new FileWriter(filename);
 	    		fout.write(BindingEvent.fullHeadString()+"\n");
 	    		for(BindingEvent e : events)
@@ -275,7 +275,7 @@ public class ExperimentManager {
 	    			//Print
 	    			String condName = cond.getName(); 
 	    			condName = condName.replaceAll("/", "-");
-	    			filename = config.getOutputParentDir()+File.separator+config.getOutBase()+"_"+condName+".events";
+	    			filename = filePrefix+"_"+condName+".events";
 					fout = new FileWriter(filename);
 					fout.write(BindingEvent.conditionHeadString(cond)+"\n");
 			    	for(BindingEvent e : events){
@@ -295,11 +295,10 @@ public class ExperimentManager {
     /**
      * Print all binding events to files
      */
-    public void writeFullEventFile(){
+    public void writeFullEventFile(String filename){
     	if(events.size()>0){
     		try {
 	    		//Full dataset table
-		    	String filename = config.getOutputParentDir()+File.separator+config.getOutBase()+".all.events.table";
 		    	FileWriter fout = new FileWriter(filename);
 		    	fout.write(BindingEvent.fullHeadString()+"\n");
 		    	for(BindingEvent e : events)
@@ -314,11 +313,10 @@ public class ExperimentManager {
     /**
      * Print all motifs to file
      */
-    public void writeMotifFile(){
+    public void writeMotifFile(String filename){
     	if(config.getFindingMotifs()){
     		try {
 	    		//Full dataset table
-		    	String filename = config.getOutputParentDir()+File.separator+config.getOutBase()+".motifs";
 		    	FileWriter fout = new FileWriter(filename);
 		    	for(ExperimentCondition cond : experiments.getConditions()){
 		    		if(cond.getFreqMatrix()!=null)
@@ -335,11 +333,10 @@ public class ExperimentManager {
     /**
      * Print replicate data counts to a file
      */
-    public void writeReplicateCounts(){
+    public void writeReplicateCounts(String filename){
     	if(events.size()>0){
     		try {
 	    		//Full dataset table
-	    		String filename = config.getOutputParentDir()+File.separator+config.getOutBase()+".replicates.counts";
 	    		FileWriter fout = new FileWriter(filename);
 	    		fout.write(BindingEvent.repCountHeadString()+"\n");
 	    		for(BindingEvent e : events)

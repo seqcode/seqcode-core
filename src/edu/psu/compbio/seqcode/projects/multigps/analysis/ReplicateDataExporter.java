@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.multigps.analysis;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,7 +45,7 @@ public class ReplicateDataExporter {
 		
 		manager.setEvents(events);
 		
-		manager.writeReplicateCounts();
+		manager.writeReplicateCounts(config.getOutputParentDir()+File.separator+config.getOutBase()+".replicates.counts");
 	}
 	
 	

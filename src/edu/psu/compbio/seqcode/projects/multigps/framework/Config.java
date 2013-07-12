@@ -159,7 +159,7 @@ public class Config {
 				}
 				
 				//Load genome
-				if(ap.hasKey("species")){
+				if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
 					Pair<Organism, Genome> pair = Args.parseGenome(args);
 					if(pair != null){
 						gen = pair.cdr();
@@ -480,6 +480,10 @@ public class Config {
 	public String getMEMEargs(){return MEMEargs;}
 	public boolean getRunDiffTests(){return runDiffTests;}
 	public boolean isVerbose(){return verbose;}
+	
+	//Some accessors to allow modification of options after config .
+	public void setMedianScaling(boolean ms){scalingByMedian = ms;}
+	
 	
 	/**
 	 * Make some output directories used by multiGPS

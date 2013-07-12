@@ -17,8 +17,8 @@ import java.io.*;
  * without worrying about the time it takes to print the output.
  * <li>--wiggle means output in wiggle format
  * <li>--bed means output in BED format
- * <li>--noheader means to skip printing the input region in the outpu
  * <li>--paired means to query the paired reads.
+ * <li>--noheader means to skip printing the input region in the outpu
  * <li>--right means to query the right side reads rather than left.
  */
 

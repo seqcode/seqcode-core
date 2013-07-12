@@ -273,7 +273,8 @@ public class Args {
         return output;
     }
 
-    /** parses <tt>--species "Mus musculus;mm8"</tt> into a Species and Genome
+    /** Parses <tt>--species "Mus musculus;mm8"</tt> into a Species and Genome
+     *  Also parses <tt>--genome mm8</tt> or <tt>--gen mm8</tt> into a Genome and inferred Species
      *  @see edu.psu.compbio.seqcode.gse.datasets.species.Organism
      *  @see edu.psu.compbio.seqcode.gse.datasets.species.Genome
      */
@@ -291,11 +292,23 @@ public class Args {
                 genomename = pieces[1];
             }
         }
+        Organism org=null;
+        Genome genome=null;
         if(speciesname==null && genomename==null){
-        	return null;
+        	for (int i = 0; i < args.length; i++) {
+                if (args[i].equals("--gen") || args[i].equals("--genome")) 
+                    genomename = args[++i];
+            }
+        	if(genomename==null)
+        		return null;
+        	else{
+        		genome =Organism.findGenome(genomename);
+        		org = new Organism(genome.getSpecies());
+        	}
+        }else{
+        	org = new Organism(speciesname);
+        	genome =Organism.findGenome(genomename);
         }
-        Organism org = new Organism(speciesname);
-        Genome genome = org.getGenome(genomename);
         orgs.put(args,org);
         genomes.put(args,genome);
         return new Pair<Organism,Genome>(org,genome);

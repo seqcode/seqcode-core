@@ -122,7 +122,7 @@ public class MultiGPS {
 		tester.execute();
         
 		//Write the replicate counts to a file (needed before EdgeR differential enrichment)
-		manager.writeReplicateCounts();
+		manager.writeReplicateCounts(config.getOutputParentDir()+File.separator+config.getOutBase()+".replicates.counts");
 		
 		//Statistical analysis: inter-condition differences
 		if(manager.getNumConditions()>1 && config.getRunDiffTests()){
@@ -147,8 +147,8 @@ public class MultiGPS {
 		}
         
         // Print final events to files
-		manager.writeBindingEventFiles();
-		manager.writeMotifFile();
+		manager.writeBindingEventFiles(config.getOutputParentDir()+File.separator+config.getOutBase());
+		manager.writeMotifFile(config.getOutputParentDir()+File.separator+config.getOutBase()+".motifs");
         System.err.println("Finished! Binding events are printed to files in "+config.getOutputParentDir()+" beginning with: "+config.getOutName());
         
         //Post-analysis of peaks
