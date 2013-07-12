@@ -157,11 +157,11 @@ public class SignificanceTester {
 						String attrib = origGFF.getAttribString()+String.format(";sig_tags=%.1f;ctrl_tags=%.1f;log2_fold_sigctrl=%.3f;log2_qval_sigctrl=%.3f", sigHits, ctrlHits, logF, logP);
 			    		
 			    		if(e.isFoundInCondition(cond) && P <=config.getQMinThres()){
-			    			signifFout.write(origGFF.getChr()+"\t"+origGFF.getSource()+"\t"+origGFF.getFeature()+"\t"+origGFF.getStart()+"\t"
+			    			signifFout.write("chr"+origGFF.getChr()+"\t"+origGFF.getSource()+"\t"+origGFF.getFeature()+"\t"+origGFF.getStart()+"\t"
 			    	    			+origGFF.getEnd()+"\t"+sigHits+"\t"+origGFF.getStrand()+"\t"+origGFF.getFrame()
 			    	    			+"\t"+attrib+"\n");
 			    		}
-			    		allFout.write(origGFF.getChr()+"\t"+origGFF.getSource()+"\t"+origGFF.getFeature()+"\t"+origGFF.getStart()+"\t"
+			    		allFout.write("chr"+origGFF.getChr()+"\t"+origGFF.getSource()+"\t"+origGFF.getFeature()+"\t"+origGFF.getStart()+"\t"
 		    	    			+origGFF.getEnd()+"\t"+sigHits+"\t"+origGFF.getStrand()+"\t"+origGFF.getFrame()
 		    	    			+"\t"+attrib+"\n");
 			    	}
