@@ -26,16 +26,19 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 		expanders = new ArrayList<SeqExpander>(); 
 		expanders.add(exp);
 		this.strand = strand;
+		this.pbMax = pbMax;
 	}
 	public Stranded5PrimeProfiler(BinningParameters ps, List<SeqExpander> exps, char strand, double pbMax) {
 		params = ps;
 		expanders = exps;
 		this.strand = strand;
+		this.pbMax = pbMax;
 	}
 	public Stranded5PrimeProfiler(BinningParameters ps, DeepSeqExpt exp, char strand, double pbMax) {
 		params = ps;
 		expt = exp;
 		this.strand = strand;
+		this.pbMax = pbMax;
 	}
 
 	public BinningParameters getBinningParameters() {
