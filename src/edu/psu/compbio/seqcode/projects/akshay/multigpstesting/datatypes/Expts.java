@@ -7,8 +7,10 @@ public class Expts {
 	public Map<Point,String> isotaedPoints= new HashMap<Point,String>();
 	public Map<Range,Integer> blacklist = new HashMap<Range,Integer>();
 	
-	public void mapPoint(Point currentPoint){
-		if(blacklist.containsKey(currentPoint.overlaps.getFirst())
+	public void mapPointstoRnages(Point currentPoint){
+		if(blacklist.containsKey(currentPoint.overlaps.getFirst()){
+			
+		}
 		
 	}
 	
