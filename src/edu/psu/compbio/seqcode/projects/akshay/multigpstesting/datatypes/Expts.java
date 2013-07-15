@@ -8,7 +8,7 @@ public class Expts {
 	public Map<Range,Integer> blacklist = new HashMap<Range,Integer>();
 	
 	public void mapPointstoRnages(Point currentPoint){
-		if(blacklist.containsKey(currentPoint.overlaps.getFirst()){
+		if(blacklist.containsKey(currentPoint.overlaps.getFirst())){
 			
 		}
 		
