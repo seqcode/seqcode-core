@@ -42,7 +42,7 @@ public class MetaMaker {
 			double lineMin = Args.parseDouble(args,"linemin", 0);
 			double lineMax = Args.parseDouble(args,"linemax", 100);
 			int lineThick = Args.parseInteger(args,"linethick", 1);
-			double pbMax = Args.parseDouble(args,"pbMax", 100);
+			double pbMax = Args.parseDouble(args,"pbmax", 100);
 			char strand = Args.parseString(args, "strand", "/").charAt(0);
 			boolean drawColorBar = !Args.parseFlags(args).contains("nocolorbar");
 			boolean saveSVG = Args.parseFlags(args).contains("svg");
