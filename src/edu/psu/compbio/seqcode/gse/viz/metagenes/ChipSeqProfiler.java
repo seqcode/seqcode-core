@@ -69,8 +69,8 @@ public class ChipSeqProfiler implements PointProfiler<Point,PointProfile> {
 				((StrandedPoint)a).getStrand() == '+' : true;
 		
 		
-		int start = Math.max(0, a.getLocation()-left);
-		int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom())-1);
+		int start = Math.max(1, a.getLocation()-left);
+		int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom()));
 		
 		Region query = new Region(a.getGenome(), a.getChrom(), start, end);
 		Region extQuery = new Region(a.getGenome(), a.getChrom(), start-extension>0 ? start-extension : 1, end+extension < a.getGenome().getChromLength(a.getChrom()) ? end+extension : a.getGenome().getChromLength(a.getChrom()) );

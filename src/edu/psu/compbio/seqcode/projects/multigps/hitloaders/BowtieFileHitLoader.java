@@ -66,7 +66,7 @@ public class BowtieFileHitLoader extends FileHitLoader {
         			String[] tmp = chr.split("\\.");
         			chr=tmp[0].replaceFirst("chr", "");
         			chr=chr.replaceFirst("^>", "");
-        			start = new Integer(words[3]).intValue();
+        			start = new Integer(words[3]).intValue()+1; //Bowtie raw output is 0-based, we want 1-based
         			end =start+readLength-1;
         			strand = words[1].charAt(0);
 					ReadHit currHit = new ReadHit(chr, start, end, strand, 1);

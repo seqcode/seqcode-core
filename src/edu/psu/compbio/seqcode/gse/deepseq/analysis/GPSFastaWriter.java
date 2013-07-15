@@ -183,10 +183,10 @@ public class GPSFastaWriter{
 	    	if (count>seqNum)
 	    		break;
 	    	int start = p.getLocation()-window/2;
-	    	if (start<0)
-	    		start=0;
+	    	if (start<1)
+	    		start=1;
 	    	int end = start+window-1;
-	    	if (end>=genome.getChromLength(p.getChrom()))
+	    	if (end>genome.getChromLength(p.getChrom()))
 	    		continue;
 	    	Region r = new Region(genome, p.getChrom(), start, end);
 	    	if (wantGEM){
@@ -198,7 +198,7 @@ public class GPSFastaWriter{
 	    	// negative region for GEM
 			// In proximal regions, but excluding binding regions
 			String chr = p.getChrom();
-			int chrLength = genome.getChromLength(chr)-1;
+			int chrLength = genome.getChromLength(chr);
 			start = p.getLocation()+ k_neg_dist;
 			if ( start+window>=chrLength)
 				continue;

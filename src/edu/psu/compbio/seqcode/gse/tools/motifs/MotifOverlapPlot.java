@@ -82,8 +82,8 @@ public class MotifOverlapPlot {
             int center = (r.getStart() + r.getEnd()) / 2;
             int start = center - distance;
             int end = center + distance;
-            if (start < 0) { start = 0; }
-            if (end > genome.getChromLength(r.getChrom())) { end = genome.getChromLength(r.getChrom()) - 1;}
+            if (start < 1) { start = 1; }
+            if (end > genome.getChromLength(r.getChrom())) { end = genome.getChromLength(r.getChrom());}
             r = new Region(r.getGenome(), r.getChrom(), start, end);
             char string[] = seqgen.execute(r).toCharArray();
             boolean anyhits = false;

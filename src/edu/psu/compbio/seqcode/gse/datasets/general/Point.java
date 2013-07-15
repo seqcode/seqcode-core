@@ -77,8 +77,8 @@ public class Point implements Comparable<Point> {
    * @return The region (as a Region) that corresponds to this expansion
    */
   public Region expand(int distance) {
-	  int ns = Math.max(0, location - distance);
-	  int ne = Math.min(location + distance, g.getChromLength(chrom)-1);
+	  int ns = Math.max(1, location - distance);
+	  int ne = Math.min(location + distance, g.getChromLength(chrom));
 	  return new Region(g, chrom, ns, ne);
   }
 

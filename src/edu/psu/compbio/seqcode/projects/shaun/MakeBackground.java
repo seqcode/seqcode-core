@@ -151,8 +151,8 @@ public class MakeBackground {
       if (start < 1) {
         start = 1;
       }
-      if (stop >= gen.getChromLength(gene.getChrom())) {
-        stop = gen.getChromLength(gene.getChrom()) - 1;
+      if (stop > gen.getChromLength(gene.getChrom())) {
+        stop = gen.getChromLength(gene.getChrom());
       }
 
       regList.add(new Region(gen, gene.getChrom(), start, stop));

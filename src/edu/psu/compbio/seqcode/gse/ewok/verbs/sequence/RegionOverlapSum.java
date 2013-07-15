@@ -21,7 +21,7 @@ public class RegionOverlapSum extends OverlapSum {
 	}
 	
 	public RegionOverlapSum(Genome g, String chr) { 
-		totalRegion = new Region(g, chr, 0, g.getChromLength(chr)-1);
+		totalRegion = new Region(g, chr, 1, g.getChromLength(chr));
 	}
 	
 	public Collection<Region> collectRegions(int threshold) { 

@@ -363,7 +363,7 @@ public class ThreePrimeUTR {
             }
             String chromName = regions[0].getChrom();
             System.err.println("Working on " + chromName);
-            Region chrom = new Region(genome, chromName, 0, genome.getChromLength(chromName));
+            Region chrom = new Region(genome, chromName, 1, genome.getChromLength(chromName));
             for (int j = 0; j < nCol; j++) {
                 perBaseMean[j] = 0;
             }

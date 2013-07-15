@@ -634,7 +634,7 @@ public class ChipSeqPeakFinder {
 					int start = peak.peak.getLocation()-((int)(seqwin/2));
 					if(start<1){start=1;}
 					int end = peak.peak.getLocation()+((int)seqwin/2)-1;
-					if(end>gen.getChromLength(peak.coords.getChrom())){end =gen.getChromLength(peak.coords.getChrom())-1;} 
+					if(end>gen.getChromLength(peak.coords.getChrom())){end =gen.getChromLength(peak.coords.getChrom());} 
 					peakWin = new Region(peak.peak.getGenome(), peak.peak.getChrom(), start, end);
 				}
 				
@@ -965,8 +965,8 @@ public class ChipSeqPeakFinder {
 			int count =0;
 			for(ChipSeqPeak p : peaks){
 				if(count<topX){
-					int start = p.peak.getLocation()-(window/2)<0 ? 0 : p.peak.getLocation()-(window/2);
-					int end = p.peak.getLocation()+(window/2) >= p.peak.getGenome().getChromLength(p.peak.getChrom()) ? p.peak.getGenome().getChromLength(p.peak.getChrom())-1 : p.peak.getLocation()+(window/2);
+					int start = p.peak.getLocation()-(window/2)<1 ? 1 : p.peak.getLocation()-(window/2);
+					int end = p.peak.getLocation()+(window/2) >= p.peak.getGenome().getChromLength(p.peak.getChrom()) ? p.peak.getGenome().getChromLength(p.peak.getChrom()) : p.peak.getLocation()+(window/2);
 					Region r = new Region(p.peak.getGenome(), p.peak.getChrom(), start, end);
 					int [] currFor = IP.hitDepthLandscape(r, 0, '+');
 					int [] currRev = IP.hitDepthLandscape(r, 0, '-');

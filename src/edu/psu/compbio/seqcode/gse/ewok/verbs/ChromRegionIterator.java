@@ -27,7 +27,7 @@ public class ChromRegionIterator implements Iterator<NamedRegion> {
         
         for(String chromName : genome.getChromList()) { 
             Genome.ChromosomeInfo s = genome.getChrom(chromName);
-            NamedRegion region = new NamedRegion(genome, chromName, 0, s.getLength() - 1, chromName);
+            NamedRegion region = new NamedRegion(genome, chromName, 1, s.getLength() , chromName);
             regions.add(region);
         }
         

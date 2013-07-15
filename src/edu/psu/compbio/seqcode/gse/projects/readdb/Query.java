@@ -210,10 +210,10 @@ public class Query {
                                 System.out.println(line);
                             }
                             for (SingleHit h : hits) {
-                                if (bed) {
+                                if (bed) {//BED is 0-based and half-open by definition
                                     System.out.println(String.format("chr%d\t%d\t%d\thit\t%f\t%s\n",
                                                                      h.chrom, 
-                                                                     h.strand ? h.pos : h.pos - h.length,
+                                                                     h.strand ? h.pos-1 : h.pos - h.length -1,
                                                                      h.strand ? h.pos + h.length : h.pos,
                                                                      h.weight,
                                                                      h.strand ? "+" : "-"));

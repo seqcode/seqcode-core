@@ -5,12 +5,8 @@ import java.io.File;
 import java.util.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.deepseq.utilities.CommonUtils;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
 import edu.psu.compbio.seqcode.gse.ewok.types.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.*;
@@ -19,6 +15,8 @@ import edu.psu.compbio.seqcode.gse.utils.io.parsing.FASTAStream;
 /** 
  * <code>SequenceGenerator</code> maps a Region to the genomic
  * sequence included in that Region.
+ * 
+ * 1-based genome
  */
 public class SequenceGenerator<X extends Region> implements Mapper<X,String>, SelfDescribingVerb {
 
@@ -129,8 +127,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
                     chromString = cache.get(chromid);
                 }
                 //1-based version (string.substr is 0-based) 
-                //result = chromString.substring(region.getStart()-1, region.getEnd());
-                result = chromString.substring(region.getStart(), region.getEnd() + 1);
+                result = chromString.substring(region.getStart()-1, region.getEnd());
             }
             if (result == null) {
                 java.sql.Connection cxn =
@@ -138,8 +135,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
                 cxn.setAutoCommit(false);
                 PreparedStatement ps;
                 //1-based version (mysql substr is 1-based)
-                //int start = Math.max(region.getStart());
-                int start = Math.max(region.getStart() + 1,0);
+                int start = Math.max(region.getStart(), 0);
                 ps = cxn.prepareStatement("select substr(sequence,?,?) from chromsequence where id = ?");
                 ps.setInt(1,start);
                 ps.setInt(2,region.getEnd() - region.getStart() + 1);

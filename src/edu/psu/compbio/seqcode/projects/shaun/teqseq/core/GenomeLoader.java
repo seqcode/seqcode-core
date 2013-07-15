@@ -256,7 +256,7 @@ public class GenomeLoader {
 				}
 			}else if(giffordDB){
 				try {
-					seq = DNATools.createDNASequence(seqgen.execute(new Region(gen, chrom, 0, gen.getChromLength(chrom)-1)), "dna");
+					seq = DNATools.createDNASequence(seqgen.execute(new Region(gen, chrom, 1, gen.getChromLength(chrom))), "dna");
 				} catch (IllegalSymbolException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

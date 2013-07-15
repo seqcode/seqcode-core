@@ -256,7 +256,7 @@ public class ComponentFeature extends Feature  implements Comparable<ComponentFe
 		int start = position.getLocation()-((int)(win/2));
 		if(start<1){start=1;}
 		int end = position.getLocation()+((int)win/2)-1;
-		if(end>coords.getGenome().getChromLength(coords.getChrom())){end =coords.getGenome().getChromLength(coords.getChrom())-1;} 
+		if(end>coords.getGenome().getChromLength(coords.getChrom())){end =coords.getGenome().getChromLength(coords.getChrom());} 
 		peakWin = new Region(coords.getGenome(), coords.getChrom(), start, end);
 		
 		String seqName = new String(">"+peakWin.getLocationString()+"\t"+peakWin.getWidth());

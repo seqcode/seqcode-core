@@ -105,7 +105,7 @@ public class BEDFileWriter{
 				System.out.println("Writing Chomosome "+chrom+" ...");
 				// load  data for this chromosome.
 				int length = gen.getChromLength(chrom);
-				Region wholeChrom = new Region(gen, chrom, 0, length);
+				Region wholeChrom = new Region(gen, chrom, 1, length);
 				int count = Math.max(ip.countHits(wholeChrom), ctrl.countHits(wholeChrom));
 				ArrayList<Region> chunks = new ArrayList<Region>();
 				// if there are too many reads in a chrom, read smaller chunks

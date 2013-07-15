@@ -1195,8 +1195,8 @@ public class MotifAnalysisSandbox {
 			int left = window/2;
 			int right = window-left-1;
 			
-			int start = Math.max(0, a.getLocation()-left);
-			int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom())-1);
+			int start = Math.max(1, a.getLocation()-left);
+			int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom()));
 			Region query = new Region(gen, a.getChrom(), start, end);
 			boolean strand = (a instanceof StrandedPoint) ? 
 					((StrandedPoint)a).getStrand() == '+' : true;

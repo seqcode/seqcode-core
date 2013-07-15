@@ -420,7 +420,7 @@ public class BindingEvent implements Comparable<BindingEvent>{
 		int start = point.getLocation()-((int)(win/2));
 		if(start<1){start=1;}
 		int end = point.getLocation()+((int)win/2)-1;
-		if(end>point.getGenome().getChromLength(point.getChrom())){end =point.getGenome().getChromLength(point.getChrom())-1;} 
+		if(end>point.getGenome().getChromLength(point.getChrom())){end =point.getGenome().getChromLength(point.getChrom());} 
 		peakWin = new Region(point.getGenome(), point.getChrom(), start, end);
 	
 		String seqName = new String(">"+peakWin.getLocationString()+"\t"+peakWin.getWidth()+"\t"+point.getLocation());

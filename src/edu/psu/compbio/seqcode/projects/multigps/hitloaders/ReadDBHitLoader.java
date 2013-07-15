@@ -142,7 +142,7 @@ public class ReadDBHitLoader extends HitLoader{
 			for (String chrom: gen.getChromList()){
 				// load  data for this chromosome.
 				int length = gen.getChromLength(chrom);
-				Region wholeChrom = new Region(gen, chrom, 0, length-1);
+				Region wholeChrom = new Region(gen, chrom, 1, length);
 				int count = 0;
 				for(SeqAlignment alignment : aligns) { 
 					if(availChroms.get(alignment).contains(gen.getChromID(wholeChrom.getChrom()))){

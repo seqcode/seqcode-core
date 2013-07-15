@@ -685,7 +685,7 @@ class GPSMixture extends MultiConditionFeatureFinder {
      	     			chromNumber = chromNumber.replaceFirst("^chr", "");
 
      	     			if(regionStr.equalsIgnoreCase(chromNumber)) {
-     	     				subsetRegions.add(new Region(gen, chrom, 0, gen.getChromLength(chrom)-1));
+     	     				subsetRegions.add(new Region(gen, chrom, 1, gen.getChromLength(chrom)));
      	     				break;
      	     			}
      	     		}
@@ -730,7 +730,7 @@ class GPSMixture extends MultiConditionFeatureFinder {
 					for (String chrom: gen.getChromList()){
 						// load  data for this chromosome.
 						int length = gen.getChromLength(chrom);
-						Region wholeChrom = new Region(gen, chrom, 0, length-1);
+						Region wholeChrom = new Region(gen, chrom, 1, length);
 						int count = Math.max(ip.countHits(wholeChrom), ctrl.countHits(wholeChrom));
 						ArrayList<Region> chunks = new ArrayList<Region>();
 						// if there are too many reads in a chrom, read smaller chunks
@@ -1099,7 +1099,7 @@ class GPSMixture extends MultiConditionFeatureFinder {
                 for(String chrom:gen.getChromList()) {
                     int chrlen = gen.getChromLength(chrom);
                     
-                    for (int start = 0; start  < chrlen - windowsize; start += windowsize) {
+                    for (int start = 1; start  < chrlen - windowsize; start += windowsize) {
                         Region r = new Region(gen, chrom, start, start + windowsize);
                         double ip = countIpReads(r, condition);
                         double ctrl = countCtrlReads(r, condition);
@@ -1181,7 +1181,7 @@ class GPSMixture extends MultiConditionFeatureFinder {
 		}
 		else {
 			for (String chrom:gen.getChromList()){
-				Region wholeChrom = new Region(gen, chrom, 0, gen.getChromLength(chrom)-1);
+				Region wholeChrom = new Region(gen, chrom, 1, gen.getChromLength(chrom));
 				chr_focusReg_pair.put(chrom, new ArrayList<Region>());
 				chr_focusReg_pair.get(chrom).add(wholeChrom);
 			}
@@ -1961,7 +1961,7 @@ class GPSMixture extends MultiConditionFeatureFinder {
 			int prev_reg_idx = 0;
 			int curr_reg_idx = 0;
 			while(start < chromLen) {
-				Region non_specific_reg = new Region(gen, chrom, start, Math.min(start + non_specific_reg_len -1, chromLen-1));
+				Region non_specific_reg = new Region(gen, chrom, start, Math.min(start + non_specific_reg_len -1, chromLen));
 				
 				if(chr_enriched_regs.size() > 0) {
 					if(!(non_specific_reg.overlaps(chr_enriched_regs.get(prev_reg_idx)) || non_specific_reg.overlaps(chr_enriched_regs.get(curr_reg_idx)))) {
@@ -2268,7 +2268,7 @@ class GPSMixture extends MultiConditionFeatureFinder {
 					
 					for(int i:chrom_comp_pair.get(chrom)) {
 						ComponentFeature cf = compFeatures.get(i);
-						Region expandedRegion = new Region(gen, chrom, Math.max(0, cf.getPosition().getLocation()-config.third_lambda_region_width), Math.min(chromLen-1, cf.getPosition().getLocation()+config.third_lambda_region_width));
+						Region expandedRegion = new Region(gen, chrom, Math.max(1, cf.getPosition().getLocation()-config.third_lambda_region_width), Math.min(chromLen, cf.getPosition().getLocation()+config.third_lambda_region_width));
 						ipStrandFivePrimes[0] = caches.get(c).car().getStrandedBases(expandedRegion, '+');
 						ipStrandFivePrimes[1] = caches.get(c).car().getStrandedBases(expandedRegion, '-');
 						
@@ -2343,7 +2343,7 @@ class GPSMixture extends MultiConditionFeatureFinder {
 		// as well as the counts for each channel (IP, CTRL) and for each condition: condHitCounts
 		for(String chrom:gen.getChromList()){
 
-			Region chromRegion = new Region(gen, chrom, 0, gen.getChromLength(chrom)-1);			
+			Region chromRegion = new Region(gen, chrom, 1, gen.getChromLength(chrom));			
 			List<List<StrandedBase>> ip_chrom_signals = loadBasesInWindow(chromRegion, "IP");
 			List<List<StrandedBase>> ctrl_chrom_signals = new ArrayList<List<StrandedBase>>();
 			if(controlDataExist) {
@@ -2405,15 +2405,15 @@ class GPSMixture extends MultiConditionFeatureFinder {
 		else
 			ctrlCounts = ipCounts;
 
-		left_peak           = (int)Math.min(chromLen-1, peakRegion.getStart());
-		left_third_region   = (int)Math.max(         0, pos.getLocation() - config.third_lambda_region_width/2);
-		left_second_region  = (int)Math.max(         0, pos.getLocation() - config.second_lambda_region_width/2);
-		left_first_region   = (int)Math.max(         0, pos.getLocation() - config.first_lambda_region_width/2);
+		left_peak           = (int)Math.min(chromLen, peakRegion.getStart());
+		left_third_region   = (int)Math.max(         1, pos.getLocation() - config.third_lambda_region_width/2);
+		left_second_region  = (int)Math.max(         1, pos.getLocation() - config.second_lambda_region_width/2);
+		left_first_region   = (int)Math.max(         1, pos.getLocation() - config.first_lambda_region_width/2);
 
-		right_peak          = (int)Math.max(         0, peakRegion.getEnd());
-		right_third_region  = (int)Math.min(chromLen-1, pos.getLocation() + config.third_lambda_region_width/2);
-		right_second_region = (int)Math.min(chromLen-1, pos.getLocation() + config.second_lambda_region_width/2);
-		right_first_region  = (int)Math.min(chromLen-1, pos.getLocation() + config.first_lambda_region_width/2);
+		right_peak          = (int)Math.max(         1, peakRegion.getEnd());
+		right_third_region  = (int)Math.min(chromLen, pos.getLocation() + config.third_lambda_region_width/2);
+		right_second_region = (int)Math.min(chromLen, pos.getLocation() + config.second_lambda_region_width/2);
+		right_first_region  = (int)Math.min(chromLen, pos.getLocation() + config.first_lambda_region_width/2);
 
 		int smallestLeft = (int) Math.min(left_peak, Math.min(left_third_region, Math.min(left_second_region, left_first_region)));
 		int largestRight = (int) Math.max(right_peak, Math.max(right_third_region, Math.max(right_second_region, right_first_region)));

@@ -1271,7 +1271,7 @@ public class KPPMixture extends MultiConditionFeatureFinder {
      	     			chromNumber = chromNumber.replaceFirst("^chr", "");
 
      	     			if(regionStr.equalsIgnoreCase(chromNumber)) {
-     	     				subsetRegions.add(new Region(gen, chrom, 0, gen.getChromLength(chrom)-1));
+     	     				subsetRegions.add(new Region(gen, chrom, 1, gen.getChromLength(chrom)));
      	     				break;
      	     			}
      	     		}
@@ -1337,7 +1337,7 @@ public class KPPMixture extends MultiConditionFeatureFinder {
 					for (String chrom: gen.getChromList()){
 						// load  data for this chromosome.
 						int length = gen.getChromLength(chrom);
-						Region wholeChrom = new Region(gen, chrom, 0, length-1);
+						Region wholeChrom = new Region(gen, chrom, 1, length);
 						int count = Math.max(ip.countHits(wholeChrom), ctrl.countHits(wholeChrom));
 						ArrayList<Region> chunks = new ArrayList<Region>();
 						// if there are too many reads in a chrom, read smaller chunks
@@ -1650,7 +1650,7 @@ public class KPPMixture extends MultiConditionFeatureFinder {
 		}
 		else {		// if no given regions, add each chrom as a region
 			for (String chrom:gen.getChromList()){
-				Region wholeChrom = new Region(gen, chrom, 0, gen.getChromLength(chrom)-1);
+				Region wholeChrom = new Region(gen, chrom, 1, gen.getChromLength(chrom));
 				chr2regions.put(chrom, new ArrayList<Region>());
 				chr2regions.get(chrom).add(wholeChrom);
 			}
@@ -2539,7 +2539,7 @@ public class KPPMixture extends MultiConditionFeatureFinder {
 			int prev_reg_idx = 0;
 			int curr_reg_idx = 0;
 			while(start < chromLen) {
-				Region non_specific_reg = new Region(gen, chrom, start, Math.min(start + non_specific_reg_len -1, chromLen-1));
+				Region non_specific_reg = new Region(gen, chrom, start, Math.min(start + non_specific_reg_len -1, chromLen));
 				
 				if(chr_enriched_regs.size() > 0) {
 					if(!(non_specific_reg.overlaps(chr_enriched_regs.get(prev_reg_idx)) || non_specific_reg.overlaps(chr_enriched_regs.get(curr_reg_idx)))) {
@@ -2840,7 +2840,7 @@ public class KPPMixture extends MultiConditionFeatureFinder {
 		// as well as the counts for each channel (IP, CTRL) and for each condition: condHitCounts
 		for(String chrom:gen.getChromList()){
 
-			Region chromRegion = new Region(gen, chrom, 0, gen.getChromLength(chrom)-1);			
+			Region chromRegion = new Region(gen, chrom, 1, gen.getChromLength(chrom));			
 			List<List<StrandedBase>> ip_chrom_signals = loadBasesInWindow(chromRegion, "IP");
 	
 			int counts = 0;
@@ -3358,7 +3358,7 @@ public class KPPMixture extends MultiConditionFeatureFinder {
 			int winSize = Math.max(config.k_win, config.k_win2); 
 			for (Feature f:signalFeatures){
 				String chr = f.getPeak().getChrom();
-				int length = gen.getChromLength(chr)-1;
+				int length = gen.getChromLength(chr);
 				int basis = f.getPeak().getLocation()+config.k_neg_dist;
 				for (int i=0;i<config.k_negSeq_ratio;i++){
 					int start = basis + (winSize+1)*i;

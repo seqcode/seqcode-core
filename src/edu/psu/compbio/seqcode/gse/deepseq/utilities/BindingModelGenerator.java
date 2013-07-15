@@ -276,7 +276,7 @@ public class BindingModelGenerator {
 	            	
 	            	if(pval<=pFilter && (over==-1 || over >=overrepFilter)){
 		            	int rstart = p.getLocation()-(window/2)<1 ? 1:p.getLocation()-(window/2);
-	                	int rend = p.getLocation()+(window/2)>gen.getChromLength(p.getChrom()) ? gen.getChromLength(p.getChrom()):p.getLocation()+(window/2)-1;
+	                	int rend = p.getLocation()+(window/2)>gen.getChromLength(p.getChrom()) ? gen.getChromLength(p.getChrom()):p.getLocation()+(window/2);
 	                	Region r = new Region(p.getGenome(), p.getChrom(), (rstart<reg.getStart()?rstart:reg.getStart()), (rend>reg.getEnd()?rend:reg.getEnd()));
 	            		EnrichedFeature peak = new EnrichedFeature(r);
 	                	peak.peak=p;
@@ -290,7 +290,7 @@ public class BindingModelGenerator {
 	            	Point p = new Point(reg.getGenome(), reg.getChrom(), (reg.getStart()+reg.getEnd())/2);
 	            	if(reg!=null){
 	            		int rstart = p.getLocation()-(window/2)<1 ? 1:p.getLocation()-(window/2);
-	                	int rend = p.getLocation()+(window/2)>gen.getChromLength(p.getChrom()) ? gen.getChromLength(p.getChrom()):p.getLocation()+(window/2)-1;
+	                	int rend = p.getLocation()+(window/2)>gen.getChromLength(p.getChrom()) ? gen.getChromLength(p.getChrom()):p.getLocation()+(window/2);
 	                	Region r = new Region(p.getGenome(), p.getChrom(), rstart, rend);
 	            		EnrichedFeature peak = new EnrichedFeature(r);
 	                	peak.peak=p;

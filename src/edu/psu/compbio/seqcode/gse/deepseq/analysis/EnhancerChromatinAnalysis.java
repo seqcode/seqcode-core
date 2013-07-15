@@ -244,7 +244,7 @@ public class EnhancerChromatinAnalysis {
 				for (String chrom: chroms ){
 					// load  data for this chromosome.
 					int length = genome.getChromLength(chrom);
-					Region wholeChrom = new Region(genome, chrom, 0, length-1);
+					Region wholeChrom = new Region(genome, chrom, 1, length);
 					int count = ip.countHits(wholeChrom);
 					ArrayList<Region> chunks = new ArrayList<Region>();
 					// if there are too many reads in a chrom, read smaller chunks

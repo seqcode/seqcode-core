@@ -56,7 +56,7 @@ public class GenomeSegmenter {
 		Genome gen = genLoader.getGenome();
 		int numSeg=0;
 		for(String c : gen.getChromList()){
-			Region chrom = new Region(gen, c, 0, gen.getChromLength(c));
+			Region chrom = new Region(gen, c, 1, gen.getChromLength(c));
 			System.err.println("GenomeSegmenter: Processing chromosome "+chrom.getChrom());
 			segments.put(chrom.getChrom(), new ArrayList<Region>());
 
