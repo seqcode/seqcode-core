@@ -47,7 +47,7 @@ public class PrintIndels {
                 System.err.println(" ======== " + name + " ========\n");
                 Region chrom = new Region(one,
                                           name,
-                                          0,
+                                          1,
                                           one.getChromLength(name));
                 Iterator<Indel> indels = generator.execute(chrom);
                 while (indels.hasNext()) {

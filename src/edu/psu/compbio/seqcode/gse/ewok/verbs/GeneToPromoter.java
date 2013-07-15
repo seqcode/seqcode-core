@@ -64,17 +64,17 @@ public class GeneToPromoter
         case '-':
             start = a.getEnd() - downstream;
             stop = a.getEnd() + upstream;
-            if (start < 0) {
-                start = 0;
+            if (start < 1) {
+                start = 1;
             }
-            if (stop < 0) {
-                stop = 0;
+            if (stop < 1) {
+                stop = 1;
             }
             if (start >= chrlen) {
                 start = chrlen - 1;
             }
             if (stop >= chrlen) {
-                stop = chrlen - 1;
+                stop = chrlen;
             }
             output = new NamedStrandedRegion(a.getGenome(), a.getChrom(), start, stop, a.getID(), a.getStrand());
             break;

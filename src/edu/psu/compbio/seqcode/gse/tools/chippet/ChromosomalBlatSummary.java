@@ -26,7 +26,7 @@ public class ChromosomalBlatSummary {
 		chrom = c;
         strand = str;
 		chromLength = genome.getChromLength(chrom);
-		intervalTree = new IntervalTree<String>(new Interval(0, chromLength));
+		intervalTree = new IntervalTree<String>(new Interval(1, chromLength));
         keyCounts = new HashMap<String,Integer>();
 	}
 

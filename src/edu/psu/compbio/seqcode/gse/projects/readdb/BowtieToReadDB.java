@@ -93,7 +93,8 @@ public class BowtieToReadDB {
 	        	if(readLength==-1)
 	        		readLength=pieces[4].length();
 	        	
-	        	String coord = pieces[1].equals("+") ? pieces[3] : Integer.toString((Integer.valueOf(pieces[3])+readLength-1)); 
+	        	Integer coord = pieces[1].equals("+") ? Integer.valueOf(pieces[3]) : Integer.valueOf(pieces[3])+readLength-1;
+	        	coord+=1; //Bowtie default output is 0-based - we want 1-based. 
 	            System.out.println(String.format("%s\t%s\t%s\t%d\t%f",
 	                                             pieces[2],
 	                                             coord,

@@ -98,7 +98,7 @@ public class ExpanderInserter {
 
                     for(String chrom : rg.getChromList()) { 
                     	int chromLength = rg.getChromLength(chrom);
-                    	Region r = new Region(rg, chrom, 0, chromLength);
+                    	Region r = new Region(rg, chrom, 1, chromLength);
                     	
                     	inserter.scanRegion(r);
                         System.out.println(r.getGenome().getVersion() + ":" + r.getLocationString());
@@ -150,7 +150,7 @@ public class ExpanderInserter {
 
     	for(String chrom : g.getChromList()) { 
     		int length = g.getChromLength(chrom);
-    		Region r = new Region(g, chrom, 0, length);
+    		Region r = new Region(g, chrom, 1, length);
     		scanRegion(r);
             
             System.out.print(String.format(" %s", chrom));

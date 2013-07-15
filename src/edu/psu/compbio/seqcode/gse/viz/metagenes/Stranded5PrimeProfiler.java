@@ -55,8 +55,8 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 			wantPosStrandReads = !wantPosStrandReads;
 		char wantedStrand = wantPosStrandReads?'+':'-';
 		
-		int start = pointStrand == '+' ?  Math.max(0, a.getLocation()-upstream) : Math.max(0, a.getLocation()-downstream);
-		int end = pointStrand == '+' ?  Math.min(a.getLocation()+downstream, a.getGenome().getChromLength(a.getChrom())-1) : Math.min(a.getLocation()+upstream, a.getGenome().getChromLength(a.getChrom())-1);
+		int start = pointStrand == '+' ?  Math.max(1, a.getLocation()-upstream) : Math.max(1, a.getLocation()-downstream);
+		int end = pointStrand == '+' ?  Math.min(a.getLocation()+downstream, a.getGenome().getChromLength(a.getChrom())) : Math.min(a.getLocation()+upstream, a.getGenome().getChromLength(a.getChrom()));
 		Region query = new Region(a.getGenome(), a.getChrom(), start, end);
 		
 		

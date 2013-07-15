@@ -221,7 +221,7 @@ public class SeqSlidingWindow {
 	    ArrayList<Float> ratios = new ArrayList<Float>();
 		for(String chrom:gen.getChromList()) {
             int chrlen = gen.getChromLength(chrom);
-            for (int start = 0; start  < chrlen - windowSize; start += windowSize) {
+            for (int start = 1; start  <= chrlen - windowSize; start += windowSize) {
                 Region r = new Region(gen, chrom, start, start + windowSize);
                 double countA = signal.sumWeights(r);
                 double countB = control.sumWeights(r);

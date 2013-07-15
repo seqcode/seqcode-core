@@ -17,7 +17,7 @@ public class ChromosomeGenerator<X extends Genome> implements Expander<X,Region>
         for (int i = 0; i < names.size(); i++) {
             chroms.add(new Region(genome,
                                   names.get(i),
-                                  0,
+                                  1,
                                   genome.getChromLength(names.get(i))));
         }
         return chroms.iterator();

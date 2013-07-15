@@ -90,7 +90,7 @@ public String toGFF(){
 			int start = peak.getLocation()-((int)(win/2));
 			if(start<1){start=1;}
 			int end = peak.getLocation()+((int)win/2)-1;
-			if(end>coords.getGenome().getChromLength(coords.getChrom())){end =coords.getGenome().getChromLength(coords.getChrom())-1;} 
+			if(end>coords.getGenome().getChromLength(coords.getChrom())){end =coords.getGenome().getChromLength(coords.getChrom());} 
 			peakWin = new Region(coords.getGenome(), coords.getChrom(), start, end);
 		}
 		

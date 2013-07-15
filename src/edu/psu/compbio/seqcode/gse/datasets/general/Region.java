@@ -23,7 +23,7 @@ import edu.psu.compbio.seqcode.gse.utils.strings.StringUtils;
 /**
  * A <code>Region</code> represents an interval along some chromosome in a
  * genome <br>
- * <i>Note</i>: We assume 0-based, inclusive coordinate.
+ * <i>Note</i>: We assume 1-based, inclusive coordinate.
  */
 
 public class Region implements Comparable<Region>, Saveable {
@@ -191,7 +191,7 @@ public class Region implements Comparable<Region>, Saveable {
     this.start = start;
     this.end = end;
     if (this.start < 1) {
-      this.start = 0;
+      this.start = 1;
     }
     if (this.start > this.end) {
       this.start = this.end;
@@ -364,11 +364,11 @@ public class Region implements Comparable<Region>, Saveable {
     int chromLength = g.getChromLength(chrom);
     int ns = start - dstart;
     int ne = end + dend;
-    if (ns < 0) {
-      ns = 0;
+    if (ns < 1) {
+      ns = 1;
     }
-    if (ne > chromLength - 1) {
-      ne = chromLength - 1;
+    if (ne > chromLength ) {
+      ne = chromLength ;
       if (ns > ne) {
         ns = ne;
       }
@@ -704,7 +704,7 @@ public class Region implements Comparable<Region>, Saveable {
       ChromosomeInfo info = genome.getChrom(chromStr);
       if (info != null) {
         int length = info.getLength();
-        output = new Region(genome, chromStr, 0, length - 1);
+        output = new Region(genome, chromStr, 1, length );
       }
     }
     if (output != null && strand != ' ') {

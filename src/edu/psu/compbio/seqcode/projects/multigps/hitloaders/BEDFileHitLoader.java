@@ -47,10 +47,11 @@ public class BEDFileHitLoader extends FileHitLoader {
 	// http://genome.ucsc.edu/FAQ/FAQformat.html#format1
 	//BED format is half open - The chromEnd base is not included  
 	// For example, the first 100 bases of a chromosome are defined as chromStart=0, chromEnd=100, and span the bases numbered 0-99.
-	            		start = new Integer(words[1]).intValue();
+    //BED format is also 0-based, and we want 1-based
+	            		start = new Integer(words[1]).intValue()+1;
 	            		end = new Integer(words[2]).intValue();
 	           			strand = words[5].charAt(0);
-	    				ReadHit currHit = new ReadHit(chr, start, end-1, strand);
+	    				ReadHit currHit = new ReadHit(chr, start, end, strand);
 	    				currRead = new Read();
 	    				currRead.addHit(currHit);
 	            	} catch (NumberFormatException e){

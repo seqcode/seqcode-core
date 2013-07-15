@@ -43,7 +43,7 @@ public class ExperimentScaler {
 		ArrayList<PairedCountData> scalingData = new ArrayList<PairedCountData>();
 		for(String chrom:genome.getChromList()) {
             int chrlen = genome.getChromLength(chrom);
-            for (int start = 0; start  < chrlen - windowSize; start += windowSize) {
+            for (int start = 1; start  < chrlen - windowSize; start += windowSize) {
                 Region r = new Region(genome, chrom, start, start + windowSize);
                 double countA = exptA.countHits(r);
                 double countB = exptB.countHits(r);
