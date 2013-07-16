@@ -111,7 +111,7 @@ public class StrandedRegion extends Region implements Stranded {
      */
     public Point getMidpoint() {
       int middle = (this.getStart() + this.getEnd()) / 2;
-      if(this.getStrand()=='-' && (this.getEnd()-this.getStart()%2==0))
+      if(this.getStrand()=='-' && (this.getEnd()-this.getStart())%2==0)
     	  middle++;
       return new Point(this.getGenome(), this.getChrom(), middle);
     }
