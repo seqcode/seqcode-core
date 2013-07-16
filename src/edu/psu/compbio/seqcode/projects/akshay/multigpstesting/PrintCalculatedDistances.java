@@ -46,9 +46,15 @@ public class PrintCalculatedDistances {
 		}
 	}
 	
-	
-	
-	
+	public void printDistances(){
+		for(int i=0; i<conditions.size()-1; i++){
+			for(int j=i+1; j<conditions.size();j++){
+				for(Point iterPoint : conditions.get(i).getIsolatedPointMap().keySet()){
+					System.out.println(conditions.get(j).getNearestDistance(iterPoint));
+				}
+			}
+		}
+	}
 	
 	public void ScanConditions(String designfile) throws IOException{
 		BufferedReader brnew = null;
@@ -60,9 +66,11 @@ public class PrintCalculatedDistances {
 		brnew.close();
 	}
 	
-	
-	
-
-	
-	
+	public static void main(String[] args) throws IOException{
+		PrintCalculatedDistances driver = new PrintCalculatedDistances();
+		driver.ScanConditions("/gpfs/home/auk262/group/projects/akshay/multigps_full/ATF3/ATF3_Results/design_testing");
+		driver.fillUnionBlacklist();
+		driver.fillAllisolatedPoints();
+		driver.printDistances();
+	}
 }

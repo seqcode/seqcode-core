@@ -29,6 +29,10 @@ public class Expts {
 		}
 	}
 	
+	public Map<Point,String> getIsolatedPointMap(){
+		return this.isolatedPoints;
+	}
+	
 	public String getExptname(){
 		return this.exptname;
 	}
