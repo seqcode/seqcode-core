@@ -107,7 +107,7 @@ public class Utilities {
 			            	if(win==-1){
 			                	if(sq!=null){regs.add(sq);}
 			                }else
-			                	regs.add(sq.expand(win/2, win/2));
+			                	regs.add(new StrandedRegion(sq.getMidpoint().expand(win/2), sq.getStrand()));
 		            	}else{
 		            		PointParser pparser = new PointParser(gen);
 			            	Point p = pparser.execute(words[0]);
