@@ -4,42 +4,82 @@ import java.util.*;
 
 
 public class Expts {
-	public Map<Point,String> isotaedPoints= new HashMap<Point,String>();
-	public Map<Range,Integer> blacklist = new HashMap<Range,Integer>();
+	private Map<Point,String> isolatedPoints= new HashMap<Point,String>();
+	private Map<Point,String> listOfPoints = new HashMap<Point,String>();
+	private Map<Range,List<Point>> rangeMap = new HashMap<Range,List<Point>>();
+	private List<Range> blacklist = new ArrayList<Range>();
+	private String exptname;
 	
-	public void mapPointstoRnages(Point currentPoint){
-		if(blacklist.containsKey(currentPoint.overlaps.getFirst())){
-			
-		}
-		
-	}
-	
-	
-}
-
-class Point{
-	public String chr;
-	public int coord;
-	public static final int scanwidth = 500; 
-	public Tuple overlaps;
-	Point(String currentpoint){
-		String[] pieces = currentpoint.split(":");
-		this.chr = pieces[0];
-		this.coord = Integer.parseInt(pieces[1]);
-		int quotient = this.coord/scanwidth;
-		int reminder = this.coord%scanwidth;
-		Range first = new Range(this.chr,scanwidth*quotient,scanwidth*quotient+scanwidth);
-		Range last=null;
-		if (reminder >= scanwidth/2){
-			last = new Range(this.chr,scanwidth*quotient+scanwidth/2,scanwidth*quotient+scanwidth+scanwidth/2);
+	public void mapPointstoRnages(Point currentPoint, String exptname){
+		listOfPoints.put(currentPoint, exptname);
+		this.exptname = exptname;
+		if(rangeMap.containsKey(currentPoint.overlaps.getFirst())){
+			rangeMap.get(currentPoint.overlaps.getFirst()).add(currentPoint);
 		}
 		else{
-			last = new Range(this.chr,scanwidth*quotient-scanwidth/2,scanwidth*quotient+scanwidth-scanwidth/2);
+			List<Point> temp = new LinkedList<Point>(Arrays.asList(currentPoint));
+			rangeMap.put(currentPoint.overlaps.getFirst(), temp);
 		}
-		this.overlaps = new Tuple(first,last);
+		if(rangeMap.containsKey(currentPoint.overlaps.getLast())){
+			rangeMap.get(currentPoint.overlaps.getLast()).add(currentPoint);
+		}
+		else{
+			List<Point> temp = new LinkedList<Point>(Arrays.asList(currentPoint));
+			rangeMap.put(currentPoint.overlaps.getLast(), temp);
+		}
 	}
+	
+	public String getExptname(){
+		return this.exptname;
+	}
+	
+	public int getNearestDistance(Point currentPoint){
+		int temp = currentPoint.infdistance;
+		for(Point iterPoint: isolatedPoints.keySet()){
+			if(currentPoint.getDistancetoPoint(iterPoint) < temp){
+				temp = currentPoint.getDistancetoPoint(iterPoint);
+			}
+		}
+		return temp;
+	}
+	
+	public void fillBlacklist(){
+		for (Range iterRange: rangeMap.keySet()){
+			if(rangeMap.get(iterRange).size() > 1){
+				blacklist.add(iterRange);
+			}
+		}
+	}
+	
+	public void fillIsolatedPoints(Map<Range,Integer> unionBlacklist){
+		this.isolatedPoints = this.listOfPoints;
+		for(Point iterPoints: listOfPoints.keySet()){
+			for(Range iterRange: unionBlacklist.keySet()){
+				if(iterRange.includes(iterPoints)){
+					isolatedPoints.remove(iterPoints);
+					break;
+				}
+			}
+		}
+	}
+	
+	public List<Range> getBlacklist(){
+		return blacklist;
+	}
+	
+	public int getNumeberofIsolatedPoints(){
+		return isolatedPoints.keySet().size();
+	}
+	
+	public int getTotalNumberOfPoints(){
+		return listOfPoints.size();
+	}
+	
 
 }
+
+
+
 
 class Tuple{
 	public Range first;
