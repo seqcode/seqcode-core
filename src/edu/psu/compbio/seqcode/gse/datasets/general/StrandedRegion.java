@@ -106,13 +106,13 @@ public class StrandedRegion extends Region implements Stranded {
     
     /**
      * Returns the mid-point (as Point) that corresponds to this region.
-     * Overriding from Region to include a correction for integerizing negative strand midpoints
+     * Correction for even-length region midpoints when reverse-complemented
      * @return
      */
     public Point getMidpoint() {
       int middle = (this.getStart() + this.getEnd()) / 2;
-      if(this.getStrand()=='-' && this.getWidth()%2==1)
-    	  middle+=1;
+      if(this.getStrand()=='-' && (this.getWidth())%2==0)
+    	  middle++;
       return new Point(this.getGenome(), this.getChrom(), middle);
     }
     
