@@ -38,7 +38,7 @@ public class Expts {
 	}
 	
 	public int getNearestDistance(Point currentPoint){
-		int temp = currentPoint.infdistance;
+		int temp = Point.infdistance;
 		for(Point iterPoint: isolatedPoints.keySet()){
 			if(currentPoint.getDistancetoPoint(iterPoint) < temp){
 				temp = currentPoint.getDistancetoPoint(iterPoint);
