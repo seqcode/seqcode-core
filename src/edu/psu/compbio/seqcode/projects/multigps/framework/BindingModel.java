@@ -93,7 +93,6 @@ public class BindingModel {
 	public int getInfluenceRange(){return influenceRange;}
 	public double[] getProbabilities(){	return  probs.clone();}
 	public double[] getLogProbabilities() { return logProbs.clone();}
-	public double getBackgroundProb(){return bgProb;}
 	public String getFileName() {
 		return fileName;
 	}
@@ -120,24 +119,7 @@ public class BindingModel {
 		Pair<Integer,Integer> intervalDists = new Pair<Integer, Integer>(first, second);
 		return intervalDists;
 	}
-	//Return a pair of distances corresponding to the interval in the probability landscape that is above that expected from a uniform distribution
-	//Can be used to provide hit extension lengths
-	public Pair<Integer,Integer> probIntervalAboveUniform(){
-		double prob = 1/(double)(max-min);
-		boolean firstFound=false, secondFound=false;
-		int first=min, second=max;
-		for(int i=min; i<=max; i++){
-			if(!firstFound && probability(i)>prob){
-				firstFound=true;
-				first=i;
-			}else if(i>0 && firstFound && !secondFound && probability(i)<prob){
-				secondFound=true;
-				second=i;
-			}
-		}
-		Pair<Integer,Integer> intervalDists = new Pair<Integer, Integer>(first, second);
-		return intervalDists;
-	}
+
 	//Update the influence range
 	public void updateInfluenceRange(){
 		Pair<Integer,Integer> intervals = probIntervalDistances(0.95);
@@ -233,14 +215,6 @@ public class BindingModel {
 			return(probs[distance-min]);
 		}
 	}
-	public double probability_extended(int distance){
-		if(distance<min)
-			return(probs[0]);
-		else if (distance>max)
-			return (probs[probs.length-1]);
-		else
-			return(probs[distance-min]);
-	}	
 	
 	public double logProbability(int distance) {
 		if(distance<min || distance>max){
@@ -258,61 +232,7 @@ public class BindingModel {
 			return(data[distance-min]);
 		}
 	}
-	//Return the distance from the maximum value to the zero point
-	public int maxShift(){
-		int shift = 0; 
-		double maxVal=0;
-		for(int i=0; i<max; i++){
-			if(dataVal(i)>maxVal){
-				shift=i; maxVal=dataVal(i);
-			}
-		}return(shift);
-	}
-	
-	// expand the model by setting prob of new positions uniformly
-	// with the prob of min or max (usually very small, but not 0)
-	public BindingModel getExpandedModel(int minExt, int maxExt){
-		List<Pair<Integer, Double>> newDist = new ArrayList<Pair<Integer, Double>>();
-		for (int i=-minExt; i<=-1; i++)
-			newDist.add(new Pair<Integer, Double>(min+i, probability(min)));
-		for (int i=min; i<=max; i++)
-			newDist.add(new Pair<Integer, Double>(i, probability(i)));
-		for (int i=1; i<=maxExt; i++)
-			newDist.add(new Pair<Integer, Double>(max+i, probability(max)));
-		return new BindingModel(newDist);
-	}
-	
-	// expand the model by setting prob of new positions "linearly"
-	// with the prob of min or max (usually very small, but not 0)
-	public BindingModel getLinearExpandedModel(int minExt, int maxExt){
-		double smallestProb = 1e-8;
-		double minProb = probability(min);
-		double maxProb = probability(max);
-		List<Pair<Integer, Double>> newDist = new ArrayList<Pair<Integer, Double>>();
-		for (int i=-minExt; i<=-1; i++)
-			newDist.add(new Pair<Integer, Double>(min+i, smallestProb+(minProb-smallestProb)*(i+minExt)/(-1+minExt)));
-		for (int i=min; i<=max; i++)
-			newDist.add(new Pair<Integer, Double>(i, probability(i)));
-		for (int i=1; i<=maxExt; i++)
-			newDist.add(new Pair<Integer, Double>(max+i, smallestProb+(maxProb-smallestProb)*(maxExt-i)/(maxExt-1)));
-		return new BindingModel(newDist);
-	}	
-	// expand the model by setting prob of new positions "exponentially"
-	// with the prob of min or max (usually very small, but not 0)
-	public BindingModel getExponentialExpandedModel(int minExt, int maxExt){
-		double smallestProb = 1e-8;
-		double minProb = probability(min);
-		double maxProb = probability(max);
-		List<Pair<Integer, Double>> newDist = new ArrayList<Pair<Integer, Double>>();
-		for (int i=-minExt; i<=-1; i++)
-			newDist.add(new Pair<Integer, Double>(min+i, minProb/(-i)));
-		for (int i=min; i<=max; i++)
-			newDist.add(new Pair<Integer, Double>(i, probability(i)));
-		for (int i=1; i<=maxExt; i++)
-			newDist.add(new Pair<Integer, Double>(max+i, maxProb/i));
-		return new BindingModel(newDist);
-	}	
-	
+		
 	//Print probs to a file
 	public void printToFile(String filename){
 		try {
@@ -362,28 +282,6 @@ public class BindingModel {
 		return newDist;
 	}
 	
-	public int findNewMax(){
-		double leftProb = probability(min);
-		double rightProb = probability(max);
-		// if left side is higher
-		if ((leftProb-rightProb)/rightProb > 0.5){
-			for (int i=probs.length-1;i>=0;i--){
-				if (probs[i]>leftProb){
-					return max-(probs.length-1-i)/2;
-				}
-			}
-		}
-		// if right side is higher
-		if ((rightProb-leftProb)/leftProb > 0.5){
-			for (int i=0; i<probs.length;i++){
-				if (probs[i]>rightProb){
-					return max+i/2;
-				}
-			}
-		}
-		return max;
-	}
-
 	/**
 	 * Estimate a better read profile ranges
 	 * @param minLeft minimum range on the left side

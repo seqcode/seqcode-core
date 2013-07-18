@@ -240,7 +240,6 @@ public class SignificanceTester {
 				"\t--win <window around events>  default=50bp\n" +
 				"\t--q <Q-value minimum (corrected p-value)>  default=0.01\n" +
 				"\t--minfold <min event fold-change>  default=2\n" +
-				"\t--fixedpb <fixed per base limit>\n" +
 				"\n" +
 				"\t--design <experiment design file>  optional: can use design file instead of --expt, --ctrl and --format\n");
 		System.err.println("\tOutput:\n" +
