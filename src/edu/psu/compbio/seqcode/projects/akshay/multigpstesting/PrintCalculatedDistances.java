@@ -24,6 +24,7 @@ public class PrintCalculatedDistances {
 				Point currentPoint = new Point(currentline.split("\t")[0]);
 				currentExpt.mapPointstoRnages(currentPoint, exptname);
 			}
+			currentline = br.readLine();
 		}
 		conditions.add(currentExpt);
 	br.close();
@@ -62,6 +63,7 @@ public class PrintCalculatedDistances {
 		String CurrentLine = brnew.readLine();
 		while(CurrentLine != null){
 			generateExpFromFile(CurrentLine);
+			CurrentLine = brnew.readLine();
 		}
 		brnew.close();
 	}
