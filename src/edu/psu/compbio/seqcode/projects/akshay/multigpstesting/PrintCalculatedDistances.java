@@ -71,23 +71,20 @@ public class PrintCalculatedDistances {
 	
 	public static void main(String[] args) throws IOException{
 		Set<String> commandlineArgs = Args.parseArgs(args);
-		if(commandlineArgs.contains("help")){
+		if(commandlineArgs.contains("help") || commandlineArgs.size() == 0){
 			System.out.println("PrintCalculatedDistances usage:\n" +
 					"\t--design <design file>\n" +
 					"\t--out <output file name>");
 		}
-		if(commandlineArgs.size() == 0){
-			System.out.println("PrintCalculatedDistances usage:\n" +
-					"\t--design <design file>\n" +
-					"\t--out <output file name>");
+		else{
+			PrintCalculatedDistances driver = new PrintCalculatedDistances();
+			Collection<String> designfiles =  Args.parseStrings(args, "design");
+			String filename = (String) designfiles.toArray()[0];
+			System.out.println(filename);
+			driver.ScanConditions(filename);
+			driver.fillUnionBlacklist();
+			driver.fillAllisolatedPoints();
+			driver.printDistances();
 		}
-		PrintCalculatedDistances driver = new PrintCalculatedDistances();
-		Collection<String> designfiles =  Args.parseStrings(args, "design");
-		String filename = (String) designfiles.toArray()[0];
-		System.out.println(filename);
-		driver.ScanConditions(filename);
-		driver.fillUnionBlacklist();
-		driver.fillAllisolatedPoints();
-		driver.printDistances();
 	}
 }
