@@ -3,6 +3,7 @@ package edu.psu.compbio.seqcode.projects.akshay.multigpstesting;
 import java.io.*;
 import java.util.*;
 
+import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.projects.akshay.multigpstesting.datatypes.*;
 
 public class PrintCalculatedDistances {
@@ -69,8 +70,22 @@ public class PrintCalculatedDistances {
 	}
 	
 	public static void main(String[] args) throws IOException{
+		Set<String> commandlineArgs = Args.parseArgs(args);
+		if(commandlineArgs.contains("help")){
+			System.out.println("PrintCalculatedDistances usage:\n" +
+					"\t--design <design file>\n" +
+					"\t--out <output file name>");
+		}
+		if(commandlineArgs.size() == 0){
+			System.out.println("PrintCalculatedDistances usage:\n" +
+					"\t--design <design file>\n" +
+					"\t--out <output file name>");
+		}
 		PrintCalculatedDistances driver = new PrintCalculatedDistances();
-		driver.ScanConditions("/gpfs/home/auk262/group/projects/akshay/multigps_full/ATF3/ATF3_Results/design_testing");
+		Collection<String> designfiles =  Args.parseStrings(args, "design");
+		String filename = (String) designfiles.toArray()[0];
+		System.out.println(filename);
+		driver.ScanConditions(filename);
 		driver.fillUnionBlacklist();
 		driver.fillAllisolatedPoints();
 		driver.printDistances();
