@@ -74,6 +74,7 @@ public class Config {
 	protected boolean annotOverlapOnly=false;
 	protected boolean estimateScaling=true;
 	protected boolean scalingByMedian = false; //Default is to estimate scaling by regression
+	protected int scalingSlidingWindow = 10000; 
 	protected boolean sequenceAvailable=false;
 	protected List<Region> regionsToPlot = new ArrayList<Region>(); //List of regions that will be printed during EM training (for debugging/demonstration)
 	protected List<Region> regionsToIgnore = new ArrayList<Region>(); //List of regions that will be ignored during EM training (i.e. known towers, etc)
@@ -459,6 +460,7 @@ public class Config {
 	public boolean getAnnotOverlapOnly(){return annotOverlapOnly;}
 	public boolean getEstimateScaling(){return estimateScaling;}
 	public boolean getScalingByMedian(){return scalingByMedian;}
+	public int getScalingSlidingWindow(){return scalingSlidingWindow;}
 	public boolean getSequenceAvailable(){return sequenceAvailable;}
 	public List<Region> getRegionsToPlot(){return regionsToPlot;}
 	public List<Region> getRegionsToIgnore(){return regionsToIgnore;}
@@ -483,6 +485,7 @@ public class Config {
 	
 	//Some accessors to allow modification of options after config .
 	public void setMedianScaling(boolean ms){scalingByMedian = ms;}
+	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
 	
 	/**
 	 * Make some output directories used by multiGPS

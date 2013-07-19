@@ -26,7 +26,6 @@ public class ControlledExperiment {
 	protected String condName;
 	protected String repName;
 	protected String name;
-	private final int scalingSlidingWindow = 10000;
 	
 	public ControlledExperiment(Config c, int idx, String cn, String rn, Sample sig, Sample ctrl, BindingModel initModel, boolean estimateScaling, boolean scaleByMedian){
 		config = c;
@@ -42,9 +41,9 @@ public class ControlledExperiment {
 			System.err.println("Estimating scaling ratio for "+name);
 			ExperimentScaler scaler = new ExperimentScaler(signal, control);
 			if(scaleByMedian)
-				ctrlScalingRatio = scaler.scalingRatioByMedian(scalingSlidingWindow);
+				ctrlScalingRatio = scaler.scalingRatioByMedian(config.getScalingSlidingWindow());
 			else
-				ctrlScalingRatio = scaler.scalingRatioByRegression(scalingSlidingWindow);
+				ctrlScalingRatio = scaler.scalingRatioByRegression(config.getScalingSlidingWindow());
 		}
 	}
 	

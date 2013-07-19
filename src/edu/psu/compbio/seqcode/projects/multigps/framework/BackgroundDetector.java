@@ -340,7 +340,7 @@ public class BackgroundDetector {
 			
 			BackgroundDetector detector = new BackgroundDetector(config, manager, binW, binS);
 			detector.execute();
-			//detector.print();
+			detector.print();
 			
 			manager.close();
 		}
