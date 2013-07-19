@@ -48,14 +48,21 @@ public class PrintCalculatedDistances {
 		}
 	}
 	
-	public void printDistances(){
+	public void printDistances(String outfilename)throws IOException{
+		File file = new File(outfilename);
+		if(!file.exists()){
+			file.createNewFile();
+		}
+		FileWriter fw = new FileWriter(file.getAbsoluteFile());
+		BufferedWriter brwrite = new BufferedWriter(fw);
 		for(int i=0; i<conditions.size()-1; i++){
 			for(int j=i+1; j<conditions.size();j++){
 				for(Point iterPoint : conditions.get(i).getIsolatedPointMap().keySet()){
-					System.out.println(conditions.get(j).getNearestDistance(iterPoint));
+					brwrite.write(conditions.get(j).getNearestDistance(iterPoint));
 				}
 			}
 		}
+		brwrite.close();
 	}
 	
 	public void ScanConditions(String designfile) throws IOException{
@@ -79,11 +86,13 @@ public class PrintCalculatedDistances {
 		else{
 			PrintCalculatedDistances driver = new PrintCalculatedDistances();
 			Collection<String> designfiles =  Args.parseStrings(args, "design");
+			Collection<String> outputfilenames = Args.parseStrings(args, "out");
 			String designfilename = (String) designfiles.toArray()[0];
+			String outfilename = (String) outputfilenames.toArray()[0];
 			driver.ScanConditions(designfilename);
 			driver.fillUnionBlacklist();
 			driver.fillAllisolatedPoints();
-			driver.printDistances();
+			driver.printDistances(outfilename);
 		}
 	}
 }
