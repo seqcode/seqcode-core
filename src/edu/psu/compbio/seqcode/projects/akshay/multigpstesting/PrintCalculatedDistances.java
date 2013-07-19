@@ -14,7 +14,7 @@ public class PrintCalculatedDistances {
 		String exptname;
 		String[] pieceslvl1 = filename.split("/");
 		String[] pieceslvl2= pieceslvl1[pieceslvl1.length-1].split("_");
-		exptname = pieceslvl2[2]+"_"+pieceslvl2[3]+"_"+pieceslvl2[4];
+		exptname = pieceslvl2[2]+"_"+pieceslvl2[3];
 		BufferedReader br =null;
 		String currentline;
 		br = new BufferedReader(new FileReader(filename));
@@ -79,9 +79,8 @@ public class PrintCalculatedDistances {
 		else{
 			PrintCalculatedDistances driver = new PrintCalculatedDistances();
 			Collection<String> designfiles =  Args.parseStrings(args, "design");
-			String filename = (String) designfiles.toArray()[0];
-			System.out.println(filename);
-			driver.ScanConditions(filename);
+			String designfilename = (String) designfiles.toArray()[0];
+			driver.ScanConditions(designfilename);
 			driver.fillUnionBlacklist();
 			driver.fillAllisolatedPoints();
 			driver.printDistances();
