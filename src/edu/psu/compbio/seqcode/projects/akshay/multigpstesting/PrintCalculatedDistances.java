@@ -58,7 +58,7 @@ public class PrintCalculatedDistances {
 		for(int i=0; i<conditions.size()-1; i++){
 			for(int j=i+1; j<conditions.size();j++){
 				for(Point iterPoint : conditions.get(i).getIsolatedPointMap().keySet()){
-					brwrite.write(conditions.get(j).getNearestDistance(iterPoint));
+					brwrite.write(Integer.toString(conditions.get(j).getNearestDistance(iterPoint))+"\n");
 				}
 			}
 		}
