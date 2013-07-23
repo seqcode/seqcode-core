@@ -54,9 +54,10 @@ public class SignificanceTester {
 	protected boolean simpleReadAssignment=true;
 	protected String outDirName, outFileBase;
 	protected File outDir;
+	protected boolean rankByQ;
 	
 	//Constructor
-	public SignificanceTester(Config config, ExperimentManager manager, String gffFileName, int win, double q, double minfold) {
+	public SignificanceTester(Config config, ExperimentManager manager, String gffFileName, int win, double q, double minfold, boolean rankByQ) {
 		this.config = config;
 		this.manager = manager;
 		potentialSites = new ArrayList<Point>();
@@ -64,7 +65,7 @@ public class SignificanceTester {
 		searchRegionWin = win;
 		qThres = q;
 		this.minFold = minfold;
-		
+		this.rankByQ = rankByQ;
 		//Load GFF file
 		String gffDir="";
 		try {
@@ -156,13 +157,16 @@ public class SignificanceTester {
 						double ctrlHits = e.getCondCtrlHits(cond);
 						String attrib = origGFF.getAttribString()+String.format(";sig_tags=%.1f;ctrl_tags=%.1f;log2_fold_sigctrl=%.3f;log2_qval_sigctrl=%.3f", sigHits, ctrlHits, logF, logP);
 			    		
+						double score = sigHits;
+						if(rankByQ)
+							score = -logP;
 			    		if(e.isFoundInCondition(cond) && P <=config.getQMinThres()){
 			    			signifFout.write("chr"+origGFF.getChr()+"\t"+origGFF.getSource()+"\t"+origGFF.getFeature()+"\t"+origGFF.getStart()+"\t"
-			    	    			+origGFF.getEnd()+"\t"+sigHits+"\t"+origGFF.getStrand()+"\t"+origGFF.getFrame()
+			    	    			+origGFF.getEnd()+"\t"+score+"\t"+origGFF.getStrand()+"\t"+origGFF.getFrame()
 			    	    			+"\t"+attrib+"\n");
 			    		}
 			    		allFout.write("chr"+origGFF.getChr()+"\t"+origGFF.getSource()+"\t"+origGFF.getFeature()+"\t"+origGFF.getStart()+"\t"
-		    	    			+origGFF.getEnd()+"\t"+sigHits+"\t"+origGFF.getStrand()+"\t"+origGFF.getFrame()
+		    	    			+origGFF.getEnd()+"\t"+score+"\t"+origGFF.getStrand()+"\t"+origGFF.getFrame()
 		    	    			+"\t"+attrib+"\n");
 			    	}
 					signifFout.close();
@@ -216,8 +220,8 @@ public class SignificanceTester {
 			int win = Args.parseInteger(args, "win", 50);
 			double qThres = Args.parseDouble(args, "q", 0.01);
 			double minFold = Args.parseDouble(args, "minfold", 2);
-			
-			SignificanceTester tester = new SignificanceTester(config, manager, siteFile, win, qThres, minFold); 
+			boolean rankbyq = Args.parseFlags(args).contains("rankbyq");
+			SignificanceTester tester = new SignificanceTester(config, manager, siteFile, win, qThres, minFold, rankbyq); 
 			
 			tester.execute();
 			
@@ -240,6 +244,7 @@ public class SignificanceTester {
 				"\t--win <window around events>  default=50bp\n" +
 				"\t--q <Q-value minimum (corrected p-value)>  default=0.01\n" +
 				"\t--minfold <min event fold-change>  default=2\n" +
+				"\t--rankbyq [flag to rank by Q-value] default=rank by signal tags\n" +
 				"\n" +
 				"\t--design <experiment design file>  optional: can use design file instead of --expt, --ctrl and --format\n");
 		System.err.println("\tOutput:\n" +
