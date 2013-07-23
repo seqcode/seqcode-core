@@ -28,19 +28,16 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
 
-import edu.psu.compbio.seqcode.gse.datasets.binding.BindingEvent;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.seqview.components.ArrayDesignSelectFrame;
-import edu.psu.compbio.seqcode.gse.seqview.components.BindingEventAnnotationPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.BindingScanSelectFrame;
-import edu.psu.compbio.seqcode.gse.seqview.components.RegionAnnotationPanel;
+import edu.psu.compbio.seqcode.gse.seqview.components.PainterContainer;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionListPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.SaveRegionsAsFasta;
-import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsFrame;
+import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsFrame2;
+import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsPane;
 import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewStatusBar;
-import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewToolsMenu;
 import edu.psu.compbio.seqcode.gse.seqview.components.SpeciesAlignFrame;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
@@ -51,6 +48,7 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
  * It aims to be the top-level class, running the others, whereas WarpOptionsFrame
  * was the top-level class in WarpDrive.
  * This class assumes you will view one genome version at a time (RegionFrame did not).
+ * If you switch genomes, the current session should be wiped out.
  * 
  * @author mahony
  *
@@ -58,13 +56,16 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 public class SeqView extends JFrame {
 	protected SeqViewOptions options;
 	protected SeqViewStatusBar statusBar;
-	protected SeqViewOptionsFrame optionsFrame;
+	protected SeqViewOptionsFrame2 optionsFrame;
+	protected SeqViewOptionsPane optionsPane;
 	protected Genome selectedGenome; 
 	protected RegionPanel panel=null;
 	protected boolean imageraster;
 	protected int imageheight = 1200, imagewidth = 1600;
-
+	private ArrayList<PainterContainer> pcs;
+	
     public SeqView(String[] args) throws NotFoundException, SQLException, IOException {
+    	pcs = new ArrayList<PainterContainer>();
     	//Set up the browser window
     	setSize(600,400);
         setLocation(50,50);
@@ -83,16 +84,16 @@ public class SeqView extends JFrame {
         setTitle(selectedGenome.getSpecies() + " " + selectedGenome.getVersion());
         statusBar.updateStatus("Genome loaded", Color.green);
         
-        //Add panels
-        //panel = new RegionPanel(opts);
-        //getContentPane().add(new ImageCachingPanel(panel));
-        //getContentPane().add(panel);
+        //Initiate pane & frame
+        optionsPane = new SeqViewOptionsPane(options);
+        optionsFrame = new SeqViewOptionsFrame2(optionsPane);
         
         this.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent arg0) {
                 System.out.println("WindowClosing: " + arg0.toString());
                 if(panel!=null)
                 	panel.handleWindowClosing();
+                //TODO: close pane, etc
                 System.exit(0);
             }
         });
@@ -111,10 +112,10 @@ public class SeqView extends JFrame {
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {                    
                     SeqViewOptions current = panel.getCurrentOptions();
-                    SeqViewOptionsFrame frame;
+                    SeqViewOptionsFrame2 frame;
                     try {
-                        frame = new SeqViewOptionsFrame(panel.getCurrentOptions());
-                        frame.addPainterContainer(panel);
+                        frame = new SeqViewOptionsFrame2(optionsPane);
+                        addPainterContainer(panel);
                     } catch (NotFoundException e1) {
                         e1.printStackTrace();
                     }
@@ -270,6 +271,11 @@ public class SeqView extends JFrame {
         return jmb;
     }
 
+    public void addPainterContainer(PainterContainer pc) {
+        pcs.add(pc);
+    }
+
+    
     class ImageConfigurationFrame extends JFrame implements ActionListener {
         private SeqView parent;
         private JCheckBox rasterbox;

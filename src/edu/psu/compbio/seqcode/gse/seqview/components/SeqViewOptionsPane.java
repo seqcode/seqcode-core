@@ -10,11 +10,7 @@ import java.util.ResourceBundle;
 import java.util.HashMap;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipDataset;
-import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedTypedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.locators.*;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedExpt;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
@@ -23,7 +19,6 @@ import edu.psu.compbio.seqcode.gse.ewok.RegionExpanderFactoryLoader;
 import edu.psu.compbio.seqcode.gse.seqview.SeqViewOptions;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.gse.viz.components.ChipChipExptSelectPanel;
 
 public class SeqViewOptionsPane 
 	extends JTabbedPane 
