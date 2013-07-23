@@ -3,6 +3,7 @@ package edu.psu.compbio.seqcode.projects.akshay.multigpstesting;
 import java.io.*;
 import java.util.*;
 
+import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.projects.akshay.multigpstesting.datatypes.*;
 
 public class PrintCalculatedDistances {
@@ -13,7 +14,7 @@ public class PrintCalculatedDistances {
 		String exptname;
 		String[] pieceslvl1 = filename.split("/");
 		String[] pieceslvl2= pieceslvl1[pieceslvl1.length-1].split("_");
-		exptname = pieceslvl2[2]+"_"+pieceslvl2[3]+"_"+pieceslvl2[4];
+		exptname = pieceslvl2[2]+"_"+pieceslvl2[3];
 		BufferedReader br =null;
 		String currentline;
 		br = new BufferedReader(new FileReader(filename));
@@ -47,14 +48,21 @@ public class PrintCalculatedDistances {
 		}
 	}
 	
-	public void printDistances(){
+	public void printDistances(String outfilename)throws IOException{
+		File file = new File(outfilename);
+		if(!file.exists()){
+			file.createNewFile();
+		}
+		FileWriter fw = new FileWriter(file.getAbsoluteFile());
+		BufferedWriter brwrite = new BufferedWriter(fw);
 		for(int i=0; i<conditions.size()-1; i++){
 			for(int j=i+1; j<conditions.size();j++){
 				for(Point iterPoint : conditions.get(i).getIsolatedPointMap().keySet()){
-					System.out.println(conditions.get(j).getNearestDistance(iterPoint));
+					brwrite.write(Integer.toString(conditions.get(j).getNearestDistance(iterPoint))+"\n");
 				}
 			}
 		}
+		brwrite.close();
 	}
 	
 	public void ScanConditions(String designfile) throws IOException{
@@ -69,10 +77,22 @@ public class PrintCalculatedDistances {
 	}
 	
 	public static void main(String[] args) throws IOException{
-		PrintCalculatedDistances driver = new PrintCalculatedDistances();
-		driver.ScanConditions("/gpfs/home/auk262/group/projects/akshay/multigps_full/ATF3/ATF3_Results/design_testing");
-		driver.fillUnionBlacklist();
-		driver.fillAllisolatedPoints();
-		driver.printDistances();
+		Set<String> commandlineArgs = Args.parseArgs(args);
+		if(commandlineArgs.contains("help") || commandlineArgs.size() == 0){
+			System.out.println("PrintCalculatedDistances usage:\n" +
+					"\t--design <design file>\n" +
+					"\t--out <output file name>");
+		}
+		else{
+			PrintCalculatedDistances driver = new PrintCalculatedDistances();
+			Collection<String> designfiles =  Args.parseStrings(args, "design");
+			Collection<String> outputfilenames = Args.parseStrings(args, "out");
+			String designfilename = (String) designfiles.toArray()[0];
+			String outfilename = (String) outputfilenames.toArray()[0];
+			driver.ScanConditions(designfilename);
+			driver.fillUnionBlacklist();
+			driver.fillAllisolatedPoints();
+			driver.printDistances(outfilename);
+		}
 	}
 }

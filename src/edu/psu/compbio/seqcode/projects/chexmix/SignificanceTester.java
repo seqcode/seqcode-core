@@ -190,6 +190,7 @@ public class SignificanceTester {
 		//Initialize Config
 		Config config = new Config(newargs, false);
 		config.setMedianScaling(true);
+		config.setScalingSlidingWindow(50000);
 		
 		if(config.helpWanted()){
 			printHelp();	

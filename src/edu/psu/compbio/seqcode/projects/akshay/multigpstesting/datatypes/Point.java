@@ -4,7 +4,7 @@ public class Point {
 	public String chr;
 	public int coord;
 	public static final int scanwidth = 500;
-	public static final int infdistance = 1000;
+	public static final int infdistance = 201;
 	public Tuple overlaps;
 	public Point(String currentpoint){
 		String[] pieces = currentpoint.split(":");

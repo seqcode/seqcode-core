@@ -175,7 +175,7 @@
 	<!-- ======================================================================= -->
   <target name="makesigniftestjar" depends="build, unjarwd, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
-    <jar destfile="${build.dist.dir}/seqview.${pwset}.jar" manifest="manifests/signiftest_manifest.txt">	    
+    <jar destfile="${build.dist.dir}/SignificanceTester.${pwset}.jar" manifest="manifests/signiftest_manifest.txt">	    
       <fileset dir="${build.classes.dir}" includes="**/*.class"/>
       <fileset dir="${build.classes.dir}" includes="**/*.properties"/>
       <fileset dir="${build.classes.dir}" includes="**/*.txt"/>
