@@ -59,6 +59,7 @@ public class RegionPanel extends JPanel
 implements ActionListener, KeyListener, 
 Listener<EventObject>, PainterContainer, MouseListener {
 
+	private boolean dummyPanel=false;
 	// controls at the bottom of the panel
 	private JPanel buttonPanel;
 	private JScrollPane scrollPane;
@@ -71,7 +72,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	// maps a track name to the set of painters in that track
 	private Hashtable<String,ArrayList<RegionPaintable>> painters;
 	// keeps track of the order in which painters are to be drawn
-	private ArrayList<RegionPaintable> allPainters;
+	private ArrayList<RegionPaintable> allPainters= new ArrayList<RegionPaintable>();
 	// Thin painters are painters that have requested a fixed amount of space.
 	// Thick painters want as much space as is available 
 
@@ -83,6 +84,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	// set of all the models and painters
 	private HashSet<RegionModel> allModels;
 	private Genome genome;
+	private boolean closed=false;
 	// painterCount is the total number of painters.
 	// readyCount is reset to 0 when the current region changes and keep track
 	// of how many painters have reported in as ready.  When readyCount ==
@@ -104,47 +106,56 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 	public RegionPanel(Genome g) {
 		super();
+		if(g==null){
+			dummyPanel=true;
+		}
 		init(g);        
 		currentOptions = new SeqViewOptions();
 	}
 
 	public RegionPanel(SeqViewOptions opts) {
 		super();
-		Genome g = opts.genome;
-		
-		init(g);
-		currentOptions = opts;
-		addPaintersFromOpts(opts);
-		//Find our initial region.
-		Region startingRegion = null;
-		if (opts.gene != null && opts.gene.matches("...*")) {
-			startingRegion = regionFromString(genome,opts.gene);
-		}
-		if (startingRegion != null) {
-			setRegion(startingRegion);
-		} else if (opts.start >= 0 && opts.chrom != null) {
-			setRegion(new Region(g,opts.chrom,opts.start,opts.stop));
-		} else if (opts.position != null && opts.position.length() > 0) {
-			Region r = regionFromString(genome,opts.position);
-			if (r != null) {
-				setRegion(r);
-			} else {
-				r = regionFromString(genome,opts.gene);
+		if(opts==null){
+			dummyPanel=true;
+			init(null);
+		}else{
+			dummyPanel=false;
+			Genome g = opts.genome;
+			init(g);
+			currentOptions = opts;
+			addPaintersFromOpts(opts);
+			setVisible(true);
+			//Find our initial region.
+			Region startingRegion = null;
+			if (opts.gene != null && opts.gene.matches("...*")) {
+				startingRegion = regionFromString(genome,opts.gene);
+			}
+			if (startingRegion != null) {
+				setRegion(startingRegion);
+			} else if (opts.start >= 0 && opts.chrom != null) {
+				setRegion(new Region(g,opts.chrom,opts.start,opts.stop));
+			} else if (opts.position != null && opts.position.length() > 0) {
+				Region r = regionFromString(genome,opts.position);
 				if (r != null) {
 					setRegion(r);
 				} else {
-					throw new NullPointerException("Need a valid starting position in either chrom or gene");
+					r = regionFromString(genome,opts.gene);
+					if (r != null) {
+						setRegion(r);
+					} else {
+						throw new NullPointerException("Need a valid starting position in either chrom or gene");
+					}
 				}
+			} else {
+				throw new NullPointerException("Need a starting position in either chrom or gene");
 			}
-		} else {
-			throw new NullPointerException("Need a starting position in either chrom or gene");
+			if (opts.regionListFile != null) {
+				java.util.List<Region> regions = readRegionsFromFile(g,opts.regionListFile);
+				RegionListPanel p = new RegionListPanel(this,
+						regions);
+				RegionListPanel.makeFrame(p);
+			}
 		}
-		if (opts.regionListFile != null) {
-			java.util.List<Region> regions = readRegionsFromFile(g,opts.regionListFile);
-			RegionListPanel p = new RegionListPanel(this,
-					regions);
-			RegionListPanel.makeFrame(p);
-		}        
 	}
 
 	public void handleWindowClosing() { 
@@ -154,79 +165,81 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	}
 
 	public void init(Genome g) {
-		genome = g;
 		allModels = new HashSet<RegionModel>();
 		painters = new Hashtable<String,ArrayList<RegionPaintable>>();
-
-		//trackPaintOrderThick = new Hashtable<String,Integer>();
-		//trackPaintOrderThin = new Hashtable<String,Integer>();
-		trackPaintOrder = new Hashtable<String,Integer>();
-
-		trackSpace = new Hashtable<String,Integer>();
-		allPainters = new ArrayList<RegionPaintable>();
-		ulx = new Hashtable<String,Integer>();
-		uly = new Hashtable<String,Integer>();
-		lrx = new Hashtable<String,Integer>();
-		lry = new Hashtable<String,Integer>();
-		painterCount = 0;
-		readyCount = 0;
-
-		currentRegion = new Region(g,"1",0,1000);
-
-		buttonPanel = new JPanel();      
-		mainPanel = new RegionContentPanel();
-		mainPanel.addMouseListener(this);
-		scrollPane = new JScrollPane(mainPanel);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		setLayout(new BorderLayout());
-		buttonPanel.setLayout(new GridBagLayout());        
-
-		leftButton = new JButton("<-");
-		leftButton.setToolTipText("step left");
-		rightButton = new JButton("->");
-		rightButton.setToolTipText("step right");
-		zoomInButton = new JButton("++");
-		zoomInButton.setToolTipText("zoom in");
-		zoomOutButton = new JButton("--");        
-		zoomOutButton.setToolTipText("zoom out");
-		farLeftButton = new JButton("<<<-");
-		farLeftButton.setToolTipText("jump left");
-		farRightButton = new JButton("->>>");
-		farRightButton.setToolTipText("jump right");
-		status = new JTextField();
-		Dimension buttonSize = new Dimension(30,20);
-		leftButton.setMaximumSize(buttonSize);
-		rightButton.setMaximumSize(buttonSize);
-		zoomInButton.setMaximumSize(buttonSize);
-		zoomOutButton.setMaximumSize(buttonSize);
-		farLeftButton.setMaximumSize(buttonSize);
-		farRightButton.setMaximumSize(buttonSize);
-		status.setMinimumSize(new Dimension(160,20));
-		status.setPreferredSize(new Dimension(300,20));
-
-		buttonPanel.add(farLeftButton);
-		buttonPanel.add(leftButton);
-		buttonPanel.add(zoomOutButton);
-		buttonPanel.add(status);
-		buttonPanel.add(zoomInButton);
-		buttonPanel.add(rightButton);
-		buttonPanel.add(farRightButton);
-
-		leftButton.addActionListener(this);
-		rightButton.addActionListener(this);
-		status.addActionListener(this);
-		zoomInButton.addActionListener(this);
-		zoomOutButton.addActionListener(this);     
-		farLeftButton.addActionListener(this);
-		farRightButton.addActionListener(this);
-		buttonPanel.addKeyListener(this);
-		mainPanel.addKeyListener(this);    
-		scrollPane.addKeyListener(this);
-		setBackground(Color.WHITE);
-		add(mainPanel,BorderLayout.CENTER);
-		//add(scrollPane,BorderLayout.CENTER);
-		add(buttonPanel, BorderLayout.SOUTH);
+		if(dummyPanel){
+			setBackground(Color.WHITE);
+			add(new JLabel("Initializing"),BorderLayout.CENTER);
+		}else{
+			genome = g;
+			trackPaintOrder = new Hashtable<String,Integer>();
+	
+			trackSpace = new Hashtable<String,Integer>();
+			allPainters = new ArrayList<RegionPaintable>();
+			ulx = new Hashtable<String,Integer>();
+			uly = new Hashtable<String,Integer>();
+			lrx = new Hashtable<String,Integer>();
+			lry = new Hashtable<String,Integer>();
+			painterCount = 0;
+			readyCount = 0;
+	
+			currentRegion = new Region(g,"1",0,1000);
+	
+			buttonPanel = new JPanel();      
+			mainPanel = new RegionContentPanel();
+			mainPanel.addMouseListener(this);
+			scrollPane = new JScrollPane(mainPanel);
+			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			setLayout(new BorderLayout());
+			buttonPanel.setLayout(new GridBagLayout());        
+	
+			leftButton = new JButton("<-");
+			leftButton.setToolTipText("step left");
+			rightButton = new JButton("->");
+			rightButton.setToolTipText("step right");
+			zoomInButton = new JButton("++");
+			zoomInButton.setToolTipText("zoom in");
+			zoomOutButton = new JButton("--");        
+			zoomOutButton.setToolTipText("zoom out");
+			farLeftButton = new JButton("<<<-");
+			farLeftButton.setToolTipText("jump left");
+			farRightButton = new JButton("->>>");
+			farRightButton.setToolTipText("jump right");
+			status = new JTextField();
+			Dimension buttonSize = new Dimension(30,20);
+			leftButton.setMaximumSize(buttonSize);
+			rightButton.setMaximumSize(buttonSize);
+			zoomInButton.setMaximumSize(buttonSize);
+			zoomOutButton.setMaximumSize(buttonSize);
+			farLeftButton.setMaximumSize(buttonSize);
+			farRightButton.setMaximumSize(buttonSize);
+			status.setMinimumSize(new Dimension(160,20));
+			status.setPreferredSize(new Dimension(300,20));
+	
+			buttonPanel.add(farLeftButton);
+			buttonPanel.add(leftButton);
+			buttonPanel.add(zoomOutButton);
+			buttonPanel.add(status);
+			buttonPanel.add(zoomInButton);
+			buttonPanel.add(rightButton);
+			buttonPanel.add(farRightButton);
+	
+			leftButton.addActionListener(this);
+			rightButton.addActionListener(this);
+			status.addActionListener(this);
+			zoomInButton.addActionListener(this);
+			zoomOutButton.addActionListener(this);     
+			farLeftButton.addActionListener(this);
+			farRightButton.addActionListener(this);
+			buttonPanel.addKeyListener(this);
+			mainPanel.addKeyListener(this);    
+			scrollPane.addKeyListener(this);
+			setBackground(Color.WHITE);
+			add(mainPanel,BorderLayout.CENTER);
+			//add(scrollPane,BorderLayout.CENTER);
+			add(buttonPanel, BorderLayout.SOUTH);
+		}
 	}
 
 	public void addPaintersFromOpts(SeqViewOptions opts) {        
@@ -864,55 +877,58 @@ Listener<EventObject>, PainterContainer, MouseListener {
        and m */
 
        public void setRegion (Region newRegion) {
-		if (newRegion.getChrom().matches("^chr.*")) {            
-			newRegion = new Region(newRegion.getGenome(),
-					newRegion.getChrom().replaceAll("^chr",""),
-					newRegion.getStart(),
-					newRegion.getEnd());
-		}
-		if (newRegion.getEnd() - newRegion.getStart() < 30) {
-			newRegion = new Region(newRegion.getGenome(),
-					newRegion.getChrom(),
-					newRegion.getStart() - 15,
-					newRegion.getEnd() + 15);
-		}
-		if (newRegion.getStart() < 1) {
-			newRegion = new Region(newRegion.getGenome(),
-					newRegion.getChrom(),
-					1,
-					newRegion.getEnd());
-		}
-		if (newRegion.getEnd() > newRegion.getGenome().getChromLength(newRegion.getChrom())) {
-			newRegion = new Region(newRegion.getGenome(),
-					newRegion.getChrom(),
-					newRegion.getStart(),
-					newRegion.getGenome().getChromLength(newRegion.getChrom()));
-		}
+    	   if (newRegion.getChrom().matches("^chr.*")) {            
+    		   newRegion = new Region(newRegion.getGenome(),
+    				   newRegion.getChrom().replaceAll("^chr",""),
+    				   newRegion.getStart(),
+    				   newRegion.getEnd());
+    	   }
+    	   if (newRegion.getEnd() - newRegion.getStart() < 30) {
+    		   newRegion = new Region(newRegion.getGenome(),
+    				   newRegion.getChrom(),
+    				   newRegion.getStart() - 15,
+    				   newRegion.getEnd() + 15);
+    	   }
+    	   if (newRegion.getStart() < 1) {
+    		   newRegion = new Region(newRegion.getGenome(),
+    				   newRegion.getChrom(),
+    				   1,
+    				   newRegion.getEnd());
+    	   }
+    	   if (newRegion.getEnd() > newRegion.getGenome().getChromLength(newRegion.getChrom())) {
+    		   newRegion = new Region(newRegion.getGenome(),
+    				   newRegion.getChrom(),
+    				   newRegion.getStart(),
+    				   newRegion.getGenome().getChromLength(newRegion.getChrom()));
+    	   }
 
-		if (!newRegion.equals(currentRegion) || forceupdate) {
-			currentRegion = newRegion;
-			status.setText(currentRegion.getLocationString());
+    	   if (!newRegion.equals(currentRegion) || forceupdate) {
+    		   currentRegion = newRegion;
+    		   status.setText(currentRegion.getLocationString());
 
-			/* kick the painters here to give them a little extra time
+    		   /* kick the painters here to give them a little extra time
                to update their data before we try to paint them */
-               readyCount = 0;
-			// set the new region in the paintables
-			for (RegionPaintable p : allPainters) {
-				p.setRegion(newRegion);
-			}
-			// set the new region in the models
-			// and call notify on them.  This gives a RegionModel
-			// the option of wait()ing in a separate thread
-			// if it so desires.
-			for (RegionModel m : allModels) {
-				synchronized(m) {
-					m.setRegion(newRegion);
-					m.notifyAll();
-				}
-			}
-			repaint();            
-		}
+    		   readyCount = 0;
+    		   // set the new region in the paintables
+    		   for (RegionPaintable p : allPainters) {
+    			   p.setRegion(newRegion);
+    		   }
+    		   // set the new region in the models
+    		   // and call notify on them.  This gives a RegionModel
+    		   // the option of wait()ing in a separate thread
+    		   // if it so desires.
+    		   for (RegionModel m : allModels) {
+    			   synchronized(m) {
+    				   m.setRegion(newRegion);
+    				   m.notifyAll();
+    			   }
+    		   }
+    		   repaint();            
+    	   }
        }
+       
+       public boolean isClosed(){return closed;}
+       
        public void close() { 
     	   for (RegionModel m : allModels) {
     		   synchronized(m) {
@@ -920,6 +936,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     			   m.notifyAll();
     		   }
     	   }
+    	   closed=true;
     	   try {
     		   Thread.sleep(400);
     	   } catch (Exception e) {
@@ -1211,20 +1228,12 @@ Listener<EventObject>, PainterContainer, MouseListener {
        }
 
        public void paintComponent(Graphics g) {
-    	   //scrollPane.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
-    	   mainPanel.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
-    	   paintComponent(g,getX(),getY(), getWidth(),getHeight());
+    	   if(!dummyPanel){
+    		   //scrollPane.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
+    		   mainPanel.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
+    	   }
        }
 
-       public void paintComponent(Graphics g, int x, int y, int width, int height) {
-    	   //        System.err.println("Calling paint component from RP");
-    	   /* don't need to do this; java is calling paintComponent() on the
-           panel anyway, so this just leads to double painting which
-           slows things down
-    	    */
-    	   //        mainPanel.paintComponent(g,mainPanel.getX(),mainPanel.getY(),
-    	   //                                 mainPanel.getWidth(),mainPanel.getHeight());        
-       }
        public boolean allCanPaint() {
     	   boolean canpaint = true;
     	   for (String s : painters.keySet()) {
@@ -1688,4 +1697,4 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   }
     	   }
        }
-}
+ }

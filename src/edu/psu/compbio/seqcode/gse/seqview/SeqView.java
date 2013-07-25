@@ -32,6 +32,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.seqview.components.BindingScanSelectFrame;
 import edu.psu.compbio.seqcode.gse.seqview.components.PainterContainer;
+import edu.psu.compbio.seqcode.gse.seqview.components.RegionFrame;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionListPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.SaveRegionsAsFasta;
@@ -54,68 +55,96 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
  *
  */
 public class SeqView extends JFrame {
-	protected SeqViewOptions options;
-	protected SeqViewStatusBar statusBar;
+	protected SeqViewOptions options=null;
 	protected SeqViewOptionsFrame2 optionsFrame;
 	protected SeqViewOptionsPane optionsPane;
-	protected Genome selectedGenome; 
-	protected RegionPanel panel=null;
+	protected RegionPanel regPanel=null;
+	protected SeqViewStatusBar statusBar;
 	protected boolean imageraster;
 	protected int imageheight = 1200, imagewidth = 1600;
-	private ArrayList<PainterContainer> pcs;
 	
     public SeqView(String[] args) throws NotFoundException, SQLException, IOException {
-    	pcs = new ArrayList<PainterContainer>();
     	//Set up the browser window
     	setSize(600,400);
         setLocation(50,50);
-        statusBar = new SeqViewStatusBar();
     	setJMenuBar(createDefaultJMenuBar());
-    	add(statusBar, BorderLayout.SOUTH);
-    	statusBar.setPreferredSize(new Dimension(getWidth(), SeqViewOptions.STATUS_BAR_HEIGHT));
+        //Set up the simple top-layer panel
+    	this.setLayout(new BorderLayout(0,0));
+    	statusBar = new SeqViewStatusBar();
+        statusBar.setPreferredSize(new Dimension(getWidth(), SeqViewOptions.STATUS_BAR_HEIGHT));
+    	add(statusBar, BorderLayout.PAGE_END);
+    	regPanel = new RegionPanel(options); //dummy region panel
+    	add(regPanel, BorderLayout.PAGE_START);
+    	
         setVisible(true);
+
         imageraster = true;
         statusBar.updateStatus("Loading genome", Color.orange);
         setTitle("Loading genome information...");
     	
         //Load command-line options
         options = SeqViewOptions.parseCL(args);
-        selectedGenome = options.genome;
-        setTitle(selectedGenome.getSpecies() + " " + selectedGenome.getVersion());
+        setTitle(options.genome.getSpecies() + " " + options.genome.getVersion());
         statusBar.updateStatus("Genome loaded", Color.green);
         
         //Initiate pane & frame
         optionsPane = new SeqViewOptionsPane(options);
-        optionsFrame = new SeqViewOptionsFrame2(optionsPane);
+        optionsFrame = new SeqViewOptionsFrame2(optionsPane, this);
         
+        //Close operations
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent arg0) {
-                System.out.println("WindowClosing: " + arg0.toString());
-                if(panel!=null)
-                	panel.handleWindowClosing();
-                //TODO: close pane, etc
-                System.exit(0);
+                if(regPanel!=null)
+                	regPanel.handleWindowClosing();
+                if(!optionsFrame.isClosed()){
+                	optionsFrame.close();
+                }
+                System.err.println("WindowClosing: " + arg0.toString());
             }
         });
     }
     
-    public RegionPanel getRegionPanel() { return panel; }
+    public RegionPanel getRegionPanel() { return regPanel; }
+    
+    public SeqViewOptions getOptions(){return options;}
+    
+    /**
+     * Update the viewer's options, changing genomes if required. 
+     * @param opts
+     */
+    public void updateOptions(SeqViewOptions opts){
+    	if ( options==null || regPanel ==null || !options.genome.equals(opts.genome)) {
+            //Populate the panel for the first time, or overwrite panel for different genome
+        	if(regPanel!=null){
+        		regPanel.close();
+        	}
+        	setTitle(opts.genome.getSpecies() + " " + opts.genome.getVersion());
+            regPanel = new RegionPanel(opts);
+        } else {
+        	if (options != null && opts.genome.equals(options.genome)) {
+        		SeqViewOptions diffopts = opts.clone();
+        		diffopts.differenceOf(options);
+        		regPanel.addPaintersFromOpts(diffopts);
+            }
+        }
+        options=opts;
+    	this.repaint();
+    }
     
     private JMenuBar createDefaultJMenuBar() { 
         JMenuBar jmb = new JMenuBar();
         JMenu filemenu, imagemenu, navigationmenu, displaymenu, toolsmenu; 
         JMenuItem item;
-        final SeqView thisframe = this;
-        final RegionPanel thispanel = panel;
+        final SeqView thisviewer = this;
+        final RegionPanel thispanel = regPanel;
         jmb.add((filemenu = new JMenu("File")));
         filemenu.add((item = new JMenuItem("Configure Tracks")));
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {                    
-                    SeqViewOptions current = panel.getCurrentOptions();
-                    SeqViewOptionsFrame2 frame;
                     try {
-                        frame = new SeqViewOptionsFrame2(optionsPane);
-                        addPainterContainer(panel);
+                    	optionsPane = new SeqViewOptionsPane(options);
+                    	optionsFrame = new SeqViewOptionsFrame2(optionsPane, thisviewer);
                     } catch (NotFoundException e1) {
                         e1.printStackTrace();
                     }
@@ -123,8 +152,9 @@ public class SeqView extends JFrame {
             });
         filemenu.add((item = new JMenuItem("Add a track from a file")));
         item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {                    
-                    thispanel.addTrackFromFile();
+                public void actionPerformed(ActionEvent e) {    
+                	if(thispanel!=null && !thispanel.isClosed())
+                		thispanel.addTrackFromFile();
                 }
             });
         filemenu.add((item = new JMenuItem("Save Region as FASTA")));
@@ -134,16 +164,11 @@ public class SeqView extends JFrame {
                 }
             });
         filemenu.addSeparator();
-        filemenu.add((item = new JMenuItem("Close")));
-        item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    thisframe.dispose();
-                }
-            });
         filemenu.add((item = new JMenuItem("Exit")));
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) { 
-                    thispanel.close();
+                	if(thispanel!=null && !thispanel.isClosed())
+                		thispanel.close();
                     System.exit(0);
                 }
             });        
@@ -163,7 +188,7 @@ public class SeqView extends JFrame {
                             raster = false;
                         }
                         try {
-                            panel.saveImage(f,imagewidth,imageheight,raster);
+                            regPanel.saveImage(f,imagewidth,imageheight,raster);
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
@@ -173,7 +198,7 @@ public class SeqView extends JFrame {
         imagemenu.add((item = new JMenuItem("Image Settings")));
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    new ImageConfigurationFrame(thisframe);
+                    new ImageConfigurationFrame(thisviewer);
                 }
             });
         jmb.add((navigationmenu = new JMenu("Navigation")));
@@ -183,10 +208,10 @@ public class SeqView extends JFrame {
         linkeditem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (linkeditem.isSelected()) {
-                        SpeciesAlignFrame.addRegionPanel(panel);
-                        panel.setRegion(panel.getRegion());
+                        SpeciesAlignFrame.addRegionPanel(regPanel);
+                        regPanel.setRegion(regPanel.getRegion());
                     } else {
-                        SpeciesAlignFrame.removeRegionPanel(panel);
+                        SpeciesAlignFrame.removeRegionPanel(regPanel);
                     }
                 }
             });
@@ -221,8 +246,8 @@ public class SeqView extends JFrame {
                     int v = chooser.showOpenDialog(null);
                     if(v == JFileChooser.APPROVE_OPTION) { 
                         File f = chooser.getSelectedFile();
-                        java.util.List<Region> regions = RegionPanel.readRegionsFromFile(panel.getGenome(),f.getAbsolutePath());
-                        RegionListPanel p = new RegionListPanel(panel,
+                        java.util.List<Region> regions = RegionPanel.readRegionsFromFile(regPanel.getGenome(),f.getAbsolutePath());
+                        RegionListPanel p = new RegionListPanel(regPanel,
                                                                 regions);
                         RegionListPanel.makeFrame(p);
                     }
@@ -232,7 +257,7 @@ public class SeqView extends JFrame {
         navigationmenu.add((item = new JMenuItem("New Region List")));
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    RegionListPanel p = new RegionListPanel(panel,
+                    RegionListPanel p = new RegionListPanel(regPanel,
                                                             new ArrayList<Region>());
                     RegionListPanel.makeFrame(p);
                 }
@@ -243,7 +268,7 @@ public class SeqView extends JFrame {
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     DynamicAttribute.getGlobalAttributes().setType(DynamicAttribute.SCREEN);
-                    thisframe.repaint();
+                    thisviewer.repaint();
                 }
             });
         item.setSelected(true);
@@ -252,7 +277,7 @@ public class SeqView extends JFrame {
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     DynamicAttribute.getGlobalAttributes().setType(DynamicAttribute.DISPLAY);
-                    thisframe.repaint();
+                    thisviewer.repaint();
                 }
             });
         group.add(item);
@@ -260,7 +285,7 @@ public class SeqView extends JFrame {
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     DynamicAttribute.getGlobalAttributes().setType(DynamicAttribute.PRINT);
-                    thisframe.repaint();
+                    thisviewer.repaint();
                 }
             });
         group.add(item);
@@ -270,11 +295,6 @@ public class SeqView extends JFrame {
 
         return jmb;
     }
-
-    public void addPainterContainer(PainterContainer pc) {
-        pcs.add(pc);
-    }
-
     
     class ImageConfigurationFrame extends JFrame implements ActionListener {
         private SeqView parent;
@@ -345,7 +365,18 @@ public class SeqView extends JFrame {
     }
 
 	
+    /** 
+     * The main driver for SeqView
+     * @param args
+     * @throws NotFoundException
+     * @throws SQLException
+     * @throws IOException
+     */
 	public static void main(String args[]) throws NotFoundException, SQLException, IOException {
-        SeqView frame = new SeqView(args);
+        try{
+        	SeqView viewer = new SeqView(args);
+        } catch (Exception e) {
+			e.printStackTrace();
+		}
     }
 }
