@@ -212,7 +212,7 @@ public class SeqViewOptionsFrame extends JFrame implements ActionListener {
     	
     	if (dataWindowsOpen) {
     		int confirmResult = 
-    			JOptionPane.showConfirmDialog(this, "Are you sure you want to exit Warp Drive?", 
+    			JOptionPane.showConfirmDialog(this, "Are you sure you want to exit SeqView?", 
     					"Confirm Exit", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
     		if (confirmResult == JOptionPane.NO_OPTION) {

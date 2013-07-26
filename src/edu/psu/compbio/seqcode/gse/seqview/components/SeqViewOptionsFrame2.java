@@ -6,6 +6,7 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
+import edu.psu.compbio.seqcode.gse.seqview.SeqView;
 import edu.psu.compbio.seqcode.gse.seqview.SeqViewOptions;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
@@ -17,6 +18,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
 
+	private SeqView parent;
     private SeqViewOptionsPane pane;
     private JButton ok, cancel;  
     
@@ -28,10 +30,12 @@ public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
     private JMenuItem exitItem;
     private JMenu toolsMenu;
     private JMenuItem optionsItem;
+    private boolean closed=false;
     
     
-    public SeqViewOptionsFrame2(SeqViewOptionsPane optpane) throws NotFoundException {
+    public SeqViewOptionsFrame2(SeqViewOptionsPane optpane, SeqView parent) throws NotFoundException {
         super();
+        this.parent = parent;
         setTitle("SeqView");
         pane = optpane;
         init();
@@ -139,11 +143,10 @@ public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
     public void actionPerformed (ActionEvent e) {
         if (e.getSource() == ok) {
             SeqViewOptions opts = pane.parseOptions();
-            pane.close();
-            this.dispose();
+            parent.updateOptions(opts);
+            close();
         } else if (e.getSource() == cancel) {
-            pane.close();
-            this.dispose();
+            close();
         }
     }
 
@@ -177,20 +180,14 @@ public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
     	
     	if (dataWindowsOpen) {
     		int confirmResult = 
-    			JOptionPane.showConfirmDialog(this, "Are you sure you want to exit Warp Drive?", 
+    			JOptionPane.showConfirmDialog(this, "Are you sure you want to exit SeqView?", 
     					"Confirm Exit", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
     		if (confirmResult == JOptionPane.NO_OPTION) {
     			return;
     		}
     	}
-        pane.close();
-        try {
-            Thread.sleep(400);
-        } catch (Exception ex) {
-
-        }
-    	System.exit(0);
+        close();
     }
 
     
@@ -211,18 +208,17 @@ public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
     	//PropertyConfigurator.configure(loader.getResource("edu/psu/compbio/seqcode/gse/utils/config/log4j.properties"));    	
     }
     
+    public boolean isClosed() { return closed; }
     
     /**
-     * 
-     * @param args
+     * Close the options window
      */
-    public static void main(String args[]) {        
-        try {
-        	SeqViewOptionsFrame2.configureLogging();
-        	SeqViewOptions opts = SeqViewOptions.parseCL(args);
-			new SeqViewOptionsFrame2(new SeqViewOptionsPane(opts));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+    public void close(){
+    	 if(!pane.isClosed())
+    		 pane.close();
+         this.dispose();
+         closed=true;
     }
+    
+    
 }
