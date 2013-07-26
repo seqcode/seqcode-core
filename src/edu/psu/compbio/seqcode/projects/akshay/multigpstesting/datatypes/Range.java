@@ -1,9 +1,9 @@
 package edu.psu.compbio.seqcode.projects.akshay.multigpstesting.datatypes;
 
 public class Range {
-	private int lowerBound;
-	private int upperBound;
-	private String chr;
+	public int lowerBound;
+	public int upperBound;
+	public String chr;
 		
 	public Range(String chr, int lowerBound, int upperBound){
 		this.lowerBound = lowerBound;
@@ -20,6 +20,26 @@ public class Range {
 		}
 			
 	}
+	
+	@Override
+	public boolean equals(Object obj){
+		if (obj == this){
+			return true;
+		}
+		
+		Range ra = (Range) obj;
+		return this.lowerBound == ra.lowerBound && this.upperBound == ra.upperBound && this.chr.equals(ra.chr);
+	}
+	
+	@Override
+	public int hashCode(){
+		int result = 17;
+		int code = (int) lowerBound;
+		code += (int) upperBound;
+		code += (int) (this.chr == null ? 0 :this.chr.hashCode());
+		result = result*37 + code;
+		return result;
+	}
 		
 	boolean includes(String givenPoint){
 		String[] pieces = givenPoint.split(":");
@@ -33,6 +53,16 @@ public class Range {
 		
 	String getChr(){
 		return chr;
+	}
+	
+	public String getRange(){
+		return this.chr+":"+Integer.toString(this.lowerBound)+":"+Integer.toString(this.upperBound);
+	}
+	
+	public static void main(String[] args){
+		Range ra1 = new Range("4",450,550);
+		Range ra2 = new Range("4",450,550);
+		System.out.println(ra1.equals(ra2));
 	}
 
 }

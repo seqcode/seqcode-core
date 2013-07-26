@@ -10,26 +10,6 @@ public class PrintCalculatedDistances {
 	public List<Expts> conditions = new ArrayList<Expts>();
 	public Map<Range,Integer> unionBlacklist = new HashMap<Range,Integer>();
 	
-	private void generateExpFromFile(String filename) throws IOException{
-		String exptname;
-		String[] pieceslvl1 = filename.split("/");
-		String[] pieceslvl2= pieceslvl1[pieceslvl1.length-1].split("_");
-		exptname = pieceslvl2[2]+"_"+pieceslvl2[3];
-		BufferedReader br =null;
-		String currentline;
-		br = new BufferedReader(new FileReader(filename));
-		currentline = br.readLine();
-		Expts currentExpt = new Expts();
-		while(currentline != null){
-			if(!currentline.startsWith("#")){
-				Point currentPoint = new Point(currentline.split("\t")[0]);
-				currentExpt.mapPointstoRnages(currentPoint, exptname);
-			}
-			currentline = br.readLine();
-		}
-		conditions.add(currentExpt);
-	br.close();
-	}
 	
 	public void fillUnionBlacklist(){
 		for(Expts iterExpts : conditions){
@@ -70,7 +50,9 @@ public class PrintCalculatedDistances {
 		brnew = new BufferedReader(new FileReader(designfile));
 		String CurrentLine = brnew.readLine();
 		while(CurrentLine != null){
-			generateExpFromFile(CurrentLine);
+			Expts currentExpt = new Expts();
+			currentExpt.mapPointstoRanges(CurrentLine);
+			conditions.add(currentExpt);
 			CurrentLine = brnew.readLine();
 		}
 		brnew.close();
