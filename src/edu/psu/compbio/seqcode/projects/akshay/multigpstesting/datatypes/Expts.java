@@ -73,13 +73,13 @@ public class Expts {
 	
 	/* Based on the blacklist this function filters out all points that are not in the blacklist region and fills the isolatedpoints hashmap*/
 	public void fillIsolatedPoints(Map<Range,Integer> unionBlacklist){
-		this.isolatedPoints = this.listOfPoints;
 		for(Point iterPoints: listOfPoints.keySet()){
+			boolean shouldadd = true;
 			for(Range iterRange: unionBlacklist.keySet()){
-				if(iterRange.includes(iterPoints)){
-					isolatedPoints.remove(iterPoints);
-					break;
-				}
+				shouldadd = (shouldadd ? !iterRange.includes(iterPoints) : false );
+			}
+			if(shouldadd){
+				isolatedPoints.put(iterPoints, "");
 			}
 		}
 	}
