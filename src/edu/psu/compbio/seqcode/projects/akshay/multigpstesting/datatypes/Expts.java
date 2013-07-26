@@ -10,7 +10,7 @@ public class Expts {
 	private Map<Range,List<Point>> rangeMap = new HashMap<Range,List<Point>>();
 	private List<Range> blacklist = new ArrayList<Range>();
 	
-	/* Fills rangeMap and list of points */
+	/* Fills rangeMap and list of points. The input argument for this method is the file name of the events file*/
 	public void mapPointstoRanges(String Filename) throws IOException{
 		BufferedReader br = null;
 		String currentline;
@@ -46,6 +46,7 @@ public class Expts {
 		return this.isolatedPoints;
 	}
 	
+	/* returns the complete list of points in this events/expt */
 	public Map<Point,String> getListofPointMap(){
 		return this.listOfPoints;
 	}

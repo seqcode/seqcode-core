@@ -43,7 +43,7 @@ public class PrintDiffEnrichedFraction {
 				}
 				
 			}
-			System.out.println(Integer.toString((int) diffsite.size()/allevents.getListofPointMap().size()));
+			System.out.println(diffsite.size()/allevents.getListofPointMap().size());
 		}
 		
 	}
