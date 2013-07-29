@@ -40,7 +40,9 @@ public class TophatSAMToReadDB {
     	filterSubOpt = cl.hasOption("nosuboptimal");
     	inclPairedEnd = cl.hasOption("pairedend");
     	inclJunction = cl.hasOption("junctions");
+    	SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
         SAMFileReader reader = new SAMFileReader(System.in);
+        reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
         CloseableIterator<SAMRecord> iter = reader.iterator();
         while (iter.hasNext()) {
             SAMRecord record = iter.next();

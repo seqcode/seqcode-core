@@ -37,7 +37,9 @@ public class SAMToReadDB {
     	uniqueOnly = cl.hasOption("uniquehits");
     	inclPairedEnd = cl.hasOption("pairedend");
     	inclJunction = cl.hasOption("junctions");
+    	SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
         SAMFileReader reader = new SAMFileReader(System.in);
+        reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
         CloseableIterator<SAMRecord> iter = reader.iterator();
         while (iter.hasNext()) {
             SAMRecord record = iter.next();

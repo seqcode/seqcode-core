@@ -221,9 +221,11 @@ public class PairedSAMToReadDB {
         debug = cl.hasOption("debug");
         String leftfile = cl.getOptionValue("left");
         String rightfile = cl.getOptionValue("right");
-
+        SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
         SAMFileReader leftreader = new SAMFileReader(new FileInputStream(leftfile));
         SAMFileReader rightreader = new SAMFileReader(new FileInputStream(rightfile));
+        leftreader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        rightreader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
         leftiter = leftreader.iterator();
         rightiter = rightreader.iterator();
 
