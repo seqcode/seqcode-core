@@ -46,19 +46,6 @@ public class CDSGenePainter extends RegionPaintable {
         goFrame = null;
         props = new GeneProperties();
         initLabels();
-/* I don't think anyone uses the GO annotations now. 
-        try {
-            funcLoader = new GOFunctionLoader("go_200904");			
-        } catch (SQLException e) {
-            e.printStackTrace();
-            if(funcLoader != null) { funcLoader.close(); }
-            funcLoader = null;
-        } catch (UnknownRoleException e) {
-            e.printStackTrace();
-            if(funcLoader != null) { funcLoader.close(); }
-            funcLoader = null;
-        }
-*/
     }
 
     public GeneProperties getProperties() {
@@ -120,6 +107,10 @@ public class CDSGenePainter extends RegionPaintable {
     public int getMaxVertSpace() { 
         int numTracks = layout.getNumTracks();
         return Math.min(Math.max(40,numTracks * 12),120);
+    }
+    public int getMinVertSpace() { 
+        int numTracks = layout.getNumTracks();
+        return Math.min(Math.max(24,numTracks * 12),60);
     }
 
     private void setLayoutGenes() {

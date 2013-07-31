@@ -102,22 +102,47 @@ public class SeqViewOptions {
         CHIPSEQANALYSES = 21;
     
     
+    public SeqViewOptions(Genome g){
+    	init(g);
+    }
     public SeqViewOptions(String gname) {
-        
-    	this.loadOptions();
-    	
         try {
         	genome = Organism.findGenome(gname);
         } catch (NotFoundException e) {
             e.printStackTrace();
             throw new IllegalArgumentException(gname);
         }
+        init(genome);
+    }
+
+    public SeqViewOptions() {
+    	String genomeStr="mm9";
+        try {        
+            ResourceBundle res = ResourceBundle.getBundle("defaultgenome");
+            genomeStr = res.getString("genome"); 
+        } catch (MissingResourceException e) {
+            // who cares, we're just getting defaults
+        } catch (Exception e) {
+            // ditto
+        }
         
+        try {
+        	genome = Organism.findGenome(genomeStr);
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException(genomeStr);
+        }
+        init(genome);
+    }
+
+    public void init(Genome g){
+    	this.loadOptions();
+    	genome = g;
         List<String> chroms = genome.getChromList();
         java.util.Collections.sort(chroms);
         chrom = chroms.get(0);
         start = 10000;
-        stop = 20000;     
+        stop = 20000;
         gene = null;
         hash = true;
         seqHistogramPainter = true;
@@ -131,27 +156,6 @@ public class SeqViewOptions {
         regionTracks = new HashMap<String,String>();
         regexes = new HashMap<String,String>();
     }
-
-    public SeqViewOptions() {
-    	this.loadOptions();
-    	
-        start = -1;
-        stop = -1;
-        chrom = null;
-        gene = null;
-        hash = true;
-        seqHistogramPainter = true;
-        genes = new ArrayList<String>();
-        ncrnas = new ArrayList<String>();
-        otherannots = new ArrayList<String>();
-        agilentdata= new ArrayList<ExptNameVersion>();
-        seqExpts = new ArrayList<SeqLocatorMatchedExpt>();
-        motifs = new ArrayList<WeightMatrix>();
-        exprExperiments = new ArrayList<Experiment>();
-        regionTracks = new HashMap<String,String>();
-        regexes = new HashMap<String,String>();
-    }
-
     /* adds options from this into union.  For lists, it generates the 
        union.  For other settings, this takes priority */
     public void mergeInto(SeqViewOptions union) throws IllegalArgumentException {

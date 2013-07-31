@@ -109,6 +109,10 @@ public class MultiGenePainter extends RegionPaintable {
         int numTracks = getNumTracks();
         return Math.min(Math.max(40,numTracks * 25),120);
     }
+    public int getMinVertSpace() {
+        int numTracks = getNumTracks();
+        return Math.min(Math.max(24,numTracks * 25),60);
+    }
 
     public void paintItem(Graphics2D g, int x1, int y1, int x2, int y2) {
         int totalTracks = Math.max(1, getNumTracks());

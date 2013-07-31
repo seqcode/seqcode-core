@@ -118,6 +118,10 @@ public class GenePainter extends RegionPaintable {
         int numTracks = layout.getNumTracks();
         return Math.min(Math.max(40,numTracks * 12),120);
     }
+    public int getMinVertSpace() { 
+        int numTracks = layout.getNumTracks();
+        return Math.min(Math.max(24,numTracks * 12),60);
+    }
 
     private void setLayoutGenes() {
         if (canPaint() && genes == null) {

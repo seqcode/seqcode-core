@@ -22,9 +22,9 @@ import java.sql.SQLException;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-/* abstract superclass for all Paintables in Warpdrive. 
+/* abstract superclass for all Paintables in SeqView. 
 
-The WarpDrive framework uses two key classes of objects: WarpPaintables and WarpModels.  The 
+The SeqView framework uses two key classes of objects: SeqViewPaintables and SeqViewModels.  The 
 model is the datasource.  It queries some underlying data stream (eg, in response to setRegion calls) 
 and when the data has been retrieved and processed, it notifies the paintables that use the model.  When
 all of a paintable's models are ready, the paintable notifies the enclosing container, which will

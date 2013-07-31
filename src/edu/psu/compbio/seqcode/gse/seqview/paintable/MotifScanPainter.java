@@ -46,6 +46,7 @@ public class MotifScanPainter extends RegionPaintable {
 
 
     public int getMaxVertSpace() {return 25;}
+    public int getMinVertSpace() {return 10;}
 
     public void paintItem(Graphics2D g, 
                           int ulx, int uly, 

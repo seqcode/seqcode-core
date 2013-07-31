@@ -42,6 +42,8 @@ public class NamedStrandedPainter extends RegionPaintable {
             return 60;
         }
     }
+    public int getMinVertSpace() {return 30;}
+    
     public void setRegion(Region r) {
         dirty = true;
         super.setRegion(r);

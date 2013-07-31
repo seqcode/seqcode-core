@@ -59,7 +59,6 @@ public class RegionPanel extends JPanel
 implements ActionListener, KeyListener, 
 Listener<EventObject>, PainterContainer, MouseListener {
 
-	private boolean dummyPanel=false;
 	// controls at the bottom of the panel
 	private JPanel buttonPanel;
 	private JScrollPane scrollPane;
@@ -73,11 +72,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	private Hashtable<String,ArrayList<RegionPaintable>> painters;
 	// keeps track of the order in which painters are to be drawn
 	private ArrayList<RegionPaintable> allPainters= new ArrayList<RegionPaintable>();
-	// Thin painters are painters that have requested a fixed amount of space.
-	// Thick painters want as much space as is available 
-
-	//private Hashtable<String,Integer> trackPaintOrderThick;
-	//private Hashtable<String,Integer> trackPaintOrderThin;
 	private Hashtable<String,Integer> trackPaintOrder;
 
 	private Hashtable<String,Integer> trackSpace;
@@ -106,55 +100,48 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 	public RegionPanel(Genome g) {
 		super();
-		if(g==null){
-			dummyPanel=true;
-		}
 		init(g);        
-		currentOptions = new SeqViewOptions();
+		currentOptions = new SeqViewOptions(g);
+		addPaintersFromOpts(currentOptions);
+		setVisible(true);	
 	}
 
 	public RegionPanel(SeqViewOptions opts) {
 		super();
-		if(opts==null){
-			dummyPanel=true;
-			init(null);
-		}else{
-			dummyPanel=false;
-			Genome g = opts.genome;
-			init(g);
-			currentOptions = opts;
-			addPaintersFromOpts(opts);
-			setVisible(true);
-			//Find our initial region.
-			Region startingRegion = null;
-			if (opts.gene != null && opts.gene.matches("...*")) {
-				startingRegion = regionFromString(genome,opts.gene);
-			}
-			if (startingRegion != null) {
-				setRegion(startingRegion);
-			} else if (opts.start >= 0 && opts.chrom != null) {
-				setRegion(new Region(g,opts.chrom,opts.start,opts.stop));
-			} else if (opts.position != null && opts.position.length() > 0) {
-				Region r = regionFromString(genome,opts.position);
+		Genome g = opts.genome;
+		init(g);
+		currentOptions = opts;
+		addPaintersFromOpts(currentOptions);
+		setVisible(true);
+		//Find our initial region.
+		Region startingRegion = null;
+		if (opts.gene != null && opts.gene.matches("...*")) {
+			startingRegion = regionFromString(genome,opts.gene);
+		}
+		if (startingRegion != null) {
+			setRegion(startingRegion);
+		} else if (opts.start >= 0 && opts.chrom != null) {
+			setRegion(new Region(g,opts.chrom,opts.start,opts.stop));
+		} else if (opts.position != null && opts.position.length() > 0) {
+			Region r = regionFromString(genome,opts.position);
+			if (r != null) {
+				setRegion(r);
+			} else {
+				r = regionFromString(genome,opts.gene);
 				if (r != null) {
 					setRegion(r);
 				} else {
-					r = regionFromString(genome,opts.gene);
-					if (r != null) {
-						setRegion(r);
-					} else {
-						throw new NullPointerException("Need a valid starting position in either chrom or gene");
-					}
+					throw new NullPointerException("Need a valid starting position in either chrom or gene");
 				}
-			} else {
-				throw new NullPointerException("Need a starting position in either chrom or gene");
 			}
-			if (opts.regionListFile != null) {
-				java.util.List<Region> regions = readRegionsFromFile(g,opts.regionListFile);
-				RegionListPanel p = new RegionListPanel(this,
-						regions);
-				RegionListPanel.makeFrame(p);
-			}
+		} else {
+			throw new NullPointerException("Need a starting position in either chrom or gene");
+		}
+		if (opts.regionListFile != null) {
+			java.util.List<Region> regions = readRegionsFromFile(g,opts.regionListFile);
+			RegionListPanel p = new RegionListPanel(this,
+					regions);
+			RegionListPanel.makeFrame(p);
 		}
 	}
 
@@ -167,97 +154,152 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	public void init(Genome g) {
 		allModels = new HashSet<RegionModel>();
 		painters = new Hashtable<String,ArrayList<RegionPaintable>>();
-		if(dummyPanel){
-			setBackground(Color.WHITE);
-			add(new JLabel("Initializing"),BorderLayout.CENTER);
-		}else{
-			genome = g;
-			trackPaintOrder = new Hashtable<String,Integer>();
+
+		genome = g;
+		trackPaintOrder = new Hashtable<String,Integer>();
+
+		trackSpace = new Hashtable<String,Integer>();
+		allPainters = new ArrayList<RegionPaintable>();
+		ulx = new Hashtable<String,Integer>();
+		uly = new Hashtable<String,Integer>();
+		lrx = new Hashtable<String,Integer>();
+		lry = new Hashtable<String,Integer>();
+		painterCount = 0;
+		readyCount = 0;
+
+		currentRegion = new Region(g,"1",1,1000);
+
+		buttonPanel = new JPanel();      
+		mainPanel = new RegionContentPanel();
+		mainPanel.addMouseListener(this);
+		mainPanel.setPreferredSize(new Dimension(1000,1000));//this should be calculated in the layout calc
+		scrollPane = new JScrollPane();
+		scrollPane.setViewportView(mainPanel);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+		setLayout(new BorderLayout());
+		buttonPanel.setLayout(new GridBagLayout());        
+
+		leftButton = new JButton("<-");
+		leftButton.setToolTipText("step left");
+		rightButton = new JButton("->");
+		rightButton.setToolTipText("step right");
+		zoomInButton = new JButton("++");
+		zoomInButton.setToolTipText("zoom in");
+		zoomOutButton = new JButton("--");        
+		zoomOutButton.setToolTipText("zoom out");
+		farLeftButton = new JButton("<<<-");
+		farLeftButton.setToolTipText("jump left");
+		farRightButton = new JButton("->>>");
+		farRightButton.setToolTipText("jump right");
+		status = new JTextField();
+		Dimension buttonSize = new Dimension(30,20);
+		leftButton.setMaximumSize(buttonSize);
+		rightButton.setMaximumSize(buttonSize);
+		zoomInButton.setMaximumSize(buttonSize);
+		zoomOutButton.setMaximumSize(buttonSize);
+		farLeftButton.setMaximumSize(buttonSize);
+		farRightButton.setMaximumSize(buttonSize);
+		status.setMinimumSize(new Dimension(160,20));
+		status.setPreferredSize(new Dimension(300,20));
+
+		buttonPanel.add(farLeftButton);
+		buttonPanel.add(leftButton);
+		buttonPanel.add(zoomOutButton);
+		buttonPanel.add(status);
+		buttonPanel.add(zoomInButton);
+		buttonPanel.add(rightButton);
+		buttonPanel.add(farRightButton);
+
+		leftButton.addActionListener(this);
+		rightButton.addActionListener(this);
+		status.addActionListener(this);
+		zoomInButton.addActionListener(this);
+		zoomOutButton.addActionListener(this);     
+		farLeftButton.addActionListener(this);
+		farRightButton.addActionListener(this);
+		buttonPanel.addKeyListener(this);
+		mainPanel.addKeyListener(this);    
+		scrollPane.addKeyListener(this);
+		setBackground(Color.WHITE);
+		//add(mainPanel,BorderLayout.CENTER);
+		add(scrollPane,BorderLayout.CENTER);
+		add(buttonPanel, BorderLayout.SOUTH);
+	}
 	
-			trackSpace = new Hashtable<String,Integer>();
-			allPainters = new ArrayList<RegionPaintable>();
-			ulx = new Hashtable<String,Integer>();
-			uly = new Hashtable<String,Integer>();
-			lrx = new Hashtable<String,Integer>();
-			lry = new Hashtable<String,Integer>();
-			painterCount = 0;
-			readyCount = 0;
-	
-			currentRegion = new Region(g,"1",0,1000);
-	
-			buttonPanel = new JPanel();      
-			mainPanel = new RegionContentPanel();
-			mainPanel.addMouseListener(this);
-			scrollPane = new JScrollPane(mainPanel);
-			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			setLayout(new BorderLayout());
-			buttonPanel.setLayout(new GridBagLayout());        
-	
-			leftButton = new JButton("<-");
-			leftButton.setToolTipText("step left");
-			rightButton = new JButton("->");
-			rightButton.setToolTipText("step right");
-			zoomInButton = new JButton("++");
-			zoomInButton.setToolTipText("zoom in");
-			zoomOutButton = new JButton("--");        
-			zoomOutButton.setToolTipText("zoom out");
-			farLeftButton = new JButton("<<<-");
-			farLeftButton.setToolTipText("jump left");
-			farRightButton = new JButton("->>>");
-			farRightButton.setToolTipText("jump right");
-			status = new JTextField();
-			Dimension buttonSize = new Dimension(30,20);
-			leftButton.setMaximumSize(buttonSize);
-			rightButton.setMaximumSize(buttonSize);
-			zoomInButton.setMaximumSize(buttonSize);
-			zoomOutButton.setMaximumSize(buttonSize);
-			farLeftButton.setMaximumSize(buttonSize);
-			farRightButton.setMaximumSize(buttonSize);
-			status.setMinimumSize(new Dimension(160,20));
-			status.setPreferredSize(new Dimension(300,20));
-	
-			buttonPanel.add(farLeftButton);
-			buttonPanel.add(leftButton);
-			buttonPanel.add(zoomOutButton);
-			buttonPanel.add(status);
-			buttonPanel.add(zoomInButton);
-			buttonPanel.add(rightButton);
-			buttonPanel.add(farRightButton);
-	
-			leftButton.addActionListener(this);
-			rightButton.addActionListener(this);
-			status.addActionListener(this);
-			zoomInButton.addActionListener(this);
-			zoomOutButton.addActionListener(this);     
-			farLeftButton.addActionListener(this);
-			farRightButton.addActionListener(this);
-			buttonPanel.addKeyListener(this);
-			mainPanel.addKeyListener(this);    
-			scrollPane.addKeyListener(this);
-			setBackground(Color.WHITE);
-			add(mainPanel,BorderLayout.CENTER);
-			//add(scrollPane,BorderLayout.CENTER);
-			add(buttonPanel, BorderLayout.SOUTH);
+	/**
+	 * reinit is like the constructor, but assumes the superclass has already been called,
+	 * and performs some cleanup first.  
+	 */
+	public void reinit(SeqViewOptions opts) {
+		//Cleanup
+		for (RegionModel m : allModels) {
+			synchronized(m) {
+				m.stopRunning();
+				m.notifyAll();
+ 		   	}
+ 	   	}
+		try {
+			Thread.sleep(400);
+ 	   	} catch (Exception e) { }
+		//Re-initialize (but don't make all the panels again)
+		genome = opts.genome;
+		allModels = new HashSet<RegionModel>();
+		painters = new Hashtable<String,ArrayList<RegionPaintable>>();
+		trackPaintOrder = new Hashtable<String,Integer>();
+		trackSpace = new Hashtable<String,Integer>();
+		allPainters = new ArrayList<RegionPaintable>();
+		ulx = new Hashtable<String,Integer>();
+		uly = new Hashtable<String,Integer>();
+		lrx = new Hashtable<String,Integer>();
+		lry = new Hashtable<String,Integer>();
+		painterCount = 0;
+		readyCount = 0;
+		currentRegion = new Region(genome,"1",1,1000);
+		
+		currentOptions = opts;
+		addPaintersFromOpts(opts);
+		setVisible(true);
+		//Find our initial region.
+		Region startingRegion = null;
+		if (opts.gene != null && opts.gene.matches("...*")) {
+			startingRegion = regionFromString(genome,opts.gene);
+		}
+		if (startingRegion != null) {
+			setRegion(startingRegion);
+		} else if (opts.start >= 0 && opts.chrom != null) {
+			setRegion(new Region(genome,opts.chrom,opts.start,opts.stop));
+		} else if (opts.position != null && opts.position.length() > 0) {
+			Region r = regionFromString(genome,opts.position);
+			if (r != null) {
+				setRegion(r);
+			} else {
+				r = regionFromString(genome,opts.gene);
+				if (r != null) {
+					setRegion(r);
+				} else {
+					throw new NullPointerException("Need a valid starting position in either chrom or gene");
+				}
+			}
+		} else {
+			throw new NullPointerException("Need a starting position in either chrom or gene");
+		}
+		if (opts.regionListFile != null) {
+			java.util.List<Region> regions = readRegionsFromFile(genome,opts.regionListFile);
+			RegionListPanel p = new RegionListPanel(this,
+					regions);
+			RegionListPanel.makeFrame(p);
 		}
 	}
 
 	public void addPaintersFromOpts(SeqViewOptions opts) {        
 
 		if (!(opts.genome.equals(genome))){
-			// if someone tries to add painters from a different species,
-			// create a new frame for them instead.
-			// this will probably get changed later if we have multi-species
-			// painters, but that's not implemented now
-			RegionFrame frame = new RegionFrame(opts);
-			return;
+			System.err.println("Should be the same");
 		}
 		opts.mergeInto(currentOptions);
-		//ChipChipDataset dataset = new ChipChipDataset(genome);
-		// there should be one scale model for each chip-chip track.  We need to keep them
-		// here because multiple chipchip datasets (ie painters) may be on the same track (ie piece
-		// of screen real-estate)
-		//Hashtable<String,ChipChipScaleModel> scalemodels = new Hashtable<String,ChipChipScaleModel>();
+
 		if (opts.hash) {
 			HashMarkPaintable p = new HashMarkPaintable();
 			//SimpleHashMarkPaintable p = new SimpleHashMarkPaintable();
@@ -661,13 +703,10 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			} else if (factory.getProduct().equals("NamedRegion")) {
 				m = new RegionExpanderModel<NamedRegion>((Expander<Region,NamedRegion>)expander);
 				p = new NamedStrandedPainter((RegionExpanderModel<NamedRegion>)m); // yes, this works.  NamedStrandedPainter can handle non-stranded Regions
-			} else if (factory.getProduct().equals("SpottedProbe")) {
-				m = new RegionExpanderModel<SpottedProbe>((Expander<Region,SpottedProbe>)expander);
-				p = new SpottedProbePainter((RegionExpanderModel<SpottedProbe>)m);
 			} else {
 				throw new RuntimeException("Don't understand product type " + factory.getProduct());
 			}
-			//                System.err.println("Created " + p + " for " + m);
+
 			addModel(m);
 			Thread t = new Thread(m); t.start();               
 			p.setLabel(opts.otherannots.get(i).toString());
@@ -1100,20 +1139,20 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   requests.put(s,maxspace);
 
     		   /*
-            if (isthick) {
-                if (!trackPaintOrderThick.containsKey(s)) {
-                    trackPaintOrderThick.put(s,trackPaintOrderThick.size() + 1);
-                }
-                // make sure the key isn't in both tables if it switched
-                // from being thin to thick
-                removeTrackOrder(s,trackPaintOrderThin);
-            } else {
-                if (!trackPaintOrderThin.containsKey(s)) {
-                    trackPaintOrderThin.put(s,trackPaintOrderThin.size() + 1);
-                }
-                removeTrackOrder(s,trackPaintOrderThick);
-            }
-    		    */
+	           if (isthick) {
+	                if (!trackPaintOrderThick.containsKey(s)) {
+	                    trackPaintOrderThick.put(s,trackPaintOrderThick.size() + 1);
+	                }
+	                // make sure the key isn't in both tables if it switched
+	                // from being thin to thick
+	                removeTrackOrder(s,trackPaintOrderThin);
+	           } else {
+	                if (!trackPaintOrderThin.containsKey(s)) {
+	                    trackPaintOrderThin.put(s,trackPaintOrderThin.size() + 1);
+	                }
+	                removeTrackOrder(s,trackPaintOrderThick);
+	           }
+    		   */
 
     		   thickMap.put(s, isthick);
 
@@ -1140,14 +1179,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
     	   int thickAlloc = (thickSpace - 5*thickCount) / (Math.max(1, thickCount));
 
-    	   /*
-        keys = new String[trackPaintOrderThin.size()];
-        i = 0;
-        for (String s : trackPaintOrderThin.keySet()) {
-            keys[i++] = s;
-        }        
-        Arrays.sort(keys,new HashtableComparator(trackPaintOrderThin));
-    	    */
     	   keys = new String[trackPaintOrder.size()];
     	   i = 0;
     	   for(String s : trackPaintOrder.keySet()) { keys[i++] = s; }
@@ -1162,19 +1193,13 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   } else if (trackSpace.containsKey(s + "_requested") &&
     				   !trackSpace.get(s + "_allocated").equals(trackSpace.get(s + "_requested"))) {
     			   allocated = trackSpace.get(s + "_allocated");
-    			   //                System.err.println("USING stored allocation for " + s + ": " + allocated + ". Requested was " +
-    			   //                                   trackSpace.get(s + "_requested"));
     		   } else {
     			   allocated = requests.get(s);
-    			   //                System.err.println("USING requested allocation for " + s + ": " + allocated);
     		   }
     		   trackSpace.put(s + "_allocated",allocated);
-    		   //            System.err.println("STORING allocation for " + s + " as " + allocated);
 
     		   ulx.put(s,x);
     		   lrx.put(s,width + x);
-
-
 
     		   if(thickMap.get(s)) { 
     			   lry.put(s,ypos-10);
@@ -1187,31 +1212,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   ypos -= allocated;
     	   }
 
-    	   /*
-        keys = null;
-        keys = new String[trackPaintOrderThick.size()];
-        i = 0;
-        for (String s : trackPaintOrderThick.keySet()) {
-            keys[i++] = s;
-        }        
-        Arrays.sort(keys,new HashtableComparator(trackPaintOrderThick));
-
-        if (trackPaintOrderThick.size() > 0) {
-            int thickspace = ypos / trackPaintOrderThick.size();
-            for (i = keys.length -1; i >= 0; i--) {
-                String s = keys[i];
-                ulx.put(s,x);
-                lrx.put(s,width + x);
-                lry.put(s,ypos - 10);
-                ypos -= thickspace;
-                uly.put(s,ypos + 10);   
-            }         
-        }
-    	    */
-
     	   for (String k : requests.keySet()) {
     		   trackSpace.put(k + "_requested",requests.get(k));
-    		   //            System.err.println("STORING request for " + k + " as " + requests.get(k));
     	   }
        }
        /* this is a callback from a painter to the RegionPanel saying that
@@ -1228,10 +1230,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
        }
 
        public void paintComponent(Graphics g) {
-    	   if(!dummyPanel){
-    		   //scrollPane.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
-    		   mainPanel.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
-    	   }
+    	   //scrollPane.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
+    	   mainPanel.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
        }
 
        public boolean allCanPaint() {
@@ -1506,13 +1506,13 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   Hashtable<String,Integer> t = null;
 
     		   /*
-            if (trackPaintOrderThick.containsKey(key)) {
-                t = trackPaintOrderThick;
-            } else if (trackPaintOrderThin.containsKey(key)) {
-                t = trackPaintOrderThin;
-            } else {
-                return;
-            }
+	            if (trackPaintOrderThick.containsKey(key)) {
+	                t = trackPaintOrderThick;
+	            } else if (trackPaintOrderThin.containsKey(key)) {
+	                t = trackPaintOrderThin;
+	            } else {
+	                return;
+	            }
     		    */
     		   if(trackPaintOrder.containsKey(key)) { 
     			   t = trackPaintOrder;

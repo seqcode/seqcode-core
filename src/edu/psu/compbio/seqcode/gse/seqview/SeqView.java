@@ -29,17 +29,13 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.seqview.components.BindingScanSelectFrame;
-import edu.psu.compbio.seqcode.gse.seqview.components.PainterContainer;
-import edu.psu.compbio.seqcode.gse.seqview.components.RegionFrame;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionListPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.SaveRegionsAsFasta;
 import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsFrame2;
 import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsPane;
 import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewStatusBar;
-import edu.psu.compbio.seqcode.gse.seqview.components.SpeciesAlignFrame;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
@@ -55,7 +51,7 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
  *
  */
 public class SeqView extends JFrame {
-	protected SeqViewOptions options=null;
+	protected SeqViewOptions options=new SeqViewOptions();
 	protected SeqViewOptionsFrame2 optionsFrame;
 	protected SeqViewOptionsPane optionsPane;
 	protected RegionPanel regPanel=null;
@@ -68,26 +64,27 @@ public class SeqView extends JFrame {
     	setSize(600,400);
         setLocation(50,50);
     	setJMenuBar(createDefaultJMenuBar());
-        //Set up the simple top-layer panel
+    	
     	this.setLayout(new BorderLayout(0,0));
     	statusBar = new SeqViewStatusBar();
         statusBar.setPreferredSize(new Dimension(getWidth(), SeqViewOptions.STATUS_BAR_HEIGHT));
-    	add(statusBar, BorderLayout.PAGE_END);
-    	regPanel = new RegionPanel(options); //dummy region panel
-    	add(regPanel, BorderLayout.PAGE_START);
-    	
-        setVisible(true);
-
-        imageraster = true;
         statusBar.updateStatus("Loading genome", Color.orange);
         setTitle("Loading genome information...");
+        add(statusBar, BorderLayout.PAGE_END);
     	
         //Load command-line options
         options = SeqViewOptions.parseCL(args);
         setTitle(options.genome.getSpecies() + " " + options.genome.getVersion());
+
+        regPanel = new RegionPanel(options); 
+    	add(regPanel, BorderLayout.CENTER);
+    	
+        setVisible(true);
+
+        imageraster = true;
         statusBar.updateStatus("Genome loaded", Color.green);
         
-        //Initiate pane & frame
+        //Initiate options pane & frame
         optionsPane = new SeqViewOptionsPane(options);
         optionsFrame = new SeqViewOptionsFrame2(optionsPane, this);
         
@@ -114,13 +111,15 @@ public class SeqView extends JFrame {
      * @param opts
      */
     public void updateOptions(SeqViewOptions opts){
-    	if ( options==null || regPanel ==null || !options.genome.equals(opts.genome)) {
-            //Populate the panel for the first time, or overwrite panel for different genome
-        	if(regPanel!=null){
-        		regPanel.close();
-        	}
+    	if(regPanel ==null){
+    		//regPanel should have been created in the constructor, so if this is true, something is wrong. 
+    		//Nevertheless:
+    		regPanel = new RegionPanel(opts); 
+        	add(regPanel, BorderLayout.PAGE_START);
+    	}else if ( options==null  || !options.genome.equals(opts.genome)) {
+            //Overwrite panel for different genome
         	setTitle(opts.genome.getSpecies() + " " + opts.genome.getVersion());
-            regPanel = new RegionPanel(opts);
+            regPanel.reinit(opts);
         } else {
         	if (options != null && opts.genome.equals(options.genome)) {
         		SeqViewOptions diffopts = opts.clone();
@@ -202,21 +201,7 @@ public class SeqView extends JFrame {
                 }
             });
         jmb.add((navigationmenu = new JMenu("Navigation")));
-        final JCheckBoxMenuItem linkeditem;
-        navigationmenu.add((linkeditem = new JCheckBoxMenuItem("Link to Alignments")));
-        linkeditem.setSelected(false);
-        linkeditem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (linkeditem.isSelected()) {
-                        SpeciesAlignFrame.addRegionPanel(regPanel);
-                        regPanel.setRegion(regPanel.getRegion());
-                    } else {
-                        SpeciesAlignFrame.removeRegionPanel(regPanel);
-                    }
-                }
-            });
-
-
+        
         
         navigationmenu.add((item = new JMenuItem("Binding Event List")));
         item.addActionListener(new ActionListener()  {
@@ -227,16 +212,6 @@ public class SeqView extends JFrame {
                 }
             });               
 
-        /*navigationmenu.add((item = new JMenuItem("Array Tiled Regions")));
-        item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    RegionListPanel rlp = new RegionListPanel(thispanel,null);
-                    RegionListPanel.makeFrame(rlp);
-                    new ArrayDesignSelectFrame(thispanel.getGenome(),rlp);
-                }
-            });
-		*/
-        
         navigationmenu.add((item = new JMenuItem("Open Region List")));
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

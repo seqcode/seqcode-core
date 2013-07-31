@@ -49,6 +49,9 @@ public class CpGPainter extends RegionPaintable {
     public int getMaxVertSpace() { 
         return 40;
     }
+    public int getMinVertSpace() { 
+        return 10;
+    }
 
     public void paintItem(Graphics2D g, 
                           int x1, int y1, 

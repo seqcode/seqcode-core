@@ -44,6 +44,7 @@ public class HashMarkPaintable extends RegionPaintable {
     }
 
     public int getMaxVertSpace() {return 30;}
+    public int getMinVertSpace() {return 10;}
     
     /* (non-Javadoc)
      * @see edu.psu.compbio.seqcode.gse.viz.paintable.Paintable#paintItem(java.awt.Graphics, int, int, int, int)

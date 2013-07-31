@@ -162,20 +162,7 @@ public class RegionFrame extends JFrame {
                 }
             });
         jmb.add((navigationmenu = new JMenu("Navigation")));
-        final JCheckBoxMenuItem linkeditem;
-        navigationmenu.add((linkeditem = new JCheckBoxMenuItem("Link to Alignments")));
-        linkeditem.setSelected(false);
-        linkeditem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (linkeditem.isSelected()) {
-                        SpeciesAlignFrame.addRegionPanel(panel);
-                        panel.setRegion(panel.getRegion());
-                    } else {
-                        SpeciesAlignFrame.removeRegionPanel(panel);
-                    }
-                }
-            });
-
+        
 
         navigationmenu.add((item = new JMenuItem("Binding Scan Annotation")));
         item.addActionListener(new ActionListener()  {

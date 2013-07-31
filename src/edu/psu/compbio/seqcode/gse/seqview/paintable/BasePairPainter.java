@@ -49,6 +49,9 @@ public class BasePairPainter extends RegionPaintable {
     public int getMaxVertSpace() { 
         return props.FontSize * 2;
     }
+    public int getMinVertSpace() { 
+        return props.FontSize+2;
+    }
 
     public void paintItem(Graphics2D g, 
                           int x1, int y1, 

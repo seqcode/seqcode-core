@@ -56,6 +56,10 @@ public class BindingEventPaintable extends RegionPaintable {
         int numTracks = layout.getNumTracks();
         return Math.min(Math.max(20,numTracks * 8),60);        
     }
+    public int getMinVertSpace() { 
+        int numTracks = layout.getNumTracks();
+        return Math.min(Math.max(16,numTracks * 8),24);        
+    }
 	
     public synchronized void eventRegistered(EventObject e) { 
         if (e.getSource() == model && model.isReady()) { 

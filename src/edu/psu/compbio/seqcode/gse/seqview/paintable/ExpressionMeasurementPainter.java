@@ -67,8 +67,6 @@ public class ExpressionMeasurementPainter extends RegionPaintable  {
         	maxValue = Math.max(maxValue, em.getValue());
         }
         
-        System.out.println("Expression: " + ems.size() + " values.");
-        
         Rectangle rect = new Rectangle(x1, y1, w, h);
         Region r = model.getRegion();
         
