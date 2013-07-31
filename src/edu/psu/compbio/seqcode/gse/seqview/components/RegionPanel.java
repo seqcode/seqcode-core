@@ -172,7 +172,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		buttonPanel = new JPanel();      
 		mainPanel = new RegionContentPanel();
 		mainPanel.addMouseListener(this);
-		mainPanel.setPreferredSize(new Dimension(1000,1000));//this should be calculated in the layout calc
+		mainPanel.setPreferredSize(new Dimension(getWidth(),1000));//this should be calculated in the layout calc
 		scrollPane = new JScrollPane();
 		scrollPane.setViewportView(mainPanel);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -1216,6 +1216,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   trackSpace.put(k + "_requested",requests.get(k));
     	   }
        }
+       
+       
        /* this is a callback from a painter to the RegionPanel saying that
        the painter is ready to be painted.  
        This implementation is just a heuristic, but the goal is to avoid
