@@ -118,6 +118,10 @@ public class SeqHistogramPainter extends RegionPaintable {
 			int x1, int y1, 
 			int x2, int y2) {
 
+		g.setRenderingHint(
+		        RenderingHints.KEY_TEXT_ANTIALIASING,
+		        RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		
 		if (!canPaint()) {
 			return;
 		}
@@ -255,16 +259,17 @@ public class SeqHistogramPainter extends RegionPaintable {
 				g.fillRect(xpix, midpoint, binPixels, ypix-midpoint);
 			}
 			//Line & trimmings
-			g.setColor(Color.black);
+			g.setColor(Color.darkGray);
 			g.drawLine(x1, midpoint, x2, midpoint);
-			g.setFont(attrib.getLargeLabelFont(trackWidth,trackHeight));
-			int step = Math.max(1,(int)Math.round(maxhits / 5));
+			g.setFont(attrib.getPointLabelFont(trackWidth,trackHeight));
+			int step = Math.max(1,(int)Math.round(maxhits / 1)); //y-axis scale
 			for (int i = step; i <= Math.ceil(maxhits); i += step) {
 				int ypos = getYPos(i, 0, maxhits, y1, midpoint, logscale);
 				g.drawString(Integer.toString(i),5,ypos);
 				ypos = midpoint + (ready2 - getYPos(i, 0, maxhits, midpoint, ready2, logscale));
 				g.drawString(Integer.toString(i),5,ypos);
-			}                    
+			}
+			g.setColor(Color.black);
 		} else {
 			//Plot density : first screen out overlapping rects (take max), then plot
 			HashMap<Integer,Double> plotXVals = new HashMap<Integer,Double>();
@@ -304,14 +309,15 @@ public class SeqHistogramPainter extends RegionPaintable {
 			}
 
 			//Line & trimmings
-			g.setColor(Color.black);
+			g.setColor(Color.darkGray);
 			g.drawLine(x1, ready2, x2, ready2);
-			g.setFont(attrib.getLargeLabelFont(trackWidth,trackHeight));
-			int step = Math.max(1,(int)Math.round(maxhits / 5));
+			g.setFont(attrib.getPointLabelFont(trackWidth,trackHeight));
+			int step = Math.max(1,(int)Math.round(maxhits / 1)); //y-axis scale labels
 			for (int i = step; i <= Math.ceil(maxhits); i += step) {
 				int ypos = getYPos(i, 0, maxhits, y1, ready2, logscale);
 				g.drawString(Integer.toString(i),5,ypos);
 			}
+			g.setColor(Color.black);
 		}
 
 		//Draw pairing arcs
@@ -339,8 +345,8 @@ public class SeqHistogramPainter extends RegionPaintable {
 		//Draw labels
 		g.setStroke(oldStroke);
 		if (getProperties().DrawTrackLabel) {
-			g.setFont(attrib.getLargeLabelFont(trackWidth,trackHeight));
-			g.setColor(Color.BLACK);
+			g.setFont(attrib.getRegionLabelFont(trackWidth,trackHeight));
+			g.setColor(Color.black);
 			g.drawString(getLabel(),x1 + g.getFont().getSize()*2,y1 + g.getFont().getSize());
 		}if(getProperties().DrawBinSize) {
 			g.setFont(attrib.getPointLabelFont(trackWidth,trackHeight));

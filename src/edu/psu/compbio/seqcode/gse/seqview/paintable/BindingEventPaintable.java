@@ -58,7 +58,7 @@ public class BindingEventPaintable extends RegionPaintable {
     }
     public int getMinVertSpace() { 
         int numTracks = layout.getNumTracks();
-        return Math.min(Math.max(16,numTracks * 8),24);        
+        return Math.min(Math.max(20,numTracks * 8),60);          
     }
 	
     public synchronized void eventRegistered(EventObject e) { 

@@ -50,7 +50,7 @@ public class CpGPainter extends RegionPaintable {
         return 40;
     }
     public int getMinVertSpace() { 
-        return 10;
+        return 20;
     }
 
     public void paintItem(Graphics2D g, 

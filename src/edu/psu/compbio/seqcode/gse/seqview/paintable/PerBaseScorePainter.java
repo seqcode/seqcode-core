@@ -66,7 +66,7 @@ public class PerBaseScorePainter<X extends Number> extends RegionPaintable {
         return 40;
     }
     public int getMinVertSpace() { 
-        return 10;
+        return 40;
     }
 
     public void paintItem(Graphics2D g, 

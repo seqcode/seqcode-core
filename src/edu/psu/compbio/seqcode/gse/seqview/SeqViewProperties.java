@@ -114,7 +114,7 @@ public abstract class SeqViewProperties extends Model {
      */
     public void loadFromFile() {
         JFileChooser chooser = new JFileChooser();
-        RegexFileFilter filter = new RegexFileFilter(".*\\." + fileSuffix() + "$", "WarpDrive Prefs",true);
+        RegexFileFilter filter = new RegexFileFilter(".*\\." + fileSuffix() + "$", "SeqView Prefs",true);
         chooser.setFileFilter(filter);
         chooser.setSelectedFile(defaultFile());
         int returnVal = chooser.showOpenDialog(null);

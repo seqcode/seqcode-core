@@ -52,7 +52,7 @@ public class GCContentPainter extends RegionPaintable {
         return 40;
     }
     public int getMinVertSpace() { 
-        return 10;
+        return 40;
     }
 
     public void paintItem(Graphics2D g, 

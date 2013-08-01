@@ -55,7 +55,7 @@ public class HeightScoredPainter extends RegionPaintable {
         return 20;
     }
     public int getMinVertSpace() { 
-        return 10;
+        return 20;
     }
     
     public void paintItem(Graphics2D g, 

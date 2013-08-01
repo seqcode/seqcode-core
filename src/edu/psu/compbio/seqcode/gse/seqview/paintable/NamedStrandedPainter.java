@@ -42,7 +42,16 @@ public class NamedStrandedPainter extends RegionPaintable {
             return 60;
         }
     }
-    public int getMinVertSpace() {return 30;}
+    public int getMinVertSpace() {
+    	if (model.isReady()) {
+            if (dirty) {
+                doLayout();
+            }
+            return 30 * (tracksUsed > 1 ? tracksUsed : 1);
+        } else {
+            return 60;
+        }
+    }
     
     public void setRegion(Region r) {
         dirty = true;

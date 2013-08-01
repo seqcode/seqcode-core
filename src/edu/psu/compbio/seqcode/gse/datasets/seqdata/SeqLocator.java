@@ -89,8 +89,7 @@ public class SeqLocator implements Comparable<SeqLocator> {
     }
     
     public String toString() { 
-    	return String.format("%s (rep: %s, align: %s)", exptName,
-                getReplicateString(), alignName); 
+    	return String.format("%s [rep: %s, align: %s]", exptName, getReplicateString(), alignName);
     }
 
     public int compareTo(SeqLocator other) {

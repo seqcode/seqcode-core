@@ -50,7 +50,7 @@ public class BasePairPainter extends RegionPaintable {
         return props.FontSize * 2;
     }
     public int getMinVertSpace() { 
-        return props.FontSize+2;
+    	return props.FontSize * 2;
     }
 
     public void paintItem(Graphics2D g, 

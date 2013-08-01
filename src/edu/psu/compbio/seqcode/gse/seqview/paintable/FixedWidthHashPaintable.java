@@ -45,7 +45,7 @@ public class FixedWidthHashPaintable extends RegionPaintable {
     }
 
     public int getMaxVertSpace() { return 30; }
-    public int getMinVertSpace() { return 10; }
+    public int getMinVertSpace() { return 30; }
     
     /* (non-Javadoc)
      * @see edu.psu.compbio.seqcode.gse.viz.paintable.Paintable#paintItem(java.awt.Graphics, int, int, int, int)

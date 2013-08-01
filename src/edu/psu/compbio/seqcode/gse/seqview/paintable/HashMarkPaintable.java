@@ -43,8 +43,8 @@ public class HashMarkPaintable extends RegionPaintable {
         notifyListeners();
     }
 
-    public int getMaxVertSpace() {return 30;}
-    public int getMinVertSpace() {return 10;}
+    public int getMaxVertSpace() {return 25;}
+    public int getMinVertSpace() {return 25;}
     
     /* (non-Javadoc)
      * @see edu.psu.compbio.seqcode.gse.viz.paintable.Paintable#paintItem(java.awt.Graphics, int, int, int, int)
@@ -67,16 +67,12 @@ public class HashMarkPaintable extends RegionPaintable {
         int tickDigits = (int)Math.ceil(Math.log(re / tickSize) / log10) + 1;
         int spaceUsed = fontmetrics.charsWidth(nines,0,tickDigits);
         int spaceAvail = (int) (.5 * w / (rw / ((double)tickSize)));
-        //                System.err.println("tickSize="+ tickSize + "\ntickDigits=" + tickDigits + "\nspaceUsed=" + spaceUsed + 
-        //                                   "\nspaceAvail=" + spaceAvail + "\n");
 
         while(spaceUsed > spaceAvail) {
             tickSize *= 10;
             tickDigits = (int)Math.ceil(Math.log(re / tickSize) / log10) + 1;
             spaceUsed = fontmetrics.charsWidth(nines,0,tickDigits);
             spaceAvail = (int) (.7 * w / (rw / ((double)tickSize)));
-//             System.err.println("tickSize="+ tickSize + "\ntickDigits=" + tickDigits + "\nspaceUsed=" + spaceUsed + 
-//                                "\nspaceAvail=" + spaceAvail + "\n");
         }
 
         tickSize = Math.max(tickSize, 1);
@@ -114,11 +110,8 @@ public class HashMarkPaintable extends RegionPaintable {
                 g.fillRect(xOffset, my, tickPixWidth, hh);
             }
             
-            //if (xOffset > x1 + (axisLabel.length() * g.getFont().getSize())) {
             g.setColor(paintBlack ? Color.white : Color.black);
-            //g.drawString(String.valueOf(bp / tickSize), xOffset, ly);
             g.drawString(String.valueOf(bp / tickSize), xOffset, my + hh - 1);
-            //}
 
             paintBlack = !paintBlack;
         }

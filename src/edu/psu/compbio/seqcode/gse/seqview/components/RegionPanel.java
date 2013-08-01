@@ -19,7 +19,6 @@ import edu.psu.compbio.seqcode.gse.datasets.general.NamedStrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedTypedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.ScoredRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.SpottedProbe;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
@@ -172,7 +171,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		buttonPanel = new JPanel();      
 		mainPanel = new RegionContentPanel();
 		mainPanel.addMouseListener(this);
-		mainPanel.setPreferredSize(new Dimension(getWidth(),1000));//this should be calculated in the layout calc
 		scrollPane = new JScrollPane();
 		scrollPane.setViewportView(mainPanel);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -1108,19 +1106,38 @@ Listener<EventObject>, PainterContainer, MouseListener {
        }
        /* recompute the layout for this panel.  Newly added painters
        will not be visible until you call this method */
-       public void computeLayout(int x, int y, int width, int height) {
-    	   int ypos = height;
-    	   int thickSpace = height;
-    	   int thickCount = 0;
-
+       public int computeLayout(int x, int y, int width, int height) {
+    	   height-=1; //otherwise you always get a scrollbar
     	   Set<String> keyset = painters.keySet();
-    	   HashMap<String,Boolean> thickMap = new HashMap<String,Boolean>();
-
     	   String[] keys = new String[keyset.size()];
     	   int i = 0;
     	   for (String s : painters.keySet()) { keys[i++] = s; }
     	   Arrays.sort(keys,new AddedOrderComparator());
 
+    	   //Find the minimum space required by all tracks
+    	   int minTotalHeight = 0;
+    	   for (i = 0; i < keys.length; i++) {
+    		   String s = keys[i];
+    		   int maxspace = 0;
+    		   ArrayList<RegionPaintable> plist = painters.get(s);
+    		   for (int j = 0; j < plist.size(); j++) {
+    			   int request = plist.get(j).getMinVertSpace();
+    			   if (maxspace < request)
+    				   maxspace = request;
+    		   }
+    		   minTotalHeight+=maxspace;
+    	   }
+    	   boolean fillSpace=false;
+    	   if(minTotalHeight<height)
+    		   fillSpace=true;
+    	   else
+    		   height = minTotalHeight;
+    	   int ypos = height;
+    	   int thickSpace = height;
+    	   int thickCount = 0;
+    	   
+    	   //Find height requests
+    	   HashMap<String,Boolean> thickMap = new HashMap<String,Boolean>();
     	   Hashtable<String,Integer> requests = new Hashtable<String,Integer>();
     	   for (i = 0; i < keys.length; i++) {
     		   String s = keys[i];
@@ -1129,7 +1146,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   ArrayList<RegionPaintable> plist = painters.get(s);
     		   for (int j = 0; j < plist.size(); j++) {
     			   int request = plist.get(j).getMaxVertSpace();
-    			   if (request == -1) {
+    			   if (request == -1 && fillSpace) {
     				   isthick = true;
     				   continue;
     			   } else if (maxspace < request) {
@@ -1137,29 +1154,10 @@ Listener<EventObject>, PainterContainer, MouseListener {
     			   }
     		   }
     		   requests.put(s,maxspace);
-
-    		   /*
-	           if (isthick) {
-	                if (!trackPaintOrderThick.containsKey(s)) {
-	                    trackPaintOrderThick.put(s,trackPaintOrderThick.size() + 1);
-	                }
-	                // make sure the key isn't in both tables if it switched
-	                // from being thin to thick
-	                removeTrackOrder(s,trackPaintOrderThin);
-	           } else {
-	                if (!trackPaintOrderThin.containsKey(s)) {
-	                    trackPaintOrderThin.put(s,trackPaintOrderThin.size() + 1);
-	                }
-	                removeTrackOrder(s,trackPaintOrderThick);
-	           }
-    		   */
-
     		   thickMap.put(s, isthick);
-
     		   if(!trackPaintOrder.containsKey(s)) { 
     			   trackPaintOrder.put(s, trackPaintOrder.size() + 1);
     		   }
-
     	   }
 
     	   for(String s : thickMap.keySet()) {
@@ -1197,7 +1195,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
     			   allocated = requests.get(s);
     		   }
     		   trackSpace.put(s + "_allocated",allocated);
-
     		   ulx.put(s,x);
     		   lrx.put(s,width + x);
 
@@ -1215,6 +1212,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   for (String k : requests.keySet()) {
     		   trackSpace.put(k + "_requested",requests.get(k));
     	   }
+    	   return height;
        }
        
        
@@ -1269,6 +1267,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
     			   }
     		   }
 
+    		   height = computeLayout(x,y,width,height);
+    		   this.setPreferredSize(new Dimension(width, height));
+    		   
     		   if (!canpaint) {
     			   g.setColor(transparentWhite);
     			   g.fillRect(0,0,width,height);
@@ -1276,7 +1277,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   }
     		   g.setColor(Color.WHITE);
     		   g.fillRect(0,0,width,height);
-    		   computeLayout(x,y,width,height);
     		   for (String s : painters.keySet()) {
     			   ArrayList<RegionPaintable> plist = painters.get(s);
     			   for (int i = 0; i < plist.size(); i++) {
