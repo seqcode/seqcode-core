@@ -358,7 +358,9 @@ public class ServerTask {
             if (request.alignid != null) {
                 Lock.readLock(request.alignid);
             }
-            if (request.type.equals("exists")) {
+            if (request.type.equals("ping")) {
+                processPing();
+            }else if (request.type.equals("exists")) {
                 processExists();            
             } else if (request.type.equals("storesingle")) {
                 processSingleStore();
@@ -602,9 +604,15 @@ public class ServerTask {
         acl.writeToFile(server.getACLFileName(request.alignid));
         server.removeACL(request.alignid);
         printString("OK\n");                        
-    }    
+    }
+    /** Get a ping, return a pong
+     */
+    public void processPing() throws IOException {
+        assert(request != null);
+        printString("pong\n");
+    }
     /** reads two lines from socket: alignment id and chromosome id.
-     * returns "exists" or unknown" to indicate whether the 
+     * returns "exists" or "unknown" to indicate whether the 
      * server knows about that pair
      */
     public void processExists() throws IOException {

@@ -110,7 +110,10 @@ public class ReadDB {
         if (cmd.equals("shutdown")) {
             client.shutdown();
         }else if (cmd.equals("isalive")) {
-            System.out.println("TRUE");;
+        	if(client.isAlive())
+        		System.out.println("TRUE");
+        	else
+        		System.out.println("FALSE");
         }  else if (cmd.equals("addtogroup")) {
             // username, groupname
             client.addToGroup(otherargs[1], otherargs[2]);

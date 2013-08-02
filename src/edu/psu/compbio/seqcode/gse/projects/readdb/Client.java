@@ -130,6 +130,21 @@ public class Client implements ReadOnlyClient {
         request = new Request();
         printErrors = false;
     }
+    
+    /** Pings the ReadDB server, 
+     *  returns true if the server pongs 
+     */
+    public boolean isAlive() throws IOException {
+        request.clear(); 
+        request.type="ping";
+        sendString(request.toString());
+        String response = readLine();
+        if (response.equals("pong")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     /**
      * Determines whether the client will print error messages to STDERR.  Useful for debugging 
      * but may produce unwanted screen output.
@@ -389,7 +404,7 @@ public class Client implements ReadOnlyClient {
      * to the user.  Returns false if they don't exist or if they aren't accessible
      */
     public boolean exists(String alignid) throws IOException {
-        request.clear();
+        request.clear(); 
         request.type="exists";
         request.alignid=alignid;
         sendString(request.toString());
@@ -402,6 +417,7 @@ public class Client implements ReadOnlyClient {
             return false;
         }
     }
+    
     /**
      * Deletes an alignment (all chromosomes).  isPaired specifies whether to delete
      * the paired or single ended reads.
