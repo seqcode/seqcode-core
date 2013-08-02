@@ -110,7 +110,7 @@ public class ReadDB {
         if (cmd.equals("shutdown")) {
             client.shutdown();
         }else if (cmd.equals("isalive")) {
-        	if(client.isAlive())
+        	if(client.connectionAlive())
         		System.out.println("TRUE");
         	else
         		System.out.println("FALSE");
