@@ -106,11 +106,11 @@ public class CDSGenePainter extends RegionPaintable {
 
     public int getMaxVertSpace() { 
         int numTracks = layout.getNumTracks();
-        return Math.min(Math.max(40,numTracks * 12),120);
+        return Math.min(Math.max(60,numTracks * 12),120);
     }
     public int getMinVertSpace() { 
         int numTracks = layout.getNumTracks();
-        return Math.min(Math.max(24,numTracks * 12),60);
+        return Math.min(Math.max(60,numTracks * 12),120);
     }
 
     private void setLayoutGenes() {
@@ -135,6 +135,8 @@ public class CDSGenePainter extends RegionPaintable {
         if (!canPaint()) {
             return;
         }
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         boolean drawtracklabel = props.DrawTrackLabel;
         boolean drawgenenames = props.DrawGeneNames;
         boolean drawallgenenames = props.DrawAllGeneNames;
@@ -142,7 +144,7 @@ public class CDSGenePainter extends RegionPaintable {
         int w = x2 - x1, h = y2 - y1;
         int my = y1 + (h / 2);
  
-        int numTracks = Math.max(1, layout.getNumTracks());
+        int numTracks = Math.max(1, layout.getNumTracks()); 
         int trackHeight = Math.max(2, h/(numTracks*2));
         int halfTrackHeight = Math.max(1, trackHeight/2);
         
@@ -150,9 +152,6 @@ public class CDSGenePainter extends RegionPaintable {
         int rs = region.getStart(), re = region.getEnd();
         int rw = re - rs + 1;
         double xScale = (double)w / (double)rw;
-        int[] a = new int[7];
-        int[] b = new int[7];
-        
         clearLabels();
         boolean drewAnything = false;
         
@@ -163,144 +162,157 @@ public class CDSGenePainter extends RegionPaintable {
         FontMetrics fontmetrics = g.getFontMetrics();
         HashSet<String> labels = new HashSet<String>();
         Stroke chevStroke = new BasicStroke(2.0f);
-        //--------------------------------------------------
         
-        		
+        ArrayList<Gene> painted=new ArrayList<Gene>();
         for(Gene gene : genes) {
-            int track = 0;
+        	if(!painted.contains(gene)){
+        		painted.add(gene);
             
-            if(!layout.hasTrack(gene)) { 
-                System.err.println("No track assigned to gene: " + gene.getName());
-            } else { 
-                track = layout.getTrack(gene);
-            }
-
-            int gy1 = y1 + (2 * trackHeight * track);
-            int gy2 = gy1 + trackHeight;
-            int texty = gy2 + trackHeight;
-            int gmy = gy1 + halfTrackHeight;
-            
-            int geneHeight = Math.max(2, (int)Math.floor((double)trackHeight * 0.80));
-            int halfHeight = trackHeight / 2;
-            int halfGeneHeight = geneHeight / 2;
-            
-            int gtop = gmy - (halfGeneHeight/2), gbottom = gtop + (geneHeight/2);
-            int gmid = (gtop+gbottom)/2, ghalfdiff = (gbottom - gtop)/2;
-            int rectheight = gbottom - gtop;
-            
-            int geneStart = gene.getStart(), geneEnd = gene.getEnd();
-            boolean strand = gene.getStrand() == '+';
-            
-            int gx1 = xcoord(geneStart, x1, rs, xScale);
-            int gx2 = xcoord(geneEnd, x1, rs, xScale);
-            int gleft = Math.max(x1, gx1), gright = Math.min(x2, gx2);
-
-            g.setColor(Color.black);
-            g.drawLine(gx1, gmy, gx2, gmy);
-            
-            if(gene instanceof ExonicGene) { 
-                ExonicGene exonGene = (ExonicGene)gene;
-                
-                Iterator<Region> exons = exonGene.getExons();
-                while(exons.hasNext()) { 
-                    Region exon = exons.next();
-                    int ex1 = xcoord(exon.getStart(), x1, rs, xScale);
-                    int ex2 = xcoord(exon.getEnd(), x1, rs, xScale);
-                    int eleft = Math.max(x1, ex1);
-                    int eright = Math.min(x2, ex2);
-
-                    int rectwidth = eright - eleft + 1;
-
-                    //Boxes
-                    g.setColor(Color.GRAY);
-                    g.fillRect(eleft, gtop, rectwidth, gbottom - gtop);
-                    //Direction chevrons
-                    g.setColor(Color.white);
-                    Stroke oldStroke = g.getStroke();
-                    g.setStroke(chevStroke);
-                    for(int c=2; c<rectwidth-2; c+=(ghalfdiff*2)){
-                    	if(strand){
-                    		g.drawLine(eleft+c, gtop, eleft+c+ghalfdiff, gmid);
-                    		g.drawLine(eleft+c, gbottom, eleft+c+ghalfdiff, gmid);
-                    	}else{
-                    		g.drawLine(eleft+c, gmid, eleft+c+ghalfdiff, gtop);
-                    		g.drawLine(eleft+c, gmid, eleft+c+ghalfdiff, gbottom);
-                    	}
-                    }
-                    //Box
-                    g.setStroke(oldStroke);
-                    g.setColor(Color.black);
-                    g.drawRect(eleft, gtop, rectwidth, gbottom - gtop);
-                    
-                    drewAnything = true;
-                }
-                
-            } else {
-                int rectwidth = gright - gleft + 1;
-
-                g.setColor(Color.GRAY);
-                g.fillRect(gleft, gtop, rectwidth, gbottom - gtop);
-                g.setColor(Color.black);
-                g.drawRect(gleft, gtop, rectwidth, gbottom - gtop);
-
-                drewAnything = true;
-            }
-            
-            boolean alwaysDrawNames = props.AlwaysDrawNames;
-            // Somewhat prettier gene-name output
-
-            int fontsize = g.getFont().getSize();
-            int nx = Math.max(x1 + 3, gx1 + 3);  // gotta do the Math.max(), to make sure the name is on the screen.
-
-            //int ny = gmy + (halfGeneHeight / 2) - 2;
-            //int ny = texty;
-            int ny = gmy + (halfGeneHeight/2) + Math.min(fontsize, trackHeight) + 1;
-            
-            int rectwidth = gright - gleft + 1;
-
-            ArrayList<String> aliases = new ArrayList<String>();
-            labels.clear();            
-
-            String first;
-            if (gene.getName().endsWith("Rik")) {
-                first = gene.getID();
-                aliases.add(gene.getName());
-            } else {
-                first = gene.getName();
-                aliases.add(gene.getID());
-            }
-            aliases.addAll(gene.getAliases());
-            String todraw = null;
-            addLabel(gleft,gy1,rectwidth,trackHeight*2,first);
-
-            labels.add(first);
-            if(alwaysDrawNames || first.length() * fontsize < rectwidth) {
-                todraw = first;
-            }
-
-            g.setColor(Color.black);
-            for (String s : aliases) {
-            	if(!s.endsWith("Rik")) { 
-            		String newtodraw = todraw + ", " + s;
-            		if (drawallgenenames && todraw != null && 
-            				fontmetrics.charsWidth((newtodraw).toCharArray(),0,newtodraw.length()) < rectwidth) {
-            			todraw = newtodraw;
-            		}
-
-            		if(!labels.contains(s)) { 
-            			addLabel(gleft,gy1,rectwidth,trackHeight*2,s);
-            			labels.add(s);
-            		}
-            	}
-            }
-
-            if (todraw != null && drawgenenames) {
-                Rectangle2D textrect = fontmetrics.getStringBounds(todraw, g);
-                int diff = (gright-gleft)/2 - (int)Math.round(textrect.getWidth()) / 2;
-                g.drawString(todraw, nx + diff, ny);
-            }
+        		int track = 0;
+	            if(!layout.hasTrack(gene)) { 
+	                System.err.println("No track assigned to gene: " + gene.getName());
+	            } else { 
+	                track = layout.getTrack(gene);
+	            }
+	            
+	            int gy1 = y1 + (2 * trackHeight * track);
+	            int gy2 = gy1 + trackHeight;
+	            int texty = gy2 + trackHeight;
+	            int gmy = gy1 + halfTrackHeight;
+	            
+	            int geneHeight = Math.max(2, (int)Math.floor((double)trackHeight * 0.80));
+	            int halfHeight = trackHeight / 2;
+	            int halfGeneHeight = geneHeight / 2;
+	            
+	            int gtop = gmy - (halfGeneHeight/2), gbottom = gtop + (geneHeight/2);
+	            int gmid = (gtop+gbottom)/2, ghalfdiff = (gbottom - gtop)/2;
+	            int rectheight = gbottom - gtop;
+	            
+	            int geneStart = gene.getStart(), geneEnd = gene.getEnd();
+	            boolean strand = gene.getStrand() == '+';
+	            
+	            int gx1 = xcoord(geneStart, x1, rs, xScale);
+	            int gx2 = xcoord(geneEnd, x1, rs, xScale);
+	            int gleft = Math.max(x1, gx1), gright = Math.min(x2, gx2);
+	
+	            g.setColor(Color.black);
+	            g.drawLine(gx1, gmy, gx2, gmy);
+	            
+	            if(gene instanceof ExonicGene) { 
+	                ExonicGene exonGene = (ExonicGene)gene;
+	                
+	                Iterator<Region> exons = exonGene.getExons();
+	                while(exons.hasNext()) { 
+	                    Region exon = exons.next();
+	                    int ex1 = xcoord(exon.getStart(), x1, rs, xScale);
+	                    int ex2 = xcoord(exon.getEnd(), x1, rs, xScale);
+	                    int eleft = Math.max(x1, ex1);
+	                    int eright = Math.min(x2, ex2);
+	
+	                    int rectwidth = eright - eleft + 1;
+	
+	                    //Boxes
+	                    g.setColor(Color.GRAY);
+	                    g.fillRect(eleft, gtop, rectwidth, gbottom - gtop);
+	                    //Direction chevrons
+	                    g.setColor(Color.white);
+	                    Stroke oldStroke = g.getStroke();
+	                    g.setStroke(chevStroke);
+	                    for(int c=2; c<rectwidth-2; c+=(ghalfdiff*2)){
+	                    	if(strand){
+	                    		g.drawLine(eleft+c, gtop, eleft+c+ghalfdiff, gmid);
+	                    		g.drawLine(eleft+c, gbottom, eleft+c+ghalfdiff, gmid);
+	                    	}else{
+	                    		g.drawLine(eleft+c, gmid, eleft+c+ghalfdiff, gtop);
+	                    		g.drawLine(eleft+c, gmid, eleft+c+ghalfdiff, gbottom);
+	                    	}
+	                    }
+	                    //Box
+	                    g.setStroke(oldStroke);
+	                    g.setColor(Color.black);
+	                    g.drawRect(eleft, gtop, rectwidth, gbottom - gtop);
+	                    
+	                    drewAnything = true;
+	                }
+	                
+	            } else {
+	                int rectwidth = gright - gleft + 1;
+	
+	                g.setColor(Color.GRAY);
+	                g.fillRect(gleft, gtop, rectwidth, gbottom - gtop);
+	                g.setColor(Color.black);
+	                g.drawRect(gleft, gtop, rectwidth, gbottom - gtop);
+	                //Direction chevrons
+	                g.setColor(Color.white);
+	                Stroke oldStroke = g.getStroke();
+	                g.setStroke(chevStroke);
+	                for(int c=2; c<rectwidth-2; c+=(ghalfdiff*2)){
+	                	if(strand){
+	                		g.drawLine(gleft+c, gtop, gleft+c+ghalfdiff, gmid);
+	                		g.drawLine(gleft+c, gbottom, gleft+c+ghalfdiff, gmid);
+	                	}else{
+	                		g.drawLine(gleft+c, gmid, gleft+c+ghalfdiff, gtop);
+	                		g.drawLine(gleft+c, gmid, gleft+c+ghalfdiff, gbottom);
+	                	}
+	                }
+	                drewAnything = true;
+	            }
+	            
+	            boolean alwaysDrawNames = props.AlwaysDrawNames;
+	            // Somewhat prettier gene-name output
+	
+	            int fontsize = g.getFont().getSize();
+	            int nx = Math.max(x1 + 3, gx1 + 3);  // gotta do the Math.max(), to make sure the name is on the screen.
+	
+	            //int ny = gmy + (halfGeneHeight / 2) - 2;
+	            //int ny = texty;
+	            int ny = gmy + (halfGeneHeight/2) + Math.min(fontsize, trackHeight) + 1;
+	            
+	            int rectwidth = gright - gleft + 1;
+	
+	            ArrayList<String> aliases = new ArrayList<String>();
+	            labels.clear();            
+	
+	            String first;
+	            if (gene.getName().endsWith("Rik")) {
+	                first = gene.getID();
+	                aliases.add(gene.getName());
+	            } else {
+	                first = gene.getName();
+	                aliases.add(gene.getID());
+	            }
+	            aliases.addAll(gene.getAliases());
+	            String todraw = null;
+	            addLabel(gleft,gy1,rectwidth,trackHeight*2,first);
+	
+	            labels.add(first);
+	            if(alwaysDrawNames || first.length() * fontsize < rectwidth) {
+	                todraw = first;
+	            }
+	
+	            g.setColor(Color.black);
+	            for (String s : aliases) {
+	            	if(!s.endsWith("Rik")) { 
+	            		String newtodraw = todraw + ", " + s;
+	            		if (drawallgenenames && todraw != null && 
+	            				fontmetrics.charsWidth((newtodraw).toCharArray(),0,newtodraw.length()) < rectwidth) {
+	            			todraw = newtodraw;
+	            		}
+	
+	            		if(!labels.contains(s)) { 
+	            			addLabel(gleft,gy1,rectwidth,trackHeight*2,s);
+	            			labels.add(s);
+	            		}
+	            	}
+	            }
+	
+	            if (todraw != null && drawgenenames) {
+	                Rectangle2D textrect = fontmetrics.getStringBounds(todraw, g);
+	                int diff = (gright-gleft)/2 - (int)Math.round(textrect.getWidth()) / 2;
+	                g.drawString(todraw, nx + diff, ny);
+	            }
+	        }
         }
-        
         g.setFont(oldFont);
     }
     

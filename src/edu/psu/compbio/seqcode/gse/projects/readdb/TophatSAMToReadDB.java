@@ -108,7 +108,7 @@ public class TophatSAMToReadDB {
 		    		   	int rEnd = rStart + rBlock.getLength()-1;
 		    		   	int rLen = rBlock.getLength();
 		                boolean neg = record.getReadNegativeStrandFlag();
-		                String refname = record.getReferenceName() + "\t";
+		                String refname = record.getReferenceName() + "\t"; 
 		    		   	System.out.println(
 		                                   refname +
 		                                   (neg ? lEnd : lStart) + "\t" +

@@ -4,8 +4,6 @@ import java.awt.*;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.ScoredRegion;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.seqview.model.RegionExpanderModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
@@ -52,10 +50,10 @@ public class HeightScoredPainter extends RegionPaintable {
     }    
 
     public int getMaxVertSpace() { 
-        return 20;
+        return 40;
     }
     public int getMinVertSpace() { 
-        return 20;
+        return 40;
     }
     
     public void paintItem(Graphics2D g, 
@@ -71,7 +69,9 @@ public class HeightScoredPainter extends RegionPaintable {
             return;
         }
 
-        g.setColor(Color.BLACK);
+        g.setColor(Color.gray);
+        g.drawRect(x1, y1, x2-x1-1, y2-y1-1);
+        g.setColor(Color.black);
         while (regions.hasNext()) {
             ScoredRegion r = regions.next();
             int minx = getXPos(r.getStart(),
@@ -87,10 +87,10 @@ public class HeightScoredPainter extends RegionPaintable {
             if (maxx == minx) {maxx++;}
             float percent = (float)(r.getScore() / maxScore);
             if (percent > 1) {
-                g.setColor(Color.RED);
+                g.setColor(Color.red);
                 percent = 1;
             } else {
-                g.setColor(Color.BLACK);
+                g.setColor(Color.black);
             }
             int height = (int)((y2 - y1) * percent);
             g.fillRect(minx,y2 - height,maxx-minx,height);

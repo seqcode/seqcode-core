@@ -23,6 +23,12 @@ import edu.psu.compbio.seqcode.gse.utils.*;
  * time you want to layout a set of Regions, call setRegions() with that 
  * Region collection.  Then, for each Region in the collection, you can query to 
  * ask the track that it was laid out on.
+ * 
+ * Mahony note: A disadvantage with this method is that if two regions have the 
+ * same coordinates, they will want to over-write each other (i.e. they will be duplicates 
+ * in the track hashmap). I've tried to fix this by removing duplicate entries from the regions
+ * array, but this may lead to some strange behavior when drawing names that come from different
+ * sources, etc. 
  */
 public class NonOverlappingLayout<X extends Region> {
     
@@ -92,8 +98,12 @@ public class NonOverlappingLayout<X extends Region> {
     public void setRegions(Collection<X> rs) {
         tracks.clear();
         trackMap.clear();
-
-        regions = rs.toArray(new Region[rs.size()]);
+        ArrayList<Region> noDupRegions = new ArrayList<Region>();
+        for(Region x : rs){
+        	if(!noDupRegions.contains(x))
+        		noDupRegions.add(x);
+        }
+        regions = noDupRegions.toArray(new Region[noDupRegions.size()]);
         boolean sorted = true;
         for (int i = 0; i < regions.length - 1; i++) {
             if (regions[i].compareTo(regions[i+1]) > 0) {

@@ -33,6 +33,12 @@ public class ChipSeqAnalysisModel extends SeqViewModel implements RegionModel, R
             }
         }
     }
+    public void resetRegion(Region r) {
+        if (newinput == false) {
+        	region = r;
+        	newinput = true;
+        }
+    }
     public boolean isReady() {return !newinput;}
     public Collection<SeqAnalysisResult> getResults() { return results;}
     public synchronized void run() {

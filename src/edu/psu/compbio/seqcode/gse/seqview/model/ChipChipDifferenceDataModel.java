@@ -155,6 +155,12 @@ public class ChipChipDifferenceDataModel extends SeqViewModel implements Runnabl
             region = r;
         }
     }
+    public synchronized void resetRegion(Region r) {
+        if (newregion == false) {
+            newregion = true;
+            region = r;
+        }
+    }
     
     public Region getRegion() { return region; }
     public boolean isReady() { return !newregion; }

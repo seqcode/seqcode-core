@@ -1106,9 +1106,9 @@ public class Client implements ReadOnlyClient {
 	                synchronized(this.parent){
 	                	if(!connectionAlive()){
 	                		connectionOpen=false;
-	                		System.err.println("ReadDB Client connection closed at:\t"+System.currentTimeMillis());
+	                	//	System.err.println("ReadDB Client connection closed at:\t"+System.currentTimeMillis());
 	                	}else{
-	                		System.err.println("ReadDB Client connection open at:\t"+System.currentTimeMillis()); //Debug
+	                	//	System.err.println("ReadDB Client connection open at:\t"+System.currentTimeMillis()); //Debug
 	                	}
 	                }
 				} catch (InterruptedException e) { 

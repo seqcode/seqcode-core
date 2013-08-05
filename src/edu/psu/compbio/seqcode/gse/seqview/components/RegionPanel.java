@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import java.io.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ExpressionLoader;
@@ -25,6 +24,7 @@ import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.*;
+import edu.psu.compbio.seqcode.gse.ewok.nouns.HarbisonRegCodeRegion;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.expression.LocatedExprMeasurementExpander;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.PerBaseMotifMatch;
@@ -34,6 +34,7 @@ import edu.psu.compbio.seqcode.gse.seqview.paintable.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
+import edu.psu.compbio.seqcode.gse.utils.models.Model;
 
 /* this is all for saveImage() */
 import org.apache.batik.svggen.SVGGraphics2D;
@@ -44,12 +45,12 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-
 
 /**
  *  RegionFrame encapsulates a set of painters that display a particular genomic region
@@ -58,13 +59,15 @@ public class RegionPanel extends JPanel
 implements ActionListener, KeyListener, 
 Listener<EventObject>, PainterContainer, MouseListener {
 
+	//status lives in the parent frame
+	private SeqViewStatus status;
 	// controls at the bottom of the panel
 	private JPanel buttonPanel;
 	private JScrollPane scrollPane;
 	private RegionContentPanel mainPanel;
 	// scrolling controls
-	private JButton leftButton, rightButton, zoomInButton, zoomOutButton, farLeftButton, farRightButton;
-	private JTextField status;
+	private JButton leftButton, rightButton, zoomInButton, zoomOutButton, farLeftButton, farRightButton, refreshButton;
+	private JTextField locationField;
 	// maps a track name to its coordinates in the current layout
 	private Hashtable<String,Integer> ulx, uly, lrx, lry;
 	// maps a track name to the set of painters in that track
@@ -93,20 +96,25 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	private CDSGenePainter cgp = null;
 	private static Color transparentWhite = new Color(255,255,255,80);
 	private boolean forceupdate = false, firstconfig = true;
-
+	private File currDirectory = new File(System.getProperty("user.home"));
+	
 	private Hashtable<RegionPaintable, ArrayList<RegionModel>> painterModelMap = new Hashtable<RegionPaintable, ArrayList<RegionModel>>();
 
 
-	public RegionPanel(Genome g) {
+	public RegionPanel(Genome g, SeqViewStatus s, File currDir) {
 		super();
+		status = s;
+		currDirectory = currDir;
 		init(g);        
 		currentOptions = new SeqViewOptions(g);
 		addPaintersFromOpts(currentOptions);
 		setVisible(true);	
 	}
 
-	public RegionPanel(SeqViewOptions opts) {
+	public RegionPanel(SeqViewOptions opts, SeqViewStatus s, File currDir) {
 		super();
+		status = s;
+		currDirectory = currDir;
 		Genome g = opts.genome;
 		init(g);
 		currentOptions = opts;
@@ -137,7 +145,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			throw new NullPointerException("Need a starting position in either chrom or gene");
 		}
 		if (opts.regionListFile != null) {
-			java.util.List<Region> regions = readRegionsFromFile(g,opts.regionListFile);
+			java.util.List<Region> regions = readRegionsFromFile(g,opts.regionListFile,false);
 			RegionListPanel p = new RegionListPanel(this,
 					regions);
 			RegionListPanel.makeFrame(p);
@@ -191,7 +199,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		farLeftButton.setToolTipText("jump left");
 		farRightButton = new JButton("->>>");
 		farRightButton.setToolTipText("jump right");
-		status = new JTextField();
+		refreshButton = new JButton("R");
+		refreshButton.setToolTipText("refresh");
+		locationField = new JTextField();
 		Dimension buttonSize = new Dimension(30,20);
 		leftButton.setMaximumSize(buttonSize);
 		rightButton.setMaximumSize(buttonSize);
@@ -199,24 +209,27 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		zoomOutButton.setMaximumSize(buttonSize);
 		farLeftButton.setMaximumSize(buttonSize);
 		farRightButton.setMaximumSize(buttonSize);
-		status.setMinimumSize(new Dimension(160,20));
-		status.setPreferredSize(new Dimension(300,20));
+		refreshButton.setMaximumSize(buttonSize);
+		locationField.setMinimumSize(new Dimension(160,20));
+		locationField.setPreferredSize(new Dimension(300,20));
 
 		buttonPanel.add(farLeftButton);
 		buttonPanel.add(leftButton);
 		buttonPanel.add(zoomOutButton);
-		buttonPanel.add(status);
+		buttonPanel.add(locationField);
 		buttonPanel.add(zoomInButton);
 		buttonPanel.add(rightButton);
 		buttonPanel.add(farRightButton);
+		buttonPanel.add(refreshButton);
 
 		leftButton.addActionListener(this);
 		rightButton.addActionListener(this);
-		status.addActionListener(this);
+		locationField.addActionListener(this);
 		zoomInButton.addActionListener(this);
 		zoomOutButton.addActionListener(this);     
 		farLeftButton.addActionListener(this);
 		farRightButton.addActionListener(this);
+		refreshButton.addActionListener(this);
 		buttonPanel.addKeyListener(this);
 		mainPanel.addKeyListener(this);    
 		scrollPane.addKeyListener(this);
@@ -284,7 +297,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			throw new NullPointerException("Need a starting position in either chrom or gene");
 		}
 		if (opts.regionListFile != null) {
-			java.util.List<Region> regions = readRegionsFromFile(genome,opts.regionListFile);
+			java.util.List<Region> regions = readRegionsFromFile(genome,opts.regionListFile,false);
 			RegionListPanel p = new RegionListPanel(this,
 					regions);
 			RegionListPanel.makeFrame(p);
@@ -398,6 +411,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 					p.setLabel(opts.seqExpts.get(i).toString());
 
 					p.addEventListener(this);
+					p.setOption(SeqViewOptions.SEQDATA,opts.seqExpts.get(i));
 					addPainter(p);
 					addModelToPaintable(p,histomod);
 					if(arcmod!=null){
@@ -469,7 +483,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 					ExpressionMeasurementPainter p = new ExpressionMeasurementPainter(model);
 					p.setLabel("Expression");
-					p.setOption(SeqViewOptions.EXPRESSION,null);
+					p.setOption(SeqViewOptions.EXPRESSION,expt);
 
 					p.addEventListener(this);
 					addPainter(p);
@@ -553,6 +567,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			} else if (factory.getProduct().equals("NamedRegion")) {
 				m = new RegionExpanderModel<NamedRegion>((Expander<Region,NamedRegion>)expander);
 				p = new NamedStrandedPainter((RegionExpanderModel<NamedRegion>)m); // yes, this works.  NamedStrandedPainter can handle non-stranded Regions
+			} else if (factory.getProduct().equals("HarbisonRegCodeRegion")) {
+				m = new RegionExpanderModel<HarbisonRegCodeRegion>((Expander<Region,HarbisonRegCodeRegion>)expander);
+				p = new HarbisonRegCodePainter((RegionExpanderModel<HarbisonRegCodeRegion>)m);
 			} else {
 				throw new RuntimeException("Don't understand product type " + factory.getProduct());
 			}
@@ -606,7 +623,10 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 		
 		for (String k : opts.regionTracks.keySet()) {
-			addTrackFromFile(k,opts.regionTracks.get(k));
+			if(k.endsWith(".gff"))
+				addTrackFromFile(k,opts.regionTracks.get(k),true);
+			else
+				addTrackFromFile(k,opts.regionTracks.get(k),false);
 		}
 
 		if (firstconfig) {
@@ -627,6 +647,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
        will remove it from the new options and it won't be re-added) */
 	public void removePainterFromOpts(RegionPaintable p) {
 		switch (p.getOptionKey()) {
+		case SeqViewOptions.SEQDATA:
+			currentOptions.seqExpts.remove(p.getOptionInfo());
 		case SeqViewOptions.GENES:
 			currentOptions.genes.remove(p.getOptionInfo());
 		case SeqViewOptions.NCRNAS:
@@ -751,57 +773,59 @@ Listener<EventObject>, PainterContainer, MouseListener {
 					currentRegion.getEnd() + increment));
 			repaint();
 		}        
-		if (e.getSource() == status) {
-			Region r = regionFromString(genome,status.getText().trim());
+		if (e.getSource() == locationField) {
+			Region r = regionFromString(genome,locationField.getText().trim());
 			if (r != null) {
 				setRegion(r);
 			}
 		}
+		if (e.getSource() == refreshButton) {
+			repaint();
+		}
 	}
-	/* need to finish grabbing the key stuff from GFFPanel */
+	/* need to finish grabbing the key stuff */
 	public void keyPressed(KeyEvent e) {}
 	public void keyReleased(KeyEvent e) {}
 	public void keyTyped(KeyEvent e) {}
-	/* this is a custom String -> int routine that handles suffixes such as k
-       and m */
+	
+	// this is a custom String -> int routine that handles suffixes such as k and m 
+	public void setRegion (Region newRegion) {
+		if (newRegion.getChrom().matches("^chr.*")) {            
+			newRegion = new Region(newRegion.getGenome(),
+					newRegion.getChrom().replaceAll("^chr",""),
+					newRegion.getStart(),
+					newRegion.getEnd());
+		}
+		if (newRegion.getEnd() - newRegion.getStart() < 30) {
+			newRegion = new Region(newRegion.getGenome(),
+					newRegion.getChrom(),
+					newRegion.getStart() - 15,
+					newRegion.getEnd() + 15);
+		}
+		if (newRegion.getStart() < 1) {
+			newRegion = new Region(newRegion.getGenome(),
+					newRegion.getChrom(),
+					1,
+					newRegion.getEnd());
+		}
+		if (newRegion.getEnd() > newRegion.getGenome().getChromLength(newRegion.getChrom())) {
+			newRegion = new Region(newRegion.getGenome(),
+					newRegion.getChrom(),
+					newRegion.getStart(),
+					newRegion.getGenome().getChromLength(newRegion.getChrom()));
+		}
 
-       public void setRegion (Region newRegion) {
-    	   if (newRegion.getChrom().matches("^chr.*")) {            
-    		   newRegion = new Region(newRegion.getGenome(),
-    				   newRegion.getChrom().replaceAll("^chr",""),
-    				   newRegion.getStart(),
-    				   newRegion.getEnd());
-    	   }
-    	   if (newRegion.getEnd() - newRegion.getStart() < 30) {
-    		   newRegion = new Region(newRegion.getGenome(),
-    				   newRegion.getChrom(),
-    				   newRegion.getStart() - 15,
-    				   newRegion.getEnd() + 15);
-    	   }
-    	   if (newRegion.getStart() < 1) {
-    		   newRegion = new Region(newRegion.getGenome(),
-    				   newRegion.getChrom(),
-    				   1,
-    				   newRegion.getEnd());
-    	   }
-    	   if (newRegion.getEnd() > newRegion.getGenome().getChromLength(newRegion.getChrom())) {
-    		   newRegion = new Region(newRegion.getGenome(),
-    				   newRegion.getChrom(),
-    				   newRegion.getStart(),
-    				   newRegion.getGenome().getChromLength(newRegion.getChrom()));
-    	   }
-
-    	   if (!newRegion.equals(currentRegion) || forceupdate) {
-    		   currentRegion = newRegion;
-    		   status.setText(currentRegion.getLocationString());
-
-    		   /* kick the painters here to give them a little extra time
+		if (!newRegion.equals(currentRegion) || forceupdate) {
+			currentRegion = newRegion;
+			locationField.setText(currentRegion.getLocationString());
+			
+			/* kick the painters here to give them a little extra time
                to update their data before we try to paint them */
     		   readyCount = 0;
     		   // set the new region in the paintables
     		   for (RegionPaintable p : allPainters) {
     			   p.setRegion(newRegion);
-    		   }
+    		   	}
     		   // set the new region in the models
     		   // and call notify on them.  This gives a RegionModel
     		   // the option of wait()ing in a separate thread
@@ -833,9 +857,28 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   }
        }
 
-       /* this parses input from the region/location text area and turns it into a region.
-       If the text is parseable as a Region, this is easy.  Otherwise,
-       try to turn it into a gene and use that.
+       public static Region regionFromGFFString(Genome genome, String input){
+    	   String [] pieces = input.split("\t");
+    	   if(!pieces[0].startsWith("#")){
+    		   String chromStr = pieces[0];
+    		   int start = Integer.parseInt(pieces[3].replaceAll(",", ""));
+    		   int end = Integer.parseInt(pieces[4].replaceAll(",", ""));
+    		   if (chromStr.startsWith("chr")) {
+    			   chromStr = chromStr.substring(3, chromStr.length());
+    		   }
+    		   char strand = pieces[6].charAt(0);
+    		   if(strand=='.')
+    			   return new Region(genome, chromStr, start, end);
+    		   else
+    			   return new StrandedRegion(genome, chromStr, start, end, strand);
+    	   }else{
+    		   return null;
+    	   }
+       }
+       
+       /* This parses input from the region/location text area and turns it into a region.
+       	  If the text is parseable as a Region, this is easy.  Otherwise,
+       	  try to turn it into a gene and use that.
         */
        public static Region regionFromString(Genome genome, String input) {
     	   String trimmed = input.trim().replaceAll("\\s+","");        
@@ -855,7 +898,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
     			   Iterator<Gene> iter = generator.byName(trimmed);
     			   if (iter.hasNext()) {
     				   Gene gene = iter.next();
-    				   return gene;
+    				   return new Region(gene.getGenome(),
+							   gene.getChrom(),
+							   gene.getStart(), gene.getEnd());
     			   }
     			   RegionExpanderFactoryLoader<Gene> gfLoader = new RegionExpanderFactoryLoader<Gene>("gene");
     			   for(String type : gfLoader.getTypes(genome)) {
@@ -880,13 +925,13 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   }
     	   return r;
        }
-       public static java.util.List<Region> readRegionsFromFile(Genome g, String filename) {
+       public static java.util.List<Region> readRegionsFromFile(Genome g, String filename, boolean isGFF) {
     	   ArrayList<Region> regions = new ArrayList<Region>();
     	   try {
     		   BufferedReader r = new BufferedReader(new FileReader(filename));
     		   String s;
     		   while ((s = r.readLine()) != null) {
-    			   Region region = regionFromString(g,s);
+    			   Region region = isGFF ? regionFromGFFString(g,s) : regionFromString(g,s);
     			   if (region != null) {
     				   regions.add(region);
     			   } else {
@@ -1077,6 +1122,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   readyCount++;
     		   if (readyCount >= painterCount) {
     			   repaint();
+    			   status.setStatus("Ready", Color.black);
+    		   }else{
+    			   status.setStatus("Waiting for data (received "+readyCount+"/"+painterCount+")", Color.red);
     		   }
     	   }
        }
@@ -1194,20 +1242,21 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   }
        }
 
-       public void addTrackFromFile() {
+       public void addTrackFromFile(boolean isGFF) {
     	   JFileChooser chooser;
-    	   chooser = new JFileChooser(new File(System.getProperty("user.dir")));
+    	   chooser = new JFileChooser(currDirectory);
     	   int v = chooser.showOpenDialog(null);
     	   if(v == JFileChooser.APPROVE_OPTION) { 
     		   File f = chooser.getSelectedFile();
-    		   addTrackFromFile(f.getAbsolutePath(),
-    				   f.getName());
+    		   currDirectory = chooser.getCurrentDirectory();
+    		   addTrackFromFile(f.getAbsolutePath(), f.getName(), isGFF);
     	   }
        }
-       public void addTrackFromFile(String fname, String trackname) {
+       public void addTrackFromFile(String fname, String trackname, boolean isGFF) {
     	   System.err.println("Adding " + fname + " with name " + trackname);
+    	   status.setStatus("Adding track from "+fname, Color.red);
     	   try {
-    		   java.util.List<Region> regions = readRegionsFromFile(genome,fname);
+    		   java.util.List<Region> regions = readRegionsFromFile(genome,fname,isGFF);
     		   StaticExpander<Region,Region> expander = new StaticExpander<Region,Region>(regions);
     		   RegionExpanderModel<Region> model = new RegionExpanderModel<Region>(expander);
     		   addModel(model);
@@ -1217,10 +1266,12 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   p.setLabel(trackname);
     		   p.addEventListener(this);
     		   addPainter(p);
+    		   setRegion(currentRegion);
+    		   this.forceModelUpdate();
     	   } catch (Exception e) {
     		   e.printStackTrace();
+    		   status.setStatus("Error adding track from "+fname, Color.red);
     	   }
-
        }
 
        private class HashtableComparator implements Comparator<String> {
@@ -1312,12 +1363,13 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   private RegionPanel panel;
     	   public SaveAllPrefsActionListener (RegionPanel p) {this.panel = p;}
     	   public void actionPerformed(ActionEvent e) {
-    		   JFileChooser chooser = new JFileChooser(new File(System.getProperty("user.dir")));
+    		   JFileChooser chooser = new JFileChooser(currDirectory);
     		   chooser.setDialogTitle("Save preferences to...");
     		   chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     		   int returnVal = chooser.showSaveDialog(null);
     		   if (returnVal == JFileChooser.APPROVE_OPTION) {
     			   File f = chooser.getSelectedFile();
+    			   currDirectory = chooser.getCurrentDirectory();
     			   for (String k : painters.keySet()) {
     				   for (RegionPaintable p : painters.get(k)) {
     					   p.savePropsInDir(f);
@@ -1330,12 +1382,13 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   private RegionPanel panel;
     	   public LoadAllPrefsActionListener (RegionPanel p) {this.panel = p;}
     	   public void actionPerformed(ActionEvent e) {
-    		   JFileChooser chooser = new JFileChooser(new File(System.getProperty("user.dir")));
+    		   JFileChooser chooser = new JFileChooser(currDirectory);
     		   chooser.setDialogTitle("Load preferences from...");
     		   chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     		   int returnVal = chooser.showOpenDialog(null);
     		   if (returnVal == JFileChooser.APPROVE_OPTION) {
     			   File f = chooser.getSelectedFile();
+    			   currDirectory = chooser.getCurrentDirectory();
     			   for (String k : painters.keySet()) {
     				   for (RegionPaintable p : painters.get(k)) {
     					   p.loadPropsInDir(f);
@@ -1452,10 +1505,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
        public void configureTrack(String track) {
     	   if (painters.containsKey(track)) {
-    		   HashSet<SeqViewProperties> props = new HashSet<SeqViewProperties>();
+    		   ArrayList<SeqViewProperties> props = new ArrayList<SeqViewProperties>();
     		   ArrayList<RegionPaintable> plist = painters.get(track);            
     		   for (RegionPaintable p : plist) {                
-    			   System.err.println("looking at painter " +p);
     			   props.add(p.getProperties());
     			   if (painterModelMap.get(p) == null) {
     				   continue;
@@ -1464,10 +1516,48 @@ Listener<EventObject>, PainterContainer, MouseListener {
     				   props.add(m.getProperties());
     			   }
     		   }
-    		   SeqViewProperties.configure(props,this);
+    		   SeqViewProperties.configure(props,this, false);
     	   }
        }
 
+       /**
+        * Batch configure all SeqHistogram tracks
+        */
+       public void configSeqDataTracksBatch(){
+    	   ArrayList<SeqViewProperties> props = new ArrayList<SeqViewProperties>();
+    	   SeqDataBatchProperties batchProp = new SeqDataBatchProperties();
+    	   batchProp.loadDefaults();
+    	   props.add(batchProp);
+    	   SeqViewProperties.configure(props,this, true);
+       }
+       
+       public void batchUpdateModels(Collection<? extends Model> models){
+		   for(RegionPaintable p : allPainters){
+    		   PaintableProperties currProps = p.getProperties();
+    		   
+    		   for(Model i : models){
+    			   currProps.setFromModel(i);
+    			   if (painterModelMap.get(p) != null) {
+        			   for (RegionModel m : painterModelMap.get(p)) {
+        				   ModelProperties modProps = m.getProperties();
+        				   modProps.setFromModel(i);
+        			   }
+        		   }
+
+    		   }
+		   }
+       }
+       
+       public void forceModelUpdate(){
+    	   for (RegionModel m : allModels) {
+			   synchronized(m) {
+				   m.resetRegion(currentRegion);
+				   m.notifyAll();
+			   }
+		   }
+		   repaint(); 
+       }
+ 
        public void mouseClicked(MouseEvent e) {
     	   //        System.err.println("CLICK " + e);
     	   if (e.getButton() == MouseEvent.BUTTON3 || e.isPopupTrigger()) {

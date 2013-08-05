@@ -51,6 +51,12 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
             }
         }
     }
+    public void resetRegion(Region r) {
+        if (newinput == false) {
+        	region = r;
+        	newinput = true;
+        }
+    }
     public List<PairedHit> getResults () {return results;}
     public List<PairedHit> getOtherChromResults() {return otherchrom;}
     public boolean isReady() {return !newinput;}

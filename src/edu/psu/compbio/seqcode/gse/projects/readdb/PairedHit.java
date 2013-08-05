@@ -94,6 +94,21 @@ public class PairedHit implements Comparable<PairedHit> {
     		return leftChrom > rightChrom ? leftStrand : rightStrand;
     	}
     }
+    public int lesserLength() {
+    	if (leftChrom == rightChrom) {
+    		return leftPos < rightPos ? leftLength : rightLength;
+    	} else {
+    		return leftChrom < rightChrom ? leftLength : rightLength;
+    	}
+    }
+    
+    public int greaterLength() {
+    	if (leftChrom == rightChrom) {
+    		return leftPos > rightPos ? leftLength : rightLength;
+    	} else {
+    		return leftChrom > rightChrom ? leftLength : rightLength;
+    	}
+    }
     
     public PairedHit flippedCopy() {
     	return new PairedHit(rightChrom, rightPos, rightStrand, rightLength, leftChrom, leftPos, leftStrand, leftLength, weight, pairCode);

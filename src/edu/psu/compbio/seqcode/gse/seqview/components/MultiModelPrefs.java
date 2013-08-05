@@ -11,20 +11,23 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
-import java.lang.reflect.*;
 
 import edu.psu.compbio.seqcode.gse.utils.models.*;
 import edu.psu.compbio.seqcode.gse.viz.eye.*;
 
 public class MultiModelPrefs extends JFrame {
 	
+	private Collection<? extends Model> models;
 	private ArrayList<PrefsPanel<Model>> panels;
 	private JButton ok, cancel;
-    private JPanel regionpanel;
+    private RegionPanel regionpanel;
+    private boolean batch=false; //allows prefs to be broadcast to all appropriate tracks in region panel
 	
-	public MultiModelPrefs(Collection<? extends Model> models, JPanel rp) { 
-		super("Preferences");
-        regionpanel = rp;
+	public MultiModelPrefs(Collection<? extends Model> models, RegionPanel rp, boolean batchUpdate) { 
+		super(batchUpdate ? "Batch Update Preferences" : "Update Track Preferences");
+        this.models = models;
+		regionpanel = rp;
+        batch = batchUpdate;
         Container c = (Container)getContentPane();
 		c.setLayout(new BorderLayout());
         panels = new ArrayList<PrefsPanel<Model>>();
@@ -53,7 +56,6 @@ public class MultiModelPrefs extends JFrame {
         if (!panels.isEmpty()) {
             JScrollPane pane = new JScrollPane(mainpanel);
             pane.setPreferredSize(new Dimension(700,height));
-            System.err.println("preferred size is " + mainpanel.getPreferredSize());
             c.add(pane, BorderLayout.CENTER);
             JPanel buttons = new JPanel();
             buttons.setLayout(new FlowLayout());
@@ -69,7 +71,7 @@ public class MultiModelPrefs extends JFrame {
 	}
 	
 	public Action createOkAction() { 
-		return new AbstractAction("Ok") { 
+		return new AbstractAction("OK") { 
 			public void actionPerformed(ActionEvent e) { 
 				ok();
 			}
@@ -89,7 +91,12 @@ public class MultiModelPrefs extends JFrame {
             p.saveToModel();            
         }
         dispose();
-		wakeWaiters();
+        if(batch){
+        	regionpanel.batchUpdateModels(models);
+        }else{
+        	wakeWaiters();
+        }
+        regionpanel.forceModelUpdate();
         regionpanel.repaint();
 	}
 	

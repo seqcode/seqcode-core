@@ -15,7 +15,8 @@ public class FileBasedTracksPanel extends JPanel implements ActionListener {
     private java.util.List<JTextField> fnames, labels;
     private java.util.List<JButton> browseButtons;
     private GridBagLayout layout;
-
+    private File currDirectory = new File(System.getProperty("user.home"));
+    
     public FileBasedTracksPanel() {
         super();
         fnames = new ArrayList<JTextField>();
@@ -79,10 +80,11 @@ public class FileBasedTracksPanel extends JPanel implements ActionListener {
             return;
         }       
         JFileChooser chooser;
-        chooser = new JFileChooser(new File(System.getProperty("user.dir")));
+        chooser = new JFileChooser(currDirectory);
         int v = chooser.showOpenDialog(null);
         if(v == JFileChooser.APPROVE_OPTION) { 
             File f = chooser.getSelectedFile();
+            currDirectory = chooser.getCurrentDirectory();
             fnames.get(index).setText(f.getAbsolutePath());
         }
     }

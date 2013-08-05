@@ -22,20 +22,21 @@ import java.sql.SQLException;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-/* abstract superclass for all Paintables in SeqView. 
-
-The SeqView framework uses two key classes of objects: SeqViewPaintables and SeqViewModels.  The 
-model is the datasource.  It queries some underlying data stream (eg, in response to setRegion calls) 
-and when the data has been retrieved and processed, it notifies the paintables that use the model.  When
-all of a paintable's models are ready, the paintable notifies the enclosing container, which will
-call the paint method on the paintable(s). 
-
-Most models and paintables inherit from RegionPaintable and RegionModel to display data across a genomic region.
-However, the Model/Paintable system is not specific to that case.
-
-Each model is typically run in a separate thread to improve the overall response time and to prevent the UI
-thread from hanging on reltaively long-running database queries.  */
-
+/**
+ * SeqViewPaintable: abstract superclass for all Paintables in SeqView. 
+ * 
+ * The SeqView framework uses two key classes of objects: SeqViewPaintables and SeqViewModels.  The 
+ * model is the datasource.  It queries some underlying data stream (eg, in response to setRegion calls) 
+ * and when the data has been retrieved and processed, it notifies the paintables that use the model.  When
+ * all of a paintable's models are ready, the paintable notifies the enclosing container, which will
+ * call the paint method on the paintable(s). 
+ * 
+ * Most models and paintables inherit from RegionPaintable and RegionModel to display data across a genomic region.
+ * However, the Model/Paintable system is not specific to that case.
+ * 
+ * Each model is typically run in a separate thread to improve the overall response time and to prevent the UI
+ * thread from hanging on relatively long-running database queries.  
+ */
 public abstract class SeqViewPaintable implements VizPaintable, Listener<EventObject>, EventSource<EventObject>, MouseListener {
 
     /* Listeners are objects that are waiting on the paintable.  When the
@@ -194,8 +195,8 @@ public abstract class SeqViewPaintable implements VizPaintable, Listener<EventOb
     public void mouseReleased(MouseEvent e) {}
 
     /* the option information stores the field (eg bindingScans, bayesresults)
-       and value from that field that created this WarpPaintable.  We need to keep
-       this information so that a container of WarpPaintables can update a WarpOptions
+       and value from that field that created this SeqViewPaintable.  We need to keep
+       this information so that a container of SeqViewPaintables can update a SeqViewOptions
        structure when a paintable is removed. */ 
     public void setOption(int key, Object info) {
         optionKey = key;
