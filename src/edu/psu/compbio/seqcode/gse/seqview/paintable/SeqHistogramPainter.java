@@ -63,10 +63,12 @@ public class SeqHistogramPainter extends RegionPaintable {
 		return histomodel.isReady() && (arcmodel==null || arcmodel.isReady());
 	}
 	public synchronized void eventRegistered(EventObject e) {        
-		if (e.getSource() == histomodel && histomodel.isReady()) {
-			setCanPaint(true);
-			setWantsPaint(true);
-			notifyListeners();
+		if (e.getSource() == histomodel || (arcmodel!=null && e.getSource() == arcmodel )) {
+			if(histomodel.isReady() && (arcmodel==null || arcmodel.isReady())){
+				setCanPaint(true);
+				setWantsPaint(true);
+				notifyListeners();
+			}
 		}
 	}
 	//pre-calculate and store the Guassian kernel prob., for efficiency

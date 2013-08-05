@@ -94,7 +94,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	//private MultiGenePainter mgp = null;
 	private ExonGenePainter egp = null;
 	private CDSGenePainter cgp = null;
-	private static Color transparentWhite = new Color(255,255,255,80);
+	private static Color transparentWhite = new Color(255,255,255,100);
+	private static boolean paintedTransparent=false;
 	private boolean forceupdate = false, firstconfig = true;
 	private File currDirectory = new File(System.getProperty("user.home"));
 	
@@ -836,7 +837,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     				   m.notifyAll();
     			   }
     		   }
-    		   repaint();            
+    		   //repaint();
     	   }
        }
        
@@ -1122,6 +1123,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   readyCount++;
     		   if (readyCount >= painterCount) {
     			   repaint();
+    			   System.out.println("Ready repaint");
     			   status.setStatus("Ready", Color.black);
     		   }else{
     			   status.setStatus("Waiting for data (received "+readyCount+"/"+painterCount+")", Color.red);
@@ -1166,15 +1168,21 @@ Listener<EventObject>, PainterContainer, MouseListener {
     				   canpaint = canpaint && plist.get(i).canPaint();
     			   }
     		   }
-
+    		   System.out.println("Painting RegionContentPanel, canpaint= "+canpaint);
     		   height = computeLayout(x,y,width,height);
     		   this.setPreferredSize(new Dimension(width, height));
-    		   
+
     		   if (!canpaint) {
-    			   g.setColor(transparentWhite);
-    			   g.fillRect(0,0,width,height);
+    			   if(!paintedTransparent){
+    				   g.setColor(transparentWhite);
+    				   paintedTransparent=true;
+    				   System.out.println("painted transparent");
+    				   g.fillRect(0,0,width,height);
+    			   }
     			   return;
     		   }
+    		   System.out.println("Painting");
+    		   paintedTransparent=false;
     		   g.setColor(Color.WHITE);
     		   g.fillRect(0,0,width,height);
     		   for (String s : painters.keySet()) {
