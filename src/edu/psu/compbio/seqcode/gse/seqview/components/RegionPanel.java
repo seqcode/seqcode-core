@@ -28,6 +28,7 @@ import edu.psu.compbio.seqcode.gse.ewok.nouns.HarbisonRegCodeRegion;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.expression.LocatedExprMeasurementExpander;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.PerBaseMotifMatch;
+import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.seqview.*;
 import edu.psu.compbio.seqcode.gse.seqview.model.*;
 import edu.psu.compbio.seqcode.gse.seqview.paintable.*;
@@ -63,7 +64,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	private SeqViewStatus status;
 	// controls at the bottom of the panel
 	private JPanel buttonPanel;
-	private JScrollPane scrollPane;
+	private JScrollPane scrollPane=null;
 	private RegionContentPanel mainPanel;
 	// scrolling controls
 	private JButton leftButton, rightButton, zoomInButton, zoomOutButton, farLeftButton, farRightButton, refreshButton;
@@ -95,12 +96,11 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	private ExonGenePainter egp = null;
 	private CDSGenePainter cgp = null;
 	private static Color transparentWhite = new Color(255,255,255,100);
-	private static boolean paintedTransparent=false;
+	private static boolean paintedTransparent=false, firstPaint=true;
 	private boolean forceupdate = false, firstconfig = true;
 	private File currDirectory = new File(System.getProperty("user.home"));
-	
 	private Hashtable<RegionPaintable, ArrayList<RegionModel>> painterModelMap = new Hashtable<RegionPaintable, ArrayList<RegionModel>>();
-
+	private Thread connectionChecker;
 
 	public RegionPanel(Genome g, SeqViewStatus s, File currDir) {
 		super();
@@ -109,7 +109,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		init(g);        
 		currentOptions = new SeqViewOptions(g);
 		addPaintersFromOpts(currentOptions);
-		setVisible(true);	
+		setVisible(true);
+		connectionChecker = new Thread(new CheckOpenConnectionsThread(this));
+		connectionChecker.start();
 	}
 
 	public RegionPanel(SeqViewOptions opts, SeqViewStatus s, File currDir) {
@@ -121,6 +123,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		currentOptions = opts;
 		addPaintersFromOpts(currentOptions);
 		setVisible(true);
+		connectionChecker = new Thread(new CheckOpenConnectionsThread(this));
+		connectionChecker.start();
 		//Find our initial region.
 		Region startingRegion = null;
 		if (opts.gene != null && opts.gene.matches("...*")) {
@@ -157,6 +161,15 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		for(RegionPaintable rp : allPainters) { 
 			rp.cleanup();
 		}
+		synchronized(allModels){
+			for (RegionModel m : allModels) {
+				synchronized(m) {
+					m.stopRunning();
+			   	}
+	 	   	}
+		}
+		closed=true;
+		connectionChecker.interrupt();
 	}
 
 	public void init(Genome g) {
@@ -178,16 +191,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		currentRegion = new Region(g,"1",1,1000);
 
 		buttonPanel = new JPanel();      
-		mainPanel = new RegionContentPanel();
-		mainPanel.addMouseListener(this);
-		scrollPane = new JScrollPane();
-		scrollPane.setViewportView(mainPanel);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-		setLayout(new BorderLayout());
-		buttonPanel.setLayout(new GridBagLayout());        
-
+		buttonPanel.setLayout(new GridBagLayout());  
 		leftButton = new JButton("<-");
 		leftButton.setToolTipText("step left");
 		rightButton = new JButton("->");
@@ -223,6 +227,18 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		buttonPanel.add(farRightButton);
 		buttonPanel.add(refreshButton);
 
+		mainPanel = new RegionContentPanel();
+		mainPanel.addMouseListener(this);
+		
+		scrollPane = new JScrollPane();
+		scrollPane.setViewportView(mainPanel);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+		
+		mainPanel.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
+		mainPanel.setPreferredSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
+		
 		leftButton.addActionListener(this);
 		rightButton.addActionListener(this);
 		locationField.addActionListener(this);
@@ -234,10 +250,11 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		buttonPanel.addKeyListener(this);
 		mainPanel.addKeyListener(this);    
 		scrollPane.addKeyListener(this);
+		
+		setLayout(new BorderLayout());
 		setBackground(Color.WHITE);
-		//add(mainPanel,BorderLayout.CENTER);
 		add(scrollPane,BorderLayout.CENTER);
-		add(buttonPanel, BorderLayout.SOUTH);
+		add(buttonPanel, BorderLayout.SOUTH);	
 	}
 	
 	/**
@@ -246,10 +263,12 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	 */
 	public void reinit(SeqViewOptions opts) {
 		//Cleanup
-		for (RegionModel m : allModels) {
-			synchronized(m) {
-				m.stopRunning();
-				m.notifyAll();
+		synchronized(allModels) {
+			for (RegionModel m : allModels) {
+				synchronized(m){
+					m.stopRunning();
+					m.notifyAll();
+				}
  		   	}
  	   	}
 		try {
@@ -648,20 +667,20 @@ Listener<EventObject>, PainterContainer, MouseListener {
        will remove it from the new options and it won't be re-added) */
 	public void removePainterFromOpts(RegionPaintable p) {
 		switch (p.getOptionKey()) {
-		case SeqViewOptions.SEQDATA:
-			currentOptions.seqExpts.remove(p.getOptionInfo());
-		case SeqViewOptions.GENES:
-			currentOptions.genes.remove(p.getOptionInfo());
-		case SeqViewOptions.NCRNAS:
-			currentOptions.ncrnas.remove(p.getOptionInfo());
-		case SeqViewOptions.OTHERANNOTS:
-			currentOptions.otherannots.remove(p.getOptionInfo());
-		case SeqViewOptions.AGILENTDATA:
-			currentOptions.agilentdata.remove(p.getOptionInfo());
-		case SeqViewOptions.SEQLETTERS:
-			currentOptions.seqletters = false;
-		case SeqViewOptions.GCCONTENT:
-			currentOptions.gccontent = false;            
+			case SeqViewOptions.SEQDATA:
+				currentOptions.seqExpts.remove(p.getOptionInfo());
+			case SeqViewOptions.GENES:
+				currentOptions.genes.remove(p.getOptionInfo());
+			case SeqViewOptions.NCRNAS:
+				currentOptions.ncrnas.remove(p.getOptionInfo());
+			case SeqViewOptions.OTHERANNOTS:
+				currentOptions.otherannots.remove(p.getOptionInfo());
+			case SeqViewOptions.AGILENTDATA:
+				currentOptions.agilentdata.remove(p.getOptionInfo());
+			case SeqViewOptions.SEQLETTERS:
+				currentOptions.seqletters = false;
+			case SeqViewOptions.GCCONTENT:
+				currentOptions.gccontent = false;            
 		}
 	}
 
@@ -723,60 +742,61 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	public void actionPerformed(ActionEvent e) { 
 		if(e.getSource() == leftButton) { 
 			int increment = (int)(currentRegion.getWidth() * .25);
+			mainPanel.paintTransBlock(this.getGraphics());
 			setRegion(new Region(currentRegion.getGenome(),
 					currentRegion.getChrom(),
 					currentRegion.getStart() - increment,
 					currentRegion.getEnd() - increment ));
-			repaint();
 		}
 
 		if(e.getSource() == rightButton) { 
 			int increment = (int)(currentRegion.getWidth() * .25);
+			mainPanel.paintTransBlock(this.getGraphics());
 			setRegion(new Region(currentRegion.getGenome(),
 					currentRegion.getChrom(),
 					currentRegion.getStart() + increment,
 					currentRegion.getEnd() + increment ));
-			repaint();
 		}
 
 		if (e.getSource() == farLeftButton) {
 			int increment = (int)(currentRegion.getWidth() * .85);
+			mainPanel.paintTransBlock(this.getGraphics());
 			setRegion(new Region(currentRegion.getGenome(),
 					currentRegion.getChrom(),
 					currentRegion.getStart() - increment,
 					currentRegion.getEnd() - increment ));
-			repaint();
 		}
 
 		if (e.getSource() == farRightButton) {
 			int increment = (int)(currentRegion.getWidth() * .85);
+			mainPanel.paintTransBlock(this.getGraphics());
 			setRegion(new Region(currentRegion.getGenome(),
 					currentRegion.getChrom(),
 					currentRegion.getStart() + increment,
 					currentRegion.getEnd() + increment ));
-			repaint();
 		}
 
 		if(e.getSource() == zoomInButton) { 
 			int increment = (int)(currentRegion.getWidth() * .25);
+			mainPanel.paintTransBlock(this.getGraphics());
 			setRegion(new Region(currentRegion.getGenome(),
 					currentRegion.getChrom(),
 					currentRegion.getStart() + increment,
 					currentRegion.getEnd() - increment));
-			repaint();
 		}
 
 		if(e.getSource() == zoomOutButton) { 
 			int increment = (int)(currentRegion.getWidth() * .5);
+			mainPanel.paintTransBlock(this.getGraphics());
 			setRegion(new Region(currentRegion.getGenome(),
 					currentRegion.getChrom(),
 					currentRegion.getStart() - increment,
 					currentRegion.getEnd() + increment));
-			repaint();
 		}        
 		if (e.getSource() == locationField) {
 			Region r = regionFromString(genome,locationField.getText().trim());
 			if (r != null) {
+				mainPanel.paintTransBlock(this.getGraphics());
 				setRegion(r);
 			}
 		}
@@ -831,34 +851,42 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   // and call notify on them.  This gives a RegionModel
     		   // the option of wait()ing in a separate thread
     		   // if it so desires.
-    		   for (RegionModel m : allModels) {
-    			   synchronized(m) {
-    				   m.setRegion(newRegion);
-    				   m.notifyAll();
-    			   }
+    		   synchronized(allModels){
+	    		   for (RegionModel m : allModels) {
+	    			   synchronized(m) {
+	    				   m.setRegion(newRegion);
+	    				   m.notifyAll();
+	    			   }
+	    		   }
     		   }
     		   //repaint();
-    	   }
-       }
+		}
+	}
        
-       public boolean isClosed(){return closed;}
+	public boolean isClosed(){return closed;}
        
-       public void close() { 
-    	   for (RegionModel m : allModels) {
-    		   synchronized(m) {
-    			   m.stopRunning();
-    			   m.notifyAll();
-    		   }
-    	   }
-    	   closed=true;
-    	   try {
-    		   Thread.sleep(400);
-    	   } catch (Exception e) {
+	public void close() { 
+		synchronized(allModels){
+			for (RegionModel m : allModels) {
+				synchronized(m) {
+					m.stopRunning();
+					m.notifyAll();
+			   	}
+	 	   	}
+		}
+		for(RegionPaintable rp : allPainters) { 
+			rp.cleanup();
+		}
+		connectionChecker.interrupt();
+		closed=true;
+		try {
+			Thread.sleep(400);
+		} catch (Exception e) {
+			
+		}
+	}
 
-    	   }
-       }
-
-       public static Region regionFromGFFString(Genome genome, String input){
+	public static Region regionFromGFFString(Genome genome, String input){
     	   String [] pieces = input.split("\t");
     	   if(!pieces[0].startsWith("#")){
     		   String chromStr = pieces[0];
@@ -875,7 +903,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   }else{
     		   return null;
     	   }
-       }
+	}
        
        /* This parses input from the region/location text area and turns it into a region.
        	  If the text is parseable as a Region, this is easy.  Otherwise,
@@ -962,6 +990,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   painters.get(p.getLabel()).add(p);
     	   p.getProperties().loadDefaults();
     	   allPainters.add(p);
+    	   
        }
 
        public void changePainter(RegionPaintable oldPainter, RegionPaintable newPainter) {
@@ -986,7 +1015,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   if (m == null) {
     		   throw new NullPointerException("Don't you give me a null model");
     	   }
-    	   allModels.add(m);
+    	   synchronized(allModels){
+    		   allModels.add(m);
+    	   }
        }
        public void addModelToPaintable(RegionPaintable p, RegionModel m) {
     	   if (painterModelMap.get(p) == null) {
@@ -1000,7 +1031,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   ArrayList<RegionModel> l = painterModelMap.get(k);
     		   l.remove(m);
     	   }
-    	   allModels.remove(m);
+    	   synchronized(allModels){
+    		   allModels.remove(m);
+    	   }
        }
        /* recompute the layout for this panel.  Newly added painters
        will not be visible until you call this method */
@@ -1123,7 +1156,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   readyCount++;
     		   if (readyCount >= painterCount) {
     			   repaint();
-    			   System.out.println("Ready repaint");
     			   status.setStatus("Ready", Color.black);
     		   }else{
     			   status.setStatus("Waiting for data (received "+readyCount+"/"+painterCount+")", Color.red);
@@ -1132,8 +1164,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
        }
 
        public void paintComponent(Graphics g) {
-    	   //scrollPane.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
-    	   mainPanel.setSize(new Dimension(getWidth(),getHeight()-buttonPanel.getHeight()));
+    	   int oheight = scrollPane.getViewport().getHeight();
+    	   int mheight = computeLayout(getX(),getY(),getWidth(),oheight);
+    	   mainPanel.setPreferredSize(new Dimension(getWidth(), mheight));
        }
 
        public boolean allCanPaint() {
@@ -1150,6 +1183,15 @@ Listener<EventObject>, PainterContainer, MouseListener {
        class RegionContentPanel extends JPanel {
     	   private Hashtable painted = new Hashtable<Object,Boolean>();
 
+    	   //Transparent block when transitioning
+    	   public void paintTransBlock(Graphics g){
+    		   if(!paintedTransparent){
+				   g.setColor(transparentWhite);
+				   paintedTransparent=true;
+				   g.fillRect(0,0,mainPanel.getWidth(),mainPanel.getHeight());
+			   }
+    	   }
+    	   
     	   public void paintComponent(Graphics g) {
     		   paintComponent(g,mainPanel.getX(),mainPanel.getY(),
     				   mainPanel.getWidth(),mainPanel.getHeight());
@@ -1157,8 +1199,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
     	   public void paintComponent(Graphics g, int x, int y, int width, int height) {
     		   /* two passes: first make sure everyone can paint.  
-               If everyone is ready, call computeLayout (in case anyone's space
-               request changed based on the amount of data they have) and
                then do the painting */
     		   Graphics2D graphics = (Graphics2D) g;
     		   boolean canpaint = true;
@@ -1168,43 +1208,32 @@ Listener<EventObject>, PainterContainer, MouseListener {
     				   canpaint = canpaint && plist.get(i).canPaint();
     			   }
     		   }
-    		   System.out.println("Painting RegionContentPanel, canpaint= "+canpaint);
-    		   height = computeLayout(x,y,width,height);
-    		   this.setPreferredSize(new Dimension(width, height));
-
     		   if (!canpaint) {
     			   if(!paintedTransparent){
     				   g.setColor(transparentWhite);
     				   paintedTransparent=true;
-    				   System.out.println("painted transparent");
     				   g.fillRect(0,0,width,height);
     			   }
     			   return;
     		   }
-    		   System.out.println("Painting");
+    		   //If we're here, everyone can paint
     		   paintedTransparent=false;
     		   g.setColor(Color.WHITE);
     		   g.fillRect(0,0,width,height);
     		   for (String s : painters.keySet()) {
     			   ArrayList<RegionPaintable> plist = painters.get(s);
     			   for (int i = 0; i < plist.size(); i++) {
-    				   //                    if (!plist.get(i).wantsPaint()) {continue;}
-    				   //                     System.err.println("Painting " + plist.get(i) + " in " + ulx.get(s) + "," + uly.get(s) +
-    				   //                                        "  " + lrx.get(s) + "," + lry.get(s));
-    				   //                     System.err.println("  time is " + System.currentTimeMillis());
     				   try {
     					   plist.get(i).paintItem(graphics,
     							   ulx.get(s),
     							   uly.get(s),
     							   lrx.get(s),
     							   lry.get(s));
-    					   //                    System.err.println("Time after " + plist.get(i).getLabel() + " is  " + System.currentTimeMillis() );
     				   } catch (Exception e) {
     					   e.printStackTrace();
     					   graphics.setColor(Color.RED);
     					   graphics.drawString("Error: " + e.toString(),ulx.get(s),lry.get(s));
     				   }
-
     			   }
     		   }
     	   }
@@ -1462,7 +1491,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   }
     		   trackSpace.put(key + "_allocated",
     				   (int)(trackSpace.get(key + "_allocated") * factor));
-    		   panel.computeLayout(getX(),getY(),getWidth(),getHeight());
     		   panel.repaint();
     	   }
        }
@@ -1557,17 +1585,46 @@ Listener<EventObject>, PainterContainer, MouseListener {
        }
        
        public void forceModelUpdate(){
-    	   for (RegionModel m : allModels) {
-			   synchronized(m) {
-				   m.resetRegion(currentRegion);
-				   m.notifyAll();
+    	   synchronized(allModels){
+	    	   for (RegionModel m : allModels) {
+				   synchronized(m) {
+					   m.resetRegion(currentRegion);
+					   m.notifyAll();
+				   }
 			   }
-		   }
+    	   }
 		   repaint(); 
        }
  
+       public boolean modelConnectionsOpen(){
+    	   boolean allOpen=true;
+    	   synchronized(allModels) {
+    		   for (RegionModel m : allModels) {
+    			   synchronized(m){
+    				   allOpen = allOpen && m.connectionOpen();
+    			   }
+			   }
+		   }
+    	   if(!allOpen)
+    		   status.setStatus("Database connections closed", Color.red);
+    	   return allOpen;
+       }
+       
+       public void reconnectModels(){
+    	   synchronized(allModels) {
+    		   for (RegionModel m : allModels) {
+    			   synchronized(m){
+    				   m.reconnect();
+    			   }
+			   }
+		   }
+    	   if(this.modelConnectionsOpen())
+    		   status.setStatus("Ready", Color.black);
+    	   else
+    		   status.setStatus("Database connections closed", Color.red);
+       }
+       
        public void mouseClicked(MouseEvent e) {
-    	   //        System.err.println("CLICK " + e);
     	   if (e.getButton() == MouseEvent.BUTTON3 || e.isPopupTrigger()) {
     		   int xpos = e.getX();
     		   int ypos = e.getY();
@@ -1649,4 +1706,28 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   }
     	   }
        }
- }
+       
+       /**
+        * CheckOpenConnectionsThread 
+        * Check if all the model's connections are still open. 
+        * @author mahony
+        */
+       class CheckOpenConnectionsThread implements Runnable{
+    	   	RegionPanel parent; //reference to parent class
+       	
+       		public CheckOpenConnectionsThread(RegionPanel p){
+       			parent = p;
+       		}
+       		public void run() {
+       			while(true){
+       				try {
+       					Thread.sleep(3000);
+       					parent.modelConnectionsOpen();
+       				} catch (InterruptedException e) { 
+       					Thread.currentThread().interrupt();
+       					break;
+       				}
+       			}
+       		}
+       }
+}

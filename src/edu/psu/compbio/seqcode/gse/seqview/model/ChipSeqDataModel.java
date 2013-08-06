@@ -115,6 +115,9 @@ public class ChipSeqDataModel extends SeqViewModel implements RegionModel, Runna
         	newinput = true;
         }
     }
+    public boolean connectionOpen(){return true;}
+    public void reconnect(){}
+    
     public boolean isReady() {return !newinput;}
     public synchronized void run() {
         while(keepRunning()) {

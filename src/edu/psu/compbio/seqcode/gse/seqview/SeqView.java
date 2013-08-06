@@ -73,6 +73,7 @@ public class SeqView extends JFrame {
     	statusBar = new SeqViewStatusBar(status);
         statusBar.setPreferredSize(new Dimension(getWidth(), SeqViewOptions.STATUS_BAR_HEIGHT));
         setTitle("Loading genome information...");
+        this.setBackground(Color.black);
         add(statusBar, BorderLayout.PAGE_END);
         setVisible(true);
         
@@ -90,16 +91,21 @@ public class SeqView extends JFrame {
         
         //Close operations
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        final SeqView thisviewer = this;
         this.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent arg0) {
-                if(regPanel!=null)
+        	public void windowClosing(WindowEvent arg0) {
+                if(regPanel!=null && !regPanel.isClosed())
                 	regPanel.handleWindowClosing();
                 if(!optionsFrame.isClosed()){
                 	optionsFrame.close();
                 }
-                System.err.println("WindowClosing: " + arg0.toString());
+                thisviewer.dispose();
             }
         });
+    }
+    
+    public String getVersion(){
+    	return "Version 0.1, Aug-2013";
     }
     
     public RegionPanel getRegionPanel() { return regPanel; }
@@ -133,7 +139,7 @@ public class SeqView extends JFrame {
     
     private JMenuBar createDefaultJMenuBar() { 
         JMenuBar jmb = new JMenuBar();
-        JMenu filemenu, editmenu, imagemenu, navigationmenu, displaymenu, toolsmenu; 
+        JMenu filemenu, editmenu, imagemenu, navigationmenu, displaymenu, aboutmenu, toolsmenu; 
         JMenuItem item;
         final SeqView thisviewer = this;
         jmb.add((filemenu = new JMenu("File")));
@@ -166,6 +172,14 @@ public class SeqView extends JFrame {
         item.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		new SaveRegionsAsFasta(thisviewer.getRegionPanel().getRegion());
+        	}
+        });
+        filemenu.addSeparator();
+        filemenu.add((item = new JMenuItem("Reconnect To Database")));
+        item.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		if(thisviewer.getRegionPanel()!=null && !thisviewer.getRegionPanel().isClosed())
+        			thisviewer.getRegionPanel().reconnectModels();
         	}
         });
         filemenu.addSeparator();
@@ -260,8 +274,16 @@ public class SeqView extends JFrame {
         group.add(item);
         
         //TODO: uncomment this to bring back the WeightMatrix browser option
-        //jmb.add(new SeqViewToolsMenu(panel));
+        //jmb.add(toolsmenu = new SeqViewToolsMenu(panel));
 
+        jmb.add((aboutmenu = new JMenu("Help")));
+        aboutmenu.add((item = new JMenuItem("About")));
+        item.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		new AboutMessage(thisviewer.getVersion());
+        	}
+        });
+        
         return jmb;
     }
     
@@ -359,6 +381,44 @@ public class SeqView extends JFrame {
    
     }
 
+    class AboutMessage extends JFrame implements ActionListener {
+        private JButton okbutton;
+
+        public AboutMessage(String version) {
+        	String text = "<html><center><font color=blue size=+2>SeqView</font><p>"+
+        			"<p>"+version+
+        			"<p>"+
+        			"<p>Based on WarpDrive from the" +
+        			"<p>Gifford Lab GSE code base (CSAIL, MIT)"+
+        			"</html>";
+        			
+        	javax.swing.JLabel messagelabel = new javax.swing.JLabel(text);
+            okbutton = new JButton("OK");
+            okbutton.addActionListener(this);
+            
+            JPanel toppanel = new JPanel();
+            toppanel.setLayout(new BorderLayout());
+            
+            toppanel.add(messagelabel,BorderLayout.CENTER);
+            
+            JPanel buttonpanel = new JPanel();
+            buttonpanel.add(okbutton);
+            toppanel.add(buttonpanel,BorderLayout.SOUTH);
+
+            getContentPane().add(toppanel);
+            setMinimumSize(new Dimension(200,200));
+            setSize(getPreferredSize());
+            pack();
+            setVisible(true);
+        }
+
+        public void actionPerformed (ActionEvent e) {
+            if (e.getSource() == okbutton) {
+                this.dispose();
+            } 
+        }     
+   
+    }
 	
     /** 
      * The main driver for SeqView

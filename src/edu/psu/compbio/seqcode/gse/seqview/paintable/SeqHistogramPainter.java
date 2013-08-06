@@ -56,7 +56,7 @@ public class SeqHistogramPainter extends RegionPaintable {
 		super.cleanup();
 		histomodel.removeEventListener(this);
 		if(arcmodel!=null){
-			arcmodel.removeEventListener(this);System.out.println("Removed listener");
+			arcmodel.removeEventListener(this);
 		}
 	}
 	public boolean canPaint() {

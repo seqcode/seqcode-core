@@ -23,6 +23,6 @@ public class RegionMapperModel<OUT> extends MapperModel<Region,OUT> implements R
     public Region getRegion() {
         return region;
     }
-
-
+    public boolean connectionOpen(){return true;}
+    public void reconnect(){}
 }

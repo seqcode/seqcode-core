@@ -181,6 +181,8 @@ public class SpeciesAlignModel extends SeqViewModel implements RegionModel, Runn
             }
         }
     }
+    public boolean connectionOpen(){return true;}
+    public void reconnect(){}
     public boolean isReady() {return !newinput;}
     public Region getRegion() {return region;}
     public Genome getCurrentGenome() {return currentGenome;}

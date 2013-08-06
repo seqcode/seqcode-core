@@ -72,6 +72,8 @@ public class ChipChipDataModel extends SeqViewModel implements Runnable, RegionM
         }
     }
     public Region getRegion() {return region;}
+    public boolean connectionOpen(){return true;}
+    public void reconnect(){}
     public boolean isReady() {return !newregion;}
     public GenericExperiment getGenericExperiment() {
         return data;

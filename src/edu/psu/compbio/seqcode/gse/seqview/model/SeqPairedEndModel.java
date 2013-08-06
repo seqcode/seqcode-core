@@ -59,6 +59,9 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
     }
     public List<PairedHit> getResults () {return results;}
     public List<PairedHit> getOtherChromResults() {return otherchrom;}
+    public boolean connectionOpen(){return client.connectionAlive();}
+    public void reconnect(){client.reConnect();}
+    
     public boolean isReady() {return !newinput;}
     public List<PairedHit> dedup(List<PairedHit> hits) {
         ArrayList<PairedHit> deduped = new ArrayList<PairedHit>();

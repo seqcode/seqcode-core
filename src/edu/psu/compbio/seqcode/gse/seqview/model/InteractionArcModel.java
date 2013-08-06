@@ -17,8 +17,7 @@ import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHitLeftComparator;
 
-public class InteractionArcModel extends SeqViewModel implements RegionModel,
-Runnable {
+public class InteractionArcModel extends SeqViewModel implements RegionModel, Runnable {
 
 	private Client client;
 	private Set<SeqAlignment> alignments;
@@ -49,7 +48,9 @@ Runnable {
 		results = null;
 		otherchrom = null;
 	}
-
+	public boolean connectionOpen(){return client.connectionAlive();}
+	public void reconnect(){client.reConnect();}
+	
 	public boolean isReady() {return !newinput;}
 
 	public synchronized void run() {

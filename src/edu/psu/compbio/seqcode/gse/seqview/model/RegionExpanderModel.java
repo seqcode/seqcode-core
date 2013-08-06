@@ -23,6 +23,7 @@ public class RegionExpanderModel<OUT> extends ExpanderModel<Region,OUT> implemen
     public Region getRegion() {
         return region;
     }
-
+    public boolean connectionOpen(){return true;}
+    public void reconnect(){}
 
 }

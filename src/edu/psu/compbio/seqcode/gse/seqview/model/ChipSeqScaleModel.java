@@ -47,6 +47,8 @@ public class ChipSeqScaleModel extends SeqViewModel implements RegionModel, List
     }
     
     public Region getRegion() {return region;}
+    public boolean connectionOpen(){return true;}
+    public void reconnect(){}
     
     public double getMaxVal() {
         maxOverlap = 1;

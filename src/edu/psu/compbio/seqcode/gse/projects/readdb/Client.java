@@ -52,7 +52,7 @@ public class Client implements ReadOnlyClient {
     /* temporary space for receiving data; contents not persistent between method calls */
     byte[] buffer;
     private static final int BUFFERLEN = 8192*20;
-    private final int socketReadTimeout = 20000; //socket timeout in ms
+    private final int socketReadTimeout = 10000; //socket timeout in ms
     private final int threadSleepTime = 3000; //check alive thread sleep time in ms
     private Request request;
     private boolean connectionOpen=false;

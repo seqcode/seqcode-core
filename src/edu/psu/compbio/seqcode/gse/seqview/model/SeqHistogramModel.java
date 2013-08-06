@@ -71,6 +71,9 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
         	newinput = true;
         }
     }
+    public boolean connectionOpen(){return client.connectionAlive();}
+    public void reconnect(){client.reConnect();}
+    
     public boolean isReady() {return !newinput;}
     public Map<Integer,Float> getPlus() {return resultsPlus;}
     public Map<Integer,Float> getMinus() {return resultsMinus;}
