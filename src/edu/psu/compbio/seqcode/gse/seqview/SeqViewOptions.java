@@ -99,7 +99,8 @@ public class SeqViewOptions {
         REGEXMATCHER = 18,
         REGIONTRACKS = 19,
         PYRPURCONTENT = 20,
-        CHIPSEQANALYSES = 21;
+        CHIPSEQANALYSES = 21,
+    	SEQDATA = 22;
     
     
     public SeqViewOptions(Genome g){

@@ -47,21 +47,21 @@ public class RegionListPanel extends JPanel implements ActionListener, KeyListen
         JMenuBar jmb = new JMenuBar();
         JMenu menu = new JMenu("File");
         jmb.add(menu);
-        JMenuItem item = new JMenuItem("Save");
+        JMenuItem item = new JMenuItem("Save region list");
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     panel.saveRegionList();
                 }
             });
         menu.add(item);
-        item = new JMenuItem("Save Tab-Separated Regions");
+        item = new JMenuItem("Save regions as tab-separated");
         item.addActionListener(new ActionListener() { 
             public void actionPerformed(ActionEvent e) { 
                 panel.saveTabSeparatedRegionList();
             }
         });
         menu.add(item);
-        item = new JMenuItem("Save as FASTA");
+        item = new JMenuItem("Save regions as FASTA");
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     ArrayList<Region> regions = new ArrayList<Region>();
@@ -71,6 +71,7 @@ public class RegionListPanel extends JPanel implements ActionListener, KeyListen
                     new SaveRegionsAsFasta(regions);
                 }
             });
+        menu.add(item);
         item = new JMenuItem("Close");
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {

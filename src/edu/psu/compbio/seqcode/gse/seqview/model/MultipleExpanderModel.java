@@ -43,8 +43,6 @@ public class MultipleExpanderModel<IN,OUT> extends SeqViewModel implements Runna
                 notifyListeners();
             }
         }
-        
-        System.err.println("ExpanderModel run() is finishing.");
     }
     
     public synchronized void addExpander(Expander<IN,OUT> exp) { 

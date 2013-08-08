@@ -3,9 +3,6 @@ package edu.psu.compbio.seqcode.gse.seqview.model;
 import java.io.IOException;
 import java.util.*;
 
-import cern.jet.random.Poisson;
-import cern.jet.random.engine.DRand;
-
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.projects.readdb.*;
@@ -56,6 +53,7 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
         resultsPval = null;
     }
     public Region getRegion() {return region;}
+    
     public void setRegion(Region r) {
         if (newinput == false) {
             if (!r.equals(region)) {
@@ -66,6 +64,16 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
             }
         }
     }
+    //Forces getting data for region again, even if same region (good for model properties updates). 
+    public void resetRegion(Region r) {
+        if (newinput == false) {
+        	region = r;
+        	newinput = true;
+        }
+    }
+    public boolean connectionOpen(){return client.connectionAlive();}
+    public void reconnect(){client.reConnect();}
+    
     public boolean isReady() {return !newinput;}
     public Map<Integer,Float> getPlus() {return resultsPlus;}
     public Map<Integer,Float> getMinus() {return resultsMinus;}

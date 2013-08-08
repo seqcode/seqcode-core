@@ -17,8 +17,7 @@ import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHitLeftComparator;
 
-public class InteractionArcModel extends SeqViewModel implements RegionModel,
-Runnable {
+public class InteractionArcModel extends SeqViewModel implements RegionModel, Runnable {
 
 	private Client client;
 	private Set<SeqAlignment> alignments;
@@ -49,7 +48,9 @@ Runnable {
 		results = null;
 		otherchrom = null;
 	}
-
+	public boolean connectionOpen(){return client.connectionAlive();}
+	public void reconnect(){client.reConnect();}
+	
 	public boolean isReady() {return !newinput;}
 
 	public synchronized void run() {
@@ -76,7 +77,7 @@ Runnable {
 							if(!deduper.containsKey(h)){ deduper.put(h, h.weight);
 							}else{float currw = deduper.get(h); deduper.put(h, currw+h.weight);} 
 								
-							if(deduper.get(h)<=props.DeDuplicate){
+							if(props.ArcDeDuplicate>0 && deduper.get(h)<=props.ArcDeDuplicate){
 								if (h.leftChrom == h.rightChrom) { 
 									if (h.rightPos >= region.getStart() &&
 											h.rightPos <= region.getEnd()) {
@@ -117,6 +118,12 @@ Runnable {
 			} else {
 				notifyListeners();
 			}
+		}
+	}
+	public void resetRegion(Region r) {
+		if (newinput == false) {
+			region = r;
+			newinput = true;
 		}
 	}
 

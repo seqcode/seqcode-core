@@ -7,6 +7,6 @@ public class ModelProperties extends SeqViewProperties {
     public ModelProperties() {
         super();
     }
-    public String fileSuffix() {return "wdmp";}
+    public String fileSuffix() {return "svmp";}
 
 }

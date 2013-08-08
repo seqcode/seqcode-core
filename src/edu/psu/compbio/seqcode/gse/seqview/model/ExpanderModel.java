@@ -58,8 +58,6 @@ public class ExpanderModel<IN,OUT> extends SeqViewModel implements Runnable {
                 notifyListeners();
             }
         }
-        
-        System.err.println("ExpanderModel run() is finishing.");
     }
 
     protected void setExpander(Expander<IN,OUT> expander) {

@@ -78,16 +78,21 @@ public class SpeciesAlignModel extends SeqViewModel implements RegionModel, Runn
 
     public void setRegion(Region r) {
         if (newinput) {
-            //            System.err.println("Got new input while processing old.  Ignoring");
             return;
         }
-        //        System.err.println("SAM going to " + r);
         if (r == bestRegion.get(r.getGenome())) {
             notifyListeners();
         } else {
             region = r;
             newinput = true;
         }
+    }
+    public void resetRegion(Region r) {
+        if (newinput) {
+            return;
+        }
+        region = r;
+        newinput = true;
     }
 
     public synchronized void run() {
@@ -176,6 +181,8 @@ public class SpeciesAlignModel extends SeqViewModel implements RegionModel, Runn
             }
         }
     }
+    public boolean connectionOpen(){return true;}
+    public void reconnect(){}
     public boolean isReady() {return !newinput;}
     public Region getRegion() {return region;}
     public Genome getCurrentGenome() {return currentGenome;}

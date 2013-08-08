@@ -56,17 +56,19 @@ public class SeqHistogramPainter extends RegionPaintable {
 		super.cleanup();
 		histomodel.removeEventListener(this);
 		if(arcmodel!=null){
-			arcmodel.removeEventListener(this);System.out.println("Removed listener");
+			arcmodel.removeEventListener(this);
 		}
 	}
 	public boolean canPaint() {
 		return histomodel.isReady() && (arcmodel==null || arcmodel.isReady());
 	}
 	public synchronized void eventRegistered(EventObject e) {        
-		if (e.getSource() == histomodel && histomodel.isReady()) {
-			setCanPaint(true);
-			setWantsPaint(true);
-			notifyListeners();
+		if (e.getSource() == histomodel || (arcmodel!=null && e.getSource() == arcmodel )) {
+			if(histomodel.isReady() && (arcmodel==null || arcmodel.isReady())){
+				setCanPaint(true);
+				setWantsPaint(true);
+				notifyListeners();
+			}
 		}
 	}
 	//pre-calculate and store the Guassian kernel prob., for efficiency
@@ -118,9 +120,8 @@ public class SeqHistogramPainter extends RegionPaintable {
 			int x1, int y1, 
 			int x2, int y2) {
 
-		g.setRenderingHint(
-		        RenderingHints.KEY_TEXT_ANTIALIASING,
-		        RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		if (!canPaint()) {
 			return;
@@ -150,14 +151,14 @@ public class SeqHistogramPainter extends RegionPaintable {
 		int regionEnd = histomodel.getRegion().getEnd();
 		
 		//Set y coordinates for drawing
-		int readh = (props.DrawPairedCurves && alignPaired && !stranded) ? (int)((y2-y1)*0.7) : (y2-y1);
+		int readh = (props.DrawPairedCurves && alignPaired) ? (int)((y2-y1)*0.7) : (y2-y1);
 		int ready2 = y1+readh;
 		int pairh = (y2-y1)-readh;
 		int pairy1 = ready2;
 		int midpoint = (y1 + ready2) / 2;
 
 		Stroke oldStroke = g.getStroke();
-		int linewidth = getProperties().LineWidth;
+		int linewidth = getProperties().getLineWidth();
 		if (linewidth < 0) {
 			linewidth = trackWidth / (histomodel.getRegion().getWidth() / histomodel.getProperties().BinWidth);
 		}
@@ -198,7 +199,7 @@ public class SeqHistogramPainter extends RegionPaintable {
 			for (float prob: density_m.values())
 				if (max<prob)
 					max= prob;
-			double scaling = (maxobs/max)*1.5;
+			double scaling = (maxobs/max)*2;
 
 			if (stranded) {
 				g.setColor(getProperties().getMinusColor());
@@ -321,20 +322,34 @@ public class SeqHistogramPainter extends RegionPaintable {
 		}
 
 		//Draw pairing arcs
-		if(props.DrawPairedCurves && alignPaired && !stranded){
+		if(props.DrawPairedCurves && alignPaired){
 			List<PairedHit> pairs = arcmodel.getResults();
 			for(PairedHit pair : pairs){
 				if(pair.leftChrom==pair.rightChrom && 
 						pair.leftPos>=arcmodel.getRegion().getStart() && pair.leftPos<=arcmodel.getRegion().getEnd() &&
 						pair.rightPos>=arcmodel.getRegion().getStart() && pair.rightPos<=arcmodel.getRegion().getEnd() ){
-					int xA =getXPos(pair.lesserPos(), regionStart, regionEnd, x1, x2);
-					int xB =getXPos(pair.greaterPos(), regionStart, regionEnd, x1, x2);
-					double pwidth = pair.greaterPos()-pair.lesserPos();
+					
+					int lPos = pair.lesserPos();
+					int rPos = pair.greaterPos();
+					if(pair.pairCode==1){
+						g.setColor(getProperties().getMateArcColor());
+					}else{
+						//Junction-mapped reads are a different color,
+						//and it looks better if they go from the end of one block to the start of the other 
+						g.setColor(getProperties().getSplitReadArcColor());
+						
+						if(pair.lesserStrand())
+							lPos = pair.lesserPos()+pair.lesserLength()-1;
+						if(!pair.greaterStrand())
+							rPos = pair.greaterPos()-pair.greaterLength()+1;
+					}
+		    		int xA =getXPos(lPos, regionStart, regionEnd, x1, x2);
+					int xB =getXPos(rPos, regionStart, regionEnd, x1, x2);
+					double pwidth = rPos-lPos;
 					int xMid = (xA+xB)/2;
 					int yMid = (int)(((double)pwidth/(double)(regionEnd-regionStart)) * pairh*2) + pairy1;
 					
-					g.setColor(getProperties().getArcColor());
-		    		g.setStroke(new BasicStroke(1.0f));
+					g.setStroke(new BasicStroke(1.0f));
 		    		QuadCurve2D loop = new QuadCurve2D.Float(xA, pairy1, xMid, yMid, xB, pairy1);
 		    		g.draw(loop);
 				}

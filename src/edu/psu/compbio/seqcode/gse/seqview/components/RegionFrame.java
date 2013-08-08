@@ -21,7 +21,7 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
  */
 
 public class RegionFrame extends JFrame {
-    
+	private File currDirectory = new File(System.getProperty("user.home"));
     public static void main(String args[]) throws NotFoundException, SQLException, IOException {
         SeqViewOptions opts = SeqViewOptions.parseCL(args);
         RegionFrame frame = new RegionFrame(opts);
@@ -64,7 +64,8 @@ public class RegionFrame extends JFrame {
 
     public RegionFrame(SeqViewOptions opts) {
     	setTitle(opts.genome.getSpecies() + " " + opts.genome.getVersion());
-        panel = new RegionPanel(opts);
+    	SeqViewStatus status = new SeqViewStatus();
+        panel = new RegionPanel(opts, status, currDirectory);
         //getContentPane().add(new ImageCachingPanel(panel));
         getContentPane().add(panel);
         setJMenuBar(createDefaultJMenuBar(opts));
@@ -109,7 +110,7 @@ public class RegionFrame extends JFrame {
         filemenu.add((item = new JMenuItem("Add a track from a file")));
         item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {                    
-                    thispanel.addTrackFromFile();
+                    thispanel.addTrackFromFile(false);
                 }
             });
         filemenu.add((item = new JMenuItem("Save Region as FASTA")));
@@ -211,7 +212,7 @@ public class RegionFrame extends JFrame {
                     int v = chooser.showOpenDialog(null);
                     if(v == JFileChooser.APPROVE_OPTION) { 
                         File f = chooser.getSelectedFile();
-                        java.util.List<Region> regions = RegionPanel.readRegionsFromFile(panel.getGenome(),f.getAbsolutePath());
+                        java.util.List<Region> regions = RegionPanel.readRegionsFromFile(panel.getGenome(),f.getAbsolutePath(),false);
                         RegionListPanel p = new RegionListPanel(panel,
                                                                 regions);
                         RegionListPanel.makeFrame(p);

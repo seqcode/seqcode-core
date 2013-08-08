@@ -46,8 +46,13 @@ public class ChipChipScaleModel extends SeqViewModel implements RegionModel, Lis
         maxval = -1;
         region = r;
     }
-    
+    public void resetRegion (Region r) {
+        maxval = -1;
+        region = r;
+    }
     public Region getRegion() {return region;}
+    public boolean connectionOpen(){return true;}
+    public void reconnect(){}
     
     public double getMaxVal() {
         if (region == null) {

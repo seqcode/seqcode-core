@@ -32,7 +32,8 @@ public class Snapshot {
         if (picturename == null) {return;}
         try {
             SeqViewOptions opts = SeqViewOptions.parseCL(args);
-            RegionPanel panel = new RegionPanel(opts);
+            SeqViewStatus s = new SeqViewStatus();
+            RegionPanel panel = new RegionPanel(opts, s, new File(System.getProperty("user.home")));
             File file = new File(picturename);
             panel.computeLayout(0,0,w,h);
             while (!panel.allCanPaint()) {

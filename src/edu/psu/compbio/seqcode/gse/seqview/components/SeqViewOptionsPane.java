@@ -336,7 +336,7 @@ public class SeqViewOptionsPane
     public void setSpeciesGenomeDefaults() {
         String species = null, genome = null;
         try {
-            ResourceBundle res = ResourceBundle.getBundle("edu.psu.compbio.seqcode.gse.warpdrive.defaultSpeciesGenome");
+            ResourceBundle res = ResourceBundle.getBundle("defaultgenome");
             species = res.getString("species");
             genome = res.getString("genome");
         } catch (Exception e) {
@@ -406,13 +406,13 @@ public class SeqViewOptionsPane
         these.seqHistogramPainter = !oldchipseq.isSelected();
 
         // parse the annotations tab
-        for (Object o : genes.getSelectedValuesList()) {
+        for (Object o : genes.getSelectedValues()) {
             these.genes.add(o.toString());
         }
-        for (Object o : ncrnas.getSelectedValuesList()) {
+        for (Object o : ncrnas.getSelectedValues()) {
             these.ncrnas.add(o.toString());
         }
-        for (Object o : otherfeats.getSelectedValuesList()) {
+        for (Object o : otherfeats.getSelectedValues()) {
             these.otherannots.add(o.toString());
         }
         these.gccontent = gccontent.isSelected();
@@ -461,11 +461,9 @@ public class SeqViewOptionsPane
         Genome lg = loadGenome();
         Genome g = lg;
         
-        System.err.println("UPDATING EXPERIMENT SELECTION FOR GENOME: " + g);
+        System.err.println("Updating experiment selection for genome: " + g);
 
         seqSelect.setGenome(lg);
-        //pairedSeqSelect.setGenome(lg);
-        //interactionArcSelect.setGenome(lg);
 
         // update the set of Gene annotations
         genesmodel.clear();
@@ -480,7 +478,7 @@ public class SeqViewOptionsPane
             }
             List<String> chroms = g.getChromList();
             if (chroms.size() == 0) {
-                throw new RuntimeException("EMPTY CHROMOSOME LIST for " + g);
+                throw new RuntimeException("Empty chromosome list for " + g);
             }
             java.util.Collections.sort(chroms);
 

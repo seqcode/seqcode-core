@@ -14,7 +14,7 @@ import edu.psu.compbio.seqcode.gse.viz.colors.ColorSet;
 
 /* actually works on all regions.  Has special behaviors for those that implement Stranded or Named */
 public class NamedStrandedPainter extends RegionPaintable {
-    private static ColorSet colors = new ColorSet();
+    //private static ColorSet colors = new ColorSet();
     private static int sMaxTracks = 12;
     private RegionExpanderModel model;    
     private boolean dirty;
@@ -70,7 +70,8 @@ public class NamedStrandedPainter extends RegionPaintable {
         }
     }
     public Color getColor(Region r) {
-        return colors.getColor(r.toString());
+        //return colors.getColor(r.toString());
+    	return props.BoxColor;
     }
     private void doLayout() {
         Iterator<Region> iter = model.getResults();
@@ -118,6 +119,8 @@ public class NamedStrandedPainter extends RegionPaintable {
     public void paintItem(Graphics2D g, 
                           int ulx, int uly, 
                           int lrx, int lry) {
+    	g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+    	g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         if (!model.isReady()) {
             System.err.println ("  but not ready");
             return;
@@ -148,7 +151,8 @@ public class NamedStrandedPainter extends RegionPaintable {
         clearLabels();
         for (int j = 0; j < regions.size(); j++) {
             Region f = regions.get(j);
-            Color c = colors.getColor(f.toString());
+            //Color c = colors.getColor(f.toString());
+            Color c = props.BoxColor;
             if (c == null) {
                 continue;
             } else {
@@ -171,9 +175,11 @@ public class NamedStrandedPainter extends RegionPaintable {
                 if (x2 == x1) {
                     x2++;
                 }
+                g.drawRect(x1, y, x2 - x1, tracksize);
             	g.fillRect(x1, y, x2 - x1, tracksize);
             }
             if (f instanceof Stranded) {
+            	g.setColor(Color.black);
                 char str = ((Stranded)f).getStrand();
                 if (str == '+') {
                     g.drawLine(x1,y,x2,y + tracksize /2);

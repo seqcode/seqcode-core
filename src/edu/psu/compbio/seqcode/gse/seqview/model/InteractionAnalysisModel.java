@@ -63,10 +63,17 @@ public class InteractionAnalysisModel extends SeqViewModel implements RegionMode
 			}
 		}
 	}
+	public void resetRegion(Region r) {
+		if (newinput == false) {
+			region = r;
+			newinput = true;
+		}
+	}
 
 	public Region getRegion() {return region;}
-
-
+	public boolean connectionOpen(){return true;}
+	public void reconnect(){}
+	
 	public Map<Pair<Point, Point>, Float> getInteractions() {
 		return interactions;
 	}

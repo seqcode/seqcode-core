@@ -4,9 +4,9 @@ import java.util.*;
 import java.io.*;
 import java.net.URL;
 import javax.swing.*;
-import javax.swing.filechooser.*;
 
 import edu.psu.compbio.seqcode.gse.seqview.components.MultiModelPrefs;
+import edu.psu.compbio.seqcode.gse.seqview.components.RegionPanel;
 import edu.psu.compbio.seqcode.gse.utils.json.*;
 import edu.psu.compbio.seqcode.gse.utils.models.*;
 import edu.psu.compbio.seqcode.gse.viz.components.RegexFileFilter;
@@ -18,7 +18,7 @@ public abstract class SeqViewProperties extends Model {
 
     // controls whether some exception stack traces are printed
     private boolean debugging = true;
-    /* true when a window is currently open to configure this WarpProperties.
+    /* true when a window is currently open to configure this SeqViewProperties.
        Used to prevent multiple windows from working on the same properties at once.
     */
     private Boolean configuring;
@@ -42,7 +42,6 @@ public abstract class SeqViewProperties extends Model {
                             prop.configuring = false;   
                         }
                         done = true;
-                        System.err.println("** Set configuring to false in " + p);
                     } catch (InterruptedException e) {
                         // ignore it and go back to sleeping
                     }
@@ -50,8 +49,7 @@ public abstract class SeqViewProperties extends Model {
             }
         }            
     }
-    public static void configure(Collection<? extends SeqViewProperties> props, JPanel regionpanel) {
-        System.err.println("Configuring " + props);
+    public static void configure(Collection<? extends SeqViewProperties> props, RegionPanel regionpanel, boolean batchUpdate) {
         Collection<SeqViewProperties> touse = new ArrayList<SeqViewProperties>();
         for (SeqViewProperties p : props) {
             synchronized(p) {
@@ -62,8 +60,8 @@ public abstract class SeqViewProperties extends Model {
             }
             touse.add(p);
         }
-        System.err.println("Creating Frame");
-        MultiModelPrefs frame = new MultiModelPrefs(touse,regionpanel);
+        
+        MultiModelPrefs frame = new MultiModelPrefs(touse,regionpanel, batchUpdate);
         (new Thread(new DoneConfiguring(touse,frame))).start();
         frame.setSize(frame.getPreferredSize());
         frame.setVisible(true);
@@ -85,11 +83,11 @@ public abstract class SeqViewProperties extends Model {
     public File defaultFile() {
         return new File(System.getProperty("user.home") + System.getProperty("file.separator") + defaultName());
     }
-    /** Displayes a JFileChooser to select the name of the file to which you want to save the properties
+    /** Displays a JFileChooser to select the name of the file to which you want to save the properties
      */
     public void saveToFile() {
         JFileChooser chooser = new JFileChooser();
-        RegexFileFilter filter = new RegexFileFilter(".*\\." + fileSuffix() + "$", "WarpDrive Prefs",true);
+        RegexFileFilter filter = new RegexFileFilter(".*\\." + fileSuffix() + "$", "SeqView Prefs",true);
         chooser.setFileFilter(filter);
         chooser.setSelectedFile(defaultFile());
         int returnVal = chooser.showSaveDialog(null);
@@ -144,10 +142,10 @@ public abstract class SeqViewProperties extends Model {
         }
     }
     /** Load default values for properties.  This looks for a file of the form
-     * FOO.defaults.wdpp (warp drive paintable properties) where FOO is the runtime class name in
+     * FOO.defaults.svpp (seq view paintable properties) where FOO is the runtime class name in
      * - current directory
      * - home directory
-     * edu.psu.compbio.seqcode.gse.seqview.paintable in the classpath
+     * - the whole classpath
      */
     public void loadDefaults() {
         File name = currentFile();
@@ -160,7 +158,7 @@ public abstract class SeqViewProperties extends Model {
                     loadFromFile(name);
                 } else {
                     ClassLoader cl = ClassLoader.getSystemClassLoader();
-                    URL url = cl.getResource("edu/psu/compbio/seqcode/gse/seqview/paintable/" + defaultName());
+                    URL url = cl.getResource(defaultName());
                     if (url != null) {
                         loadFromStream(new InputStreamReader(url.openStream()));
                     }
