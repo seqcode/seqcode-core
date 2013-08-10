@@ -17,7 +17,8 @@ public abstract class RegionPaintable extends SeqViewPaintable {
        resolution.  -1 means "give me as much space as possible".
     */
     public int getMaxVertSpace () {return -1;}
-    //Minimum vertical space that this paintable requires
+    //Minimum vertical space that this paintable requires. 
+    //Despite the misleading name, this must be the same as getMaxVertSpace, unless the latter = -1
     public int getMinVertSpace () {return 80;}
     public Region getRegion() {return region;}
     /* Sets the genomic region that this Paintable will display.

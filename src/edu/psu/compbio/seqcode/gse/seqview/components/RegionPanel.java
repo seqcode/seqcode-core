@@ -34,6 +34,7 @@ import edu.psu.compbio.seqcode.gse.seqview.model.*;
 import edu.psu.compbio.seqcode.gse.seqview.paintable.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.utils.models.Model;
 
@@ -100,7 +101,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	private boolean forceupdate = false, firstconfig = true;
 	private File currDirectory = new File(System.getProperty("user.home"));
 	private Hashtable<RegionPaintable, ArrayList<RegionModel>> painterModelMap = new Hashtable<RegionPaintable, ArrayList<RegionModel>>();
-	private Thread connectionChecker;
+	private Thread connectionChecker=null;
 
 	public RegionPanel(Genome g, SeqViewStatus s, File currDir) {
 		super();
@@ -263,6 +264,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	 */
 	public void reinit(SeqViewOptions opts) {
 		//Cleanup
+		connectionChecker.interrupt();
 		synchronized(allModels) {
 			for (RegionModel m : allModels) {
 				synchronized(m){
@@ -322,6 +324,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
 					regions);
 			RegionListPanel.makeFrame(p);
 		}
+		connectionChecker = new Thread(new CheckOpenConnectionsThread(this));
+		connectionChecker.start();
 	}
 
 	public void addPaintersFromOpts(SeqViewOptions opts) {        
@@ -333,7 +337,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 		if (opts.hash) {
 			HashMarkPaintable p = new HashMarkPaintable();
-			//SimpleHashMarkPaintable p = new SimpleHashMarkPaintable();
 			p.setLabel("Chromosomal position");
 			p.addEventListener(this);
 			addPainter(p);
@@ -348,6 +351,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
 		if (opts.gccontent) {
 			GCContentPainter p = new GCContentPainter(seqmodel);
+			p.setLabel("GC content");
 			p.addEventListener(this);
 			p.setOption(SeqViewOptions.GCCONTENT,null);
 			addPainter(p);
@@ -654,7 +658,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		} else {
 			forceupdate = true;
 			setRegion(getRegion());
-		}        
+		}
 	}
 
 	/* when we take a paintable out of the display, we also
@@ -1076,13 +1080,14 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   int maxspace = 0;
     		   ArrayList<RegionPaintable> plist = painters.get(s);
     		   for (int j = 0; j < plist.size(); j++) {
-    			   int request = plist.get(j).getMaxVertSpace();
-    			   if (request == -1 && fillSpace) {
+    			   int request = fillSpace ? plist.get(j).getMaxVertSpace() : plist.get(j).getMinVertSpace();
+
+    			   if (request == -1) {
     				   isthick = true;
     				   continue;
-    			   } else if (maxspace < request) {
-    				   maxspace = request;
     			   }
+    			   if (request>0 && maxspace < request)
+    				   maxspace = request;
     		   }
     		   requests.put(s,maxspace);
     		   thickMap.put(s, isthick);
@@ -1091,6 +1096,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   }
     	   }
 
+    	   //Allocate non-autofill track space first
     	   for(String s : thickMap.keySet()) {
     		   if(!thickMap.get(s)) {
     			   int allocated;
@@ -1105,8 +1111,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
     			   thickCount += 1;
     		   }
     	   }
-
-    	   int thickAlloc = (thickSpace - 5*thickCount) / (Math.max(1, thickCount));
+    	   //Split the remaining space between autofill tracks
+    	   //int thickAlloc = (thickSpace - 5*thickCount) / (Math.max(1, thickCount));
+    	   int thickAlloc = (thickSpace) / (Math.max(1, thickCount));
 
     	   keys = new String[trackPaintOrder.size()];
     	   i = 0;
@@ -1130,14 +1137,14 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   lrx.put(s,width + x);
 
     		   if(thickMap.get(s)) { 
-    			   lry.put(s,ypos-10);
-    			   uly.put(s,ypos-allocated+10);            	
+    			   lry.put(s,ypos-5);
+    			   uly.put(s,ypos-allocated+5);            	
     		   } else { 
     			   lry.put(s,ypos);
     			   uly.put(s,ypos-allocated);
     		   }
 
-    		   ypos -= allocated;
+    		   ypos -= allocated;  
     	   }
 
     	   for (String k : requests.keySet()) {
@@ -1167,6 +1174,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   int oheight = scrollPane.getViewport().getHeight();
     	   int mheight = computeLayout(getX(),getY(),getWidth(),oheight);
     	   mainPanel.setPreferredSize(new Dimension(getWidth(), mheight));
+    	   mainPanel.revalidate();
        }
 
        public boolean allCanPaint() {
@@ -1611,6 +1619,14 @@ Listener<EventObject>, PainterContainer, MouseListener {
        }
        
        public void reconnectModels(){
+    	   DatabaseFactory.reestablishConnections();
+    	   try {
+    		   genome.renewCoreConnection();
+    	   } catch (UnknownRoleException e) {
+    		   e.printStackTrace();
+    	   } catch (SQLException e) {
+    		   e.printStackTrace();
+    	   }
     	   synchronized(allModels) {
     		   for (RegionModel m : allModels) {
     			   synchronized(m){
@@ -1618,6 +1634,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
     			   }
 			   }
 		   }
+    	   Region creg = currentRegion;
+    	   reinit(currentOptions);
+    	   setRegion(creg);
     	   if(this.modelConnectionsOpen())
     		   status.setStatus("Ready", Color.black);
     	   else

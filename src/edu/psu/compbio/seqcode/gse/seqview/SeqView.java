@@ -4,6 +4,7 @@ package edu.psu.compbio.seqcode.gse.seqview;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,10 +13,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -385,11 +388,19 @@ public class SeqView extends JFrame {
         private JButton okbutton;
 
         public AboutMessage(String version) {
-        	String text = "<html><center><font color=blue size=+2>SeqView</font><p>"+
+        	URL picURL = getClass().getResource("SeqViewLogo.png");
+            ImageIcon icon = new ImageIcon(picURL, "SeqView");
+            JLabel iconlabel = new JLabel(icon);
+            iconlabel.setPreferredSize(new Dimension(249,161));
+            
+        	String text = "<html><center>"+
         			"<p>"+version+
         			"<p>"+
-        			"<p>Based on WarpDrive from the" +
-        			"<p>Gifford Lab GSE code base (CSAIL, MIT)"+
+        			"<p>Written by Shaun Mahony"+
+        			"<p>"+
+        			"<p>Based on the GSE library,"+
+        			"<p>by Alex Rolfe & Tim Danford"+
+        			"<p>(Gifford Lab, CSAIL, MIT)"+
         			"</html>";
         			
         	javax.swing.JLabel messagelabel = new javax.swing.JLabel(text);
@@ -397,18 +408,20 @@ public class SeqView extends JFrame {
             okbutton.addActionListener(this);
             
             JPanel toppanel = new JPanel();
-            toppanel.setLayout(new BorderLayout());
+            toppanel.setLayout(new GridBagLayout());
             
-            toppanel.add(messagelabel,BorderLayout.CENTER);
+            toppanel.add(iconlabel);;
+            toppanel.add(messagelabel);
             
             JPanel buttonpanel = new JPanel();
             buttonpanel.add(okbutton);
-            toppanel.add(buttonpanel,BorderLayout.SOUTH);
+            toppanel.add(buttonpanel);
 
             getContentPane().add(toppanel);
-            setMinimumSize(new Dimension(200,200));
-            setSize(getPreferredSize());
             pack();
+            setMinimumSize(new Dimension(300,250));
+            setPreferredSize(new Dimension(300,250));
+            setLocation(100,100);
             setVisible(true);
         }
 

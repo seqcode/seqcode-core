@@ -15,7 +15,7 @@ public abstract class CxnPool {
 
     /* availPool is the set of available connections.  fullPool
        is all of the connections we've created.  This freeConnection()
-       check that the connection can be returned ot the availPool
+       check that the connection can be returned to the availPool
        before it does so */
     private LinkedList<Connection> availPool, fullPool;
     private int poolSize;
@@ -53,10 +53,6 @@ public abstract class CxnPool {
         }
         Connection c = null;
         
-        /*
-        c = availPool.removeFirst();
-        availPool.remove(c);
-        */
         c = fullPool.getFirst();
         
         return c;

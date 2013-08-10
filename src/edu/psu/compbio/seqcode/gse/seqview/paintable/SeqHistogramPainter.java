@@ -263,9 +263,10 @@ public class SeqHistogramPainter extends RegionPaintable {
 			g.setColor(Color.darkGray);
 			g.drawLine(x1, midpoint, x2, midpoint);
 			g.setFont(attrib.getPointLabelFont(trackWidth,trackHeight));
+			int fh = g.getFont().getSize();
 			int step = Math.max(1,(int)Math.round(maxhits / 1)); //y-axis scale
 			for (int i = step; i <= Math.ceil(maxhits); i += step) {
-				int ypos = getYPos(i, 0, maxhits, y1, midpoint, logscale);
+				int ypos = getYPos(i, 0, maxhits, y1+fh, midpoint, logscale);
 				g.drawString(Integer.toString(i),5,ypos);
 				ypos = midpoint + (ready2 - getYPos(i, 0, maxhits, midpoint, ready2, logscale));
 				g.drawString(Integer.toString(i),5,ypos);
@@ -313,9 +314,10 @@ public class SeqHistogramPainter extends RegionPaintable {
 			g.setColor(Color.darkGray);
 			g.drawLine(x1, ready2, x2, ready2);
 			g.setFont(attrib.getPointLabelFont(trackWidth,trackHeight));
+			int fh = g.getFont().getSize();
 			int step = Math.max(1,(int)Math.round(maxhits / 1)); //y-axis scale labels
 			for (int i = step; i <= Math.ceil(maxhits); i += step) {
-				int ypos = getYPos(i, 0, maxhits, y1, ready2, logscale);
+				int ypos = getYPos(i, 0, maxhits, y1+fh, ready2, logscale);
 				g.drawString(Integer.toString(i),5,ypos);
 			}
 			g.setColor(Color.black);

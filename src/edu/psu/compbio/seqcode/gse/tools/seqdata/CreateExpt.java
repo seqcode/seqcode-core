@@ -35,7 +35,7 @@ public class CreateExpt {
     				"\t--readtype <SINGLE/PAIRED>\n" +
     				"\t--readlength <int>\n" +
     				"\t--numreads <int>\n" +
-    				"\t--collabalignid <align ID>\n" +
+    				"\t--collabid <align ID>\n" +
     				"\t--publicsource <PMID/UNPUB>\n" +
     				"\t--publicdbid <GEO ID>\n" +
     				"\t--fqfile <FQ filename>\n" +

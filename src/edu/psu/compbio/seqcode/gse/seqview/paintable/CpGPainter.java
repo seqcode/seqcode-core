@@ -4,8 +4,6 @@ import java.awt.*;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
 import edu.psu.compbio.seqcode.gse.seqview.model.RegionMapperModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
@@ -50,7 +48,7 @@ public class CpGPainter extends RegionPaintable {
         return 40;
     }
     public int getMinVertSpace() { 
-        return 20;
+        return 40;
     }
 
     public void paintItem(Graphics2D g, 

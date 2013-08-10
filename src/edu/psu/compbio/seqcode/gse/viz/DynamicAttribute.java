@@ -118,7 +118,7 @@ public class DynamicAttribute implements AttributeCalculator {
         return new Font("Arial",Font.PLAIN,getFontSize(w,h,1.1 * scale * getTypeScale()));
     }
     public Font getPointLabelFont(int w, int h, double scale) {
-        return new Font("Arial",Font.PLAIN,getFontSize(w,h,.8 * scale * getTypeScale()));
+        return new Font("Arial",Font.PLAIN,getFontSize(w,h,.6 * scale * getTypeScale()));
     }
     
 

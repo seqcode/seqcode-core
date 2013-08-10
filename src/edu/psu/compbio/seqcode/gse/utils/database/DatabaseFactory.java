@@ -2,6 +2,8 @@ package edu.psu.compbio.seqcode.gse.utils.database;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
@@ -14,7 +16,7 @@ import java.util.regex.*;
  * database connections (don't use CxnPool directly).  DatabaseFactory
  * provides database connections for *roles* and manages the connection pool for you.
  * A role is a database resource that you want to access, eg, <b>ucsc_SGDv1</b> for 
- * annotations for SGDv1 or <b>chipchip</b> for ChIP-Chip data.
+ * annotations for SGDv1 or <b>core</b> for the core db.
  *
  * @author <a href="mailto:arolfe@mit.edu">Alex Rolfe</a>
  * @version 1.0
@@ -29,6 +31,7 @@ public abstract class DatabaseFactory {
      * Static Methods
      */
     private static Map<String,CxnPool>pools = new HashMap<String,CxnPool>();
+    private static List<String> usedRoles = new ArrayList<String>();
     private static Map<String,String>defaultUsers = new HashMap<String,String>();
     private static Map<String,String>defaultSchemas = new HashMap<String,String>();
     private static Map<Connection, CxnPool> cxnSource = new HashMap<Connection, CxnPool>();
@@ -39,7 +42,9 @@ public abstract class DatabaseFactory {
     public static Connection getConnection(String role) throws SQLException, UnknownRoleException {
         Properties props = null;
         try {
-            role = getRealRole(role);
+        	role = getRealRole(role);
+        	if(!usedRoles.contains(role))
+        		usedRoles.add(role);
             String user, schema;
             if (defaultUsers.containsKey(role) && 
                 defaultSchemas.containsKey(role)) {
@@ -115,10 +120,8 @@ public abstract class DatabaseFactory {
         Matcher o = oraclePattern.matcher(cs);
         Matcher m = mysqlPattern.matcher(cs);
         if (o.matches()) {
-            //            System.err.println("Creating oracle Connection pool for " + key);
             pools.put(key,new OracleCxnPool(props));
         } else if (m.matches()) {
-            //            System.err.println("Creating mysql Connection pool for " + key);
             pools.put(key,new MySQLCxnPool(props));
         } else {
             throw new SQLException("Unknown database type in " + cs);
@@ -240,5 +243,23 @@ public abstract class DatabaseFactory {
         return false;
     }
 
+    /**
+     * Reestabish all connections. 
+     * May be buggy and error-prone, but this is for a drastic case where db connections are down.  
+     */
+    public static void reestablishConnections(){
+    	//Drastically drop all existing pools
+    	pools = new HashMap<String,CxnPool>();
+    	cxnSource = new HashMap<Connection, CxnPool>();
+    	for(String r : usedRoles){
+    		try {
+				getConnection(r);
+			} catch (UnknownRoleException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+    	}
+    }
 }
 
