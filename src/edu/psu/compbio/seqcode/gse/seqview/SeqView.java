@@ -150,7 +150,7 @@ public class SeqView extends JFrame {
         item.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {                    
         		try {
-        			optionsPane = new SeqViewOptionsPane(options);
+        			optionsPane = new SeqViewOptionsPane(regPanel.getCurrentOptions());
         			optionsFrame = new SeqViewOptionsFrame2(optionsPane, thisviewer);
         		} catch (NotFoundException e1) {
         			e1.printStackTrace();

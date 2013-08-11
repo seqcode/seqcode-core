@@ -328,7 +328,7 @@ public class SeqViewOptionsPane
                 !opts.chrom.equals("")) {
                 position.setText(opts.chrom + ":" + opts.start + "-" + opts.stop);
             }
-        }       
+        }
         seqSelect.addToSelected(opts.seqExpts);
         filetracks.fill(opts.regionTracks);
     }
@@ -454,6 +454,7 @@ public class SeqViewOptionsPane
         }
         return these;
     }
+    
     
     /* updates the choice of experiments based on the
        currently selected genome and species */

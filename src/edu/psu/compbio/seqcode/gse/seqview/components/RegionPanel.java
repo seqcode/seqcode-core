@@ -77,8 +77,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	// keeps track of the order in which painters are to be drawn
 	private ArrayList<RegionPaintable> allPainters= new ArrayList<RegionPaintable>();
 	private Hashtable<String,Integer> trackPaintOrder;
-
-	private Hashtable<String,Integer> trackSpace;
+	private Hashtable<String,Double> trackSizeFactor;
 	// set of all the models and painters
 	private HashSet<RegionModel> allModels;
 	private Genome genome;
@@ -180,7 +179,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		genome = g;
 		trackPaintOrder = new Hashtable<String,Integer>();
 
-		trackSpace = new Hashtable<String,Integer>();
+		trackSizeFactor = new Hashtable<String,Double>();
 		allPainters = new ArrayList<RegionPaintable>();
 		ulx = new Hashtable<String,Integer>();
 		uly = new Hashtable<String,Integer>();
@@ -281,7 +280,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		allModels = new HashSet<RegionModel>();
 		painters = new Hashtable<String,ArrayList<RegionPaintable>>();
 		trackPaintOrder = new Hashtable<String,Integer>();
-		trackSpace = new Hashtable<String,Integer>();
+		trackSizeFactor = new Hashtable<String,Double>();
 		allPainters = new ArrayList<RegionPaintable>();
 		ulx = new Hashtable<String,Integer>();
 		uly = new Hashtable<String,Integer>();
@@ -706,18 +705,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				painterCount--;
 			}            
 		}
-
-		/*
-        if (trackPaintOrderThin.containsKey(trackname)) {
-            removeTrackOrder(trackname,trackPaintOrderThin);
-        } else if (trackPaintOrderThick.containsKey(trackname)){
-            removeTrackOrder(trackname,trackPaintOrderThick);
-        }
-		 */
-		if(trackPaintOrder.containsKey(trackname)) { 
+		if(trackPaintOrder.containsKey(trackname))  
 			removeTrackOrder(trackname,trackPaintOrder);
-		}
-
 		painters.remove(trackname);
 		for (RegionModel m : (HashSet<RegionModel>)allModels.clone()) {
 			if (!m.hasListeners()) {
@@ -988,10 +977,11 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   String pk = p.getLabel();
     	   if (painters.get(pk) == null) {
     		   painters.put(pk,new ArrayList<RegionPaintable>());
+    		   trackSizeFactor.put(pk, 1.0);
     		   ulx.put(pk,0); uly.put(pk,0);
     		   lrx.put(pk,0); lry.put(pk,0);            
     	   }
-    	   painters.get(p.getLabel()).add(p);
+    	   painters.get(pk).add(p);
     	   p.getProperties().loadDefaults();
     	   allPainters.add(p);
     	   
@@ -1056,7 +1046,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   int maxspace = 0;
     		   ArrayList<RegionPaintable> plist = painters.get(s);
     		   for (int j = 0; j < plist.size(); j++) {
-    			   int request = plist.get(j).getMinVertSpace();
+    			   double requestd = plist.get(j).getMinVertSpace()*trackSizeFactor.get(s);
+    			   int request = (int)requestd;
     			   if (maxspace < request)
     				   maxspace = request;
     		   }
@@ -1081,13 +1072,16 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   ArrayList<RegionPaintable> plist = painters.get(s);
     		   for (int j = 0; j < plist.size(); j++) {
     			   int request = fillSpace ? plist.get(j).getMaxVertSpace() : plist.get(j).getMinVertSpace();
-
     			   if (request == -1) {
     				   isthick = true;
     				   continue;
     			   }
-    			   if (request>0 && maxspace < request)
-    				   maxspace = request;
+    			   if (request>0){
+    				   double tmpr = request*trackSizeFactor.get(s);
+    				   request = (int)tmpr;
+    				   if(maxspace < request)
+    					   maxspace = request;
+    			   }
     		   }
     		   requests.put(s,maxspace);
     		   thickMap.put(s, isthick);
@@ -1099,21 +1093,21 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   //Allocate non-autofill track space first
     	   for(String s : thickMap.keySet()) {
     		   if(!thickMap.get(s)) {
-    			   int allocated;
-    			   if (trackSpace.containsKey(s + "_requested") &&
-    					   !trackSpace.get(s + "_allocated").equals(trackSpace.get(s + "_requested"))) {
-    				   allocated = trackSpace.get(s + "_allocated");
-    			   } else {
-    				   allocated = requests.get(s);
-    			   }
+    			   int allocated = requests.get(s);
     			   thickSpace -= allocated;
     		   } else { 
     			   thickCount += 1;
     		   }
     	   }
     	   //Split the remaining space between autofill tracks
+    	   double totalSizeFactor = 0;
+    	   for(String s : thickMap.keySet()) {
+    		   if(thickMap.get(s))
+    			   totalSizeFactor+=trackSizeFactor.get(s);
+    	   }
     	   //int thickAlloc = (thickSpace - 5*thickCount) / (Math.max(1, thickCount));
-    	   int thickAlloc = (thickSpace) / (Math.max(1, thickCount));
+    	   double thickAllocd = (thickSpace) / (Math.max(1, totalSizeFactor));
+    	   int thickAlloc = (int)thickAllocd;
 
     	   keys = new String[trackPaintOrder.size()];
     	   i = 0;
@@ -1122,19 +1116,16 @@ Listener<EventObject>, PainterContainer, MouseListener {
 
     	   // layout from the bottom up
     	   for (i = keys.length - 1; i >=0; i--) {
-    		   String s = keys[i];
+    		   String s = keys[i]; 
     		   int allocated;
-    		   if(thickMap.get(s)) { 
-    			   allocated = thickAlloc;
-    		   } else if (trackSpace.containsKey(s + "_requested") &&
-    				   !trackSpace.get(s + "_allocated").equals(trackSpace.get(s + "_requested"))) {
-    			   allocated = trackSpace.get(s + "_allocated");
+    		   if(thickMap.get(s)) {
+    			   double a = thickAlloc*trackSizeFactor.get(s);
+    			   allocated = (int) a;
     		   } else {
     			   allocated = requests.get(s);
     		   }
-    		   trackSpace.put(s + "_allocated",allocated);
     		   ulx.put(s,x);
-    		   lrx.put(s,width + x);
+    		   lrx.put(s,width + x-5);
 
     		   if(thickMap.get(s)) { 
     			   lry.put(s,ypos-5);
@@ -1145,10 +1136,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   }
 
     		   ypos -= allocated;  
-    	   }
-
-    	   for (String k : requests.keySet()) {
-    		   trackSpace.put(k + "_requested",requests.get(k));
     	   }
     	   return height;
        }
@@ -1494,11 +1481,8 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   this.panel = p;
     	   }
     	   public void actionPerformed(ActionEvent e) {
-    		   if (!trackSpace.containsKey(key + "_allocated")) {
-    			   return;
-    		   }
-    		   trackSpace.put(key + "_allocated",
-    				   (int)(trackSpace.get(key + "_allocated") * factor));
+    		   trackSizeFactor.put(key ,
+    				   (double)(trackSizeFactor.get(key) * factor));
     		   panel.repaint();
     	   }
        }

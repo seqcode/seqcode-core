@@ -119,11 +119,13 @@ public class ExonGenePainter extends RegionPaintable {
 
     public int getMaxVertSpace() { 
         int numTracks = layout.getNumTracks();
-        return Math.min(Math.max(70,numTracks * 12),140);
+        //return Math.min(Math.max(70,numTracks * 12),140);
+        return 80;
     }
     public int getMinVertSpace() { 
         int numTracks = layout.getNumTracks();
-        return Math.min(Math.max(70,numTracks * 12),140);
+        //return Math.min(Math.max(70,numTracks * 12),140);
+        return 80;
     }
 
     private void setLayoutGenes() {
