@@ -269,7 +269,7 @@
 	   shortversion="0.1"
 	   identifier="edu.psu.compbio.seqcode.gse.seqview.SeqView"
 	   mainclassname="edu.psu.compbio.seqcode.gse.seqview.SeqView"
-	   icon="edu.psu.compbio.seqcode.gse.seqview.SeqView.SeqViewLogo.png">
+	   icon="/gpfs/group/mahony/code/supportfiles/SeqViewLogo_128x128.png">
 	   <runtime dir="/gpfs/group/mahony/software/java_jre/jre1.7.0_25.jre"/>
 	   <classpath file="${build.dist.dir}/seqview.${pwset}.jar" />
 	   <option value="-Xmx2G"/>		        
