@@ -252,9 +252,10 @@
     <chmod file="${build.dist.dir}/gse-readdb.jar" perm="755"/>
   </target>
 
-  <taskdef name="jarbundler" 
-	classname="net.sourceforge.jarbundler.JarBundler"  
-	classpath="${lib.dir}/jarbundler/jarbundler-2.2.0/jarbundler-2.2.0.jar" />
+  
+  <taskdef name="bundleapp"
+	classname="com.oracle.appbundler.AppBundlerTask"   
+	classpath="${lib.dir}/appbundler/appbundler-1.0.jar" />
 
 	<!-- ======================================================================= -->
 	<!-- Target: bundleseqview                                                   -->
@@ -262,15 +263,16 @@
 	<!--              ant -Dpwset=mahonylab  bundleseqview 					     -->
 	<!-- ======================================================================= -->
   <target name="bundleseqview">
-  	<jarbundler dir="${build.dist.dir}"
-  		name="SeqView"
-  		mainclass="edu.psu.compbio.seqcode.gse.seqview.SeqView" 
-  	    jar="${build.dist.dir}/seqview.${pwset}.jar" 
-  		vmoptions="-Xmx2G"
-  		icon="/Users/mahony/code/other/SeqViewLogo_128x128.png"
-  		jvmversion="1.7+"
-  		version="0.1"/>
+	<bundleapp outputdirectory="${build.dist.dir}"
+	   name="SeqView"
+	   displayname="SeqView"
+	   shortversion="0.1"
+	   identifier="edu.psu.compbio.seqcode.gse.seqview.SeqView"
+	   mainclassname="edu.psu.compbio.seqcode.gse.seqview.SeqView"
+	   icon="/gpfs/group/mahony/code/supportfiles/SeqViewLogo_128x128.png">
+	   <runtime dir="/gpfs/group/mahony/software/java_jre/jre1.7.0_25.jre"/>
+	   <classpath file="${build.dist.dir}/seqview.${pwset}.jar" />
+	   <option value="-Xmx2G"/>		        
+	</bundleapp>
   </target>
-	
-	
 </project>
