@@ -266,7 +266,7 @@
   		name="SeqView"
   		mainclass="edu.psu.compbio.seqcode.gse.seqview.SeqView" 
   	    jar="${build.dist.dir}/seqview.${pwset}.jar" 
-  		vmoption="-Xmx2G"
+  		vmoptions="-Xmx2G"
   		icon="/Users/mahony/code/other/SeqViewLogo_128x128.png"
   		jvmversion="1.7+"
   		version="0.1"/>
