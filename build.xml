@@ -257,14 +257,19 @@
 	classname="com.oracle.appbundler.AppBundlerTask"   
 	classpath="${lib.dir}/appbundler/appbundler-1.0.jar" />
 
-  <target name="bundle">
+	<!-- ======================================================================= -->
+	<!-- Target: bundleseqview                                                   -->
+	<!-- Description: Bundles a SeqView app for Mac OSX    						 -->
+	<!--              ant -Dpwset=mahonylab  bundleseqview 					     -->
+	<!-- ======================================================================= -->
+  <target name="bundleseqview">
 	<bundleapp outputdirectory="${build.dist.dir}"
 	   name="SeqView"
 	   displayname="SeqView"
 	   shortversion="0.1"
 	   identifier="edu.psu.compbio.seqcode.gse.seqview.SeqView"
 	   mainclassname="edu.psu.compbio.seqcode.gse.seqview.SeqView"
-	   logo="/gpfs/group/mahony/code/supportfiles/SeqViewLogo_128x128.png">
+	   icon="/gpfs/group/mahony/code/supportfiles/SeqViewLogo_128x128.png">
 	   <runtime dir="/gpfs/group/mahony/software/java_jre/jre1.7.0_25.jre"/>
 	   <classpath file="${build.dist.dir}/seqview.${pwset}.jar" />
 	   <option value="-Xmx2G"/>		        
