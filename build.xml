@@ -252,25 +252,26 @@
     <chmod file="${build.dist.dir}/gse-readdb.jar" perm="755"/>
   </target>
 
-  
-  <taskdef name="bundleapp"
-	classname="com.oracle.appbundler.AppBundlerTask"   
-	classpath="${lib.dir}/appbundler/appbundler-1.0.jar" />
-
+ 
 	<!-- ======================================================================= -->
 	<!-- Target: bundleseqview                                                   -->
 	<!-- Description: Bundles a SeqView app for Mac OSX    						 -->
 	<!--              ant -Dpwset=mahonylab  bundleseqview 					     -->
 	<!-- ======================================================================= -->
   <target name="bundleseqview">
+  	<taskdef name="bundleapp"
+  		classname="com.oracle.appbundler.AppBundlerTask"   
+  		classpath="/gpfs/home/sam77/code/appbundler/infinitekind-appbundler/appbundler/bin/classes" />
+
 	<bundleapp outputdirectory="${build.dist.dir}"
 	   name="SeqView"
 	   displayname="SeqView"
 	   shortversion="0.1"
 	   identifier="edu.psu.compbio.seqcode.gse.seqview.SeqView"
 	   mainclassname="edu.psu.compbio.seqcode.gse.seqview.SeqView"
-	   icon="/gpfs/group/mahony/code/supportfiles/SeqViewLogo_128x128.png">
-	   <runtime dir="/gpfs/group/mahony/software/java_jre/jre1.7.0_25.jre"/>
+	   icon="/gpfs/group/mahony/code/supportfiles/SeqViewLogo_128x128.png"
+	   copyright="2013 Shaun Mahony.">
+	   <runtime dir="/gpfs/group/mahony/software/java_jre/jre1.7.0_25.jre/Contents/Home"/>
 	   <classpath file="${build.dist.dir}/seqview.${pwset}.jar" />
 	   <option value="-Xmx2G"/>		        
 	</bundleapp>
