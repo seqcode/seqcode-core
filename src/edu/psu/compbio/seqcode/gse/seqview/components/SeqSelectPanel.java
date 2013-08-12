@@ -216,38 +216,45 @@ public class SeqSelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
     public void filter() {
     	Pattern pattType=null, pattLab=null, pattCond=null, pattTarget=null, pattCell=null, pattAlign=null, pattRep=null;
     	//String regType = regexType.getText().trim();
-    	String regType = (String) jcbType.getSelectedItem();
+    	String regType = (String) jcbType.getSelectedItem(); 
+    	regType=regType.toLowerCase();
         if(regType != null && regType.length() > 0)
         	pattType = Pattern.compile(regType);
         String regLab = regexLab.getText().trim();
+        regLab = regLab.toLowerCase();
         if(regLab != null && regLab.length() > 0)
         	pattLab = Pattern.compile(regLab);
         String regCond = regexCond.getText().trim();
+        regCond = regCond.toLowerCase();
         if(regCond != null && regCond.length() > 0)
         	pattCond = Pattern.compile(regCond);
         String regTarget = regexTarget.getText().trim();
+        regTarget = regTarget.toLowerCase();
         if(regTarget != null && regTarget.length() > 0)
         	pattTarget = Pattern.compile(regTarget);
         String regCell = regexCell.getText().trim();
+        regCell = regCell.toLowerCase();
         if(regCell != null && regCell.length() > 0)
         	pattCell = Pattern.compile(regCell);
         String regAlign = regexAlign.getText().trim();
+        regAlign=regAlign.toLowerCase();
         if(regAlign != null && regAlign.length() > 0)
         	pattAlign = Pattern.compile(regAlign);
         String regRep = regexRep.getText().trim();
+        regRep = regRep.toLowerCase();
         if(regRep != null && regRep.length() > 0)
         	pattRep = Pattern.compile(regRep);
         
         synchronized(lme) {
             lme.clear();
             for (SeqAlignment align : alignments){
-                if( (pattType == null || pattType.matcher(align.getExpt().getExptType().getName()).find()) &&
-                	(pattLab == null || pattLab.matcher(align.getExpt().getLab().getName()).find()) &&
-                	(pattCond == null || pattCond.matcher(align.getExpt().getExptCondition().getName()).find()) &&
-                	(pattTarget == null || pattTarget.matcher(align.getExpt().getExptTarget().getName()).find()) &&
-                	(pattCell == null || pattCell.matcher(align.getExpt().getCellLine().getName()).find()) &&
-                	(pattAlign == null || pattAlign.matcher(align.getName()).find()) &&
-                	(pattRep == null || pattRep.matcher(align.getExpt().getReplicate()).find())
+                if( (pattType == null || pattType.matcher(align.getExpt().getExptType().getName().toLowerCase()).find()) &&
+                	(pattLab == null || pattLab.matcher(align.getExpt().getLab().getName().toLowerCase()).find()) &&
+                	(pattCond == null || pattCond.matcher(align.getExpt().getExptCondition().getName().toLowerCase()).find()) &&
+                	(pattTarget == null || pattTarget.matcher(align.getExpt().getExptTarget().getName().toLowerCase()).find()) &&
+                	(pattCell == null || pattCell.matcher(align.getExpt().getCellLine().getName().toLowerCase()).find()) &&
+                	(pattAlign == null || pattAlign.matcher(align.getName().toLowerCase()).find()) &&
+                	(pattRep == null || pattRep.matcher(align.getExpt().getReplicate().toLowerCase()).find())
                 		) {
                 	List<SeqExpt> e = new ArrayList<SeqExpt>();
                 	e.add(align.getExpt());

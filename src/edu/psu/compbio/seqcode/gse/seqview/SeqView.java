@@ -388,41 +388,52 @@ public class SeqView extends JFrame {
         private JButton okbutton;
 
         public AboutMessage(String version) {
-        	URL picURL = getClass().getResource("SeqViewLogo.png");
-            ImageIcon icon = new ImageIcon(picURL, "SeqView");
-            JLabel iconlabel = new JLabel(icon);
-            iconlabel.setPreferredSize(new Dimension(249,161));
-            
-        	String text = "<html><center>"+
-        			"<p>"+version+
-        			"<p>"+
-        			"<p>Written by Shaun Mahony"+
-        			"<p>"+
-        			"<p>Based on the GSE library,"+
-        			"<p>by Alex Rolfe & Tim Danford"+
-        			"<p>(Gifford Lab, CSAIL, MIT)"+
-        			"</html>";
-        			
-        	javax.swing.JLabel messagelabel = new javax.swing.JLabel(text);
-            okbutton = new JButton("OK");
-            okbutton.addActionListener(this);
-            
-            JPanel toppanel = new JPanel();
-            toppanel.setLayout(new GridBagLayout());
-            
-            toppanel.add(iconlabel);;
-            toppanel.add(messagelabel);
-            
-            JPanel buttonpanel = new JPanel();
-            buttonpanel.add(okbutton);
-            toppanel.add(buttonpanel);
+        	JLabel iconlabel=null;
+        	try{
+        		URL picURL = getClass().getResource("/edu/psu/compbio/seqcode/gse/seqview/SeqViewLogo.png");
+        		if(picURL!=null){
+	        		ImageIcon icon = new ImageIcon(picURL, "SeqView");
+	                iconlabel = new JLabel(icon);
+	                iconlabel.setPreferredSize(new Dimension(249,161));
+        		}
+                String text = "<html><center>"+
+            			"<p>"+version+
+            			"<p>"+
+            			"<p>Written by Shaun Mahony"+
+            			"<p>"+
+            			"<p>Based on the GSE library,"+
+            			"<p>by Alex Rolfe & Tim Danford"+
+            			"<p>(Gifford Lab, CSAIL, MIT)"+
+            			"</html>";
+            			
+            	javax.swing.JLabel messagelabel = new javax.swing.JLabel(text);
+                okbutton = new JButton("OK");
+                okbutton.addActionListener(this);
+                
+                JPanel toppanel = new JPanel();
+                toppanel.setLayout(new GridBagLayout());
+                
+                if(iconlabel!=null)
+                	toppanel.add(iconlabel);
+                else{
+                	javax.swing.JLabel svlabel = new javax.swing.JLabel(new String("<html><center><font size=\"+2\" color=\"blue\">SeqView</font></html>"));
+                	toppanel.add(svlabel);
+                }
+                toppanel.add(messagelabel);
+                
+                JPanel buttonpanel = new JPanel();
+                buttonpanel.add(okbutton);
+                toppanel.add(buttonpanel);
 
-            getContentPane().add(toppanel);
-            pack();
-            setMinimumSize(new Dimension(300,250));
-            setPreferredSize(new Dimension(300,250));
-            setLocation(100,100);
-            setVisible(true);
+                getContentPane().add(toppanel);
+                pack();
+                setMinimumSize(new Dimension(300,250));
+                setPreferredSize(new Dimension(300,250));
+                setLocation(100,100);
+                setVisible(true);
+        	}  catch (NullPointerException e) {
+        		e.printStackTrace();
+        	}
         }
 
         public void actionPerformed (ActionEvent e) {
