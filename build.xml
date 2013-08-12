@@ -73,6 +73,7 @@
 	<include name="**/*.bat"/>
 	<include name="**/*.exe"/>
 	<include name="**/*.ico"/>
+    <include name="**/*.png"/>
 	<include name="**/*.properties"/>
       </fileset>
     </copy>
@@ -142,6 +143,7 @@
     <jar destfile="${build.dist.dir}/multigps.${pwset}.jar" manifest="manifests/multigps_manifest.txt">	    
       <fileset dir="${build.classes.dir}" includes="**/*.class"/>
       <fileset dir="${build.classes.dir}" includes="**/*.properties"/>
+      <fileset dir="${build.classes.dir}" includes="**/*.png"/>
       <fileset dir="${build.classes.dir}" includes="**/*.txt"/>
       <fileset dir="${pwfiles.path}" includes="*"/>
       <fileset dir="${build.unjar.dir}"/>	    
@@ -160,6 +162,7 @@
     <jar destfile="${build.dist.dir}/seqview.${pwset}.jar" manifest="manifests/seqview_manifest.txt">	    
       <fileset dir="${build.classes.dir}" includes="**/*.class"/>
       <fileset dir="${build.classes.dir}" includes="**/*.properties"/>
+      <fileset dir="${build.classes.dir}" includes="**/*.png"/>
       <fileset dir="${build.classes.dir}" includes="**/*.txt"/>
       <fileset dir="${pwfiles.path}" includes="*"/>
       <fileset dir="${build.unjar.dir}"/>	    
@@ -178,6 +181,7 @@
     <jar destfile="${build.dist.dir}/SignificanceTester.${pwset}.jar" manifest="manifests/signiftest_manifest.txt">	    
       <fileset dir="${build.classes.dir}" includes="**/*.class"/>
       <fileset dir="${build.classes.dir}" includes="**/*.properties"/>
+      <fileset dir="${build.classes.dir}" includes="**/*.png"/>
       <fileset dir="${build.classes.dir}" includes="**/*.txt"/>
       <fileset dir="${pwfiles.path}" includes="*"/>
       <fileset dir="${build.unjar.dir}"/>	    
@@ -197,6 +201,7 @@
     <jar destfile="${build.dist.dir}/seqcode.${pwset}.jar" >	    
       <fileset dir="${build.classes.dir}" includes="**/*.class"/>
       <fileset dir="${build.classes.dir}" includes="**/*.properties"/>
+      <fileset dir="${build.classes.dir}" includes="**/*.png"/>
       <fileset dir="${build.classes.dir}" includes="**/*.txt"/>
       <fileset dir="${pwfiles.path}" includes="*"/>
       <fileset dir="${build.unjar.dir}"/>	    
