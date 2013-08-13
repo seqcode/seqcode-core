@@ -63,7 +63,7 @@ public class SeqViewOptions {
     public int start, stop;
 
     // tracks to paint and their options
-    public boolean hash=true, relative=false, seqletters=true, gccontent=false, pyrpurcontent=false, cpg=false, regexmatcher=false;
+    public boolean hash=true, relative=false, seqletters=true, polya=false, gccontent=false, pyrpurcontent=false, cpg=false, regexmatcher=false;
     public ArrayList<String> genes, ncrnas, otherannots;
     public ArrayList<ExptNameVersion> agilentdata;
     public ArrayList<WeightMatrix> motifs;
