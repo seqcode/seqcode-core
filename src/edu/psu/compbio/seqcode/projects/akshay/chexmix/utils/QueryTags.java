@@ -21,27 +21,18 @@ public abstract class QueryTags {
 	
 	public void prepareQureybed(String orientation) throws IOException{
 		String currdir = System.getProperty("user.dir");
-		FileOutputStream fop = null;
 		File file;
 		file = new File(currdir+"/temp/"+"tempQueryInterval.bed");
 		if(file.exists()){
 			file.delete();
 		}
-		file.createNewFile();
-
-		fop = new FileOutputStream(file);
-		String content="";
+		FileWriter fstream = new FileWriter(currdir+"/temp/tempQueryInterval.bed", false);
+		BufferedWriter out = new BufferedWriter(fstream);
 		for(int i=this.midpoint-this.range/2; i<this.midpoint+this.range/2;i++){
-			if(content != ""){
-				content = content+"\n";
-			}
-			content = content + this.chr+"\t"+Integer.toString(i)+"\t"+Integer.toString(i+1)+"\t"+"*"+"\t"+"*"+"\t"+orientation;
+			String content = this.chr+"\t"+Integer.toString(i)+"\t"+Integer.toString(i+1)+"\t"+"*"+"\t"+"*"+"\t"+orientation+"\n";
+			out.write(content);
 		}
-		
-		byte[] contentinbytes = content.getBytes();
-		fop.write(contentinbytes);
-		fop.flush();
-		fop.close();
+		out.close();
 		
 	}
 	

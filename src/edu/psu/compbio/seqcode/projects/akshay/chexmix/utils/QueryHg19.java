@@ -20,9 +20,13 @@ public class QueryHg19 extends QueryGenome{
 		this.genomepath = path;
 	}
 	
-	public static void main(String[] args){
-		File dir = new File("dendi");
-		dir.mkdir();
+	public static void main(String[] args) throws IOException{
+		String currdir = System.getProperty("user.dir");
+		FileWriter fstream = new FileWriter(currdir+"/teee", false);
+		BufferedWriter out = new BufferedWriter(fstream);
+		out.write("ttt"+"\n");
+		out.write("pppp");
+		out.close();
 	}
 
 }

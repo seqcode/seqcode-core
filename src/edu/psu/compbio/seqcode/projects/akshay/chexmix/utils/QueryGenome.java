@@ -39,7 +39,7 @@ public abstract class QueryGenome {
 		command.add("-bed");
 		command.add(currdir+"/temp/tempSeqQuery.bed");
 		command.add("-fo");
-		command.add("temp.fa");
+		command.add("temp/temp.fa");
 		ProcessBuilder pb = new ProcessBuilder(command);
 		System.out.println(pb.command());
 		try{
