@@ -20,19 +20,16 @@ public abstract class QueryGenome {
 	}
 	public Seq getSeq(String orientation) throws IOException{
 		String currdir = System.getProperty("user.dir");
-		FileOutputStream fop = null;
 		File file;
 		file = new File(currdir+"/temp/"+"tempSeqQuery.bed");
 		if(file.exists()){
 			file.delete();
 		}
-		file.createNewFile();
-		fop = new FileOutputStream(file);
+		FileWriter fstream = new FileWriter(currdir+"/temp/tempSeqQuery.bed", false);
+		BufferedWriter out = new BufferedWriter(fstream);
 		String content = this.chr+"\t"+Integer.toString(this.midpoint-this.range)+"\t"+Integer.toString(this.midpoint+this.range)+"\t"+"*"+"\t"+"*"+"\t"+orientation+"\n";
-		byte[] contentinbytes = content.getBytes();
-		fop.write(contentinbytes);
-		fop.flush();
-		fop.close();
+		out.write(content);
+		out.close();
 		List<String> command = new ArrayList<String>();
 		command.add("bedtools");
 		command.add("getfasta");

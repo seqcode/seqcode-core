@@ -20,7 +20,7 @@ public class QueryTagsIdx extends QueryTags{
 				BufferedReader br = null;
 				br = new BufferedReader(new FileReader(tagspath));
 				String currentline = br.readLine();
-				FileWriter fstream = new FileWriter(currdir+"/temp/temptagsbed", true);
+				FileWriter fstream = new FileWriter(currdir+"/temp/temptagsbed", false);
 		        BufferedWriter out = new BufferedWriter(fstream);
 				while(!currentline.startsWith("chrom") && currentline != null){
 					String[] pieces = currentline.split("\t");
