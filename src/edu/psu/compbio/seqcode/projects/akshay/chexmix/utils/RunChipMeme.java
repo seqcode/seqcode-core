@@ -22,6 +22,8 @@ public class RunChipMeme {
 	
 	public static void main(String[] args) throws IOException{
 		BufferedReader br = null;
+		File tempdir = new File("temp");
+		tempdir.mkdir();
 		br =  new BufferedReader(new FileReader("/gpfs/home/auk262/scratch/test_input"));
 		RunChipMeme chipdriver = null;
 		List<BindingLocation> locationlist = new ArrayList<BindingLocation>();

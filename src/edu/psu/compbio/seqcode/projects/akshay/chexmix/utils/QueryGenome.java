@@ -23,6 +23,9 @@ public abstract class QueryGenome {
 		FileOutputStream fop = null;
 		File file;
 		file = new File(currdir+"/temp/"+"tempSeqQuery.bed");
+		if(file.exists()){
+			file.delete();
+		}
 		file.createNewFile();
 		fop = new FileOutputStream(file);
 		String content = this.chr+"\t"+Integer.toString(this.midpoint-this.range)+"\t"+Integer.toString(this.midpoint+this.range)+"\t"+"*"+"\t"+"*"+"\t"+orientation;

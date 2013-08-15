@@ -21,8 +21,8 @@ public class QueryHg19 extends QueryGenome{
 	}
 	
 	public static void main(String[] args){
-		String con = null;
-		System.out.println(con+"akshay");
+		File dir = new File("dendi");
+		dir.mkdir();
 	}
 
 }
