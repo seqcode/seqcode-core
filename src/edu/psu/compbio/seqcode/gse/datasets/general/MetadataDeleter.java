@@ -18,6 +18,7 @@ public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closea
     public MetadataDeleter() throws SQLException { 
         try {
             cxn = DatabaseFactory.getConnection(role);
+            cxn.setAutoCommit(false);
         } catch (UnknownRoleException e) {
             throw new IllegalArgumentException("Unknown role: " + role, e);
         }

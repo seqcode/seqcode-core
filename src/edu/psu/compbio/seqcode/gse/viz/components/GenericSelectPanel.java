@@ -236,16 +236,15 @@ public abstract class GenericSelectPanel<X> extends JSplitPane implements Closea
     }
     
     public void addToSelected(Collection<X> objects) {
-            if (handlingNewGenome || dataReady) {
-                synchronized (asyncSelected) {
-                    asyncSelected.addAll(objects);
-                }                
-            } else {
-                for (X x : objects) {
-                    selectedModel.addObject(x);
-                }
+        if (handlingNewGenome || dataReady) {
+            synchronized (asyncSelected) {
+                asyncSelected.addAll(objects);
+            }                
+        } else {
+            for (X x : objects) {
+                selectedModel.addObject(x);
             }
-
+        }
     }
     public void addToSelected(X object) {
         if (handlingNewGenome || dataReady) {
@@ -254,6 +253,12 @@ public abstract class GenericSelectPanel<X> extends JSplitPane implements Closea
             }                
         } else {
             selectedModel.addObject(object);
+        }
+    }
+    public void removeFromSelected(X object) {
+        if(selectedModel.contains(object)){
+            int i = selectedModel.indexOf(object);
+        	selectedModel.deleteObject(i);
         }
     }
     public void close() {}

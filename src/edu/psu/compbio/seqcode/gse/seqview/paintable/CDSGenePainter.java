@@ -106,11 +106,13 @@ public class CDSGenePainter extends RegionPaintable {
 
     public int getMaxVertSpace() { 
         int numTracks = layout.getNumTracks();
-        return Math.min(Math.max(60,numTracks * 12),120);
+        //return Math.min(Math.max(60,numTracks * 12),120);
+        return 80;
     }
     public int getMinVertSpace() { 
         int numTracks = layout.getNumTracks();
-        return Math.min(Math.max(60,numTracks * 12),120);
+        //return Math.min(Math.max(60,numTracks * 12),120);
+        return 80;
     }
 
     private void setLayoutGenes() {

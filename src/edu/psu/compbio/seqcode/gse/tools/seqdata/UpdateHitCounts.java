@@ -52,6 +52,8 @@ public class UpdateHitCounts {
 	        update.setInt(5, id);
 	        update.execute();
 	        update.close();
+	        
+	        loader.close();
 	        cxn.commit();
 	        cxn.close();
         }else{

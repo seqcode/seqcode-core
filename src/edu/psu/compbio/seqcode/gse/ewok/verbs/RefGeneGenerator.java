@@ -10,7 +10,6 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.types.*;
-import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.*;
 
 /** Generator that returns Gene objects from the refGene table (or table with a similar structure, eg sgdGene) in
@@ -27,9 +26,12 @@ import edu.psu.compbio.seqcode.gse.utils.database.*;
  *   - genes whose orf overlaps the query region
  *   - genes whose 5' IGR overlaps the query region
  *   - the closest n genes to a region, regardless of distance
- *
+ * 
  *   Most of the SQL generation code here could probably be generalized out and then reused to query a larger number of table
  *   types
+ *   
+ *   Note from Shaun: One quirk of the UCSC tables is that the starting coordinates of genes, exons, etc
+ *   is 0-based, while the end coordinate is 1-based. Correcting for that here. 
  *
  * @author Alex Rolfe
  */
@@ -397,7 +399,7 @@ public class RefGeneGenerator<X extends Region>
                 }                
                 ExonicGene exonicGene = new ExonicGene(genome,
                                                        chr,
-                                                       rs.getInt(4),
+                                                       rs.getInt(4)+1,  //Correction for 0-based starts
                                                        rs.getInt(5),
                                                        rs.getString(1),
                                                        rs.getString(1),
@@ -421,7 +423,7 @@ public class RefGeneGenerator<X extends Region>
                         
                         for(int i = 0; i < startArray.length && i < endArray.length; i++) { 
                             if(startArray[i].length() > 0 && endArray[i].length() > 0) { 
-                                int start = Integer.parseInt(startArray[i]);
+                                int start = Integer.parseInt(startArray[i])+1; //Correction for 0-based starts in UCSC tables
                                 int end = Integer.parseInt(endArray[i]);
                                 
                                 try {
@@ -446,7 +448,7 @@ public class RefGeneGenerator<X extends Region>
                 }
                 g = new Gene(genome,
                              chr,
-                             rs.getInt(4),
+                             rs.getInt(4)+1, //Correction for 0-based starts
                              rs.getInt(5),
                              rs.getString(1),
                              rs.getString(1),

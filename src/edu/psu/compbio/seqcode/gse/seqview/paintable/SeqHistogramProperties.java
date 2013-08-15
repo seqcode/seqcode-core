@@ -16,7 +16,7 @@ public class SeqHistogramProperties extends ExperimentPaintableProperties {
     private Color mateArcColor = new Color(100,100,100,50);
     private Color splitReadArcColor = new Color(0,255,255,50);
     
-    private int drawGaussianMaxWindow = 10000;
+    private int drawGaussianMaxWindow = 30000;
     private Integer LineWidth = 1;
     
     public Color getPlusColor(){return plusColor;}

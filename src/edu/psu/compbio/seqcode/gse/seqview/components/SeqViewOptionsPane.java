@@ -299,6 +299,7 @@ public class SeqViewOptionsPane
         hash.setSelected(opts.hash);
         gccontent.setSelected(opts.gccontent);        
         pyrpurcontent.setSelected(opts.pyrpurcontent);
+        polyA.setSelected(opts.polya);
         cpg.setSelected(opts.cpg);
         regexmatcher.setSelected(opts.regexmatcher);
         seqletters.setSelected(opts.seqletters);
@@ -328,7 +329,7 @@ public class SeqViewOptionsPane
                 !opts.chrom.equals("")) {
                 position.setText(opts.chrom + ":" + opts.start + "-" + opts.stop);
             }
-        }       
+        }
         seqSelect.addToSelected(opts.seqExpts);
         filetracks.fill(opts.regionTracks);
     }
@@ -417,6 +418,7 @@ public class SeqViewOptionsPane
         }
         these.gccontent = gccontent.isSelected();
         these.pyrpurcontent = pyrpurcontent.isSelected();
+        these.polya = polyA.isSelected();
         these.cpg = cpg.isSelected();
         these.regexmatcher = regexmatcher.isSelected();
 
@@ -454,6 +456,7 @@ public class SeqViewOptionsPane
         }
         return these;
     }
+    
     
     /* updates the choice of experiments based on the
        currently selected genome and species */

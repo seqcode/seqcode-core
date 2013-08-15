@@ -204,7 +204,7 @@ public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
      * Configure log4j
      */
     public static void configureLogging() {
-    	ClassLoader loader = SeqViewOptionsFrame.class.getClassLoader();
+    	ClassLoader loader = SeqViewOptionsFrame2.class.getClassLoader();
     	//PropertyConfigurator.configure(loader.getResource("edu/psu/compbio/seqcode/gse/utils/config/log4j.properties"));    	
     }
     

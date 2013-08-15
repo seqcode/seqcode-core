@@ -11,7 +11,7 @@ import edu.psu.compbio.seqcode.gse.utils.*;
 public class BasePairPainter extends RegionPaintable {
 
     private RegionMapperModel<String> model;
-    private Color A = Color.GREEN, C = Color.BLUE, G = Color.ORANGE, T = Color.RED;
+    private Color A = Color.RED, C = Color.BLUE, G = Color.ORANGE, T = Color.GREEN;
     private BasePairPainterProperties props;
 
     public BasePairPainter (RegionMapperModel<String> model) {

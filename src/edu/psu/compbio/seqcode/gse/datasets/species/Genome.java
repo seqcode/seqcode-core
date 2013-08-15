@@ -54,7 +54,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     private static String[] intvals;
     private String species, version;
     private int speciesid, dbid;
-    private java.sql.Connection cxn;
+    private java.sql.Connection cxn=null;
     
     private Map<String,ChromosomeInfo> chroms;
     private Map<Integer,ChromosomeInfo> revchroms;
@@ -546,16 +546,22 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     public int getDBID() {return dbid;}
     public int getSpeciesDBID() { return speciesid; }
     
+    /**
+     * Get the database connection from the factory again.
+     * Works to reestablish a dropped connection if used with DatabaseFactory.reestablishConnnections
+     * @throws UnknownRoleException
+     * @throws SQLException
+     */
+    public void renewCoreConnection() throws UnknownRoleException, SQLException{
+    	cxn = DatabaseFactory.getConnection("core");
+    }
+    
     /** Returns a read connection to the UCSC database for this
      * genome 
      */
     public java.sql.Connection getUcscConnection() throws SQLException {
         try {
-        	if(getVersion().equals("vv1")) { 
-        		return DatabaseFactory.getConnection("vaccinia_vv1");
-        	}
-        	
-            String v = this.getVersion().replaceAll("[^\\w\\-]","_");
+        	String v = this.getVersion().replaceAll("[^\\w\\-]","_");
             return DatabaseFactory.getConnection("ucsc_" + v);
         } catch (UnknownRoleException ex) {
             throw new DatabaseException("Couldn't create a database connection for genome " + 

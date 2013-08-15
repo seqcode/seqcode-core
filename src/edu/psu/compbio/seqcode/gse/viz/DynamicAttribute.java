@@ -108,17 +108,17 @@ public class DynamicAttribute implements AttributeCalculator {
         return getPointLabelFont(w,h,1.0);
     }    
     public Font getLargeLabelFont(int w, int h, double scale) {
-        int size = getFontSize(Math.max(w,h), Math.max(w,h),1.4 * scale * getTypeScale());
+        int size = getFontSize(Math.max(w,h), Math.max(w,h),1.2 * scale * getTypeScale());
         if (size > Math.min(w,h)) {
             size = Math.min(w,h);
         }
         return new Font("Arial",Font.PLAIN,size);
     }
     public Font getRegionLabelFont(int w, int h, double scale) {
-        return new Font("Arial",Font.PLAIN,getFontSize(w,h,1.1 * scale * getTypeScale()));
+        return new Font("Arial",Font.PLAIN,getFontSize(w,h,0.9 * scale * getTypeScale()));
     }
     public Font getPointLabelFont(int w, int h, double scale) {
-        return new Font("Arial",Font.PLAIN,getFontSize(w,h,.8 * scale * getTypeScale()));
+        return new Font("Arial",Font.PLAIN,getFontSize(w,h,.6 * scale * getTypeScale()));
     }
     
 
