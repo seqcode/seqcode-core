@@ -31,7 +31,7 @@ public class RunChipMeme {
 		String currentline = br.readLine();
 		while(currentline != null){
 			String[] pieces = currentline.split("\t");
-			int tempMidpoint = (Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2;
+			int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
 			String tempChr = pieces[0];
 			BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, 60);
 			temploc.fillSeqs("mm9");

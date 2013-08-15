@@ -44,6 +44,7 @@ public abstract class QueryGenome {
 		command.add("-fo");
 		command.add("temp.fa");
 		ProcessBuilder pb = new ProcessBuilder(command);
+		System.out.println(pb.command());
 		try{
 			Process shell = pb.start();
 			shell.waitFor();
