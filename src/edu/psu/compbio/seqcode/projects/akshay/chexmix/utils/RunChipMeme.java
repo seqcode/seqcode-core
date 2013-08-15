@@ -15,7 +15,7 @@ public class RunChipMeme {
 	public void printFasta(){
 		for(int i=0; i<locations.size(); i++){
 			System.out.println("loc"+i);
-			System.out.println(locations.get(i).seqpos);
+			System.out.println(locations.get(i).seqpos.sequence);
 			
 		}
 	}
