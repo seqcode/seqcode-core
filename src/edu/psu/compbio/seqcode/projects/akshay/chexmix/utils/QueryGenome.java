@@ -59,6 +59,7 @@ public abstract class QueryGenome {
 		String tempseq = null;
 		while(!currentline.startsWith(">") && currentline != null){
 			tempseq = currentline;
+			System.out.println(currentline);
 			currentline = br.readLine();
 		}
 		br.close();
