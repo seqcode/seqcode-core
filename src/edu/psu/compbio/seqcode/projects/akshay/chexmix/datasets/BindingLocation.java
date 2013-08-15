@@ -30,11 +30,13 @@ public class BindingLocation {
 	public void fillSeqs(String genome) throws IOException{
 		if(genome == "hg19"){
 			QueryHg19 seqloader = new QueryHg19(this.chr,this.midpoint, this.range);
+			seqloader.fillGenomePath();
 			this.seqpos = seqloader.getSeq("+");
 			this.seqneg = seqloader.getSeq("-");
 		}
 		if(genome == "mm9"){
 			QueryMm9 seqloader = new QueryMm9(this.chr,this.midpoint,this.range);
+			seqloader.fillGenomePath();
 			this.seqpos = seqloader.getSeq("+");
 			this.seqneg = seqloader.getSeq("-");
 		}
