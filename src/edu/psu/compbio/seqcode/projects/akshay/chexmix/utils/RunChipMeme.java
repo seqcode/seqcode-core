@@ -14,8 +14,8 @@ public class RunChipMeme {
 	
 	public void printFasta(){
 		for(int i=0; i<locations.size(); i++){
-			System.out.println("loc"+i+"\n");
-			System.out.println(locations.get(i).seqpos+"\n");
+			System.out.println("loc"+i);
+			System.out.println(locations.get(i).seqpos);
 			
 		}
 	}
@@ -32,6 +32,7 @@ public class RunChipMeme {
 			int tempMidpoint = (Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2;
 			String tempChr = pieces[0];
 			BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, 60);
+			temploc.fillSeqs("mm9");
 			locationlist.add(temploc);
 			currentline = br.readLine();
 		}

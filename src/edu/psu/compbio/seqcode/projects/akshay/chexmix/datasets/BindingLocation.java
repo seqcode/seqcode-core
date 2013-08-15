@@ -33,6 +33,11 @@ public class BindingLocation {
 			this.seqpos = seqloader.getSeq("+");
 			this.seqneg = seqloader.getSeq("-");
 		}
+		if(genome == "mm9"){
+			QueryMm9 seqloader = new QueryMm9(this.chr,this.midpoint,this.range);
+			this.seqpos = seqloader.getSeq("+");
+			this.seqneg = seqloader.getSeq("-");
+		}
 	}
 	
 	public Seq getSubSeq(int midpoint, String orientation, int range){
