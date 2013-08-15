@@ -41,7 +41,6 @@ public abstract class QueryGenome {
 		command.add("-fo");
 		command.add("temp/temp.fa");
 		ProcessBuilder pb = new ProcessBuilder(command);
-		System.out.println(pb.command());
 		try{
 			Process shell = pb.start();
 			shell.waitFor();
@@ -57,9 +56,10 @@ public abstract class QueryGenome {
 		br = new BufferedReader(new FileReader(currdir+"/temp/"+"temp.fa"));
 		String currentline = br.readLine();
 		String tempseq = null;
-		while(!currentline.startsWith(">") && currentline != null){
-			tempseq = currentline;
-			System.out.println(currentline);
+		while(currentline != null){
+			if(!currentline.startsWith(">")){
+				tempseq = currentline;
+			}
 			currentline = br.readLine();
 		}
 		br.close();
