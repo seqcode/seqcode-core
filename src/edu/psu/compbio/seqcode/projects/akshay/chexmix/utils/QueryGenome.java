@@ -28,7 +28,7 @@ public abstract class QueryGenome {
 		}
 		file.createNewFile();
 		fop = new FileOutputStream(file);
-		String content = this.chr+"\t"+Integer.toString(this.midpoint-this.range)+"\t"+Integer.toString(this.midpoint+this.range)+"\t"+"*"+"\t"+"*"+"\t"+orientation;
+		String content = this.chr+"\t"+Integer.toString(this.midpoint-this.range)+"\t"+Integer.toString(this.midpoint+this.range)+"\t"+"*"+"\t"+"*"+"\t"+orientation+"\n";
 		byte[] contentinbytes = content.getBytes();
 		fop.write(contentinbytes);
 		fop.flush();
