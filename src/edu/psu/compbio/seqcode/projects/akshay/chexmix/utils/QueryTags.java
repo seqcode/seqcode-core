@@ -65,7 +65,7 @@ public abstract class QueryTags {
 	             }
 	        }
 	        
-	        ret = new Vec(this.range, this.chr, orientation, false, 1, this.tags);
+	        ret = new Vec(this.range, this.midpoint, this.chr, orientation, false, 1, this.tags);
 	        
 		}
 		catch (IOException e) {

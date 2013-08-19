@@ -8,7 +8,7 @@ public class QueryMm10 extends QueryGenome{
 
 	@Override
 	public void fillGenomePath() {
-		this.genomepath =  "/gpfs/home/auk262/group/genomes/mm9";
+		this.genomepath =  "/gpfs/home/auk262/group/genomes/mm10";
 		
 	}
 
