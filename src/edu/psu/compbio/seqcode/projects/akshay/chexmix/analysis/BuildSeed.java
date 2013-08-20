@@ -116,6 +116,7 @@ public class BuildSeed {
 		
 		BuildSeed driver = new BuildSeed(locationlist, 60, 0, 0.5);
 		for (int i=0; i<5; i++){
+			System.out.println("Getting Center");
 			BindingLocation tempcenter = driver.getCenter();
 			driver.updateRemoved(tempcenter);
 		}
