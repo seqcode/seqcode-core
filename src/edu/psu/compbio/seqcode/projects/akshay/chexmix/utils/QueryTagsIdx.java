@@ -23,6 +23,7 @@ public class QueryTagsIdx extends QueryTags{
 				FileWriter fstream = new FileWriter(currdir+"/temp/temptagsbed", false);
 		        BufferedWriter out = new BufferedWriter(fstream);
 				while(!currentline.startsWith("chrom") && currentline != null){
+					System.out.println(currentline);
 					String[] pieces = currentline.split("\t");
 					for(int i=0; i< Integer.parseInt(pieces[2]); i++){
 						String content = pieces[0]+"\t"+Integer.toString(Integer.parseInt(pieces[0])+1)+"\t"+"*"+"\t"+"*"+"+";

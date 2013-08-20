@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.akshay.chexmix.utils;
 
+import java.io.File;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.*;
@@ -28,5 +29,16 @@ public class Smoothing {
 		Vec ret = new Vec(inputvec.range, inputvec.midpoint, inputvec.chr, inputvec.orientation, true, inputvec.binsize, smoothtags);
 		return ret;
 		
+	}
+	
+	public static void main(String[] args){
+		String currdir = System.getProperty("user.dir");
+		File temptagsbed = new File(currdir+"/temp/temptagsbed");
+		if(temptagsbed.exists()){
+			System.out.println("YaY");
+		}
+		else{
+			System.out.println("Nah");
+		}
 	}
 }
