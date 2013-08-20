@@ -112,6 +112,7 @@ public class BuildSeed {
 			locationlist.add(temploc);
 			currentline = br.readLine();
 		}
+		System.out.println(locationlist.get(1).vecpos.tags);
 		br.close();
 		
 		BuildSeed driver = new BuildSeed(locationlist, 60, 0, 0.5);
