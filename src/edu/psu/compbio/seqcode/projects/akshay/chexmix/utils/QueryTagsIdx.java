@@ -29,11 +29,11 @@ public class QueryTagsIdx extends QueryTags{
 					
 					String[] pieces = currentline.split("\t");
 					for(int i=0; i< Integer.parseInt(pieces[2]); i++){
-						String content = pieces[0]+"\t"+Integer.toString(Integer.parseInt(pieces[0])+1)+"\t"+"*"+"\t"+"*"+"+";
+						String content = pieces[0]+"\t"+pieces[1]+"\t"+Integer.toString(Integer.parseInt(pieces[1])+1)+"\t"+"*"+"\t"+"*"+"+";
 						out.write(content+"\n");
 					}
 					for(int i=0; i< Integer.parseInt(pieces[3]); i++){
-						String content =  pieces[0]+"\t"+Integer.toString(Integer.parseInt(pieces[0])+1)+"\t"+"*"+"\t"+"*"+"-";
+						String content =  pieces[0]+"\t"+pieces[1]+"\t"+Integer.toString(Integer.parseInt(pieces[1])+1)+"\t"+"*"+"\t"+"*"+"-";
 						out.write(content+"\n");
 					}
 					currentline = br.readLine();
