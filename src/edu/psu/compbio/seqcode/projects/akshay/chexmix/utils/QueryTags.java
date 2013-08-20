@@ -48,9 +48,8 @@ public abstract class QueryTags {
 		command.add("-s");
 		command.add("-a");
 		command.add(currdir+"/temp/"+"tempQueryInterval.bed");
-		command.add("=b");
+		command.add("-b");
 		command.add(this.tagsbedfilepath);
-		command.add("temp.fa");
 		ProcessBuilder pb = new ProcessBuilder(command);
 		try{
 			Process shell = pb.start();
