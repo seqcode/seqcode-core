@@ -105,7 +105,9 @@ public class BuildSeed {
 			String[] pieces = currentline.split("\t");
 			int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
 			String tempChr = pieces[0];
+			System.out.println("Creating Binding Location");
 			BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, 300);
+			System.out.println("Filling Tags");
 			temploc.filltags("idx","/gpfs/home/auk262/scratch/FoxA2_07-633_liver_-_-_-_XO_kaz1-S001_Pugh4020mm10.idx");
 			locationlist.add(temploc);
 			currentline = br.readLine();
