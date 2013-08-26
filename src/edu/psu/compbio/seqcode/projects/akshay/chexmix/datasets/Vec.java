@@ -48,13 +48,21 @@ public class Vec {
 	
 	
 	 public Vec getSub(int midpoint, int range){
-		 int start = midpoint-range;
-		 int end = midpoint+range;
+		 if(midpoint-range<this.midpoint-this.range || midpoint+range > this.midpoint+this.range){
+			 System.err.println("the requested vector is out of bounds");
+		 }
+		 int[] positions = new int[this.tags.size()];
+		 int[] counts = new int[this.tags.size()];
+		 int i=0;
+		 for(int pos: this.tags.keySet()){
+			 positions[i]=pos;
+			 counts[i]=this.tags.get(pos);
+		 }
+		 int start_ind = Arrays.binarySearch(positions, midpoint-range);
+		 int end_ind = start_ind+range*2;
 		 Map<Integer, Integer> rettags = new TreeMap<Integer, Integer>();
-		 for(int ke: this.tags.keySet()){
-			 if(ke>=start && ke < end){
-				 rettags.put(ke, this.tags.get(ke));
-			 }
+		 for(int j=start_ind; j< end_ind; j++ ){
+			 rettags.put(positions[j], counts[j]);
 		 }
 		 Vec ret = new Vec(range, midpoint, this.chr,this.orientation,this.smoothing,this.binsize,rettags);
 		 return ret;
