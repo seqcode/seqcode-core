@@ -57,6 +57,7 @@ public class Vec {
 		 for(int pos: this.tags.keySet()){
 			 positions[i]=pos;
 			 counts[i]=this.tags.get(pos);
+			 i++;
 		 }
 		 int start_ind = Arrays.binarySearch(positions, midpoint-range);
 		 int end_ind = start_ind+range*2;
