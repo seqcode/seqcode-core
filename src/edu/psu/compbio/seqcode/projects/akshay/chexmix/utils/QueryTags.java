@@ -33,7 +33,7 @@ public class QueryTags {
 				if( start_ind < 0 ) { start_ind = -start_ind - 1; }
 				for(int k=this.midpoint-this.range; k<this.midpoint+this.range; k++){
 					if(k == tempStarts[start_ind]){
-						tags.put(k, (int)loader.fivePrimeCounts[chrID][j][k]);
+						tags.put(k, (int)loader.fivePrimeCounts[chrID][j][start_ind]);
 						start_ind++;
 					}
 					else{
