@@ -19,8 +19,8 @@ public class BuildSeed {
 	public BuildSeed(List<BindingLocation> topBlList, int range, int smoothsize, double cutoff) {
 		this.cutoff = cutoff;
 		this.smoothsize = smoothsize;
-		for(int i=0; i<topBlList.size(); i++){
-			for(int j=0; j< topBlList.size(); j++ ){
+		for(int i=0; i<topBlList.size()-1; i++){
+			for(int j=i+1; j< topBlList.size(); j++ ){
 				if(i != j){
 					BLpair pair = new BLpair(topBlList.get(i),topBlList.get(j));
 					CustomReturn pccmax = topBlList.get(i).scanTwoBLs(topBlList.get(j), range, smoothsize);
@@ -38,6 +38,12 @@ public class BuildSeed {
 				}
 				else{
 					pccpairwise.put(pair.BL1, allpairs.get(pair).pcc);
+				}
+				if(pccpairwise.containsKey(pair.BL2)){
+					pccpairwise.put(pair.BL2, pccpairwise.get(pair.BL2)+allpairs.get(pair).pcc);
+				}
+				else{
+					pccpairwise.put(pair.BL2, allpairs.get(pair).pcc);
 				}
 			}
 		}
