@@ -21,7 +21,10 @@ public class QueryTags {
 	public Vec getTags(LoadTags loader, String orientation){
 		Vec ret = null;
 		Map<Integer,Integer> tags = new TreeMap<Integer,Integer>();
-		int chrID = loader.chrom2ID.get(this.chr);
+		String[] tmp = this.chr.split("\\.");
+		String ch=tmp[0].replaceFirst("chr", "");
+		ch=ch.replaceFirst("^>", "");
+		int chrID = loader.chrom2ID.get(ch);
 		int j = (orientation == "+")?0:1;
 		if(loader.fivePrimePos[chrID][j]!= null){
 			int[] tempStarts = loader.fivePrimePos[chrID][j];
