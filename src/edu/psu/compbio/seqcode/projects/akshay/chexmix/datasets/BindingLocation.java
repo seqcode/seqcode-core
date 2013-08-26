@@ -183,8 +183,8 @@ public class BindingLocation {
 					pcc=temppcc;
 					// debuggining lines
 					System.out.println(pcc);
-					maxVec1= this.getSubVec(i, range, "+", smoothsize);
-					maxVec2= givenBL.getSubVec(j, range, "+", smoothsize);
+					maxVec1= this.getSubVec(thisvec.get(i), range, "+", smoothsize);
+					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+", smoothsize);
 				}
 				first = this.getConcatenatedTags(thisvec.get(i), this.chr, range, "+", smoothsize);
 				second = givenBL.getConcatenatedTags(givenvec.get(j), givenBL.chr, range, "-", smoothsize);
@@ -194,8 +194,8 @@ public class BindingLocation {
 					pcc=temppcc;
 					// debuggining lines
 					System.out.println(pcc);
-					maxVec1= this.getSubVec(i, range, "+", smoothsize);
-					maxVec2= givenBL.getSubVec(j, range, "-", smoothsize);
+					maxVec1= this.getSubVec(thisvec.get(i), range, "+", smoothsize);
+					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-", smoothsize);
 				}
 				first = this.getConcatenatedTags(thisvec.get(i), this.chr, range, "-", smoothsize);
 				second = givenBL.getConcatenatedTags(givenvec.get(j), givenBL.chr, range, "+", smoothsize);
@@ -205,8 +205,8 @@ public class BindingLocation {
 					pcc=temppcc;
 					// debuggining lines
 					System.out.println(pcc);
-					maxVec1= this.getSubVec(i, range, "-", smoothsize);
-					maxVec2= givenBL.getSubVec(j, range, "+", smoothsize);
+					maxVec1= this.getSubVec(thisvec.get(i), range, "-", smoothsize);
+					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+", smoothsize);
 				}
 				first = this.getConcatenatedTags(thisvec.get(i), this.chr, range, "-", smoothsize);
 				second = givenBL.getConcatenatedTags(givenvec.get(j), givenBL.chr, range, "-", smoothsize);
@@ -216,8 +216,8 @@ public class BindingLocation {
 					pcc=temppcc;
 					// debuggining lines
 					System.out.println(pcc);
-					maxVec1= this.getSubVec(i, range, "-", smoothsize);
-					maxVec2= givenBL.getSubVec(j, range, "-", smoothsize);
+					maxVec1= this.getSubVec(thisvec.get(i), range, "-", smoothsize);
+					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-", smoothsize);
 				}
 			}
 		}
