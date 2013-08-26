@@ -17,6 +17,7 @@ public class BindingLocation {
 	private int range;
 	private List<Integer> coords = new ArrayList<Integer>();
 	
+	
 	public BindingLocation(int midpoint, String chr, int range) {
 		this.chr = chr;
 		this.midpoint = midpoint;
@@ -140,6 +141,10 @@ public class BindingLocation {
 			}
 		}
 		return ret;
+	}
+	
+	public String getName(){
+		return this.chr+":"+this.midpoint;
 	}
 	
 	public List<Vec> getListSubVec(int range, String orientation, int smoothsize){

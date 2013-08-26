@@ -114,16 +114,20 @@ public class BuildSeed {
 			int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
 			String tempChr = pieces[0];
 			System.out.println("Creating Binding Location");
-			BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, 300);
+			BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, 100);
 			System.out.println("Filling Tags");
 			temploc.filltags(loader);
 			locationlist.add(temploc);
 			currentline = br.readLine();
 		}
-		System.out.println(locationlist.get(1).vecpos.tags);
+		
 		br.close();
 		
 		BuildSeed driver = new BuildSeed(locationlist, 60, 0, 0.5);
+		for(BLpair pair: driver.allpairs.keySet()){
+			System.out.println(pair.BL1.getName()+"=="+pair.BL2.getName());
+			System.out.println(driver.allpairs.get(pair).pcc);
+		}
 		for (int i=0; i<5; i++){
 			System.out.println("Getting Center");
 			BindingLocation tempcenter = driver.getCenter();
