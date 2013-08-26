@@ -36,13 +36,6 @@ public class LoadTags {
 	public HashMap<String, Integer> chrom2ID=new HashMap<String,Integer>();
 	public HashMap<Integer,String> id2Chrom=new HashMap<Integer,String>();
 	
-	/**
-	 * Constructor for this class,
-	 * Takses the path of the tags file
-	 */
-	public LoadTags(String path) {
-		this.tagsfilepath  =path;
-	}
 	
 	
 	/**
@@ -232,9 +225,5 @@ public class LoadTags {
 			out[i] = list.get(i);
 		return out;
 	}
-	
-	
-	
-	
 
 }

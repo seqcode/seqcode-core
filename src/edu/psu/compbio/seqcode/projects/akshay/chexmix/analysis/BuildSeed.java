@@ -101,7 +101,8 @@ public class BuildSeed {
 	
 	public static void main(String[] args) throws IOException{
 		System.out.println("Loading the hitloader");
-		LoadTags loader = new LoadTags("/gpfs/home/auk262/scratch/FoxA2_07-633_liver_-_-_-_XO_kaz1-S001_Pugh4020mm10.idx");
+		LoadTags loader = new LoadTags();
+		loader.loadHits("/gpfs/home/auk262/scratchFoxA2_07-633_liver_-_-_-_XO_kaz1-S001_Pugh4020mm10.idx", "idx", false);
 		BufferedReader br = null;
 		File tempdir = new File("temp");
 		tempdir.mkdir();
