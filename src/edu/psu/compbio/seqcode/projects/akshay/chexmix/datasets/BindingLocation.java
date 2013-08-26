@@ -180,6 +180,8 @@ public class BindingLocation {
 				double temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
 					pcc=temppcc;
+					// debuggining lines
+					System.out.println(pcc);
 					maxVec1= thisvec.get(i);
 					maxVec2=givenvec.get(j);
 				}
