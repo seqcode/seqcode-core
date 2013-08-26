@@ -93,8 +93,15 @@ public class BuildSeed {
 		}
 		
 	}
+	/**
+	 * this main body is only to test the buildseed class.
+	 * @param args
+	 * @throws IOException
+	 */
 	
 	public static void main(String[] args) throws IOException{
+		System.out.println("Loading the hitloader");
+		LoadTags loader = new LoadTags("/gpfs/home/auk262/scratch/FoxA2_07-633_liver_-_-_-_XO_kaz1-S001_Pugh4020mm10.idx");
 		BufferedReader br = null;
 		File tempdir = new File("temp");
 		tempdir.mkdir();
@@ -108,7 +115,7 @@ public class BuildSeed {
 			System.out.println("Creating Binding Location");
 			BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, 300);
 			System.out.println("Filling Tags");
-			temploc.filltags("idx","/gpfs/home/auk262/scratch/FoxA2_07-633_liver_-_-_-_XO_kaz1-S001_Pugh4020mm10.idx");
+			temploc.filltags(loader);
 			locationlist.add(temploc);
 			currentline = br.readLine();
 		}

@@ -32,13 +32,12 @@ public class Smoothing {
 	}
 	
 	public static void main(String[] args){
-		String currdir = System.getProperty("user.dir");
-		File temptagsbed = new File(currdir+"/temp/temptagsbed");
-		if(temptagsbed.exists()){
-			System.out.println("YaY");
-		}
-		else{
-			System.out.println("Nah");
-		}
+		String chr = "chr7";
+		String[] tmp = chr.split("\\.");
+		System.out.println(tmp[0]);
+		chr=tmp[0].replaceFirst("chr", "");
+		System.out.println(chr);
+		chr=chr.replaceFirst("^>", "");
+		System.out.println(chr);
 	}
 }

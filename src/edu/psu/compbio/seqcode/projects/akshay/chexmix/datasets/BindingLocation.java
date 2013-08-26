@@ -3,6 +3,7 @@ package edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets;
 import java.io.*;
 import java.util.*;
 
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.analysis.LoadTags;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.*;
 
 public class BindingLocation {
@@ -15,7 +16,6 @@ public class BindingLocation {
 	private int midpoint;
 	private int range;
 	private List<Integer> coords = new ArrayList<Integer>();
-	private Map<Integer,Integer> tags = new TreeMap<Integer,Integer>();
 	
 	public BindingLocation(int midpoint, String chr, int range) {
 		this.chr = chr;
@@ -79,23 +79,10 @@ public class BindingLocation {
 		return ret;
 	}
 	
-	public void filltags(String tagsfiletype, String tagsfilepath) throws IOException{
-		if(tagsfiletype == "bed"){
-			QueryTagsBed tagsloader = new QueryTagsBed(this.midpoint, this.range, this.chr);
-			tagsloader.prepareQureybed("+");
-			tagsloader.fillTagsBedPath(tagsfilepath);
-			this.vecpos = tagsloader.getTags("+");
-			tagsloader.prepareQureybed("-");
-			this.vecneg = tagsloader.getTags("-");
-		}
-		if(tagsfiletype == "idx"){
-			QueryTagsIdx tagsloader = new QueryTagsIdx(this.midpoint,this.range,this.chr);
-			tagsloader.prepareQureybed("+");
-			tagsloader.fillTagsBedPath(tagsfilepath);
-			this.vecpos = tagsloader.getTags("+");
-			tagsloader.prepareQureybed("-");
-			this.vecneg = tagsloader.getTags("-");
-		}
+	public void filltags(LoadTags loader) throws IOException{
+		QueryTags tagsfetcher = new QueryTags(this.midpoint,this.range, this.chr);
+		this.vecpos = tagsfetcher.getTags(loader, "+");
+		this.vecneg = tagsfetcher.getTags(loader, "-");
 	}
 	
 	public List<Integer> getConcatenatedTags(int midpoint, String chr, int range, String Orientation, int smoothsize){

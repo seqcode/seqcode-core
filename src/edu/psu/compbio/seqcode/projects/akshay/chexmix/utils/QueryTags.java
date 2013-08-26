@@ -3,13 +3,13 @@ package edu.psu.compbio.seqcode.projects.akshay.chexmix.utils;
 import java.io.*;
 import java.util.*;
 
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.analysis.LoadTags;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.*;
 
-public abstract class QueryTags {
+public class QueryTags {
 	public int midpoint;
 	public String chr;
 	public int range;
-	public String tagsbedfilepath;
 	public Map<Integer, Integer> tags = new TreeMap<Integer, Integer>();
 	
 	public QueryTags(int midpoint, int range, String chr) {
@@ -18,62 +18,29 @@ public abstract class QueryTags {
 		this.chr = chr;
 	}
 	
-	
-	public void prepareQureybed(String orientation) throws IOException{
-		String currdir = System.getProperty("user.dir");
-		File file;
-		file = new File(currdir+"/temp/"+"tempQueryInterval.bed");
-		if(file.exists()){
-			file.delete();
-		}
-		FileWriter fstream = new FileWriter(currdir+"/temp/tempQueryInterval.bed", false);
-		BufferedWriter out = new BufferedWriter(fstream);
-		for(int i=this.midpoint-this.range/2; i<this.midpoint+this.range/2;i++){
-			String content = this.chr+"\t"+Integer.toString(i)+"\t"+Integer.toString(i+1)+"\t"+"*"+"\t"+"*"+"\t"+orientation+"\n";
-			out.write(content);
-		}
-		out.close();
-		
-	}
-	
-	public abstract void fillTagsBedPath(String tagspath);
-
-	public Vec getTags(String orientation){
+	public Vec getTags(LoadTags loader, String orientation){
 		Vec ret = null;
-		String currdir = System.getProperty("user.dir");
-		List<String> command = new ArrayList<String>();
-		command.add("bedtools");
-		command.add("intersect");
-		command.add("-c");
-		command.add("-s");
-		command.add("-a");
-		command.add(currdir+"/temp/"+"tempQueryInterval.bed");
-		command.add("-b");
-		command.add(this.tagsbedfilepath);
-		ProcessBuilder pb = new ProcessBuilder(command);
-		try{
-			Process shell = pb.start();
-			shell.waitFor();
-	        BufferedReader br = new BufferedReader(new InputStreamReader(shell.getInputStream()));
-	        String line = null, previous = null;
-	        while ((line = br.readLine()) != null){
-	            if (!line.equals(previous)) {
-	                previous = line;
-	                String[] pieces = line.split("\t");
-	                this.tags.put(Integer.parseInt(pieces[1]),Integer.parseInt(pieces[6]));
-	             }
-	        }
-	        
-	        ret = new Vec(this.range, this.midpoint, this.chr, orientation, false, 1, this.tags);
-	        
+		Map<Integer,Integer> tags = new TreeMap<Integer,Integer>();
+		int chrID = loader.chrom2ID.get(this.chr);
+		int j = (orientation == "+")?0:1;
+		if(loader.fivePrimePos[chrID][j]!= null){
+			int[] tempStarts = loader.fivePrimePos[chrID][j];
+			if(tempStarts.length != 0){
+				int start_ind = Arrays.binarySearch(tempStarts, this.midpoint-this.range);
+				if( start_ind < 0 ) { start_ind = -start_ind - 1; }
+				for(int k=this.midpoint-this.range; k<this.midpoint+this.range; k++){
+					if(k == tempStarts[start_ind]){
+						tags.put(k, (int)loader.fivePrimeCounts[chrID][j][k]);
+						start_ind++;
+					}
+					else{
+						tags.put(k, 0);
+					}
+				}
+				
+			}
 		}
-		catch (IOException e) {
-			System.out.println("Error occured while executing Linux command. Error Description: "
-			+ e.getMessage());
-		} catch (InterruptedException e) {
-			System.out.println("Error occured while executing Linux command. Error Description: "
-					+ e.getMessage());
-		}
+		ret = new Vec(this.range, this.midpoint, this.chr, orientation, false, 0,tags);
 		return ret;
 	}
 }
