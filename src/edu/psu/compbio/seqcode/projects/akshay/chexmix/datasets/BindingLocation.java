@@ -164,6 +164,8 @@ public class BindingLocation {
 		}
 		return ret;
 	}
+	
+	
 	/* maxVec1 is from thisvector and mxvec2 is from given vector
 	 * */
 	public CustomReturn scanTwoBLs(BindingLocation givenBL,int range, int smoothsize){
@@ -177,48 +179,48 @@ public class BindingLocation {
 			for(int j=0; j<givenvec.size(); j++){
 				List<Integer> first = this.getConcatenatedTags(thisvec.get(i), this.chr, range, "+", smoothsize);
 				List<Integer> second = givenBL.getConcatenatedTags(givenvec.get(j), givenBL.chr, range, "+", smoothsize);
-				Pearson pccdriver = new Pearson(first,second);
-				double temppcc = pccdriver.doComparision();
-				if(temppcc>pcc ){
-					pcc=temppcc;
+				//Pearson pccdriver = new Pearson(first,second);
+				//double temppcc = pccdriver.doComparision();
+				//if(temppcc>pcc ){
+				//	pcc=temppcc;
 					// debuggining lines
-					System.out.println(pcc);
-					maxVec1= this.getSubVec(thisvec.get(i), range, "+", smoothsize);
-					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+", smoothsize);
-				}
+				//	System.out.println(pcc);
+				//	maxVec1= this.getSubVec(thisvec.get(i), range, "+", smoothsize);
+				//	maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+", smoothsize);
+				//}
 				first = this.getConcatenatedTags(thisvec.get(i), this.chr, range, "+", smoothsize);
 				second = givenBL.getConcatenatedTags(givenvec.get(j), givenBL.chr, range, "-", smoothsize);
-				pccdriver = new Pearson(first,second);
-				temppcc = pccdriver.doComparision();
-				if(temppcc>pcc ){
-					pcc=temppcc;
+				//pccdriver = new Pearson(first,second);
+				//temppcc = pccdriver.doComparision();
+				//if(temppcc>pcc ){
+				//	pcc=temppcc;
 					// debuggining lines
-					System.out.println(pcc);
-					maxVec1= this.getSubVec(thisvec.get(i), range, "+", smoothsize);
-					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-", smoothsize);
-				}
+				//	System.out.println(pcc);
+				//	maxVec1= this.getSubVec(thisvec.get(i), range, "+", smoothsize);
+				//	maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-", smoothsize);
+				//}
 				first = this.getConcatenatedTags(thisvec.get(i), this.chr, range, "-", smoothsize);
 				second = givenBL.getConcatenatedTags(givenvec.get(j), givenBL.chr, range, "+", smoothsize);
-				pccdriver = new Pearson(first,second);
-				temppcc = pccdriver.doComparision();
-				if(temppcc>pcc ){
-					pcc=temppcc;
+				//pccdriver = new Pearson(first,second);
+				//temppcc = pccdriver.doComparision();
+				//if(temppcc>pcc ){
+				//	pcc=temppcc;
 					// debuggining lines
-					System.out.println(pcc);
-					maxVec1= this.getSubVec(thisvec.get(i), range, "-", smoothsize);
-					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+", smoothsize);
-				}
+				//	System.out.println(pcc);
+				//	maxVec1= this.getSubVec(thisvec.get(i), range, "-", smoothsize);
+				//	maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+", smoothsize);
+				//}
 				first = this.getConcatenatedTags(thisvec.get(i), this.chr, range, "-", smoothsize);
 				second = givenBL.getConcatenatedTags(givenvec.get(j), givenBL.chr, range, "-", smoothsize);
-				pccdriver = new Pearson(first,second);
-				temppcc = pccdriver.doComparision();
-				if(temppcc>pcc ){
-					pcc=temppcc;
+				//pccdriver = new Pearson(first,second);
+				//temppcc = pccdriver.doComparision();
+				//if(temppcc>pcc ){
+				//	pcc=temppcc;
 					// debuggining lines
-					System.out.println(pcc);
-					maxVec1= this.getSubVec(thisvec.get(i), range, "-", smoothsize);
-					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-", smoothsize);
-				}
+				//	System.out.println(pcc);
+				//	maxVec1= this.getSubVec(thisvec.get(i), range, "-", smoothsize);
+				//	maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-", smoothsize);
+				//}
 			}
 		}
 		
