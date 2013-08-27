@@ -123,7 +123,7 @@ public class BuildSeed {
 			int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
 			String tempChr = pieces[0];
 			System.out.println("Creating Binding Location");
-			BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, 100);
+			BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, 70);
 			System.out.println("Filling Tags");
 			temploc.filltags(loader);
 			locationlist.add(temploc);
