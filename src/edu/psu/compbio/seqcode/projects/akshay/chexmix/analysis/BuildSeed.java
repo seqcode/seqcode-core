@@ -86,6 +86,9 @@ public class BuildSeed {
 			if(!removed.containsKey(bl)){
 				count++;
 			}
+			else{
+				System.out.println(bl.getName());
+			}
 		}
 		return count;
 	}
@@ -146,7 +149,7 @@ public class BuildSeed {
 		
 		br.close();
 		
-		BuildSeed driver = new BuildSeed(locationlist, 60, 0, 0.5);
+		BuildSeed driver = new BuildSeed(locationlist, 60, 0, 0.7);
 		for(BLpair pair: driver.allpairs.keySet()){
 			System.out.println(pair.BL1.getName()+"=="+pair.BL2.getName());
 			System.out.println(driver.allpairs.get(pair).pcc);
