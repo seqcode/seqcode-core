@@ -137,13 +137,6 @@ public class BuildSeed {
 			System.out.println(pair.BL1.getName()+"=="+pair.BL2.getName());
 			System.out.println(driver.allpairs.get(pair).pcc);
 		}
-		for (int i=0; i<5; i++){
-			System.out.println("Getting Center");
-			BindingLocation tempcenter = driver.getCenter();
-			driver.updateRemoved(tempcenter);
-		}
-		driver.printSeed();
-		
 	}
 	
 }
