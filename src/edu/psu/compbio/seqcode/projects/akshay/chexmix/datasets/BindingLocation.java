@@ -168,7 +168,7 @@ public class BindingLocation {
 	
 	/* maxVec1 is from thisvector and mxvec2 is from given vector
 	 * */
-	public CustomReturn scanTwoBLs(BindingLocation givenBL,int range, int smoothsize){
+	public CustomReturn scanWithBl(BindingLocation givenBL,int range, int smoothsize){
 		Vec maxVec1=null;
 		Vec maxVec2=null;
 		double pcc = -2.0;

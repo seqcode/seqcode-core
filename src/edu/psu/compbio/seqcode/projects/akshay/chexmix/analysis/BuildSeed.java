@@ -25,7 +25,7 @@ public class BuildSeed {
 					//debugging line
 					System.out.println(i+"to"+j);
 					BLpair pair = new BLpair(topBlList.get(i),topBlList.get(j));
-					CustomReturn pccmax = topBlList.get(i).scanTwoBLs(topBlList.get(j), range, smoothsize);
+					CustomReturn pccmax = topBlList.get(i).scanWithBl(topBlList.get(j), range, smoothsize);
 					System.out.println(pccmax.pcc);
 					allpairs.put(pair, pccmax);
 				}
@@ -35,31 +35,26 @@ public class BuildSeed {
 	
 	public BindingLocation getCenter(){
 		for (BLpair pair: allpairs.keySet()){
-			if(!removed.containsKey(pair.BL1) && !removed.containsKey(pair.BL2)){
-				if(pccpairwise.containsKey(pair.BL1)){
-					pccpairwise.put(pair.BL1, pccpairwise.get(pair.BL1) + allpairs.get(pair).pcc);
-				}
-				else{
-					pccpairwise.put(pair.BL1, allpairs.get(pair).pcc);
-				}
-				if(pccpairwise.containsKey(pair.BL2)){
-					pccpairwise.put(pair.BL2, pccpairwise.get(pair.BL2)+allpairs.get(pair).pcc);
-				}
-				else{
-					pccpairwise.put(pair.BL2, allpairs.get(pair).pcc);
-				}
+			if(pccpairwise.containsKey(pair.BL1)){
+				pccpairwise.put(pair.BL1, pccpairwise.get(pair.BL1) + allpairs.get(pair).pcc);
+			}
+			else{
+				pccpairwise.put(pair.BL1, allpairs.get(pair).pcc);
+			}
+			if(pccpairwise.containsKey(pair.BL2)){
+				pccpairwise.put(pair.BL2, pccpairwise.get(pair.BL2)+allpairs.get(pair).pcc);
+			}
+			else{
+				pccpairwise.put(pair.BL2, allpairs.get(pair).pcc);
 			}
 		}
-		
 		BindingLocation ret=null;
 		double max=-1000;
 		
 		for(BindingLocation bl : pccpairwise.keySet()){
-			if(!removed.containsKey(bl)){
-				if(pccpairwise.get(bl)>max){
-					max =pccpairwise.get(bl);
-					ret = bl;
-				}
+			if(pccpairwise.get(bl)>max){
+				max =pccpairwise.get(bl);
+				ret = bl;
 			}
 		}
 		return ret;
@@ -69,11 +64,30 @@ public class BuildSeed {
 		for(BLpair pair : allpairs.keySet()){
 			if(pair.BL1 == center){
 				if(allpairs.get(pair).pcc < this.cutoff){
+					if(!removed.containsKey(pair.BL2)){
 					removed.put(pair.BL2, 1);
+					}
+				}
+			}
+			if(pair.BL2 == center){
+				if(allpairs.get(pair).pcc < this.cutoff){
+					if(!removed.containsKey(pair.BL1)){
+						removed.put(pair.BL1, 1);
+					}
 				}
 			}
 		}
 		
+	}
+	
+	public int getNoInSeed(){
+		int count=0;
+		for(BindingLocation bl : pccpairwise.keySet()){
+			if(!removed.containsKey(bl)){
+				count++;
+			}
+		}
+		return count;
 	}
 	
 	public void printSeed(){
@@ -137,6 +151,10 @@ public class BuildSeed {
 			System.out.println(pair.BL1.getName()+"=="+pair.BL2.getName());
 			System.out.println(driver.allpairs.get(pair).pcc);
 		}
+		
+		BindingLocation center = driver.getCenter();
+		driver.updateRemoved(center);
+		System.out.println(driver.getNoInSeed());
 	}
 	
 }
