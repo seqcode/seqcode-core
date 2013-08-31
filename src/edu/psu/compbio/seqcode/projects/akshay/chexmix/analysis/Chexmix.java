@@ -17,6 +17,9 @@ public class Chexmix {
 	public static void main(String[] args) throws IOException{
 		Config c = new Config(args);
 		Chexmix driver = new Chexmix(c);
+		if(driver.c.helpWanted()){
+			driver.c.getArgsList();
+		}
 		System.currentTimeMillis();
 		System.out.println("\n============================ Loading Tags/Reads ============================");
 		LoadTags tagsloader = new LoadTags();
