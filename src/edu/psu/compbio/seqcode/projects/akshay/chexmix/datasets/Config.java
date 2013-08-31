@@ -93,12 +93,12 @@ public class Config {
 				"\t--G <name of the genome; hg18, hg19..>\n" +
 				"\t--BM <Build method; scheme1, scheme2..>\n" +
 				"\t--TBL <Top binding locations to consider for building seed>\n" +
-				"\t--PSC <PCC seed cutoff; default value 0.8>"+
+				"\t--PSC <PCC seed cutoff; default value 0.8>\n"+
 				"\t--PC <PCC cutoff; default value 0.6>\n" +
-				"\t--offset <displacement to consider, +- this value will be considered; default value set to 10>"+
+				"\t--offset <displacement to consider, +- this value will be considered; default value set to 10>\n"+
 				"\t--IR <Interval Range; *2 this values will be the interval size; default value set to 30>\n" +
-				"\t--S <Smoothing value; 0 for no smoothing; default value set to 0>"+
-				"\t--O <turn Off center approach; by default it is on>"));
+				"\t--S <Smoothing value; 0 for no smoothing; default value set to 0>\n"+
+				"\t--O <turn Off center approach; by default it is on>\n"));
 				
 	}
 }
