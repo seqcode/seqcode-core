@@ -2,17 +2,27 @@ package edu.psu.compbio.seqcode.projects.akshay.chexmix.analysis;
 
 import java.io.File;
 import java.util.*;
-import java.util.HashMap;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
 import edu.psu.compbio.seqcode.projects.multigps.hitloaders.*;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 public class LoadTags {
 	
+	/**
+	 * This variable stores the actual path of the tags (IDX/BED/BAM..)
+	 * This variable id filled by the fillTagsfilepathname method
+	 */
 	private String tagsfilepath;
 	
-	private Genome gen; // this genome object is estimated for the data internally
+	/**
+	 * This genome object is estimated internally by the estimateGenome method
+	 */
+	private Genome gen; 
 	
+	/**
+	 * This variable holds the number of chromosomes in the genome. Filled by getting this information from the genome object
+	 */
 	private int numChroms; 
 	
 	/** 
@@ -23,7 +33,10 @@ public class LoadTags {
 	 */
 	public int[][][] fivePrimePos = null;
 	
-	private double totalHits; //totalHits is the sum of alignment weights
+	/**
+	 * totalHits is the sum of alignment weights
+	 */
+	private double totalHits; 
 	
 	/**
 	 * Sum of read hit weights that corresponds to the 5' position
@@ -80,9 +93,9 @@ public class LoadTags {
 		return currReader;
 	}
 	
-	public void loadHits(String path, String format, boolean useNonUnique ){
-		this.fillTagsfilepathname(path);
-		HitLoader hloader = this.getFileHitloader(format, useNonUnique);
+	public void loadHits(Config conf, boolean useNonUnique ){
+		this.fillTagsfilepathname(conf.getTagsPath());
+		HitLoader hloader = this.getFileHitloader(conf.getTagsFormat(), useNonUnique);
 		
 		hloader.sourceReads();
 		//Estimate the genome
