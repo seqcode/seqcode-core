@@ -17,6 +17,7 @@ public class Chexmix {
 	public static void main(String[] args) throws IOException{
 		Config c = new Config(args);
 		Chexmix driver = new Chexmix(c);
+		System.out.println(c.helpWanted());
 		if(driver.c.helpWanted()){
 			driver.c.getArgsList();
 		}
