@@ -122,8 +122,8 @@ public class BindingLocation {
 		//debug lines
 		System.out.println(range);
 		//debug lines
-		this.vecpos.tags.values();
-		givenBL.vecpos.tags.values();
+		System.out.println(this.vecpos.tags.values());
+		System.out.println(givenBL.vecpos.tags.values());
 		
 		Vec maxVec1=null;
 		Vec maxVec2=null;
