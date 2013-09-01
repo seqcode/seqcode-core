@@ -33,7 +33,7 @@ public class Chexmix {
 			String currentline = brpeaks.readLine();
 			while(currentline != null){
 				//debugg line
-				System.out.println();
+				System.out.println(currentline);
 				String[] pieces = currentline.split("\t");
 				int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
 				String tempChr = pieces[0];
