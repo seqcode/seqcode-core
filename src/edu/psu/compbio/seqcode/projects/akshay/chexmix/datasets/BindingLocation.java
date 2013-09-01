@@ -120,30 +120,17 @@ public class BindingLocation {
 	 * and reversal that yields the maximum similarity in the current binding location. maxvec2 is for the given binding location)
 	 */
 	public CustomReturn scanBlWithBl(BindingLocation givenBL,int range, int smoothsize){
-		//debug lines
-		System.out.println(range);
-		//debug lines
-		System.out.println(this.vecpos.tags.values());
-		System.out.println(givenBL.vecpos.tags.values());
-		
 		Vec maxVec1=null;
 		Vec maxVec2=null;
 		double pcc = -2.0;
 		List<Integer> thisvec = this.getListMidpoints(range);
 		List<Integer> givenvec = givenBL.getListMidpoints(range);
-		
-		//debug lines
-		System.out.println(thisvec);
-		System.out.println(givenvec);
+
 		
 		for(int i=0; i<thisvec.size(); i++){
 			for(int j=0; j<givenvec.size(); j++){
 				List<Integer> first = this.getConcatenatedTags(thisvec.get(i), range, "+", smoothsize);
 				List<Integer> second = givenBL.getConcatenatedTags(givenvec.get(j), range, "+", smoothsize);
-				//debug line
-				System.out.println(first);
-				//debug line
-				System.out.println(second);
 				Pearson pccdriver = new Pearson(first,second);
 				double temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
@@ -383,11 +370,6 @@ public class BindingLocation {
 	 * @return
 	 */
 	public List<Integer> getListMidpoints(int range){
-		//debug lines
-		System.out.println(this.coords.get(0));
-		System.out.println(this.coords.get(1));
-		System.out.println(this.coords.get(0)+range);
-		System.out.println(this.coords.get(1)-range);
 		List<Integer> ret = new ArrayList<Integer>();
 		for(int i=this.coords.get(0)+range; i< this.coords.get(1)-range; i++){
 			ret.add(i);

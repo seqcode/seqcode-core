@@ -55,6 +55,7 @@ public class BuildSeed {
 					System.out.println(i+"to"+j);
 					BLpair pair = new BLpair(topBlList.get(i),topBlList.get(j));
 					CustomReturn pccmax = topBlList.get(i).scanBlWithBl(topBlList.get(j), conf.getIntSize(), smoothsize);
+					//debug line
 					System.out.println(pccmax.pcc);
 					allpairs.put(pair, pccmax);
 				}
