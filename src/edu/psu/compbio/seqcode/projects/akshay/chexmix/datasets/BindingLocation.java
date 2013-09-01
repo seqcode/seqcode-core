@@ -46,11 +46,12 @@ public class BindingLocation {
 	public BindingLocation(int midpoint, String chr, Config conf) {
 		this.chr = chr;
 		this.midpoint = midpoint;
+		this.range = conf.getBlsize();
 		int start = midpoint - range;
 		int end = midpoint + range;
 		this.coords.add(start);
 		this.coords.add(end);
-		this.range = conf.getBlsize();
+		
 	}
 	
 	@Override
