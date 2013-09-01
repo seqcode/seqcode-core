@@ -41,6 +41,8 @@ public class Config {
 			
 			for(String s: ap.getKeys()){
 				if(s=="tags"){
+					//debug line
+					System.out.println("akshay"+ap.getKeyValue(s));
 					this.tagsfile = ap.getKeyValue(s);
 				}
 				if(s=="G"){

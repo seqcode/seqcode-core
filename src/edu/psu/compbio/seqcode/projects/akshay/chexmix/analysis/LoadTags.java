@@ -97,6 +97,8 @@ public class LoadTags {
 	
 	public void loadHits(Config conf, boolean useNonUnique ){
 		this.fillTagsfilepathname(conf.getTagsPath());
+		//debug line
+		System.out.println(conf.getTagsPath());
 		HitLoader hloader = this.getFileHitloader(conf.getTagsFormat(), useNonUnique);
 		
 		hloader.sourceReads();
