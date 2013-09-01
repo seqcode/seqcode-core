@@ -39,10 +39,13 @@ public class Chexmix {
 				//debug line
 				System.out.println(temploc.getName());
 				temploc.filltags(tagsloader);
+				//debug line
+				System.out.println(temploc.vecpos.tags.values());
 				allbls.add(temploc);
 				currentline = brpeaks.readLine();
 			}
 			brpeaks.close();
+			System.out.println(allbls.size());
 			System.currentTimeMillis();
 			System.out.println("\n============================ Building Seed Profile ============================");
 			ArrayList<BindingLocation> topbls = new ArrayList<BindingLocation>();
