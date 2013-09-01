@@ -119,6 +119,12 @@ public class BindingLocation {
 	 * and reversal that yields the maximum similarity in the current binding location. maxvec2 is for the given binding location)
 	 */
 	public CustomReturn scanBlWithBl(BindingLocation givenBL,int range, int smoothsize){
+		//debug lines
+		System.out.println(range);
+		//debug lines
+		this.vecpos.tags.values();
+		givenBL.vecpos.tags.values();
+		
 		Vec maxVec1=null;
 		Vec maxVec2=null;
 		double pcc = -2.0;

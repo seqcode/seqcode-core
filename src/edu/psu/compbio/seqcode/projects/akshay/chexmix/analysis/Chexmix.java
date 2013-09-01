@@ -47,8 +47,6 @@ public class Chexmix {
 			for(int i=0; i<driver.c.getNoTopBls(); i++){
 				topbls.add(allbls.get(i));
 			}
-			//debug lines 
-			System.out.println(topbls.get(25).vecpos.tags.values());
 			BuildSeed seedbuilder = new BuildSeed(topbls, driver.c);
 			int[] profile=null ;
 			if(driver.c.getSchemename().equals("scheme1")){
