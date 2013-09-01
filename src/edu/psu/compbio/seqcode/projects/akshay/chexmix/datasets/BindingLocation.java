@@ -133,8 +133,6 @@ public class BindingLocation {
 				double temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
 					pcc=temppcc;
-					// debuggining lines
-					System.out.println(pcc);
 					maxVec1= this.getSubVec(thisvec.get(i), range, "+", smoothsize);
 					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+", smoothsize);
 				}
@@ -143,8 +141,6 @@ public class BindingLocation {
 				pccdriver = new Pearson(first,second);
 				temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
-					pcc=temppcc;
-					// debuggining lines
 					System.out.println(pcc);
 					maxVec1= this.getSubVec(thisvec.get(i), range, "+", smoothsize);
 					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-", smoothsize);
@@ -154,8 +150,6 @@ public class BindingLocation {
 				pccdriver = new Pearson(first,second);
 				temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
-					pcc=temppcc;
-					// debuggining lines
 					System.out.println(pcc);
 					maxVec1= this.getSubVec(thisvec.get(i), range, "-", smoothsize);
 					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+", smoothsize);
@@ -166,8 +160,6 @@ public class BindingLocation {
 				temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
 					pcc=temppcc;
-					// debuggining lines
-					System.out.println(pcc);
 					maxVec1= this.getSubVec(thisvec.get(i), range, "-", smoothsize);
 					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-", smoothsize);
 				}
