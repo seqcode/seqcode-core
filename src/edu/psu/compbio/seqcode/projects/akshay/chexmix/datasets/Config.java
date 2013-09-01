@@ -39,28 +39,27 @@ public class Config {
 			smoothing =  Args.parseInteger(args, "S", 0);
 			tagsfiletype = Args.parseString(args, "tagstype", "IDX").toUpperCase();
 			
+			
 			for(String s: ap.getKeys()){
-				if(s=="tags"){
-					//debug line
-					System.out.println("akshay"+ap.getKeyValue(s));
+				if(s.equals("tags")){
 					this.tagsfile = ap.getKeyValue(s);
 				}
-				if(s=="G"){
+				if(s.equals("G")){
 					this.genome_name = ap.getKeyValue(s);
 				}
-				if(s=="BM"){
+				if(s.equals("BM")){
 					this.scheme_name = ap.getKeyValue(s);
 				}
-				if(s=="seq"){
+				if(s.equals("seq")){
 					this.genome_path = ap.getKeyValue(s);
 				}
-				if(s=="P"){
+				if(s.equals("P")){
 					this.peak_location = ap.getKeyValue(s);
 				}
 			}
 			
 			for(String flag: Args.parseFlags(args)){
-				if(flag == "O"){
+				if(flag.equals("O")){
 					this.useCenterApproach = false;
 				}
 			}

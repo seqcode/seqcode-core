@@ -49,10 +49,10 @@ public class Chexmix {
 			}
 			BuildSeed seedbuilder = new BuildSeed(topbls, driver.c);
 			int[] profile=null ;
-			if(driver.c.getSchemename() == "scheme1"){
+			if(driver.c.getSchemename().equals("scheme1")){
 				profile= seedbuilder.executeScheme1(driver.c);
 			}
-			if(driver.c.getSchemename() == "scheme2"){
+			if(driver.c.getSchemename().equals("scheme2")){
 				profile=seedbuilder.executeScheme2(driver.c);
 			}
 			System.currentTimeMillis();

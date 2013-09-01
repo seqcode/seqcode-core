@@ -70,8 +70,6 @@ public class LoadTags {
 	 */
 	private HitLoader getFileHitloader(String format, boolean useNonUnique){
 		HitLoader currReader=null;
-		//debug line
-		System.out.println(this.tagsfilepath);
 		File file = new File(this.tagsfilepath);
 		if(!file.isFile()){System.err.println("File not found: "+file.getName());System.exit(1);}
 		if(format.equals("SAM") || format.equals("BAM")){
@@ -97,8 +95,6 @@ public class LoadTags {
 	
 	public void loadHits(Config conf, boolean useNonUnique ){
 		this.fillTagsfilepathname(conf.getTagsPath());
-		//debug line
-		System.out.println(conf.getTagsPath());
 		HitLoader hloader = this.getFileHitloader(conf.getTagsFormat(), useNonUnique);
 		
 		hloader.sourceReads();
