@@ -129,6 +129,10 @@ public class BindingLocation {
 			for(int j=0; j<givenvec.size(); j++){
 				List<Integer> first = this.getConcatenatedTags(thisvec.get(i), range, "+", smoothsize);
 				List<Integer> second = givenBL.getConcatenatedTags(givenvec.get(j), range, "+", smoothsize);
+				//debug line
+				System.out.println(first);
+				//debug line
+				System.out.println(second);
 				Pearson pccdriver = new Pearson(first,second);
 				double temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){

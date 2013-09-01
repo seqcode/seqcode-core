@@ -36,16 +36,11 @@ public class Chexmix {
 				int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
 				String tempChr = pieces[0];
 				BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, driver.c);
-				//debug line
-				System.out.println(temploc.getName());
 				temploc.filltags(tagsloader);
-				//debug line
-				System.out.println(temploc.vecpos.tags.values());
 				allbls.add(temploc);
 				currentline = brpeaks.readLine();
 			}
 			brpeaks.close();
-			System.out.println(allbls.size());
 			System.currentTimeMillis();
 			System.out.println("\n============================ Building Seed Profile ============================");
 			ArrayList<BindingLocation> topbls = new ArrayList<BindingLocation>();
