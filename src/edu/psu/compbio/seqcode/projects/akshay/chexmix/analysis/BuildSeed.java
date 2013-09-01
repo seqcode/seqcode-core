@@ -218,7 +218,7 @@ public class BuildSeed {
 			if(!bl.equals(center)){
 				BLpair temppair = (allpairs.containsKey(new BLpair(center, bl)) ? new BLpair(center,bl): new BLpair(bl,center));
 				CustomReturn tempPos = this.allpairs.get(temppair);
-				List<Integer> tempaddToProfile = (temppair.BL1.equals(this.center) ? new ArrayList<Integer>(tempPos.maxVec1.tags.values()) : new ArrayList<Integer>(tempPos.maxVec2.tags.values()));
+				List<Integer> tempaddToProfile = (temppair.BL1.equals(this.center) ? temppair.BL2.getConcatenatedTags(tempPos.maxVec2.midpoint, tempPos.maxVec2.range, tempPos.maxVec2.orientation, this.smoothsize): temppair.BL1.getConcatenatedTags(tempPos.maxVec1.midpoint, tempPos.maxVec1.range, tempPos.maxVec1.orientation, this.smoothsize));
 				if(profile == null){
 					profile = new int[tempaddToProfile.size()];
 					for(int i=0; i<tempaddToProfile.size(); i++){
