@@ -383,6 +383,8 @@ public class BindingLocation {
 	 */
 	public List<Integer> getListMidpoints(int range){
 		//debug lines
+		System.out.println(this.coords.get(0));
+		System.out.println(this.coords.get(1));
 		System.out.println(this.coords.get(0)+range);
 		System.out.println(this.coords.get(1)-range);
 		List<Integer> ret = new ArrayList<Integer>();
