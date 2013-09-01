@@ -123,7 +123,11 @@ public class BindingLocation {
 		Vec maxVec2=null;
 		double pcc = -2.0;
 		List<Integer> thisvec = this.getListMidpoints(range);
-		List<Integer> givenvec = givenBL.getListMidpoints(range); 
+		List<Integer> givenvec = givenBL.getListMidpoints(range);
+		
+		//debug lines
+		System.out.println(thisvec);
+		System.out.println(givenvec);
 		
 		for(int i=0; i<thisvec.size(); i++){
 			for(int j=0; j<givenvec.size(); j++){
