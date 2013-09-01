@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import cern.colt.Arrays;
+
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.BindingLocation;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
 
@@ -58,10 +60,10 @@ public class Chexmix {
 			System.currentTimeMillis();
 			System.out.println("No of Binding Locations selected to build seed are: "+seedbuilder.getNoInSeed());
 			System.out.println("Composite of seed:");
-			System.out.println(profile);
+			System.out.println(Arrays.toString(profile));
 			System.out.println("\n============================ Scanning the entire list of binding locations ============================");
 			LocationsScanner scanner = new LocationsScanner(allbls, driver.c, profile);
-			System.out.println(scanner.getListofPCCvalues());
+			System.out.println(Arrays.toString(scanner.getListofPCCvalues()));
 			System.currentTimeMillis();
 		}
 		
