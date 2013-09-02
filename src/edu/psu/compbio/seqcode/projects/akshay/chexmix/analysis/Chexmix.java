@@ -76,15 +76,15 @@ public class Chexmix {
 			br_profile.close();
 			System.out.println("\n============================ Scanning the entire list of binding locations ============================");
 			LocationsScanner scanner = new LocationsScanner(allbls, driver.c, profile);
-			System.out.println(Arrays.toString(scanner.getListofPCCvalues()));
+			//System.out.println(Arrays.toString(scanner.getListofPCCvalues()));
 			File file_pcc =  new File(driver.c.getOutTagname()+"_list_pcc");
 			if(!file_pcc.exists()){
 				file_pcc.createNewFile();
 			}
 			FileWriter fw_pcc = new FileWriter(file_pcc.getAbsoluteFile());
 			BufferedWriter br_pcc = new BufferedWriter(fw_pcc);
-			for(int j=0; j<scanner.getListofPCCvalues().length; j++){
-				br_pcc.write(Double.toString(scanner.getListofPCCvalues()[j])+"\n");
+			for(int j=0; j<scanner.getEntireListOfPccValues().length; j++){
+				br_pcc.write(Double.toString(scanner.getEntireListOfPccValues()[j])+"\n");
 			}
 			System.currentTimeMillis();
 		}

@@ -10,12 +10,14 @@ import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.CustomReturn;
 public class LocationsScanner {
 	
 	public List<CustomReturn> scanOut = new ArrayList<CustomReturn>();
+	public List<CustomReturn> allblscan = new ArrayList<CustomReturn>();
 	
 	public LocationsScanner(List<BindingLocation> allbls, Config conf, int[] seedprofile) {
 		for(BindingLocation bl : allbls){
 			CustomReturn temp = bl.scanConcVecWithBl(seedprofile, conf.getIntSize(), conf.getSmoothSize());
+			CustomReturn pushed = new CustomReturn(temp.pcc, temp.maxvec, bl);
+			allblscan.add(pushed);
 			if(temp.pcc > conf.getPccCutoff()){
-				CustomReturn pushed = new CustomReturn(temp.pcc, temp.maxvec, bl);
 				scanOut.add(pushed);
 			}
 		}
@@ -23,7 +25,7 @@ public class LocationsScanner {
 	
 	//Accessories
 	
-	public double[] getListofPCCvalues(){
+	public double[] getListofPCCvaluesThatPassCutoff(){
 		double[] ret = new double[scanOut.size()];
 		for(int i=0; i< scanOut.size(); i++){
 			ret[i] = scanOut.get(i).pcc;
@@ -38,6 +40,14 @@ public class LocationsScanner {
 			for(int j=0; j<addToRet.size(); j++){
 				ret[i][j] = addToRet.get(j);
 			}
+		}
+		return ret;
+	}
+	
+	public double[] getEntireListOfPccValues(){
+		double[] ret =  new double[allblscan.size()];
+		for(int i=0; i<allblscan.size(); i++){
+			ret[i] = allblscan.get(i).pcc;
 		}
 		return ret;
 	}
