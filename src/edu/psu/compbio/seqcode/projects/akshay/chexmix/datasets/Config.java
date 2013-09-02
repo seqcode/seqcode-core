@@ -20,6 +20,7 @@ public class Config {
 	protected boolean printHelp=false;
 	protected boolean useCenterApproach=true;
 	protected final boolean useNonUnique = false;
+	protected String out_tag; //default value is out
 	
 	protected String[] args;
 	
@@ -38,7 +39,9 @@ public class Config {
 			pcc_cutoff= Args.parseDouble(args, "PC", 0.6);
 			smoothing =  Args.parseInteger(args, "S", 0);
 			tagsfiletype = Args.parseString(args, "tagstype", "IDX").toUpperCase();
-			
+			String out = Args.parseString(args, "Out", "out");
+			String currdir = System.getProperty("user.dir");
+			out_tag = currdir+"/"+out;
 			
 			for(String s: ap.getKeys()){
 				if(s.equals("tags")){
@@ -83,6 +86,7 @@ public class Config {
 	public String getPeaksFilePath(){return this.peak_location;}
 	public int getNoTopBls(){return this.no_top_bl;}
 	public String getSchemename(){return this.scheme_name;}
+	public String getOutTagname(){return this.out_tag;}
 	
 	
 	public String getArgsList(){
@@ -99,7 +103,8 @@ public class Config {
 				"\t--offset <displacement to consider, +- this value will be considered; default value set to 10>\n"+
 				"\t--IR <Interval Range; *2 this values will be the interval size; default value set to 30>\n" +
 				"\t--S <Smoothing value; 0 for no smoothing; default value set to 0>\n"+
-				"\t--O <turn Off center approach; by default it is on>\n"));
+				"\t--O <turn Off center approach; by default it is on>\n" +
+				"\t--Out <output tag name; files will be written to in the working directory; default value is out>"));
 				
 	}
 }

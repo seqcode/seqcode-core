@@ -1,7 +1,10 @@
 package edu.psu.compbio.seqcode.projects.akshay.chexmix.analysis;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -61,9 +64,28 @@ public class Chexmix {
 			System.out.println("No of Binding Locations selected to build seed are: "+seedbuilder.getNoInSeed());
 			System.out.println("Composite of seed:");
 			System.out.println(Arrays.toString(profile));
+			File file = new File(driver.c.getOutTagname()+"_seed_profile.tab");
+			if(!file.exists()){
+				file.createNewFile();
+			}
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			BufferedWriter br_profile = new BufferedWriter(fw);
+			for(int i=0; i<profile.length; i++){
+				br_profile.write(Integer.toString(i+1)+"\t"+Integer.toString(profile[i])+"\n");
+			}
+			br_profile.close();
 			System.out.println("\n============================ Scanning the entire list of binding locations ============================");
 			LocationsScanner scanner = new LocationsScanner(allbls, driver.c, profile);
 			System.out.println(Arrays.toString(scanner.getListofPCCvalues()));
+			File file_pcc =  new File(driver.c.getOutTagname()+"_list_pcc");
+			if(!file_pcc.exists()){
+				file_pcc.createNewFile();
+			}
+			FileWriter fw_pcc = new FileWriter(file_pcc.getAbsoluteFile());
+			BufferedWriter br_pcc = new BufferedWriter(fw_pcc);
+			for(int j=0; j<scanner.getListofPCCvalues().length; j++){
+				br_pcc.write(Double.toString(scanner.getListofPCCvalues()[j])+"\n");
+			}
 			System.currentTimeMillis();
 		}
 		
