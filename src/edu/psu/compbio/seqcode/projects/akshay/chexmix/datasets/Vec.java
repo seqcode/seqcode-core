@@ -10,14 +10,14 @@ public class Vec {
 	public String chr;
 	public Map<Integer,Integer> tags = new TreeMap<Integer, Integer>();
 	public int binsize;
-	public boolean smoothing;
+	public int Smoothing;
 	public int midpoint;
 	
-	public Vec(int range, int midpoint, String chr, String orientation, boolean smoothing, int binsize, Map<Integer, Integer> tags) {
+	public Vec(int range, int midpoint, String chr, String orientation, int Smoothing, int binsize, Map<Integer, Integer> tags) {
 		this.range = range;
 		this.chr = chr;
 		this.orientation = orientation;
-		this.smoothing = smoothing;
+		this.Smoothing = Smoothing;
 		this.binsize = binsize;
 		this.tags = tags;
 		this.midpoint = midpoint;
@@ -30,16 +30,16 @@ public class Vec {
 		}
 		
 		Vec ve = (Vec) obj;
-		return this.orientation == ve.orientation && this.range == ve.range && this.chr == ve.chr && this.binsize == ve.binsize && this.smoothing == ve.smoothing;
+		return this.orientation == ve.orientation && this.range == ve.range && this.chr == ve.chr && this.binsize == ve.binsize && this.Smoothing == ve.Smoothing;
 	}
 	
 	@Override
 	public int hashCode(){
 		int result = 17;
 		int code = (int) this.range;
+		code+= (int) this.Smoothing;
 		code+= (int) this.midpoint;
 		code += (int) (this.chr == null ? 0 :this.chr.hashCode());
-		code+= (this.smoothing ? 1231 : 1237);
 		code+= (int) (this.orientation == null ? 0 : this.orientation.hashCode());
 		
 		result = result*37 + code;
@@ -65,7 +65,7 @@ public class Vec {
 		 for(int j=start_ind; j< end_ind; j++ ){
 			 rettags.put(positions[j], counts[j]);
 		 }
-		 Vec ret = new Vec(range, midpoint, this.chr,this.orientation,this.smoothing,this.binsize,rettags);
+		 Vec ret = new Vec(range, midpoint, this.chr,this.orientation,this.Smoothing,this.binsize,rettags);
 		 return ret;
 	}
 	 

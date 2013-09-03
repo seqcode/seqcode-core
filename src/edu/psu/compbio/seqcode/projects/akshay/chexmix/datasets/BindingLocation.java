@@ -37,6 +37,8 @@ public class BindingLocation {
 	 */
 	private List<Integer> coords = new ArrayList<Integer>();
 	
+	private int Smoothsize;
+	
 	/**
 	 * The only constructor for this class
 	 * @param midpoint
@@ -51,6 +53,7 @@ public class BindingLocation {
 		int end = midpoint + range;
 		this.coords.add(start);
 		this.coords.add(end);
+		this.Smoothsize = conf.smoothing;
 		
 	}
 	
@@ -60,7 +63,7 @@ public class BindingLocation {
 			return true;
 		}
 		BindingLocation bl = (BindingLocation) obj;
-		return this.midpoint == bl.midpoint && this.chr == bl.chr && this.range == bl.range;
+		return this.midpoint == bl.midpoint && this.chr == bl.chr && this.range == bl.range && this.Smoothsize == bl.Smoothsize;
 	}
 	
 	@Override
@@ -68,6 +71,7 @@ public class BindingLocation {
 		int result = 17;
 		int code = (int) this.range;
 		code+= (int) this.midpoint;
+		code+= (int) this.Smoothsize;
 		code += (int) (this.chr == null ? 0 :this.chr.hashCode());
 		result = result*37 + code;
 		return result;
@@ -107,6 +111,16 @@ public class BindingLocation {
 		QueryTags tagsfetcher = new QueryTags(this.midpoint,this.range, this.chr);
 		this.vecpos = tagsfetcher.getTags(loader, "+");
 		this.vecneg = tagsfetcher.getTags(loader, "-");
+		if(this.Smoothsize >0){
+			Smoothing smoo =  new Smoothing();
+			Vec temppos = smoo.doSmoothing(this.vecpos, this.Smoothsize);
+			if(temppos.tags.size() != vecpos.tags.size()){System.err.println("Somthing Wrong in the Smoonthing code; This error message is for the developer");}
+			this.vecpos = temppos;
+			smoo = new Smoothing();
+			Vec tempneg = smoo.doSmoothing(this.vecneg, this.Smoothsize);
+			if(tempneg.tags.size() != vecneg.tags.size()){System.err.println("Somthing Wrong in the Smoonthing code; This error message is for the developer");}
+			this.vecneg = tempneg;
+		}
 	}
 	
 	/**
@@ -119,7 +133,7 @@ public class BindingLocation {
 	 * @return (Returns a custom object(edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.CustomReturn). maxvec1 in the return object is the offset
 	 * and reversal that yields the maximum similarity in the current binding location. maxvec2 is for the given binding location)
 	 */
-	public CustomReturn scanBlWithBl(BindingLocation givenBL,int range, int smoothsize){
+	public CustomReturn scanBlWithBl(BindingLocation givenBL,int range){
 		Vec maxVec1=null;
 		Vec maxVec2=null;
 		double pcc = -2.0;
@@ -129,41 +143,41 @@ public class BindingLocation {
 		
 		for(int i=0; i<thisvec.size(); i++){
 			for(int j=0; j<givenvec.size(); j++){
-				List<Integer> first = this.getConcatenatedTags(thisvec.get(i), range, "+", smoothsize);
-				List<Integer> second = givenBL.getConcatenatedTags(givenvec.get(j), range, "+", smoothsize);
+				List<Integer> first = this.getConcatenatedTags(thisvec.get(i), range, "+");
+				List<Integer> second = givenBL.getConcatenatedTags(givenvec.get(j), range, "+");
 				Pearson pccdriver = new Pearson(first,second);
 				double temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
 					pcc=temppcc;
-					maxVec1= this.getSubVec(thisvec.get(i), range, "+", smoothsize);
-					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+", smoothsize);
+					maxVec1= this.getSubVec(thisvec.get(i), range, "+");
+					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+");
 				}
-				first = this.getConcatenatedTags(thisvec.get(i), range, "+", smoothsize);
-				second = givenBL.getConcatenatedTags(givenvec.get(j),range, "-", smoothsize);
+				first = this.getConcatenatedTags(thisvec.get(i), range, "+");
+				second = givenBL.getConcatenatedTags(givenvec.get(j),range, "-");
 				pccdriver = new Pearson(first,second);
 				temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
 					System.out.println(pcc);
-					maxVec1= this.getSubVec(thisvec.get(i), range, "+", smoothsize);
-					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-", smoothsize);
+					maxVec1= this.getSubVec(thisvec.get(i), range, "+");
+					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-");
 				}
-				first = this.getConcatenatedTags(thisvec.get(i), range, "-", smoothsize);
-				second = givenBL.getConcatenatedTags(givenvec.get(j), range, "+", smoothsize);
+				first = this.getConcatenatedTags(thisvec.get(i), range, "-");
+				second = givenBL.getConcatenatedTags(givenvec.get(j), range, "+");
 				pccdriver = new Pearson(first,second);
 				temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
 					System.out.println(pcc);
-					maxVec1= this.getSubVec(thisvec.get(i), range, "-", smoothsize);
-					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+", smoothsize);
+					maxVec1= this.getSubVec(thisvec.get(i), range, "-");
+					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+");
 				}
-				first = this.getConcatenatedTags(thisvec.get(i),range, "-", smoothsize);
-				second = givenBL.getConcatenatedTags(givenvec.get(j), range, "-", smoothsize);
+				first = this.getConcatenatedTags(thisvec.get(i),range, "-");
+				second = givenBL.getConcatenatedTags(givenvec.get(j), range, "-");
 				pccdriver = new Pearson(first,second);
 				temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
 					pcc=temppcc;
-					maxVec1= this.getSubVec(thisvec.get(i), range, "-", smoothsize);
-					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-", smoothsize);
+					maxVec1= this.getSubVec(thisvec.get(i), range, "-");
+					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-");
 				}
 			}
 		}
@@ -182,26 +196,26 @@ public class BindingLocation {
 	 * @param smoothsize
 	 * @return
 	 */
-	public CustomReturn scanVecWithBl(BindingLocation givenbl, int midpoint, String orientation, int range, int smoothsize){
-		List<Integer> first = givenbl.getConcatenatedTags(midpoint, range, orientation, smoothsize);
+	public CustomReturn scanVecWithBl(BindingLocation givenbl, int midpoint, String orientation, int range){
+		List<Integer> first = givenbl.getConcatenatedTags(midpoint, range, orientation);
 		List<Integer> thisvec = this.getListMidpoints(range);
 		double maxpcc=-2.0;
 		Vec maxvec = null;
 		for(int i=0; i<thisvec.size(); i++){
-			List<Integer> second = this.getConcatenatedTags(thisvec.get(i), range, "+", smoothsize);
+			List<Integer> second = this.getConcatenatedTags(thisvec.get(i), range, "+");
 			Pearson pcccalculater = new Pearson(first, second);
 			double pcc = pcccalculater.doComparision();
 			if(pcc>maxpcc){
 				maxpcc = pcc;
-				maxvec = this.getSubVec(thisvec.get(i), range, "+", smoothsize);
+				maxvec = this.getSubVec(thisvec.get(i), range, "+");
 			}
 			
-			second = this.getConcatenatedTags(thisvec.get(i), range, "-", smoothsize);
+			second = this.getConcatenatedTags(thisvec.get(i), range, "-");
 			pcccalculater = new Pearson(first, second);
 			pcc = pcccalculater.doComparision();
 			if(pcc>maxpcc){
 				maxpcc = pcc;
-				maxvec = this.getSubVec(thisvec.get(i), range, "-", smoothsize);
+				maxvec = this.getSubVec(thisvec.get(i), range, "-");
 			}
 		}
 		CustomReturn ret = new CustomReturn(maxpcc, maxvec);
@@ -214,7 +228,7 @@ public class BindingLocation {
 	 * @param smoothsize
 	 * @return
 	 */
-	public CustomReturn scanConcVecWithBl(int[] tags, int range, int smoothsize){
+	public CustomReturn scanConcVecWithBl(int[] tags, int range){
 		List<Integer> first = new ArrayList<Integer>();
 		for(int j=0; j< tags.length; j++){
 			first.add(tags[j]);
@@ -223,20 +237,20 @@ public class BindingLocation {
 		double maxpcc=-2.0;
 		Vec maxvec = null;
 		for(int i=0; i<thisvec.size(); i++){
-			List<Integer> second = this.getConcatenatedTags(thisvec.get(i), range, "+", smoothsize);
+			List<Integer> second = this.getConcatenatedTags(thisvec.get(i), range, "+");
 			Pearson pcccalculater = new Pearson(first, second);
 			double pcc = pcccalculater.doComparision();
 			if(pcc>maxpcc){
 				maxpcc = pcc;
-				maxvec = this.getSubVec(thisvec.get(i), range, "+", smoothsize);
+				maxvec = this.getSubVec(thisvec.get(i), range, "+");
 			}
 			
-			second = this.getConcatenatedTags(thisvec.get(i), range, "-", smoothsize);
+			second = this.getConcatenatedTags(thisvec.get(i), range, "-");
 			pcccalculater = new Pearson(first, second);
 			pcc = pcccalculater.doComparision();
 			if(pcc>maxpcc){
 				maxpcc = pcc;
-				maxvec = this.getSubVec(thisvec.get(i), range, "-", smoothsize);
+				maxvec = this.getSubVec(thisvec.get(i), range, "-");
 			}
 			
 		}
@@ -273,11 +287,11 @@ public class BindingLocation {
 	 * @param smoothsize
 	 * @return
 	 */
-	public List<Integer> getConcatenatedTags(int midpoint, int range, String Orientation, int smoothsize){
+	public List<Integer> getConcatenatedTags(int midpoint, int range, String Orientation){
 		List<Integer> ret  = new ArrayList<Integer>();
 		if(Orientation  == "+"){
-			Vec temp = this.getSubVec(midpoint, range, Orientation, smoothsize);
-			Vec rev = this.getSubVec(midpoint, range, "-", smoothsize);
+			Vec temp = this.getSubVec(midpoint, range, Orientation);
+			Vec rev = this.getSubVec(midpoint, range, "-");
 			List<Integer> tempvalues = new ArrayList<Integer>(temp.tags.values());
 			List<Integer> revvalues = new ArrayList<Integer>(rev.tags.values());
 			for(int i =0; i<tempvalues.size(); i++){
@@ -290,8 +304,8 @@ public class BindingLocation {
 		}
 		
 		if(Orientation == "-"){
-			Vec temp = this.getSubVec(midpoint, range, Orientation, smoothsize);
-			Vec rev = this.getSubVec(midpoint, range, "+", smoothsize);
+			Vec temp = this.getSubVec(midpoint, range, Orientation);
+			Vec rev = this.getSubVec(midpoint, range, "+");
 			List<Integer> tempvalues = new ArrayList<Integer>(temp.tags.values());
 			List<Integer> revvalues = new ArrayList<Integer>(rev.tags.values());
 			for(int i=revvalues.size()-1;i>=0;i--){
@@ -314,28 +328,15 @@ public class BindingLocation {
 	 * @param smoothsize
 	 * @return
 	 */
-	public Vec getSubVec(int midpoint, int range, String orientation, int smoothsize){
+	public Vec getSubVec(int midpoint, int range, String orientation){
 		Vec ret = null;
-		if(smoothsize > 0){
-			if(orientation=="+"){
-				Smoothing smoo = new Smoothing();
-				Vec tempret = smoo.doSmoothing(this.vecpos, smoothsize);
-				ret = tempret.getSub(midpoint, range);
-			}
-			if(orientation =="-"){
-				Smoothing smoo = new Smoothing();
-				Vec tempret = smoo.doSmoothing(this.vecneg, smoothsize);
-				ret = tempret.getSub(midpoint, range);
-			}
+		if(orientation=="+"){
+			ret = vecpos.getSub(midpoint, range);
 		}
-		else{
-			if(orientation=="+"){
-				ret = vecpos.getSub(midpoint, range);
-			}
-			if(orientation == "-"){
-				ret =vecneg.getSub(midpoint, range);
-			}
+		if(orientation == "-"){
+			ret =vecneg.getSub(midpoint, range);
 		}
+		
 		return ret;
 	}
 	
@@ -355,10 +356,10 @@ public class BindingLocation {
 	 * @param smoothsize
 	 * @return
 	 */
-	public List<Vec> getListSubVec(int range, String orientation, int smoothsize){
+	public List<Vec> getListSubVec(int range, String orientation){
 		List<Vec> ret = new ArrayList<Vec>();
 		for(int i=this.coords.get(0)+range; i<this.coords.get(1)-range; i++){
-			Vec temp = this.getSubVec(i, range, orientation, smoothsize);
+			Vec temp = this.getSubVec(i, range, orientation);
 			ret.add(temp);
 		}
 		return ret;
