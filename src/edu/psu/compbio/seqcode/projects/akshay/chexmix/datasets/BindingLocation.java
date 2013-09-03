@@ -108,7 +108,7 @@ public class BindingLocation {
 	 * @param loader (LoadTags class object should be initiated first (it stores all the tags in a 3-d array format, see that class for more details))
 	 */
 	public void filltags(LoadTags loader){
-		QueryTags tagsfetcher = new QueryTags(this.midpoint,this.range, this.chr, this.Smoothsizes);
+		QueryTags tagsfetcher = new QueryTags(this.midpoint,this.range, this.chr, this.Smoothsize);
 		this.vecpos = tagsfetcher.getTags(loader, "+");
 		this.vecneg = tagsfetcher.getTags(loader, "-");
 		if(this.Smoothsize >0){
