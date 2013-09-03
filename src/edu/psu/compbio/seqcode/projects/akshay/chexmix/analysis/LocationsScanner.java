@@ -14,7 +14,7 @@ public class LocationsScanner {
 	
 	public LocationsScanner(List<BindingLocation> allbls, Config conf, int[] seedprofile) {
 		for(BindingLocation bl : allbls){
-			CustomReturn temp = bl.scanConcVecWithBl(seedprofile, conf.getIntSize(), conf.getSmoothSize());
+			CustomReturn temp = bl.scanConcVecWithBl(seedprofile, conf.getIntSize());
 			CustomReturn pushed = new CustomReturn(temp.pcc, temp.maxvec, bl);
 			allblscan.add(pushed);
 			if(temp.pcc > conf.getPccCutoff()){
@@ -36,7 +36,7 @@ public class LocationsScanner {
 	public int[][] getTags(Config conf){
 		int[][] ret = new int[scanOut.size()][4*conf.getIntSize()];
 		for(int i=0; i<scanOut.size(); i++){
-			List<Integer> addToRet = scanOut.get(i).bl.getConcatenatedTags(scanOut.get(i).maxvec.midpoint, conf.getIntSize(), scanOut.get(i).maxvec.orientation, conf.getSmoothSize());
+			List<Integer> addToRet = scanOut.get(i).bl.getConcatenatedTags(scanOut.get(i).maxvec.midpoint, conf.getIntSize(), scanOut.get(i).maxvec.orientation);
 			for(int j=0; j<addToRet.size(); j++){
 				ret[i][j] = addToRet.get(j);
 			}
