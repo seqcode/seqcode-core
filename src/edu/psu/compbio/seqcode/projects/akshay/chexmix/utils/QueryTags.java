@@ -10,9 +10,10 @@ public class QueryTags {
 	public int midpoint;
 	public String chr;
 	public int range;
+	public int Smoothsize;
 	public Map<Integer, Integer> tags = new TreeMap<Integer, Integer>();
 	
-	public QueryTags(int midpoint, int range, String chr) {
+	public QueryTags(int midpoint, int range, String chr, int Smoothsize) {
 		this.midpoint = midpoint;
 		this.range = range;
 		this.chr = chr;
@@ -43,7 +44,7 @@ public class QueryTags {
 				
 			}
 		}
-		ret = new Vec(this.range, this.midpoint, this.chr, orientation, false, 0,tags);
+		ret = new Vec(this.range, this.midpoint, this.chr, orientation, this.Smoothsize, 0,tags);
 		return ret;
 	}
 }
