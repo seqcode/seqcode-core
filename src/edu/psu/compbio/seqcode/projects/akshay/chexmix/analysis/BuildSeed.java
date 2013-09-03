@@ -38,7 +38,6 @@ public class BuildSeed {
 	 */
 	public BindingLocation center;
 	
-	public int smoothsize;
 	
 	/**
 	 * Initiats the class object that should be used to construct the seed profile
@@ -47,14 +46,13 @@ public class BuildSeed {
 	 * @param smoothsize (Smoothing bin size; this parameter is taken from the config object)
 	 */
 	public BuildSeed(List<BindingLocation> topBlList, Config conf) {
-		this.smoothsize = conf.getSmoothSize();
 		for(int i=0; i<topBlList.size()-1; i++){
 			for(int j=i+1; j< topBlList.size(); j++ ){
 				if(i != j){
 					//debugging line
 					System.out.println(i+"to"+j);
 					BLpair pair = new BLpair(topBlList.get(i),topBlList.get(j));
-					CustomReturn pccmax = topBlList.get(i).scanBlWithBl(topBlList.get(j), conf.getIntSize(), smoothsize);
+					CustomReturn pccmax = topBlList.get(i).scanBlWithBl(topBlList.get(j), conf.getIntSize());
 					//debug line
 					System.out.println(pccmax.pcc);
 					allpairs.put(pair, pccmax);
@@ -151,7 +149,7 @@ public class BuildSeed {
 			double avgpcc=0.0;
 			int[] profile = allseeds.get(bl);
 			for(BindingLocation jbl : this.seed){
-				CustomReturn tempRet = jbl.scanConcVecWithBl(profile, conf.getIntSize(), this.smoothsize);
+				CustomReturn tempRet = jbl.scanConcVecWithBl(profile, conf.getIntSize());
 				avgpcc = avgpcc+tempRet.pcc;
 			}
 			avgpcc = avgpcc/allseeds.size();
@@ -177,12 +175,12 @@ public class BuildSeed {
 			int[] profile=null;
 			BLpair temppair = (allpairs.containsKey(new BLpair(center, bl)) ? new BLpair(center,bl): new BLpair(bl,center));
 			CustomReturn tempPos = this.allpairs.get(temppair);
-			List<Integer> tempaddToProfile = temppair.BL1.getConcatenatedTags(tempPos.maxVec1.midpoint, tempPos.maxVec1.range, tempPos.maxVec1.orientation, this.smoothsize); 
+			List<Integer> tempaddToProfile = temppair.BL1.getConcatenatedTags(tempPos.maxVec1.midpoint, tempPos.maxVec1.range, tempPos.maxVec1.orientation); 
 			profile = new int[tempaddToProfile.size()];
 			for(int i=0; i<tempaddToProfile.size(); i++){
 				profile[i] = tempaddToProfile.get(i);
 			}
-			tempaddToProfile = temppair.BL2.getConcatenatedTags(tempPos.maxVec2.midpoint, tempPos.maxVec2.range, tempPos.maxVec2.orientation, this.smoothsize);
+			tempaddToProfile = temppair.BL2.getConcatenatedTags(tempPos.maxVec2.midpoint, tempPos.maxVec2.range, tempPos.maxVec2.orientation);
 			for(int i=0; i< profile.length; i++){
 				profile[i] = profile[i]+tempaddToProfile.get(i);
 			}
@@ -191,8 +189,8 @@ public class BuildSeed {
 			int range = tempPos.maxVec1.range;
 			for(BindingLocation jbl: seed){
 				if(!jbl.equals(bl) && !jbl.equals(center)){
-					CustomReturn cus = jbl.scanVecWithBl(center, centerMidpoint, centerorientation, range, this.smoothsize);
-					tempaddToProfile = jbl.getConcatenatedTags(cus.maxvec.midpoint, range, cus.maxvec.orientation, this.smoothsize);
+					CustomReturn cus = jbl.scanVecWithBl(center, centerMidpoint, centerorientation, range);
+					tempaddToProfile = jbl.getConcatenatedTags(cus.maxvec.midpoint, range, cus.maxvec.orientation);
 					for(int i=0; i< profile.length; i++){
 						profile[i] = profile[i]+tempaddToProfile.get(i);
 					}
@@ -218,7 +216,7 @@ public class BuildSeed {
 			if(!bl.equals(center)){
 				BLpair temppair = (allpairs.containsKey(new BLpair(center, bl)) ? new BLpair(center,bl): new BLpair(bl,center));
 				CustomReturn tempPos = this.allpairs.get(temppair);
-				List<Integer> tempaddToProfile = (temppair.BL1.equals(this.center) ? temppair.BL2.getConcatenatedTags(tempPos.maxVec2.midpoint, tempPos.maxVec2.range, tempPos.maxVec2.orientation, this.smoothsize): temppair.BL1.getConcatenatedTags(tempPos.maxVec1.midpoint, tempPos.maxVec1.range, tempPos.maxVec1.orientation, this.smoothsize));
+				List<Integer> tempaddToProfile = (temppair.BL1.equals(this.center) ? temppair.BL2.getConcatenatedTags(tempPos.maxVec2.midpoint, tempPos.maxVec2.range, tempPos.maxVec2.orientation): temppair.BL1.getConcatenatedTags(tempPos.maxVec1.midpoint, tempPos.maxVec1.range, tempPos.maxVec1.orientation));
 				if(profile == null){
 					profile = new int[tempaddToProfile.size()];
 					for(int i=0; i<tempaddToProfile.size(); i++){
@@ -234,8 +232,8 @@ public class BuildSeed {
 		}
 		//debug line
 		System.out.println(profile.length);
-		CustomReturn centscan = center.scanConcVecWithBl(profile, conf.getIntSize(), this.smoothsize);
-		List<Integer> tempaddToProfile = this.center.getConcatenatedTags(centscan.maxvec.midpoint, centscan.maxvec.range, centscan.maxvec.orientation, this.smoothsize);
+		CustomReturn centscan = center.scanConcVecWithBl(profile, conf.getIntSize());
+		List<Integer> tempaddToProfile = this.center.getConcatenatedTags(centscan.maxvec.midpoint, centscan.maxvec.range, centscan.maxvec.orientation);
 		for(int i=0; i<profile.length; i++){
 			profile[i] = profile[i] + tempaddToProfile.get(i);
 		}
