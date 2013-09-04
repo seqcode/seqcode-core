@@ -58,7 +58,7 @@ public class Chexmix {
 			System.out.println("Printing the composite of the entire list of bls");
 			int[] allblscomposite = sandbox.getCompositeFromBlLisr(allbls);
 			for(int k=0; k<allblscomposite.length; k++){
-				System.out.println(allblscomposite[k]);
+				System.out.println(k+"\t"+allblscomposite[k]);
 			}
 			
 			
