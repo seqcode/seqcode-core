@@ -49,15 +49,15 @@ public class Chexmix {
 			brpeaks.close();
 			System.currentTimeMillis();
 			
-			int i=0;
+			int i=1;
 			List<BindingLocation> totalbls = allbls;
 			
-			while(i<driver.c.getNoOfCycles() && totalbls.size()>driver.c.getNoOfCycles()){
+			while(i<=driver.c.getNoOfCycles() && totalbls.size()>driver.c.getNoOfCycles()){
 				List<BindingLocation> selectedbls = new ArrayList<BindingLocation>();
 				for(int j=0; j<driver.c.getNoTopBls(); j++){
 					selectedbls.add(totalbls.get(j));
 				}
-				System.out.println("\n============================ Building Seed Profile - "+i+1+" ============================");
+				System.out.println("\n============================ Building Seed Profile - "+i+" ============================");
 				BuildSeed seedbuilder = new BuildSeed(selectedbls, driver.c);
 				int[] profile=null ;
 				if(driver.c.getSchemename().equals("scheme1")){
@@ -68,10 +68,10 @@ public class Chexmix {
 					profile=seedbuilder.executeScheme2(driver.c);
 				}
 				System.currentTimeMillis();
-				System.out.println("No of Binding Locations selected to build seed "+i+1+" are: "+seedbuilder.getNoInSeed());
-				System.out.println("Composite of seed "+i+1+":");
+				System.out.println("No of Binding Locations selected to build seed "+i+" are: "+seedbuilder.getNoInSeed());
+				System.out.println("Composite of seed "+i+":");
 				System.out.println(Arrays.toString(profile));
-				File file = new File(driver.c.getOutTagname()+"_seed_profile.tab");
+				File file = new File(driver.c.getOutTagname()+"_seed_profile_"+i+".tab");
 				if(!file.exists()){
 					file.createNewFile();
 				}
@@ -82,9 +82,9 @@ public class Chexmix {
 				}
 				br_profile.close();
 				
-				System.out.println("\n============================ Scanning the entire list of binding locations - "+i+1+" ============================");
+				System.out.println("\n============================ Scanning the entire list of binding locations - "+i+" ============================");
 				LocationsScanner scanner = new LocationsScanner(totalbls, driver.c, profile);
-				File file_pcc =  new File(driver.c.getOutTagname()+"_list_pcc");
+				File file_pcc =  new File(driver.c.getOutTagname()+"_list_pcc_"+i+".tab");
 				if(!file_pcc.exists()){
 					file_pcc.createNewFile();
 				}
