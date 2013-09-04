@@ -23,7 +23,7 @@ public class LocationsScanner {
 		}
 	}
 	
-	//Accessories
+	//Accessorie
 	
 	public double[] getListofPCCvaluesThatPassCutoff(){
 		double[] ret = new double[scanOut.size()];
