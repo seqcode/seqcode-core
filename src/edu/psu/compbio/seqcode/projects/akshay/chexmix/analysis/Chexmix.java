@@ -74,6 +74,13 @@ public class Chexmix {
 				br_profile.write(Integer.toString(i+1)+"\t"+Integer.toString(profile[i])+"\n");
 			}
 			br_profile.close();
+			//debug lines
+			System.out.println("Printing the center tags in the positive strand");
+			ArrayList<Integer> kelist = new ArrayList<Integer>(seedbuilder.center.vecpos.tags.keySet());
+			for(int i: kelist){
+				System.out.println(seedbuilder.center.vecpos.tags.get(i));
+			}
+			
 			System.out.println("\n============================ Scanning the entire list of binding locations ============================");
 			LocationsScanner scanner = new LocationsScanner(allbls, driver.c, profile);
 			//System.out.println(Arrays.toString(scanner.getListofPCCvalues()));
