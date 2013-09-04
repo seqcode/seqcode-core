@@ -13,6 +13,7 @@ import cern.colt.Arrays;
 
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.BindingLocation;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.ChexmixSandbox;
 
 public class Chexmix {
 	public Config c;
@@ -22,6 +23,7 @@ public class Chexmix {
 
 	public static void main(String[] args) throws IOException{
 		Config c = new Config(args);
+		ChexmixSandbox sandbox = new ChexmixSandbox();
 		Chexmix driver = new Chexmix(c);
 		if(driver.c.helpWanted()){
 			System.err.println("Chexmix:");
@@ -51,6 +53,14 @@ public class Chexmix {
 			
 			int i=1;
 			List<BindingLocation> totalbls = allbls;
+			
+			//debug lines
+			System.out.println("Printing the composite of the entire list of bls");
+			int[] allblscomposite = sandbox.getCompositeFromBlLisr(allbls);
+			for(int k=0; k<allblscomposite.length; k++){
+				System.out.println(allblscomposite[k]);
+			}
+			
 			
 			while(i<=driver.c.getNoOfCycles() && totalbls.size()>driver.c.getNoOfCycles()){
 				List<BindingLocation> selectedbls = new ArrayList<BindingLocation>();

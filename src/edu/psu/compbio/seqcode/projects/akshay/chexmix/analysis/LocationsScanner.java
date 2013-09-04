@@ -73,5 +73,6 @@ public class LocationsScanner {
 	public List<BindingLocation> getListOfBlsThatPassCuttoff(){
 		return passscanbls;
 	}
+	
 
 }
