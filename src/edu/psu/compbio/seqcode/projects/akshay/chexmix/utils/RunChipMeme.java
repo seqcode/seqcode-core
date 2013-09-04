@@ -20,28 +20,5 @@ public class RunChipMeme {
 		}
 	}
 	
-	public static void main(String[] args) throws IOException{
-		BufferedReader br = null;
-		File tempdir = new File("temp");
-		tempdir.mkdir();
-		br =  new BufferedReader(new FileReader("/gpfs/home/auk262/scratch/test_input"));
-		RunChipMeme chipdriver = null;
-		List<BindingLocation> locationlist = new ArrayList<BindingLocation>();
-		
-		String currentline = br.readLine();
-		while(currentline != null){
-			String[] pieces = currentline.split("\t");
-			int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
-			String tempChr = pieces[0];
-			BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, 60);
-			temploc.fillSeqs("mm10");
-			locationlist.add(temploc);
-			currentline = br.readLine();
-		}
-		br.close();
-		chipdriver = new RunChipMeme(locationlist);
-		chipdriver.printFasta();
-		
-	}
 
 }
