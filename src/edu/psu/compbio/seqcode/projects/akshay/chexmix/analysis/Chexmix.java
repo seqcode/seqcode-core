@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import cern.colt.Arrays;
 
@@ -34,7 +35,7 @@ public class Chexmix {
 			System.currentTimeMillis();
 			System.out.println("\n============================ Filling Binding Locations ============================");
 			BufferedReader brpeaks = new BufferedReader(new FileReader(driver.c.getPeaksFilePath()));
-			ArrayList<BindingLocation> allbls = new ArrayList<BindingLocation>();
+			List<BindingLocation> allbls = new ArrayList<BindingLocation>();
 			String currentline = brpeaks.readLine();
 			while(currentline != null){
 				String[] pieces = currentline.split("\t");
@@ -47,56 +48,55 @@ public class Chexmix {
 			}
 			brpeaks.close();
 			System.currentTimeMillis();
-			System.out.println("\n============================ Building Seed Profile ============================");
-			ArrayList<BindingLocation> topbls = new ArrayList<BindingLocation>();
-			for(int i=0; i<driver.c.getNoTopBls(); i++){
-				topbls.add(allbls.get(i));
-			}
-			BuildSeed seedbuilder = new BuildSeed(topbls, driver.c);
-			int[] profile=null ;
-			if(driver.c.getSchemename().equals("scheme1")){
-				profile= seedbuilder.executeScheme1(driver.c);
-			}
-			if(driver.c.getSchemename().equals("scheme2")){
-				profile=seedbuilder.executeScheme2(driver.c);
-			}
-			System.currentTimeMillis();
-			System.out.println("No of Binding Locations selected to build seed are: "+seedbuilder.getNoInSeed());
-			System.out.println("Composite of seed:");
-			System.out.println(Arrays.toString(profile));
-			File file = new File(driver.c.getOutTagname()+"_seed_profile.tab");
-			if(!file.exists()){
-				file.createNewFile();
-			}
-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
-			BufferedWriter br_profile = new BufferedWriter(fw);
-			for(int i=0; i<profile.length; i++){
-				br_profile.write(Integer.toString(i+1)+"\t"+Integer.toString(profile[i])+"\n");
-			}
-			br_profile.close();
-			//debug lines
-			System.out.println("Printing the center tags in the positive strand");
-			ArrayList<Integer> kelist = new ArrayList<Integer>(seedbuilder.center.vecpos.tags.keySet());
-			for(int i: kelist){
-				System.out.println(seedbuilder.center.vecpos.tags.get(i));
-			}
 			
-			System.out.println("\n============================ Scanning the entire list of binding locations ============================");
-			LocationsScanner scanner = new LocationsScanner(allbls, driver.c, profile);
-			//System.out.println(Arrays.toString(scanner.getListofPCCvalues()));
-			File file_pcc =  new File(driver.c.getOutTagname()+"_list_pcc");
-			if(!file_pcc.exists()){
-				file_pcc.createNewFile();
-			}
-			FileWriter fw_pcc = new FileWriter(file_pcc.getAbsoluteFile());
-			BufferedWriter br_pcc = new BufferedWriter(fw_pcc);
-			for(int j=0; j<scanner.getEntireListOfPccValues().length; j++){
-				br_pcc.write(Double.toString(scanner.getEntireListOfPccValues()[j])+"\n");
-			}
-			System.currentTimeMillis();
-		}
-		
-		
-	}
+			int i=0;
+			List<BindingLocation> totalbls = allbls;
+			List<BindingLocation> selectedbls = new ArrayList<BindingLocation>();
+			while(i<driver.c.getNoOfCycles() && totalbls.size()>driver.c.getNoOfCycles()){
+				for(int j=0; j<driver.c.getNoTopBls(); j++){
+					selectedbls.add(totalbls.get(j));
+				}
+				System.out.println("\n============================ Building Seed Profile - "+i+" ============================");
+				BuildSeed seedbuilder = new BuildSeed(selectedbls, driver.c);
+				int[] profile=null ;
+				if(driver.c.getSchemename().equals("scheme1")){
+					profile= seedbuilder.executeScheme1(driver.c);
+				}
 
+				if(driver.c.getSchemename().equals("scheme2")){
+					profile=seedbuilder.executeScheme2(driver.c);
+				}
+				System.currentTimeMillis();
+				System.out.println("No of Binding Locations selected to build seed "+i+" are: "+seedbuilder.getNoInSeed());
+				System.out.println("Composite of seed "+i+":");
+				System.out.println(Arrays.toString(profile));
+				File file = new File(driver.c.getOutTagname()+"_seed_profile.tab");
+				if(!file.exists()){
+					file.createNewFile();
+				}
+				FileWriter fw = new FileWriter(file.getAbsoluteFile());
+				BufferedWriter br_profile = new BufferedWriter(fw);
+				for(int j=0; j<profile.length; j++){
+					br_profile.write(Integer.toString(j+1)+"\t"+Integer.toString(profile[j])+"\n");
+				}
+				br_profile.close();
+				
+				System.out.println("\n============================ Scanning the entire list of binding locations - "+i+" ============================");
+				LocationsScanner scanner = new LocationsScanner(totalbls, driver.c, profile);
+				File file_pcc =  new File(driver.c.getOutTagname()+"_list_pcc");
+				if(!file_pcc.exists()){
+					file_pcc.createNewFile();
+				}
+				FileWriter fw_pcc = new FileWriter(file_pcc.getAbsoluteFile());
+				BufferedWriter br_pcc = new BufferedWriter(fw_pcc);
+				for(int j=0; j<scanner.getEntireListOfPccValues().length; j++){
+					br_pcc.write(Double.toString(scanner.getEntireListOfPccValues()[j])+"\n");
+				}
+				System.currentTimeMillis();
+				
+				totalbls = scanner.getListOfBlsThatDoNotPassCuttOff();
+				
+			}
+		}
+	}
 }

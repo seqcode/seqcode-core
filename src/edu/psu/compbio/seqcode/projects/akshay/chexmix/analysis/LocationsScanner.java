@@ -11,6 +11,8 @@ public class LocationsScanner {
 	
 	public List<CustomReturn> scanOut = new ArrayList<CustomReturn>();
 	public List<CustomReturn> allblscan = new ArrayList<CustomReturn>();
+	private List<BindingLocation> failscanbls =  new ArrayList<BindingLocation>();
+	private List<BindingLocation> passscanbls = new ArrayList<BindingLocation>();
 	
 	public LocationsScanner(List<BindingLocation> allbls, Config conf, int[] seedprofile) {
 		for(BindingLocation bl : allbls){
@@ -19,6 +21,10 @@ public class LocationsScanner {
 			allblscan.add(pushed);
 			if(temp.pcc > conf.getPccCutoff()){
 				scanOut.add(pushed);
+				passscanbls.add(bl);
+			}
+			else{
+				failscanbls.add(bl);
 			}
 		}
 	}
@@ -58,6 +64,14 @@ public class LocationsScanner {
 			ret[i] = scanOut.get(i).bl.getName();
 		}
 		return ret;
+	}
+	
+	public List<BindingLocation> getListOfBlsThatDoNotPassCuttOff(){
+		return failscanbls;
+	}
+	
+	public List<BindingLocation> getListOfBlsThatPassCuttoff(){
+		return passscanbls;
 	}
 
 }

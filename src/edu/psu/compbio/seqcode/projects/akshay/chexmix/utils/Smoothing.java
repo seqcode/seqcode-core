@@ -39,5 +39,11 @@ public class Smoothing {
 		System.out.println(chr);
 		chr=chr.replaceFirst("^>", "");
 		System.out.println(chr);
+		int a=3;
+		int b=4;
+		int c=5;
+		int d= (1)/5;
+		System.out.println(d); 
+		
 	}
 }

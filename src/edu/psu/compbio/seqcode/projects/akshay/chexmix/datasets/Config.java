@@ -21,6 +21,7 @@ public class Config {
 	protected boolean useCenterApproach=true;
 	protected final boolean useNonUnique = false;
 	protected String out_tag; //default value is out
+	protected int no_of_cycles; //default value is 3
 	
 	protected String[] args;
 	
@@ -41,6 +42,7 @@ public class Config {
 			tagsfiletype = Args.parseString(args, "tagstype", "IDX").toUpperCase();
 			String out = Args.parseString(args, "Out", "out");
 			String currdir = System.getProperty("user.dir");
+			no_of_cycles = Args.parseInteger(args, "NI", 3);
 			out_tag = currdir+"/"+out;
 			
 			for(String s: ap.getKeys()){
@@ -87,7 +89,7 @@ public class Config {
 	public int getNoTopBls(){return this.no_top_bl;}
 	public String getSchemename(){return this.scheme_name;}
 	public String getOutTagname(){return this.out_tag;}
-	
+	public int getNoOfCycles(){return this.no_of_cycles;}
 	
 	public String getArgsList(){
 		return(new String("" +
@@ -104,7 +106,8 @@ public class Config {
 				"\t--IR <Interval Range; *2 this values will be the interval size; default value set to 30>\n" +
 				"\t--S <Smoothing value; 0 for no smoothing; default value set to 0>\n"+
 				"\t--O <turn Off center approach; by default it is on>\n" +
-				"\t--Out <output tag name; files will be written to in the working directory; default value is out>"));
+				"\t--Out <output tag name; files will be written to in the working directory; default value is out>\n"+
+				"\t--NI <No of iterations of the whole mehtod; default value is set to 3>"));
 				
 	}
 }
