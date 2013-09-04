@@ -157,7 +157,7 @@ public class BindingLocation {
 				pccdriver = new Pearson(first,second);
 				temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
-					System.out.println(pcc);
+					//System.out.println(pcc);
 					maxVec1= this.getSubVec(thisvec.get(i), range, "+");
 					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-");
 				}
@@ -166,7 +166,7 @@ public class BindingLocation {
 				pccdriver = new Pearson(first,second);
 				temppcc = pccdriver.doComparision();
 				if(temppcc>pcc ){
-					System.out.println(pcc);
+					//System.out.println(pcc);
 					maxVec1= this.getSubVec(thisvec.get(i), range, "-");
 					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "+");
 				}
