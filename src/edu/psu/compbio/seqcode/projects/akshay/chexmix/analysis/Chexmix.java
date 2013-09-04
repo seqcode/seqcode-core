@@ -93,6 +93,7 @@ public class Chexmix {
 				for(int j=0; j<scanner.getEntireListOfPccValues().length; j++){
 					br_pcc.write(Double.toString(scanner.getEntireListOfPccValues()[j])+"\n");
 				}
+				br_pcc.close();
 				System.currentTimeMillis();
 				
 				totalbls = scanner.getListOfBlsThatDoNotPassCuttOff();
