@@ -57,7 +57,7 @@ public class Chexmix {
 			//debug lines
 			System.out.println("Printing the composite of the entire list of bls");
 			List<BindingLocation> temp = new ArrayList<BindingLocation>();
-			for(int k=0; k<5000; k++){
+			for(int k=0; k<1; k++){
 				temp.add(allbls.get(k));
 			}
 			int[] allblscomposite = sandbox.getCompositeFromBlLisr(temp);
