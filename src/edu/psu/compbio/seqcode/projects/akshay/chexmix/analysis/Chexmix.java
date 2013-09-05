@@ -53,12 +53,7 @@ public class Chexmix {
 			int i=1;
 			List<BindingLocation> totalbls = allbls;
 			
-			//debug lines
-			System.out.println("Printing the composite of the entire list of bls");
-			int[] allblscomposite = ChexmixSandbox.getCompositeFromBlLisr(allbls);
-			for(int k=0; k<allblscomposite.length; k++){
-				System.out.println(k+"\t"+allblscomposite[k]);
-			}
+			
 			
 			
 			while(i<=driver.c.getNoOfCycles() && totalbls.size()>driver.c.getNoOfCycles()){
