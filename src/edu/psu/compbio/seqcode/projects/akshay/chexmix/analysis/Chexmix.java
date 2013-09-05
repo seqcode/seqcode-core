@@ -7,7 +7,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cern.colt.Arrays;
 
@@ -38,12 +40,14 @@ public class Chexmix {
 			BufferedReader brpeaks = new BufferedReader(new FileReader(driver.c.getPeaksFilePath()));
 			List<BindingLocation> allbls = new ArrayList<BindingLocation>();
 			String currentline = brpeaks.readLine();
+			Map<BindingLocation, String> motif_orientation = new HashMap<BindingLocation, String>();
 			while(currentline != null){
 				String[] pieces = currentline.split("\t");
 				int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
 				String tempChr = pieces[0];
 				BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, driver.c);
 				temploc.filltags(tagsloader);
+				motif_orientation.put(temploc, pieces[6]);
 				allbls.add(temploc);
 				currentline = brpeaks.readLine();
 			}
@@ -51,8 +55,13 @@ public class Chexmix {
 			System.currentTimeMillis();
 			
 			int i=1;
-			List<BindingLocation> totalbls = allbls;
-			
+			List<BindingLocation> totalbls= allbls;
+			 //debug lines
+			System.out.println("Printing the composite of the entire list of bls");
+			int[] allblscomposite = ChexmixSandbox.getCompositeFromBlLisr(motif_orientation);
+			for(int k=0; k<allblscomposite.length; k++){
+                System.out.println(k+"\t"+allblscomposite[k]);
+			}
 			
 			
 			
