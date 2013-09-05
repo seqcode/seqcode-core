@@ -23,7 +23,6 @@ public class Chexmix {
 
 	public static void main(String[] args) throws IOException{
 		Config c = new Config(args);
-		ChexmixSandbox sandbox = new ChexmixSandbox();
 		Chexmix driver = new Chexmix(c);
 		if(driver.c.helpWanted()){
 			System.err.println("Chexmix:");
@@ -56,7 +55,7 @@ public class Chexmix {
 			
 			//debug lines
 			System.out.println("Printing the composite of the entire list of bls");
-			int[] allblscomposite = sandbox.getCompositeFromBlLisr(allbls);
+			int[] allblscomposite = ChexmixSandbox.getCompositeFromBlLisr(allbls);
 			for(int k=0; k<allblscomposite.length; k++){
 				System.out.println(k+"\t"+allblscomposite[k]);
 			}
