@@ -56,14 +56,20 @@ public class Chexmix {
 			
 			int i=1;
 			List<BindingLocation> totalbls= allbls;
-			 //debug lines
+			
 			System.out.println("Printing the composite of the entire list of bls");
-			int[] allblscomposite = ChexmixSandbox.getCompositeFromBlLisr(motif_orientation);
-			for(int k=0; k<allblscomposite.length; k++){
-                System.out.println(k+"\t"+allblscomposite[k]);
+			
+			File file_entire_composite = new File(driver.c.getOutTagname()+"_entire_locations_composite.tab");
+			if(!file_entire_composite.exists()){
+				file_entire_composite.createNewFile();
 			}
-			
-			
+			FileWriter fw_entire_composite = new FileWriter(file_entire_composite.getAbsoluteFile());
+			BufferedWriter br_entire_composite = new BufferedWriter(fw_entire_composite);
+			int[] allblscomposite = ChexmixSandbox.getCompositeFromBlLisr(allbls,motif_orientation);
+			for(int k=0; k<allblscomposite.length; k++){
+                br_entire_composite.write(k+"\t"+allblscomposite[k]);
+			}
+			br_entire_composite.close();
 			
 			while(i<=driver.c.getNoOfCycles() && totalbls.size()>driver.c.getNoOfCycles()){
 				List<BindingLocation> selectedbls = new ArrayList<BindingLocation>();
@@ -84,7 +90,7 @@ public class Chexmix {
 				System.out.println("No of Binding Locations selected to build seed "+i+" are: "+seedbuilder.getNoInSeed());
 				System.out.println("Composite of seed "+i+":");
 				System.out.println(Arrays.toString(profile));
-				File file = new File(driver.c.getOutTagname()+"_seed_profile_"+i+".tab");
+				File file = new File(driver.c.getOutTagname()+"_seed_profile_composite_"+i+".tab");
 				if(!file.exists()){
 					file.createNewFile();
 				}
@@ -97,7 +103,7 @@ public class Chexmix {
 				
 				System.out.println("\n============================ Scanning the entire list of binding locations - "+i+" ============================");
 				LocationsScanner scanner = new LocationsScanner(totalbls, driver.c, profile);
-				File file_pcc =  new File(driver.c.getOutTagname()+"_list_pcc_"+i+".tab");
+				File file_pcc =  new File(driver.c.getOutTagname()+"_complete_list_pcc_"+i+".tab");
 				if(!file_pcc.exists()){
 					file_pcc.createNewFile();
 				}
@@ -107,9 +113,44 @@ public class Chexmix {
 					br_pcc.write(Double.toString(scanner.getEntireListOfPccValues()[j])+"\n");
 				}
 				br_pcc.close();
+				File file_tagsPass = new File(driver.c.getOutTagname()+"_scan_pass_profile_composite_"+i+".tab");
+				if(!file_tagsPass.exists()){
+					file_tagsPass.createNewFile();
+				}
+				FileWriter fw_tagsPass = new FileWriter(file_tagsPass.getAbsoluteFile());
+				BufferedWriter br_tagsPass = new BufferedWriter(fw_tagsPass);
+				int[][] temp = scanner.getTagsThatPassCuttoff(c);
+				int[] composite_passed = new int[temp[0].length];
+				for(int j=0; j<temp.length; j++){
+					for(int k=0; k<temp[j].length; k++){
+						if(j==0){
+							composite_passed[k] = temp[j][k];
+						}
+						else{
+							composite_passed[k] = composite_passed[k] + temp[j][k];
+						}
+						
+					}
+				}
+				for(int j=0; j<composite_passed.length; j++){
+					br_tagsPass.write(j+"\t"+composite_passed[j]);
+				}
+				br_tagsPass.close();
 				System.currentTimeMillis();
 				
 				totalbls = scanner.getListOfBlsThatDoNotPassCuttOff();
+				
+				int[] tempcomposite = ChexmixSandbox.getCompositeFromBlLisr(totalbls, motif_orientation);
+				File file_remaining_all_composite = new File(driver.c.getOutTagname()+"_remaining_all_composite_"+i+".tab");
+				if(!file_remaining_all_composite.exists()){
+					file_remaining_all_composite.createNewFile();
+				}
+				FileWriter fw_remaining_all_composite = new FileWriter(file_remaining_all_composite.getAbsoluteFile());
+				BufferedWriter br_remaining_all_composite = new BufferedWriter(fw_remaining_all_composite);
+				for(int j=0; j< tempcomposite.length; j++){
+					br_remaining_all_composite.write(j+"\t"+tempcomposite[j]);
+				}
+				br_remaining_all_composite.close();
 				i++;
 				
 			}

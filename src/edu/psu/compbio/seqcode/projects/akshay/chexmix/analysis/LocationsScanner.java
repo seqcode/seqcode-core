@@ -39,7 +39,7 @@ public class LocationsScanner {
 		return ret;
 	}
 	
-	public int[][] getTags(Config conf){
+	public int[][] getTagsThatPassCuttoff(Config conf){
 		int[][] ret = new int[scanOut.size()][4*conf.getIntSize()];
 		for(int i=0; i<scanOut.size(); i++){
 			List<Integer> addToRet = scanOut.get(i).bl.getConcatenatedTags(scanOut.get(i).maxvec.midpoint, conf.getIntSize(), scanOut.get(i).maxvec.orientation);
@@ -58,7 +58,7 @@ public class LocationsScanner {
 		return ret;
 	}
 	
-	public String[] getBlnames(){
+	public String[] getBlnamesThatPassCutoff(){
 		String[] ret = new String[scanOut.size()];
 		for(int i=0; i<scanOut.size(); i++){
 			ret[i] = scanOut.get(i).bl.getName();
