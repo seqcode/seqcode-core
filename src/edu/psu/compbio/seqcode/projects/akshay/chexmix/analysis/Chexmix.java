@@ -67,7 +67,7 @@ public class Chexmix {
 			BufferedWriter br_entire_composite = new BufferedWriter(fw_entire_composite);
 			int[] allblscomposite = ChexmixSandbox.getCompositeFromBlLisr(allbls,motif_orientation);
 			for(int k=0; k<allblscomposite.length; k++){
-                br_entire_composite.write(k+"\t"+allblscomposite[k]);
+                br_entire_composite.write(k+"\t"+allblscomposite[k]+"\n");
 			}
 			br_entire_composite.close();
 			
@@ -133,7 +133,7 @@ public class Chexmix {
 					}
 				}
 				for(int j=0; j<composite_passed.length; j++){
-					br_tagsPass.write(j+"\t"+composite_passed[j]);
+					br_tagsPass.write(j+"\t"+composite_passed[j]+"\n");
 				}
 				br_tagsPass.close();
 				System.currentTimeMillis();
@@ -148,7 +148,7 @@ public class Chexmix {
 				FileWriter fw_remaining_all_composite = new FileWriter(file_remaining_all_composite.getAbsoluteFile());
 				BufferedWriter br_remaining_all_composite = new BufferedWriter(fw_remaining_all_composite);
 				for(int j=0; j< tempcomposite.length; j++){
-					br_remaining_all_composite.write(j+"\t"+tempcomposite[j]);
+					br_remaining_all_composite.write(j+"\t"+tempcomposite[j]+"\n");
 				}
 				br_remaining_all_composite.close();
 				i++;
