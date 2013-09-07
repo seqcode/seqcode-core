@@ -231,7 +231,7 @@ public class BuildSeed {
 		   }
 		}
 		//debug line
-		System.out.println(profile.length);
+		//System.out.println(profile.length);
 		CustomReturn centscan = center.scanConcVecWithBl(profile, conf.getIntSize());
 		List<Integer> tempaddToProfile = this.center.getConcatenatedTags(centscan.maxvec.midpoint, centscan.maxvec.range, centscan.maxvec.orientation);
 		for(int i=0; i<profile.length; i++){
