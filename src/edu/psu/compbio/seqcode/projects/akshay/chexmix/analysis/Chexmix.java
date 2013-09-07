@@ -57,7 +57,7 @@ public class Chexmix {
 			int i=1;
 			List<BindingLocation> totalbls= allbls;
 			
-			System.out.println("Printing the composite of the entire list of bls");
+			System.out.println("Total no of Binding Locations in the input peak file are: "+allbls.size() );
 			
 			File file_entire_composite = new File(driver.c.getOutTagname()+"_entire_locations_composite.tab");
 			if(!file_entire_composite.exists()){
@@ -103,6 +103,7 @@ public class Chexmix {
 				
 				System.out.println("\n============================ Scanning the entire list of binding locations - "+i+" ============================");
 				LocationsScanner scanner = new LocationsScanner(totalbls, driver.c, profile);
+				System.out.println("No of locations that match the seed profile "+i+" are:"+scanner.getListOfBlsThatPassCuttoff().size());
 				File file_pcc =  new File(driver.c.getOutTagname()+"_complete_list_pcc_"+i+".tab");
 				if(!file_pcc.exists()){
 					file_pcc.createNewFile();
