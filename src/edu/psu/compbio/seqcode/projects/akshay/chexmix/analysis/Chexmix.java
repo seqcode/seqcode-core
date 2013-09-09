@@ -89,6 +89,9 @@ public class Chexmix {
 				System.currentTimeMillis();
 				// debug methods start
 				if(i==1){
+					for(BindingLocation bl: seedbuilder.seed){
+						System.out.println(bl.getName());
+					}
 					int[] tempout = ChexmixSandbox.getCompositeFromBlLisr(seedbuilder.seed, motif_orientation);
 					for (int l=0; l<tempout.length; l++){
 						System.out.println(Integer.toString(l+1)+"\t"+tempout[l]);
