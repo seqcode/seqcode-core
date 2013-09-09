@@ -91,7 +91,7 @@ public class Chexmix {
 				if(i==1){
 					int[] tempout = ChexmixSandbox.getCompositeFromBlLisr(seedbuilder.seed, motif_orientation);
 					for (int l=0; l<tempout.length; l++){
-						System.out.println(tempout[l]);
+						System.out.println(Integer.toString(l+1)+tempout[l]+"\n");
 					}
 				}
 				//debug method ends
