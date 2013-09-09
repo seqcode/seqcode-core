@@ -102,6 +102,7 @@ public class Chexmix {
 					for (int l=0; l<tempout.length; l++){
 						System.out.println(Integer.toString(l+1)+"\t"+tempout[l]);
 					}
+					System.out.println(seedbuilder.center.getName());
 				}
 				//debug method ends
 				
