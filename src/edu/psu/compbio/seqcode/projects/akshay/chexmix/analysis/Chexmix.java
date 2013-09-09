@@ -87,6 +87,15 @@ public class Chexmix {
 					profile=seedbuilder.executeScheme2(driver.c);
 				}
 				System.currentTimeMillis();
+				// debug methods start
+				if(i==1){
+					int[] tempout = ChexmixSandbox.getCompositeFromBlLisr(seedbuilder.seed, motif_orientation);
+					for (int l=0; l<tempout.length; l++){
+						System.out.println(tempout[l]);
+					}
+				}
+				//debug method ends
+				
 				System.out.println("No of Binding Locations selected to build seed "+i+" are: "+seedbuilder.getNoInSeed());
 				System.out.println("Composite of seed "+i+":");
 				System.out.println(Arrays.toString(profile));
