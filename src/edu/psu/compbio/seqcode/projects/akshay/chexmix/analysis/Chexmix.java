@@ -91,7 +91,7 @@ public class Chexmix {
 				}
 				System.currentTimeMillis();
 				// debug methods start
-				if(i==1){
+				//if(i==1){
 					//for(BindingLocation bl: seedbuilder.seed){
 					//	System.out.println(bl.getName());
 					//}
@@ -99,17 +99,17 @@ public class Chexmix {
 					//for (int l=0; l<tempout.length; l++){
 					//	System.out.println(Integer.toString(l+1)+"\t"+tempout[l]);
 					//}
-					List<BindingLocation> onlycenter = new ArrayList<BindingLocation>();
-					onlycenter.add(seedbuilder.center);
-					int[] tempout = ChexmixSandbox.getCompositeFromBlLisr(onlycenter, motif_orientation);
-					for (int l=0; l<tempout.length; l++){
-						System.out.println(Integer.toString(l+1)+"\t"+tempout[l]);
-					}
-					System.out.println(seedbuilder.center.getName());
-				}
+					//List<BindingLocation> onlycenter = new ArrayList<BindingLocation>();
+					//onlycenter.add(seedbuilder.center);
+					//int[] tempout = ChexmixSandbox.getCompositeFromBlLisr(onlycenter, motif_orientation);
+					//for (int l=0; l<tempout.length; l++){
+					//	System.out.println(Integer.toString(l+1)+"\t"+tempout[l]);
+					//}
+					//System.out.println(seedbuilder.center.getName());
+				//}
 				//debug method ends
 				
-				System.out.println("No of Binding Locations selected to build seed "+i+" are: "+seedbuilder.getNoInSeed());
+				//System.out.println("No of Binding Locations selected to build seed "+i+" are: "+seedbuilder.getNoInSeed());
 				System.out.println("Composite of seed "+i+":");
 				System.out.println(Arrays.toString(profile));
 				File file = new File(driver.c.getOutTagname()+"_seed_profile_composite_"+i+".tab");
