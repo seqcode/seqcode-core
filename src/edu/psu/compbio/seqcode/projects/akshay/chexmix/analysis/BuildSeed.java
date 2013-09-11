@@ -263,7 +263,7 @@ public class BuildSeed {
 					if(!workingTree.get(i).isleaf && ! workingTree.get(j).isleaf){
 						List<Integer> first = new ArrayList<Integer>();
 						List<Integer> second =  new ArrayList<Integer>();
-						for(int l=0; i< workingTree.get(i).composite.length; l++){
+						for(int l=0; l< workingTree.get(i).composite.length; l++){
 							first.add(workingTree.get(i).composite[l]);
 							second.add(workingTree.get(j).composite[l]);
 						}
@@ -318,6 +318,10 @@ public class BuildSeed {
 				workingTree.remove(right_pos);
 				workingTree.add(node_to_be_added);
 			}
+			
+			//debug line
+			System.out.println(workingTree.size());
+			System.out.println(max_pcc);
 		} while(max_pcc>conf.getSeedCutoff() && workingTree.size()>0);
 		
 		int count_max=0;
