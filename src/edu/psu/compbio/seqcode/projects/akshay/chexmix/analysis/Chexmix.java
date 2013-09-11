@@ -86,6 +86,9 @@ public class Chexmix {
 				if(driver.c.getSchemename().equals("scheme2")){
 					profile=seedbuilder.executeScheme2(driver.c);
 				}
+				if(driver.c.getSchemename().equals("scheme3")){
+					profile = seedbuilder.executeScheme3(driver.c);
+				}
 				System.currentTimeMillis();
 				// debug methods start
 				if(i==1){
