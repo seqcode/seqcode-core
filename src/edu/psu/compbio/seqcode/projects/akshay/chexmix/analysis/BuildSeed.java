@@ -315,8 +315,15 @@ public class BuildSeed {
 			}
 		
 			if(max_pcc > conf.getSeedCutoff()){
-				workingTree.remove(left_pos);
-				workingTree.remove(right_pos);
+				
+				if(left_pos>right_pos){
+					workingTree.remove(left_pos);
+					workingTree.remove(right_pos);
+				}
+				else{
+					workingTree.remove(right_pos);
+					workingTree.remove(left_pos);
+				}
 				workingTree.add(node_to_be_added);
 			}
 			
