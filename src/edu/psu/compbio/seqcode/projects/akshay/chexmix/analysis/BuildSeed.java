@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.*;
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.Pearson;
 
 
 public class BuildSeed {
@@ -238,6 +239,104 @@ public class BuildSeed {
 			profile[i] = profile[i] + tempaddToProfile.get(i);
 		}
 		return profile;
+	}
+	
+	public int[] executeScheme3(Config conf){
+		int[] ret = new int[conf.getIntSize()*4];
+		List<Node> workingTree = new LinkedList<Node>();
+		
+		List<BindingLocation> bllist = new ArrayList<BindingLocation>(this.pccpairwise.keySet());
+		workingTree = this.getLinkedListFromListOfBl(bllist);
+		
+		
+		double max_pcc=-10.0;
+		int left_pos =0;
+		int right_pos=0;
+		Node node_to_be_added=null;
+		do{
+			for(int i=0; i< workingTree.size()-1; i++){
+				for(int j=i+1; j< workingTree.size(); j++){
+					double temp_pcc;
+					int temp_left_pos;
+					int temp_right_pos;
+					Node newnode;
+					if(!workingTree.get(i).isleaf && ! workingTree.get(j).isleaf){
+						List<Integer> first = new ArrayList<Integer>();
+						List<Integer> second =  new ArrayList<Integer>();
+						for(int l=0; i< workingTree.get(i).composite.length; l++){
+							first.add(workingTree.get(i).composite[l]);
+							second.add(workingTree.get(j).composite[l]);
+						}
+						Pearson pcc_calculator = new Pearson(first, second);
+						temp_pcc = pcc_calculator.doComparision();
+						temp_left_pos = i;
+						temp_right_pos = j;
+						int[] newcomposite = new int[first.size()];
+						for(int l=0; l< first.size(); l++){
+							newcomposite[l] = first.get(l)+second.get(l);
+						}
+						newnode = new Node(workingTree.get(i),workingTree.get(j),newcomposite);
+					}
+					else if(workingTree.get(i).isleaf && workingTree.get(j).isleaf){
+						CustomReturn cr = workingTree.get(i).leafbl.scanBlWithBl(workingTree.get(j).leafbl, conf.getIntSize());
+						temp_pcc = cr.pcc;
+						int[] newcomposite = new int[conf.getIntSize()*4];
+						List<Integer> lefvec = workingTree.get(i).leafbl.getConcatenatedTags(cr.maxVec1.midpoint, cr.maxVec1.range, cr.maxVec1.orientation);
+						List<Integer> rightvec = workingTree.get(j).leafbl.getConcatenatedTags(cr.maxVec2.midpoint, cr.maxVec2.range, cr.maxVec2.orientation);
+						for(int l=0; l<lefvec.size(); l++){
+							newcomposite[l] = lefvec.get(l)+rightvec.get(l);
+						}
+						temp_left_pos = i;
+						temp_right_pos = j;
+						newnode = new Node(workingTree.get(i), workingTree.get(j), newcomposite);
+					}
+					else{
+						Node non_leaf_node = (workingTree.get(i).isleaf ? workingTree.get(j) : workingTree.get(i));
+						Node leaf_node = (workingTree.get(i).isleaf ? workingTree.get(i) : workingTree.get(j));
+						CustomReturn cr = leaf_node.leafbl.scanConcVecWithBl(non_leaf_node.composite, conf.getIntSize());
+						temp_pcc = cr.pcc;
+						int[] newcomposite = new int[conf.getIntSize()*4];
+						List<Integer> vec = leaf_node.leafbl.getConcatenatedTags(cr.maxvec.midpoint, cr.maxvec.range, cr.maxvec.orientation);
+						for(int l=0; l< vec.size(); l++){
+							newcomposite[l] = non_leaf_node.composite[l]+vec.get(l);
+						}
+						temp_left_pos = i;
+						temp_right_pos=j;
+						newnode = new Node(workingTree.get(i), workingTree.get(j),newcomposite);
+					}
+					if(temp_pcc > max_pcc){
+						node_to_be_added = newnode;
+						left_pos = temp_left_pos;
+						right_pos = temp_right_pos;
+						max_pcc = temp_pcc;
+					}
+				}
+			}
+		
+			if(max_pcc > conf.getSeedCutoff()){
+				workingTree.remove(left_pos);
+				workingTree.remove(right_pos);
+				workingTree.add(node_to_be_added);
+			}
+		} while(max_pcc>conf.getSeedCutoff() && workingTree.size()>0);
+		
+		int count_max=0;
+		for(int l=0; l< workingTree.size(); l++){
+			if(workingTree.get(l).count > count_max){
+				ret = workingTree.get(l).composite;
+			}
+		}
+		
+		return ret;
+	}
+	
+	private List<Node> getLinkedListFromListOfBl(List<BindingLocation> bls){
+		List<Node> ret = new LinkedList<Node>();
+		for(int i=0; i< bls.size(); i++){
+			Node tempnode = new Node(bls.get(i));
+			ret.add(tempnode);
+		}
+		return ret;
 	}
 	
 
