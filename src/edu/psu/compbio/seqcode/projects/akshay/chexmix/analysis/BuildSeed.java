@@ -248,12 +248,13 @@ public class BuildSeed {
 		List<BindingLocation> bllist = new ArrayList<BindingLocation>(this.pccpairwise.keySet());
 		workingTree = this.getLinkedListFromListOfBl(bllist);
 		
+		double max_pcc = -10.0;
 		
-		double max_pcc=-10.0;
-		int left_pos =0;
-		int right_pos=0;
-		Node node_to_be_added=null;
 		do{
+			max_pcc=-10.0;
+			int left_pos =0;
+			int right_pos=0;
+			Node node_to_be_added=null;
 			for(int i=0; i< workingTree.size()-1; i++){
 				for(int j=i+1; j< workingTree.size(); j++){
 					double temp_pcc;
