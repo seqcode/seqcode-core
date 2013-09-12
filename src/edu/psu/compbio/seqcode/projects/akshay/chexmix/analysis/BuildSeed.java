@@ -338,8 +338,9 @@ public class BuildSeed {
 				count_max = workingTree.get(l).count;
 				ret = workingTree.get(l).composite;
 			}
-			System.out.println(count_max);
+			
 		}
+		System.out.println(count_max);
 		
 		return ret;
 	}
