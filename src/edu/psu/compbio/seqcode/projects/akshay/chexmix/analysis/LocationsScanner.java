@@ -74,5 +74,14 @@ public class LocationsScanner {
 		return passscanbls;
 	}
 	
+	public List<String> getNamesAndOrientationOfBlsThatPassCuttoff(){
+		List<String> ret = new ArrayList<String>();
+		for(CustomReturn cr: scanOut){
+			String temp = cr.bl.getName()+":"+cr.maxvec.orientation;
+			ret.add(temp);
+		}
+		return ret;
+	}
+	
 
 }

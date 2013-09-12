@@ -126,6 +126,14 @@ public class Chexmix {
 				System.out.println("\n============================ Scanning the entire list of binding locations - "+i+" ============================");
 				LocationsScanner scanner = new LocationsScanner(totalbls, driver.c, profile);
 				System.out.println("No of locations that match the seed profile "+i+" are:"+scanner.getListOfBlsThatPassCuttoff().size());
+				
+				// debug lines start
+				List<String> passblorientation = scanner.getNamesAndOrientationOfBlsThatPassCuttoff();
+				for(String out_string: passblorientation){
+					System.out.println(out_string);
+				}
+				// debug lines end
+				
 				File file_pcc =  new File(driver.c.getOutTagname()+"_complete_list_pcc_"+i+".tab");
 				if(!file_pcc.exists()){
 					file_pcc.createNewFile();
