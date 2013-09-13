@@ -342,6 +342,11 @@ public class BuildSeed {
 		}
 		System.out.println(count_max);
 		
+		//debug lines
+		for(int m=0; m<ret.length; m++){
+			System.out.println(m+"\t"+ret[m]);
+		}
+		
 		return ret;
 	}
 	

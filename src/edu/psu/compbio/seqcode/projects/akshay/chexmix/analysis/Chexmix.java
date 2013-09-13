@@ -128,10 +128,10 @@ public class Chexmix {
 				System.out.println("No of locations that match the seed profile "+i+" are:"+scanner.getListOfBlsThatPassCuttoff().size());
 				
 				// debug lines start
-				List<String> passblorientation = scanner.getNamesAndOrientationOfBlsThatPassCuttoff();
-				for(String out_string: passblorientation){
-					System.out.println(out_string);
-				}
+				//List<String> passblorientation = scanner.getNamesAndOrientationOfBlsThatPassCuttoff();
+				//for(String out_string: passblorientation){
+				//	System.out.println(out_string);
+				//}
 				// debug lines end
 				
 				File file_pcc =  new File(driver.c.getOutTagname()+"_complete_list_pcc_"+i+".tab");
