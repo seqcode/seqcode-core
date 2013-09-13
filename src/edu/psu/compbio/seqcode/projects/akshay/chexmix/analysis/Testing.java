@@ -5,6 +5,7 @@ import java.util.List;
 
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.BindingLocation;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Node;
 
 public class Testing {
 	
@@ -20,10 +21,10 @@ public class Testing {
 			loadTags.loadHits(c, c.useNonUnique());
 			BindingLocation bl =  new BindingLocation(151128370,"chr1",c);
 			bl.filltags(loadTags);
-			List<Integer> temp = bl.getConcatenatedTags(bl.vecpos.midpoint, bl.vecpos.range, bl.vecpos.orientation);
-			
-			for(int i=0; i<temp.size();i++){
-				System.out.println(i+"\t"+temp.get(i));
+			//List<Integer> temp = bl.getConcatenatedTags(bl.vecpos.midpoint, bl.vecpos.range, bl.vecpos.orientation);
+			Node no = new Node(bl);
+			for(int i=0; i<no.composite.length;i++){
+				System.out.println(i+"\t"+no.composite[i]);
 			}
 		}
 	}

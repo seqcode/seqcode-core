@@ -261,7 +261,7 @@ public class BuildSeed {
 					int temp_left_pos;
 					int temp_right_pos;
 					Node newnode;
-					if(!workingTree.get(i).isleaf && ! workingTree.get(j).isleaf){
+					if(!workingTree.get(i).isleaf && !workingTree.get(j).isleaf){
 						List<Integer> first = new ArrayList<Integer>();
 						List<Integer> second =  new ArrayList<Integer>();
 						for(int l=0; l< workingTree.get(i).composite.length; l++){
@@ -346,6 +346,7 @@ public class BuildSeed {
 		for(int m=0; m<ret.length; m++){
 			System.out.println(m+"\t"+ret[m]);
 		}
+		
 		
 		return ret;
 	}
