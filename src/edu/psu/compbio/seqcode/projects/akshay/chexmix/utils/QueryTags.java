@@ -47,6 +47,12 @@ public class QueryTags {
 		ret = new Vec(this.range, this.midpoint, this.chr, orientation, this.Smoothsize, 0,tags);
 		return ret;
 	}
+	
+	public static void main(String[] args){
+		String strand="+";
+		int pp = (strand == "-"?0:1);
+		System.out.println(pp);
+	}
 }
 		
 
