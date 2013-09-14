@@ -286,15 +286,18 @@ public class BuildSeed {
 						List<Integer> rightvec = workingTree.get(j).leafbl.getConcatenatedTags(cr.maxVec2.midpoint, cr.maxVec2.range, cr.maxVec2.orientation);
 						//debug begin
 						if(i==4 && j==19){
-							System.out.println(temp_pcc);
-							System.out.println("i==4one");
-							for(int k=0; k<lefvec.size(); k++){
-								System.out.println(k+"\t"+lefvec.get(k));
-							}
-							System.out.println("j==19one");
-							for(int k=0; k<lefvec.size(); k++){
-								System.out.println(k+"\t"+rightvec.get(k));
-							}
+							System.out.println(workingTree.get(4).leafbl.getName());
+							System.out.println(workingTree.get(19).leafbl.getName());
+							//System.out.println(temp_pcc);
+							//System.out.println("i==4one");
+							
+							//for(int k=0; k<lefvec.size(); k++){
+							//	System.out.println(k+"\t"+lefvec.get(k));
+							//}
+							//System.out.println("j==19one");
+							//for(int k=0; k<lefvec.size(); k++){
+							//	System.out.println(k+"\t"+rightvec.get(k));
+							//}
 							
 							
 						}
@@ -305,13 +308,13 @@ public class BuildSeed {
 						temp_right_pos = j;
 						newnode = new Node(workingTree.get(i), workingTree.get(j), newcomposite);
 						//debug lines start
-						if(i==4 && j==19){
-							System.out.println("compoiste");
-							for(int k=0; k<newcomposite.length; k++){
-								System.out.println(k+"\t"+newcomposite[k]);
-							}
+						//if(i==4 && j==19){
+						//	System.out.println("compoiste");
+						//	for(int k=0; k<newcomposite.length; k++){
+						//		System.out.println(k+"\t"+newcomposite[k]);
+						//	}
 							
-						}
+						//}
 						// end
 					}
 					else{
@@ -357,6 +360,13 @@ public class BuildSeed {
 			//debug line
 			System.out.println(workingTree.size());
 			System.out.println(max_pcc);
+			//end
+			
+			//debug line
+			System.out.println("added node");
+			for(int k=0; k< workingTree.get(19).composite.length; k++){
+				System.out.println(k+"\t"+workingTree.get(19).composite[k]);
+			}
 		} while(max_pcc>conf.getSeedCutoff() && workingTree.size()>0);
 		
 		int count_max=0;
