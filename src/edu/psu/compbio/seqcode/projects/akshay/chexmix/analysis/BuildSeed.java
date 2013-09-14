@@ -291,13 +291,13 @@ public class BuildSeed {
 						temp_right_pos = j;
 						newnode = new Node(workingTree.get(i), workingTree.get(j), newcomposite);
 						//debug lines start
-						if(i==1){
-							System.out.println(j+"\t"+cr.pcc);
-							for(int k=0; k<newcomposite.length; k++){
-								System.out.println(k+"\t"+newcomposite[k]);
-							}
+						//if(i==1){
+						//	System.out.println(j+"\t"+cr.pcc);
+						//	for(int k=0; k<newcomposite.length; k++){
+						//		System.out.println(k+"\t"+newcomposite[k]);
+						//	}
 							
-						}
+						//}
 						// end
 					}
 					else{
@@ -324,7 +324,11 @@ public class BuildSeed {
 			}
 		
 			if(max_pcc > conf.getSeedCutoff()){
-				
+				// debug line
+				System.out.println(left_pos);
+				System.out.println(right_pos);
+				System.out.println(max_pcc);
+				//end
 				if(left_pos>right_pos){
 					workingTree.remove(left_pos);
 					workingTree.remove(right_pos);
