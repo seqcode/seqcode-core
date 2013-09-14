@@ -284,6 +284,20 @@ public class BuildSeed {
 						int[] newcomposite = new int[conf.getIntSize()*4];
 						List<Integer> lefvec = workingTree.get(i).leafbl.getConcatenatedTags(cr.maxVec1.midpoint, cr.maxVec1.range, cr.maxVec1.orientation);
 						List<Integer> rightvec = workingTree.get(j).leafbl.getConcatenatedTags(cr.maxVec2.midpoint, cr.maxVec2.range, cr.maxVec2.orientation);
+						//debug begin
+						if(i==4 && j==19){
+							System.out.println(temp_pcc);
+							System.out.println("i==4one");
+							for(int k=0; k<lefvec.size(); k++){
+								System.out.println(k+"\t"+lefvec.get(k));
+							}
+							System.out.println("j==19one");
+							for(int k=0; k<lefvec.size(); k++){
+								System.out.println(k+"\t"+rightvec.get(k));
+							}
+							
+							
+						}
 						for(int l=0; l<lefvec.size(); l++){
 							newcomposite[l] = lefvec.get(l)+rightvec.get(l);
 						}
@@ -291,13 +305,13 @@ public class BuildSeed {
 						temp_right_pos = j;
 						newnode = new Node(workingTree.get(i), workingTree.get(j), newcomposite);
 						//debug lines start
-						//if(i==1){
-						//	System.out.println(j+"\t"+cr.pcc);
-						//	for(int k=0; k<newcomposite.length; k++){
-						//		System.out.println(k+"\t"+newcomposite[k]);
-						//	}
+						if(i==4 && j==19){
+							System.out.println("compoiste");
+							for(int k=0; k<newcomposite.length; k++){
+								System.out.println(k+"\t"+newcomposite[k]);
+							}
 							
-						//}
+						}
 						// end
 					}
 					else{
@@ -325,9 +339,9 @@ public class BuildSeed {
 		
 			if(max_pcc > conf.getSeedCutoff()){
 				// debug line
-				System.out.println(left_pos);
-				System.out.println(right_pos);
-				System.out.println(max_pcc);
+				//System.out.println(left_pos);
+				//System.out.println(right_pos);
+				//System.out.println(max_pcc);
 				//end
 				if(left_pos>right_pos){
 					workingTree.remove(left_pos);
