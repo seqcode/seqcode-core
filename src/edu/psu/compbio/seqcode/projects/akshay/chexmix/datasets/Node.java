@@ -10,7 +10,7 @@ public class Node {
 	public int[] composite;
 	public Node left_child;
 	public Node right_child;
-	public boolean visited;
+	public boolean visited=false;
 	
 	public Node(BindingLocation leafbl) {
 		this.leafbl = leafbl;
