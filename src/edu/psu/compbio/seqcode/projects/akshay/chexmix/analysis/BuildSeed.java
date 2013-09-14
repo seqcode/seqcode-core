@@ -365,7 +365,7 @@ public class BuildSeed {
 			//debug line
 			System.out.println("added node");
 			for(int k=0; k< workingTree.get(19).composite.length; k++){
-				System.out.println(k+"\t"+workingTree.get(19).composite[k]);
+				System.out.println(k+"\t"+workingTree.get(18).composite[k]);
 			}
 		} while(max_pcc>conf.getSeedCutoff() && workingTree.size()>0);
 		
