@@ -333,20 +333,29 @@ public class BuildSeed {
 		} while(max_pcc>conf.getSeedCutoff() && workingTree.size()>0);
 		
 		int count_max=0;
+		Node max_node=null;
 		for(int l=0; l< workingTree.size(); l++){
 			if(workingTree.get(l).count > count_max){
 				count_max = workingTree.get(l).count;
 				ret = workingTree.get(l).composite;
+				//debug line
+				max_node = workingTree.get(l);
+				//ends
 			}
 			
 		}
 		System.out.println(count_max);
+		//debug lines
+		Node.printTree(max_node);
+		//ends
+		
+		
 		
 		//debug lines
-		for(int m=0; m<ret.length; m++){
-			System.out.println(m+"\t"+ret[m]);
-		}
-		
+		//for(int m=0; m<ret.length; m++){
+		//	System.out.println(m+"\t"+ret[m]);
+		//}
+		//ends
 		
 		return ret;
 	}

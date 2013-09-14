@@ -33,5 +33,22 @@ public class Node {
 		this.right_child = right;
 	}
 	
+	public static void printTree(Node root){
+		while(!root.isleaf){
+			Node left = root.left_child;
+			Node right = root.right_child;
+			System.out.println("left"+left.count);
+			for(int i=0; i<left.composite.length; i++){
+				System.out.println(i+"\t"+left.composite[i]);
+			}
+			System.out.println("right"+right.count);
+			for(int i=0; i< right.composite.length; i++){
+				System.out.println(i+"\t"+right.composite[i]);
+			}
+			printTree(left);
+			printTree(right);
+		}
+	}
+	
 
 }
