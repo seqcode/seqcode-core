@@ -290,6 +290,15 @@ public class BuildSeed {
 						temp_left_pos = i;
 						temp_right_pos = j;
 						newnode = new Node(workingTree.get(i), workingTree.get(j), newcomposite);
+						//debug lines start
+						if(i==1){
+							System.out.println(j+"\t"+cr.pcc);
+							for(int k=0; k<newcomposite.length; k++){
+								System.out.println(k+"\t"+newcomposite[k]);
+							}
+							
+						}
+						// end
 					}
 					else{
 						Node non_leaf_node = (workingTree.get(i).isleaf ? workingTree.get(j) : workingTree.get(i));
@@ -346,7 +355,7 @@ public class BuildSeed {
 		}
 		System.out.println(count_max);
 		//debug lines
-		Node.printTree(max_node);
+		//Node.printTree(max_node);
 		//ends
 		
 		
