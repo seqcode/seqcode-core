@@ -47,6 +47,9 @@ public class Node {
 			}
 			printTree(left);
 			printTree(right);
+			if(left.isleaf && right.isleaf){
+				break;
+			}
 		}
 	}
 	
