@@ -10,6 +10,7 @@ public class Node {
 	public int[] composite;
 	public Node left_child;
 	public Node right_child;
+	public boolean visited;
 	
 	public Node(BindingLocation leafbl) {
 		this.leafbl = leafbl;
@@ -34,7 +35,7 @@ public class Node {
 	}
 	
 	public static void printTree(Node root){
-		while(!root.isleaf){
+		while(!root.isleaf && !root.visited){
 			Node left = root.left_child;
 			Node right = root.right_child;
 			System.out.println("left"+left.count);
@@ -45,11 +46,9 @@ public class Node {
 			for(int i=0; i< right.composite.length; i++){
 				System.out.println(i+"\t"+right.composite[i]);
 			}
+			root.visited=true;
 			printTree(left);
 			printTree(right);
-			if(left.isleaf && right.isleaf){
-				break;
-			}
 		}
 	}
 	
