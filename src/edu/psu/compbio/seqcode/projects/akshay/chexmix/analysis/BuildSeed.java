@@ -284,40 +284,17 @@ public class BuildSeed {
 						int[] newcomposite = new int[conf.getIntSize()*4];
 						List<Integer> lefvec = workingTree.get(i).leafbl.getConcatenatedTags(cr.maxVec1.midpoint, cr.maxVec1.range, cr.maxVec1.orientation);
 						List<Integer> rightvec = workingTree.get(j).leafbl.getConcatenatedTags(cr.maxVec2.midpoint, cr.maxVec2.range, cr.maxVec2.orientation);
-						//debug begin
-						if(i==4 && j==19){
-							System.out.println(workingTree.get(4).leafbl.getName());
-							System.out.println(workingTree.get(19).leafbl.getName());
-							//System.out.println(temp_pcc);
-							//System.out.println("i==4one");
-							
-							//for(int k=0; k<lefvec.size(); k++){
-							//	System.out.println(k+"\t"+lefvec.get(k));
-							//}
-							//System.out.println("j==19one");
-							//for(int k=0; k<lefvec.size(); k++){
-							//	System.out.println(k+"\t"+rightvec.get(k));
-							//}
-							
-							
-						}
 						for(int l=0; l<lefvec.size(); l++){
 							newcomposite[l] = lefvec.get(l)+rightvec.get(l);
 						}
 						temp_left_pos = i;
 						temp_right_pos = j;
 						newnode = new Node(workingTree.get(i), workingTree.get(j), newcomposite);
-						//debug lines start
-						//if(i==4 && j==19){
-						//	System.out.println("compoiste");
-						//	for(int k=0; k<newcomposite.length; k++){
-						//		System.out.println(k+"\t"+newcomposite[k]);
-						//	}
-							
-						//}
-						// end
 					}
 					else{
+						//debug line
+						System.out.println(i+"\t"+j);
+						//end
 						Node non_leaf_node = (workingTree.get(i).isleaf ? workingTree.get(j) : workingTree.get(i));
 						Node leaf_node = (workingTree.get(i).isleaf ? workingTree.get(i) : workingTree.get(j));
 						CustomReturn cr = leaf_node.leafbl.scanConcVecWithBl(non_leaf_node.composite, conf.getIntSize());
