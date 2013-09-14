@@ -277,6 +277,23 @@ public class BuildSeed {
 							newcomposite[l] = first.get(l)+second.get(l);
 						}
 						newnode = new Node(workingTree.get(i),workingTree.get(j),newcomposite);
+						
+						//debug lines
+						System.out.println(i+"\t"+j+"before_i_both_merged");
+						for(int k=0; k<workingTree.get(i).composite.length; k++){
+							System.out.println(k+"\t"+workingTree.get(i).composite[k]);
+						}
+						System.out.println(i+"\t"+j+"before_j_both_merged");
+						for(int k=0; k<workingTree.get(j).composite.length; k++){
+							System.out.println(k+"\t"+workingTree.get(j).composite[k]);
+						}
+						
+						System.out.println("Merged");
+						for(int k=0; k<newnode.composite.length; k++){
+							System.out.println(k+"\t"+newnode.composite[k]);
+						}
+						//end
+						
 					}
 					else if(workingTree.get(i).isleaf && workingTree.get(j).isleaf){
 						CustomReturn cr = workingTree.get(i).leafbl.scanBlWithBl(workingTree.get(j).leafbl, conf.getIntSize());
@@ -290,11 +307,25 @@ public class BuildSeed {
 						temp_left_pos = i;
 						temp_right_pos = j;
 						newnode = new Node(workingTree.get(i), workingTree.get(j), newcomposite);
+						
+						//debug start
+						System.out.println(i+"\t"+j+"before_i_both_merged");
+						for(int k=0; k<workingTree.get(i).composite.length; k++){
+							System.out.println(k+"\t"+workingTree.get(i).composite[k]);
+						}
+						System.out.println(i+"\t"+j+"before_j_both_merged");
+						for(int k=0; k<workingTree.get(j).composite.length; k++){
+							System.out.println(k+"\t"+workingTree.get(j).composite[k]);
+						}
+						
+						System.out.println("Merged");
+						for(int k=0; k<newnode.composite.length; k++){
+							System.out.println(k+"\t"+newnode.composite[k]);
+						}
+						//debug end
+						
 					}
 					else{
-						//debug line
-						System.out.println(i+"\t"+j);
-						//end
 						Node non_leaf_node = (workingTree.get(i).isleaf ? workingTree.get(j) : workingTree.get(i));
 						Node leaf_node = (workingTree.get(i).isleaf ? workingTree.get(i) : workingTree.get(j));
 						CustomReturn cr = leaf_node.leafbl.scanConcVecWithBl(non_leaf_node.composite, conf.getIntSize());
@@ -307,6 +338,23 @@ public class BuildSeed {
 						temp_left_pos = i;
 						temp_right_pos=j;
 						newnode = new Node(workingTree.get(i), workingTree.get(j),newcomposite);
+						
+						//debug starts
+						System.out.println(i+"\t"+j+"before_i_both_merged");
+						for(int k=0; k<workingTree.get(i).composite.length; k++){
+							System.out.println(k+"\t"+workingTree.get(i).composite[k]);
+						}
+						System.out.println(i+"\t"+j+"before_j_both_merged");
+						for(int k=0; k<workingTree.get(j).composite.length; k++){
+							System.out.println(k+"\t"+workingTree.get(j).composite[k]);
+						}
+						
+						System.out.println("Merged");
+						for(int k=0; k<newnode.composite.length; k++){
+							System.out.println(k+"\t"+newnode.composite[k]);
+						}
+						//ends
+						
 					}
 					if(temp_pcc > max_pcc){
 						node_to_be_added = newnode;
@@ -318,11 +366,6 @@ public class BuildSeed {
 			}
 		
 			if(max_pcc > conf.getSeedCutoff()){
-				// debug line
-				//System.out.println(left_pos);
-				//System.out.println(right_pos);
-				//System.out.println(max_pcc);
-				//end
 				if(left_pos>right_pos){
 					workingTree.remove(left_pos);
 					workingTree.remove(right_pos);
@@ -334,16 +377,6 @@ public class BuildSeed {
 				workingTree.add(node_to_be_added);
 			}
 			
-			//debug line
-			System.out.println(workingTree.size());
-			System.out.println(max_pcc);
-			//end
-			
-			//debug line
-			System.out.println("added node");
-			for(int k=0; k< workingTree.get(18).composite.length; k++){
-				System.out.println(k+"\t"+workingTree.get(18).composite[k]);
-			}
 		} while(max_pcc>conf.getSeedCutoff() && workingTree.size()>0);
 		
 		int count_max=0;
@@ -352,24 +385,10 @@ public class BuildSeed {
 			if(workingTree.get(l).count > count_max){
 				count_max = workingTree.get(l).count;
 				ret = workingTree.get(l).composite;
-				//debug line
-				max_node = workingTree.get(l);
-				//ends
 			}
 			
 		}
 		System.out.println(count_max);
-		//debug lines
-		//Node.printTree(max_node);
-		//ends
-		
-		
-		
-		//debug lines
-		//for(int m=0; m<ret.length; m++){
-		//	System.out.println(m+"\t"+ret[m]);
-		//}
-		//ends
 		
 		return ret;
 	}
