@@ -421,22 +421,23 @@ public class BuildSeed {
 				}
 				bllist.remove(indext);
 				count=2;
-			}
-			indext = this.getClosestBl(profile, bllist, conf);
-			cr = bllist.get(indext).scanConcVecWithBl(profile, conf.getIntSize());
-			while(cr.pcc> conf.getSeedCutoff()){
-				List<Integer> addtolist = bllist.get(indext).getConcatenatedTags(cr.maxvec.midpoint, cr.maxvec.range, cr.maxvec.orientation);
-				for(int j=0; j< addtolist.size(); j++){
-					profile[j] = profile[j]+addtolist.get(j);
-				}
-				bllist.remove(indext);
 				indext = this.getClosestBl(profile, bllist, conf);
-				cr= bllist.get(indext).scanConcVecWithBl(profile, conf.getIntSize());
-				count++;
+				cr = bllist.get(indext).scanConcVecWithBl(profile, conf.getIntSize());
+				while(cr.pcc> conf.getSeedCutoff()){
+					addtolist = bllist.get(indext).getConcatenatedTags(cr.maxvec.midpoint, cr.maxvec.range, cr.maxvec.orientation);
+					for(int j=0; j< addtolist.size(); j++){
+						profile[j] = profile[j]+addtolist.get(j);
+					}
+					bllist.remove(indext);
+					indext = this.getClosestBl(profile, bllist, conf);
+					cr= bllist.get(indext).scanConcVecWithBl(profile, conf.getIntSize());
+					count++;
+				}
+				
+				allprofiles.put(givenbl, profile);
+				noofcomposite.put(givenbl, count);
 			}
 			
-			allprofiles.put(givenbl, profile);
-			noofcomposite.put(givenbl, count);
 		}
 		ret = this.doPostAssessment(allprofiles, conf);
 		return ret;
