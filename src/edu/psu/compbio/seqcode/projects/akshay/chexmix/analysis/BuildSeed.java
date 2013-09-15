@@ -162,6 +162,31 @@ public class BuildSeed {
 		return bestalignment;
 	}
 	
+	
+	
+	//debug method
+	
+	
+	public BindingLocation doPost(Map<BindingLocation, int[]> allseeds, Config conf ){
+		double maxavgpcc=-1000.0;
+		BindingLocation retbl=null;
+		for(BindingLocation bl: allseeds.keySet()){
+			double avgpcc=0.0;
+			int[] profile = allseeds.get(bl);
+			for(BindingLocation jbl : this.pccpairwise.keySet()){
+				CustomReturn tempRet = jbl.scanConcVecWithBl(profile, conf.getIntSize());
+				avgpcc = avgpcc+tempRet.pcc;
+			}
+			avgpcc = avgpcc/allseeds.size();
+			if(avgpcc> maxavgpcc){
+				maxavgpcc = avgpcc;
+				retbl = bl;
+			}
+		}
+		return retbl;
+	}
+	
+	
 	/**
 	 * This is the scheme-1 for building the seed.
 	 * This scheme works when the center (exemplar point) is the true representation of the data (other binding locations considered)
@@ -439,9 +464,23 @@ public class BuildSeed {
 			}
 			
 		}
-		ret = this.doPostAssessment(allprofiles, conf);
+		BindingLocation blmax =  this.doPost(allprofiles, conf);
+		for(BindingLocation bl : this.pccpairwise.keySet()){
+			System.out.println(bl.getName());
+			List<Integer> temptags = bl.getConcatenatedTags(bl.vecpos.midpoint, bl.vecpos.range, "+");
+			for(int k=0; k<temptags.size(); k++){
+				System.out.println(k+"\t"+temptags.get(k));
+			}
+		}
+		List<Integer> temptags = blmax.getConcatenatedTags(blmax.vecpos.midpoint, blmax.vecpos.range, "+");
+		System.out.println("Start");
+		for(int k=0; k<temptags.size(); k++){
+			System.out.println(k+"\t"+temptags.get(k));
+		}
+		ret = allprofiles.get(blmax);
 		return ret;
 	}
+	
 	
 	
 
