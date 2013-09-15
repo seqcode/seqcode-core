@@ -465,18 +465,19 @@ public class BuildSeed {
 			
 		}
 		BindingLocation blmax =  this.doPost(allprofiles, conf);
-		for(BindingLocation bl : this.pccpairwise.keySet()){
-			System.out.println(bl.getName());
-			List<Integer> temptags = bl.getConcatenatedTags(bl.vecpos.midpoint, bl.vecpos.range, "+");
-			for(int k=0; k<temptags.size(); k++){
-				System.out.println(k+"\t"+temptags.get(k));
-			}
-		}
-		List<Integer> temptags = blmax.getConcatenatedTags(blmax.vecpos.midpoint, blmax.vecpos.range, "+");
-		System.out.println("Start");
-		for(int k=0; k<temptags.size(); k++){
-			System.out.println(k+"\t"+temptags.get(k));
-		}
+		//for(BindingLocation bl : this.pccpairwise.keySet()){
+		//	System.out.println(bl.getName());
+		//	List<Integer> temptags = bl.getConcatenatedTags(bl.vecpos.midpoint, bl.vecpos.range, "+");
+		//	for(int k=0; k<temptags.size(); k++){
+		//		System.out.println(k+"\t"+temptags.get(k));
+		//	}
+		//}
+		//List<Integer> temptags = blmax.getConcatenatedTags(blmax.vecpos.midpoint, blmax.vecpos.range, "+");
+		//System.out.println("Start");
+		//for(int k=0; k<temptags.size(); k++){
+		//	System.out.println(k+"\t"+temptags.get(k));
+		//}
+		System.out.println("No: "+noofcomposite.get(blmax));
 		ret = allprofiles.get(blmax);
 		return ret;
 	}
