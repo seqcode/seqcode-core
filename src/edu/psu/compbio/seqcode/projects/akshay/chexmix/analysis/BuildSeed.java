@@ -477,7 +477,7 @@ public class BuildSeed {
 		//for(int k=0; k<temptags.size(); k++){
 		//	System.out.println(k+"\t"+temptags.get(k));
 		//}
-		System.out.println("No: "+noofcomposite.get(blmax));
+		System.out.println(blmax.getName());
 		ret = allprofiles.get(blmax);
 		return ret;
 	}
