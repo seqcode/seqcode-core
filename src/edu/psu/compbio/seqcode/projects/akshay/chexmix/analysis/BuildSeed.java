@@ -393,6 +393,60 @@ public class BuildSeed {
 		return ret;
 	}
 	
+	
+	public int[] executeScheme4(Config conf){
+		int[] ret=null;
+		Map<BindingLocation,int[]> allprofiles = new HashMap<BindingLocation, int[]>();
+		Map<BindingLocation, Integer> noofcomposite = new HashMap<BindingLocation, Integer>();
+		for(int i=0; i< this.pccpairwise.size();i++){
+			int[] profile = null;
+			int count=0;
+			List<BindingLocation> bllist = new LinkedList<BindingLocation>();
+			for(BindingLocation bl: this.pccpairwise.keySet()){
+				bllist.add(bl);
+			}
+			BindingLocation givenbl = bllist.get(i);
+			bllist.remove(i);
+			int indext = this.getClosestBl(givenbl, bllist, conf);
+			CustomReturn cr = givenbl.scanBlWithBl(bllist.get(indext), conf.getIntSize());
+			if(cr.pcc>conf.getSeedCutoff()){
+				profile = new int[conf.getIntSize()*4];
+				List<Integer> addtolist= givenbl.getConcatenatedTags(cr.maxVec1.midpoint, cr.maxVec1.range, cr.maxVec1.orientation);
+				for(int j=0; j< addtolist.size(); j++){
+					profile[j] = addtolist.get(j);
+				}
+				addtolist = bllist.get(indext).getConcatenatedTags(cr.maxVec2.midpoint, cr.maxVec2.range, cr.maxVec2.orientation);
+				for(int j=0; j< addtolist.size(); j++){
+					profile[j] = profile[j]+addtolist.get(j);
+				}
+				bllist.remove(indext);
+				count=2;
+			}
+			indext = this.getClosestBl(profile, bllist, conf);
+			cr = bllist.get(indext).scanConcVecWithBl(profile, conf.getIntSize());
+			while(cr.pcc> conf.getSeedCutoff()){
+				List<Integer> addtolist = bllist.get(indext).getConcatenatedTags(cr.maxvec.midpoint, cr.maxvec.range, cr.maxvec.orientation);
+				for(int j=0; j< addtolist.size(); j++){
+					profile[j] = profile[j]+addtolist.get(j);
+				}
+				bllist.remove(indext);
+				indext = this.getClosestBl(profile, bllist, conf);
+				cr= bllist.get(indext).scanConcVecWithBl(profile, conf.getIntSize());
+				count++;
+			}
+			
+			allprofiles.put(givenbl, profile);
+			noofcomposite.put(givenbl, count);
+		}
+		ret = this.doPostAssessment(allprofiles, conf);
+		return ret;
+	}
+	
+	
+
+	
+	//Accessors
+	
 	private List<Node> getLinkedListFromListOfBl(List<BindingLocation> bls){
 		List<Node> ret = new LinkedList<Node>();
 		for(int i=0; i< bls.size(); i++){
@@ -402,9 +456,34 @@ public class BuildSeed {
 		return ret;
 	}
 	
-
+	private int getClosestBl(int[] profile, List<BindingLocation> bllist, Config conf){
+		int retindex=-2;
+		double max_pcc =-2.0;
+		for(int i=0; i< bllist.size(); i++){
+			CustomReturn cr = bllist.get(i).scanConcVecWithBl(profile, conf.getIntSize());
+			if(cr.pcc>max_pcc){
+				max_pcc = cr.pcc;
+				retindex = i;
+			}
+		}
+		return retindex;
+	}
 	
-	//Accessors
+	private int getClosestBl(BindingLocation givenbl, List<BindingLocation> bllist, Config conf){
+		int retindex=-2;
+		double max_pcc=-2.0;
+		for(int i=0; i<bllist.size(); i++){
+			if(!bllist.get(i).equals(givenbl)){
+				CustomReturn cr = givenbl.scanBlWithBl(bllist.get(i), conf.getIntSize());
+				if(cr.pcc> max_pcc){
+					max_pcc = cr.pcc;
+					retindex = i;
+				}
+			}
+		}
+		return retindex;
+	}
+	
 	public int getNoInSeed(){ return seed.size();}
 	public int getNoRemoved(){return removed.size();}
 
