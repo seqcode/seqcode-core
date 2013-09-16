@@ -433,6 +433,20 @@ public class BuildSeed {
 			BindingLocation givenbl = bllist.get(i);
 			bllist.remove(i);
 			int indext = this.getClosestBl(givenbl, bllist, conf);
+			
+			//debug line starts
+			if(givenbl.getName().equals("chr9:102996337")){
+				System.out.println(givenbl.getName());
+				List<Integer> tempout = givenbl.getConcatenatedTags(givenbl.vecpos.midpoint, givenbl.vecpos.range, givenbl.vecpos.orientation);
+				for(int m=0; m< tempout.size(); m++){
+					System.out.println(m+"\t"+tempout.get(m));
+				}
+				tempout = bllist.get(indext).getConcatenatedTags(bllist.get(indext).vecpos.midpoint, bllist.get(indext).vecpos.range, bllist.get(indext).vecpos.orientation);
+				System.out.println(bllist.get(indext).getName());
+				for(int m=0; m< tempout.size(); m++){
+					System.out.println(m+"\t"+tempout.get(m));
+				}
+			}
 			CustomReturn cr = givenbl.scanBlWithBl(bllist.get(indext), conf.getIntSize());
 			if(cr.pcc>conf.getSeedCutoff()){
 				profile = new int[conf.getIntSize()*4];
@@ -485,21 +499,9 @@ public class BuildSeed {
 			
 		}
 		BindingLocation blmax =  this.doPost(allprofiles, conf);
-		//for(BindingLocation bl : this.pccpairwise.keySet()){
-		//	System.out.println(bl.getName());
-		//	List<Integer> temptags = bl.getConcatenatedTags(bl.vecpos.midpoint, bl.vecpos.range, "+");
-		//	for(int k=0; k<temptags.size(); k++){
-		//		System.out.println(k+"\t"+temptags.get(k));
-		//	}
-		//}
-		//List<Integer> temptags = blmax.getConcatenatedTags(blmax.vecpos.midpoint, blmax.vecpos.range, "+");
-		//System.out.println("Start");
-		//for(int k=0; k<temptags.size(); k++){
-		//	System.out.println(k+"\t"+temptags.get(k));
-		//}
 		System.out.println(blmax.getName());
 		ret = allprofiles.get(blmax);
-		return ret;
+		return ret;	
 	}
 	
 	
