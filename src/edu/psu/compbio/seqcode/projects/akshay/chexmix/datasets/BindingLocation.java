@@ -309,12 +309,13 @@ public class BindingLocation {
 			Vec rev = this.getSubVec(midpoint, range, "+");
 			List<Integer> tempvalues = new ArrayList<Integer>(temp.tags.values());
 			List<Integer> revvalues = new ArrayList<Integer>(rev.tags.values());
-			for(int i=revvalues.size()-1;i>=0;i--){
-				ret.add(revvalues.get(i));
-			}
-			for(int i=0; i< tempvalues.size(); i++){
+			for(int i=tempvalues.size()-1; i>= 0; i--){
 				ret.add(tempvalues.get(i));
 			}
+			for(int i=0;i<revvalues.size();i++){
+				ret.add(revvalues.get(i));
+			}
+			
 		}
 		
 		return ret;
