@@ -437,7 +437,7 @@ public class BuildSeed {
 			//debug line starts
 			if(givenbl.getName().equals("chr9:102996337")){
 				System.out.println(givenbl.getName());
-				List<Integer> tempout = givenbl.getConcatenatedTags(givenbl.vecpos.midpoint, givenbl.vecpos.range, givenbl.vecpos.orientation);
+				List<Integer> tempout = givenbl.getConcatenatedTags(givenbl.vecpos.midpoint, givenbl.vecpos.range, givenbl.vecneg.orientation);
 				for(int m=0; m< tempout.size(); m++){
 					System.out.println(m+"\t"+tempout.get(m));
 				}
