@@ -180,6 +180,7 @@ public class BindingLocation {
 					maxVec2= givenBL.getSubVec(givenvec.get(j), range, "-");
 				}
 			}
+			
 		}
 		
 		CustomReturn ret = new CustomReturn(pcc,maxVec1,maxVec2);

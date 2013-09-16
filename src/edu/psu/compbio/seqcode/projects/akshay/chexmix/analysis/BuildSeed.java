@@ -448,35 +448,22 @@ public class BuildSeed {
 				}
 			}
 			CustomReturn cr = givenbl.scanBlWithBl(bllist.get(indext), conf.getIntSize());
+			//debug line begins
+			if(givenbl.getName().equals("chr9:102996337")){
+				System.out.println(givenbl.getName());
+				System.out.println(cr.maxVec1.midpoint+":"+cr.maxVec1.range+":"+cr.maxVec1.orientation);
+				System.out.println(bllist.get(indext).getName());
+				System.out.println(cr.maxVec2.midpoint+":"+cr.maxVec2.range+":"+cr.maxVec2.orientation);
+			}
 			if(cr.pcc>conf.getSeedCutoff()){
 				profile = new int[conf.getIntSize()*4];
 				List<Integer> addtolist= givenbl.getConcatenatedTags(cr.maxVec1.midpoint, cr.maxVec1.range, cr.maxVec1.orientation);
-				// debug line
-				if(givenbl.getName().equals("chr9:102996337")){
-					System.out.println("start");
-				}
-				//end
 				for(int j=0; j< addtolist.size(); j++){
 					profile[j] = addtolist.get(j);
-					//debug line
-					if(givenbl.getName().equals("chr9:102996337")){
-						System.out.println(j+"\t"+profile[j]);
-					}
-					//end
 				}
 				addtolist = bllist.get(indext).getConcatenatedTags(cr.maxVec2.midpoint, cr.maxVec2.range, cr.maxVec2.orientation);
-				// debug line
-				if(givenbl.getName().equals("chr9:102996337")){
-					System.out.println("start");
-				}
-				//end
 				for(int j=0; j< addtolist.size(); j++){
 					profile[j] = profile[j]+addtolist.get(j);
-					//debug line
-					if(givenbl.getName().equals("chr9:102996337")){
-						System.out.println(j+"\t"+profile[j]);
-					}
-					//end
 				}
 				bllist.remove(indext);
 				count=2;
