@@ -41,7 +41,7 @@ public class Chexmix {
 			List<BindingLocation> allbls = new ArrayList<BindingLocation>();
 			String currentline = brpeaks.readLine();
 			Map<BindingLocation, String> motif_orientation = new HashMap<BindingLocation, String>();
-			Map<BindingLocation, Integer> location_coverage = new HashMap<BindingLocation, Integer>();
+			Map<BindingLocation, Double> location_coverage = new HashMap<BindingLocation, Double>();
 			while(currentline != null){
 				String[] pieces = currentline.split("\t");
 				int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
@@ -49,7 +49,7 @@ public class Chexmix {
 				BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, driver.c);
 				temploc.filltags(tagsloader);
 				motif_orientation.put(temploc, pieces[6]);
-				location_coverage.put(temploc, Integer.parseInt(pieces[5]));
+				location_coverage.put(temploc, Double.parseDouble(pieces[5]));
 				allbls.add(temploc);
 				currentline = brpeaks.readLine();
 			}
