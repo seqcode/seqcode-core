@@ -132,12 +132,11 @@ public class Chexmix {
 				}
 				FileWriter fw_pcc = new FileWriter(file_pcc.getAbsoluteFile());
 				BufferedWriter br_pcc = new BufferedWriter(fw_pcc);
-				for(int j=0; j<scanner.getEntireListOfPccValues().length; j++){
-					Map<BindingLocation, Double> temp = scanner.getmapofAllblscan();
-					for(BindingLocation tempbl :temp.keySet()){
-						br_pcc.write(location_coverage.get(tempbl)+"\t"+temp.get(tempbl)+"\n");
-					}
+				Map<BindingLocation, Double> tempmap = scanner.getmapofAllblscan();
+				for(BindingLocation tempbl :tempmap.keySet()){
+					br_pcc.write(location_coverage.get(tempbl)+"\t"+tempmap.get(tempbl)+"\n");
 				}
+				
 				br_pcc.close();
 				File file_tagsPass = new File(driver.c.getOutTagname()+"_scan_pass_profile_composite_"+i+".tab");
 				if(!file_tagsPass.exists()){
