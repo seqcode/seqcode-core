@@ -1,7 +1,9 @@
 package edu.psu.compbio.seqcode.projects.akshay.chexmix.analysis;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.BindingLocation;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
@@ -54,6 +56,14 @@ public class LocationsScanner {
 		double[] ret =  new double[allblscan.size()];
 		for(int i=0; i<allblscan.size(); i++){
 			ret[i] = allblscan.get(i).pcc;
+		}
+		return ret;
+	}
+	
+	public Map<BindingLocation, Double> getmapofAllblscan(){
+		Map<BindingLocation, Double> ret = new HashMap<BindingLocation, Double>();
+		for(CustomReturn cr: allblscan){
+			ret.put(cr.bl, cr.pcc);
 		}
 		return ret;
 	}

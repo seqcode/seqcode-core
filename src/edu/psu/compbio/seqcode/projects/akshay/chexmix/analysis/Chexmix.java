@@ -41,6 +41,7 @@ public class Chexmix {
 			List<BindingLocation> allbls = new ArrayList<BindingLocation>();
 			String currentline = brpeaks.readLine();
 			Map<BindingLocation, String> motif_orientation = new HashMap<BindingLocation, String>();
+			Map<BindingLocation, Integer> location_coverage = new HashMap<BindingLocation, Integer>();
 			while(currentline != null){
 				String[] pieces = currentline.split("\t");
 				int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
@@ -48,6 +49,7 @@ public class Chexmix {
 				BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, driver.c);
 				temploc.filltags(tagsloader);
 				motif_orientation.put(temploc, pieces[6]);
+				location_coverage.put(temploc, Integer.parseInt(pieces[5]));
 				allbls.add(temploc);
 				currentline = brpeaks.readLine();
 			}
@@ -72,11 +74,15 @@ public class Chexmix {
 			br_entire_composite.close();
 			
 			while(i<=driver.c.getNoOfCycles() && totalbls.size()>driver.c.getNoOfCycles()){
+				System.out.println("\n============================ Building Seed Profile - "+i+" ============================");
 				List<BindingLocation> selectedbls = new ArrayList<BindingLocation>();
 				for(int j=0; j<driver.c.getNoTopBls(); j++){
 					selectedbls.add(totalbls.get(j));
 				}
-				System.out.println("\n============================ Building Seed Profile - "+i+" ============================");
+				
+				
+				
+				
 				BuildSeed seedbuilder = new BuildSeed(selectedbls, driver.c);
 				int[] profile=null ;
 				if(driver.c.getSchemename().equals("scheme1")){
@@ -92,25 +98,8 @@ public class Chexmix {
 				if(driver.c.getSchemename().equals("scheme4")){
 					profile = seedbuilder.executeScheme4(driver.c);
 				}
+				
 				System.currentTimeMillis();
-				// debug methods start
-				//if(i==1){
-					//for(BindingLocation bl: seedbuilder.seed){
-					//	System.out.println(bl.getName());
-					//}
-					//int[] tempout = ChexmixSandbox.getCompositeFromBlLisr(seedbuilder.seed, motif_orientation);
-					//for (int l=0; l<tempout.length; l++){
-					//	System.out.println(Integer.toString(l+1)+"\t"+tempout[l]);
-					//}
-					//List<BindingLocation> onlycenter = new ArrayList<BindingLocation>();
-					//onlycenter.add(seedbuilder.center);
-					//int[] tempout = ChexmixSandbox.getCompositeFromBlLisr(onlycenter, motif_orientation);
-					//for (int l=0; l<tempout.length; l++){
-					//	System.out.println(Integer.toString(l+1)+"\t"+tempout[l]);
-					//}
-					//System.out.println(seedbuilder.center.getName());
-				//}
-				//debug method ends
 				
 				//System.out.println("No of Binding Locations selected to build seed "+i+" are: "+seedbuilder.getNoInSeed());
 				System.out.println("Composite of seed "+i+":");
@@ -144,7 +133,10 @@ public class Chexmix {
 				FileWriter fw_pcc = new FileWriter(file_pcc.getAbsoluteFile());
 				BufferedWriter br_pcc = new BufferedWriter(fw_pcc);
 				for(int j=0; j<scanner.getEntireListOfPccValues().length; j++){
-					br_pcc.write(Double.toString(scanner.getEntireListOfPccValues()[j])+"\n");
+					Map<BindingLocation, Double> temp = scanner.getmapofAllblscan();
+					for(BindingLocation tempbl :temp.keySet()){
+						br_pcc.write(location_coverage.get(tempbl)+"\t"+temp.get(tempbl)+"\n");
+					}
 				}
 				br_pcc.close();
 				File file_tagsPass = new File(driver.c.getOutTagname()+"_scan_pass_profile_composite_"+i+".tab");
