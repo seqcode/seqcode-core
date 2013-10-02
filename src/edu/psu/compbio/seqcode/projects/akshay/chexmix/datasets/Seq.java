@@ -52,12 +52,11 @@ public class Seq {
 	
 	public static void main(String[] args){
 		
-		Seq t1 = new Seq(3,4,"yy","+","a");
-		Seq t2 = new Seq(3,4,"yy","+","a");
-		System.out.println(t1==t2);
-		Map<Seq, Integer> tt = new HashMap<Seq,Integer>();
-		tt.put(t1, 1);
-		tt.put(t2, 2);
-		System.out.println(tt.size());
+		Map<Integer,Integer> test = new HashMap<Integer, Integer>();
+		System.out.println(test.size());
+		test.put(3, 4);
+		System.out.println(test.size());
+		test.remove(3);
+		System.out.println(test.size());
 	}
 }

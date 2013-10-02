@@ -461,11 +461,26 @@ public class BuildSeed {
 				allprofiles.put(givenbl, profile);
 				noofcomposite.put(givenbl, count);
 			}
+			else{
+				allprofiles.put(givenbl, profile);
+				noofcomposite.put(givenbl, count);
+			}
 			
 		}
-		BindingLocation blmax =  this.doPost(allprofiles, conf);
+		for(BindingLocation tempbl : noofcomposite.keySet()){
+			if(noofcomposite.get(tempbl) == 0){
+				allprofiles.remove(tempbl);
+			}
+		}
 		
-		CustomReturn ret = new CustomReturn(allprofiles.get(blmax),noofcomposite.get(blmax));
+		CustomReturn ret = null;
+		if(allprofiles.size() != 0){
+			BindingLocation blmax =  this.doPost(allprofiles, conf);
+			ret = new CustomReturn(allprofiles.get(blmax),noofcomposite.get(blmax));
+		}
+		else{
+			ret = new CustomReturn(null,0);
+		}
 		return ret;
 	}
 	
