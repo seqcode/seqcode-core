@@ -430,6 +430,9 @@ public class BuildSeed {
 			bllist.remove(i);
 			int indext = this.getClosestBl(givenbl, bllist, conf);
 			CustomReturn cr = givenbl.scanBlWithBl(bllist.get(indext), conf.getIntSize());
+			//debug line
+			System.out.println("katy perrt "+cr.pcc);
+			// end
 			if(cr.pcc>conf.getSeedCutoff()){
 				profile = new int[conf.getIntSize()*4];
 				List<Integer> addtolist= givenbl.getConcatenatedTags(cr.maxVec1.midpoint, cr.maxVec1.range, cr.maxVec1.orientation);
