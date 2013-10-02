@@ -67,6 +67,7 @@ public class Chexmix {
 			
 			
 			System.out.println("Total no of Binding Locations in the input peak file are: "+allbls.size() );
+			System.out.println("Total no of Binding Locations that are being considered: "+totalbls.size() );
 			
 			File file_entire_composite = new File(driver.c.getOutTagname()+"_entire_locations_composite.tab");
 			if(!file_entire_composite.exists()){
@@ -80,7 +81,7 @@ public class Chexmix {
 			}
 			br_entire_composite.close();
 			
-			while(i<=driver.c.getNoOfCycles() && totalbls.size()>driver.c.getNoOfCycles()){
+			while(i<=driver.c.getNoOfCycles() && totalbls.size()>driver.c.getHowDeepToSearch()*driver.c.getNoTopBls()){
 				int counter = 0;
 				System.out.println("\n============================ Building Seed Profile - "+i+" ============================");
 				List<BindingLocation> selectedbls = new ArrayList<BindingLocation>();
@@ -99,7 +100,8 @@ public class Chexmix {
 				}
 				
 				
-				while(counter < driver.c.getHowDeepToSearch()*driver.c.getNoTopBls()){
+				while(counter < driver.c.getHowDeepToSearch()*driver.c.getNoTopBls() && counter < totalbls.size()){
+					System.out.println(counter);
 					if(profile_cr.no_in_seed >= driver.c.getNoTopBls()/4){
 						profile = profile_cr.profile;
 						Final_number_in_profile = profile_cr.no_in_seed;
