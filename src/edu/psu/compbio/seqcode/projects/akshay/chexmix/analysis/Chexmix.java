@@ -124,9 +124,9 @@ public class Chexmix {
 								for(int k=0; k< addtoprofile.size(); k++){
 									profile[k] = profile[k]+addtoprofile.get(k);
 								}
-								counter++;
 								no_bl_already_in++;
 							}
+							counter++;
 						}
 						Final_number_in_profile = no_bl_already_in;
 						//debug
