@@ -415,8 +415,8 @@ public class BuildSeed {
 	}
 	
 	
-	public int[] executeScheme4(Config conf){
-		int[] ret=null;
+	public CustomReturn executeScheme4(Config conf){
+		
 		Map<BindingLocation,int[]> allprofiles = new HashMap<BindingLocation, int[]>();
 		Map<BindingLocation, Integer> noofcomposite = new HashMap<BindingLocation, Integer>();
 		for(int i=0; i< this.pccpairwise.size();i++){
@@ -461,8 +461,9 @@ public class BuildSeed {
 			
 		}
 		BindingLocation blmax =  this.doPost(allprofiles, conf);
-		ret = allprofiles.get(blmax);
-		return ret;	
+		
+		CustomReturn ret = new CustomReturn(allprofiles.get(blmax),noofcomposite.get(blmax));
+		return ret;
 	}
 	
 	

@@ -9,6 +9,9 @@ public class CustomReturn {
 	
 	public BindingLocation bl;
 	
+	public int[] profile;
+	public int no_in_seed;
+	
 	/**
 	 * This constructor is used as the return object for scanBlWithBl method in the Bindinglocation class
 	 * @param pcc
@@ -29,11 +32,26 @@ public class CustomReturn {
 		this.pcc = pcc;
 		this.maxvec = maxvec;
 	}
-	
+	/**
+	 * This constructor is usesa as the return object in locationscanner class. The elements of the allblscan are these objects 
+	 * @param pcc
+	 * @param maxvec
+	 * @param bl
+	 */
 	public CustomReturn(double pcc, Vec maxvec, BindingLocation bl){
 		this.pcc = pcc;
 		this.maxvec = maxvec;
 		this.bl = bl;
+	}
+	
+	/**
+	 * used as the return object by the executescheme4 method of the buildseed class
+	 * @param profile
+	 * @param no_in_seed
+	 */
+	public CustomReturn(int[] profile, int no_in_seed){
+		this.profile = profile;
+		this.no_in_seed = no_in_seed;
 	}
 	
 

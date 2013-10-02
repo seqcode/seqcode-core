@@ -15,6 +15,7 @@ import cern.colt.Arrays;
 
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.BindingLocation;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.CustomReturn;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.ChexmixSandbox;
 
 public class Chexmix {
@@ -56,8 +57,14 @@ public class Chexmix {
 			brpeaks.close();
 			System.currentTimeMillis();
 			
+			int size_to_consider =  (int) (driver.c.getListPercentageToCosider()*0.01*allbls.size());
+			List<BindingLocation> totalbls= new ArrayList<BindingLocation>();
+			for(int k=0; k< size_to_consider; k++){
+				totalbls.add(allbls.get(k));
+			}
+//==========================================================================================================================================================================================
 			int i=1;
-			List<BindingLocation> totalbls= allbls;
+			
 			
 			System.out.println("Total no of Binding Locations in the input peak file are: "+allbls.size() );
 			
@@ -74,34 +81,69 @@ public class Chexmix {
 			br_entire_composite.close();
 			
 			while(i<=driver.c.getNoOfCycles() && totalbls.size()>driver.c.getNoOfCycles()){
+				int counter = 0;
 				System.out.println("\n============================ Building Seed Profile - "+i+" ============================");
 				List<BindingLocation> selectedbls = new ArrayList<BindingLocation>();
-				for(int j=0; j<driver.c.getNoTopBls(); j++){
-					selectedbls.add(totalbls.get(j));
+				for(counter=0; counter<driver.c.getNoTopBls(); counter++){
+					selectedbls.add(totalbls.get(counter));
 				}
-				
-				
-				
 				
 				BuildSeed seedbuilder = new BuildSeed(selectedbls, driver.c);
-				int[] profile=null ;
-				if(driver.c.getSchemename().equals("scheme1")){
-					profile= seedbuilder.executeScheme1(driver.c);
-				}
-
-				if(driver.c.getSchemename().equals("scheme2")){
-					profile=seedbuilder.executeScheme2(driver.c);
-				}
-				if(driver.c.getSchemename().equals("scheme3")){
-					profile = seedbuilder.executeScheme3(driver.c);
-				}
+				int[] profile=null;
+				int Final_number_in_profile=0;
+				CustomReturn profile_cr = null;
+				
+				
 				if(driver.c.getSchemename().equals("scheme4")){
-					profile = seedbuilder.executeScheme4(driver.c);
+					profile_cr = seedbuilder.executeScheme4(driver.c);
 				}
 				
-				System.currentTimeMillis();
 				
-				//System.out.println("No of Binding Locations selected to build seed "+i+" are: "+seedbuilder.getNoInSeed());
+				while(counter < driver.c.getHowDeepToSearch()*driver.c.getNoTopBls()){
+					if(profile_cr.no_in_seed >= driver.c.getNoTopBls()/4){
+						profile = profile_cr.profile;
+						Final_number_in_profile = profile_cr.no_in_seed;
+						break;
+					}
+					else if(profile_cr.no_in_seed < driver.c.getNoTopBls()/4 && profile_cr.no_in_seed > driver.c.getNoTopBls()/10){
+						profile = profile_cr.profile;
+						int no_bl_already_in= profile_cr.no_in_seed;
+						while(no_bl_already_in >= profile_cr.no_in_seed/4 || counter > driver.c.getHowDeepToSearch()*driver.c.getNoTopBls() ){
+							BindingLocation to_scan = totalbls.get(counter);
+							CustomReturn temp_cr = to_scan.scanConcVecWithBl(profile, driver.c.getIntSize());
+							if(temp_cr.pcc > driver.c.getSeedCutoff()){
+								List<Integer> addtoprofile = to_scan.getConcatenatedTags(temp_cr.maxvec.midpoint, temp_cr.maxvec.range, temp_cr.maxvec.orientation);
+								for(int k=0; k< addtoprofile.size(); k++){
+									profile[k] = profile[k]+addtoprofile.get(k);
+								}
+								counter++;
+								no_bl_already_in++;
+							}
+						}
+						Final_number_in_profile = no_bl_already_in;
+						break;
+					}
+					else if(profile_cr.no_in_seed <= driver.c.getNoTopBls()/10){
+						int temp_count=0;
+						selectedbls=new ArrayList<BindingLocation>();
+						while(temp_count<driver.c.getNoTopBls()){
+							selectedbls.add(totalbls.get(counter));
+							counter++;
+							temp_count++;
+						}
+						seedbuilder = new BuildSeed(selectedbls, driver.c);
+						if(driver.c.getSchemename().equals("scheme4")){
+							profile_cr = seedbuilder.executeScheme4(driver.c);
+						}
+					
+					}
+				}
+				if(Final_number_in_profile < driver.c.getNoTopBls()/driver.c.getFactorToAddIteratively()){
+					int no_of_porfiles_in_dataset = i-1;
+					System.out.println("There are "+no_of_porfiles_in_dataset+" profiles in this dataset");
+					System.exit(0);
+				}
+				
 				System.out.println("Composite of seed "+i+":");
 				System.out.println(Arrays.toString(profile));
 				File file = new File(driver.c.getOutTagname()+"_seed_profile_composite_"+i+".tab");
@@ -118,13 +160,6 @@ public class Chexmix {
 				System.out.println("\n============================ Scanning the entire list of binding locations - "+i+" ============================");
 				LocationsScanner scanner = new LocationsScanner(totalbls, driver.c, profile);
 				System.out.println("No of locations that match the seed profile "+i+" are:"+scanner.getListOfBlsThatPassCuttoff().size());
-				
-				// debug lines start
-				//List<String> passblorientation = scanner.getNamesAndOrientationOfBlsThatPassCuttoff();
-				//for(String out_string: passblorientation){
-				//	System.out.println(out_string);
-				//}
-				// debug lines end
 				
 				File file_pcc =  new File(driver.c.getOutTagname()+"_complete_list_pcc_"+i+".tab");
 				if(!file_pcc.exists()){

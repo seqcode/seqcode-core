@@ -22,6 +22,10 @@ public class Config {
 	protected final boolean useNonUnique = false;
 	protected String out_tag; //default value is out
 	protected int no_of_cycles; //default value is 3
+	protected final int depth_to_search_patters=6;
+	protected final int factor_to_add_one_by_one=4;
+	protected final int factor_to_get_new_topbls = 10;
+	protected int percentage_list_to_consider;
 	
 	protected String[] args;
 	
@@ -43,6 +47,7 @@ public class Config {
 			String out = Args.parseString(args, "Out", "out");
 			String currdir = System.getProperty("user.dir");
 			no_of_cycles = Args.parseInteger(args, "NI", 3);
+			percentage_list_to_consider = Args.parseInteger(args, "PL", 60);
 			out_tag = currdir+"/"+out;
 			
 			for(String s: ap.getKeys()){
@@ -90,6 +95,11 @@ public class Config {
 	public String getSchemename(){return this.scheme_name;}
 	public String getOutTagname(){return this.out_tag;}
 	public int getNoOfCycles(){return this.no_of_cycles;}
+	public int getHowDeepToSearch(){return this.depth_to_search_patters;}
+	public int getFactorToAddIteratively(){return this.factor_to_add_one_by_one;}
+	public int getFactorToGetNewTopBls(){return this.factor_to_get_new_topbls;}
+	public int getListPercentageToCosider(){return this.percentage_list_to_consider;}
+	
 	
 	public String getArgsList(){
 		return(new String("" +
@@ -107,7 +117,8 @@ public class Config {
 				"\t--S <Smoothing value; 0 for no smoothing; default value set to 0>\n"+
 				"\t--O <turn Off center approach; by default it is on>\n" +
 				"\t--Out <output tag name; files will be written to in the working directory; default value is out>\n"+
-				"\t--NI <No of iterations of the whole mehtod; default value is set to 3>"));
+				"\t--NI <No of iterations of the whole mehtod; default value is set to 3>\n"+
+				"\t--PL <Percentage of the list to consider>"));
 				
 	}
 }
