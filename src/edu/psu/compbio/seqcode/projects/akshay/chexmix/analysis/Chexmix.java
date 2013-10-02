@@ -113,7 +113,7 @@ public class Chexmix {
 					else if(profile_cr.no_in_seed < driver.c.getNoTopBls()/4 && profile_cr.no_in_seed > driver.c.getNoTopBls()/10){
 						profile = profile_cr.profile;
 						int no_bl_already_in= profile_cr.no_in_seed;
-						while(no_bl_already_in >= profile_cr.no_in_seed/4 || counter > driver.c.getHowDeepToSearch()*driver.c.getNoTopBls() ){
+						while(no_bl_already_in <= profile_cr.no_in_seed/4 && counter < driver.c.getHowDeepToSearch()*driver.c.getNoTopBls() ){
 							BindingLocation to_scan = totalbls.get(counter);
 							CustomReturn temp_cr = to_scan.scanConcVecWithBl(profile, driver.c.getIntSize());
 							if(temp_cr.pcc > driver.c.getSeedCutoff()){
