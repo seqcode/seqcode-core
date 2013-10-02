@@ -101,7 +101,9 @@ public class Chexmix {
 				
 				
 				while(counter < driver.c.getHowDeepToSearch()*driver.c.getNoTopBls() && counter < totalbls.size()){
+					//debug line
 					System.out.println(counter);
+					//end
 					if(profile_cr.no_in_seed >= driver.c.getNoTopBls()/4){
 						profile = profile_cr.profile;
 						Final_number_in_profile = profile_cr.no_in_seed;
