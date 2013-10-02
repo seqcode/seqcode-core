@@ -116,6 +116,9 @@ public class Chexmix {
 						while(no_bl_already_in <= profile_cr.no_in_seed/4 && counter < driver.c.getHowDeepToSearch()*driver.c.getNoTopBls() ){
 							BindingLocation to_scan = totalbls.get(counter);
 							CustomReturn temp_cr = to_scan.scanConcVecWithBl(profile, driver.c.getIntSize());
+							//debug line
+							System.out.println(temp_cr.pcc);
+							//end
 							if(temp_cr.pcc > driver.c.getSeedCutoff()){
 								List<Integer> addtoprofile = to_scan.getConcatenatedTags(temp_cr.maxvec.midpoint, temp_cr.maxvec.range, temp_cr.maxvec.orientation);
 								for(int k=0; k< addtoprofile.size(); k++){
@@ -126,6 +129,9 @@ public class Chexmix {
 							}
 						}
 						Final_number_in_profile = no_bl_already_in;
+						//debug
+						System.out.println(Final_number_in_profile);
+						//end 
 						break;
 					}
 					else if(profile_cr.no_in_seed <= driver.c.getNoTopBls()/10){
