@@ -16,10 +16,13 @@ import cern.colt.Arrays;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.BindingLocation;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.CustomReturn;
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Membership;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.ChexmixSandbox;
 
 public class Chexmix {
 	public Config c;
+	public List<int[]> profiles_in_the_dataset = new ArrayList<int[]>();
+	public List<Membership> cluster_assignment = new ArrayList<Membership>();
 	public Chexmix(Config conf) {
 		this.c = conf;
 	}
@@ -33,10 +36,11 @@ public class Chexmix {
 		}
 		else{
 			System.currentTimeMillis();
+//========================================================================================LOADING TAGS================================================================================================
 			System.out.println("\n============================ Loading Tags/Reads ============================");
 			LoadTags tagsloader = new LoadTags();
 			tagsloader.loadHits(driver.c, driver.c.useNonUnique());
-			System.currentTimeMillis();
+//========================================================================================FILLING LOCATIONS=================================================================================================
 			System.out.println("\n============================ Filling Binding Locations ============================");
 			BufferedReader brpeaks = new BufferedReader(new FileReader(driver.c.getPeaksFilePath()));
 			List<BindingLocation> allbls = new ArrayList<BindingLocation>();
@@ -62,7 +66,7 @@ public class Chexmix {
 			for(int k=0; k< size_to_consider; k++){
 				totalbls.add(allbls.get(k));
 			}
-//==========================================================================================================================================================================================
+//===========================================================================================BUILDING SEEDS===============================================================================================
 			int i=1;
 			
 			
@@ -154,7 +158,7 @@ public class Chexmix {
 					System.out.println("There are "+no_of_porfiles_in_dataset+" profiles in this dataset");
 					System.exit(0);
 				}
-				
+//=============================================================================== FINISHED BUILDING SEEDS ========================================================================			
 				System.out.println("Composite of seed "+i+":");
 				System.out.println(Arrays.toString(profile));
 				File file = new File(driver.c.getOutTagname()+"_seed_profile_composite_"+i+".tab");
@@ -168,6 +172,8 @@ public class Chexmix {
 				}
 				br_profile.close();
 				
+				driver.profiles_in_the_dataset.add(profile);
+//==================================================================================== SCANNING THE SEED PROFILE THROUGH THE ENTIRE DATASET ==============================================				
 				System.out.println("\n============================ Scanning the entire list of binding locations - "+i+" ============================");
 				LocationsScanner scanner = new LocationsScanner(totalbls, driver.c, profile);
 				System.out.println("No of locations that match the seed profile "+i+" are:"+scanner.getListOfBlsThatPassCuttoff().size());

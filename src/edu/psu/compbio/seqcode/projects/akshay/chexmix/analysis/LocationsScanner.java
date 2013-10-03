@@ -8,6 +8,7 @@ import java.util.Map;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.BindingLocation;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.CustomReturn;
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Membership;
 
 public class LocationsScanner {
 	
@@ -92,6 +93,16 @@ public class LocationsScanner {
 		}
 		return ret;
 	}
+	 public List<Membership> getMembershipsForThoseThatPassCuttoff(int iteration, Config conf){
+		 List<Membership> ret = new ArrayList<Membership>();
+		 for(CustomReturn cr : this.allblscan){
+			 if(cr.pcc > conf.getPccCutoff()){
+				 Membership temp = new Membership(cr.bl, cr, iteration);
+				 ret.add(temp);
+			 }
+		 }
+		 return ret;
+	 }
 	
 
 }
