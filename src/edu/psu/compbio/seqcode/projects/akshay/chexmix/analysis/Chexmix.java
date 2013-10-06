@@ -23,6 +23,7 @@ public class Chexmix {
 	public Config c;
 	public List<int[]> profiles_in_the_dataset = new ArrayList<int[]>();
 	public List<Membership> cluster_assignment = new ArrayList<Membership>();
+	public double[][] cluster_assessment;
 	public Chexmix(Config conf) {
 		this.c = conf;
 	}
@@ -178,6 +179,11 @@ public class Chexmix {
 				LocationsScanner scanner = new LocationsScanner(totalbls, driver.c, profile);
 				System.out.println("No of locations that match the seed profile "+i+" are:"+scanner.getListOfBlsThatPassCuttoff().size());
 				
+				List<Membership> temp_add_to_cluster_assignment = scanner.getMembershipsForThoseThatPassCuttoff(i, driver.c);
+				for(Membership temp :  temp_add_to_cluster_assignment){
+					driver.cluster_assignment.add(temp);
+				}
+				
 				File file_pcc =  new File(driver.c.getOutTagname()+"_complete_list_pcc_"+i+".tab");
 				if(!file_pcc.exists()){
 					file_pcc.createNewFile();
@@ -230,7 +236,37 @@ public class Chexmix {
 				br_remaining_all_composite.close();
 				i++;
 				
+			} //end of while
+			
+			// extending the seed profiles
+			for(int l=0; l< driver.profiles_in_the_dataset.size(); l++){
+				int add_till = 20;
+				int k=0;
+				while(add_till < driver.c.getFactorToRefineSeedProfiles()*driver.c.getNoTopBls()){
+					if(driver.cluster_assignment.get(k).membership == l+1){
+						List<Integer> add_to_profile = driver.cluster_assignment.get(k).bl.getConcatenatedTags(driver.cluster_assignment.get(k).cr.maxvec.midpoint,
+								driver.cluster_assignment.get(k).cr.maxvec.range, driver.cluster_assignment.get(k).cr.maxvec.orientation);
+						for(int m =0; m< add_to_profile.size(); m++){
+							driver.profiles_in_the_dataset.get(l)[m] = driver.profiles_in_the_dataset.get(l)[m] + add_to_profile.get(m);
+						}
+						add_till++;
+					}
+					k++;
+				}
 			}
-		}
-	}
-}
+			
+			// re assigning cluster membership
+			List<Membership> temp = ChexmixSandbox.perfromReAssignmentOfMembership(driver.cluster_assignment, driver.profiles_in_the_dataset);
+			driver.cluster_assignment = temp;
+			temp = null;
+			
+			// do cluster assessment
+			driver.cluster_assessment = ChexmixSandbox.getClusterAssesmsent(driver.cluster_assignment, driver.profiles_in_the_dataset);
+			for(int m = 0; m< driver.cluster_assessment.length; m++){
+				
+			}
+			
+			
+		} // end of else
+	} // end of main
+} // end of class

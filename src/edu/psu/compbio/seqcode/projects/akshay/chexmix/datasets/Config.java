@@ -26,6 +26,7 @@ public class Config {
 	protected final int factor_to_add_one_by_one=4;
 	protected final int factor_to_get_new_topbls = 10;
 	protected int percentage_list_to_consider;
+	protected final int factor_to_refine_profiles = 5;
 	
 	protected String[] args;
 	
@@ -99,6 +100,7 @@ public class Config {
 	public int getFactorToAddIteratively(){return this.factor_to_add_one_by_one;}
 	public int getFactorToGetNewTopBls(){return this.factor_to_get_new_topbls;}
 	public int getListPercentageToCosider(){return this.percentage_list_to_consider;}
+	public int getFactorToRefineSeedProfiles(){return this.getFactorToRefineSeedProfiles();}
 	
 	
 	public String getArgsList(){
