@@ -239,6 +239,7 @@ public class Chexmix {
 			} //end of while
 			
 			// extending the seed profiles
+			System.out.println("Expanding the seed profiles for each cluster group");
 			for(int l=0; l< driver.profiles_in_the_dataset.size(); l++){
 				int add_till = 20;
 				int k=0;
@@ -256,11 +257,15 @@ public class Chexmix {
 			}
 			
 			// re assigning cluster membership
+			
+			System.out.println("Reassigning cluster membership");
 			List<Membership> temp = ChexmixSandbox.perfromReAssignmentOfMembership(driver.cluster_assignment, driver.profiles_in_the_dataset);
 			driver.cluster_assignment = temp;
 			temp = null;
 			
 			// do cluster assessment
+			
+			System.out.println("Cluster assessment");
 			driver.cluster_assessment = ChexmixSandbox.getClusterAssesmsent(driver.cluster_assignment, driver.profiles_in_the_dataset);
 			for(int m = 0; m< driver.cluster_assessment.length; m++){
 				String out ="";
