@@ -100,7 +100,7 @@ public class Config {
 	public int getFactorToAddIteratively(){return this.factor_to_add_one_by_one;}
 	public int getFactorToGetNewTopBls(){return this.factor_to_get_new_topbls;}
 	public int getListPercentageToCosider(){return this.percentage_list_to_consider;}
-	public int getFactorToRefineSeedProfiles(){return this.getFactorToRefineSeedProfiles();}
+	public int getFactorToRefineSeedProfiles(){return this.factor_to_refine_profiles;}
 	
 	
 	public String getArgsList(){
