@@ -157,7 +157,7 @@ public class Chexmix {
 				if(Final_number_in_profile < driver.c.getNoTopBls()/driver.c.getFactorToAddIteratively()){
 					int no_of_porfiles_in_dataset = i-1;
 					System.out.println("There are "+no_of_porfiles_in_dataset+" profiles in this dataset");
-					System.exit(0);
+					break;
 				}
 //=============================================================================== FINISHED BUILDING SEEDS ========================================================================			
 				System.out.println("Composite of seed "+i+":");
