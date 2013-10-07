@@ -77,6 +77,7 @@ public class ChexmixSandbox {
 						ret.get(i).membership = k+1;
 					}
 				}
+				k++;
 			}
 		}
 		return ret;
