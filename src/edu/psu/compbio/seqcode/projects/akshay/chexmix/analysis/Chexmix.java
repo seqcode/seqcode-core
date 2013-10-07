@@ -251,6 +251,8 @@ public class Chexmix {
 							driver.profiles_in_the_dataset.get(l)[m] = driver.profiles_in_the_dataset.get(l)[m] + add_to_profile.get(m);
 						}
 						add_till++;
+						//debug line 
+						System.out.println(add_till);
 					}
 					k++;
 				}
