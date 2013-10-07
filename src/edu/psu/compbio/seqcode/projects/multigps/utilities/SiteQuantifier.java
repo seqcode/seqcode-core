@@ -151,7 +151,7 @@ public class SiteQuantifier {
 		}
 		for(Region pr : peakRegions){
 			String out="";
-			out = pr.getChrom()+":"+pr.getMidpoint();
+			out = pr.getMidpoint().getChrom()+":"+pr.getMidpoint().getLocation();
 			for(ExperimentCondition c : eset.getConditions()){
 				for(ControlledExperiment r : c.getReplicates()){
 					double currSig = r.getSignal().countHits(pr);
