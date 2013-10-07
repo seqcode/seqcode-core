@@ -263,7 +263,11 @@ public class Chexmix {
 			// do cluster assessment
 			driver.cluster_assessment = ChexmixSandbox.getClusterAssesmsent(driver.cluster_assignment, driver.profiles_in_the_dataset);
 			for(int m = 0; m< driver.cluster_assessment.length; m++){
-				
+				String out ="";
+				for(int n=0; n< driver.cluster_assessment[m].length; n++){
+					out = out + "\t" + Double.toString(driver.cluster_assessment[m][n]);
+				}
+				System.out.println(out);
 			}
 			
 			
