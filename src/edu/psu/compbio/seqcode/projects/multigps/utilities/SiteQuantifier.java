@@ -144,6 +144,24 @@ public class SiteQuantifier {
 		}
 	}
 	
+	public void countSignalAcrossReplicates(List<Region> peakRegions){
+		ExperimentSet eset = manager.getExperimentSet();
+		if(eset.getConditions().size()==0){
+			System.out.println("No experiments specified."); System.exit(1);
+		}
+		for(Region pr : peakRegions){
+			String out="";
+			out = pr.getChrom()+":"+pr.getMidpoint();
+			for(ExperimentCondition c : eset.getConditions()){
+				for(ControlledExperiment r : c.getReplicates()){
+					double currSig = r.getSignal().countHits(pr);
+					out=out+"\t"+Double.toString(currSig);
+				}
+			}
+			System.out.println(out);
+		}
+	}
+	
 	/**
 	 * Print quadrant values around stranded points
 	 * @param motifhits
@@ -243,7 +261,8 @@ public class SiteQuantifier {
 					quant.calcSigNoiseRatios(peakRegions);
 				}
 				if(Args.parseFlags(args).contains("count")){
-					quant.countSignal(peakRegions);
+					//quant.countSignal(peakRegions);
+					quant.countSignalAcrossReplicates(peakRegions);
 				}
 			}
 			
