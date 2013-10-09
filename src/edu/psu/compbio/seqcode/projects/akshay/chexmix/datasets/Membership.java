@@ -23,6 +23,6 @@ public class Membership {
 		}
 		return ret;
 	}
-	
+	public String getPointName(){return this.cr.maxvec.chr+":"+this.cr.maxvec.midpoint+":"+this.cr.maxvec.orientation;}
 
 }

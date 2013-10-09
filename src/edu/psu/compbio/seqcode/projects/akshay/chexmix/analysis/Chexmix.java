@@ -277,6 +277,25 @@ public class Chexmix {
 				System.out.println(out);
 			}
 			
+			//printing cluster files
+			
+			System.out.println("Printing Cluster Files");
+			for(int k=0; k < driver.profiles_in_the_dataset.size(); k++){
+				File file_cluster = new File(driver.c.getOutTagname()+"_cluster_"+k+".peaks");
+				if(!file_cluster.exists()){
+					file_cluster.createNewFile();
+				}
+				FileWriter fw_cluster = new FileWriter(file_cluster.getAbsoluteFile());
+				BufferedWriter br_cluster = new BufferedWriter(fw_cluster);
+				for(int m=0; m < driver.cluster_assignment.size(); m++){
+					if(driver.cluster_assignment.get(m).membership == k+1){
+						br_cluster.write(driver.cluster_assignment.get(m).getPointName()+"\t"+driver.c.getIntSize()+"\t"+driver.cluster_assignment.get(m).membership+
+								"\t"+driver.cluster_assignment.get(m).getPCC()+"\t"+driver.cluster_assignment.get(m).bl.getName()+"\n");
+					}
+				}
+				br_cluster.close();
+			}
+			
 			
 		} // end of else
 	} // end of main
