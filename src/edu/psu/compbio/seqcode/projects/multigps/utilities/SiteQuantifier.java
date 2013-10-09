@@ -149,6 +149,16 @@ public class SiteQuantifier {
 		if(eset.getConditions().size()==0){
 			System.out.println("No experiments specified."); System.exit(1);
 		}
+		
+		// print header line
+		String header ="";
+		for(ExperimentCondition c :eset.getConditions()){
+			for(ControlledExperiment r : c.getReplicates()){
+				header = header + c.getName()+":"+r.getName()+"\t";
+			}
+		}
+		System.out.println(header);
+		
 		for(Region pr : peakRegions){
 			String out="";
 			out = pr.getMidpoint().getChrom()+":"+pr.getMidpoint().getLocation();
