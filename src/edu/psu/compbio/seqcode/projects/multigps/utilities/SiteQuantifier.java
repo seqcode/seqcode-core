@@ -75,6 +75,26 @@ public class SiteQuantifier {
 		return regs;
 	}
 	
+	public List<Region> parsePeaksToRegionsWithOutMerging(Collection<String> files, int win){
+		List<Region> regs = new ArrayList<Region>();
+		List<Point> points = new ArrayList<Point>();
+		//Load the points
+		for(String f : files){
+			points.addAll(Utils.loadPointsFromFile(f, config.getGenome()));
+		}
+		for(Point p : points){
+			Region r = p.expand(win/2);
+			regs.add(r);
+		}
+		//Simple stats
+		int totalLen = 0;
+		for(Region r : regs)
+			totalLen += r.getWidth();
+		System.out.println(regs.size()+" regions with "+totalLen+"bp total length.");
+				
+		return regs;
+	}
+	
 	/**
 	 * Parse a set of region files
 	 * @param files
@@ -250,7 +270,8 @@ public class SiteQuantifier {
 				List<Region> peakRegions =null;
 				if(ap.hasKey("peaks")){
 					Collection<String> peakFiles = Args.parseStrings(args, "peaks");
-					peakRegions = quant.parsePeaksToRegions(peakFiles, win);
+					//peakRegions = quant.parsePeaksToRegions(peakFiles, win);
+					peakRegions = quant.parsePeaksToRegionsWithOutMerging(peakFiles, win);
 				}
 				if(ap.hasKey("regions")){
 					Collection<String> peakFiles = Args.parseStrings(args, "regions");
