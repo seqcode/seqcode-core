@@ -171,10 +171,10 @@ public class SiteQuantifier {
 		}
 		
 		// print header line
-		String header ="";
+		String header ="Point"+"\t";
 		for(ExperimentCondition c :eset.getConditions()){
 			for(ControlledExperiment r : c.getReplicates()){
-				header = header + c.getName()+":"+r.getName()+"\t";
+				header = header + r.getName()+"\t";
 			}
 		}
 		System.out.println(header);
