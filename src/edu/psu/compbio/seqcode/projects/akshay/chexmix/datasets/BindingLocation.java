@@ -110,7 +110,7 @@ public class BindingLocation {
 	public void filltags(LoadTags loader){
 		QueryTags tagsfetcher = new QueryTags(this.midpoint,this.range, this.chr, this.Smoothsize);
 		//debug line
-		System.out.println(this.getName());
+		//System.out.println(this.getName());
 		//end
 		this.vecpos = tagsfetcher.getTags(loader, "+");
 		this.vecneg = tagsfetcher.getTags(loader, "-");
