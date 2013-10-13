@@ -33,6 +33,7 @@ public class QueryTags {
 				int start_ind = Arrays.binarySearch(tempStarts, this.midpoint-this.range);
 				//debug line
 				System.out.println(start_ind);
+				System.out.println(tempStarts.length);
 				//end
 				if( start_ind < 0 ) { start_ind = -start_ind - 1; }
 				for(int k=this.midpoint-this.range; k<this.midpoint+this.range; k++){
