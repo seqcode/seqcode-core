@@ -2,8 +2,8 @@ package edu.psu.compbio.seqcode.projects.akshay.chexmix.utils;
 
 public class QueryMm10 extends QueryGenome{
 
-	public QueryMm10(String chr, int midpoint, int range) {
-		super(chr, midpoint, range);
+	public QueryMm10() {
+		super();
 	}
 
 	@Override

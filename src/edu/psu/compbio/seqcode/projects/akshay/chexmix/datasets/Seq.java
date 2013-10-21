@@ -41,11 +41,13 @@ public class Seq {
 	
 	public Seq getSub(int midpoint, int range){
 		Seq ret=null;
-		if(midpoint-range/2 < this.midpoint-this.range/2 && midpoint+range/2 >this.midpoint + this.range/2 ){
+		if(midpoint-range < this.midpoint-this.range && midpoint+range >this.midpoint + this.range ){
 			System.err.println("getSub err: the sequence requested is not a subsequence of the original sequence!");
 		}
 		else{
-			ret = new Seq(midpoint, range, this.chr, this.orientation, this.sequence.substring(midpoint-range/2, midpoint+range/2));
+			int start = midpoint-range - this.midpoint+this.range;
+			int end = start + 2*range;
+			ret = new Seq(midpoint, range, this.chr, this.orientation, this.sequence.substring(start, end));
 		}
 		return ret;
 	}

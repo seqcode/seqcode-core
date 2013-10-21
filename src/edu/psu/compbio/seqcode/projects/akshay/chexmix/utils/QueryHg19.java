@@ -6,8 +6,8 @@ import java.util.*;
 
 public class QueryHg19 extends QueryGenome{
 
-	public QueryHg19(String chr, int midpoint, int range) {
-		super(chr, midpoint, range);
+	public QueryHg19() {
+		super();
 	}
 
 	@Override

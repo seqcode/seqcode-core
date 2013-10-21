@@ -3,67 +3,66 @@ package edu.psu.compbio.seqcode.projects.akshay.chexmix.utils;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.parsing.FASTAStream;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.*;
 
 public abstract class QueryGenome {
 	public String genomepath;
-	public String chr;
-	public int midpoint;
-	public int range;
+	public static Map<String,String> cache;
 	public abstract void fillGenomePath();
 	public abstract void fillGenomePath(String path);
-	public QueryGenome(String chr, int midpoint, int range) {
-		this.chr = chr;
-		this.midpoint = midpoint;
-		this.range = range;
-	}
-	public Seq getSeq(String orientation) throws IOException{
-		String currdir = System.getProperty("user.dir");
-		File file;
-		file = new File(currdir+"/temp/"+"tempSeqQuery.bed");
-		if(file.exists()){
-			file.delete();
-		}
-		FileWriter fstream = new FileWriter(currdir+"/temp/tempSeqQuery.bed", false);
-		BufferedWriter out = new BufferedWriter(fstream);
-		String content = this.chr+"\t"+Integer.toString(this.midpoint-this.range)+"\t"+Integer.toString(this.midpoint+this.range)+"\t"+"*"+"\t"+"*"+"\t"+orientation+"\n";
-		out.write(content);
-		out.close();
-		List<String> command = new ArrayList<String>();
-		command.add("bedtools");
-		command.add("getfasta");
-		command.add("-s");
-		command.add("-fi");
-		command.add(this.genomepath+"/"+this.chr+".fa");
-		command.add("-bed");
-		command.add(currdir+"/temp/tempSeqQuery.bed");
-		command.add("-fo");
-		command.add("temp/temp.fa");
-		ProcessBuilder pb = new ProcessBuilder(command);
-		try{
-			Process shell = pb.start();
-			shell.waitFor();
-		}
-		catch (IOException e) {
-			System.out.println("Error occured while executing Linux command. Error Description: "
-			+ e.getMessage());
-		} catch (InterruptedException e) {
-			System.out.println("Error occured while executing Linux command. Error Description: "
-					+ e.getMessage());
-		}
-		BufferedReader br = null;
-		br = new BufferedReader(new FileReader(currdir+"/temp/"+"temp.fa"));
-		String currentline = br.readLine();
-		String tempseq = null;
-		while(currentline != null){
-			if(!currentline.startsWith(">")){
-				tempseq = currentline;
+	public QueryGenome() {}
+	
+	private void cache(BindingLocation bl)  throws IOException{
+		String chromid = bl.getChr();
+		// if the chromosome is already cached exit method
+		synchronized(cache) {
+			if (cache.containsKey(chromid)) {
+				return;
 			}
-			currentline = br.readLine();
 		}
-		br.close();
-		Seq ret = new Seq(this.midpoint, this.range, this.chr, orientation, tempseq);
-		return ret;
+		String chromseq = null;
+		File f = new File( this.genomepath + "/chr" + chromid + ".fa");
+		if (f.exists()) {
+			FASTAStream stream = new FASTAStream(f);
+			while (stream.hasNext()) {
+				Pair<String,String> pair = stream.next();
+				if (pair.car().equals(chromid)) {
+					chromseq = pair.cdr();
+					break;
+				}
+			}
+			stream.close();
+		}
+		else{
+			System.out.print("Genome is not found at "+this.genomepath+". \n");
+			System.exit(-1);
+		}
+		if (chromseq == null) {
+			return;
+		}
+		synchronized(cache) {
+			if (!cache.containsKey(chromid)) {
+				cache.put(chromid, chromseq);
+			}
+		}
 	}
+	
+	 public String execute(BindingLocation bl) throws IOException{
+		 String ret = null;
+		 String Chrname = bl.getChr();
+		 cache(bl);
+		 String chromString = null;
+		 synchronized(cache) {
+			 if (!cache.containsKey(Chrname)) {
+				 return null;
+			 }
+			 chromString = cache.get(Chrname);	
+		 }
+		 ret = chromString.substring(bl.getCoords().get(0)-1, bl.getCoords().get(1));
+		 return ret;
+	 }
 }

@@ -18,6 +18,8 @@ import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.CustomReturn;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Membership;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.ChexmixSandbox;
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.QueryGenome;
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.QueryMm10;
 
 public class Chexmix {
 	public Config c;
@@ -61,6 +63,19 @@ public class Chexmix {
 			}
 			brpeaks.close();
 			System.currentTimeMillis();
+			
+			// ============================== Filling Sequences ============================
+			QueryGenome seqloader = null;
+			if(driver.c.getGenomeName().equals("mm10")){
+				seqloader = new QueryMm10();
+				seqloader.fillGenomePath();
+			}
+			
+			for(int h=0; h< allbls.size(); h++){
+				String postemp = seqloader.execute(allbls.get(h));
+				allbls.get(h).fillSeqs(postemp.toUpperCase());
+			}
+			
 			
 			int size_to_consider =  (int) (driver.c.getListPercentageToCosider()*0.01*allbls.size());
 			List<BindingLocation> totalbls= new ArrayList<BindingLocation>();
@@ -276,6 +291,8 @@ public class Chexmix {
 				}
 				System.out.println(out);
 			}
+			
+			//
 			
 			//printing cluster files
 			

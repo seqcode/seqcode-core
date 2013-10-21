@@ -27,6 +27,8 @@ public class Config {
 	protected final int factor_to_get_new_topbls = 10;
 	protected int percentage_list_to_consider;
 	protected final int factor_to_refine_profiles = 5;
+	protected String MEMEPath = "";
+	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus ";
 	
 	protected String[] args;
 	
@@ -50,6 +52,7 @@ public class Config {
 			no_of_cycles = Args.parseInteger(args, "NI", 3);
 			percentage_list_to_consider = Args.parseInteger(args, "PL", 60);
 			out_tag = currdir+"/"+out;
+			this.MEMEPath = Args.parseString(args, "memepath", MEMEPath);
 			
 			for(String s: ap.getKeys()){
 				if(s.equals("tags")){
@@ -101,6 +104,9 @@ public class Config {
 	public int getFactorToGetNewTopBls(){return this.factor_to_get_new_topbls;}
 	public int getListPercentageToCosider(){return this.percentage_list_to_consider;}
 	public int getFactorToRefineSeedProfiles(){return this.factor_to_refine_profiles;}
+	public String getGenomeName(){return this.genome_name;}
+	public String getMEMEPath(){return this.MEMEPath;}
+	public String getMEMEargs(){return this.MEMEargs;}
 	
 	
 	public String getArgsList(){
@@ -120,6 +126,7 @@ public class Config {
 				"\t--O <turn Off center approach; by default it is on>\n" +
 				"\t--Out <output tag name; files will be written to in the working directory; default value is out>\n"+
 				"\t--NI <No of iterations of the whole mehtod; default value is set to 3>\n"+
+				"\t--memepath <path to the meme bin dir (default: meme is in $PATH)>\n"+
 				"\t--PL <Percentage of the list to consider>"));
 				
 	}

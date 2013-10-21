@@ -3,6 +3,7 @@ package edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets;
 import java.io.*;
 import java.util.*;
 
+import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.analysis.LoadTags;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.*;
 
@@ -77,30 +78,9 @@ public class BindingLocation {
 		return result;
 	}
 	
-	/**
-	 * This mehods fills the seqpos and seqneg objects. Should be called only if you need to work with the sequences. 
-	 * @param genome
-	 * @throws IOException
-	 */
-	public void fillSeqs(Config conf) throws IOException{
-		if(conf.genome_name == "hg19"){
-			QueryHg19 seqloader = new QueryHg19(this.chr,this.midpoint, this.range);
-			seqloader.fillGenomePath();
-			this.seqpos = seqloader.getSeq("+");
-			this.seqneg = seqloader.getSeq("-");
-		}
-		if(conf.genome_name == "mm9"){
-			QueryMm9 seqloader = new QueryMm9(this.chr,this.midpoint,this.range);
-			seqloader.fillGenomePath();
-			this.seqpos = seqloader.getSeq("+");
-			this.seqneg = seqloader.getSeq("-");
-		}
-		if(conf.genome_name == "mm10"){
-			QueryMm10 seqloader = new QueryMm10(this.chr,this.midpoint,this.range);
-			seqloader.fillGenomePath();
-			this.seqpos = seqloader.getSeq("+");
-			this.seqneg = seqloader.getSeq("-");
-		}
+	public void fillSeqs(String posSeq){
+		this.seqpos = new Seq(this.midpoint, this.range, this.chr, "+", posSeq);
+		this.seqneg = new Seq(this.midpoint, this.range, this.chr, "-", SequenceUtils.reverseComplement(posSeq));
 	}
 	
 	/**
@@ -383,7 +363,8 @@ public class BindingLocation {
 		return ret;
 	}
 	
-	
+	public String getChr(){return this.chr;};
+	public List<Integer> getCoords(){return this.coords;}
 	
 	
 	
