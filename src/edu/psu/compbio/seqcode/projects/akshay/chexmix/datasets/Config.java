@@ -1,5 +1,7 @@
 package edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets;
 
+import java.io.File;
+
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 
@@ -20,7 +22,9 @@ public class Config {
 	protected boolean printHelp=false;
 	protected boolean useCenterApproach=true;
 	protected final boolean useNonUnique = false;
-	protected String out_tag; //default value is out
+	protected String out_name; //default value is out
+	protected String out_base;
+	protected File outDir = null;
 	protected int no_of_cycles; //default value is 3
 	protected final int depth_to_search_patters=6;
 	protected final int factor_to_add_one_by_one=4;
@@ -29,6 +33,7 @@ public class Config {
 	protected final int factor_to_refine_profiles = 5;
 	protected String MEMEPath = "";
 	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus ";
+	
 	
 	protected String[] args;
 	
@@ -47,11 +52,12 @@ public class Config {
 			pcc_cutoff= Args.parseDouble(args, "PC", 0.6);
 			smoothing =  Args.parseInteger(args, "S", 0);
 			tagsfiletype = Args.parseString(args, "tagstype", "IDX").toUpperCase();
-			String out = Args.parseString(args, "Out", "out");
-			String currdir = System.getProperty("user.dir");
+			out_name = Args.parseString(args, "Out", "out");
+			outDir = new File(out_name);
+			out_base = outDir.getName();
+			
 			no_of_cycles = Args.parseInteger(args, "NI", 3);
 			percentage_list_to_consider = Args.parseInteger(args, "PL", 60);
-			out_tag = currdir+"/"+out;
 			this.MEMEPath = Args.parseString(args, "memepath", MEMEPath);
 			
 			for(String s: ap.getKeys()){
@@ -83,6 +89,29 @@ public class Config {
 		
 	}
 	
+	public void makeChexmixOuputDirs(){
+		if(outDir.exists()){
+			deleteDirectory(outDir);
+		}
+		outDir.mkdirs();
+	}
+	
+	
+	public boolean deleteDirectory(File path) {
+	    if( path.exists() ) {
+	      File[] files = path.listFiles();
+	      for(int i=0; i<files.length; i++) {
+	         if(files[i].isDirectory()) {
+	           deleteDirectory(files[i]);
+	         }
+	         else {
+	           files[i].delete();
+	         }
+	      }
+	    }
+	    return( path.delete() );
+	}
+	
 	//Accessories
 	public boolean helpWanted(){return printHelp;}
 	public String getTagsPath(){return this.tagsfile;}
@@ -97,7 +126,9 @@ public class Config {
 	public String getPeaksFilePath(){return this.peak_location;}
 	public int getNoTopBls(){return this.no_top_bl;}
 	public String getSchemename(){return this.scheme_name;}
-	public String getOutTagname(){return this.out_tag;}
+	public String getOutName(){return this.out_name;}
+	public String getOutBase(){return this.out_base;}
+	public File getOutParentDir(){return this.outDir;}
 	public int getNoOfCycles(){return this.no_of_cycles;}
 	public int getHowDeepToSearch(){return this.depth_to_search_patters;}
 	public int getFactorToAddIteratively(){return this.factor_to_add_one_by_one;}

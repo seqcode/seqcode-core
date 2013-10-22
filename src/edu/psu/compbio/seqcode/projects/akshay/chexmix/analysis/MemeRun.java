@@ -33,12 +33,11 @@ public class MemeRun {
 	public Pair<List<WeightMatrix>,List<WeightMatrix>> execute(List<String> sequences, String memeOutDirName, boolean bestOnly){
 		List<WeightMatrix> wm = new ArrayList<WeightMatrix>();
 		List<WeightMatrix> fm = new ArrayList<WeightMatrix>();
-		//File workingDir = conf.getOutputIntermediateDir();
-		//String memeOutDir = workingDir+"/meme_"+memeOutDirName;
-		File memeOutDir = new File("Meme_out");
+		File workingDir = conf.getOutParentDir();
+		String memeOutDir = workingDir+"/meme_out";
 		try {
 			//Set up the input file
-			File seqFile= File.createTempFile("seq", ".fa", memeOutDir);
+			File seqFile= File.createTempFile("seq", ".fa", workingDir);
 			String seqFilename = seqFile.getCanonicalPath();
 			FileWriter fout = new FileWriter(seqFile);
 			int sCount=1;
@@ -49,9 +48,9 @@ public class MemeRun {
 			fout.close();
 			
 			//Test if meme directory exists. If it does, recursively delete contents
-			//File memeOutPath = new File(memeOutDir);
-			//if(memeOutPath.exists())
-			//	config.deleteDirectory(memeOutPath);
+			File memeOutPath = new File(memeOutDir);
+			if(memeOutPath.exists())
+				conf.deleteDirectory(memeOutPath);
 			
 			//Call MEME
 			String MEMEcmd = MEMEpath+"/meme ";
