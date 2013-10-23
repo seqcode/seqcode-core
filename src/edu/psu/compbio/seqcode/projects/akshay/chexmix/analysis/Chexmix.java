@@ -75,6 +75,9 @@ public class Chexmix {
 			
 			for(int h=0; h< allbls.size(); h++){
 				String postemp = seqloader.execute(allbls.get(h));
+				//debug line
+				System.out.println(QueryGenome.cache.keySet().size());
+				//ends
 				allbls.get(h).fillSeqs(postemp.toUpperCase());
 			}
 			
