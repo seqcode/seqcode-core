@@ -24,5 +24,10 @@ public class Membership {
 		return ret;
 	}
 	public String getPointName(){return this.cr.maxvec.chr+":"+this.cr.maxvec.midpoint+":"+this.cr.maxvec.orientation;}
+	
+	public String getSeqAtMaxPCC(){
+		String temp = this.bl.seqpos.getSub(this.cr.maxvec.midpoint, this.cr.maxvec.range).sequence;
+		return temp;		
+	}
 
 }

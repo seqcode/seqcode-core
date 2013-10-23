@@ -13,6 +13,8 @@ import java.util.Map;
 
 import cern.colt.Arrays;
 
+import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.BindingLocation;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.CustomReturn;
@@ -89,7 +91,7 @@ public class Chexmix {
 			System.out.println("Total no of Binding Locations in the input peak file are: "+allbls.size() );
 			System.out.println("Total no of Binding Locations that are being considered: "+totalbls.size() );
 			
-			File file_entire_composite = new File(driver.c.getOutTagname()+"_entire_locations_composite.tab");
+			File file_entire_composite = new File(driver.c.getOutName()+"_entire_locations_composite.tab");
 			if(!file_entire_composite.exists()){
 				file_entire_composite.createNewFile();
 			}
@@ -177,7 +179,7 @@ public class Chexmix {
 //=============================================================================== FINISHED BUILDING SEEDS ========================================================================			
 				System.out.println("Composite of seed "+i+":");
 				System.out.println(Arrays.toString(profile));
-				File file = new File(driver.c.getOutTagname()+"_seed_profile_composite_"+i+".tab");
+				File file = new File(driver.c.getOutName()+"_seed_profile_composite_"+i+".tab");
 				if(!file.exists()){
 					file.createNewFile();
 				}
@@ -199,7 +201,7 @@ public class Chexmix {
 					driver.cluster_assignment.add(temp);
 				}
 				
-				File file_pcc =  new File(driver.c.getOutTagname()+"_complete_list_pcc_"+i+".tab");
+				File file_pcc =  new File(driver.c.getOutName()+"_complete_list_pcc_"+i+".tab");
 				if(!file_pcc.exists()){
 					file_pcc.createNewFile();
 				}
@@ -211,7 +213,7 @@ public class Chexmix {
 				}
 				
 				br_pcc.close();
-				File file_tagsPass = new File(driver.c.getOutTagname()+"_scan_pass_profile_composite_"+i+".tab");
+				File file_tagsPass = new File(driver.c.getOutName()+"_scan_pass_profile_composite_"+i+".tab");
 				if(!file_tagsPass.exists()){
 					file_tagsPass.createNewFile();
 				}
@@ -239,7 +241,7 @@ public class Chexmix {
 				totalbls = scanner.getListOfBlsThatDoNotPassCuttOff();
 				
 				int[] tempcomposite = ChexmixSandbox.getCompositeFromBlLisr(totalbls, motif_orientation);
-				File file_remaining_all_composite = new File(driver.c.getOutTagname()+"_remaining_all_composite_"+i+".tab");
+				File file_remaining_all_composite = new File(driver.c.getOutName()+"_remaining_all_composite_"+i+".tab");
 				if(!file_remaining_all_composite.exists()){
 					file_remaining_all_composite.createNewFile();
 				}
@@ -292,13 +294,30 @@ public class Chexmix {
 				System.out.println(out);
 			}
 			
-			//
+			// Run meme to find motifs
+			
+			for(int p=0; p< driver.profiles_in_the_dataset.size(); p++){
+				int cluster_name = p+1;
+				System.out.println(cluster_name);
+				List<String> seqs  = new ArrayList<String>();
+				for(int k=0; k < driver.cluster_assignment.size(); k++){
+					if(driver.cluster_assignment.get(k).membership == cluster_name){
+						String tempseq = driver.cluster_assignment.get(k).getSeqAtMaxPCC();
+						seqs.add(tempseq);
+					}
+				}
+				MemeRun meme = new MemeRun(driver.c);
+				Pair<List<WeightMatrix>,List<WeightMatrix>> memeout = meme.execute(seqs, "cluster_"+Integer.toString(cluster_name), false);
+				for(int k=0; k < memeout.car().size(); k++){
+					System.out.println(WeightMatrix.printTransfacMatrix(memeout.car().get(k), "cluster_"+cluster_name));
+				}
+			}
 			
 			//printing cluster files
 			
 			System.out.println("Printing Cluster Files");
 			for(int k=0; k < driver.profiles_in_the_dataset.size(); k++){
-				File file_cluster = new File(driver.c.getOutTagname()+"_cluster_"+k+".peaks");
+				File file_cluster = new File(driver.c.getOutName()+"_cluster_"+k+".peaks");
 				if(!file_cluster.exists()){
 					file_cluster.createNewFile();
 				}

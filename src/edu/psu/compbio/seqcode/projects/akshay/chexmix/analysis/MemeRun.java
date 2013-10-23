@@ -34,7 +34,7 @@ public class MemeRun {
 		List<WeightMatrix> wm = new ArrayList<WeightMatrix>();
 		List<WeightMatrix> fm = new ArrayList<WeightMatrix>();
 		File workingDir = conf.getOutParentDir();
-		String memeOutDir = workingDir+"/meme_out";
+		String memeOutDir = workingDir+"/meme_"+memeOutDirName;
 		try {
 			//Set up the input file
 			File seqFile= File.createTempFile("seq", ".fa", workingDir);
