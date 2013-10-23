@@ -38,6 +38,9 @@ public class MemeRun {
 		try {
 			//Set up the input file
 			File seqFile= File.createTempFile("seq", ".fa", workingDir);
+			//
+			System.out.println(seqFile.getName());
+			//
 			String seqFilename = seqFile.getCanonicalPath();
 			FileWriter fout = new FileWriter(seqFile);
 			int sCount=1;
