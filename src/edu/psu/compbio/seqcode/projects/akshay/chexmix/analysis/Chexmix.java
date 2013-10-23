@@ -40,6 +40,9 @@ public class Chexmix {
 			System.err.println(driver.c.getArgsList());
 		}
 		else{
+			// making out put directories
+			driver.c.makeChexmixOuputDirs();
+			
 			System.currentTimeMillis();
 //========================================================================================LOADING TAGS================================================================================================
 			System.out.println("\n============================ Loading Tags/Reads ============================");
