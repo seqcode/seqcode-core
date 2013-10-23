@@ -36,6 +36,7 @@ public class Config {
 	protected int MEMEminw=6;
 	protected int MEMEmaxw=18;
 	protected int MEMEnmotifs;
+	protected int MEMEmaxsize=1000;
 	
 	
 	protected String[] args;
@@ -69,7 +70,8 @@ public class Config {
 			MEMEmaxw = Args.parseInteger(args, "mememaxw", MEMEmaxw);
 			//MEME nmotifs option
 			MEMEnmotifs = Args.parseInteger(args,"memenmotifs", 3);
-			MEMEargs = MEMEargs + " -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
+			MEMEmaxsize = Args.parseInteger(args, "maxsize", MEMEmaxsize);
+			MEMEargs = MEMEargs + " -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw+" -maxsize "+MEMEmaxsize;
 			
 			for(String s: ap.getKeys()){
 				if(s.equals("tags")){
@@ -172,6 +174,7 @@ public class Config {
 				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
 				"\t--mememaxw <maxw arg for MEME (default="+MEMEmaxw+")>\n"+
 				"\t--memenmotifs <number of motifs MEME should find for each condition>\n" +
+				"\t--maxsize <maximum dataset size>\n" +
 				"\t--PL <Percentage of the list to consider>"));
 				
 	}
