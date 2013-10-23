@@ -26,7 +26,7 @@ public abstract class QueryGenome {
 			}
 		}
 		String chromseq = null;
-		File f = new File( this.genomepath + "/chr" + chromid + ".fa");
+		File f = new File( this.genomepath + "/" + chromid + ".fa");
 		if (f.exists()) {
 			FASTAStream stream = new FASTAStream(f);
 			while (stream.hasNext()) {
