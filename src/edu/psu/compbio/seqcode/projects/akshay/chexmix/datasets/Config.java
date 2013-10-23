@@ -33,6 +33,9 @@ public class Config {
 	protected final int factor_to_refine_profiles = 5;
 	protected String MEMEPath = "";
 	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus ";
+	protected int MEMEminw=6;
+	protected int MEMEmaxw=18;
+	protected int MEMEnmotifs;
 	
 	
 	protected String[] args;
@@ -59,6 +62,14 @@ public class Config {
 			no_of_cycles = Args.parseInteger(args, "NI", 3);
 			percentage_list_to_consider = Args.parseInteger(args, "PL", 60);
 			this.MEMEPath = Args.parseString(args, "memepath", MEMEPath);
+			MEMEargs = Args.parseString(args, "memeargs", MEMEargs);
+			//MEME minw
+			MEMEminw = Args.parseInteger(args, "mememinw", MEMEminw);
+			//MEME maxw
+			MEMEmaxw = Args.parseInteger(args, "mememaxw", MEMEmaxw);
+			//MEME nmotifs option
+			MEMEnmotifs = Args.parseInteger(args,"memenmotifs", 3);
+			MEMEargs = MEMEargs + " -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
 			
 			for(String s: ap.getKeys()){
 				if(s.equals("tags")){
@@ -158,6 +169,9 @@ public class Config {
 				"\t--Out <output tag name; files will be written to in the working directory; default value is out>\n"+
 				"\t--NI <No of iterations of the whole mehtod; default value is set to 3>\n"+
 				"\t--memepath <path to the meme bin dir (default: meme is in $PATH)>\n"+
+				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
+				"\t--mememaxw <maxw arg for MEME (default="+MEMEmaxw+")>\n"+
+				"\t--memenmotifs <number of motifs MEME should find for each condition>\n" +
 				"\t--PL <Percentage of the list to consider>"));
 				
 	}
