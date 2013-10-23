@@ -2,6 +2,7 @@ package edu.psu.compbio.seqcode.projects.akshay.chexmix.utils;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.*;
 
 public abstract class QueryGenome {
 	public String genomepath;
-	public static Map<String,String> cache;
+	public static Map<String,String> cache = new HashMap<String,String>();
 	public abstract void fillGenomePath();
 	public abstract void fillGenomePath(String path);
 	public QueryGenome() {}
