@@ -78,9 +78,6 @@ public class Chexmix {
 			
 			for(int h=0; h< allbls.size(); h++){
 				String postemp = seqloader.execute(allbls.get(h));
-				//debug line
-				System.out.println(QueryGenome.cache.keySet().size());
-				//ends
 				allbls.get(h).fillSeqs(postemp.toUpperCase());
 			}
 			
@@ -307,13 +304,18 @@ public class Chexmix {
 				System.out.println(cluster_name);
 				List<String> seqs  = new ArrayList<String>();
 				for(int k=0; k < driver.cluster_assignment.size(); k++){
-					if(driver.cluster_assignment.get(k).membership == cluster_name){
+					if(driver.cluster_assignment.get(k).membership == cluster_name && driver.cluster_assignment.get(k).getPCC() > driver.c.getSeedCutoff()){
 						String tempseq = driver.cluster_assignment.get(k).getSeqAtMaxPCC();
 						seqs.add(tempseq);
 					}
 				}
+				// selecting the top 500
+				List<String> top_seq = new ArrayList<String>();
+				for(int k=0; k< seqs.size() && k<500; k++){
+					top_seq.add(seqs.get(k));
+				}
 				MemeRun meme = new MemeRun(driver.c);
-				Pair<List<WeightMatrix>,List<WeightMatrix>> memeout = meme.execute(seqs, "cluster_"+Integer.toString(cluster_name), false);
+				Pair<List<WeightMatrix>,List<WeightMatrix>> memeout = meme.execute(top_seq, "cluster_"+Integer.toString(cluster_name), false);
 				for(int k=0; k < memeout.car().size(); k++){
 					System.out.println(WeightMatrix.printTransfacMatrix(memeout.car().get(k), "cluster_"+cluster_name));
 				}
