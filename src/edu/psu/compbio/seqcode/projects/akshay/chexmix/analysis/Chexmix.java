@@ -21,6 +21,7 @@ import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.CustomReturn;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Membership;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.ChexmixSandbox;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.QueryGenome;
+import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.QueryHg19;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.utils.QueryMm10;
 
 public class Chexmix {
@@ -73,6 +74,11 @@ public class Chexmix {
 			QueryGenome seqloader = null;
 			if(driver.c.getGenomeName().equals("mm10")){
 				seqloader = new QueryMm10();
+				seqloader.fillGenomePath();
+			}
+			
+			if(driver.c.getGenomeName().equals("hg19")){
+				seqloader = new QueryHg19();
 				seqloader.fillGenomePath();
 			}
 			
