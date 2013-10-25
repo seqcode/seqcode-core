@@ -61,10 +61,21 @@ public class Chexmix {
 				int tempMidpoint = Integer.parseInt(pieces[3])+((Integer.parseInt(pieces[4])-Integer.parseInt(pieces[3]))/2);
 				String tempChr = pieces[0];
 				BindingLocation temploc = new BindingLocation(tempMidpoint, tempChr, driver.c);
-				temploc.filltags(tagsloader);
-				motif_orientation.put(temploc, pieces[6]);
-				location_coverage.put(temploc, Double.parseDouble(pieces[5]));
-				allbls.add(temploc);
+				
+				// checking ----
+				String ch= tempChr.replaceFirst("chr", "");
+				int chrID = tagsloader.chrom2ID.get(ch);
+				if(tagsloader.fivePrimePos[chrID][0][tagsloader.fivePrimeCounts[chrID][0].length-1] > tempMidpoint+driver.c.getBlsize() &&
+						tagsloader.fivePrimePos[chrID][1][tagsloader.fivePrimeCounts[chrID][1].length-1] > tempMidpoint+driver.c.getBlsize() &&
+						tagsloader.fivePrimePos[chrID][0][0] < tempMidpoint-driver.c.getBlsize() &&
+						tagsloader.fivePrimePos[chrID][0][0] > tempMidpoint-driver.c.getBlsize()){
+					temploc.filltags(tagsloader);
+					motif_orientation.put(temploc, pieces[6]);
+					location_coverage.put(temploc, Double.parseDouble(pieces[5]));
+					allbls.add(temploc);
+				}
+				
+				
 				currentline = brpeaks.readLine();
 			}
 			brpeaks.close();
