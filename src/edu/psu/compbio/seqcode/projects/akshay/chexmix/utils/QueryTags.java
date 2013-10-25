@@ -32,11 +32,11 @@ public class QueryTags {
 			if(tempStarts.length != 0){
 				int start_ind = Arrays.binarySearch(tempStarts, this.midpoint-this.range);
 				//debug line
-				System.out.println(start_ind);
-				System.out.println(tempStarts.length);
-				System.out.println(tempStarts[tempStarts.length-1]);
-				System.out.println(this.midpoint-this.range);
-				System.out.println(loader.getGenome().getChromLength(ch));
+				//System.out.println(start_ind);
+				//System.out.println(tempStarts.length);
+				//System.out.println(tempStarts[tempStarts.length-1]);
+				//System.out.println(this.midpoint-this.range);
+				//System.out.println(loader.getGenome().getChromLength(ch));
 				//end
 				if( start_ind < 0 ) { start_ind = -start_ind - 1; }
 				for(int k=this.midpoint-this.range; k<this.midpoint+this.range; k++){
