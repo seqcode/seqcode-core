@@ -68,7 +68,7 @@ public class Chexmix {
 				if(tagsloader.fivePrimePos[chrID][0][tagsloader.fivePrimeCounts[chrID][0].length-1] > tempMidpoint+driver.c.getBlsize() &&
 						tagsloader.fivePrimePos[chrID][1][tagsloader.fivePrimeCounts[chrID][1].length-1] > tempMidpoint+driver.c.getBlsize() &&
 						tagsloader.fivePrimePos[chrID][0][0] < tempMidpoint-driver.c.getBlsize() &&
-						tagsloader.fivePrimePos[chrID][1][0] > tempMidpoint-driver.c.getBlsize()){
+						tagsloader.fivePrimePos[chrID][1][0] < tempMidpoint-driver.c.getBlsize()){
 					temploc.filltags(tagsloader);
 					motif_orientation.put(temploc, pieces[6]);
 					location_coverage.put(temploc, Double.parseDouble(pieces[5]));
