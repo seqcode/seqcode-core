@@ -203,18 +203,18 @@ public class Chexmix {
 					break;
 				}
 //=============================================================================== FINISHED BUILDING SEEDS ========================================================================			
-				System.out.println("Composite of seed "+i+":");
-				System.out.println(Arrays.toString(profile));
-				File file = new File(driver.c.getOutName()+"_seed_profile_composite_"+i+".tab");
-				if(!file.exists()){
-					file.createNewFile();
-				}
-				FileWriter fw = new FileWriter(file.getAbsoluteFile());
-				BufferedWriter br_profile = new BufferedWriter(fw);
-				for(int j=0; j<profile.length; j++){
-					br_profile.write(Integer.toString(j+1)+"\t"+Integer.toString(profile[j])+"\n");
-				}
-				br_profile.close();
+				//System.out.println("Composite of seed "+i+":");
+				//System.out.println(Arrays.toString(profile));
+				//File file = new File(driver.c.getOutName()+"_seed_profile_composite_"+i+".tab");
+				//if(!file.exists()){
+				//	file.createNewFile();
+				//}
+				//FileWriter fw = new FileWriter(file.getAbsoluteFile());
+				//BufferedWriter br_profile = new BufferedWriter(fw);
+				//for(int j=0; j<profile.length; j++){
+				//	br_profile.write(Integer.toString(j+1)+"\t"+Integer.toString(profile[j])+"\n");
+				//}
+				//br_profile.close();
 				
 				driver.profiles_in_the_dataset.add(profile);
 //==================================================================================== SCANNING THE SEED PROFILE THROUGH THE ENTIRE DATASET ==============================================				
@@ -227,56 +227,56 @@ public class Chexmix {
 					driver.cluster_assignment.add(temp);
 				}
 				
-				File file_pcc =  new File(driver.c.getOutName()+"_complete_list_pcc_"+i+".tab");
-				if(!file_pcc.exists()){
-					file_pcc.createNewFile();
-				}
-				FileWriter fw_pcc = new FileWriter(file_pcc.getAbsoluteFile());
-				BufferedWriter br_pcc = new BufferedWriter(fw_pcc);
-				Map<BindingLocation, Double> tempmap = scanner.getmapofAllblscan();
-				for(BindingLocation tempbl :tempmap.keySet()){
-					br_pcc.write(location_coverage.get(tempbl)+"\t"+tempmap.get(tempbl)+"\n");
-				}
+				//File file_pcc =  new File(driver.c.getOutName()+"_complete_list_pcc_"+i+".tab");
+				//if(!file_pcc.exists()){
+				//	file_pcc.createNewFile();
+				//}
+				//FileWriter fw_pcc = new FileWriter(file_pcc.getAbsoluteFile());
+				//BufferedWriter br_pcc = new BufferedWriter(fw_pcc);
+				//Map<BindingLocation, Double> tempmap = scanner.getmapofAllblscan();
+				//for(BindingLocation tempbl :tempmap.keySet()){
+				//	br_pcc.write(location_coverage.get(tempbl)+"\t"+tempmap.get(tempbl)+"\n");
+				//}
 				
-				br_pcc.close();
-				File file_tagsPass = new File(driver.c.getOutName()+"_scan_pass_profile_composite_"+i+".tab");
-				if(!file_tagsPass.exists()){
-					file_tagsPass.createNewFile();
-				}
-				FileWriter fw_tagsPass = new FileWriter(file_tagsPass.getAbsoluteFile());
-				BufferedWriter br_tagsPass = new BufferedWriter(fw_tagsPass);
-				int[][] temp = scanner.getTagsThatPassCuttoff(c);
-				int[] composite_passed = new int[temp[0].length];
-				for(int j=0; j<temp.length; j++){
-					for(int k=0; k<temp[j].length; k++){
-						if(j==0){
-							composite_passed[k] = temp[j][k];
-						}
-						else{
-							composite_passed[k] = composite_passed[k] + temp[j][k];
-						}
+				//br_pcc.close();
+				//File file_tagsPass = new File(driver.c.getOutName()+"_scan_pass_profile_composite_"+i+".tab");
+				//if(!file_tagsPass.exists()){
+				//	file_tagsPass.createNewFile();
+				//}
+				//FileWriter fw_tagsPass = new FileWriter(file_tagsPass.getAbsoluteFile());
+				//BufferedWriter br_tagsPass = new BufferedWriter(fw_tagsPass);
+				//int[][] temp = scanner.getTagsThatPassCuttoff(c);
+				//int[] composite_passed = new int[temp[0].length];
+				//for(int j=0; j<temp.length; j++){
+				//	for(int k=0; k<temp[j].length; k++){
+				//		if(j==0){
+				//			composite_passed[k] = temp[j][k];
+				//		}
+				//		else{
+				//			composite_passed[k] = composite_passed[k] + temp[j][k];
+				//		}
 						
-					}
-				}
-				for(int j=0; j<composite_passed.length; j++){
-					br_tagsPass.write(j+"\t"+composite_passed[j]+"\n");
-				}
-				br_tagsPass.close();
-				System.currentTimeMillis();
+				//	}
+				//}
+				//for(int j=0; j<composite_passed.length; j++){
+				//	br_tagsPass.write(j+"\t"+composite_passed[j]+"\n");
+				//}
+				//br_tagsPass.close();
+				//System.currentTimeMillis();
 				
-				totalbls = scanner.getListOfBlsThatDoNotPassCuttOff();
+				//totalbls = scanner.getListOfBlsThatDoNotPassCuttOff();
 				
-				int[] tempcomposite = ChexmixSandbox.getCompositeFromBlLisr(totalbls, motif_orientation);
-				File file_remaining_all_composite = new File(driver.c.getOutName()+"_remaining_all_composite_"+i+".tab");
-				if(!file_remaining_all_composite.exists()){
-					file_remaining_all_composite.createNewFile();
-				}
-				FileWriter fw_remaining_all_composite = new FileWriter(file_remaining_all_composite.getAbsoluteFile());
-				BufferedWriter br_remaining_all_composite = new BufferedWriter(fw_remaining_all_composite);
-				for(int j=0; j< tempcomposite.length; j++){
-					br_remaining_all_composite.write(j+"\t"+tempcomposite[j]+"\n");
-				}
-				br_remaining_all_composite.close();
+				//int[] tempcomposite = ChexmixSandbox.getCompositeFromBlLisr(totalbls, motif_orientation);
+				//File file_remaining_all_composite = new File(driver.c.getOutName()+"_remaining_all_composite_"+i+".tab");
+				//if(!file_remaining_all_composite.exists()){
+				//	file_remaining_all_composite.createNewFile();
+				//}
+				//FileWriter fw_remaining_all_composite = new FileWriter(file_remaining_all_composite.getAbsoluteFile());
+				//BufferedWriter br_remaining_all_composite = new BufferedWriter(fw_remaining_all_composite);
+				//for(int j=0; j< tempcomposite.length; j++){
+				//	br_remaining_all_composite.write(j+"\t"+tempcomposite[j]+"\n");
+				//}
+				//br_remaining_all_composite.close();
 				i++;
 				
 			} //end of while
