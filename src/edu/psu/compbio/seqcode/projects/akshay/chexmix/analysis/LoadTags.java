@@ -239,4 +239,5 @@ public class LoadTags {
 		return out;
 	}
 
+	public Genome getGenome(){return this.gen;}
 }
