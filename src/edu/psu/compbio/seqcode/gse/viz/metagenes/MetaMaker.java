@@ -4,7 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.FlowLayout;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ public class MetaMaker {
 			boolean drawColorBar = !Args.parseFlags(args).contains("nocolorbar");
 			boolean saveSVG = Args.parseFlags(args).contains("svg");
 			boolean transparent = Args.parseFlags(args).contains("transparent");
+			boolean printMatrix = Args.parseFlags(args).contains("printMatrix");
 			String profilerType = Args.parseString(args, "profiler", "simplechipseq");	
 			String profileStyle = Args.parseString(args, "style", "Line");	
 			List<String> expts = (List<String>) Args.parseStrings(args,"expt");
@@ -59,6 +62,13 @@ public class MetaMaker {
 			if(Args.parseFlags(args).contains("cluster")){cluster=true;}
 			Color c = Color.blue;
 			String newCol = Args.parseString(args, "color", "blue");
+			File file_mat = new File(outName+"_matrix.peaks");
+			if(!file_mat.exists()){
+				file_mat.createNewFile();
+			}
+			FileWriter fw_mat = new FileWriter(file_mat.getAbsoluteFile());
+			BufferedWriter br_mat = new BufferedWriter(fw_mat);
+			
 			if(newCol.equals("red"))
 				c=Color.red;
 			if(newCol.equals("green"))
@@ -129,6 +139,31 @@ public class MetaMaker {
 						System.out.println("Single set mode...");
 						String peakFile = peakFiles.get(0);
 						Vector<Point> points = nonframe.getUtils().loadPoints(new File(peakFile));
+						if(printMatrix){
+							double[][] mat_out = null;
+							for(int k=0; k<points.size(); k++){
+								if(k==0){
+									PointProfile temp = (PointProfile) profiler.execute(points.get(k));
+									mat_out = new double[points.size()][temp.length()];
+									for(int j=0; j< temp.length(); j++){
+										mat_out[k][j] = temp.value(j);
+									}
+								}
+								else{
+									PointProfile temp = (PointProfile) profiler.execute(points.get(k));
+									for(int j=0; j< temp.length(); j++){
+										mat_out[k][j] = temp.value(j);
+									}
+								}
+							}
+							for(int k =0; k< mat_out.length; k++ ){
+								br_mat.write(points.get(k).getLocationString()+"\t");
+								for (int j=0; j< mat_out[k].length; j++){
+									br_mat.write(mat_out[k][j]+"\t");
+								}
+								br_mat.write("\n");
+							}
+						}
 						handler.addPoints(points);
 					}else{
 						System.out.println("All TSS mode...");
@@ -201,6 +236,7 @@ public class MetaMaker {
 				"--peaks <peaks file name> --out <output root name> \n" +
 				"--color <red/green/blue> or --color4 <R G B A>\n" +
 				"--strand <+-/>\n" +
+				"--printMatrix [flag to print the matrix of tags] \n"+
 				"--cluster [flag to cluster in batch mode] \n" +
 				"--batch [a flag to run without displaying the window]\n" +
 				"--nocolorbar [flag to turn off colorbar in batch mode]\n" +
