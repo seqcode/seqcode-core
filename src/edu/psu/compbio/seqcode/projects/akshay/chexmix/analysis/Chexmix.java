@@ -264,7 +264,7 @@ public class Chexmix {
 				//br_tagsPass.close();
 				//System.currentTimeMillis();
 				
-				//totalbls = scanner.getListOfBlsThatDoNotPassCuttOff();
+				totalbls = scanner.getListOfBlsThatDoNotPassCuttOff();
 				
 				//int[] tempcomposite = ChexmixSandbox.getCompositeFromBlLisr(totalbls, motif_orientation);
 				//File file_remaining_all_composite = new File(driver.c.getOutName()+"_remaining_all_composite_"+i+".tab");
