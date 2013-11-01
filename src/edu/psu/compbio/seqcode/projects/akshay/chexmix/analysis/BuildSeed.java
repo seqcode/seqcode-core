@@ -516,6 +516,7 @@ public class BuildSeed {
 			if(!bllist.get(i).equals(givenbl)){
 				CustomReturn cr = givenbl.scanBlWithBl(bllist.get(i), conf.getIntSize());
 				if(cr.pcc> max_pcc){
+					System.out.println(cr.pcc);
 					max_pcc = cr.pcc;
 					retindex = i;
 				}
