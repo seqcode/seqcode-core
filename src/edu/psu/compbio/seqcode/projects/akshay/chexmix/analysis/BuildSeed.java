@@ -429,6 +429,7 @@ public class BuildSeed {
 			BindingLocation givenbl = bllist.get(i);
 			bllist.remove(i);
 			int indext = this.getClosestBl(givenbl, bllist, conf);
+			System.out.println(indext+"\t"+givenbl.getName());
 			CustomReturn cr = givenbl.scanBlWithBl(bllist.get(indext), conf.getIntSize());
 			if(cr.pcc>conf.getSeedCutoff()){
 				profile = new int[conf.getIntSize()*4];
@@ -516,7 +517,6 @@ public class BuildSeed {
 			if(!bllist.get(i).equals(givenbl)){
 				CustomReturn cr = givenbl.scanBlWithBl(bllist.get(i), conf.getIntSize());
 				if(cr.pcc> max_pcc){
-					System.out.println(cr.pcc);
 					max_pcc = cr.pcc;
 					retindex = i;
 				}
