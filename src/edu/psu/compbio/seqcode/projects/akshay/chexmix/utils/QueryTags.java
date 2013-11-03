@@ -51,6 +51,12 @@ public class QueryTags {
 				
 			}
 		}
+		//debug line 
+		if(this.midpoint == 28214693){
+			System.out.println(tags.values());
+			System.out.println(tags.keySet());
+		}
+		//debug
 		ret = new Vec(this.range, this.midpoint, this.chr, orientation, this.Smoothsize, 0,tags);
 		return ret;
 	}
