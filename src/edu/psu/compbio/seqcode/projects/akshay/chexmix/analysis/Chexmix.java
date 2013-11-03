@@ -53,10 +53,10 @@ public class Chexmix {
 			tagsloader.loadHits(driver.c, driver.c.useNonUnique());
 			
 			//debug start
-			int[] remp = tagsloader.fivePrimePos[tagsloader.chrom2ID.get("8")][0];
-			int index = Arrays.binarySearch(remp, 28214650);
+			//int[] remp = tagsloader.fivePrimePos[tagsloader.chrom2ID.get("8")][0];
+			//int index = Arrays.binarySearch(remp, 28214650);
 			
-			System.out.println(tagsloader.fivePrimeCounts[tagsloader.chrom2ID.get("8")][0][index]);
+			//System.out.println(tagsloader.fivePrimeCounts[tagsloader.chrom2ID.get("8")][0][index]);
 			// end debug
 //========================================================================================FILLING LOCATIONS=================================================================================================
 			System.out.println("\n============================ Filling Binding Locations ============================");
