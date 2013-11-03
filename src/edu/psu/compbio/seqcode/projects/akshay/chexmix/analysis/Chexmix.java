@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.projects.akshay.chexmix.analysis;
 
-import java.io.BufferedReader;
+import java.io.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
@@ -9,9 +9,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Arrays.*;
+import java.util.*;
 
-import cern.colt.Arrays;
+
 
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
@@ -50,6 +51,13 @@ public class Chexmix {
 			System.out.println("\n============================ Loading Tags/Reads ============================");
 			LoadTags tagsloader = new LoadTags();
 			tagsloader.loadHits(driver.c, driver.c.useNonUnique());
+			
+			//debug start
+			int[] remp = tagsloader.fivePrimePos[tagsloader.chrom2ID.get("chr8")][0];
+			int index = Arrays.binarySearch(remp, 28214650);
+			
+			System.out.println(tagsloader.fivePrimeCounts[tagsloader.chrom2ID.get("chr8")][0][index]);
+			// end debug
 //========================================================================================FILLING LOCATIONS=================================================================================================
 			System.out.println("\n============================ Filling Binding Locations ============================");
 			BufferedReader brpeaks = new BufferedReader(new FileReader(driver.c.getPeaksFilePath()));
