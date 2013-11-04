@@ -72,6 +72,8 @@ public class MetaNonFrame{
 	public void savePointsToFile(String root){
 		String fileName = String.format("%s.points.txt", root);
 		profile.saveToFile(fileName);
+		fileName = String.format("%s.profiles.txt", root);
+		profile.saveProfilesToFile(fileName);
 	}
 	public MetaProfileHandler getHandler() { return handler; }
 	public MetaUtils getUtils(){return utils;}

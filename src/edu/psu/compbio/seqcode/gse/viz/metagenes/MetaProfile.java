@@ -49,6 +49,27 @@ public class MetaProfile extends MutableProfile implements ProfileListener {
 			System.err.println("Empty MetaProfile: nothing to write to file");
 		}
 	}
+	public void saveProfilesToFile(String fileName){
+		if(profiles.size()>0){
+			try {
+				FileWriter fout = new FileWriter(fileName);
+				for(Profile p : profiles) { 
+					for(int i = 0; i < values.length; i++) {
+						fout.write(String.format("%.2", p.value(i)));
+						if(i<values.length-1)
+							fout.write("\t");
+					}
+					fout.write("\n");
+				}			
+				fout.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}else{
+			System.err.println("Empty MetaProfile: nothing to write to file");
+		}
+	}
 	public synchronized void profileChanged(ProfileEvent p) {
 		recalculate();
 	}
