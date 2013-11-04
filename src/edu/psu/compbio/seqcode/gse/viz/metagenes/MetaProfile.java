@@ -55,7 +55,7 @@ public class MetaProfile extends MutableProfile implements ProfileListener {
 				FileWriter fout = new FileWriter(fileName);
 				for(Profile p : profiles) { 
 					for(int i = 0; i < values.length; i++) {
-						fout.write(String.format("%.2", p.value(i)));
+						fout.write(String.format("%.2f", p.value(i)));
 						if(i<values.length-1)
 							fout.write("\t");
 					}
