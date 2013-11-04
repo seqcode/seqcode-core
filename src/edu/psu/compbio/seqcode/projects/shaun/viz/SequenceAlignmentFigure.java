@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -108,6 +109,7 @@ public class SequenceAlignmentFigure {
                                "  --seq <FASTA file>\n" +
                                "  --win <window of sequence around peaks> \n"+
                                "  --out output filename\n" +
+                               "  --seqout sequence output filename\n" +
                                "");
             return;
         }
@@ -116,6 +118,7 @@ public class SequenceAlignmentFigure {
         	Organism currorg = pair.car();
         	Genome currgen = pair.cdr();
         	String outFile = ap.hasKey("out") ? ap.getKeyValue("out") : "out.png";
+        	String seqOutFile = ap.hasKey("seqout") ? ap.getKeyValue("seqout") : null;
         	
         	List<String> seqs = null;
         	
@@ -148,9 +151,20 @@ public class SequenceAlignmentFigure {
         	if(seqs !=null){
 		    	SequenceAlignmentFigure fig = new SequenceAlignmentFigure();
 		    	fig.visualizeSequences(seqs, 3, 1, new File(outFile));
+		    	
+		    	if(seqOutFile != null){
+		    		FileWriter fout = new FileWriter(seqOutFile);
+		    		for(String s: seqs){
+		    			fout.write(String.format("%s\n", s));
+		    		}
+		    		fout.close();
+		    	}
         	}
 	    	
         } catch (NotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
