@@ -61,7 +61,7 @@ public class MetaUtils {
 			
 			if(coord.contains(":")) {
 				String [] currB = coord.split(":");
-				String chrom = currB[0];
+				String chrom = currB[0].replaceAll("chr", "");
 				char strand = '?';
 				if(currB.length==3)
 					strand = currB[2].charAt(0);
