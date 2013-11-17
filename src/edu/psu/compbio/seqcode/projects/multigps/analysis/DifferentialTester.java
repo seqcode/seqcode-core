@@ -101,6 +101,7 @@ public class DifferentialTester {
 				data.savePairwiseConditionXYPlots(manager, config.getDiffPMinThres(), outImagesDir.getAbsolutePath()+File.separator, true);
 			}
 		}
+		manager.writeBindingEventFiles(outDirName+File.separator+outFileBase);
 		
 		System.out.println("Output files written to: "+outDirName);
 	}
