@@ -57,7 +57,7 @@ public class DifferentialTester {
 
 		potentialSites = Utilities.loadPeaksFromPeakFile(config.getGenome(), peaksFileName, win);
 		outFileBase=outRoot;		
-		outDirName = outRoot+"_signif_w"+searchRegionWin+"_q"+String.format("%.2e", qThres)+"_minfold"+String.format("%.1f", minFold);
+		outDirName = outRoot;
 		outDir = new File(outDirName);
 		outDir.mkdir();
 	}
@@ -158,12 +158,8 @@ public class DifferentialTester {
 	}
 	
 	public static void printHelp(){
-		System.err.println("SignificanceTester:\n" +
-				"\tCounts signal and control tags in windows around specified binding events, \n" +
-				"\tnormalizes signal vs control using median scaling, and assesses the significance\n" +
-				"\tof signal vs control enrichment using a Binomial test. \n" +
-				"\tNote that median scaling is probably not appropriate in yeast ChIP-exo datasets.\n" +
-				"\tAlternatives will be added soon. \n");
+		System.err.println("DifferentialTester:\n" +
+				"\tDifferential analysis of read counts in windows around a fixed set of peak positions using edgeR. \n");
 		System.err.println("\t--gen <genome version>\n" +
 				"\t--format <format of seq data files (SAM/IDX)>  default=SAM\n" +
 				"\t--exptNAME-REP <file name of signal experiment, where NAME and REP are experiment name and replicate number>\n" +
