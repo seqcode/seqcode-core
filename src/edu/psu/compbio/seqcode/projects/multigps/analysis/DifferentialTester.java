@@ -79,7 +79,7 @@ public class DifferentialTester {
 		tester.execute();
 		
 		manager.setEvents(events);
-		manager.writeReplicateCounts(outDirName+File.separator+outFileBase+"_replicatecounts.txt");
+		manager.writeReplicateCounts(outDirName+File.separator+outFileBase+"_replicates.counts");
 		
 		//Statistical analysis: inter-condition differences
 		if(manager.getNumConditions()>1 && config.getRunDiffTests()){
