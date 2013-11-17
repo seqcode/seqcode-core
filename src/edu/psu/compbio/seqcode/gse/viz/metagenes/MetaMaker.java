@@ -92,7 +92,6 @@ public class MetaMaker {
 			PointProfiler profiler=null;
 			boolean normalizeProfile=false;
 			if(profilerType.equals("simplechipseq")){
-					readExt = -1;
 				List<SeqLocator> exptlocs = Args.parseSeqExpt(args,"expt");
 				if(exptlocs.size()>0){
 					ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
