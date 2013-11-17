@@ -21,10 +21,15 @@ import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentSet;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.framework.EnrichmentSignificance;
+import edu.psu.compbio.seqcode.projects.multigps.stats.CountsDataset;
+import edu.psu.compbio.seqcode.projects.multigps.stats.DifferentialEnrichment;
+import edu.psu.compbio.seqcode.projects.multigps.stats.EdgeRDifferentialEnrichment;
 import edu.psu.compbio.seqcode.projects.multigps.stats.Normalization;
+import edu.psu.compbio.seqcode.projects.multigps.stats.TMMNormalization;
 
 /**
  * Utility to quantify enrichment and assess significance of a set of peaks (from GFF file). 
+ * If multiple conditions are specified, differential binding analysis is performed via edgeR.
  * Meant to be used by Pugh lab pipeline.
  * 
  * 	Input: 
@@ -94,8 +99,6 @@ public class SignificanceTester {
 	 * Execute the enrichment tester
 	 */
 	public void execute(){
-		//normalizer = new MedianRatiosNormalization(manager.getExperimentSet().getReplicates().size());
-		
 		
 		//Convert our points to events
 		PointsToEvents p2e = new PointsToEvents(config, manager, potentialSites, searchRegionWin,simpleReadAssignment);
@@ -103,26 +106,34 @@ public class SignificanceTester {
 		
 		//Estimate signal fraction (necessary for calculating statistics)
 		manager.estimateSignalProportion(events);
-		
-		/*//Get the scaling ratio from the scaling events if appropriate
-		if(scalingSites.size()>0){
-			PointsToEvents p2e_scaling = new PointsToEvents(config, manager, scalingSites, searchRegionWin, simpleReadAssignment);
-			List<BindingEvent> scalingEvents = p2e_scaling.execute();
-			//Convert events to a CountsDataset for the normalizer
-			CountsDataset data = new CountsDataset(manager, scalingEvents, 0);
-			normalizer.normalize(data);
-		}else{
-			//Convert events to a CountsDataset for the normalizer
-			CountsDataset data = new CountsDataset(manager, events, 0);
-			normalizer.normalize(data);
-		}*/
-		
+				
 		EnrichmentSignificance tester = new EnrichmentSignificance(config, manager.getExperimentSet(), events, config.getMinEventFoldChange(), config.getMappableGenomeLength());
 		tester.execute();
 		
 		manager.setEvents(events);
 		manager.writeReplicateCounts(outDirName+File.separator+outFileBase+"_replicatecounts.txt");
 		writeBindingEventGFFFiles(outDirName+File.separator+outFileBase, events);
+		
+		//Statistical analysis: inter-condition differences
+		if(manager.getNumConditions()>1 && config.getRunDiffTests()){
+			DifferentialEnrichment edgeR = new EdgeRDifferentialEnrichment(config);
+			CountsDataset data;
+			File outImagesDir = new File(outDirName+File.separator+"images");
+			outImagesDir.mkdir();
+			
+			for(int ref=0; ref<manager.getNumConditions(); ref++){
+				data = new CountsDataset(manager, manager.getEvents(), ref);
+				data = edgeR.execute(data);
+				data.updateEvents(manager.getEvents(), manager);
+				
+				//Print MA scatters (inter-sample & inter-condition)
+				data.savePairwiseConditionMAPlots(config.getDiffPMinThres(), outImagesDir.getAbsolutePath()+File.separator, true);
+				
+				//Print XY scatters (inter-sample & inter-condition)
+				data.savePairwiseFocalSampleXYPlots(outImagesDir.getAbsolutePath()+File.separator, true);
+				data.savePairwiseConditionXYPlots(manager, config.getDiffPMinThres(), outImagesDir.getAbsolutePath()+File.separator, true);
+			}
+		}
 		
 		System.out.println("Output files written to: "+outDirName);
 	}
