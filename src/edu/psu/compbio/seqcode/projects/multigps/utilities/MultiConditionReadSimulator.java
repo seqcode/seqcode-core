@@ -329,15 +329,17 @@ public class MultiConditionReadSimulator {
 			for(int co=0; co<numConditions; co++)
 				for(int r=0; r<numReplicates; r++)
 					fout.write("\tC"+co+"_R"+r);
+			fout.write("\n");
 			
 			// Generate reads for each event
 			for(Pair<Point, SimCounts> ps : events){
 				Point coord = ps.car();
 				SimCounts sc = ps.cdr();
-				fout.write(coord.getLocationString()+"\t"+sc.isDiff);
+				int diff = sc.isDiff ? 1 : 0;
+				fout.write(coord.getLocationString()+"\t"+diff);
 				for(int x=0; x<sc.counts.length; x++){
 					fout.write("\t"+sc.counts[x]);
-				}
+				}fout.write("\n");
 			}
 			fout.close();
 		} catch (IOException e) {
@@ -428,7 +430,7 @@ public class MultiConditionReadSimulator {
 			// Simulate counts 
 			List<SimCounts> counts = null;
 			if(noiseProb<1.0){
-				cdsim.simulate();
+				counts = cdsim.simulate();
 				cdsim.printOutput(outFile, true);
 			}
 			
