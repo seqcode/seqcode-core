@@ -55,7 +55,7 @@ public class MultiConditionReadSimulator {
 	private int eventSpacing = 10000;
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
 	
-	public MultiConditionReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, String outPath){
+	public MultiConditionReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, String outPath){
 		model=m;
 		numConditions = numCond;
 		numReplicates = numRep;
@@ -77,7 +77,7 @@ public class MultiConditionReadSimulator {
 		numTotalReads = new int[numConditions][numReplicates];
 		for(int co=0; co<numConditions; co++)
 			for(int r=0; r<numReplicates; r++){
-				noiseProbabilities[co][r]=0.95;
+				noiseProbabilities[co][r]=noiseProb;
 				numSigReads[co][r]=0;
 				numTotalReads[co][r]=0;
 			}
@@ -94,18 +94,21 @@ public class MultiConditionReadSimulator {
 			e.printStackTrace();
 		}
 		
-		simCounts = counts;
-		numEvents = simCounts.size();
-		setBindingPositions();
-		
-		//Count signal reads and infer total reads
-		for(SimCounts s : simCounts){
-			int index=0;
-			for(int co=0; co<numConditions; co++)
-				for(int r=0; r<numReplicates; r++){
-					numSigReads[co][r]+=s.counts[index];
-					index++;
-				}
+		if(noiseProb<1.0){
+			simCounts = counts;
+			numEvents = simCounts.size();
+			setBindingPositions();
+			
+			//Count signal reads and infer total reads
+			for(SimCounts s : simCounts){
+				int index=0;
+				for(int co=0; co<numConditions; co++)
+					for(int r=0; r<numReplicates; r++){
+						numSigReads[co][r]+=s.counts[index];
+						numTotalReads[co][r] = (int)((double)numSigReads[co][r]/(1-noiseProbabilities[co][r]));
+						index++;
+					}
+			}
 		}
 	}
 	
@@ -178,7 +181,7 @@ public class MultiConditionReadSimulator {
 						int start = pos-offset;
 						
 						//Add the ReadHit
-						if (strandrand<0)
+						if (strandrand<0.5)
 							rh = new ReadHit(chr, start, start+rLen-1, '+');
 						else
 							rh = new ReadHit(chr, Math.max(1, start-rLen+1), start, '-');
@@ -290,12 +293,13 @@ public class MultiConditionReadSimulator {
 	}
 		
 	//Accessors
-	public void setNoiseProbs(double[][] p){
+	public void setTotalReads(int totReadsA, int totReadsB){
 		for(int co=0; co<numConditions; co++)
 			for(int r=0; r<numReplicates; r++){
-				if(p[co][r] < 0.0 || p[co][r] > 1.0) { throw new IllegalArgumentException("p has to be a number between 0.0 and 1.0"); }
-				noiseProbabilities[co][r] = p[co][r];
-				numTotalReads[co][r] = (int)((double)numSigReads[co][r]/(1-noiseProbabilities[co][r]));
+				if(co==0)
+					numTotalReads[co][r] = totReadsA;
+				else
+					numTotalReads[co][r] = totReadsB;
 			}
 	}
 	
@@ -348,7 +352,7 @@ public class MultiConditionReadSimulator {
 	public static void main(String[] args) {
 		String empFile, outFile="out";
 		int r=2, numdata;
-		double rA, rB, a, up, down, diff;
+		double rA=1000000, rB=100000, a, up, down, diff;
 		String bmfile;
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h") || !ap.hasKey("emp")){
@@ -358,8 +362,8 @@ public class MultiConditionReadSimulator {
 					"\t--numdata <number of events to simulate>\n" +
 					"\t--r <num replicates per condition>\n" +
 					"\t--a <over-dispersion param>\n" +
-					"\t--readsA <avg signal reads in cond A>\n" +
-					"\t--readsB <avg signal reads in cond B>\n" +
+					"\t--readsA <avg total reads in cond A>\n" +
+					"\t--readsB <avg total reads in cond B>\n" +
 					"\t--up <up-regulated fraction>\n" +
 					"\t--down <down-regulated fraction>\n" +
 					"\t--diff <basis of differential expression>\n" +
@@ -392,7 +396,6 @@ public class MultiConditionReadSimulator {
 				cdsim.setAlpha(a);
 			}if(ap.hasKey("readsA")){
 				rA = new Double(ap.getKeyValue("readsA"));
-				cdsim.setReadsA(rA);
 			}if(ap.hasKey("readsB")){
 				rB = new Double(ap.getKeyValue("readsB"));
 				cdsim.setReadsB(rB);
@@ -413,6 +416,8 @@ public class MultiConditionReadSimulator {
 			for(int x=0; x<2; x++)
 				for(int y=0; y<noiseProbs.length; y++)
 					noiseProbs[x][y]=noiseProb;
+			cdsim.setReadsA(rA*(1-noiseProb));
+			cdsim.setReadsB(rB*(1-noiseProb));
 			
 			bmfile  = Args.parseString(args, "model", null);
 			File mFile = new File(bmfile);
@@ -421,20 +426,25 @@ public class MultiConditionReadSimulator {
 			
 			//////////////////////////////////////////////////
 			// Simulate counts 
-			List<SimCounts> counts = cdsim.simulate();
-			cdsim.printOutput(outFile, true);
-			
+			List<SimCounts> counts = null;
+			if(noiseProb<1.0){
+				cdsim.simulate();
+				cdsim.printOutput(outFile, true);
+			}
 			
 			//////////////////////////////////////////////////
 			// Simulate reads according to counts and binding model
 			BindingModel bm = new BindingModel(mFile);
 	        //Initialize the MultiConditionReadSimulator
-	        MultiConditionReadSimulator sim = new MultiConditionReadSimulator(bm, gen, counts, 2, r, outFile);
-	        sim.setNoiseProbs(noiseProbs);
-	     
-			sim.simulateBindingReads();
+	        MultiConditionReadSimulator sim = new MultiConditionReadSimulator(bm, gen, counts, 2, r, noiseProb, outFile);
+	        if(noiseProb==1.0)
+	        	sim.setTotalReads((int)rA, (int)rB);
+
+	        if(noiseProb<1){
+	        	sim.printEvents();
+	        	sim.simulateBindingReads();
+	        }
 			sim.simulateNoiseReads();
-			sim.printEvents();
 			sim.close();
 		}
 	}
