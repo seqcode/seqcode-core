@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -22,6 +24,7 @@ public class CountDataSimulator {
 	//Parameters
 	private int numReplicates=1;
 	private final int numConditions=2;
+	private int numDataPoints = 10000;
 	private Double alpha = 0.15; //Parameter for biological variance. Poisson distribution (technical variance only) is alpha=0
 	private Double upRegFrac=0.1; //Fraction of genes that are up-regulated B vs A
 	private Double downRegFrac=0.1; //Fraction of genes that are down-regulated B vs A
@@ -31,12 +34,16 @@ public class CountDataSimulator {
 	
 	//Variables
 	private ArrayList<Double> empirical = new ArrayList<Double>();
-	private double empTotal = 0; 
+	
+	//Output
+	double[][] counts;
+	List<SimCounts> simResults = new ArrayList<SimCounts>();
 	
 	//Constructor
 	public CountDataSimulator(){}
 	
 	//Modifiers
+	public void setDataPoints(int nd){numDataPoints=nd;}
 	public void setReplicates(int r){numReplicates=r;}
 	//public void setConditions(int c){numConditions=c;}
 	public void setAlpha(Double a){alpha=a;}
@@ -58,11 +65,13 @@ public class CountDataSimulator {
 	        String line= reader.readLine(); //Skip first line
 	        while ((line = reader.readLine()) != null) {
 	            line = line.trim();
-	            String[] words = line.split("\\s+");
-	            double e = new Double(words[1]);
-	            empirical.add(e);
-	            empTotal+=e;
+	            if(!line.startsWith("#")){
+	            	String[] words = line.split("\\s+");
+	            	double e = new Double(words[1]);
+	            	empirical.add(e);
+	            }
 	        }reader.close();
+	        Collections.sort(empirical);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -74,12 +83,14 @@ public class CountDataSimulator {
 	 * Simulate counts using a negative binomial model
 	 * @param outFilename
 	 */
-	public void simulate(String outFilename){
-		double[][] counts = new double[empirical.size()][numConditions*numReplicates];
+	public List<SimCounts> simulate(){
+		counts = new double[numDataPoints][numConditions*numReplicates];
+		simResults = new ArrayList<SimCounts>();
+		boolean [] diffs = new boolean[numDataPoints]; 
 		Random rand = new Random();
 		NegativeBinomialDistrib nb = new NegativeBinomialDistrib(1,0.5);
-		double [] condAMols = new double[empirical.size()];
-		double [] condBMols = new double[empirical.size()];
+		double [] condAMols = new double[numDataPoints];
+		double [] condBMols = new double[numDataPoints];
 		double [] condMolTotals = new double[numConditions];
 		double [] sampleReadTotals = new double[numConditions*numReplicates];
 		double [] sampleReadsPerMols = new double[numConditions*numReplicates];
@@ -95,14 +106,18 @@ public class CountDataSimulator {
 		
 		//Assume that empirical holds the absolute molecule counts
 		//Generate new molecule counts for two conditions
-		for(int d=0; d<empirical.size(); d++){
-			double empMol = empirical.get(d);
+		for(int d=0; d<numDataPoints; d++){
+			//Choose a binding event strength
+			double dice = rand.nextDouble();
+			int strengthIndex = (int)(dice*(double)empirical.size());
+			double empMol = empirical.get(strengthIndex);
 			
 			double currAMol = empMol;
 			double currBMol = empMol;
-			double dice = rand.nextDouble();
+			dice = rand.nextDouble();
 			//Is this gene differentially expressed in this condition? (w.r.t condition A)
 			//Implemented a little strangely to avoid skew
+			diffs[d] = true;
 			if(dice<(downRegFrac/2))
 				currAMol=currAMol*diffExpLevel;
 			else if(dice<downRegFrac)
@@ -111,6 +126,8 @@ public class CountDataSimulator {
 				currAMol=currAMol/diffExpLevel;
 			else if(dice<(downRegFrac+upRegFrac))
 				currBMol=currBMol*diffExpLevel;
+			else
+				diffs[d] = false;
 			
 			condAMols[d]=currAMol;
 			condBMols[d]=currBMol;
@@ -121,9 +138,9 @@ public class CountDataSimulator {
 		//For each condition
 		for(int c=0; c<numConditions; c++){	
 			//Sample counts at the appropriate concentrations
-			for(int d=0; d<empirical.size(); d++){
+			for(int d=0; d<numDataPoints; d++){
 				double conc = c==0 ? condAMols[d]/condMolTotals[0] : condBMols[d]/condMolTotals[1];
-				double mean = c==0 ? (conc*condATotalReads) : (conc*condBTotalReads);  
+				double mean = c==0 ? (conc*condATotalReads) : (conc*condBTotalReads);
 				double var = mean+(mean*mean*alpha);
 				nb.setMeanVar(mean, var);
 				int sample = c*numReplicates;
@@ -135,8 +152,16 @@ public class CountDataSimulator {
 			}
 		}
 		
+		//Make simulated results data structure
+		for(int d=0; d<numDataPoints; d++){
+			SimCounts sim = new SimCounts();
+			sim.counts=counts[d];
+			sim.isDiff=diffs[d];
+			simResults.add(sim);
+		}
+		
 		//Reads per Mol ratios
-		System.out.println("Reads per Mol ratios\n");
+		System.out.println("CountDataSimulator: Reads per Mol ratios\n");
 		x=0;
 		for(int c=0; c<numConditions; c++){
 			for(int r=0; r<numReplicates; r++){
@@ -160,23 +185,41 @@ public class CountDataSimulator {
 			}
 		}System.out.println("");
 		
-		//Write the counts table to a file
-		try {
-			FileWriter fw = new FileWriter(outFilename);
-			fw.write("Point");
-			for(int c=0; c<numConditions; c++){
-				for(int r=0; r<numReplicates; r++)
-					fw.write("\t"+c+":"+r);
-			}fw.write("\n");
-			for(int d=0; d<empirical.size(); d++){
-				fw.write(d+"");
-				for(int s=0; s<(numConditions*numReplicates); s++)
-					fw.write("\t"+counts[d][s]);
-				fw.write("\n");
+		return(simResults);
+	}
+	
+	/**
+	 * Write the counts table to a file
+	 * @param outFilename
+	 */
+	public void printOutput(String outBase, boolean printLabels){
+		if(counts!=null){
+			try {
+				String outFilename = outBase+".counts";
+				FileWriter fw = new FileWriter(outFilename);
+				fw.write("Point");
+				if(printLabels)
+					fw.write("\tLabel");
+				for(int c=0; c<numConditions; c++){
+					for(int r=0; r<numReplicates; r++)
+						fw.write("\t"+c+":"+r);
+				}fw.write("\n");
+				for(int d=0; d<numDataPoints; d++){
+					fw.write(d+"");
+					if(printLabels){
+						int label = simResults.get(d).isDiff? 1:0;
+						fw.write("\t"+label);
+					}
+					for(int s=0; s<(numConditions*numReplicates); s++)
+						fw.write("\t"+counts[d][s]);
+					fw.write("\n");
+				}
+				fw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			fw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		}else{
+			System.err.println("Counts matrix not defined.");
 		}
 	}
 	
@@ -186,13 +229,13 @@ public class CountDataSimulator {
 	 */
 	public static void main(String[] args) {
 		String empFile, outFile="out";
-		int r, c;
+		int r, numdata;
 		double rA, rB, a, up, down, diff;
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h") || !ap.hasKey("emp")){
 			System.err.println("CountDataSimulator:\n" +
 					"\t--emp <empirical data file>\n" +
-					//"\t--c <num conditions>\n" +
+					"\t--numdata <number of data points>\n" +
 					"\t--r <num replicates per condition>\n" +
 					"\t--a <over-dispersion param>\n" +
 					"\t--readsA <avg reads in cond A>\n" +
@@ -208,12 +251,12 @@ public class CountDataSimulator {
 			if(ap.hasKey("emp")){
 				empFile = ap.getKeyValue("emp");
 				sim.loadEmpiricalFromFile(empFile);
+			}if(ap.hasKey("numdata")){
+				numdata = new Integer(ap.getKeyValue("numdata"));
+				sim.setDataPoints(numdata);
 			}if(ap.hasKey("r")){
 				r = new Integer(ap.getKeyValue("r"));
 				sim.setReplicates(r);
-			//}if(ap.hasKey("c")){
-			//	c = new Integer(ap.getKeyValue("c"));
-			//	sim.setConditions(c);
 			}if(ap.hasKey("a")){
 				a = new Double(ap.getKeyValue("a"));
 				sim.setAlpha(a);
@@ -236,7 +279,15 @@ public class CountDataSimulator {
 				outFile = ap.getKeyValue("out");
 			}
 			
-			sim.simulate(outFile);
+			sim.simulate();
+			sim.printOutput(outFile, false);
 		}
 	}
+	
+	public class SimCounts{
+		double [] counts;
+		boolean isDiff=false;
+	}
 }
+
+
