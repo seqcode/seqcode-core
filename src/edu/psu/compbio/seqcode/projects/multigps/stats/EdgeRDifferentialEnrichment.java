@@ -80,7 +80,7 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
     					if(c<data.getNumConditions()-1){contrastString = contrastString+",";}
     					else{contrastString = contrastString+")";}
     				}
-    				String diffFilename = config.getOutputParentDir()+File.separator+config.getOutBase()+".overdisp"+config.EDGER_OVERDISPERSION+
+    				String diffFilename = config.getOutputParentDir()+File.separator+config.getOutBase()+".overdisp"+config.getEdgeROverDisp()+
     						"."+data.getCondName(x)+"vs"+data.getCondName(ref)+".edgeR_GLM_DE.txt";
     				fout.write(	"calls <- glmLRT(fit, "+contrastString+") # later versions of edgeR (R >= 2.15) dropped the y argument in the call to glmLRT \n"+
     							"all_tags = topTags(calls, n=1000000)$table \n"+
@@ -91,7 +91,7 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
     		fout.close();
 
     		//Run the R script
-    		Process proc = Runtime.getRuntime().exec("Rscript "+scriptFilename+" "+repCountsFilename+" "+config.EDGER_OVERDISPERSION);
+    		Process proc = Runtime.getRuntime().exec("Rscript "+scriptFilename+" "+repCountsFilename+" "+config.getEdgeROverDisp());
     		// any error message? 
 			StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
 			// any output? 
@@ -106,7 +106,7 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
     		//Import the EdgeR results
     		for(int x=0; x<data.getNumConditions(); x++){
     			if(x!=ref){
-    				String diffFilename = config.getOutputParentDir()+File.separator+config.getOutBase()+".overdisp"+config.EDGER_OVERDISPERSION+
+    				String diffFilename = config.getOutputParentDir()+File.separator+config.getOutBase()+".overdisp"+config.getEdgeROverDisp()+
     						"."+data.getCondName(x)+"vs"+data.getCondName(ref)+".edgeR_GLM_DE.txt";
     				File dfFile = new File(diffFilename);
     				if(!dfFile.isFile()){System.err.println("ERROR: Differential enrichment file not generated: "+diffFilename);}

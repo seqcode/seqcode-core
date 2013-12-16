@@ -88,6 +88,7 @@ public class Config {
 	protected int MEMEminw=6;
 	protected int MEMEmaxw=18;
 	protected boolean runDiffTests = true; //Run differential enrichment testing
+	protected double edger_overdispersion = 0.15; //Overdispersion used by EdgeR differential enrichment tests
 	protected boolean verbose = false; //Print extra output
 	
     
@@ -114,7 +115,6 @@ public class Config {
     public final double MOTIF_FINDING_ALLOWED_REPETITIVE = 0.2; //Percentage of the examined sequence window allowed to be lowercase or N
     public final int MOTIF_FINDING_NEGSEQ=5000; //Number of negative sequences for motif significance tests
     public final double MOTIF_MIN_ROC = 0.7; //Motif prior is used only if the ROC is greater than this .
-    public final double EDGER_OVERDISPERSION = 0.15; //Default overdispersion used by EdgeR differential enrichment tests
     public final double LOG_FC_LIMIT = 10; //Maximum absolute log fold-change reported
 	public final boolean CALC_LL=false; //Calculate the log-likelihood during EM.
 	public final boolean CALC_COMP_LL=false; //Calculate component-wise log-likelihoods during ML 
@@ -397,6 +397,8 @@ public class Config {
 				MEMEargs = MEMEargs + " -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
 				//Turn off DE testing
 				runDiffTests = Args.parseFlags(args).contains("nodifftests") ? false : true;
+				//EdgeR overdispersion parameter
+				edger_overdispersion = Args.parseDouble(args,"edgerod",edger_overdispersion);
 				//Extra output
 				verbose = Args.parseFlags(args).contains("verbose") ? true : false;
 				//Shared component config in ML step
@@ -481,6 +483,7 @@ public class Config {
 	public String getMEMEpath(){return MEMEpath;}
 	public String getMEMEargs(){return MEMEargs;}
 	public boolean getRunDiffTests(){return runDiffTests;}
+	public double getEdgeROverDisp(){return edger_overdispersion;}
 	public boolean isVerbose(){return verbose;}
 	
 	//Some accessors to allow modification of options after config .
@@ -585,6 +588,7 @@ public class Config {
 				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
 				"\t--mememaxw <maxw arg for MEME (default="+MEMEmaxw+")>\n"+
 				"\t--nodifftests [flag to turn off DE tests]\n" +
+				"\t--edgerod <EdgeR overdispersion>\n" +
 				"\t--diffp <minimum p-value for differential enrichment>\n" +
 				"\t--verbose [flag to print intermediate files and extra output]\n" +
 				"\t--config <config file: all options can be specified in a name<space>value text file, over-ridden by command-line args>\n" +
