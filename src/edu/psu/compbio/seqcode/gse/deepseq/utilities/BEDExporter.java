@@ -117,6 +117,8 @@ public class BEDExporter {
                     BEDhits = expt.getBED_StrandedReads(currSubRegion, '-', 2.0);
                     fw.write(BEDhits);
 				}
+				System.out.println(currentRegion.getName());
+				System.out.println(chroms.hasNext());
 			}
 			fw.close();
 		} catch (IOException e) {
