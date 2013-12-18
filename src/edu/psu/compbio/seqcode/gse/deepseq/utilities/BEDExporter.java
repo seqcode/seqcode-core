@@ -42,6 +42,7 @@ public class BEDExporter {
 		
 		BEDExporter bed = new BEDExporter(args);
 		bed.execute();
+		System.out.println("I AM HERE");
 	}
 	
 	
