@@ -42,7 +42,8 @@ public class BEDExporter {
 		
 		BEDExporter bed = new BEDExporter(args);
 		bed.execute();
-		System.out.println("I AM HERE");
+		
+		System.exit(0);
 	}
 	
 	
@@ -118,9 +119,9 @@ public class BEDExporter {
                     fw.write(BEDhits);
 				}
 			}
-			System.out.println("Out of while");
+			
 			fw.close();
-			System.out.println("Closed file");
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
