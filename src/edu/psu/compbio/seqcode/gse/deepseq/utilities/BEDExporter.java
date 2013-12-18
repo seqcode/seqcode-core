@@ -104,6 +104,7 @@ public class BEDExporter {
 			ChromRegionIterator chroms = new ChromRegionIterator(gen);
 			while(chroms.hasNext()){
 				NamedRegion currentRegion = chroms.next();
+				System.out.println(currentRegion.getName());
 				
 				//Split the job up into chunks of 100Mbp
 				for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=100000000){
