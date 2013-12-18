@@ -104,7 +104,6 @@ public class BEDExporter {
 			ChromRegionIterator chroms = new ChromRegionIterator(gen);
 			while(chroms.hasNext()){
 				NamedRegion currentRegion = chroms.next();
-				System.out.println(currentRegion.getName());
 				
 				//Split the job up into chunks of 100Mbp
 				for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=100000000){
@@ -117,10 +116,10 @@ public class BEDExporter {
                     BEDhits = expt.getBED_StrandedReads(currSubRegion, '-', 2.0);
                     fw.write(BEDhits);
 				}
-				System.out.println(currentRegion.getName());
-				System.out.println(chroms.hasNext());
 			}
+			System.out.println("Out of while");
 			fw.close();
+			System.out.println("Closed file");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
