@@ -119,6 +119,7 @@ public class MultiConditionReadSimulator {
 		Random jointDice = new Random();
 		List<SimCounts> nondiffSimCounts=new ArrayList<SimCounts>();
 		List<SimCounts> diffSimCounts=new ArrayList<SimCounts>();
+		List<SimCounts> orderedSimCounts=new ArrayList<SimCounts>();
 		HashMap<SimCounts, Integer> simOffsets = new HashMap<SimCounts, Integer>();
 		int sharedOffset=0, diffOffset=0;
 		int offset=0;
@@ -142,11 +143,12 @@ public class MultiConditionReadSimulator {
 		for(SimCounts s : diffSimCounts){
 			int curroff =diffOffset;
 			simOffsets.put(s, curroff);
+			orderedSimCounts.add(s);
 			//Joint event here
 			double jointrand = jointDice.nextDouble();
 			if(jointrand<jointEventRate){
-				curroff += jointEventSpacing;
-				simOffsets.put(nondiffSimCounts.get(jointCount), curroff);
+				simOffsets.put(nondiffSimCounts.get(jointCount), curroff+jointEventSpacing);
+				orderedSimCounts.add(nondiffSimCounts.get(jointCount));
 				jointCount++;
 			}
 			diffOffset+=eventSpacing;
@@ -156,11 +158,12 @@ public class MultiConditionReadSimulator {
 			SimCounts s = nondiffSimCounts.get(x);
 			int curroff =sharedOffset;
 			simOffsets.put(s, curroff);
+			orderedSimCounts.add(s);
 			//Joint event here
 			double jointrand = jointDice.nextDouble();
 			if(jointrand<jointEventRate && x<nondiffSimCounts.size()-1){
-				curroff += jointEventSpacing;
-				simOffsets.put(nondiffSimCounts.get(x+1), curroff);
+				simOffsets.put(nondiffSimCounts.get(x+1), curroff+jointEventSpacing);
+				orderedSimCounts.add(nondiffSimCounts.get(x+1));
 				x++;
 				jointCount++;
 			}
@@ -168,7 +171,7 @@ public class MultiConditionReadSimulator {
 		}
 		
 		//Translate from offsets to chromosome name and start
-		for(SimCounts s : simCounts){
+		for(SimCounts s : orderedSimCounts){
 			int curroff =simOffsets.get(s);
 			int c=0; offset=0;
 			String chr = fakeGen.getChromList().get(0);
