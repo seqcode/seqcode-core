@@ -42,6 +42,8 @@ public class BEDExporter {
 		
 		BEDExporter bed = new BEDExporter(args);
 		bed.execute();
+		
+		System.exit(0);
 	}
 	
 	
@@ -117,7 +119,9 @@ public class BEDExporter {
                     fw.write(BEDhits);
 				}
 			}
+			
 			fw.close();
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
