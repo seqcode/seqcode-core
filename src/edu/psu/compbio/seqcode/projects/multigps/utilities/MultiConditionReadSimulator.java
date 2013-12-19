@@ -49,14 +49,15 @@ public class MultiConditionReadSimulator {
 	
 	private int numEvents=0;
 	private int eventSpacing = 10000;
-	private double jointEventRate = 0.1;
+	private double jointEventRate = 0.0;
 	private int jointEventSpacing = 150;
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
 	
-	public MultiConditionReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, String outPath){
+	public MultiConditionReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, String outPath){
 		model=m;
 		numConditions = numCond;
 		numReplicates = numRep;
+		jointEventRate = jointRate;
 		this.outPath = outPath;
 		fakeGen = g;
 		genomeLength = (int)fakeGen.getGenomeLength();
@@ -387,7 +388,7 @@ public class MultiConditionReadSimulator {
 	public static void main(String[] args) {
 		String empFile, outFile="out";
 		int r=2, numdata;
-		double rA=1000000, rB=100000, a, up, down, diff, jointRate=0.1;
+		double rA=1000000, rB=100000, a, up, down, diff, jointRate=0.0;
 		String bmfile;
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h") || !ap.hasKey("emp")){
@@ -474,8 +475,7 @@ public class MultiConditionReadSimulator {
 			// Simulate reads according to counts and binding model
 			BindingModel bm = new BindingModel(mFile);
 	        //Initialize the MultiConditionReadSimulator
-	        MultiConditionReadSimulator sim = new MultiConditionReadSimulator(bm, gen, counts, 2, r, noiseProb, outFile);
-	        sim.setJointEventRate(jointRate);
+	        MultiConditionReadSimulator sim = new MultiConditionReadSimulator(bm, gen, counts, 2, r, noiseProb, jointRate,outFile);
 	        if(noiseProb==1.0)
 	        	sim.setTotalReads((int)rA, (int)rB);
 
