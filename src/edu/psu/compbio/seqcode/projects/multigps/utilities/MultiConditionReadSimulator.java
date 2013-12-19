@@ -1,14 +1,10 @@
 package edu.psu.compbio.seqcode.projects.multigps.utilities; 
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -53,6 +49,8 @@ public class MultiConditionReadSimulator {
 	
 	private int numEvents=0;
 	private int eventSpacing = 10000;
+	private double jointEventRate = 0.1;
+	private int jointEventSpacing = 150;
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
 	
 	public MultiConditionReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, String outPath){
@@ -117,6 +115,10 @@ public class MultiConditionReadSimulator {
 	 * By default, shared events are in chr1, and diff events are in chrX
 	 */
 	private void setBindingPositions(){
+		Random jointDice = new Random();
+		List<SimCounts> nondiffSimCounts=new ArrayList<SimCounts>();
+		List<SimCounts> diffSimCounts=new ArrayList<SimCounts>();
+		HashMap<SimCounts, Integer> simOffsets = new HashMap<SimCounts, Integer>();
 		int sharedOffset=0, diffOffset=0;
 		int offset=0;
 		for(int c=0; c<fakeGen.getChromList().size(); c++){
@@ -127,17 +129,46 @@ public class MultiConditionReadSimulator {
 				diffOffset = offset+eventSpacing;
 			offset +=chromLens[c];
 		}
-		
 		for(SimCounts s : simCounts){
-			int curroff =0;
-			if(s.isDiff){
-				curroff = diffOffset;
-				diffOffset+=eventSpacing;
-			}else{
-				curroff = sharedOffset;
-				sharedOffset+=eventSpacing;
+			if(s.isDiff)
+				diffSimCounts.add(s);
+			else
+				nondiffSimCounts.add(s);
+		}
+		
+		//Place the differential events first (maybe with some joint non-diff) 
+		int jointCount=0;
+		for(SimCounts s : diffSimCounts){
+			int curroff =diffOffset;
+			simOffsets.put(s, curroff);
+			//Joint event here
+			double jointrand = jointDice.nextDouble();
+			if(jointrand<jointEventRate){
+				curroff += jointEventSpacing;
+				simOffsets.put(nondiffSimCounts.get(jointCount), curroff);
+				jointCount++;
 			}
-			//Translate from pos to chromosome name and start
+			diffOffset+=eventSpacing;
+		}
+		//Now place the remaining non-differential events
+		for(int x=jointCount; x<nondiffSimCounts.size(); x++){
+			SimCounts s = nondiffSimCounts.get(x);
+			int curroff =sharedOffset;
+			simOffsets.put(s, curroff);
+			//Joint event here
+			double jointrand = jointDice.nextDouble();
+			if(jointrand<jointEventRate && x<nondiffSimCounts.size()-1){
+				curroff += jointEventSpacing;
+				simOffsets.put(nondiffSimCounts.get(x+1), curroff);
+				x++;
+				jointCount++;
+			}
+			sharedOffset+=eventSpacing;
+		}
+		
+		//Translate from offsets to chromosome name and start
+		for(SimCounts s : simCounts){
+			int curroff =simOffsets.get(s);
 			int c=0; offset=0;
 			String chr = fakeGen.getChromList().get(0);
 			while(curroff>(offset+chromLens[c]) && c<fakeGen.getChromList().size()-1){
@@ -302,7 +333,9 @@ public class MultiConditionReadSimulator {
 					numTotalReads[co][r] = totReadsB;
 			}
 	}
-	
+	public void setJointEventRate(double jointRate){
+		this.jointEventRate = jointRate;
+	}
 
 	// clean up
 	public void close(){
@@ -354,7 +387,7 @@ public class MultiConditionReadSimulator {
 	public static void main(String[] args) {
 		String empFile, outFile="out";
 		int r=2, numdata;
-		double rA=1000000, rB=100000, a, up, down, diff;
+		double rA=1000000, rB=100000, a, up, down, diff, jointRate=0.1;
 		String bmfile;
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h") || !ap.hasKey("emp")){
@@ -371,6 +404,7 @@ public class MultiConditionReadSimulator {
 					"\t--diff <basis of differential expression>\n" +
 					"\t--model <binding model file>\n" +
 					"\t--noise <noise probability per replicate>\n" +
+					"\t--jointrate <proportion of peaks that are joint binding events>\n" +
 					"\t--out <output file>\n" +
 					"");
 		}else{
@@ -410,6 +444,8 @@ public class MultiConditionReadSimulator {
 			}if(ap.hasKey("diff")){
 				diff = new Double(ap.getKeyValue("diff"));
 				cdsim.setDiffExpLevel(diff);
+			}if(ap.hasKey("jointrate")){
+				jointRate = new Double(ap.getKeyValue("jointrate"));
 			}if(ap.hasKey("out")){
 				outFile = ap.getKeyValue("out");
 			}
@@ -439,6 +475,7 @@ public class MultiConditionReadSimulator {
 			BindingModel bm = new BindingModel(mFile);
 	        //Initialize the MultiConditionReadSimulator
 	        MultiConditionReadSimulator sim = new MultiConditionReadSimulator(bm, gen, counts, 2, r, noiseProb, outFile);
+	        sim.setJointEventRate(jointRate);
 	        if(noiseProb==1.0)
 	        	sim.setTotalReads((int)rA, (int)rB);
 
