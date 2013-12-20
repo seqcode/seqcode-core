@@ -50,14 +50,15 @@ public class MultiConditionReadSimulator {
 	private int numEvents=0;
 	private int eventSpacing = 10000;
 	private double jointEventRate = 0.0;
-	private int jointEventSpacing = 150;
+	private int jointEventSpacing = 200;
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
 	
-	public MultiConditionReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, String outPath){
+	public MultiConditionReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, int jointSpacing, String outPath){
 		model=m;
 		numConditions = numCond;
 		numReplicates = numRep;
 		jointEventRate = jointRate;
+		jointEventSpacing = jointSpacing;
 		this.outPath = outPath;
 		fakeGen = g;
 		genomeLength = (int)fakeGen.getGenomeLength();
@@ -390,7 +391,7 @@ public class MultiConditionReadSimulator {
 	 */
 	public static void main(String[] args) {
 		String empFile, outFile="out";
-		int r=2, numdata;
+		int r=2, numdata, jointSpacing=200;
 		double rA=1000000, rB=100000, a, up, down, diff, jointRate=0.0;
 		String bmfile;
 		ArgParser ap = new ArgParser(args);
@@ -409,6 +410,7 @@ public class MultiConditionReadSimulator {
 					"\t--model <binding model file>\n" +
 					"\t--noise <noise probability per replicate>\n" +
 					"\t--jointrate <proportion of peaks that are joint binding events>\n" +
+					"\t--jointspacing <spacing between joint events>\n" +
 					"\t--out <output file>\n" +
 					"");
 		}else{
@@ -450,6 +452,8 @@ public class MultiConditionReadSimulator {
 				cdsim.setDiffExpLevel(diff);
 			}if(ap.hasKey("jointrate")){
 				jointRate = new Double(ap.getKeyValue("jointrate"));
+			}if(ap.hasKey("jointspacing")){
+				jointSpacing = new Integer(ap.getKeyValue("jointspacing"));
 			}if(ap.hasKey("out")){
 				outFile = ap.getKeyValue("out");
 			}
@@ -478,7 +482,7 @@ public class MultiConditionReadSimulator {
 			// Simulate reads according to counts and binding model
 			BindingModel bm = new BindingModel(mFile);
 	        //Initialize the MultiConditionReadSimulator
-	        MultiConditionReadSimulator sim = new MultiConditionReadSimulator(bm, gen, counts, 2, r, noiseProb, jointRate,outFile);
+	        MultiConditionReadSimulator sim = new MultiConditionReadSimulator(bm, gen, counts, 2, r, noiseProb, jointRate, jointSpacing, outFile);
 	        if(noiseProb==1.0)
 	        	sim.setTotalReads((int)rA, (int)rB);
 
