@@ -52,6 +52,7 @@ public class MultiConditionReadSimulator {
 	private double jointEventRate = 0.0;
 	private int jointEventSpacing = 200;
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
+	private HashMap<Point, Boolean> eventIsJoint = new HashMap<Point, Boolean>();
 	
 	public MultiConditionReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, int jointSpacing, String outPath){
 		model=m;
@@ -96,15 +97,19 @@ public class MultiConditionReadSimulator {
 		
 		if(noiseProb<1.0){
 			simCounts = counts;
-			numEvents = simCounts.size();
 			setBindingPositions();
+			numEvents = events.size();
 			
 			//Count signal reads and infer total reads
-			for(SimCounts s : simCounts){
+			for(Pair<Point,SimCounts> event : events){
 				int index=0;
 				for(int co=0; co<numConditions; co++)
 					for(int r=0; r<numReplicates; r++){
-						numSigReads[co][r]+=s.counts[index];
+						if(!eventIsJoint.get(event.car())){
+							numSigReads[co][r]+=event.cdr().counts[index];
+						}else{
+							numSigReads[co][r]+=event.cdr().backup[index];
+						}
 						numTotalReads[co][r] = (int)((double)numSigReads[co][r]/(1-noiseProbabilities[co][r]));
 						index++;
 					}
@@ -118,10 +123,6 @@ public class MultiConditionReadSimulator {
 	 */
 	private void setBindingPositions(){
 		Random jointDice = new Random();
-		List<SimCounts> nondiffSimCounts=new ArrayList<SimCounts>();
-		List<SimCounts> diffSimCounts=new ArrayList<SimCounts>();
-		List<SimCounts> orderedSimCounts=new ArrayList<SimCounts>();
-		HashMap<SimCounts, Integer> simOffsets = new HashMap<SimCounts, Integer>();
 		int sharedOffset=0, diffOffset=0;
 		int offset=0;
 		for(int c=0; c<fakeGen.getChromList().size(); c++){
@@ -132,48 +133,18 @@ public class MultiConditionReadSimulator {
 				diffOffset = offset+eventSpacing;
 			offset +=chromLens[c];
 		}
+		
 		for(SimCounts s : simCounts){
-			if(s.isDiff)
-				diffSimCounts.add(s);
-			else
-				nondiffSimCounts.add(s);
-		}
-		
-		//Place the differential events first (maybe with some joint non-diff) 
-		int jointCount=0;
-		for(SimCounts s : diffSimCounts){
-			int curroff =diffOffset;
-			simOffsets.put(s, curroff);
-			orderedSimCounts.add(s);
-			//Joint event here
-			double jointrand = jointDice.nextDouble();
-			if(jointrand<jointEventRate){
-				simOffsets.put(nondiffSimCounts.get(jointCount), curroff+jointEventSpacing);
-				orderedSimCounts.add(nondiffSimCounts.get(jointCount));
-				jointCount++;
+			int curroff =0;
+			if(s.isDiff){
+				curroff =diffOffset;
+				diffOffset+=eventSpacing;
+			}else{
+				curroff =sharedOffset;
+				sharedOffset+=eventSpacing;
 			}
-			diffOffset+=eventSpacing;
-		}
-		//Now place the remaining non-differential events
-		for(int x=jointCount; x<nondiffSimCounts.size(); x++){
-			SimCounts s = nondiffSimCounts.get(x);
-			int curroff =sharedOffset;
-			simOffsets.put(s, curroff);
-			orderedSimCounts.add(s);
-			//Joint event here
-			double jointrand = jointDice.nextDouble();
-			if(jointrand<jointEventRate && x<nondiffSimCounts.size()-1){
-				simOffsets.put(nondiffSimCounts.get(x+1), curroff+jointEventSpacing);
-				orderedSimCounts.add(nondiffSimCounts.get(x+1));
-				x++;
-				jointCount++;
-			}
-			sharedOffset+=eventSpacing;
-		}
-		
-		//Translate from offsets to chromosome name and start
-		for(SimCounts s : orderedSimCounts){
-			int curroff =simOffsets.get(s);
+			
+			//Translate from offsets to chromosome name and start
 			int c=0; offset=0;
 			String chr = fakeGen.getChromList().get(0);
 			while(curroff>(offset+chromLens[c]) && c<fakeGen.getChromList().size()-1){
@@ -183,7 +154,16 @@ public class MultiConditionReadSimulator {
 			}
 			int start = curroff-offset;
 			Point p = new Point(fakeGen, chr, start);
-			events.add(new Pair<Point, SimCounts>(p,s)); 
+			events.add(new Pair<Point, SimCounts>(p,s));
+			eventIsJoint.put(p, false);
+			
+			//Simulate a joint event?
+			double jointrand = jointDice.nextDouble();
+			if(jointrand<jointEventRate){
+				Point jp = new Point(fakeGen, chr, start+jointEventSpacing);
+				events.add(new Pair<Point, SimCounts>(jp,s));
+				eventIsJoint.put(jp, true);
+			}
 		}
 	}
 	
@@ -287,9 +267,10 @@ public class MultiConditionReadSimulator {
 						int chrLen = fakeGen.getChromLength(chr);
 						SimCounts sc = ps.cdr();
 						int sample = co*numReplicates+r;
+						double readCount = eventIsJoint.get(coord) ? sc.backup[sample] : sc.counts[sample];
 						
 						ReadHit rh = null;
-						for(int x=0; x<sc.counts[sample]; x++){
+						for(int x=0; x<readCount; x++){
 							boolean forwardStrand = strandGenerator.nextDouble()<0.5 ? true:false;
 							double rand = sigGenerator.nextDouble();
 							int fivePrimeEnd=coord.getLocation()-evoff;
@@ -373,10 +354,13 @@ public class MultiConditionReadSimulator {
 			for(Pair<Point, SimCounts> ps : events){
 				Point coord = ps.car();
 				SimCounts sc = ps.cdr();
-				int diff = sc.isDiff ? 1 : 0;
+				int diff = sc.isDiff && !eventIsJoint.get(coord) ? 1 : 0;
 				fout.write(coord.getLocationString()+"\t"+diff);
 				for(int x=0; x<sc.counts.length; x++){
-					fout.write("\t"+sc.counts[x]);
+					if(!eventIsJoint.get(coord))
+						fout.write("\t"+sc.counts[x]);
+					else
+						fout.write("\t"+sc.backup[x]);
 				}fout.write("\n");
 			}
 			fout.close();

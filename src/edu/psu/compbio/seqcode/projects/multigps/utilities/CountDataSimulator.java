@@ -37,6 +37,7 @@ public class CountDataSimulator {
 	
 	//Output
 	double[][] counts;
+	double[][] extraCounts;
 	List<SimCounts> simResults = new ArrayList<SimCounts>();
 	
 	//Constructor
@@ -85,6 +86,8 @@ public class CountDataSimulator {
 	 */
 	public List<SimCounts> simulate(){
 		counts = new double[numDataPoints][numConditions*numReplicates];
+		extraCounts = new double[numDataPoints][numConditions*numReplicates];
+		double[] absolutes = new double[numDataPoints];
 		simResults = new ArrayList<SimCounts>();
 		boolean [] diffs = new boolean[numDataPoints]; 
 		Random rand = new Random();
@@ -94,6 +97,7 @@ public class CountDataSimulator {
 		double [] condMolTotals = new double[numConditions];
 		double [] sampleReadTotals = new double[numConditions*numReplicates];
 		double [] sampleReadsPerMols = new double[numConditions*numReplicates];
+		double absTotal = 0;
 		int x=0;
 		for(int c=0; c<numConditions; c++){
 			condMolTotals[c]=0;
@@ -111,7 +115,8 @@ public class CountDataSimulator {
 			double dice = rand.nextDouble();
 			int strengthIndex = (int)(dice*(double)empirical.size());
 			double empMol = empirical.get(strengthIndex);
-			
+			absolutes[d] = empMol;
+
 			double currAMol = empMol;
 			double currBMol = empMol;
 			dice = rand.nextDouble();
@@ -133,6 +138,7 @@ public class CountDataSimulator {
 			condBMols[d]=currBMol;
 			condMolTotals[0]+=currAMol;
 			condMolTotals[1]+=currBMol;
+			absTotal+=empMol;
 		}
 
 		//For each condition
@@ -152,10 +158,27 @@ public class CountDataSimulator {
 			}
 		}
 		
+		//Extra counts around the absolute conc
+		for(int d=0; d<numDataPoints; d++){
+			double conc = absolutes[d]/absTotal;
+			for(int c=0; c<numConditions; c++){
+				double mean = c==0 ? (conc*condATotalReads) : (conc*condBTotalReads);
+				double var = mean+(mean*mean*alpha);
+				nb.setMeanVar(mean, var);
+				int sample= c*numReplicates;
+				for(int r=0; r<numReplicates; r++){
+					extraCounts[d][sample]=(double)nb.nextInt();
+					sample++;
+				}
+			}
+		}
+		
 		//Make simulated results data structure
 		for(int d=0; d<numDataPoints; d++){
 			SimCounts sim = new SimCounts();
+			sim.absolute = absolutes[d];
 			sim.counts=counts[d];
+			sim.backup = extraCounts[d];
 			sim.isDiff=diffs[d];
 			simResults.add(sim);
 		}
@@ -285,7 +308,9 @@ public class CountDataSimulator {
 	}
 	
 	public class SimCounts{
-		double [] counts;
+		double absolute; //The absolute value of binding enrichment (mean before differential)
+		double [] counts; //The simulated counts
+		double [] backup; //Extra counts used by the multi-condition read simulator
 		boolean isDiff=false;
 	}
 }
