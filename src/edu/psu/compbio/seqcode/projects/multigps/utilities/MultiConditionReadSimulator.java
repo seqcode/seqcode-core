@@ -115,10 +115,6 @@ public class MultiConditionReadSimulator {
 					}
 			}
 		}
-		System.out.println(fakeGen.getGenomeLength());
-		for(String chr : fakeGen.getChromList()){
-			System.out.println(chr+"\t"+chromOffsets.get(chr));
-		}
 	}
 	
 	/**
