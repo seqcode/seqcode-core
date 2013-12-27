@@ -39,10 +39,10 @@ public class MultiConditionReadSimulator {
 	private FileWriter[][] writers;
 	
 	private Genome fakeGen;
-	private int[] chromLens;
-	private HashMap<String, Integer> chromOffsets = new HashMap<String, Integer>();
+	private long[] chromLens;
+	private HashMap<String, Long> chromOffsets = new HashMap<String, Long>();
 	private int rLen=32;
-	private int genomeLength=-1;
+	private long genomeLength=-1;
 	private double noiseProbabilities[][];
 	private int numSigReads[][], numTotalReads[][];
 	private List<SimCounts> simCounts;
@@ -62,10 +62,10 @@ public class MultiConditionReadSimulator {
 		jointEventSpacing = jointSpacing;
 		this.outPath = outPath;
 		fakeGen = g;
-		genomeLength = (int)fakeGen.getGenomeLength();
-		chromLens = new int[fakeGen.getChromList().size()];
+		genomeLength = (long)fakeGen.getGenomeLength();
+		chromLens = new long[fakeGen.getChromList().size()];
 		
-		int c=0; int offset=0;
+		int c=0; long offset=0;
 		for(String chr : fakeGen.getChromList()){
 			chromLens[c]=fakeGen.getChromLength(chr); 
 			chromOffsets.put(chr, offset);
@@ -115,6 +115,10 @@ public class MultiConditionReadSimulator {
 					}
 			}
 		}
+		System.out.println(fakeGen.getGenomeLength());
+		for(String chr : fakeGen.getChromList()){
+			System.out.println(chr+"\t"+chromOffsets.get(chr));
+		}
 	}
 	
 	/**
@@ -123,19 +127,11 @@ public class MultiConditionReadSimulator {
 	 */
 	private void setBindingPositions(){
 		Random jointDice = new Random();
-		int sharedOffset=0, diffOffset=0;
-		int offset=0;
-		for(int c=0; c<fakeGen.getChromList().size(); c++){
-			String chr = fakeGen.getChromList().get(c);
-			if(chr.equals("1"))
-				sharedOffset = offset+eventSpacing;
-			if(chr.equals("X"))
-				diffOffset = offset+eventSpacing;
-			offset +=chromLens[c];
-		}
+		long sharedOffset=chromOffsets.get("1"), diffOffset=chromOffsets.get("X");
+		
 		
 		for(SimCounts s : simCounts){
-			int curroff =0;
+			long curroff =0;
 			if(s.isDiff){
 				curroff =diffOffset;
 				diffOffset+=eventSpacing;
@@ -145,22 +141,22 @@ public class MultiConditionReadSimulator {
 			}
 			
 			//Translate from offsets to chromosome name and start
-			int c=0; offset=0;
+			int c=0; long offset=0;
 			String chr = fakeGen.getChromList().get(0);
 			while(curroff>(offset+chromLens[c]) && c<fakeGen.getChromList().size()-1){
-				offset +=chromLens[c];
 				c++;
 				chr = fakeGen.getChromList().get(c);
+				offset = chromOffsets.get(chr);
 			}
-			int start = curroff-offset;
-			Point p = new Point(fakeGen, chr, start);
+			long start = curroff-offset;
+			Point p = new Point(fakeGen, chr, (int)start);
 			events.add(new Pair<Point, SimCounts>(p,s));
 			eventIsJoint.put(p, false);
 			
 			//Simulate a joint event?
 			double jointrand = jointDice.nextDouble();
 			if(jointrand<jointEventRate){
-				Point jp = new Point(fakeGen, chr, start+jointEventSpacing);
+				Point jp = new Point(fakeGen, chr, (int)start+jointEventSpacing);
 				events.add(new Pair<Point, SimCounts>(jp,s));
 				eventIsJoint.put(jp, true);
 			}
@@ -184,23 +180,23 @@ public class MultiConditionReadSimulator {
 						double noiserand = noiseGenerator.nextDouble();
 						double strandrand = strandGenerator.nextDouble();
 	
-						int pos = (int)(noiserand*(genomeLength));
+						long pos = (long)(noiserand*(genomeLength));
 						
 						//Translate from pos to chromosome name and start
-						int c=0; int offset=0;
+						int c=0; long offset=0;
 						String chr = fakeGen.getChromList().get(0);
 						while(pos>(offset+chromLens[c]) && c<fakeGen.getChromList().size()-1){
-							offset +=chromLens[c];
 							c++;
 							chr = fakeGen.getChromList().get(c);
+							offset = chromOffsets.get(chr);
 						}
-						int start = pos-offset;
+						long start = pos-offset;
 						
 						//Add the ReadHit
 						if (strandrand<0.5)
-							rh = new ReadHit(chr, start, start+rLen-1, '+');
+							rh = new ReadHit(chr, (int)start, (int)start+rLen-1, '+');
 						else
-							rh = new ReadHit(chr, Math.max(1, start-rLen+1), start, '-');
+							rh = new ReadHit(chr, Math.max(1, (int)start-rLen+1), (int)start, '-');
 						reads.add(rh);
 					}
 					for(ReadHit rh : reads){
