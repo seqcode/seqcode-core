@@ -40,7 +40,4 @@ public class ExptDescriptor {
 		perBaseMaxReads = perBPMax;
 	}
 	
-	// added by Akshay, to define ExptDescriptor class in the absence of binding model and still having a non default perBPMax
-	public ExptDescriptor(String cond, String rep, boolean sig, Pair<String, String> src, float perBPMax){this(cond, rep, sig, src, null, perBPMax);} 
-	
 }

@@ -9,7 +9,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExptDescriptor;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExptDescriptor;
 
 
 public class Config {
@@ -20,6 +20,7 @@ public class Config {
 	protected boolean printHelp = false;
 	protected boolean poissonGaussWinPerBaseFilter = false;
 	protected float perBaseReadLimit;
+	protected boolean nonUnique=false;
 	
 	public Config(String[] arguments){
 		this.args = arguments;
@@ -52,7 +53,7 @@ public class Config {
 				
 				//Load expts from design file
 				//Format: (tab separated)
-				//Signal/Control   SrcName   Type   Condition   Replicate	[Read Distribution]	[per-base max]
+				//Signal/Control   SrcName   Type   Condition   Replicate [Chromatin/Factor default is chromatin state] [per-base max]
 				if(ap.hasKey("design")){
 					String dfile = ap.getKeyValue("design");
 					File df = new File(dfile);
@@ -62,23 +63,28 @@ public class Config {
 			        	if(!line.startsWith("#")){
 				            line = line.trim();
 				            String[] words = line.split("\\t");
-				            if(words.length >=3){
-				            	String cond="", rep="";
+				            if(words.length >=6){
+				            	String cond="", rep="", feature="";
 					            boolean signal = words[0].toUpperCase().equals("SIGNAL") ? true : false;
 					            Pair<String, String> src = new Pair<String, String>(words[1], words[2]);
-					            if(words.length>=4 && !words[3].equals("")){
+					            if(!words[3].equals("")){
 					            	cond = words[3];
 					            }else
 					            	cond = signal ? "EXPERIMENT" :"DEFAULT";
 					            
-					            if(words.length>=5 &&  !words[4].equals("")){
+					            if(!words[4].equals("")){
 					            	rep = words[4];
 					            }else{
 					            	rep = signal ? "Rep1" : "DEFAULT";
 					            }
+					            if(!words[5].equals("")){
+					            	feature = words[5].toUpperCase();
+					            }else{
+					            	feature = "CHROMATIN";
+					            }
 					            //Per-base read limit in field 6
 					            float currCondPerBaseReads = this.perBaseReadLimit;
-					            if(words.length>=6 && !words[5].equals("")){
+					            if(words.length>=6 && !words[6].equals("")){
 					            	if(words[5].equals("P"))
 					            		currCondPerBaseReads=0;
 					            	else
@@ -93,7 +99,7 @@ public class Config {
 					            	}
 					            }
 					            if(!found){
-					            	expts.add(new ExptDescriptor(cond, rep, signal, src, currCondPerBaseReads));
+					            	expts.add(new ExptDescriptor(cond, rep, feature,  signal, src, currCondPerBaseReads));
 					            }
 				            }else{
 				            	System.err.println("Error in design file. Cannot parse line: \n"+line);
@@ -126,6 +132,7 @@ public class Config {
 	public boolean helpWanter(){return printHelp;}
 	public float getPerBaseReadLimit(){return this.perBaseReadLimit;}
 	public boolean doPoissonGaussWinPerBaseFiltering(){return this.poissonGaussWinPerBaseFilter;}
+	public boolean getNonUnique(){return nonUnique;}
 	
 	
 	public String getArgsList(){
