@@ -21,6 +21,7 @@ public class Config {
 	protected boolean poissonGaussWinPerBaseFilter = false;
 	protected float perBaseReadLimit;
 	protected boolean nonUnique=false;
+	protected int scalingSlidingWindow = 10000; 
 	
 	public Config(String[] arguments){
 		this.args = arguments;
@@ -133,6 +134,10 @@ public class Config {
 	public float getPerBaseReadLimit(){return this.perBaseReadLimit;}
 	public boolean doPoissonGaussWinPerBaseFiltering(){return this.poissonGaussWinPerBaseFilter;}
 	public boolean getNonUnique(){return nonUnique;}
+	public int getScalingSlidingWindow(){return scalingSlidingWindow;}
+	
+	//Some accessors to allow modification of options after config
+	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
 	
 	
 	public String getArgsList(){

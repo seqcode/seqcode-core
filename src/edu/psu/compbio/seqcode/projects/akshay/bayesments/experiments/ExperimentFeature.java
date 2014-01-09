@@ -1,11 +1,10 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments;
 
-import java.util.ArrayList;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.Sample;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.Sample;
 
 public class ExperimentFeature {
 	
