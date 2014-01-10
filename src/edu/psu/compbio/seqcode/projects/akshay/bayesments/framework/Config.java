@@ -140,6 +140,21 @@ public class Config {
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
 	
 	
+	public Genome mergeGenomes(List<Genome> estGenomes){
+		//Combine the chromosome information
+		HashMap<String, Integer> chrLenMap = new HashMap<String, Integer>();
+		for(Genome e : estGenomes){
+			Map<String, Integer> currMap = e.getChromLengthMap();
+			for(String s: currMap.keySet()){
+				if(!chrLenMap.containsKey(s) || chrLenMap.get(s)<currMap.get(s))
+					chrLenMap.put(s, currMap.get(s));
+			}
+		}
+		this.gen =new Genome("Genome", chrLenMap);
+		return this.gen;		
+	}
+	
+	
 	public String getArgsList(){
 		return(new String("" +
 				"Genome:" +

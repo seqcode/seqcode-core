@@ -25,7 +25,6 @@ public class ExperimentManager {
 	protected Config config;
 	protected Genome gen;
 	protected HashMap<String, HitLoader> loaders = new HashMap<String, HitLoader>();
-	protected List<Sample> sampleList = new ArrayList<Sample>();
 	protected HashMap<String, Sample> allSamples = new HashMap<String, Sample>();
 	protected List<ControlledExperiment> replicateList = new ArrayList<ControlledExperiment>();
 	protected HashMap<String, ControlledExperiment> allReplicates =  new HashMap<String, ControlledExperiment>();
@@ -59,6 +58,37 @@ public class ExperimentManager {
 		}
 		
 		//loading Samples to allSamples and sampleList
+		for(ExptDescriptor e: this.config.getExperiments()){
+			String sampleName;
+			if(e.signal)
+				sampleName = e.feature+":"+e.condition+":"+e.replicate+":signal";
+			else
+				sampleName = e.feature+":"+e.condition+":"+e.replicate+":control";
+			if(!this.allSamples.containsKey(sampleName)){
+				Sample samp = new Sample(samCount, this.config, sampleName, e.perBaseReadLimit);
+				this.allSamples.put(sampleName, samp);
+				samCount++;
+			}
+			for(Pair<String,String> source : e.sources){
+				String name = source.car();
+				this.allSamples.get(sampleName).addHitLoader(this.loaders.get(name));
+				
+			}
+			if(loadReads)
+				this.allSamples.get(sampleName).loadHits();
+		}
+		
+		//merging the learned genome incase the the user has not provided the genome
+		if(this.gen == null){
+			List<Genome> estGenomes = new ArrayList<Genome>();
+			for(String s : this.allSamples.keySet())
+				estGenomes.add(this.allSamples.get(s).getGenome());
+			this.gen = this.config.mergeGenomes(estGenomes);
+			for(String s : this.allSamples.keySet())
+				this.allSamples.get(s).setGenome(this.gen);
+		}
+		
+		//initialize the replicates
 		for(ExptDescriptor e: this.config.getExperiments()){
 			
 		}
