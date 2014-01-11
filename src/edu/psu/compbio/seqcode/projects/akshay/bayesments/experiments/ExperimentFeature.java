@@ -13,16 +13,30 @@ public class ExperimentFeature {
 	protected List<Sample> signalSamples = new ArrayList<Sample>();
 	protected List<Sample> controlSamples = new ArrayList<Sample>();
 	protected List<ControlledExperiment> replicates = new ArrayList<ControlledExperiment>();
-	protected HashMap<Integer,ControlledExperiment> indexedReplicates = new HashMap<Integer, ControlledExperiment>();
-	protected HashMap<ControlledExperiment, Integer> replicateIndex = new HashMap<ControlledExperiment, Integer>();
+	protected List<ExperimentCondition> conditions = new ArrayList<ExperimentCondition>();
+	protected HashMap<Integer,ExperimentCondition> indexedConditions = new HashMap<Integer, ExperimentCondition>();
+	protected HashMap<ExperimentCondition, Integer> conditionIndex = new HashMap<ExperimentCondition, Integer>();
 	protected String name;
 	
 	
-	public ExperimentFeature(Config config, int id, String name, List<ControlledExperiment> replicates) {
+	public ExperimentFeature(Config config, int id, String name, List<ExperimentCondition> conditions) {
 		this.index = id;
 		this.config = config;
 		this.name = name;
-		this.replicates = replicates;
+		this.conditions = conditions;
+		
+		for(ExperimentCondition ec : conditions){
+			List<ControlledExperiment> tempRepList = ec.getReplicates();
+			for (ControlledExperiment ce : tempRepList){
+				if(!replicates.contains(ce)){
+					this.replicates.add(ce);
+				}
+			}
+			this.indexedConditions.put(ec.getIndex(), ec);
+			this.conditionIndex.put(ec, ec.getIndex());
+		}
+		
+		
 		
 		for(ControlledExperiment ce : replicates){
 			if(!signalSamples.contains(ce.getSignal())){
@@ -31,8 +45,6 @@ public class ExperimentFeature {
 			if(!controlSamples.contains(ce.getControl())){
 				controlSamples.add(ce.getControl());
 			}
-			indexedReplicates.put(ce.getIndex(), ce);
-			replicateIndex.put(ce, ce.getIndex());
 		}
 	}
 	
@@ -42,6 +54,6 @@ public class ExperimentFeature {
 	public int getIndex(){return this.index;}
 	public String getName(){return this.name;}
 	public int getNumReplicates(){return this.replicates.size();}
+	public int getNumCondition(){return this.conditions.size();}
 	
-
 }

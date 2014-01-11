@@ -21,7 +21,9 @@ public class Config {
 	protected boolean poissonGaussWinPerBaseFilter = false;
 	protected float perBaseReadLimit;
 	protected boolean nonUnique=false;
-	protected int scalingSlidingWindow = 10000; 
+	protected int scalingSlidingWindow = 10000;
+	protected boolean estimateScaling = true;
+	protected boolean scalingByMedian =false; // default is scaling by regression
 	
 	public Config(String[] arguments){
 		this.args = arguments;
@@ -81,7 +83,7 @@ public class Config {
 					            if(!words[5].equals("")){
 					            	feature = words[5].toUpperCase();
 					            }else{
-					            	feature = "CHROMATIN";
+					            	feature = signal ? "CHROMATIN" : "DEFAULT";
 					            }
 					            //Per-base read limit in field 6
 					            float currCondPerBaseReads = this.perBaseReadLimit;
@@ -108,7 +110,18 @@ public class Config {
 			            }
 			    	}
 			        reader.close();
-				}	
+				}
+				
+				/****Miscellaneous arguments****/
+				
+				//Turn off scaling estimation
+				estimateScaling = Args.parseFlags(args).contains("noscaling") ? false : true;
+				//Scale by median or regression
+				scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
+				
+				
+				
+				
 			}
 			catch (NotFoundException e){
 				e.printStackTrace();
@@ -135,6 +148,8 @@ public class Config {
 	public boolean doPoissonGaussWinPerBaseFiltering(){return this.poissonGaussWinPerBaseFilter;}
 	public boolean getNonUnique(){return nonUnique;}
 	public int getScalingSlidingWindow(){return scalingSlidingWindow;}
+	public boolean getEstimateScaling(){return estimateScaling;}
+	public boolean getScalingByMedian(){return scalingByMedian;}
 	
 	//Some accessors to allow modification of options after config
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
@@ -163,6 +178,8 @@ public class Config {
 				"\t--geninfo|g <genome info file> AND --seq <fasta seq directory>\n"+
 				"\t--fixedpb <fixed per base limit>\n"+
 				"\t--design <file name>\n"+
+				"\t--noscaling [flag to turn off signal vs control scaling]\n" +
+				"\t--medianscale [flag to use scaling by median (default = regression)]\n" +
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	

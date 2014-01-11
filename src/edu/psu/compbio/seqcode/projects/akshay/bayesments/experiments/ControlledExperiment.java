@@ -23,14 +23,16 @@ public class ControlledExperiment {
 	protected BindingModel model;
 	protected String condName;
 	protected String repName;
+	protected String feaName;
 	protected String name;
 	
-	public ControlledExperiment(Config c, int idx, String cn, String rn, Sample sig, Sample ctrl, BindingModel initModel, boolean estimateScaling, boolean scaleByMedian){
+	public ControlledExperiment(Config c, int idx, String fn, String cn, String rn, Sample sig, Sample ctrl, BindingModel initModel, boolean estimateScaling, boolean scaleByMedian){
 		config = c;
 		index=idx;
 		condName = cn;
 		repName = rn;
-		name = condName+":"+repName;
+		feaName = fn;
+		name = feaName+":"+condName+":"+repName;
 		signal=sig;
 		control = ctrl;
 		model = initModel;
@@ -48,6 +50,7 @@ public class ControlledExperiment {
 	//Accessors
 	public int getIndex(){return index;}
 	public String getName(){return name;}
+	public String getFeaName(){return feaName;}
 	public String getCondName(){return condName;}
 	public String getRepName(){return repName;}
 	public Sample getSignal(){return signal;}

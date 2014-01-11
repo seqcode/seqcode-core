@@ -28,10 +28,10 @@ public class ExperimentManager {
 	protected HashMap<String, Sample> allSamples = new HashMap<String, Sample>();
 	protected List<ControlledExperiment> replicateList = new ArrayList<ControlledExperiment>();
 	protected HashMap<String, ControlledExperiment> allReplicates =  new HashMap<String, ControlledExperiment>();
-	protected List<ExperimentCondition> allConditions = new ArrayList<ExperimentCondition>();
-	protected HashMap<String, ExperimentCondition> conditionList = new HashMap<String, ExperimentCondition>();
-	protected List<ExperimentFeature> allFeatures = new ArrayList<ExperimentFeature>();
-	protected HashMap<String, ExperimentFeature> featureList = new HashMap<String, ExperimentFeature>();
+	protected List<ExperimentCondition> conditionList = new ArrayList<ExperimentCondition>();
+	protected HashMap<String, ExperimentCondition> allConditions = new HashMap<String, ExperimentCondition>();
+	protected List<ExperimentFeature> featureList = new ArrayList<ExperimentFeature>();
+	protected HashMap<String, ExperimentFeature> allFeatures = new HashMap<String, ExperimentFeature>();
 	protected ExperimentSet experiments;
 	
 	public ExperimentManager(Config conf, boolean loadReads) {
@@ -88,13 +88,79 @@ public class ExperimentManager {
 				this.allSamples.get(s).setGenome(this.gen);
 		}
 		
-		//initialize the replicates
+		//initialize the replicates (scaling is estimated by default between the signal and control)
 		for(ExptDescriptor e: this.config.getExperiments()){
-			
+			if(e.signal){
+				String repName = e.feature+":"+e.condition+":"+e.replicate;
+				if(!allReplicates.containsKey(repName)){
+					Sample sig=null, ctrl=null;
+					if(allSamples.containsKey(repName+":signal")){ //Require that there is a signal (in case of orphan/default controls)
+						sig = allSamples.get(repName+":signal");
+						
+						if(allSamples.containsKey(repName+":control"))           //Ctrl1: if there is a control defined for this condition & replicate
+							ctrl = allSamples.get(repName+":control");
+						else if(allSamples.containsKey(e.feature+":"+e.condition+":DEFAULT:control")) //Ctrl2: if there is a default control for this condition 
+							ctrl = allSamples.get(e.feature+":"+e.condition+":DEFAULT:control");
+						else if(allSamples.containsKey("DEFAULT:DEFAULT:DEFAULT:control"))             //Ctrl3: if there is a global default control
+							ctrl = allSamples.get("DEFAULT:DEFAULT:DEFAULT:control");
+						//If no control specified, ctrl is still null
+						
+						ControlledExperiment rep = new ControlledExperiment(this.config, repCount, e.feature, e.condition, e.replicate, 
+								sig, ctrl, e.bindingmodel, this.config.getEstimateScaling(), this.config.getScalingByMedian());
+						allReplicates.put(repName, rep);
+						replicateList.add(rep);
+						repCount++;
+					}
+				}
+			}
 		}
 		
+		//initializing the condition lists
+		List<String> replicatesByConditionNames = new ArrayList<String>();
+		List<List<ControlledExperiment>> replicatesByConditionReps = new ArrayList<List<ControlledExperiment>>();
+		for(ExptDescriptor e : this.config.getExperiments()){
+			String repName = e.feature+":"+e.condition+":"+e.replicate;
+			if(allReplicates.containsKey(repName)){
+				if(!replicatesByConditionNames.contains(e.condition)){
+					replicatesByConditionReps.add(new ArrayList<ControlledExperiment>());
+					replicatesByConditionNames.add(e.condition);
+				}
+				int index = replicatesByConditionNames.indexOf(e.condition);
+				List<ControlledExperiment> currReps = replicatesByConditionReps.get(index);
+				if(!currReps.contains(allReplicates.get(repName))){
+					currReps.add(allReplicates.get(repName));
+				}
+			}
+		}
+		for(String s: replicatesByConditionNames){
+			int index = replicatesByConditionNames.indexOf(s);
+			conditionList.add(new ExperimentCondition(config, conCount, s, replicatesByConditionReps.get(index)));
+			allConditions.put(s, new ExperimentCondition(config, conCount, s, replicatesByConditionReps.get(index)));
+			conCount++;
+		}
 		
+		//initializing the feature lists
+		List<String> conditionsByFeatureNames = new ArrayList<String>();
+		List<List<ExperimentCondition>> conditionsByFeatureCons = new ArrayList<List<ExperimentCondition>>();
+		for(ExptDescriptor e : this.config.getExperiments()){
+			if(!conditionsByFeatureNames.contains(e.feature)){
+				conditionsByFeatureCons.add(new ArrayList<ExperimentCondition>());
+				conditionsByFeatureNames.add(e.feature);
+			}
+			int index = conditionsByFeatureNames.indexOf(e.feature);
+			List<ExperimentCondition> currCons = conditionsByFeatureCons.get(index);
+			if(!currCons.contains(allConditions.get(e.condition))){
+				currCons.add(allConditions.get(e.condition));
+			}
+		}
+		for(String s: conditionsByFeatureNames){
+			int index = conditionsByFeatureNames.indexOf(s);
+			featureList.add(new ExperimentFeature(this.config, feaCount, s, conditionsByFeatureCons.get(index)));
+			allFeatures.put(s, new ExperimentFeature(this.config, feaCount, s, conditionsByFeatureCons.get(index)));
+		}
 		
+		//Oveall Experimentset
+		this.experiments = new ExperimentSet(this.replicateList, this.conditionList, this.featureList);
 	}
 	
 	public HitLoader getReadDBHitLoader(String name){
