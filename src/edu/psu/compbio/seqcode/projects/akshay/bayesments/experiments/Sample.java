@@ -35,6 +35,7 @@ public class Sample {
 	private int numChroms;
 	protected BackgroundCollection perBaseBack=new BackgroundCollection();
 	protected float maxReadsPerBP=-1;
+	protected int winsize;
 	
 	/**
 	 * Five prime ends of the read hits. <br>
@@ -59,7 +60,7 @@ public class Sample {
 	 * @param g Genome (can be null to estimate from data)
 	 * @param name String
 	 */
-	public Sample(int index, Config c, String name, float perBaseReadMax){
+	public Sample(int index, Config c, String name, float perBaseReadMax, int winsize){
 		this.index = index;
 		this.name = name;
 		config = c;
@@ -68,6 +69,7 @@ public class Sample {
 		numChroms = 0;
 		loaders = new ArrayList<HitLoader>();
 		maxReadsPerBP= perBaseReadMax;
+		this.winsize = winsize;
 	}
 
 	//Accessors
@@ -77,6 +79,7 @@ public class Sample {
 	public double getHitCount(){return(totalHits);}
 	public void setGenome(Genome g){gen=g;}
 	public BackgroundCollection getPerBaseBackground(){return perBaseBack;}
+	public int getWinSize(){return this.winsize;}
 
 	/**
 	 * Add a HitLoader to the set

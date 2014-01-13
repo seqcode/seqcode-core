@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments;
 
+import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.ExperimentScaler;
@@ -62,6 +63,14 @@ public class ControlledExperiment {
 	public void setSigNoiseCounts(double s, double n){sigCount=s; noiseCount=n; signalProportion=sigCount/(sigCount+noiseCount);}
 	public double getSigCount(){return sigCount;}
 	public double getNoiseCount(){return noiseCount;}
+	
+	// return the hits in a given regions after multiplying with the scaling ratio
+	public float getSignaHitCount(Region r){
+		Sample sig = this.signal;
+		float count = sig.countHits(r);
+		count = count*(float)this.ctrlScalingRatio;
+		return count;
+	}
 	
 	public void setScaling(double s){ctrlScalingRatio = s;}
 	public void setSigProp(double s){signalProportion = s;}

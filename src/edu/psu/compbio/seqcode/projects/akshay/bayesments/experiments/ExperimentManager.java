@@ -65,7 +65,7 @@ public class ExperimentManager {
 			else
 				sampleName = e.feature+":"+e.condition+":"+e.replicate+":control";
 			if(!this.allSamples.containsKey(sampleName)){
-				Sample samp = new Sample(samCount, this.config, sampleName, e.perBaseReadLimit);
+				Sample samp = new Sample(samCount, this.config, sampleName, e.perBaseReadLimit,e.winsize);
 				this.allSamples.put(sampleName, samp);
 				samCount++;
 			}
@@ -162,6 +162,15 @@ public class ExperimentManager {
 		//Oveall Experimentset
 		this.experiments = new ExperimentSet(this.replicateList, this.conditionList, this.featureList);
 	}
+	
+	//Accessors
+	public ExperimentSet getExperimentSet(){return this.experiments;}
+	public Genome getGenome(){return this.gen;}
+	public List<ExperimentCondition> getChromatinConditionList(){return 
+			this.allFeatures.get("CHROMATIN").getCondtionList();}
+	public List<ExperimentCondition> getFacConditionList(){return 
+			this.allFeatures.get("FACTOR").getCondtionList();}
+
 	
 	public HitLoader getReadDBHitLoader(String name){
 		List<SeqLocator> locs = new ArrayList<SeqLocator>();

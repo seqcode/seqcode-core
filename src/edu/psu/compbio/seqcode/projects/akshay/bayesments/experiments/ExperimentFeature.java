@@ -53,6 +53,7 @@ public class ExperimentFeature {
 	
 	public int getIndex(){return this.index;}
 	public String getName(){return this.name;}
+	public List<ExperimentCondition> getCondtionList(){return this.conditions;}
 	public int getNumReplicates(){return this.replicates.size();}
 	public int getNumCondition(){return this.conditions.size();}
 	

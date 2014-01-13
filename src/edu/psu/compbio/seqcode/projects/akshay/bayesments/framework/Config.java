@@ -20,10 +20,18 @@ public class Config {
 	protected boolean printHelp = false;
 	protected boolean poissonGaussWinPerBaseFilter = false;
 	protected float perBaseReadLimit;
+	protected double perBaseLogConf;
 	protected boolean nonUnique=false;
 	protected int scalingSlidingWindow = 10000;
 	protected boolean estimateScaling = true;
 	protected boolean scalingByMedian =false; // default is scaling by regression
+	protected int factorWindow;
+	protected int chromatinWindow;
+	protected double mappableGenome = 0.8;
+	protected File locations;
+	protected int numChromStates;
+	protected int numBindingStates;
+	protected boolean plotEM;
 	
 	public Config(String[] arguments){
 		this.args = arguments;
@@ -54,9 +62,19 @@ public class Config {
 				this.poissonGaussWinPerBaseFilter = Args.parseFlags(this.args).contains("poissongausspb");
 				this.perBaseReadLimit = Args.parseFloat(this.args,"fixedpb" , -1);
 				
+				this.plotEM = Args.parseFlags(args).contains("plotEM");
+				
+				//Reading the global win sizes if provided in the command line
+				//These values will be over-ridded if they are also provided in the design file
+				this.chromatinWindow = Args.parseInteger(this.args, "chromwin", 500);
+				this.factorWindow = Args.parseInteger(this.args, "facwin", 50);
+				
+				this.numChromStates = Args.parseInteger(args, "nChrmStates", 4);
+				this.numBindingStates = Args.parseInteger(args, "nFacStates", 3);
+				
 				//Load expts from design file
 				//Format: (tab separated)
-				//Signal/Control   SrcName   Type   Condition   Replicate [Chromatin/Factor default is chromatin state] [per-base max]
+				//Signal/Control   SrcName   Type   Condition   Replicate [Chromatin/Factor default is chromatin state] [per-base max] [window size]
 				if(ap.hasKey("design")){
 					String dfile = ap.getKeyValue("design");
 					File df = new File(dfile);
@@ -93,6 +111,12 @@ public class Config {
 					            	else
 					            		currCondPerBaseReads = new Float(words[6]);
 					            }
+					            // Window regions to consider for this feature
+					            int winsize = words[4].toUpperCase().equals("CHROMATIN") ? this.chromatinWindow : this.factorWindow;
+					            if(words.length>=7  && !words[7].equals("")){
+					            	winsize = new Integer(words[7]);
+					            }
+					            
 					            //Check if we have other entries for this experiment
 					            boolean found=false;
 					            for(ExptDescriptor e : this.expts){
@@ -102,7 +126,7 @@ public class Config {
 					            	}
 					            }
 					            if(!found){
-					            	expts.add(new ExptDescriptor(cond, rep, feature,  signal, src, currCondPerBaseReads));
+					            	expts.add(new ExptDescriptor(cond, rep, feature,  signal, src, currCondPerBaseReads,winsize));
 					            }
 				            }else{
 				            	System.err.println("Error in design file. Cannot parse line: \n"+line);
@@ -112,12 +136,22 @@ public class Config {
 			        reader.close();
 				}
 				
+				//Checking if the peaks/locations file exists or not (stops the program if it does not exist)
+				String peaksFileName = ap.getKeyValue("peaks");
+				this.locations = new File(peaksFileName);
+				if(!locations.exists()){
+					System.err.println("Peaks File does not exist\n");
+					System.exit(1);    
+				}
+				
 				/****Miscellaneous arguments****/
 				
 				//Turn off scaling estimation
 				estimateScaling = Args.parseFlags(args).contains("noscaling") ? false : true;
 				//Scale by median or regression
 				scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
+				//bacground parameters 
+				perBaseLogConf = Args.parseDouble(args,"pblogconf",-7);
 				
 				
 				
@@ -150,6 +184,12 @@ public class Config {
 	public int getScalingSlidingWindow(){return scalingSlidingWindow;}
 	public boolean getEstimateScaling(){return estimateScaling;}
 	public boolean getScalingByMedian(){return scalingByMedian;}
+	public double getPerBaseLogConf(){return this.perBaseLogConf;}
+	public double getMappableGenomeProp(){return mappableGenome;}
+	public File getPeaksFile(){return this.locations;}
+	public int getNumChrmStates(){return this.numChromStates;}
+	public int getNumFacStates(){return this.numBindingStates;}
+	public boolean doEMplot(){return this.plotEM;}
 	
 	//Some accessors to allow modification of options after config
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
@@ -180,6 +220,13 @@ public class Config {
 				"\t--design <file name>\n"+
 				"\t--noscaling [flag to turn off signal vs control scaling]\n" +
 				"\t--medianscale [flag to use scaling by median (default = regression)]\n" +
+				"\t--chromwin <widow size around factor binding site for a chromatin expt>\n"+
+				"\t--facwin <window size around the factor binding site>\n"+
+				"\t--nchrmStates <number of chromatin states to be learned>\n"+
+				"\t--nfacStates <number of factor states to be learned>\n"+
+				"\t--pblogconf <per base log confidence for the background model>\n"+
+				"\t--peaks <file location for the genomic locations>\n"+
+				"\t--plotEM <flag to plot the EM steps>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	

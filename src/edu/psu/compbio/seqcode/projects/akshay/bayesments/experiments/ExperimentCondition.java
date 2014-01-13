@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
@@ -65,6 +66,7 @@ public class ExperimentCondition {
 	public WeightMatrix getFreqMatrix(){return freqMatrix;}
 	public int getMotifOffset(){return motifOffset;}
 	public int getMaxInfluenceRange(){return maxInfluenceRange;}
+	public int getWinSize(){return this.signalSamples.get(0).getWinSize();}
 	
 	//Setters
 	public void setBindingEvents(List<BindingEvent> e){events=e;}
@@ -78,6 +80,14 @@ public class ExperimentCondition {
 			if(rep.getBindingModel().getInfluenceRange()>maxInfluenceRange)
 				maxInfluenceRange=rep.getBindingModel().getInfluenceRange();
 		}
+	}
+	
+	public float getTotalSignalCountInARegion(Region r){
+		float count=0;
+		for(ControlledExperiment ce: this.replicates){
+			count = count+ce.getSignaHitCount(r);
+		}
+		return count;
 	}
 	
 	/**
