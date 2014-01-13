@@ -32,6 +32,7 @@ public class Config {
 	protected int numChromStates;
 	protected int numBindingStates;
 	protected boolean plotEM;
+	protected int numItrs;        // number of EM training steps
 	
 	public Config(String[] arguments){
 		this.args = arguments;
@@ -71,6 +72,8 @@ public class Config {
 				
 				this.numChromStates = Args.parseInteger(args, "nChrmStates", 4);
 				this.numBindingStates = Args.parseInteger(args, "nFacStates", 3);
+				
+				this.numItrs = Args.parseInteger(args, "numItrs", 50);
 				
 				//Load expts from design file
 				//Format: (tab separated)
@@ -190,6 +193,7 @@ public class Config {
 	public int getNumChrmStates(){return this.numChromStates;}
 	public int getNumFacStates(){return this.numBindingStates;}
 	public boolean doEMplot(){return this.plotEM;}
+	public int getNumItrs(){return this.numItrs;}
 	
 	//Some accessors to allow modification of options after config
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
@@ -222,6 +226,7 @@ public class Config {
 				"\t--medianscale [flag to use scaling by median (default = regression)]\n" +
 				"\t--chromwin <widow size around factor binding site for a chromatin expt>\n"+
 				"\t--facwin <window size around the factor binding site>\n"+
+				"\t--numItrs <num of EM steps>\n"+
 				"\t--nchrmStates <number of chromatin states to be learned>\n"+
 				"\t--nfacStates <number of factor states to be learned>\n"+
 				"\t--pblogconf <per base log confidence for the background model>\n"+

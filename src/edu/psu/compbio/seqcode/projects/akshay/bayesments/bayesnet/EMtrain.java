@@ -2,6 +2,7 @@ package edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet;
 
 import java.util.Random;
 
+import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentFeature;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
@@ -18,11 +19,13 @@ public class EMtrain {
 	protected double[][] SIGMAf;
 	protected double[][] Bjk;
 	protected double[] PIj;
+	protected double[][][] Qijk;
 	protected int numChromStates;
 	protected int numFacBindingStates;
 	protected int N; // number of training examples
 	protected int C; // number of chromatin conditions
 	protected int F; // number of factor conditions (alomost always 1)
+	protected boolean finishedTraining;  // to know if the current state is trained or not
 	protected boolean plot;
 	
 	public EMtrain(Config config, GenomicLocations trainingData) {
@@ -32,10 +35,11 @@ public class EMtrain {
 		
 		//Initializing the model
 		initializeEM();
+		finishedTraining=false;
 	}
 	
 	
-	public void initializeEM(){
+	private void initializeEM(){
 		// getting N, M, C, P and F
 		N=this.trainingData.getNumTrainingExamples();
 		C=this.trainingData.getNumChromatinCons();
@@ -79,6 +83,9 @@ public class EMtrain {
 		PIj = new double[numChromStates];
 		PIj = this.getRandomList(numChromStates, true);
 		
+		//Initializing Qijk
+		Qijk = new double[N][numChromStates][numFacBindingStates];
+		
 	}
 	
 	
@@ -100,6 +107,213 @@ public class EMtrain {
 			return ret;
 		}
 	}
+	
+	public void runEM(){
+		int itrs = config.getNumItrs();
+		double[][][] trainMUc = new double[itrs+1][numChromStates][C]; //initial random params plus itrs 
+		double[][][] trainMUf = new double[itrs+1][numFacBindingStates][F];
+		double[][][] trainSIGMAc = new double[itrs+1][numChromStates][C];
+		double[][][] trainSIGMAf = new double[itrs+1][numFacBindingStates][F];
+		double[][] trainPIj = new double[itrs+1][numChromStates];
+		double[][][] trainBjk = new double[itrs+1][numChromStates][numFacBindingStates];
+		
+		for(int t=0; t<itrs; t++){
+			if(t==0){      //copy the initial set of random params
+				trainMUc[0] = MUc;
+				trainMUf[0] = MUf;
+				trainSIGMAc[0] = SIGMAc;
+				trainSIGMAf[0] = SIGMAf;
+				trainPIj[0] = PIj;
+				trainBjk[0] = Bjk;
+			}
+			
+			executeEStep();  //E-Step
+			executeMStep(); //M-Step
+			
+			// copy the updated params
+			trainMUc[t+1]= MUc;
+			trainMUf[t+1] = MUf;
+			trainSIGMAc[t+1] = SIGMAc;
+			trainSIGMAf[t+1] = SIGMAf;
+			trainPIj[t+1] = PIj;
+			trainBjk[t+1] = Bjk;
+			
+		}
+		
+		this.finishedTraining=true;
+		
+		// plot if asked for
+		
+	}
+	
+	private void executeEStep(){
+		//E-Step
+		double den[]= new double[N];
+		for(int i=0; i<N; i++){    // over the training examples
+			for(int j=0; j<numChromStates; j++){   // over the chromatin states
+				for(int k=0; k< numFacBindingStates; k++){ //over factor binding states
+					double chromGausssianProd=0.0;
+					double facGaussianProd = 0.0;
+					for(int c=0; c<C; c++){
+						NormalDistribution gaussian = new NormalDistribution(MUc[j][c],Math.pow(SIGMAc[j][c], 2.0));
+						chromGausssianProd = (c==0 ? gaussian.calcProbability((double) Xc[i][c]): chromGausssianProd* gaussian.calcProbability((double) Xc[i][c]));
+					}
+					for(int f=0; f< numFacBindingStates; f++){
+						NormalDistribution gaussian = new NormalDistribution(MUf[j][f],Math.pow(SIGMAf[j][f], 2.0));
+						facGaussianProd = (f == 0 ? gaussian.calcProbability((double) Xf[i][f]): facGaussianProd* gaussian.calcProbability((double) Xf[i][f]));
+					}
+					Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;
+					den[i] = den[i]+Qijk[i][j][k];
+				}
+				
+			}
+		}
+		
+		for(int i=0; i<N; i++){
+			for(int j=0; j<numChromStates; j++){
+				for(int k=0; k<numFacBindingStates; k++){
+					Qijk[i][j][k] = Qijk[i][j][k]/den[i];
+				}
+			}
+		}
+		
+	}
+	
+	private void executeMStep(){
+		
+		//-------------------------PIj update-----------------------------
+		
+		//compute
+		double denPIj = 0.0;
+		for(int j=0; j<numChromStates; j++){
+			for(int i=0; i<N; i++){
+				for(int k=0; k<numFacBindingStates; k++){
+					PIj[j] = k==0 ? Qijk[i][j][k] : PIj[j]+Qijk[i][j][k];
+					denPIj = denPIj + PIj[j];
+				}
+			}
+		}
+		
+		//normalize
+		for(int j=0; j<numChromStates; j++){
+			PIj[j] = PIj[j]/denPIj;
+		}
+		
+		//-----------------------MUc update------------------------------------
+		
+		//compute
+		double[][] denMUc=new double[numChromStates][C];
+		for(int j=0; j<numChromStates; j++){
+			for(int c=0; c<C; c++){
+				for(int i=0; i<N; i++){
+					for(int k=0; k<numFacBindingStates; k++){
+						MUc[j][c] = k==0 ? Qijk[i][j][k]*Xc[i][c] : MUc[j][c]+ Qijk[i][j][k]*Xc[i][c];
+						denMUc[j][c] = denMUc[j][c]+Qijk[i][j][k];
+					}
+				}
+			}
+		}
+		
+		//dividing by denominator 
+		for(int j=0; j<numChromStates; j++){
+			for(int c=0; c<C; c++){
+				MUc[j][c] = MUc[j][c]/denMUc[j][c];
+			}
+		}
+		
+		
+		//-----------------------MUf update --------------------------------------
+		
+		//compute
+		double[][] denMUf = new double[numFacBindingStates][F];
+		for(int k=0; k<numFacBindingStates; k++){
+			for(int f=0; f<F; f++){
+				for(int i=0; i<N; i++){
+					for(int j=0; j<numChromStates; j++){
+						MUf[k][f] = j==0 ? Qijk[i][j][k]*Xf[i][f]: MUf[k][f]+Qijk[i][j][k]*Xf[i][f];
+						denMUf[k][f] = denMUf[k][f]+Qijk[i][j][k];
+					}
+				}
+			}
+		}
+		
+		//dividing by denominator
+		for(int k=0; k<numFacBindingStates; k++){
+			for(int f=0; f<F; f++){
+				MUf[k][f] = MUf[k][f]/denMUf[k][f];
+			}
+		}
+		
+		
+		//--------------------SIGMAc update --------------------------------------
+		
+		//compute
+		double[][] denSIGMAc = new double[numChromStates][C];
+		for(int j=0; j<numChromStates; j++){
+			for(int c=0; c<C; c++){
+				for(int i=0; i<N; i++){
+					for(int k=0; k<numFacBindingStates; k++){
+						SIGMAc[j][c] = k==0 ? Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0): SIGMAc[j][c]+Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0);
+						denSIGMAc[j][c] = denSIGMAc[j][c]+Qijk[i][j][k];
+					}
+				}
+			}
+		}
+		
+		//dividing by denominator and taking square root
+		for(int j=0; j<numChromStates; j++){
+			for(int c=0; c<C; c++){
+				SIGMAc[j][c] = Math.sqrt(SIGMAc[j][c]/denSIGMAc[j][c]);
+			}
+		}
+		
+		//------------------SIGMAf update------------------------------------------
+		
+		//compute
+		double[][] denSIGMAf = new double[numFacBindingStates][F];
+		for(int k=0; k<numFacBindingStates; k++){
+			for(int f=0; f<F; f++){
+				for(int i=0; i<N; i++){
+					for(int j=0; j< numChromStates; j++){
+						SIGMAf[k][f] = j==0 ? Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0) : SIGMAf[k][f]+Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0);
+						denSIGMAf[k][f] = denSIGMAf[k][f]+Qijk[i][j][k];
+					}
+				}
+			}
+		}
+		
+		//dividing by denominator and taking square root
+		for(int k=0; k<numFacBindingStates; k++){
+			for(int f=0; f<F; f++){
+				SIGMAf[k][f] = Math.sqrt(SIGMAf[k][f]/denSIGMAf[k][f]);
+			}
+		}
+		
+		
+		//---------------------Bjk update -------------------------------------------
+		
+		//compute
+		double[] denBjk = new double[numFacBindingStates];
+		for(int k=0; k<numFacBindingStates; k++){
+			for(int j=0; j< numChromStates; j++){
+				for(int i=0; i<N; i++){
+					Bjk[j][k] = i==0 ? Qijk[i][j][k] : Bjk[j][k]+Qijk[i][j][k];
+					denBjk[k] = denBjk[k]+Qijk[i][j][k];
+				}
+			}
+		}
+		
+		//normalize
+		for(int k=0; k<numFacBindingStates; k++){
+			for(int j=0; j< numChromStates; k++){
+				Bjk[j][k] = Bjk[j][k]/denBjk[k];
+			}
+		}
+	}
+	
+	//Accessors
+	
+	public boolean isTrainined(){return this.finishedTraining;}
 	
 	
 }
