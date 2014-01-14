@@ -33,6 +33,20 @@ public class Config {
 	protected int numBindingStates;
 	protected boolean plotEM;
 	protected int numItrs;        // number of EM training steps
+	protected String out_name;
+	protected String out_base;
+	protected File out_dir=null, images_dir=null;
+	
+	
+	
+	
+	public final int W_MARGIN = 80;
+	public final int H_MARGIN = 60;
+	public final int W = 800;
+	public final int H = 800;
+	
+	
+	
 	
 	public Config(String[] arguments){
 		this.args = arguments;
@@ -74,6 +88,8 @@ public class Config {
 				this.numBindingStates = Args.parseInteger(args, "nFacStates", 3);
 				
 				this.numItrs = Args.parseInteger(args, "numItrs", 50);
+				
+				
 				
 				//Load expts from design file
 				//Format: (tab separated)
@@ -156,6 +172,10 @@ public class Config {
 				//bacground parameters 
 				perBaseLogConf = Args.parseDouble(args,"pblogconf",-7);
 				
+				out_name = Args.parseString(args, "out", "bayesments_out");
+				out_dir =  new File(out_name); //Output directory
+				out_base = out_dir.getName(); //Last part of name
+				
 				
 				
 				
@@ -194,6 +214,11 @@ public class Config {
 	public int getNumFacStates(){return this.numBindingStates;}
 	public boolean doEMplot(){return this.plotEM;}
 	public int getNumItrs(){return this.numItrs;}
+	public String getOutName(){return out_name;}
+	public String getOutBase(){return out_base;}
+	public File getOutputParentDir(){return out_dir;}
+	public File getOutputImagesDir(){return images_dir;}
+	
 	
 	//Some accessors to allow modification of options after config
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
@@ -213,6 +238,35 @@ public class Config {
 		return this.gen;		
 	}
 	
+	public void makeGPSOutputDirs(boolean makeImageDirs){
+		//Test if output directory already exists. If it does,  recursively delete contents
+		out_dir =  new File(out_name);
+		if(out_dir.exists())
+			deleteDirectory(out_dir);
+		out_base = out_dir.getName();
+		//(re)make the output directory
+		out_dir.mkdirs();
+		if(makeImageDirs){
+			//Make the image results output directory
+			images_dir = new File(out_dir.getAbsolutePath()+File.separator+"images");
+			images_dir.mkdirs();
+		}
+	}
+	
+	public boolean deleteDirectory(File path) {
+	    if( path.exists() ) {
+	      File[] files = path.listFiles();
+	      for(int i=0; i<files.length; i++) {
+	         if(files[i].isDirectory()) {
+	           deleteDirectory(files[i]);
+	         }
+	         else {
+	           files[i].delete();
+	         }
+	      }
+	    }
+	    return( path.delete() );
+	}
 	
 	public String getArgsList(){
 		return(new String("" +
@@ -232,6 +286,7 @@ public class Config {
 				"\t--pblogconf <per base log confidence for the background model>\n"+
 				"\t--peaks <file location for the genomic locations>\n"+
 				"\t--plotEM <flag to plot the EM steps>\n"+
+				"\t--out <name of the output directory>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	

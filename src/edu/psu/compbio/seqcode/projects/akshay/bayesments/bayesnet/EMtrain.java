@@ -143,6 +143,9 @@ public class EMtrain {
 		this.finishedTraining=true;
 		
 		// plot if asked for
+		if(plot){
+			EMplotter ep = new EMplotter(config, trainMUc, trainMUf, trainSIGMAc, trainSIGMAf, trainPIj, trainBjk, C, F);
+		}
 		
 	}
 	
