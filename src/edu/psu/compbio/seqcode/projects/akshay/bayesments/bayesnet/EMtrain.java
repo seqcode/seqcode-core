@@ -147,6 +147,8 @@ public class EMtrain {
 			EMplotter ep = new EMplotter(config, trainMUc, trainMUf, trainSIGMAc, trainSIGMAf, trainPIj, trainBjk, C, F);
 		}
 		
+		
+		
 	}
 	
 	private void executeEStep(){
@@ -317,6 +319,12 @@ public class EMtrain {
 	//Accessors
 	
 	public boolean isTrainined(){return this.finishedTraining;}
+	public double[] getPIj(){return this.PIj;}
+	public double[][] getMUc(){return this.MUc;}
+	public double[][] getMUf(){return this.MUf;}
+	public double[][] getSIGMAc(){return this.SIGMAc;}
+	public double[][] getSIGMAf(){return this.SIGMAf;}
+	public double[][] getBjk(){return this.Bjk;}
 	
 	
 }

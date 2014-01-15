@@ -36,6 +36,7 @@ public class Config {
 	protected String out_name;
 	protected String out_base;
 	protected File out_dir=null, images_dir=null;
+	protected boolean loadReads;
 	
 	
 	
@@ -172,6 +173,8 @@ public class Config {
 				//bacground parameters 
 				perBaseLogConf = Args.parseDouble(args,"pblogconf",-7);
 				
+				this.loadReads = Args.parseFlags(args).contains("noreads") ? false : true;
+				
 				out_name = Args.parseString(args, "out", "bayesments_out");
 				out_dir =  new File(out_name); //Output directory
 				out_base = out_dir.getName(); //Last part of name
@@ -218,6 +221,7 @@ public class Config {
 	public String getOutBase(){return out_base;}
 	public File getOutputParentDir(){return out_dir;}
 	public File getOutputImagesDir(){return images_dir;}
+	public boolean loadReads(){return loadReads;}
 	
 	
 	//Some accessors to allow modification of options after config
@@ -287,6 +291,7 @@ public class Config {
 				"\t--peaks <file location for the genomic locations>\n"+
 				"\t--plotEM <flag to plot the EM steps>\n"+
 				"\t--out <name of the output directory>\n"+
+				"\t--noreads <flag to turn off loading rads>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	
