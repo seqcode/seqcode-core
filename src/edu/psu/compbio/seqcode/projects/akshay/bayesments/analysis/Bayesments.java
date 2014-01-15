@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 
 public class Bayesments {
 	
-	public static void run(String[] args){
+	public static void main(String[] args){
 		
 		Config c = new Config(args);
 		if(c.helpWanter()){
