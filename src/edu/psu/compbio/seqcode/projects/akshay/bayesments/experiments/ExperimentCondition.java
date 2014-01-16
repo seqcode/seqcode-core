@@ -52,7 +52,7 @@ public class ExperimentCondition {
 			indexedReplicate.put(rep.getIndex(), rep);
 			replicateCondIndex.put(rep, x);
 		}
-		this.updateMaxInfluenceRange();
+		//this.updateMaxInfluenceRange();
 	}
 	
 	//Accessors
