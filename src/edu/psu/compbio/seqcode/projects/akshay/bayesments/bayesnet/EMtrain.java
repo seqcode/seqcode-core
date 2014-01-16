@@ -310,7 +310,7 @@ public class EMtrain {
 		
 		//normalize
 		for(int k=0; k<numFacBindingStates; k++){
-			for(int j=0; j< numChromStates; k++){
+			for(int j=0; j< numChromStates; j++){
 				Bjk[j][k] = Bjk[j][k]/denBjk[k];
 			}
 		}
