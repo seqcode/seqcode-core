@@ -43,7 +43,7 @@ public class GenomicLocations {
 			for(Point p : points){
 				int conCount=0;
 				for(ExperimentCondition ec : chromConds){
-					chromatinRegions[pointCount][conCount] = new Region(p.getGenome(),p.getChrom()
+					chromatinRegions[pointCount][conCount] = new Region(this.gen,p.getChrom()
 							,p.getLocation()-ec.getWinSize(),p.getLocation()+ec.getWinSize());
 					conCount++;
 				}
@@ -59,7 +59,7 @@ public class GenomicLocations {
 			for(Point p : points){
 				int conCount=0;
 				for(ExperimentCondition ec : facConds){
-					factorRegions[pointCount][conCount] = new Region(p.getGenome(),p.getChrom()
+					factorRegions[pointCount][conCount] = new Region(this.gen,p.getChrom()
 							, p.getLocation()-ec.getWinSize(), p.getLocation()+ec.getWinSize());
 					conCount++;
 				}
