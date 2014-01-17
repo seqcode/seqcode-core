@@ -30,17 +30,17 @@ public class GenomicLocations {
 	public GenomicLocations(ExperimentManager manager, Config config) {
 		try{
 			File peaksFile = config.getPeaksFile();
-			List<Point> points = EventMetaMaker.loadPoints(peaksFile);
+			locations = EventMetaMaker.loadPoints(peaksFile);
 			this.experiments = manager.getExperimentSet();
 			this.gen = manager.getGenome();
 			
 			//Filling chromatinRegions
 			List<ExperimentCondition> chromConds = manager.getChromatinConditionList();
 			this.numChromCons = chromConds.size();
-			chromatinRegions = new Region[points.size()][chromConds.size()];
-			chromatinCounts = new float[points.size()][chromConds.size()];
+			chromatinRegions = new Region[locations.size()][chromConds.size()];
+			chromatinCounts = new float[locations.size()][chromConds.size()];
 			int pointCount=0;
-			for(Point p : points){
+			for(Point p : locations){
 				int conCount=0;
 				for(ExperimentCondition ec : chromConds){
 					chromatinRegions[pointCount][conCount] = new Region(this.gen,p.getChrom()
@@ -54,9 +54,9 @@ public class GenomicLocations {
 			pointCount=0;
 			List<ExperimentCondition> facConds = manager.getFacConditionList();
 			this.numFacCons = facConds.size();
-			factorRegions = new Region[points.size()][facConds.size()];
-			factorCounts = new float[points.size()][facConds.size()];
-			for(Point p : points){
+			factorRegions = new Region[locations.size()][facConds.size()];
+			factorCounts = new float[locations.size()][facConds.size()];
+			for(Point p : locations){
 				int conCount=0;
 				for(ExperimentCondition ec : facConds){
 					factorRegions[pointCount][conCount] = new Region(this.gen,p.getChrom()
@@ -68,7 +68,7 @@ public class GenomicLocations {
 			
 			//Filling chromatinCounts
 			pointCount=0;
-			for(Point p : points){
+			for(Point p : locations){
 				int conCount=0;
 				for(ExperimentCondition ec : chromConds){
 					Region r = chromatinRegions[pointCount][conCount];
@@ -80,7 +80,7 @@ public class GenomicLocations {
 			
 			//Filling factorCounts
 			pointCount=0;
-			for(Point p: points){
+			for(Point p: locations){
 				int conCount=0;
 				for(ExperimentCondition ec : facConds){
 					Region r = factorRegions[pointCount][conCount];
