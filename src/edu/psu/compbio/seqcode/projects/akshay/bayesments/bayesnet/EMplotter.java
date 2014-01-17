@@ -77,8 +77,8 @@ public class EMplotter {
 		//Re-Initialize the Xaxis and Yaxis vectors
 		Xaxes = null; 
 		Yaxes=null;
-		Xaxes = new double[C*numChromStates][itrs];
-		Yaxes = new double[C*numChromStates][itrs];
+		Xaxes = new double[C*numChromStates][itrs+1];
+		Yaxes = new double[C*numChromStates][itrs+1];
 		int count=0;
 		for(int j=0; j<numChromStates; j++){
 			for(int c=0; c<C; c++){
