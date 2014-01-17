@@ -76,7 +76,7 @@ public class EMtrain {
 			SIGMAc[i] = this.getRandomList(C, false);
 		}
 		for(int i=0; i<numFacBindingStates; i++){
-			SIGMAf[i] = this.getRandomList(C, false);
+			SIGMAf[i] = this.getRandomList(F, false);
 		}
 		
 		//printing SIGMA's for debugging
@@ -179,7 +179,7 @@ public class EMtrain {
 						NormalDistribution gaussian = new NormalDistribution(MUc[j][c],Math.pow(SIGMAc[j][c], 2.0));
 						chromGausssianProd = (c==0 ? gaussian.calcProbability((double) Xc[i][c]): chromGausssianProd* gaussian.calcProbability((double) Xc[i][c]));
 					}
-					for(int f=0; f< numFacBindingStates; f++){
+					for(int f=0; f< F; f++){
 						NormalDistribution gaussian = new NormalDistribution(MUf[j][f],Math.pow(SIGMAf[j][f], 2.0));
 						facGaussianProd = (f == 0 ? gaussian.calcProbability((double) Xf[i][f]): facGaussianProd* gaussian.calcProbability((double) Xf[i][f]));
 					}
