@@ -190,13 +190,13 @@ public class EMtrain {
 				
 			}
 		}
-		System.out.println("I am here");
+		
 		for(int i=0; i<N; i++){
 			for(int j=0; j<numChromStates; j++){
 				for(int k=0; k<numFacBindingStates; k++){
 					Qijk[i][j][k] = Qijk[i][j][k]/den[i];
 					//debug line
-					System.out.println(Qijk[i][j][k]);
+					//System.out.println(Qijk[i][j][k]);
 				}
 			}
 		}
