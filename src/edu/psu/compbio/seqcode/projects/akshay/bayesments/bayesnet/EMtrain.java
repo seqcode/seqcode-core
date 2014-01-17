@@ -169,8 +169,6 @@ public class EMtrain {
 	
 	private void executeEStep(){
 		//E-Step
-		System.out.println(N);
-		System.out.println(numChromStates);
 		double den[]= new double[N];
 		for(int i=0; i<N; i++){    // over the training examples
 			for(int j=0; j<numChromStates; j++){   // over the chromatin states
@@ -198,7 +196,6 @@ public class EMtrain {
 				for(int k=0; k<numFacBindingStates; k++){
 					Qijk[i][j][k] = Qijk[i][j][k]/den[i];
 					//debug line
-					System.out.println(i);
 					System.out.println(Qijk[i][j][k]);
 				}
 			}
@@ -225,6 +222,10 @@ public class EMtrain {
 		for(int j=0; j<numChromStates; j++){
 			PIj[j] = PIj[j]/denPIj;
 		}
+		
+		//debug lines
+		System.out.println("PI-j");
+		BayesmentsSandbox.printArray(PIj, "chrom");
 		
 		//-----------------------MUc update------------------------------------
 		
@@ -271,6 +272,9 @@ public class EMtrain {
 			}
 		}
 		
+		//debug lines
+		BayesmentsSandbox.printArray(MUc, "chrom_state", "Condition");
+		BayesmentsSandbox.printArray(MUf, "factor_state", "Condition");
 		
 		//--------------------SIGMAc update --------------------------------------
 		
@@ -316,6 +320,9 @@ public class EMtrain {
 			}
 		}
 		
+		//printing SIGMA's for debugging
+		BayesmentsSandbox.printArray(SIGMAc, "chrom_state", "Condition");
+		BayesmentsSandbox.printArray(SIGMAf, "factor_state", "Condition");
 		
 		//---------------------Bjk update -------------------------------------------
 		
@@ -336,6 +343,8 @@ public class EMtrain {
 				Bjk[j][k] = Bjk[j][k]/denBjk[k];
 			}
 		}
+		//printing Bjk for debugging
+		BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State");
 	}
 	
 	//Accessors
