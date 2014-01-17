@@ -4,6 +4,7 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.EMtrain;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
 
 public class Bayesments {
 	
@@ -27,22 +28,22 @@ public class Bayesments {
 			EM.runEM();
 		
 			System.out.println("PI-C values\n");
-			System.out.println(EM.getPIj());
+			BayesmentsSandbox.printArray(EM.getPIj(), "chrom_state");
 		
 			System.out.println("MU-C values\n");
-			System.out.println(EM.getMUc());
+			BayesmentsSandbox.printArray(EM.getMUc(),"chrom_State" , "condition");
 		
 			System.out.println("MU-F values\n");
-			System.out.println(EM.getMUf());
+			BayesmentsSandbox.printArray(EM.getMUf(),"factor_State" , "condition");
 		
 			System.out.println("SIGMA-C values\n");
-			System.out.println(EM.getSIGMAc());
+			BayesmentsSandbox.printArray(EM.getSIGMAc(),"chrom_State" , "condition");
 		
 			System.out.println("SIGMA-F values\n");
-			System.out.println(EM.getSIGMAf());
+			BayesmentsSandbox.printArray(EM.getSIGMAf(),"factor_State" , "condition");
 		
 			System.out.println("Bjk values\n");
-			System.out.println(EM.getBjk());
+			BayesmentsSandbox.printArray(EM.getBjk(),"chromatin_State" , "factor_state");
 		}
 	}	
 }

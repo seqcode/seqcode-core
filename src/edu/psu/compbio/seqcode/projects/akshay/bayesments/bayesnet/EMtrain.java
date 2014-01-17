@@ -6,6 +6,7 @@ import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentFeature;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
 
 public class EMtrain {
 
@@ -63,6 +64,11 @@ public class EMtrain {
 			MUf[i] = this.getRandomList(F, false);
 		}
 		
+		//Printing Mu's for debugging
+		BayesmentsSandbox.printArray(MUc, "chrom_state", "Condition");
+		BayesmentsSandbox.printArray(MUf, "factor_state", "Condition");
+		
+	
 		//Initializing sigma's
 		SIGMAc = new double[numChromStates][C];
 		SIGMAf = new double[numFacBindingStates][F];
@@ -73,15 +79,25 @@ public class EMtrain {
 			SIGMAf[i] = this.getRandomList(C, false);
 		}
 		
+		//printing SIGMA's for debugging
+		BayesmentsSandbox.printArray(SIGMAc, "chrom_state", "Condition");
+		BayesmentsSandbox.printArray(SIGMAf, "factor_state", "Condition");
+		
 		// Initializing Bjk
 		Bjk = new double[numChromStates][numFacBindingStates];
 		for(int i=0; i<numChromStates; i++){
 			Bjk[i] = this.getRandomList(numFacBindingStates, true);
 		}
 		
+		//printing Bjk for debugging
+		BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State");
+		
 		// Initializing PIj
 		PIj = new double[numChromStates];
 		PIj = this.getRandomList(numChromStates, true);
+		
+		//printing PIj for debugging
+		BayesmentsSandbox.printArray(PIj, "chrom_state");
 		
 		//Initializing Qijk
 		Qijk = new double[N][numChromStates][numFacBindingStates];
