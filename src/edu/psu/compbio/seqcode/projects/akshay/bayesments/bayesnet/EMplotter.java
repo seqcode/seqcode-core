@@ -97,8 +97,8 @@ public class EMplotter {
 		//Re-Initialize the Xaxis and Yaxis vectors
 		Xaxes = null; 
 		Yaxes=null;
-		Xaxes = new double[F*numFacBindingStates][itrs];
-		Yaxes = new double[C*numFacBindingStates][itrs];
+		Xaxes = new double[F*numFacBindingStates][itrs+1];
+		Yaxes = new double[C*numFacBindingStates][itrs+1];
 		
 		count=0;
 		for(int k=0; k<numFacBindingStates; k++){
@@ -116,8 +116,8 @@ public class EMplotter {
 		//Draw SIGMAc graphs
 		Xaxes = null; 
 		Yaxes=null;
-		Xaxes = new double[C*numChromStates][itrs];
-		Yaxes = new double[C*numChromStates][itrs];
+		Xaxes = new double[C*numChromStates][itrs+1];
+		Yaxes = new double[C*numChromStates][itrs+1];
 		count=0;
 		for(int j=0; j<numChromStates; j++){
 			for(int c=0; c<C; c++){
@@ -134,8 +134,8 @@ public class EMplotter {
 		//Draw SIGMAf graphs
 		Xaxes = null; 
 		Yaxes=null;
-		Xaxes = new double[F*numFacBindingStates][itrs];
-		Yaxes = new double[C*numFacBindingStates][itrs];
+		Xaxes = new double[F*numFacBindingStates][itrs+1];
+		Yaxes = new double[C*numFacBindingStates][itrs+1];
 		
 		count=0;
 		for(int k=0; k<numFacBindingStates; k++){
@@ -153,8 +153,8 @@ public class EMplotter {
 		//Draw Bjk graps
 		Xaxes = null; 
 		Yaxes=null;
-		Xaxes = new double[numFacBindingStates*numChromStates][itrs];
-		Yaxes = new double[numFacBindingStates*numChromStates][itrs];
+		Xaxes = new double[numFacBindingStates*numChromStates][itrs+1];
+		Yaxes = new double[numFacBindingStates*numChromStates][itrs+1];
 		
 		count=0;
 		for(int j=0; j<numChromStates; j++){
