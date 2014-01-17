@@ -95,7 +95,7 @@ public class EMtrain {
 		double sum=0.0;
 		Random ran = new Random();
 		for(int i=0; i<n; i++){
-			ret[i] = ran.nextDouble()+(double) ran.nextInt();
+			ret[i] = ran.nextDouble()+(double) ran.nextInt(90);
 			sum = sum + ret[i];
 		}
 		if(prob){
@@ -326,5 +326,13 @@ public class EMtrain {
 	public double[][] getSIGMAf(){return this.SIGMAf;}
 	public double[][] getBjk(){return this.Bjk;}
 	
+	// main method is only for testing puposers
+	
+	public static void main(String[] args){
+		//double[] test = getRandomList(3,true);
+		//System.out.println(test[0]);
+		//System.out.println(test[1]);
+		//System.out.println(test[2]);
+	}
 	
 }
