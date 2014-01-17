@@ -159,7 +159,7 @@ public class EMplotter {
 		count=0;
 		for(int j=0; j<numChromStates; j++){
 			for(int k=0; k<numFacBindingStates; k++){
-				for(int itr=0; itr<itrs+itrs; itr++){
+				for(int itr=0; itr<itrs+1; itr++){
 					Xaxes[count][itr] = itr;
 					Yaxes[count][itr] = trainBjk[itr][j][k];
 				}
