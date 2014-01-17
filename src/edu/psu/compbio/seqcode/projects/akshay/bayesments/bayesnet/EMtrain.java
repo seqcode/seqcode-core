@@ -173,6 +173,7 @@ public class EMtrain {
 		for(int i=0; i<N; i++){    // over the training examples
 			for(int j=0; j<numChromStates; j++){   // over the chromatin states
 				for(int k=0; k< numFacBindingStates; k++){ //over factor binding states
+					System.out.println(i);
 					double chromGausssianProd=0.0;
 					double facGaussianProd = 0.0;
 					for(int c=0; c<C; c++){
@@ -195,6 +196,7 @@ public class EMtrain {
 				for(int k=0; k<numFacBindingStates; k++){
 					Qijk[i][j][k] = Qijk[i][j][k]/den[i];
 					//debug line
+					System.out.println(i);
 					System.out.println(Qijk[i][j][k]);
 				}
 			}
