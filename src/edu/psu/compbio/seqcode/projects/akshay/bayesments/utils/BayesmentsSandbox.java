@@ -25,8 +25,8 @@ public class BayesmentsSandbox {
 		for(int i=0; i< numCols; i++){
 			column_header = column_header + "\t"+column_tag+"_"+Integer.toString(i);
 		}
-		for(int i=0; i< numCols; i++){
-			for(int j=0; j< numRows; j++){
+		for(int i=0; i< numRows; i++){
+			for(int j=0; j< numCols; j++){
 				out = j==0 ? row_tag + "_"+Integer.toString(i)+"\t"+Double.toString(vec[i][j]): out+"\t"+Double.toString(vec[i][j]);
 			}
 			System.out.println(out);
