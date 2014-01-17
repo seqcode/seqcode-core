@@ -180,7 +180,7 @@ public class EMtrain {
 						chromGausssianProd = (c==0 ? gaussian.calcProbability((double) Xc[i][c]): chromGausssianProd* gaussian.calcProbability((double) Xc[i][c]));
 					}
 					for(int f=0; f< F; f++){
-						NormalDistribution gaussian = new NormalDistribution(MUf[j][f],Math.pow(SIGMAf[j][f], 2.0));
+						NormalDistribution gaussian = new NormalDistribution(MUf[k][f],Math.pow(SIGMAf[k][f], 2.0));
 						facGaussianProd = (f == 0 ? gaussian.calcProbability((double) Xf[i][f]): facGaussianProd* gaussian.calcProbability((double) Xf[i][f]));
 					}
 					Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;
@@ -194,6 +194,8 @@ public class EMtrain {
 			for(int j=0; j<numChromStates; j++){
 				for(int k=0; k<numFacBindingStates; k++){
 					Qijk[i][j][k] = Qijk[i][j][k]/den[i];
+					//debug line
+					System.out.println(Qijk[i][j][k]);
 				}
 			}
 		}
