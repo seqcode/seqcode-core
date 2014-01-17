@@ -189,7 +189,7 @@ public class EMtrain {
 				
 			}
 		}
-		
+		System.out.println("I am here");
 		for(int i=0; i<N; i++){
 			for(int j=0; j<numChromStates; j++){
 				for(int k=0; k<numFacBindingStates; k++){
