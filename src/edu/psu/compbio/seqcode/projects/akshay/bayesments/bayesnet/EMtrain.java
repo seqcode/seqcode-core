@@ -169,6 +169,8 @@ public class EMtrain {
 	
 	private void executeEStep(){
 		//E-Step
+		System.out.println(N);
+		System.out.println(numChromStates);
 		double den[]= new double[N];
 		for(int i=0; i<N; i++){    // over the training examples
 			for(int j=0; j<numChromStates; j++){   // over the chromatin states
