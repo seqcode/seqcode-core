@@ -43,6 +43,11 @@ public class EMplotter {
 		this.itrs = config.getNumItrs();
 		int numChromStates = config.getNumChrmStates();
 		int numFacBindingStates = config.getNumFacStates();
+		this.w = config.W;
+		this.h = config.H;
+		this.wmargin = config.W_MARGIN;
+		this.hmargin = config.H_MARGIN;
+		this.out_base = config.getOutBase();
 	
 		
 		double[][] Xaxes;
@@ -64,7 +69,7 @@ public class EMplotter {
 				Yaxes[j][itr] = trainPIj[itr][j];
 			}
 		}
-		File fp = new File(f.getAbsoluteFile()+File.separator+"PI-c.png");
+		File fp = new File(f.getAbsoluteFile()+File.separator+out_base+"_PI-c.png");
 		plot(Xaxes,Yaxes,"number of interations","PI-C values",fp);
 		
 		//Draw MUc graphs
@@ -84,7 +89,7 @@ public class EMplotter {
 				count++;
 			}
 		}
-		fp = new File(f.getAbsolutePath()+File.separator+"MU-c.png");
+		fp = new File(f.getAbsolutePath()+File.separator+out_base+"_MU-c.png");
 		plot(Xaxes,Yaxes,"number of interations","MU-C values",fp);
 		
 		//Draw MUf graphs
@@ -105,7 +110,7 @@ public class EMplotter {
 				count++;
 			}
 		}
-		fp = new File(f.getAbsolutePath()+File.separator+"MU-f.png");
+		fp = new File(f.getAbsolutePath()+File.separator+out_base+"_MU-f.png");
 		plot(Xaxes,Yaxes,"number of interations","MU-F values",fp);
 		
 		//Draw SIGMAc graphs
@@ -123,7 +128,7 @@ public class EMplotter {
 				count++;
 			}
 		}
-		fp = new File(f.getAbsolutePath()+File.separator+"SIGMA-c.png");
+		fp = new File(f.getAbsolutePath()+File.separator+out_base+"_SIGMA-c.png");
 		plot(Xaxes,Yaxes,"number of interations","SIGMA-C values",fp);
 		
 		//Draw SIGMAf graphs
@@ -142,7 +147,7 @@ public class EMplotter {
 				count++;
 			}
 		}
-		fp = new File(f.getAbsolutePath()+File.separator+"SIGMA-f.png");
+		fp = new File(f.getAbsolutePath()+File.separator+out_base+"_SIGMA-f.png");
 		plot(Xaxes,Yaxes,"number of interations","SIGMA-F values",fp);
 		
 		//Draw Bjk graps
