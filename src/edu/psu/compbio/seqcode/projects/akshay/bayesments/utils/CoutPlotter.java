@@ -36,8 +36,8 @@ public class CoutPlotter {
 			String rscript = config.getOutputInterDir().getAbsolutePath()+File.separator+
 					"rscript.R";
 			FileWriter rout = new FileWriter(rscript);
-			rout.write("dat = read.table("+fdata+")\n"+
-						"png("+imageName+")\n"+
+			rout.write("dat = read.table("+'"'+fdata+'"'+")\n"+
+						"png("+'"'+imageName+'"'+")\n"+
 						"boxplot(dat,outline=FALSE)\n");
 			
 			rout.close();
