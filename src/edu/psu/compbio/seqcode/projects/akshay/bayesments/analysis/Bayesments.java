@@ -21,6 +21,9 @@ public class Bayesments {
 			System.out.println("Filling Training Dara\n");
 			GenomicLocations trainingData = new GenomicLocations(manager,c);
 			
+			System.out.println("Plotting the traning data");
+			trainingData.plotData(c, manager);
+			
 			System.out.println("Initializing EM\n");
 			EMtrain EM = new EMtrain(c,trainingData);
 			
