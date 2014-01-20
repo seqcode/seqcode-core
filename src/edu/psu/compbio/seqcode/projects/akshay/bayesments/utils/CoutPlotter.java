@@ -38,7 +38,7 @@ public class CoutPlotter {
 			FileWriter rout = new FileWriter(rscript);
 			rout.write("dat = read.table("+fdata+")\n"+
 						"png("+imageName+")\n"+
-						"boxplot(dat,outline=TRUE)\n");
+						"boxplot(dat,outline=FALSE)\n");
 			
 			rout.close();
 			

@@ -113,6 +113,15 @@ public class GenomicLocations {
 			CoutPlotter cp = new CoutPlotter(counts, conf, name_tag);
 			cp.plot();
 		}
+		for(int f=0; f<numFacCons; f++){
+			float[] counts = new float[locations.size()];
+			for(int i=0; i<locations.size(); i++){
+				counts[i] = factorCounts[i][f];
+			}
+			String name_tag = manager.getFacConditionList().get(f).getName();
+			CoutPlotter cp = new CoutPlotter(counts, conf, name_tag);
+			cp.plot();
+		}
 		
 	}
 	
