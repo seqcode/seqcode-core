@@ -37,6 +37,7 @@ public class Config {
 	protected String out_base;
 	protected File out_dir=null, images_dir=null;
 	protected boolean loadReads;
+	protected File inter_dir=null;
 	
 	
 	
@@ -221,6 +222,7 @@ public class Config {
 	public String getOutBase(){return out_base;}
 	public File getOutputParentDir(){return out_dir;}
 	public File getOutputImagesDir(){return images_dir;}
+	public File getOutputInterDir(){return inter_dir;}
 	public boolean loadReads(){return loadReads;}
 	
 	
@@ -250,6 +252,9 @@ public class Config {
 		out_base = out_dir.getName();
 		//(re)make the output directory
 		out_dir.mkdirs();
+		
+		inter_dir = new File(out_dir.getAbsolutePath()+File.separator+"intermediate-results");
+		inter_dir.mkdirs();
 		if(makeImageDirs){
 			//Make the image results output directory
 			images_dir = new File(out_dir.getAbsolutePath()+File.separator+"images");

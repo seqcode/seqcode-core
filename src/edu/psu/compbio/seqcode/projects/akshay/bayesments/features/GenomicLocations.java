@@ -12,6 +12,7 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.Experiment
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentSet;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.CoutPlotter;
 import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
 
 public class GenomicLocations {
@@ -101,6 +102,19 @@ public class GenomicLocations {
 	public int getNumTrainingExamples(){return this.locations.size();}
 	public float[][] getChromatinCounts(){return this.chromatinCounts;}
 	public float[][] getFactorCounts(){return this.factorCounts;}
+	
+	public void plotData(Config conf,ExperimentManager manager){
+		for(int c=0; c<numChromCons; c++){
+			float[] counts = new float[locations.size()];
+			for(int i=0; i<locations.size(); i++){
+				counts[i] = chromatinCounts[i][c];
+			}
+			String name_tag = manager.getChromatinConditionList().get(c).getName();
+			CoutPlotter cp = new CoutPlotter(counts, conf, name_tag);
+			cp.plot();
+		}
+		
+	}
 	
 	
 
