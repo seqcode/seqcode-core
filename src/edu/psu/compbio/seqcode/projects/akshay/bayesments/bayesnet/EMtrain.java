@@ -222,9 +222,13 @@ public class EMtrain {
 			PIj[j] = PIj[j]/denPIj;
 		}
 		
+		//debug line
+		System.out.println("denom for PIj");
+		System.out.println(Double.toString(denPIj));
+		
 		//debug lines
-		System.out.println("PI-j");
-		BayesmentsSandbox.printArray(PIj, "chrom");
+		//System.out.println("PI-j");
+		//BayesmentsSandbox.printArray(PIj, "chrom");
 		
 		//-----------------------MUc update------------------------------------
 		
@@ -272,8 +276,8 @@ public class EMtrain {
 		}
 		
 		//debug lines
-		BayesmentsSandbox.printArray(MUc, "chrom_state", "Condition");
-		BayesmentsSandbox.printArray(MUf, "factor_state", "Condition");
+		//BayesmentsSandbox.printArray(MUc, "chrom_state", "Condition");
+		//BayesmentsSandbox.printArray(MUf, "factor_state", "Condition");
 		
 		//--------------------SIGMAc update --------------------------------------
 		
@@ -320,8 +324,8 @@ public class EMtrain {
 		}
 		
 		//printing SIGMA's for debugging
-		BayesmentsSandbox.printArray(SIGMAc, "chrom_state", "Condition");
-		BayesmentsSandbox.printArray(SIGMAf, "factor_state", "Condition");
+		//BayesmentsSandbox.printArray(SIGMAc, "chrom_state", "Condition");
+		//BayesmentsSandbox.printArray(SIGMAf, "factor_state", "Condition");
 		
 		//---------------------Bjk update -------------------------------------------
 		
@@ -343,7 +347,7 @@ public class EMtrain {
 			}
 		}
 		//printing Bjk for debugging
-		BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State");
+		//BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State");
 	}
 	
 	//Accessors

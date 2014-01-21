@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.stats.StreamGobbler;
 
 public class CoutPlotter {
 	public float[] counts;
@@ -51,15 +52,22 @@ public class CoutPlotter {
 			//running the rscript
 			
 			Process proc = Runtime.getRuntime().exec("Rscript "+rscript);
-			proc.destroy();
-			
-			
-			
-			
+			StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
+			// any output? 
+			StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream(), "R_OUT", true); 
+			// kick them off 
+			errorGobbler.start(); 
+			outputGobbler.start(); 
+			int exitVal = proc.waitFor(); 
+    		System.err.println("R ExitValue: " + exitVal);
+    		proc.destroy();
 		}
 		catch(IOException e){
 			e.printStackTrace();
+		}catch (InterruptedException e) {
+			e.printStackTrace();
 		}
+		
 		
 		
 		
