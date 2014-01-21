@@ -195,6 +195,7 @@ public class EMtrain {
 				//debug line
 				System.out.println("den for i: "+Double.toString(den[i]));
 			}
+			
 		}
 		
 		for(int i=0; i<N; i++){
@@ -219,10 +220,10 @@ public class EMtrain {
 			for(int i=0; i<N; i++){
 				for(int k=0; k<numFacBindingStates; k++){
 					PIj[j] = k==0 ? Qijk[i][j][k] : PIj[j]+Qijk[i][j][k];
-					
+					denPIj = denPIj + Qijk[i][j][k];
 				}
 			}
-			denPIj = denPIj + PIj[j];
+			
 			//debug lines
 			System.out.println("PIj values: "+Double.toString(PIj[j]));
 		}
@@ -252,6 +253,10 @@ public class EMtrain {
 						denMUc[j][c] = denMUc[j][c]+Qijk[i][j][k];
 					}
 				}
+				
+				//debug line
+				System.out.println("muec num values: "+Double.toString(MUc[j][c]));
+				System.out.println("muec din vakues: "+ Double.toString(denMUc[j][c]));
 			}
 		}
 		
@@ -275,6 +280,9 @@ public class EMtrain {
 						denMUf[k][f] = denMUf[k][f]+Qijk[i][j][k];
 					}
 				}
+				//debug line
+				System.out.println("muef num values: "+Double.toString(MUf[k][f]));
+				System.out.println("muef din vakues: "+ Double.toString(denMUf[k][f]));
 			}
 		}
 		
@@ -301,6 +309,9 @@ public class EMtrain {
 						denSIGMAc[j][c] = denSIGMAc[j][c]+Qijk[i][j][k];
 					}
 				}
+				//debug line
+				System.out.println("sigmac num values: "+Double.toString(SIGMAc[j][c]));
+				System.out.println("sigmac din vakues: "+ Double.toString(denSIGMAc[j][c]));
 			}
 		}
 		
@@ -323,6 +334,10 @@ public class EMtrain {
 						denSIGMAf[k][f] = denSIGMAf[k][f]+Qijk[i][j][k];
 					}
 				}
+				
+				//debug line
+				System.out.println("sigmaf num values: "+Double.toString(SIGMAf[k][f]));
+				System.out.println("sigmaf din vakues: "+ Double.toString(denMUc[k][f]));
 			}
 		}
 		
