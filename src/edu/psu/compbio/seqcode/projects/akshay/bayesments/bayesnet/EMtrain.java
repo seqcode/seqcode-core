@@ -219,7 +219,7 @@ public class EMtrain {
 		for(int j=0; j<numChromStates; j++){
 			for(int i=0; i<N; i++){
 				for(int k=0; k<numFacBindingStates; k++){
-					PIj[j] = k==0 ? Qijk[i][j][k] : PIj[j]+Qijk[i][j][k];
+					PIj[j] = k==0 && i==0 ? Qijk[i][j][k] : PIj[j]+Qijk[i][j][k];
 					denPIj = denPIj + Qijk[i][j][k];
 				}
 			}
@@ -249,7 +249,7 @@ public class EMtrain {
 			for(int c=0; c<C; c++){
 				for(int i=0; i<N; i++){
 					for(int k=0; k<numFacBindingStates; k++){
-						MUc[j][c] = k==0 ? Qijk[i][j][k]*Xc[i][c] : MUc[j][c]+ Qijk[i][j][k]*Xc[i][c];
+						MUc[j][c] = k==0 && i==0 ? Qijk[i][j][k]*Xc[i][c] : MUc[j][c]+ Qijk[i][j][k]*Xc[i][c];
 						denMUc[j][c] = denMUc[j][c]+Qijk[i][j][k];
 					}
 				}
@@ -276,7 +276,7 @@ public class EMtrain {
 			for(int f=0; f<F; f++){
 				for(int i=0; i<N; i++){
 					for(int j=0; j<numChromStates; j++){
-						MUf[k][f] = j==0 ? Qijk[i][j][k]*Xf[i][f]: MUf[k][f]+Qijk[i][j][k]*Xf[i][f];
+						MUf[k][f] = j==0 && i==0? Qijk[i][j][k]*Xf[i][f]: MUf[k][f]+Qijk[i][j][k]*Xf[i][f];
 						denMUf[k][f] = denMUf[k][f]+Qijk[i][j][k];
 					}
 				}
@@ -305,7 +305,7 @@ public class EMtrain {
 			for(int c=0; c<C; c++){
 				for(int i=0; i<N; i++){
 					for(int k=0; k<numFacBindingStates; k++){
-						SIGMAc[j][c] = k==0 ? Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0): SIGMAc[j][c]+Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0);
+						SIGMAc[j][c] = k==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0): SIGMAc[j][c]+Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0);
 						denSIGMAc[j][c] = denSIGMAc[j][c]+Qijk[i][j][k];
 					}
 				}
@@ -330,7 +330,7 @@ public class EMtrain {
 			for(int f=0; f<F; f++){
 				for(int i=0; i<N; i++){
 					for(int j=0; j< numChromStates; j++){
-						SIGMAf[k][f] = j==0 ? Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0) : SIGMAf[k][f]+Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0);
+						SIGMAf[k][f] = j==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0) : SIGMAf[k][f]+Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0);
 						denSIGMAf[k][f] = denSIGMAf[k][f]+Qijk[i][j][k];
 					}
 				}
