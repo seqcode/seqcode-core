@@ -36,9 +36,15 @@ public class CoutPlotter {
 			String rscript = config.getOutputInterDir().getAbsolutePath()+File.separator+
 					"rscript.R";
 			FileWriter rout = new FileWriter(rscript);
-			rout.write("dat = read.table("+'"'+fdata+'"'+")\n"+
-						"png("+'"'+imageName+'"'+")\n"+
-						"boxplot(dat,outline=FALSE)\n");
+			rout.write("dat = read.table("+"\""+fdata+"\""+")\n"+
+						"dat_sorted = sort(dat[,1])"+
+						"maxx = max(dat_sorted)"+
+						"breaks = seq(0,maxx,10)"+
+						"cuts = cut(dat_sorted[,1],breaks,right=FALSE)"+
+						"freqs=table(cuts)"+
+						"cumfreq0 = c(0, cumsum(freqs))"+
+						"png("+"\""+imageName+"\""+")\n"+
+						"plot(breaks_F,cumfreq0_F,xlab=\"number of tags\", ylab=\"number of events\")");
 			
 			rout.close();
 			
