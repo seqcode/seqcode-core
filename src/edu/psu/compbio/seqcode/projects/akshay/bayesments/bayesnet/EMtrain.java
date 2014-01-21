@@ -220,6 +220,8 @@ public class EMtrain {
 				for(int k=0; k<numFacBindingStates; k++){
 					PIj[j] = k==0 ? Qijk[i][j][k] : PIj[j]+Qijk[i][j][k];
 					denPIj = denPIj + PIj[j];
+					//debug lines
+					System.out.println("PIj values: "+Double.toString(PIj[j]));
 				}
 			}
 		}
@@ -234,8 +236,8 @@ public class EMtrain {
 		System.out.println(Double.toString(denPIj));
 		
 		//debug lines
-		//System.out.println("PI-j");
-		//BayesmentsSandbox.printArray(PIj, "chrom");
+		System.out.println("PI-j");
+		BayesmentsSandbox.printArray(PIj, "chrom");
 		
 		//-----------------------MUc update------------------------------------
 		
