@@ -40,7 +40,7 @@ public class CoutPlotter {
 						"dat_sorted = sort(dat[,1])\n"+
 						"maxx = max(dat_sorted)\n"+
 						"breaks = seq(0,maxx,10)\n"+
-						"cuts = cut(dat_sorted[,1],breaks,right=FALSE)\n"+
+						"cuts = cut(dat_sorted,breaks,right=FALSE)\n"+
 						"freqs=table(cuts)\n"+
 						"cumfreq0 = c(0, cumsum(freqs))\n"+
 						"png("+"\""+imageName+"\""+")\n"+
