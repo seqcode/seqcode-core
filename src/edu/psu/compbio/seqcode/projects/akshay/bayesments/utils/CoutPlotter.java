@@ -37,12 +37,12 @@ public class CoutPlotter {
 					"rscript.R";
 			FileWriter rout = new FileWriter(rscript);
 			rout.write("dat = read.table("+"\""+fdata+"\""+")\n"+
-						"dat_sorted = sort(dat[,1])"+
-						"maxx = max(dat_sorted)"+
-						"breaks = seq(0,maxx,10)"+
-						"cuts = cut(dat_sorted[,1],breaks,right=FALSE)"+
-						"freqs=table(cuts)"+
-						"cumfreq0 = c(0, cumsum(freqs))"+
+						"dat_sorted = sort(dat[,1])\n"+
+						"maxx = max(dat_sorted)\n"+
+						"breaks = seq(0,maxx,10)\n"+
+						"cuts = cut(dat_sorted[,1],breaks,right=FALSE)\n"+
+						"freqs=table(cuts)\n"+
+						"cumfreq0 = c(0, cumsum(freqs))\n"+
 						"png("+"\""+imageName+"\""+")\n"+
 						"plot(breaks_F,cumfreq0_F,xlab=\"number of tags\", ylab=\"number of events\")");
 			
