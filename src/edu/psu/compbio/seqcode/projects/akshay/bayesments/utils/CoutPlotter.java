@@ -44,7 +44,7 @@ public class CoutPlotter {
 						"freqs=table(cuts)\n"+
 						"cumfreq0 = c(0, cumsum(freqs))\n"+
 						"png("+"\""+imageName+"\""+")\n"+
-						"plot(breaks_F,cumfreq0_F,xlab=\"number of tags\", ylab=\"number of events\")");
+						"plot(breaks,cumfreq0,xlab=\"number of tags\", ylab=\"number of events\")");
 			
 			rout.close();
 			
