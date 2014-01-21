@@ -219,11 +219,12 @@ public class EMtrain {
 			for(int i=0; i<N; i++){
 				for(int k=0; k<numFacBindingStates; k++){
 					PIj[j] = k==0 ? Qijk[i][j][k] : PIj[j]+Qijk[i][j][k];
-					denPIj = denPIj + PIj[j];
-					//debug lines
-					System.out.println("PIj values: "+Double.toString(PIj[j]));
+					
 				}
 			}
+			denPIj = denPIj + PIj[j];
+			//debug lines
+			System.out.println("PIj values: "+Double.toString(PIj[j]));
 		}
 		
 		//normalize
