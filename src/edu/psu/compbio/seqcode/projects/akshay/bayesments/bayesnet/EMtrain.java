@@ -184,9 +184,16 @@ public class EMtrain {
 						facGaussianProd = (f == 0 ? gaussian.calcProbability((double) Xf[i][f]): facGaussianProd* gaussian.calcProbability((double) Xf[i][f]));
 					}
 					Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;
+					//debug lines
+					System.out.println("pie value: "+Double.toString(PIj[j]));
+					System.out.println("chromatin guassian product value: "+Double.toString(chromGausssianProd));
+					System.out.println("factor guassian product value: "+Double.toString(facGaussianProd));
+					System.out.println("Bjk value: "+Double.toString(Bjk[j][k]));
+					System.out.println("product value: "+Double.toString(Qijk[i][j][k]));
 					den[i] = den[i]+Qijk[i][j][k];
 				}
-				
+				//debug line
+				System.out.println("den for i: "+Double.toString(den[i]));
 			}
 		}
 		
@@ -195,7 +202,7 @@ public class EMtrain {
 				for(int k=0; k<numFacBindingStates; k++){
 					Qijk[i][j][k] = Qijk[i][j][k]/den[i];
 					//debug line
-					//System.out.println(Qijk[i][j][k]);
+					System.out.println("qijk values: "+Double.toString(Qijk[i][j][k]));
 				}
 			}
 		}
