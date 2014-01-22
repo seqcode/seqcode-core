@@ -204,6 +204,8 @@ public class EMtrain {
 			for(int j=0; j<numChromStates; j++){
 				for(int k=0; k<numFacBindingStates; k++){
 					Qijk[i][j][k] = Qijk[i][j][k]/den[i];
+					
+					Qijk[i][j][k] = ( Double.isNaN(Qijk[i][j][k])) ? 0.0 : Qijk[i][j][k];
 					//debug line
 					System.out.println("qijk values: "+Double.toString(Qijk[i][j][k]));
 				}
