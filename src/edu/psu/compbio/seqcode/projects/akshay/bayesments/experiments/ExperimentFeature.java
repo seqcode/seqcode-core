@@ -56,5 +56,6 @@ public class ExperimentFeature {
 	public List<ExperimentCondition> getCondtionList(){return this.conditions;}
 	public int getNumReplicates(){return this.replicates.size();}
 	public int getNumCondition(){return this.conditions.size();}
+	public String getNameOfConditionAtGivenIndexInConditionList(int i){return conditions.get(i).getName();}
 	
 }

@@ -4,6 +4,7 @@ import java.util.Random;
 
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentFeature;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
@@ -29,18 +30,18 @@ public class EMtrain {
 	protected boolean finishedTraining;  // to know if the current state is trained or not
 	protected boolean plot;
 	
-	public EMtrain(Config config, GenomicLocations trainingData) {
+	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager) {
 		this.config = config;
 		this.trainingData = trainingData;
 		this.plot = config.doEMplot();
 		
 		//Initializing the model
-		initializeEM();
+		initializeEM(manager);
 		finishedTraining=false;
 	}
 	
 	
-	private void initializeEM(){
+	private void initializeEM(ExperimentManager manager){
 		// getting N, M, C, P and F
 		N=this.trainingData.getNumTrainingExamples();
 		C=this.trainingData.getNumChromatinCons();
@@ -65,8 +66,8 @@ public class EMtrain {
 		}
 		
 		//Printing Mu's for debugging
-		BayesmentsSandbox.printArray(MUc, "chrom_state", "Condition");
-		BayesmentsSandbox.printArray(MUf, "factor_state", "Condition");
+		BayesmentsSandbox.printArray(MUc, "MUc", "MUc", manager);
+		BayesmentsSandbox.printArray(MUf, "MUf", "MUf", manager);
 		
 	
 		//Initializing sigma's
@@ -80,8 +81,8 @@ public class EMtrain {
 		}
 		
 		//printing SIGMA's for debugging
-		BayesmentsSandbox.printArray(SIGMAc, "chrom_state", "Condition");
-		BayesmentsSandbox.printArray(SIGMAf, "factor_state", "Condition");
+		BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", manager);
+		BayesmentsSandbox.printArray(SIGMAf, "SIGMAf", "SIGMAf", manager);
 		
 		// Initializing Bjk
 		Bjk = new double[numChromStates][numFacBindingStates];
@@ -90,7 +91,7 @@ public class EMtrain {
 		}
 		
 		//printing Bjk for debugging
-		BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State");
+		BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", manager);
 		
 		// Initializing PIj
 		PIj = new double[numChromStates];
