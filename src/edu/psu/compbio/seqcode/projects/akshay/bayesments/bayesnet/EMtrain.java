@@ -183,6 +183,8 @@ public class EMtrain {
 						NormalDistribution gaussian = new NormalDistribution(MUf[k][f],Math.pow(SIGMAf[k][f], 2.0));
 						facGaussianProd = (f == 0 ? gaussian.calcProbability((double) Xf[i][f]): facGaussianProd* gaussian.calcProbability((double) Xf[i][f]));
 					}
+					chromGausssianProd = ( Double.isNaN(chromGausssianProd)) ? 0.0 : chromGausssianProd;
+					facGaussianProd = (Double.isNaN(facGaussianProd)) ? 0.0: facGaussianProd;
 					Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;
 					//debug lines
 					System.out.println("pie value: "+Double.toString(PIj[j]));
