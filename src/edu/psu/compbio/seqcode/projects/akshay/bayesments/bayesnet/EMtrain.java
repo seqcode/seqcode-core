@@ -149,12 +149,39 @@ public class EMtrain {
 			executeMStep(); //M-Step
 			
 			// copy the updated params
-			trainMUc[t+1]= MUc;
-			trainMUf[t+1] = MUf;
-			trainSIGMAc[t+1] = SIGMAc;
-			trainSIGMAf[t+1] = SIGMAf;
-			trainPIj[t+1] = PIj;
-			trainBjk[t+1] = Bjk;
+			for(int j=0; j<numChromStates; j++){
+				for(int c=0; c<C; c++){
+					trainMUc[t+1][j][c]= MUc[j][c];
+				}
+			}
+			
+			for(int k=0; k<numFacBindingStates; k++){
+				for(int f=0; f<F; f++){
+					trainMUf[t+1][k][f]= MUf[k][f];
+				}
+			}
+			
+			for(int j=0; j<numChromStates; j++){
+				for(int c=0; c<C; c++){
+					trainSIGMAc[t+1][j][c]= SIGMAc[j][c];
+				}
+			}
+			
+			for(int k=0; k<numFacBindingStates; k++){
+				for(int f=0; f<F; f++){
+					trainSIGMAf[t+1][k][f]= SIGMAf[k][f];
+				}
+			}
+			
+			for(int j=0; j<numChromStates; j++){
+				trainPIj[t+1][j] = PIj[j];
+			}
+			
+			for(int j=0; j< numChromStates; j++){
+				for(int k=0; k<numFacBindingStates; k++){
+					trainBjk[t+1][j][k] = Bjk[j][k];
+				}
+			}
 			
 		}
 		
