@@ -134,6 +134,7 @@ public class EMtrain {
 		double[][][] trainBjk = new double[itrs+1][numChromStates][numFacBindingStates];
 		
 		for(int t=0; t<itrs; t++){
+			System.out.println("Iteration no: "+ Integer.toString(t));
 			if(t==0){      //copy the initial set of random params
 				trainMUc[0] = MUc;
 				trainMUf[0] = MUf;
@@ -185,15 +186,15 @@ public class EMtrain {
 					}
 					Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;
 					//debug lines
-					System.out.println("pie value: "+Double.toString(PIj[j]));
-					System.out.println("chromatin guassian product value: "+Double.toString(chromGausssianProd));
-					System.out.println("factor guassian product value: "+Double.toString(facGaussianProd));
-					System.out.println("Bjk value: "+Double.toString(Bjk[j][k]));
-					System.out.println("product value: "+Double.toString(Qijk[i][j][k]));
+					//System.out.println("pie value: "+Double.toString(PIj[j]));
+					//System.out.println("chromatin guassian product value: "+Double.toString(chromGausssianProd));
+					//System.out.println("factor guassian product value: "+Double.toString(facGaussianProd));
+					//System.out.println("Bjk value: "+Double.toString(Bjk[j][k]));
+					//System.out.println("product value: "+Double.toString(Qijk[i][j][k]));
 					den[i] = den[i]+Qijk[i][j][k];
 				}
 				//debug line
-				System.out.println("den for i: "+Double.toString(den[i]));
+				//System.out.println("den for i: "+Double.toString(den[i]));
 			}
 			
 		}
@@ -203,7 +204,7 @@ public class EMtrain {
 				for(int k=0; k<numFacBindingStates; k++){
 					Qijk[i][j][k] = Qijk[i][j][k]/den[i];
 					//debug line
-					System.out.println("qijk values: "+Double.toString(Qijk[i][j][k]));
+					//System.out.println("qijk values: "+Double.toString(Qijk[i][j][k]));
 				}
 			}
 		}
@@ -225,7 +226,7 @@ public class EMtrain {
 			}
 			
 			//debug lines
-			System.out.println("PIj values: "+Double.toString(PIj[j]));
+			//System.out.println("PIj values: "+Double.toString(PIj[j]));
 		}
 		
 		//normalize
@@ -234,12 +235,12 @@ public class EMtrain {
 		}
 		
 		//debug line
-		System.out.println("denom for PIj");
-		System.out.println(Double.toString(denPIj));
+		//System.out.println("denom for PIj");
+		//System.out.println(Double.toString(denPIj));
 		
 		//debug lines
-		System.out.println("PI-j");
-		BayesmentsSandbox.printArray(PIj, "chrom");
+		//System.out.println("PI-j");
+		//BayesmentsSandbox.printArray(PIj, "chrom");
 		
 		//-----------------------MUc update------------------------------------
 		
@@ -255,8 +256,8 @@ public class EMtrain {
 				}
 				
 				//debug line
-				System.out.println("muec num values: "+Double.toString(MUc[j][c]));
-				System.out.println("muec din vakues: "+ Double.toString(denMUc[j][c]));
+				//System.out.println("muec num values: "+Double.toString(MUc[j][c]));
+				//System.out.println("muec din vakues: "+ Double.toString(denMUc[j][c]));
 			}
 		}
 		
@@ -281,8 +282,8 @@ public class EMtrain {
 					}
 				}
 				//debug line
-				System.out.println("muef num values: "+Double.toString(MUf[k][f]));
-				System.out.println("muef din vakues: "+ Double.toString(denMUf[k][f]));
+				//System.out.println("muef num values: "+Double.toString(MUf[k][f]));
+				//System.out.println("muef din vakues: "+ Double.toString(denMUf[k][f]));
 			}
 		}
 		
@@ -310,8 +311,8 @@ public class EMtrain {
 					}
 				}
 				//debug line
-				System.out.println("sigmac num values: "+Double.toString(SIGMAc[j][c]));
-				System.out.println("sigmac din vakues: "+ Double.toString(denSIGMAc[j][c]));
+				//System.out.println("sigmac num values: "+Double.toString(SIGMAc[j][c]));
+				//System.out.println("sigmac din vakues: "+ Double.toString(denSIGMAc[j][c]));
 			}
 		}
 		
@@ -336,8 +337,8 @@ public class EMtrain {
 				}
 				
 				//debug line
-				System.out.println("sigmaf num values: "+Double.toString(SIGMAf[k][f]));
-				System.out.println("sigmaf din vakues: "+ Double.toString(denMUc[k][f]));
+				//System.out.println("sigmaf num values: "+Double.toString(SIGMAf[k][f]));
+				//System.out.println("sigmaf din vakues: "+ Double.toString(denMUc[k][f]));
 			}
 		}
 		
