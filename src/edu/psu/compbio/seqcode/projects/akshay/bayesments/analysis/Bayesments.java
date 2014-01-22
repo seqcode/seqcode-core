@@ -25,7 +25,7 @@ public class Bayesments {
 			trainingData.plotData(c, manager);
 			
 			System.out.println("Initializing EM\n");
-			EMtrain EM = new EMtrain(c,trainingData);
+			EMtrain EM = new EMtrain(c,trainingData,manager);
 			
 			System.out.println("Running EM\n");
 			EM.runEM();
@@ -34,19 +34,19 @@ public class Bayesments {
 			BayesmentsSandbox.printArray(EM.getPIj(), "chrom_state");
 		
 			System.out.println("MU-C values\n");
-			BayesmentsSandbox.printArray(EM.getMUc(),"chrom_State" , "condition");
+			BayesmentsSandbox.printArray(EM.getMUc(),"MUc" , "MUc", manager);
 		
 			System.out.println("MU-F values\n");
-			BayesmentsSandbox.printArray(EM.getMUf(),"factor_State" , "condition");
+			BayesmentsSandbox.printArray(EM.getMUf(),"MUf" , "MUf", manager);
 		
 			System.out.println("SIGMA-C values\n");
-			BayesmentsSandbox.printArray(EM.getSIGMAc(),"chrom_State" , "condition");
+			BayesmentsSandbox.printArray(EM.getSIGMAc(),"SIGMAc" , "SIGMAc", manager);
 		
 			System.out.println("SIGMA-F values\n");
-			BayesmentsSandbox.printArray(EM.getSIGMAf(),"factor_State" , "condition");
+			BayesmentsSandbox.printArray(EM.getSIGMAf(),"SIGMAf" , "SIGMAf", manager);
 		
 			System.out.println("Bjk values\n");
-			BayesmentsSandbox.printArray(EM.getBjk(),"chromatin_State" , "factor_state");
+			BayesmentsSandbox.printArray(EM.getBjk(),"chromatin_State" , "factor_state", manager);
 		}
 	}	
 }
