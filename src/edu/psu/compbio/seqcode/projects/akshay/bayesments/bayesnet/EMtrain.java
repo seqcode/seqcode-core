@@ -95,8 +95,8 @@ public class EMtrain {
 		
 		// Initializing PIj
 		PIj = new double[numChromStates];
-		PIj = this.getRandomList(numChromStates, true);
-		
+		//PIj = this.getRandomList(numChromStates, true);
+		PIj = this.getUniformList(numChromStates);
 		//printing PIj for debugging
 		BayesmentsSandbox.printArray(PIj, "chrom_state");
 		
@@ -123,6 +123,15 @@ public class EMtrain {
 		}else{
 			return ret;
 		}
+	}
+	
+	private double[] getUniformList(int n){
+		double[] ret =  new double[n];
+		double value = 1/n;
+		for(int i=0; i<n; i++){
+			ret[i] = 1/n;
+		}
+		return ret;
 	}
 	
 	public void runEM(){
