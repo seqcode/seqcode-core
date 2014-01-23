@@ -129,7 +129,7 @@ public class EMtrain {
 		double[] ret =  new double[n];
 		double value = 1/n;
 		for(int i=0; i<n; i++){
-			ret[i] = 1/n;
+			ret[i] = 1/(double)n;
 		}
 		return ret;
 	}
