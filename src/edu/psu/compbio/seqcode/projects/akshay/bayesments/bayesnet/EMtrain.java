@@ -134,6 +134,18 @@ public class EMtrain {
 		return ret;
 	}
 	
+	private int getMinindex(double[] list){
+		double val = 100000.0;
+		int ret=0;
+		for(int i=0; i< list.length; i++){
+			if(list[i]> val){
+				ret = i;
+				val = list[i];
+			}
+		}
+		return ret;
+	}
+	
 	public void runEM(){
 		int itrs = config.getNumItrs();
 		double[][][] trainMUc = new double[itrs+1][numChromStates][C]; //initial random params plus itrs 
@@ -274,6 +286,14 @@ public class EMtrain {
 		for(int j=0; j<numChromStates; j++){
 			PIj[j] = PIj[j]/denPIj;
 		}
+		
+		//making sure PI-j for ant state does not go to zero
+		
+		int minProbIndex = this.getMinindex(PIj);
+		if (PIj[minProbIndex] == 0.0){
+			PIj[minProbIndex] = 0.001;
+		}
+		
 		
 		//debug line
 		//System.out.println("denom for PIj");
