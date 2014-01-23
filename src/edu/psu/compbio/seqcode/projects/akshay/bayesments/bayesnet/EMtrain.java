@@ -284,6 +284,7 @@ public class EMtrain {
 					for(int k=0; k<numFacBindingStates; k++){
 						MUc[j][c] = k==0 && i==0 ? Qijk[i][j][k]*Xc[i][c] : MUc[j][c]+ Qijk[i][j][k]*Xc[i][c];
 						denMUc[j][c] = denMUc[j][c]+Qijk[i][j][k];
+					
 					}
 				}
 				
@@ -296,6 +297,9 @@ public class EMtrain {
 		//dividing by denominator 
 		for(int j=0; j<numChromStates; j++){
 			for(int c=0; c<C; c++){
+				
+				//debug line
+				if(denMUc[j][c] == 0){System.out.println("Chromatin state "+Integer.toString(j)+" Condition "+Integer.toString(c));}
 				MUc[j][c] = MUc[j][c]/denMUc[j][c];
 			}
 		}
@@ -351,6 +355,10 @@ public class EMtrain {
 		//dividing by denominator and taking square root
 		for(int j=0; j<numChromStates; j++){
 			for(int c=0; c<C; c++){
+				
+				
+				//debug line
+				if(denSIGMAc[j][c] == 0){System.out.println("Chromatin state "+Integer.toString(j)+" Condition "+Integer.toString(c));}
 				SIGMAc[j][c] = Math.sqrt(SIGMAc[j][c]/denSIGMAc[j][c]);
 			}
 		}
