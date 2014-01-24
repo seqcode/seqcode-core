@@ -37,6 +37,7 @@ public class Config {
 	protected String out_base;
 	protected File out_dir=null, images_dir=null;
 	protected boolean loadReads;
+	protected boolean doAffine;
 	protected File inter_dir=null;
 	
 	
@@ -179,6 +180,7 @@ public class Config {
 				out_name = Args.parseString(args, "out", "bayesments_out");
 				out_dir =  new File(out_name); //Output directory
 				out_base = out_dir.getName(); //Last part of name
+				doAffine = Args.parseArgs(args).contains("affine") ? true : false;
 				
 				
 				
@@ -224,6 +226,7 @@ public class Config {
 	public File getOutputImagesDir(){return images_dir;}
 	public File getOutputInterDir(){return inter_dir;}
 	public boolean loadReads(){return loadReads;}
+	public boolean doAffine(){return doAffine;}
 	
 	
 	//Some accessors to allow modification of options after config
@@ -297,6 +300,7 @@ public class Config {
 				"\t--plotEM <flag to plot the EM steps>\n"+
 				"\t--out <name of the output directory>\n"+
 				"\t--noreads <flag to turn off loading rads>\n"+
+				"\t--affine <flag to turn on affine transcormation>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	

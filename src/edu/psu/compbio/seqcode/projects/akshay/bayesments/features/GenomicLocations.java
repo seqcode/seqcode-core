@@ -90,9 +90,28 @@ public class GenomicLocations {
 				}
 				pointCount++;
 			}
+			
+			// do affine transformation of the data
+			if(config.doAffine()){
+				updataAsineTransformation();
+			}
 		}
 		catch(IOException e){
 			e.printStackTrace();
+		}
+	}
+	
+	public void updataAsineTransformation(){
+		for(int i=0; i<locations.size(); i++){
+			for(int c=0; c<numChromCons; c++){
+				chromatinCounts[i][c] = (float) Math.log((double)chromatinCounts[i][c]+(double) Math.sqrt(Math.pow((double)chromatinCounts[i][c], 2.0)+1.0));
+			}
+		}
+		
+		for(int i=0; i<locations.size(); i++){
+			for(int f=0; f<numFacCons; f++){
+				factorCounts[i][f] = (float) Math.log((double)factorCounts[i][f]+(double) Math.sqrt(Math.pow((double)factorCounts[i][f], 2.0)+1.0));
+			}
 		}
 	}
 	
