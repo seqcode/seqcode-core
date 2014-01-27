@@ -384,11 +384,19 @@ public class EMtrain {
 		
 		//making sure PI-j for ant state does not go to zero
 		
-		int minProbIndex = this.getMinindex(PIj);
-		if (PIj[minProbIndex] == 0.0){
-			PIj[minProbIndex] = 0.001;
+		for(int j=0; j<numChromStates; j++){
+			if(PIj[j] == 0){
+				PIj[j] = 0.001;
+			}
 		}
-		
+			//re-normalize
+		denPIj = 0.0;
+		for(int j=0; j< numChromStates; j++){
+			denPIj = denPIj + PIj[j];
+		}
+		for(int j=0; j<numChromStates; j++){
+			PIj[j] = PIj[j]/denPIj;
+		}
 		
 		//debug line
 		//System.out.println("denom for PIj");
