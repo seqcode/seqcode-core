@@ -108,6 +108,8 @@ public class EMtrain {
 			}
 			double min = observedValues[this.getMinindex(observedValues)];
 			double max = observedValues[this.getMaxindex(observedValues)];
+			System.out.println("Max "+ Double.toString(max));
+			System.out.println("Min "+ Double.toString(min));
 			for(int j=0; j<numChromStates; j++){
 				SIGMAc[j][c] = max-min;
 			}
@@ -121,7 +123,7 @@ public class EMtrain {
 			double min = observedValues[this.getMinindex(observedValues)];
 			double max = observedValues[this.getMaxindex(observedValues)];
 			for(int k=0; k<numFacBindingStates; k++){
-				SIGMAc[k][f] = max-min;
+				SIGMAf[k][f] = max-min;
 			}
 		}
 		
@@ -219,7 +221,7 @@ public class EMtrain {
 		double val = 100000.0;
 		int ret=0;
 		for(int i=0; i< list.length; i++){
-			if(list[i]> val){
+			if(val > list[i]){
 				ret = i;
 				val = list[i];
 			}
@@ -231,7 +233,7 @@ public class EMtrain {
 		double val = -100000.0;
 		int ret=0;
 		for(int i=0; i< list.length; i++){
-			if(list[i] < val){
+			if(list[i] > val){
 				ret =i;
 				val = list[i];
 			}
