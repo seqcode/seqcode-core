@@ -58,12 +58,38 @@ public class EMtrain {
 		//Initializing mu's
 		MUc = new double[numChromStates][C];
 		MUf = new double[numFacBindingStates][F];
-		for(int i=0; i<numChromStates; i++){
-			MUc[i] = this.getRandomList(C, false);
+		
+		//Initialization from emperical means
+		
+		for(int c=0; c< C; c++){
+			float[] observedValues = new float[N];
+			for(int i=0; i<N; i++){
+				observedValues[i] = Xc[i][c];
+			}
+			double[] means = this.getEmpMeanValues(numChromStates, observedValues);
+			for(int j=0; j<numChromStates; j++){
+				MUc[j][c] = means[j];
+			}
 		}
-		for(int i=0; i<numFacBindingStates; i++){
-			MUf[i] = this.getRandomList(F, false);
+		
+		for(int f=0; f< F; f++){
+			float[] observedValues = new float[N];
+			for(int i=0; i<N; i++){
+				observedValues[i] = Xf[i][f];
+			}
+			double[] means = this.getEmpMeanValues(numFacBindingStates, observedValues);
+			for(int k=0; k<numFacBindingStates; k++){
+				MUf[k][f] = means[k];
+			}
 		}
+		
+		// random initialization
+		//for(int i=0; i<numChromStates; i++){
+		//	MUc[i] = this.getRandomList(C, false);
+		//}
+		//for(int i=0; i<numFacBindingStates; i++){
+		//	MUf[i] = this.getRandomList(F, false);
+		//}
 		
 		//Printing Mu's for debugging
 		BayesmentsSandbox.printArray(MUc, "MUc", "MUc", manager);
@@ -73,12 +99,40 @@ public class EMtrain {
 		//Initializing sigma's
 		SIGMAc = new double[numChromStates][C];
 		SIGMAf = new double[numFacBindingStates][F];
-		for(int i=0; i<numChromStates; i++){
-			SIGMAc[i] = this.getRandomList(C, false);
+		
+		// Initializing for emperical data
+		for(int c=0; c< C; c++){
+			double[] observedValues = new double[N];
+			for(int i=0; i<N; i++){
+				observedValues[i] = Xc[i][c];
+			}
+			double min = observedValues[this.getMinindex(observedValues)];
+			double max = observedValues[this.getMaxindex(observedValues)];
+			for(int j=0; j<numChromStates; j++){
+				SIGMAc[j][c] = max-min;
+			}
 		}
-		for(int i=0; i<numFacBindingStates; i++){
-			SIGMAf[i] = this.getRandomList(F, false);
+		
+		for(int f=0; f< F; f++){
+			double[] observedValues = new double[N];
+			for(int i=0; i<N; i++){
+				observedValues[i] = Xf[i][f];
+			}
+			double min = observedValues[this.getMinindex(observedValues)];
+			double max = observedValues[this.getMaxindex(observedValues)];
+			for(int k=0; k<numFacBindingStates; k++){
+				SIGMAc[k][f] = max-min;
+			}
 		}
+		
+		
+		//random initialization
+		//for(int i=0; i<numChromStates; i++){
+		//	SIGMAc[i] = this.getRandomList(C, false);
+		//}
+		//for(int i=0; i<numFacBindingStates; i++){
+		//	SIGMAf[i] = this.getRandomList(F, false);
+		//}
 		
 		//printing SIGMA's for debugging
 		BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", manager);
@@ -125,6 +179,28 @@ public class EMtrain {
 		}
 	}
 	
+	private double[] getEmpMeanValues(int n, float[] observedValues){
+		double[] ret =  new double[n];
+		double mean = 0.0;
+		double std=0.0;
+		for(int i=0; i< observedValues.length; i++){
+			mean = mean + observedValues[i];
+		}
+		mean = mean/(double) observedValues.length;
+		for(int i=0; i<observedValues.length; i++){
+			std = std + Math.pow(observedValues[i]-mean, 2.0);
+		}
+		std = std/(double) observedValues.length;
+		std = Math.sqrt(std);
+		Random rn =new Random();
+		int range = (int) (0.4*std);
+		for(int i=0; i<n ; i++){
+			double random  = rn.nextInt(range)+mean-0.2*std;
+			ret[i] = random;
+		}
+		return ret;
+	}
+	
 	private double[] getUniformList(int n){
 		double[] ret =  new double[n];
 		double value = 1/n;
@@ -140,6 +216,18 @@ public class EMtrain {
 		for(int i=0; i< list.length; i++){
 			if(list[i]> val){
 				ret = i;
+				val = list[i];
+			}
+		}
+		return ret;
+	}
+	
+	private int getMaxindex(double[] list){
+		double val = -100000.0;
+		int ret=0;
+		for(int i=0; i< list.length; i++){
+			if(list[i] < val){
+				ret =i;
 				val = list[i];
 			}
 		}
