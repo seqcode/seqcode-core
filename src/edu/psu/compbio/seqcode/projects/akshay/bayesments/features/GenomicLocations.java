@@ -104,7 +104,9 @@ public class GenomicLocations {
 	public void updataAsineTransformation(){
 		for(int i=0; i<locations.size(); i++){
 			for(int c=0; c<numChromCons; c++){
+				System.out.println("Before transformation "+Float.toString(chromatinCounts[i][c]));
 				chromatinCounts[i][c] = (float) Math.log((double)chromatinCounts[i][c]+(double) Math.sqrt(Math.pow((double)chromatinCounts[i][c], 2.0)+1.0));
+				System.out.println("after transformation "+Float.toString(chromatinCounts[i][c]));
 			}
 		}
 		
