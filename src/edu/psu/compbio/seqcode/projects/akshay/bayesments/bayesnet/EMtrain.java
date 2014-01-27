@@ -187,18 +187,18 @@ public class EMtrain {
 			mean = mean + observedValues[i];
 		}
 		mean = mean/(double) observedValues.length;
-		System.out.println("Mean "+Double.toString(mean));
+		
 		for(int i=0; i<observedValues.length; i++){
 			std = std + Math.pow(observedValues[i]-mean, 2.0);
 		}
 		std = std/(double) observedValues.length;
 		
-		System.out.println("std "+Double.toString(std));
+		
 		std = Math.sqrt(std);
 		Random rn =new Random();
 		int range = (int) (0.4*std);
 		
-		System.out.println("range "+Double.toString(range));
+		range = range ==0 ? 1 : range;
 		for(int i=0; i<n ; i++){
 			double random  = rn.nextInt(range)+mean-0.2*std;
 			ret[i] = random;
