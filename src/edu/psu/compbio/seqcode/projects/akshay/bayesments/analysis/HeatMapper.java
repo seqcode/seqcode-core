@@ -1,5 +1,8 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.analysis;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.tc33.jheatchart.HeatChart;
 
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
@@ -26,6 +29,13 @@ public class HeatMapper {
 	public void plot(){
 		this.scaleMatrix();
 		HeatChart map = new HeatChart(this.matrix);
+		map.setXAxisLabel(Xtitle);
+		map.setYAxisLabel(Ytitle);
+		try {
+			map.saveToFile(new File(conf.getOutputImagesDir().getAbsolutePath()+File.separator+"mu_heat.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
