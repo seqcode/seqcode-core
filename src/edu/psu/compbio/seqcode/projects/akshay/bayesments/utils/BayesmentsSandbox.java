@@ -43,5 +43,29 @@ public class BayesmentsSandbox {
 		}
 	}
 	
+	public static int getMinindex(double[] list){
+		double val = 100000.0;
+		int ret=0;
+		for(int i=0; i< list.length; i++){
+			if(val > list[i]){
+				ret = i;
+				val = list[i];
+			}
+		}
+		return ret;
+	}
+	
+	public static int getMaxindex(double[] list){
+		double val = -100000.0;
+		int ret=0;
+		for(int i=0; i< list.length; i++){
+			if(list[i] > val){
+				ret =i;
+				val = list[i];
+			}
+		}
+		return ret;
+	}
+	
 
 }
