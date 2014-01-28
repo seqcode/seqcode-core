@@ -29,9 +29,6 @@ public class Bayesments {
 			
 			System.out.println("Running EM\n");
 			EM.runEM();
-			
-			HeatMapper map = new HeatMapper(EM.getMUc(),"Experiment Track","Chromatin State",c);
-			map.plot();
 		
 			System.out.println("PI-C values\n");
 			BayesmentsSandbox.printArray(EM.getPIj(), "chrom_state");

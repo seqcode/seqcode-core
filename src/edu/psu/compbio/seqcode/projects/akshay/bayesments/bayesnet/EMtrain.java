@@ -557,6 +557,7 @@ public class EMtrain {
 	public double[][] getSIGMAc(){return this.SIGMAc;}
 	public double[][] getSIGMAf(){return this.SIGMAf;}
 	public double[][] getBjk(){return this.Bjk;}
+	public GenomicLocations getTrainingData(){return this.trainingData;}
 	
 	// main method is only for testing puposers
 	
