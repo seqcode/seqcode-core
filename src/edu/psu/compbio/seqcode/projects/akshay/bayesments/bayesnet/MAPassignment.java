@@ -72,6 +72,8 @@ public class MAPassignment {
 					}
 				}
 			}
+			this.MapAssignment[i][0] = assignment[0];
+			this.MapAssignment[i][1] = assignment[1];
 		}
 		
 		// printing the files
