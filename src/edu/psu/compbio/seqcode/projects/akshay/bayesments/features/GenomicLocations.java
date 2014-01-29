@@ -123,6 +123,7 @@ public class GenomicLocations {
 	public int getNumTrainingExamples(){return this.locations.size();}
 	public float[][] getChromatinCounts(){return this.chromatinCounts;}
 	public float[][] getFactorCounts(){return this.factorCounts;}
+	public List<Point> getLocations(){return this.locations;}
 	
 	public void plotData(Config conf,ExperimentManager manager){
 		for(int c=0; c<numChromCons; c++){

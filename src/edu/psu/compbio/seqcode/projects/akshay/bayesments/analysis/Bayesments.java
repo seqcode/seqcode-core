@@ -1,6 +1,7 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.analysis;
 
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.EMtrain;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.MAPassignment;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
@@ -29,6 +30,9 @@ public class Bayesments {
 			
 			System.out.println("Running EM\n");
 			EM.runEM();
+			
+			MAPassignment assignment = new MAPassignment(EM, c);
+			assignment.execute();
 		
 			System.out.println("PI-C values\n");
 			BayesmentsSandbox.printArray(EM.getPIj(), "chrom_state");

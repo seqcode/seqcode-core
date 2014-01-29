@@ -1,5 +1,9 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
@@ -69,8 +73,26 @@ public class MAPassignment {
 				}
 			}
 		}
+		
+		// printing the files
+		for(int j=0; j<numChromStates; j++){
+			for(int k=0; k<numFacState; k++){
+				File outfile = new File(conf.getOutputInterDir().getAbsolutePath()+File.separator+Integer.toString(j)+"chromatin_"+
+			Integer.toString(k)+"_factor.tab");
+				try {
+					FileWriter fw = new FileWriter(outfile);
+					for(int i=0; i<N; i++){
+						if((int) MapAssignment[i][0] == j && (int) MapAssignment[i][1] == k){
+							fw.write(trainingdata.getLocations().get(i).getLocationString()+"\n");
+						}
+					}
+					fw.close();
+				}catch(IOException e){
+					e.printStackTrace();
+				}
+			}
+		}
 	}
-	
 	
 
 }
