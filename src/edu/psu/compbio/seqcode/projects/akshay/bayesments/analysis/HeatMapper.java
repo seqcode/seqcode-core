@@ -32,7 +32,7 @@ public class HeatMapper {
 	public void plot(){
 		this.scaleMatrix();
 		HeatChart map = new HeatChart(this.matrix);
-		map.setHighValueColour(new Color(221,20,20));
+		map.setHighValueColour(new Color(20,20,221));
 		map.setChartMargin(600);
 		map.setCellHeight(200);
 		map.setCellWidth(200);
@@ -46,7 +46,7 @@ public class HeatMapper {
 		map.setBackgroundColour(new Color(0, 0, 0, 0));
 		//map.setYAxisLabel(Ytitle);
 		try {
-			map.saveToFile(new File("/Users/akshaykakumanu/maptrans.png"));
+			map.saveToFile(new File("/Users/akshaykakumanu/map.png"));
 			//map.saveToFile(new File(conf.getOutputImagesDir().getAbsolutePath()+File.separator+"mu_heat.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -72,13 +72,25 @@ public class HeatMapper {
 		//		{4.401, 5.457, 3.183, 9.494, 33.9, 2.486},
 		//		{3.152, 19.479, 2.592, 83.789, 309.339, 20.807},
 		//		{1.801, 0.821, 1.808, 1.3977, 13.2268, 0.446}};
-		double [][] matrix = new double[][] {{0,0.053,0.015},
-				{0.159,0.342,0.340},
-				{0,0.442,0.323},
-				{0.84,0.162,0.32}};
+		//double [][] matrix = new double[][] {{0,0.053,0.015},
+		//		{0.159,0.342,0.340},
+		//		{0,0.442,0.323},
+		//		{0.84,0.162,0.32}};
+		double [][] matri = new double[][]{{4.40118341884727,5.454400623480247,3.1828502751441996,9.489368630182394,33.88547988658285,2.4840755361408022},
+		{3.1522251316091605,19.476689587319637,2.59224166155906,83.76512631956068,309.250191749674,20.80184934658802},
+		{29.030666347292104,13.774674603349387,10.089122305375888,31.518710449288218,265.02065335492756,14.270024995137218},
+		{1.8010107787097895,0.8209476253485581,1.8078185550881471,1.3971846878691898,13.224849491562479,0.4467358048566439}};
+		
+		double[][] matrix = new double[][] {{0.1599219574306244,0.34003915182638955,0.3424221327007531},
+				{0,0.3241051228047087,0.44217886803934875},
+				{0,0.015677709417432757,0.05303022441889957},
+				{0.8400714404264896,0.3201780159514997,0.16236877484097206}
+		};
+		
 		HeatMapper map = new HeatMapper(matrix, "Experimental Track", "Chromatin State");
 		map.plot();
 	}
-	
-	
 }
+	
+	
+
