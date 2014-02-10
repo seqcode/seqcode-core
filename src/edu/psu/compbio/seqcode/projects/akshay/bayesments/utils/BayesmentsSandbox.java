@@ -2,8 +2,19 @@ package edu.psu.compbio.seqcode.projects.akshay.bayesments.utils;
 
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 
+/**
+ * Utility class that contains some useful static methods
+ * @author akshaykakumanu
+ *
+ */
+
 public class BayesmentsSandbox {
 	
+	/**
+	 * Prints a vector of doubles and also adds a header tag
+	 * @param vec
+	 * @param header_tag
+	 */
 	public static void printArray(double[] vec, String header_tag){
 		String out ="";
 		String header = "";
@@ -17,6 +28,13 @@ public class BayesmentsSandbox {
 		System.out.println(out);
 	}
 	
+	/**
+	 * Prints a 2-d double array and adds the given row and column tag names
+	 * @param vec
+	 * @param row_tag
+	 * @param column_tag
+	 * @param manager
+	 */
 	public static void printArray(double[][] vec, String row_tag, String column_tag, ExperimentManager manager){
 		String out ="";
 		String column_header = "";
@@ -43,6 +61,11 @@ public class BayesmentsSandbox {
 		}
 	}
 	
+	/**
+	 * returns the index of the minimum double in the given list
+	 * @param list
+	 * @return
+	 */
 	public static int getMinindex(double[] list){
 		double val = 100000.0;
 		int ret=0;
@@ -55,6 +78,11 @@ public class BayesmentsSandbox {
 		return ret;
 	}
 	
+	/**
+	 * returns the index of the maximum double in the given list
+	 * @param list
+	 * @return
+	 */
 	public static int getMaxindex(double[] list){
 		double val = -100000.0;
 		int ret=0;

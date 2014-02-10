@@ -16,7 +16,11 @@ import javax.imageio.ImageIO;
 
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 
-
+/**
+ * Plots all the parameters in the Bayesian network over all rouds of traning iterations
+ * @author akshaykakumanu
+ *
+ */
 
 public class EMplotter {
 	
@@ -28,11 +32,23 @@ public class EMplotter {
 	protected double[][][] trainBjk;
 	protected int w; // plot width
 	protected int h; // plot height
-	protected int wmargin; //wifth margin
-	protected int hmargin; //height margon
+	protected int wmargin; //width margin
+	protected int hmargin; //height margin
 	protected String out_base; // out put base string name
 	protected int itrs;
 	
+	/**
+	 * Constructor method
+	 * @param config
+	 * @param trainMUc
+	 * @param trainMUf
+	 * @param trainSIGMAc
+	 * @param trainSIGMAf
+	 * @param trainPIj
+	 * @param trainBjk
+	 * @param C
+	 * @param F
+	 */
 	public EMplotter(Config config, double[][][] trainMUc, double[][][] trainMUf, double[][][] trainSIGMAc, double[][][] trainSIGMAf, double[][] trainPIj, double[][][] trainBjk, int C, int F)  {
 		this.trainMUc = trainMUc;
 		this.trainMUf = trainMUf;
@@ -53,14 +69,14 @@ public class EMplotter {
 		double[][] Xaxes;
 		double[][] Yaxes;
 		
-		//Images directory
+		//Create Image directory if it does not already exist
 		File f = config.getOutputImagesDir();
 		if(!f.exists()){f.mkdirs();}
 		
 		
 		// Draw PIj graphs
 		//Initialzie the Xaxis and Yaxis vectors
-		Xaxes = new double[numChromStates][itrs+1];  // plus 1 for initial random paramenters
+		Xaxes = new double[numChromStates][itrs+1];  // plus 1 for initial random parameters
 		Yaxes = new double[numChromStates][itrs+1];
 
 		for(int j=0; j<numChromStates; j++){
@@ -167,7 +183,12 @@ public class EMplotter {
 			}
 		}
 	}
-
+	
+	/**
+	 * Get the maximum value in a given 2-d array
+	 * @param vec
+	 * @return
+	 */
 	public double getMax(double[][] vec){
 		double ret=-100.0;
 		for(int i=0; i<vec.length; i++){
@@ -180,6 +201,14 @@ public class EMplotter {
 		return ret;
 	}
 	
+	/**
+	 * Plot mehtod
+	 * @param Xax
+	 * @param Yax
+	 * @param Xlab
+	 * @param Ylab
+	 * @param fp
+	 */
 	private void plot(double[][] Xax, double[][] Yax, String Xlab, String Ylab, File fp){
 		try{
 			BufferedImage im = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);

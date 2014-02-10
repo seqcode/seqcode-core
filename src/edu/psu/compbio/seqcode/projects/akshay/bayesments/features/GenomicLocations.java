@@ -15,19 +15,36 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.CoutPlotter;
 import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
 
+/**
+ * Class the reads and stores the training data for the Bayesian network
+ * @author akshaykakumanu
+ *
+ */
+
 public class GenomicLocations {
 	
 	protected Genome gen;
 	protected ExperimentSet experiments;
+	// List of points, which are used to train the model
 	protected List<Point> locations = new ArrayList<Point>();
+	//2-d array of counts, rows as points and columns as chromatin condition
 	protected float[][] chromatinCounts;
+	//2-d array of counts, rows as points and columns as factor conditions 
 	protected float[][] factorCounts;
-	// 2-d array, rows as points and columns as conditions
+	// 2-d array of regions, rows as points and columns as conditions
+	//(note: factor regions and chromatin regions may have different win sizes)
 	protected Region[][] chromatinRegions;
 	protected Region[][] factorRegions;
+	
+	// number of chromatin and factor conditions
 	protected int numChromCons;
 	protected int numFacCons;
 	
+	/**
+	 *
+	 * @param manager
+	 * @param config
+	 */
 	public GenomicLocations(ExperimentManager manager, Config config) {
 		try{
 			File peaksFile = config.getPeaksFile();
@@ -91,7 +108,7 @@ public class GenomicLocations {
 				pointCount++;
 			}
 			
-			// do affine transformation of the data
+			// If flag is on, do asinh transformation
 			if(config.doAffine()){
 				updataAsineTransformation();
 			}
@@ -100,7 +117,9 @@ public class GenomicLocations {
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * Does asinh transformation of the counts data and updates it to the transformed values
+	 */
 	public void updataAsineTransformation(){
 		for(int i=0; i<locations.size(); i++){
 			for(int c=0; c<numChromCons; c++){
@@ -125,6 +144,12 @@ public class GenomicLocations {
 	public float[][] getFactorCounts(){return this.factorCounts;}
 	public List<Point> getLocations(){return this.locations;}
 	
+	
+	/**
+	 * Calls the CoutPlotter class and plots the Observed experimental tracks
+	 * @param conf
+	 * @param manager
+	 */
 	public void plotData(Config conf,ExperimentManager manager){
 		for(int c=0; c<numChromCons; c++){
 			float[] counts = new float[locations.size()];

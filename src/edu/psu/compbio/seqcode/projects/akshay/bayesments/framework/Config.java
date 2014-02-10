@@ -84,6 +84,7 @@ public class Config {
 				
 				//Reading the global win sizes if provided in the command line
 				//These values will be over-ridded if they are also provided in the design file
+				//IMPORTANT: The factorWindow is also chosen for extracting the sequence  around the peak pair locaitons
 				this.chromatinWindow = Args.parseInteger(this.args, "chromwin", 500);
 				this.factorWindow = Args.parseInteger(this.args, "facwin", 50);
 				
@@ -227,6 +228,7 @@ public class Config {
 	public File getOutputInterDir(){return inter_dir;}
 	public boolean loadReads(){return loadReads;}
 	public boolean doAffine(){return doAffine;}
+	public int getSeqWinSize(){return factorWindow;}
 	
 	
 	//Some accessors to allow modification of options after config

@@ -8,17 +8,33 @@ import java.io.IOException;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.stats.StreamGobbler;
 
+/**
+ * Plotter class that should be used to plot cumulative plots of count data
+ * @author akshaykakumanu
+ *
+ */
 public class CoutPlotter {
+	// List of counts to be plotted
 	public float[] counts;
 	public Config config;
+	//name tag to name the output file
 	public String name_tag;
 	
+	/**
+	 * Constructor class
+	 * @param counts
+	 * @param config
+	 * @param name
+	 */
 	public CoutPlotter(float[] counts, Config config, String name) {
 		this.counts = counts;
 		this.config =config;
 		this.name_tag = name;
 	}
 	
+	/**
+	 * Plots the data
+	 */
 	public void plot(){
 		// Writing the data to the intermediate file
 		try{
@@ -32,7 +48,7 @@ public class CoutPlotter {
 			}
 			fout.close();
 			
-			//writing the R script
+			//Writing the R script
 			
 			String rscript = config.getOutputInterDir().getAbsolutePath()+File.separator+
 					"rscript.R";
@@ -49,7 +65,7 @@ public class CoutPlotter {
 			
 			rout.close();
 			
-			//running the rscript
+			//Running the rscript
 			
 			Process proc = Runtime.getRuntime().exec("Rscript "+rscript);
 			StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
