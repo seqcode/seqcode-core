@@ -18,7 +18,7 @@ public class Bayesments {
 		// Build the Config class the comman line arguments
 		Config c = new Config(args);
 		if(c.helpWanter()){
-			System.err.println("MultiGPS:");
+			System.err.println("Bayesments:");
 			System.err.println(c.getArgsList());
 		}else{
 			// Make the output directories using the provided root name
@@ -29,7 +29,7 @@ public class Bayesments {
 			ExperimentManager manager = new ExperimentManager(c,c.loadReads());
 			
 			// Read and store the training data in a GenomicLocations object
-			System.out.println("Filling Training Dara\n");
+			System.out.println("Filling Training Data\n");
 			GenomicLocations trainingData = new GenomicLocations(manager,c);
 			
 			// Plot the cumulative plots of the training data
