@@ -23,10 +23,9 @@ public class Sequences {
 	protected double Xs[][];
 	protected List<WeightMatrix> motifs_log_odds;
 	
-	public Sequences(Config conf, List<WeightMatrix> wm) {
+	public Sequences(Config conf) {
 		this.conf = conf;
 		this.winSize = conf.getSeqWinSize();
-		this.motifs_log_odds = wm;
 		File peaksFile = conf.getPeaksFile();
 		try {
 			locations = EventMetaMaker.loadPoints(peaksFile);
@@ -37,13 +36,12 @@ public class Sequences {
 		}
 	}
 	
-	public Sequences(Config conf, List<Point> locations, List<WeightMatrix> wm) {
+	public Sequences(Config conf, List<Point> locations) {
 		this.conf =conf;
 		this.gen = conf.getGenome();
 		this.locations = locations;
 		this.winSize = conf.getSeqWinSize();
 		this.fetchSequences();
-		this.motifs_log_odds = wm;
 	}
 	
 	private void fetchSequences(){
@@ -64,27 +62,37 @@ public class Sequences {
 		}
 	}
 	
+	//setters
 	public void setXc(){
 		Xs =  new double[locations.size()][motifs_log_odds.size()];
-		
+		for(int i=0; i<locations.size(); i++){
+			for(int j=0; j<motifs_log_odds.size(); j++){
+				Xs[i][j] = this.calculateLogOddinRegion(this.motifs_log_odds.get(j), this.sequences[i]);
+			}
+		}
 	}
+	
+	public void setMotifs(List<WeightMatrix> wm){this.motifs_log_odds = wm;}
+	
+	
 	
 	private double calculateLogOddinRegion(WeightMatrix wm, String seq){
 		int motif_width = wm.length();
 		int seq_length = seq.length();
 		double total_score=0.0;
-		for(int i=0; i< seq_length-motif_width; i++){
-			String scan_seq = seq.substring(i, i+motif_width);
+		for(int i=0; i< seq_length-motif_width+1; i++){
 			double score =1.0;
 			for(int j=0; j<motif_width; j++){
-				String letter = scan_seq.substring(j,j+1);
-				
+				score = score*wm.matrix[j][seq.charAt(i+j)];
 			}
+			total_score = total_score+score;
 		}
 		return total_score;
 	}
 	
+	//Accessors
 	
+	public double[][] getXs(){return this.Xs;}
 	
 	
 	

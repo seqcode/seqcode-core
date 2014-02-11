@@ -5,6 +5,7 @@ import java.util.Random;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Sequences;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
 
@@ -18,6 +19,14 @@ public class EMtrain {
 
 	protected Config config;
 	protected GenomicLocations trainingData;
+	
+	protected Sequences seqs;
+	protected double[][] Xs;
+	protected double[][] MUs;
+	protected double[][] SIGMAs;
+	
+	protected boolean seqState;
+	
 	// 2-d array of chromatin counts, with rows as locations and columns as conditions
 	protected float[][] Xc;
 	//2-d array of factor countts, with rows as locations and columns as conditions
@@ -43,23 +52,29 @@ public class EMtrain {
 	protected int N; // number of training examples
 	protected int C; // number of chromatin conditions
 	protected int F; // number of factor conditions (alomost always 1)
+	protected int M; // number of motifs
 	protected boolean finishedTraining;  // to know if the current instance of this class is trained or not
 	// flag to turn on plotting of the parameters as the function of iterations step in EM
 	protected boolean plot;
 	
+	protected int itr_no=0;
+	protected int total_itrs=0;
+	
 	/**
-	 * 
+	 * When initializing this class object, it is always in seq off mode
 	 * @param config
 	 * @param trainingData
 	 * @param manager
 	 */
-	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager) {
+	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager, int total_itrs) {
 		this.config = config;
 		this.trainingData = trainingData;
 		this.plot = config.doEMplot();
 		
 		//Initializing the model
 		initializeEM(manager);
+		this.setOffSeqMode();
+		this.total_itrs = total_itrs;
 		finishedTraining=false;
 	}
 	
@@ -133,8 +148,6 @@ public class EMtrain {
 			}
 			double min = observedValues[this.getMinindex(observedValues)];
 			double max = observedValues[this.getMaxindex(observedValues)];
-			System.out.println("Max "+ Double.toString(max));
-			System.out.println("Min "+ Double.toString(min));
 			for(int j=0; j<numChromStates; j++){
 				SIGMAc[j][c] = max-min;
 			}
@@ -184,6 +197,37 @@ public class EMtrain {
 		//Initializing the dimensions of Qijk's
 		Qijk = new double[N][numChromStates][numFacBindingStates];
 		
+	}
+	
+	public void initializeSeqParams(){
+		M = Xs[0].length;
+		
+		this.MUs = new double[numChromStates][M];
+		this.SIGMAs = new double[numChromStates][M];
+		
+		for(int m=0; m< M; m++){
+			float[] observedScores = new float[N];
+			for(int i=0; i<N; i++){
+				observedScores[i] = (float) Xs[i][m];
+			}
+			double[] means = this.getEmpMeanValues(numChromStates,  observedScores);
+			for(int j=0; j<numChromStates; j++){
+				MUc[j][m] = means[j];
+			}
+		}
+		
+		for(int m=0; m< M; m++){
+			double[] observedValues = new double[N];
+			for(int i=0; i<N; i++){
+				observedValues[i] = Xs[i][m];
+			}
+			double min = observedValues[this.getMinindex(observedValues)];
+			double max = observedValues[this.getMaxindex(observedValues)];
+			
+			for(int j=0; j<numChromStates; j++){
+				SIGMAc[j][m] = max-min;
+			}
+		}
 	}
 	
 	
@@ -294,26 +338,47 @@ public class EMtrain {
 	/**
 	 * Runs the EM algorithm for a given number of iterations and also plots the parameters over the learning rounds if plot parameter is true
 	 */
-	public void runEM(){
-		int itrs = config.getNumItrs();
+	public void runEM(int itrs){
 		
 		// Initializing the arrays to store the parameters for all training rounds
-		double[][][] trainMUc = new double[itrs+1][numChromStates][C]; //initial random params plus itrs 
-		double[][][] trainMUf = new double[itrs+1][numFacBindingStates][F];
-		double[][][] trainSIGMAc = new double[itrs+1][numChromStates][C];
-		double[][][] trainSIGMAf = new double[itrs+1][numFacBindingStates][F];
-		double[][] trainPIj = new double[itrs+1][numChromStates];
-		double[][][] trainBjk = new double[itrs+1][numChromStates][numFacBindingStates];
+		double[][][] trainMUc = new double[this.total_itrs+1][numChromStates][C]; //initial random params plus itrs 
+		double[][][] trainMUf = new double[this.total_itrs+1][numFacBindingStates][F];
+		double[][][] trainSIGMAc = new double[this.total_itrs+1][numChromStates][C];
+		double[][][] trainSIGMAf = new double[this.total_itrs+1][numFacBindingStates][F];
+		double[][] trainPIj = new double[this.total_itrs+1][numChromStates];
+		double[][][] trainBjk = new double[this.total_itrs+1][numChromStates][numFacBindingStates];
+		double[][][] trainMUs;
+		double[][][] trainSIGMAs;
+		if(this.seqState){
+			trainMUs = new double[this.total_itrs+1][this.numChromStates][M];
+			trainSIGMAs = new double[this.total_itrs+1][this.numChromStates][M];
+			for(int t=0; t< this.itr_no ; t++){
+				for(int j=0; j<this.numChromStates; j++){
+					for(int m=0; m<M; m++){
+						trainMUs[t][j][m] =0.0; 
+					}
+				}
+			}
+			
+			for(int j=0; j<this.numChromStates; j++){
+				for(int m=0; m<M; m++){
+					trainMUs[itr_no] = MUs;
+					trainSIGMAs[itr_no] = SIGMAs;
+				}
+			}
+			
+		}
 		
 		for(int t=0; t<itrs; t++){ // training for the given number of iterations
 			
-			if(t==0){      //Copy the initial set of random parameters
+			if(itr_no==0){      //Copy the initial set of random parameters
 				trainMUc[0] = MUc;
 				trainMUf[0] = MUf;
 				trainSIGMAc[0] = SIGMAc;
 				trainSIGMAf[0] = SIGMAf;
 				trainPIj[0] = PIj;
 				trainBjk[0] = Bjk;
+				itr_no++;
 			}
 			
 			executeEStep();  //E-Step
@@ -322,38 +387,51 @@ public class EMtrain {
 			// Copy the updated parameters
 			for(int j=0; j<numChromStates; j++){
 				for(int c=0; c<C; c++){
-					trainMUc[t+1][j][c]= MUc[j][c];
+					trainMUc[itr_no][j][c]= MUc[j][c];
 				}
 			}
 			
 			for(int k=0; k<numFacBindingStates; k++){
 				for(int f=0; f<F; f++){
-					trainMUf[t+1][k][f]= MUf[k][f];
+					trainMUf[itr_no][k][f]= MUf[k][f];
 				}
 			}
 			
 			for(int j=0; j<numChromStates; j++){
 				for(int c=0; c<C; c++){
-					trainSIGMAc[t+1][j][c]= SIGMAc[j][c];
+					trainSIGMAc[itr_no][j][c]= SIGMAc[j][c];
 				}
 			}
 			
 			for(int k=0; k<numFacBindingStates; k++){
 				for(int f=0; f<F; f++){
-					trainSIGMAf[t+1][k][f]= SIGMAf[k][f];
+					trainSIGMAf[itr_no][k][f]= SIGMAf[k][f];
 				}
 			}
 			
 			for(int j=0; j<numChromStates; j++){
-				trainPIj[t+1][j] = PIj[j];
+				trainPIj[itr_no][j] = PIj[j];
 			}
 			
 			for(int j=0; j< numChromStates; j++){
 				for(int k=0; k<numFacBindingStates; k++){
-					trainBjk[t+1][j][k] = Bjk[j][k];
+					trainBjk[itr_no][j][k] = Bjk[j][k];
 				}
 			}
 			
+			if(this.seqState){
+				for(int j=0; j<numChromStates; j++){
+					for(int m=0; m<M; m++){
+						//trainMUs[itr_no][j][m]= MUs[j][m];
+					}
+				}
+				
+				for(int j=0; j<numChromStates; j++){
+					for(int m=0; m<M; m++){
+						//trainSIGMAs[itr_no][j][m]= SIGMAs[j][m];
+					}
+				}
+			}
 		}
 		
 		// Turning on the trained flag
@@ -381,6 +459,7 @@ public class EMtrain {
 				for(int k=0; k< numFacBindingStates; k++){ //over factor binding states
 					double chromGausssianProd=0.0;
 					double facGaussianProd = 0.0;
+					double seqGaussianProd = 0.0;
 					for(int c=0; c<C; c++){
 						NormalDistribution gaussian = new NormalDistribution(MUc[j][c],Math.pow(SIGMAc[j][c], 2.0));
 						chromGausssianProd = (c==0 ? gaussian.calcProbability((double) Xc[i][c]): chromGausssianProd* gaussian.calcProbability((double) Xc[i][c]));
@@ -393,7 +472,18 @@ public class EMtrain {
 					chromGausssianProd = ( Double.isNaN(chromGausssianProd)) ? 0.0 : chromGausssianProd;
 					facGaussianProd = (Double.isNaN(facGaussianProd)) ? 0.0: facGaussianProd;
 					
-					Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;
+					if(this.seqState){
+						for(int m=0; m<M; m++){
+							NormalDistribution gaussian = new NormalDistribution(MUs[j][m],Math.pow(SIGMAs[j][m], 2.0));
+							seqGaussianProd = (m==0 ? gaussian.calcProbability((double) Xs[i][m]): seqGaussianProd* gaussian.calcProbability((double) Xs[i][m]));
+						}
+						seqGaussianProd = (Double.isNaN(seqGaussianProd)) ? 0.0: seqGaussianProd;
+					}
+					
+					if(this.seqState){
+						Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd*seqGaussianProd;
+					}else{Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;}
+					
 					
 					den[i] = den[i]+Qijk[i][j][k];
 				}
@@ -498,6 +588,31 @@ public class EMtrain {
 				MUf[k][f] = MUf[k][f]/denMUf[k][f];
 			}
 		}
+		
+		// -----------------------MUs update, if in seqState----------------------------
+		
+		//Compute
+		if(this.seqState){
+			double[][] denMUs = new double[numChromStates][M];
+			for(int j=0; j<numChromStates; j++){
+				for(int m=0; m<M; m++){
+					for(int i=0; i<N; i++){
+						for(int k=0; k<numFacBindingStates; k++){
+							MUs[j][m] = k==0 && i==0? Qijk[i][j][k]*Xs[i][m]: MUs[j][m]+Qijk[i][j][k]*Xs[i][m];
+							denMUs[j][m] = denMUs[j][m]+Qijk[i][j][k];
+						}
+					}
+				}
+			}
+			
+			//Normalize
+			for(int j=0; j<numChromStates; j++){
+				for(int m=0; m<M; m++){
+					MUs[j][m] = MUs[j][m]/denMUs[j][m];
+				}
+			}
+		}
+		
 
 		//--------------------SIGMAc update --------------------------------------
 		
@@ -543,6 +658,31 @@ public class EMtrain {
 			}
 		}
 		
+		
+		//--------------------SIGMAs update, if in seqState ------------------------
+		
+		//Compute
+		if(this.seqState){
+			double[][] denSIGMAs = new double[numChromStates][M];
+			for(int j=0; j<numChromStates; j++){
+				for(int m=0; m<M; m++){
+					for(int i=0; i<N; i++){
+						for(int k=0; k<numFacBindingStates; k++){
+							SIGMAs[j][m] = k==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xs[i][m] - MUs[j][m]) , 2.0): SIGMAs[j][m]+Qijk[i][j][k]*Math.pow(((double)Xs[i][m] - MUs[j][m]) , 2.0);
+							denSIGMAs[j][m] = denSIGMAs[j][m]+Qijk[i][j][k];
+						}
+					}
+				}
+			}
+			
+			//Normalize and taking the square root
+			for(int j=0; j<numChromStates; j++){
+				for(int m=0; m<M; m++){
+					SIGMAs[j][m] = Math.sqrt(SIGMAs[j][m]/denSIGMAs[j][m]);
+				}
+			}
+		}
+		
 		//---------------------Bjk update -------------------------------------------
 		
 		//Compute
@@ -565,6 +705,18 @@ public class EMtrain {
 	}
 	
 	
+	//setters
+	public void setSeqMode(){this.seqState = true;}
+	public void setOffSeqMode(){this.seqState = false;}
+	public void setSequences(Sequences seqs){this.seqs = seqs;}
+	public void setXs(double[][] Xs){this.Xs = Xs;}
+	public void setInitialSeqParams(){this.initializeSeqParams();}
+	public void serTotalNoItrs(int n){
+		if(this.total_itrs == 0){
+			this.total_itrs = n;
+		}
+	}
+	
 	//Accessors
 	public boolean isTrainined(){return this.finishedTraining;}
 	public double[] getPIj(){return this.PIj;}
@@ -582,6 +734,7 @@ public class EMtrain {
 		//System.out.println(test[0]);
 		//System.out.println(test[1]);
 		//System.out.println(test[2]);
+		
 	}
 	
 }
