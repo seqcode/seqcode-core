@@ -39,6 +39,8 @@ public class Config {
 	protected boolean loadReads;
 	protected boolean doAffine;
 	protected File inter_dir=null;
+	protected boolean includeSeqFeatures;
+	protected String genomeSequencePath;
 	
 	
 	
@@ -182,7 +184,15 @@ public class Config {
 				out_dir =  new File(out_name); //Output directory
 				out_base = out_dir.getName(); //Last part of name
 				doAffine = Args.parseArgs(args).contains("affine") ? true : false;
+				includeSeqFeatures = Args.parseFlags(args).contains("noSeq") ? false :true;
 				
+				if(includeSeqFeatures){ //Do we need to load sequences?
+					genomeSequencePath = ap.hasKey("seq") ? ap.getKeyValue("seq") : null;
+					if(genomeSequencePath==null){
+						System.err.println("You have requested to include sequence features, but no genome sequence data was provided with --seq");
+						System.exit(1);
+					}
+				}
 				
 				
 				
@@ -229,6 +239,8 @@ public class Config {
 	public boolean loadReads(){return loadReads;}
 	public boolean doAffine(){return doAffine;}
 	public int getSeqWinSize(){return factorWindow;}
+	public boolean includeSeqFeatures(){return includeSeqFeatures;}
+	public String getGenomeSeqPath(){return genomeSequencePath;}
 	
 	
 	//Some accessors to allow modification of options after config
@@ -303,6 +315,8 @@ public class Config {
 				"\t--out <name of the output directory>\n"+
 				"\t--noreads <flag to turn off loading rads>\n"+
 				"\t--affine <flag to turn on affine transcormation>\n"+
+				"\t--noSeq <flag to turn off sequence features>\n"+
+				"\t--seq<Path to seq fasta dir>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	
