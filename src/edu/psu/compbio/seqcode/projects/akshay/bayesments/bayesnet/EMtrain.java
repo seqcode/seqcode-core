@@ -53,9 +53,11 @@ public class EMtrain {
 	protected int C; // number of chromatin conditions
 	protected int F; // number of factor conditions (alomost always 1)
 	protected int M; // number of motifs
-	protected boolean finishedTraining;  // to know if the current instance of this class is trained or not
 	// flag to turn on plotting of the parameters as the function of iterations step in EM
 	protected boolean plot;
+	
+	double[][][] trainMUs;
+	double[][][] trainSIGMAs;
 	
 	protected int itr_no=0;
 	protected int total_itrs=0;
@@ -73,9 +75,7 @@ public class EMtrain {
 		
 		//Initializing the model
 		initializeEM(manager);
-		this.setOffSeqMode();
 		this.total_itrs = total_itrs;
-		finishedTraining=false;
 	}
 	
 	/**
@@ -199,8 +199,7 @@ public class EMtrain {
 		
 	}
 	
-	public void initializeSeqParams(){
-		M = Xs[0].length;
+	private void initializeSeqParams(){
 		
 		this.MUs = new double[numChromStates][M];
 		this.SIGMAs = new double[numChromStates][M];
@@ -347,27 +346,7 @@ public class EMtrain {
 		double[][][] trainSIGMAf = new double[this.total_itrs+1][numFacBindingStates][F];
 		double[][] trainPIj = new double[this.total_itrs+1][numChromStates];
 		double[][][] trainBjk = new double[this.total_itrs+1][numChromStates][numFacBindingStates];
-		double[][][] trainMUs;
-		double[][][] trainSIGMAs;
-		if(this.seqState){
-			trainMUs = new double[this.total_itrs+1][this.numChromStates][M];
-			trainSIGMAs = new double[this.total_itrs+1][this.numChromStates][M];
-			for(int t=0; t< this.itr_no ; t++){
-				for(int j=0; j<this.numChromStates; j++){
-					for(int m=0; m<M; m++){
-						trainMUs[t][j][m] =0.0; 
-					}
-				}
-			}
-			
-			for(int j=0; j<this.numChromStates; j++){
-				for(int m=0; m<M; m++){
-					trainMUs[itr_no] = MUs;
-					trainSIGMAs[itr_no] = SIGMAs;
-				}
-			}
-			
-		}
+		
 		
 		for(int t=0; t<itrs; t++){ // training for the given number of iterations
 			
@@ -379,6 +358,23 @@ public class EMtrain {
 				trainPIj[0] = PIj;
 				trainBjk[0] = Bjk;
 				itr_no++;
+			}
+			if(this.seqState){
+				if(t == 0){
+					for(int p=0; p< this.itr_no-1 ; p++){
+						for(int j=0; j<this.numChromStates; j++){
+							for(int m=0; m<M; m++){
+									trainMUs[p][j][m] =0.0; 
+							}
+						}
+					}
+					for(int j=0; j<this.numChromStates; j++){
+						for(int m=0; m<M; m++){
+							trainMUs[itr_no-1] = MUs;
+							trainSIGMAs[itr_no-1] = SIGMAs;
+						}
+					}
+				}
 			}
 			
 			executeEStep();  //E-Step
@@ -422,20 +418,17 @@ public class EMtrain {
 			if(this.seqState){
 				for(int j=0; j<numChromStates; j++){
 					for(int m=0; m<M; m++){
-						//trainMUs[itr_no][j][m]= MUs[j][m];
+						trainMUs[itr_no][j][m]= MUs[j][m];
 					}
 				}
-				
 				for(int j=0; j<numChromStates; j++){
 					for(int m=0; m<M; m++){
-						//trainSIGMAs[itr_no][j][m]= SIGMAs[j][m];
+						trainSIGMAs[itr_no][j][m]= SIGMAs[j][m];
 					}
 				}
 			}
+			this.itr_no++;
 		}
-		
-		// Turning on the trained flag
-		this.finishedTraining=true;
 		
 		// Plot if asked for
 		if(plot){
@@ -706,11 +699,19 @@ public class EMtrain {
 	
 	
 	//setters
-	public void setSeqMode(){this.seqState = true;}
-	public void setOffSeqMode(){this.seqState = false;}
-	public void setSequences(Sequences seqs){this.seqs = seqs;}
-	public void setXs(double[][] Xs){this.Xs = Xs;}
-	public void setInitialSeqParams(){this.initializeSeqParams();}
+	public void setSeqMode(Sequences seqs, double[][] Xs){
+		this.seqState = true;
+		this.setXs(Xs);
+		this.M = Xs[0].length;
+		this.setSequences(seqs);
+		this.setInitialSeqParams();
+		this.trainMUs = new double[this.total_itrs+1][this.numChromStates][this.M];
+		this.trainSIGMAs = new double[this.total_itrs+1][this.numChromStates][this.M];
+		
+	}
+	private void setSequences(Sequences seqs){this.seqs = seqs;}
+	private void setXs(double[][] Xs){this.Xs = Xs;}
+	private void setInitialSeqParams(){this.initializeSeqParams();}
 	public void serTotalNoItrs(int n){
 		if(this.total_itrs == 0){
 			this.total_itrs = n;
@@ -718,7 +719,6 @@ public class EMtrain {
 	}
 	
 	//Accessors
-	public boolean isTrainined(){return this.finishedTraining;}
 	public double[] getPIj(){return this.PIj;}
 	public double[][] getMUc(){return this.MUc;}
 	public double[][] getMUf(){return this.MUf;}
