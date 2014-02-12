@@ -42,7 +42,7 @@ public class Bayesments {
 			
 			//Run EM
 			System.out.println("Running EM\n");
-			EM.runEM();
+			//EM.runEM();
 			
 			// Perform MAP assignment
 			MAPassignment assignment = new MAPassignment(EM, c);

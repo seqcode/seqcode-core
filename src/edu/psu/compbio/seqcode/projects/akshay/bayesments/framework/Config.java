@@ -41,6 +41,15 @@ public class Config {
 	protected File inter_dir=null;
 	protected boolean includeSeqFeatures;
 	protected String genomeSequencePath;
+	protected boolean onlyChrom;
+	
+	protected String MEMEpath="";
+	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus ";
+	protected int MEMEminw=6;
+	protected int MEMEmaxw=18;
+	
+	protected int chrom_itrs;
+	protected int seq_itrs;
 	
 	
 	
@@ -94,6 +103,15 @@ public class Config {
 				this.numBindingStates = Args.parseInteger(args, "nFacStates", 3);
 				
 				this.numItrs = Args.parseInteger(args, "numItrs", 50);
+				this.chrom_itrs = Args.parseInteger(args, "", 10);
+				this.seq_itrs = Args.parseInteger(args, "", 40);
+				
+				if(!Args.parseFlags(args).contains("onlyChrom")){
+					this.numItrs = this.chrom_itrs+this.seq_itrs;
+				}else{
+					this.chrom_itrs = this.numItrs;
+					this.seq_itrs=0;
+				}
 				
 				
 				
@@ -194,6 +212,20 @@ public class Config {
 					}
 				}
 				
+				onlyChrom = Args.parseFlags(args).contains("onlyChrom") ? true : false;
+				
+				//MEME path
+				MEMEpath = Args.parseString(args, "memepath", MEMEpath);
+				//MEME args
+				MEMEargs = Args.parseString(args, "memeargs", MEMEargs);
+				//MEME minw
+				MEMEminw = Args.parseInteger(args, "mememinw", MEMEminw);
+				//MEME maxw
+				MEMEmaxw = Args.parseInteger(args, "mememaxw", MEMEmaxw);
+				//MEME nmotifs option
+				int MEMEnmotifs = Args.parseInteger(args,"memenmotifs", 3);
+				MEMEargs = MEMEargs + " -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
+				
 				
 				
 			}
@@ -241,6 +273,11 @@ public class Config {
 	public int getSeqWinSize(){return factorWindow;}
 	public boolean includeSeqFeatures(){return includeSeqFeatures;}
 	public String getGenomeSeqPath(){return genomeSequencePath;}
+	public boolean runOnlyChrom(){return this.onlyChrom;}
+	public String getMEMEpath(){return this.MEMEpath;}
+	public String getMEMEargs(){return this.MEMEargs;}
+	public int getNumChromIters(){return this.chrom_itrs;}
+	public int getNumSeqIters(){return this.seq_itrs;}
 	
 	
 	//Some accessors to allow modification of options after config
@@ -306,7 +343,9 @@ public class Config {
 				"\t--medianscale [flag to use scaling by median (default = regression)]\n" +
 				"\t--chromwin <widow size around factor binding site for a chromatin expt>\n"+
 				"\t--facwin <window size around the factor binding site>\n"+
-				"\t--numItrs <num of EM steps>\n"+
+				"\t--numItrs <num of EM steps: if onlyChrom flag is off, this option is invalid>\n"+
+				"\t--numChromItrs <num of chromatin feature interations after which seq features are to be included: invalid if onlyChrom flag is on>\n"+
+				"\t--numSeqItrs <num of iterations to run after the sequence features are included: invalid if onlyChrom flag is on>\n"+
 				"\t--nchrmStates <number of chromatin states to be learned>\n"+
 				"\t--nfacStates <number of factor states to be learned>\n"+
 				"\t--pblogconf <per base log confidence for the background model>\n"+
@@ -317,6 +356,11 @@ public class Config {
 				"\t--affine <flag to turn on affine transcormation>\n"+
 				"\t--noSeq <flag to turn off sequence features>\n"+
 				"\t--seq<Path to seq fasta dir>\n"+
+				"\t--onlyChrom<flag to turn only only chromatin tracks as features>\n"+
+				"\t--memepath <path to the meme bin dir (default: meme is in $PATH)>\n" +
+				"\t--memenmotifs <number of motifs MEME should find for each condition>\n" +
+				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
+				"\t--mememaxw <maxw arg for MEME (default="+MEMEmaxw+")>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	
