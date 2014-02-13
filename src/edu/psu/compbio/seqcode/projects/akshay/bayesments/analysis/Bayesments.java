@@ -36,36 +36,43 @@ public class Bayesments {
 			System.out.println("Plotting the traning data");
 			trainingData.plotData(c, manager);
 			
-			// Initialize the EM training object
-			System.out.println("Initializing EM\n");
-			EMtrain EM = new EMtrain(c,trainingData,manager);
+			//Initialize EMrunner and train the model
 			
-			//Run EM
-			System.out.println("Running EM\n");
-			//EM.runEM();
+			EMrunner trainer = new EMrunner(c, trainingData, manager );
+			trainer.trainModel();
 			
-			// Perform MAP assignment
-			MAPassignment assignment = new MAPassignment(EM, c);
-			assignment.execute();
+			//Do MAP assignament
+			
+			MAPassignment map =  new MAPassignment(trainer.getModel(), c);
+			map.execute(true);
 			
 			// Print all the learned parameters
 			System.out.println("PI-C values\n");
-			BayesmentsSandbox.printArray(EM.getPIj(), "chrom_state");
+			BayesmentsSandbox.printArray(trainer.getPIj(), "chrom_state");
 		
 			System.out.println("MU-C values\n");
-			BayesmentsSandbox.printArray(EM.getMUc(),"MUc" , "MUc", manager);
+			BayesmentsSandbox.printArray(trainer.getMUc(),"MUc" , "MUc", manager);
 		
 			System.out.println("MU-F values\n");
-			BayesmentsSandbox.printArray(EM.getMUf(),"MUf" , "MUf", manager);
+			BayesmentsSandbox.printArray(trainer.getMUf(),"MUf" , "MUf", manager);
+			if(!c.runOnlyChrom()){
+				System.out.println("MU-S values\n");
+				BayesmentsSandbox.printArray(trainer.getMUs(),"MUS" , "MUS", manager);
+			}
 		
 			System.out.println("SIGMA-C values\n");
-			BayesmentsSandbox.printArray(EM.getSIGMAc(),"SIGMAc" , "SIGMAc", manager);
+			BayesmentsSandbox.printArray(trainer.getSIGMAc(),"SIGMAc" , "SIGMAc", manager);
 		
 			System.out.println("SIGMA-F values\n");
-			BayesmentsSandbox.printArray(EM.getSIGMAf(),"SIGMAf" , "SIGMAf", manager);
+			BayesmentsSandbox.printArray(trainer.getSIGMAf(),"SIGMAf" , "SIGMAf", manager);
+			
+			if(!c.runOnlyChrom()){
+				System.out.println("SIGMA-S values\n");
+				BayesmentsSandbox.printArray(trainer.getSIGMAs(),"SIGMAs" , "SIGMAs", manager);
+			}
 		
 			System.out.println("Bjk values\n");
-			BayesmentsSandbox.printArray(EM.getBjk(),"chromatin_State" , "factor_state", manager);
+			BayesmentsSandbox.printArray(trainer.getBjk(),"chromatin_State" , "factor_state", manager);
 		}
 	}	
 }

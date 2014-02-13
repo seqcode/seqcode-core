@@ -68,13 +68,14 @@ public class EMrunner {
 			}
 			//Secondly, run meme on these top seqs and store them in globalListOfMotifs
 			this.globalListOfMotifs = this.runMeme(alltopseqs);
-			//Thirdly, scan these motifs over the peak- pair locations and conver them into chip like signals
+			//Thirdly, scan these motifs over the peak- pair locations and convert them into chip like signals
 			this.seqdata.setMotifs(globalListOfMotifs);
 			this.seqdata.setXc();
 			//Finaly, run the remaining EM iterations with thses new seqence features
 			this.model.setSeqMode(seqdata, seqdata.getXs());
 			model.runEM(num_seq_itrs);
 		}
+		
 		
 		
 	}
@@ -88,6 +89,15 @@ public class EMrunner {
 		
 	}
 	
-	
+	//Accessors
+	public double[] getPIj(){return model.getPIj();}
+	public double[][] getBjk(){return model.getBjk();}
+	public double[][] getMUc(){return model.getMUc();}
+	public double[][] getMUf(){return model.getMUf();}
+	public double[][] getMUs(){return model.getMUs();}
+	public double[][] getSIGMAc(){return model.getSIGMAc();}
+	public double[][] getSIGMAf(){return model.getSIGMAf();}
+	public double[][] getSIGMAs(){return model.getSIGMAs();}
+	public EMtrain getModel(){return this.model;}
 	
 }

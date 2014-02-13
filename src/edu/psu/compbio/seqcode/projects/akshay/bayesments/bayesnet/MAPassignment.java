@@ -63,7 +63,7 @@ public class MAPassignment {
 	/**
 	 * Performs the MAP assignment
 	 */
-	public void execute(boolean plot){
+	public void execute(boolean print){
 		int N = trainingdata.getNumTrainingExamples();
 		int numChromStates = conf.getNumChrmStates();
 		int numFacState = conf.getNumFacStates();
@@ -121,7 +121,7 @@ public class MAPassignment {
 		}
 		
 		// Printing the locations that were assigned to each configuration
-		if(plot){
+		if(print){
 			for(int j=0; j<numChromStates; j++){ // over all chromatin states
 				for(int k=0; k<numFacState; k++){ // over all factor states
 					File outfile = new File(conf.getOutputInterDir().getAbsolutePath()+File.separator+Integer.toString(j)+"chromatin_"+
