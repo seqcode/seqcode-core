@@ -93,7 +93,9 @@ public class Sequences {
 	//Accessors
 	
 	public double[][] getXs(){return this.Xs;}
-	
+	public int getNumMotifs(){return this.motifs_log_odds.size();}
+	// i index starts from 0
+	public String getIthSeq(int i){return this.sequences[i];} 
 	
 	
 }

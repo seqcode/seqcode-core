@@ -872,8 +872,11 @@ public class EMtrain {
 	public double[][] getSIGMAc(){return this.SIGMAc;}
 	public double[][] getSIGMAf(){return this.SIGMAf;}
 	public double[][] getBjk(){return this.Bjk;}
-	public GenomicLocations getTrainingData(){return this.trainingData;}
-	
+	public double[][] getMUs(){return this.MUs;}
+	public double[][] getSIGMAs(){return this.SIGMAs;}
+	public GenomicLocations getChromData(){return this.trainingData;}
+	public Sequences getSeqData(){return this.seqs;}
+	public boolean getSeqStateStatus(){return this.seqState;}
 	// main method is only for testing puposers
 	
 	public static void main(String[] args){

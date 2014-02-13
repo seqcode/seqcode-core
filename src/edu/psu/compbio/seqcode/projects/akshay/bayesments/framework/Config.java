@@ -47,6 +47,7 @@ public class Config {
 	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus ";
 	protected int MEMEminw=6;
 	protected int MEMEmaxw=18;
+	protected int MEMEnmotifs;
 	
 	protected int chrom_itrs;
 	protected int seq_itrs;
@@ -223,7 +224,7 @@ public class Config {
 				//MEME maxw
 				MEMEmaxw = Args.parseInteger(args, "mememaxw", MEMEmaxw);
 				//MEME nmotifs option
-				int MEMEnmotifs = Args.parseInteger(args,"memenmotifs", 3);
+				MEMEnmotifs = Args.parseInteger(args,"memenmotifs", 3);
 				MEMEargs = MEMEargs + " -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
 				
 				
@@ -361,6 +362,7 @@ public class Config {
 				"\t--memenmotifs <number of motifs MEME should find for each condition>\n" +
 				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
 				"\t--mememaxw <maxw arg for MEME (default="+MEMEmaxw+")>\n"+
+				"\t--memenmotifs <number of motifs you want to include>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	
