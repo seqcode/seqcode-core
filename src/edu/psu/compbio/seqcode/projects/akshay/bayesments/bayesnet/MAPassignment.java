@@ -52,7 +52,7 @@ public class MAPassignment {
 	/**
 	 * Performs the MAP assignment
 	 */
-	public void execute(){
+	public void execute(boolean plot){
 		int N = trainingdata.getNumTrainingExamples();
 		int numChromStates = conf.getNumChrmStates();
 		int numFacState = conf.getNumFacStates();
@@ -95,20 +95,22 @@ public class MAPassignment {
 		}
 		
 		// Printing the locations that were assigned to each configuration
-		for(int j=0; j<numChromStates; j++){ // over all chromatin states
-			for(int k=0; k<numFacState; k++){ // over all factor states
-				File outfile = new File(conf.getOutputInterDir().getAbsolutePath()+File.separator+Integer.toString(j)+"chromatin_"+
-			Integer.toString(k)+"_factor.tab");
-				try {
-					FileWriter fw = new FileWriter(outfile);
-					for(int i=0; i<N; i++){
-						if((int) MapAssignment[i][0] == j && (int) MapAssignment[i][1] == k){
-							fw.write(trainingdata.getLocations().get(i).getLocationString()+"\n");
+		if(plot){
+			for(int j=0; j<numChromStates; j++){ // over all chromatin states
+				for(int k=0; k<numFacState; k++){ // over all factor states
+					File outfile = new File(conf.getOutputInterDir().getAbsolutePath()+File.separator+Integer.toString(j)+"chromatin_"+
+					Integer.toString(k)+"_factor.tab");
+					try {
+						FileWriter fw = new FileWriter(outfile);
+						for(int i=0; i<N; i++){
+							if((int) MapAssignment[i][0] == j && (int) MapAssignment[i][1] == k){
+								fw.write(trainingdata.getLocations().get(i).getLocationString()+"\n");
+							}
 						}
+						fw.close();
+					}catch(IOException e){
+						e.printStackTrace();
 					}
-					fw.close();
-				}catch(IOException e){
-					e.printStackTrace();
 				}
 			}
 		}
