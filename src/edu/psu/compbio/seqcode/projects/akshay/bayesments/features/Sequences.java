@@ -60,12 +60,13 @@ public class Sequences {
 		seqgen.setGenomePath(conf.getGenomeSeqPath());
 		sequences = new String[locations.size()];
 		for(int i=0; i< regions.length; i++){
-			sequences[i] =seqgen.execute(regions[i]);
 			//debug lines
 			System.out.println(regions[i].getChrom());
 			System.out.println(regions[i].getStart());
 			System.out.println(regions[i].getEnd());
 			sequences[i].toLowerCase();
+			sequences[i] =seqgen.execute(regions[i]);
+			
 		}
 	}
 	
