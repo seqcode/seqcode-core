@@ -56,14 +56,10 @@ public class Sequences {
 		
 		SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
 		seqgen.useLocalFiles(false);
+		seqgen.useCache(true);
 		//seqgen.setGenomePath(conf.getGenomeSeqPath());
 		sequences = new String[locations.size()];
-		for(int i=0; i< regions.length; i++){
-			//debug lines
-			System.out.println(regions[i].getChrom());
-			System.out.println(regions[i].getStart());
-			System.out.println(regions[i].getEnd());
-			
+		for(int i=0; i< regions.length; i++){			
 			sequences[i] =seqgen.execute(regions[i]);
 			sequences[i].toLowerCase();
 			
