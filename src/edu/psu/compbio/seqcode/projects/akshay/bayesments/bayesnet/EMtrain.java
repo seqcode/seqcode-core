@@ -61,7 +61,6 @@ public class EMtrain {
 	protected int F; // number of factor conditions (alomost always 1)
 	protected int M; // number of motifs to be included as features (this number is initialized when the models enters the seq state mode (setSeqMode))
 	// flag to turn on plotting of the parameters as the function of iterations step in EM
-	protected boolean plot;
 	
 	//The 3-d arrays store the values of seq parameters over all iterations of EM. They are globally defined unlike other non-seq parameters 
 	//because of some technical details
@@ -83,7 +82,6 @@ public class EMtrain {
 	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager) {
 		this.config = config;
 		this.trainingData = trainingData;
-		this.plot = config.doEMplot();
 		
 		//Initializing the model
 		initializeEM(manager);
@@ -354,7 +352,7 @@ public class EMtrain {
 	/**
 	 * Runs the EM algorithm for a given number of iterations and also plots the parameters over the learning rounds if plot parameter is true
 	 */
-	public void runEM(int itrs){
+	public void runEM(int itrs, boolean plot){
 		
 		// Initializing the arrays to store the parameters for all training rounds
 		double[][][] trainMUc = new double[this.total_itrs+1][numChromStates][C]; //initial random params plus itrs 
@@ -451,10 +449,10 @@ public class EMtrain {
 		if(plot){
 			if(this.onlyChrom || this.seqState){
 				//Plotting Pi values
-				double[][] Xaxes = new double[numChromStates][itrs+1];  // plus 1 for initial random parameters
-				double[][] Yaxes = new double[numChromStates][itrs+1];
+				double[][] Xaxes = new double[numChromStates][this.total_itrs+1];  // plus 1 for initial random parameters
+				double[][] Yaxes = new double[numChromStates][this.total_itrs+1];
 				for(int j=0; j<numChromStates; j++){
-					for(int itr =0; itr<itrs+1; itr++){
+					for(int itr =0; itr<this.total_itrs+1; itr++){
 						Xaxes[j][itr] = itr;
 						Yaxes[j][itr] = trainPIj[itr][j];
 					}
@@ -463,12 +461,12 @@ public class EMtrain {
 				piplotter.plot();
 				
 				//Plotting Mu-c
-				Xaxes = new double[C*numChromStates][itrs+1];
-				Yaxes = new double[C*numChromStates][itrs+1];
+				Xaxes = new double[C*numChromStates][this.total_itrs+1];
+				Yaxes = new double[C*numChromStates][this.total_itrs+1];
 				int count=0;
 				for(int j=0; j<numChromStates; j++){
 					for(int c=0; c<C; c++){
-						for(int itr=0; itr<itrs+1; itr++){
+						for(int itr=0; itr<this.total_itrs+1; itr++){
 							Xaxes[count][itr] = itr;
 							Yaxes[count][itr] = trainMUc[itr][j][c];
 						}
@@ -479,12 +477,12 @@ public class EMtrain {
 				MUcPlotter.plot();
 				
 				//Plotting SIGMAc
-				Xaxes = new double[C*numChromStates][itrs+1];
-				Yaxes = new double[C*numChromStates][itrs+1];
+				Xaxes = new double[C*numChromStates][this.total_itrs+1];
+				Yaxes = new double[C*numChromStates][this.total_itrs+1];
 				count=0;
 				for(int j=0; j<numChromStates; j++){
 					for(int c=0; c<C; c++){
-						for(int itr=0; itr<itrs+1; itr++){
+						for(int itr=0; itr<this.total_itrs+1; itr++){
 							Xaxes[count][itr] = itr;
 							Yaxes[count][itr] = trainSIGMAc[itr][j][c];
 						}
@@ -495,13 +493,13 @@ public class EMtrain {
 				SIGMAcPlotter.plot();
 				
 				//Plotting Muf
-				Xaxes = new double[F*numFacBindingStates][itrs+1];
-				Yaxes = new double[C*numFacBindingStates][itrs+1];
+				Xaxes = new double[F*numFacBindingStates][this.total_itrs+1];
+				Yaxes = new double[C*numFacBindingStates][this.total_itrs+1];
 				
 				count=0;
 				for(int k=0; k<numFacBindingStates; k++){
 					for(int nf=0; nf<F; nf++){
-						for(int itr=0; itr<itrs+1; itr++){
+						for(int itr=0; itr<this.total_itrs+1; itr++){
 							Xaxes[count][itr] = itr;
 							Yaxes[count][itr] = trainMUf[itr][k][nf];
 						}
@@ -513,13 +511,13 @@ public class EMtrain {
 				
 				//Plotting SIGMAf
 				
-				Xaxes = new double[F*numFacBindingStates][itrs+1];
-				Yaxes = new double[C*numFacBindingStates][itrs+1];
+				Xaxes = new double[F*numFacBindingStates][this.total_itrs+1];
+				Yaxes = new double[C*numFacBindingStates][this.total_itrs+1];
 				
 				count=0;
 				for(int k=0; k<numFacBindingStates; k++){
 					for(int nf=0; nf<F; nf++){
-						for(int itr=0; itr<itrs+1; itr++){
+						for(int itr=0; itr<this.total_itrs+1; itr++){
 							Xaxes[count][itr] = itr;
 							Yaxes[count][itr] = trainSIGMAf[itr][k][nf];
 						}
@@ -531,13 +529,13 @@ public class EMtrain {
 				SIGMAfPlotter.plot();
 				
 				//Plotting Bjk
-				Xaxes = new double[numFacBindingStates*numChromStates][itrs+1];
-				Yaxes = new double[numFacBindingStates*numChromStates][itrs+1];
+				Xaxes = new double[numFacBindingStates*numChromStates][this.total_itrs+1];
+				Yaxes = new double[numFacBindingStates*numChromStates][this.total_itrs+1];
 				
 				count=0;
 				for(int j=0; j<numChromStates; j++){
 					for(int k=0; k<numFacBindingStates; k++){
-						for(int itr=0; itr<itrs+1; itr++){
+						for(int itr=0; itr<this.total_itrs+1; itr++){
 							Xaxes[count][itr] = itr;
 							Yaxes[count][itr] = trainBjk[itr][j][k];
 						}
@@ -550,11 +548,11 @@ public class EMtrain {
 			}
 			if(this.seqState){
 				
-				double[][] Xaxes = new double[numChromStates][itrs+1];  // plus 1 for initial random parameters
-				double[][] Yaxes = new double[numChromStates][itrs+1];
+				double[][] Xaxes = new double[numChromStates][this.total_itrs+1];  // plus 1 for initial random parameters
+				double[][] Yaxes = new double[numChromStates][this.total_itrs+1];
 				//Plotting Mus
-				Xaxes = new double[M*numChromStates][itrs+1];
-				Yaxes = new double[M*numChromStates][itrs+1];
+				Xaxes = new double[M*numChromStates][this.total_itrs+1];
+				Yaxes = new double[M*numChromStates][this.total_itrs+1];
 				int count=0;
 				for(int j=0; j<numChromStates; j++){
 					for(int m=0; m<M; m++){
@@ -569,12 +567,12 @@ public class EMtrain {
 				MUsPlotter.plot();
 				
 				//Plotting SIIGMAs
-				Xaxes = new double[M*numChromStates][itrs+1];
-				Yaxes = new double[M*numChromStates][itrs+1];
+				Xaxes = new double[M*numChromStates][this.total_itrs+1];
+				Yaxes = new double[M*numChromStates][this.total_itrs+1];
 				count=0;
 				for(int j=0; j<numChromStates; j++){
 					for(int m=0; m<M; m++){
-						for(int itr=0; itr<itrs+1; itr++){
+						for(int itr=0; itr<this.total_itrs+1; itr++){
 							Xaxes[count][itr] = itr;
 							Yaxes[count][itr] = trainSIGMAs[itr][j][m];
 						}
