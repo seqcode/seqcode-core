@@ -47,10 +47,11 @@ public class GenomicLocations {
 	 */
 	public GenomicLocations(ExperimentManager manager, Config config) {
 		try{
+			this.gen = manager.getGenome();
 			File peaksFile = config.getPeaksFile();
 			locations = EventMetaMaker.loadPoints(peaksFile, this.gen);
 			this.experiments = manager.getExperimentSet();
-			this.gen = manager.getGenome();
+			
 			
 			//Filling chromatinRegions
 			List<ExperimentCondition> chromConds = manager.getChromatinConditionList();
