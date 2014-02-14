@@ -48,16 +48,16 @@ public class Sequences {
 		Region[] regions = new Region[locations.size()];
 		int countPoint = 0;
 		for(Point p : locations){
-			regions[countPoint] =  new Region(this.gen,p.getChrom()
-					,p.getLocation()-winSize,p.getLocation()+winSize);
+			regions[countPoint] = p.expand(winSize);
 			countPoint++;
+			
 		}
 		
 		
 		SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
-		seqgen.useLocalFiles(false);
+		seqgen.useLocalFiles(true);
+		seqgen.setGenomePath(conf.getGenomeSeqPath());
 		seqgen.useCache(true);
-		//seqgen.setGenomePath(conf.getGenomeSeqPath());
 		sequences = new String[locations.size()];
 		for(int i=0; i< regions.length; i++){
 			System.out.println(regions[i].getChrom());
