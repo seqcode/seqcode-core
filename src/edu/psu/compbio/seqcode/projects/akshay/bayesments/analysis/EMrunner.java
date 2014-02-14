@@ -42,7 +42,7 @@ public class EMrunner {
 		// Since we are just initializing the model, it is not in seq state
 		this.model = new EMtrain(this.config, this.chromdata,this.manager);
 		// Running the EM only on chromatin features
-		model.runEM(num_chrom_itrs);
+		model.runEM(num_chrom_itrs, onlyChrom && config.doEMplot());
 		if(!this.onlyChrom){ // Now we have to initialze the seq data and features
 			// Before doing anything lets fetch DNA sequences at the peak pair locations
 			this.seqdata = new Sequences(config,chromdata.getLocations());
@@ -73,7 +73,7 @@ public class EMrunner {
 			this.seqdata.setXc();
 			//Finaly, run the remaining EM iterations with thses new seqence features
 			this.model.setSeqMode(seqdata, seqdata.getXs());
-			model.runEM(num_seq_itrs);
+			model.runEM(num_seq_itrs, config.doEMplot());
 		}
 		
 		
