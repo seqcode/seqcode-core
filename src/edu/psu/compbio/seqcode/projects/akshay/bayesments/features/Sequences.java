@@ -63,8 +63,9 @@ public class Sequences {
 			System.out.println(regions[i].getChrom());
 			System.out.println(regions[i].getStart());
 			System.out.println(regions[i].getEnd());
-			sequences[i].toLowerCase();
+			
 			sequences[i] =seqgen.execute(regions[i]);
+			sequences[i].toLowerCase();
 			
 		}
 	}
