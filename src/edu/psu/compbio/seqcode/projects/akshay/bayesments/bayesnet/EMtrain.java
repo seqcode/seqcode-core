@@ -229,7 +229,7 @@ public class EMtrain {
 			}
 			double[] means = this.getEmpMeanValues(numChromStates,  observedScores);
 			for(int j=0; j<numChromStates; j++){
-				MUc[j][m] = means[j];
+				MUs[j][m] = means[j];
 			}
 		}
 		
@@ -242,7 +242,7 @@ public class EMtrain {
 			double max = observedValues[this.getMaxindex(observedValues)];
 			
 			for(int j=0; j<numChromStates; j++){
-				SIGMAc[j][m] = max-min;
+				SIGMAs[j][m] = max-min;
 			}
 		}
 	}

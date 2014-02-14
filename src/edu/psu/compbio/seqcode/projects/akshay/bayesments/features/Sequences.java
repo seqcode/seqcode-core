@@ -60,9 +60,6 @@ public class Sequences {
 		seqgen.useCache(true);
 		sequences = new String[locations.size()];
 		for(int i=0; i< regions.length; i++){
-			System.out.println(regions[i].getChrom());
-			System.out.println(regions[i].getStart());
-			System.out.println(regions[i].getEnd());
 			sequences[i] =seqgen.execute(regions[i]);
 			sequences[i].toLowerCase();
 			
