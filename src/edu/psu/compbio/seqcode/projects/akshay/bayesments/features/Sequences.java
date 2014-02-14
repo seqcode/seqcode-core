@@ -50,7 +50,10 @@ public class Sequences {
 		for(Point p : locations){
 			regions[countPoint] =  new Region(this.gen,p.getChrom()
 					,p.getLocation()-winSize,p.getLocation()+winSize);
+			countPoint++;
 		}
+		
+		
 		SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
 		seqgen.useCache(true);
 		seqgen.useLocalFiles(true);
