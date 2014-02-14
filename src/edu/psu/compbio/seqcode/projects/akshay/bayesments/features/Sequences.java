@@ -28,7 +28,7 @@ public class Sequences {
 		this.winSize = conf.getSeqWinSize();
 		File peaksFile = conf.getPeaksFile();
 		try {
-			locations = EventMetaMaker.loadPoints(peaksFile);
+			locations = EventMetaMaker.loadPoints(peaksFile, this.gen);
 			this.gen = conf.getGenome();
 			this.fetchSequences();
 		} catch (IOException e) {

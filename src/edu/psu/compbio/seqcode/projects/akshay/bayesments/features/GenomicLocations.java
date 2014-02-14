@@ -48,7 +48,7 @@ public class GenomicLocations {
 	public GenomicLocations(ExperimentManager manager, Config config) {
 		try{
 			File peaksFile = config.getPeaksFile();
-			locations = EventMetaMaker.loadPoints(peaksFile);
+			locations = EventMetaMaker.loadPoints(peaksFile, this.gen);
 			this.experiments = manager.getExperimentSet();
 			this.gen = manager.getGenome();
 			
