@@ -55,7 +55,6 @@ public class Sequences {
 		
 		
 		SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
-		seqgen.useCache(true);
 		seqgen.useLocalFiles(true);
 		seqgen.setGenomePath(conf.getGenomeSeqPath());
 		sequences = new String[locations.size()];
