@@ -44,7 +44,7 @@ public class Sequences {
 		this.fetchSequences();
 	}
 	
-	private void fetchSequences(){
+	private void fetchSequences() {
 		Region[] regions = new Region[locations.size()];
 		int countPoint = 0;
 		for(Point p : locations){
@@ -59,7 +59,10 @@ public class Sequences {
 		seqgen.useCache(true);
 		//seqgen.setGenomePath(conf.getGenomeSeqPath());
 		sequences = new String[locations.size()];
-		for(int i=0; i< regions.length; i++){			
+		for(int i=0; i< regions.length; i++){
+			System.out.println(regions[i].getChrom());
+			System.out.println(regions[i].getStart());
+			System.out.println(regions[i].getEnd());
 			sequences[i] =seqgen.execute(regions[i]);
 			sequences[i].toLowerCase();
 			
