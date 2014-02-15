@@ -85,9 +85,9 @@ public class Sequences {
 		int seq_length = seq.length();
 		double total_score=0.0;
 		for(int i=0; i< seq_length-motif_width+1; i++){
-			double score =1.0;
+			double score =0.0;
 			for(int j=0; j<motif_width; j++){
-				score = score*wm.matrix[j][seq.charAt(i+j)];
+				score = score+wm.matrix[j][seq.charAt(i+j)];
 			}
 			total_score = total_score+score;
 		}
