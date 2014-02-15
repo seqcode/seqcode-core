@@ -672,8 +672,8 @@ public class EMtrain {
 		
 		//Making sure PI-j for any state does not go to zero
 		for(int j=0; j<numChromStates; j++){
-			if(PIj[j] == 0){
-				PIj[j] = 0.001;
+			if(PIj[j] < 0.01){
+				PIj[j] = 0.01;
 			}
 		}
 		
