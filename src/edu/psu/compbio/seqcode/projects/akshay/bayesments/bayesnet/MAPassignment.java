@@ -150,7 +150,7 @@ public class MAPassignment {
 		}
 		this.seqs = model.getSeqData();
 		this.MUs = model.getMUs();
-		this.SIGMAs = model.getSIGMAc();
+		this.SIGMAs = model.getSIGMAs();
 		this.M = seqs.getNumMotifs();
 		this.Xs = seqs.getXs();
 	}
