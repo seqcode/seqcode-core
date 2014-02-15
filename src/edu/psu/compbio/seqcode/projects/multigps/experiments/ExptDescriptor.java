@@ -39,4 +39,5 @@ public class ExptDescriptor {
 		bindingModel=mod;
 		perBaseMaxReads = perBPMax;
 	}
+	
 }

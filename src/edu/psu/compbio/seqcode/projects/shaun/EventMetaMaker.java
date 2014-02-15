@@ -67,7 +67,7 @@ public class EventMetaMaker {
 			PointProfiler profiler=null;
 			boolean normalizeProfile=false;
 			if(profilerType.equals("events")){
-				ArrayList<Point> events = loadPoints(new File(eventFile));
+				ArrayList<Point> events = loadPoints(new File(eventFile), gen);
 				System.out.println("Loading data...");
 				profiler = new EventProfiler(params, gen, events);
 			}
@@ -124,7 +124,7 @@ public class EventMetaMaker {
 				"--batch [a flag to run without displaying the window]");
 		System.exit(1);
 	}
-	public static ArrayList<Point> loadPoints(File f) throws IOException {
+	public static ArrayList<Point> loadPoints(File f, Genome g) throws IOException {
 		System.out.println("Loading points");
 		ArrayList<Point> pts = new ArrayList<Point>();
 		BufferedReader br = new BufferedReader(new FileReader(f));
@@ -144,11 +144,11 @@ public class EventMetaMaker {
 				}
 				Point pt = null;
 				if(strand == '+') { 
-					pt = new StrandedPoint(gen, chrom, location, strand);
+					pt = new StrandedPoint(g, chrom, location, strand);
 				} else if (strand == '-') { 
-					pt = new StrandedPoint(gen, chrom, location, strand);					
+					pt = new StrandedPoint(g, chrom, location, strand);					
 				} else { 
-					pt = new Point(gen, chrom, location);
+					pt = new Point(g, chrom, location);
 				}
 				pts.add(pt);
 			} else { 
