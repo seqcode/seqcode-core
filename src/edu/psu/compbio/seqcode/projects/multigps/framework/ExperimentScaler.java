@@ -7,6 +7,7 @@ import java.util.Map;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.deepseq.PairedCountData;
+import edu.psu.compbio.seqcode.gse.utils.models.Model;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataFrame;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataRegression;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
@@ -24,6 +25,7 @@ public class ExperimentScaler {
 	protected Genome genome;
 	protected Sample exptA, exptB;
 	protected int windowSize=10000;
+	protected double scalingRatio=-1;
 	
 	public ExperimentScaler(Sample a, Sample b){
 		exptA = a;
@@ -36,7 +38,7 @@ public class ExperimentScaler {
 	 * @return double 
 	 */
 	public double scalingRatioByRegression(int win){
-		double scalingRatio=1;
+		scalingRatio=1;
 		if(exptB==null)
 			return(1);
 		windowSize = win;
@@ -66,7 +68,7 @@ public class ExperimentScaler {
 	 * @return
 	 */
 	public double scalingRatioByMedian(int win){
-		double scalingRatio=1;
+		scalingRatio=1;
 		if(exptB==null)
 			return(1);
 		windowSize = win;
@@ -92,6 +94,81 @@ public class ExperimentScaler {
         		scalingRatio, ratios.size(), windowSize));
 		
 		return(scalingRatio);
+	}
+	
+	/**
+	 * Find the scaling ratio according to the SES method from Diaz, et al. Stat Appl Genet Mol Biol. 2012.
+	 * Also sets a background proportion estimate for the signal channel.  
+	 * @return
+	 */
+	public double scalingRatioBySES(int win){
+		windowSize = win;
+		scalingRatio=1;
+		ArrayList<PairedCounts> counts = new ArrayList<PairedCounts>();
+		
+		//Either A alone if no experiment B, or A & B otherwise
+		double totalA=0, totalB=0, numWin=0;
+		for(String chrom:genome.getChromList()) {
+            int chrlen = genome.getChromLength(chrom);
+            for (int start = 0; start  < chrlen - windowSize; start += windowSize) {
+                Region r = new Region(genome, chrom, start, start + windowSize);
+                double countA = exptA.countHits(r);
+                double countB = exptB==null ? 0 : exptB.countHits(r);                
+                counts.add(new PairedCounts(countA, countB));
+                
+                totalA+=countA;
+                totalB+=countB;
+                numWin++;
+            }
+        }
+		if(exptB==null){
+			int winCount=0;
+			totalB=totalA;
+			for(String chrom:genome.getChromList()) {
+	            int chrlen = genome.getChromLength(chrom);
+	            for (int start = 0; start  < chrlen - windowSize; start += windowSize) {                
+	                counts.get(winCount).y=totalA/numWin;
+	                winCount++;
+	            }
+	        }
+		}
+		
+        Collections.sort(counts);
+        
+        //SES procedure
+        double cumulA=0, cumulB=0, maxDiffAB=0, maxDiffAprop=0, currDiff=0;
+        int maxDiffIndex=0, i=0;
+        for(PairedCounts pc : counts){
+        	cumulA+=pc.x;
+        	cumulB+=pc.y;
+        	currDiff = (cumulB/totalB)-(cumulA/totalA);
+        	if(currDiff>maxDiffAB){
+        		maxDiffAB=currDiff;
+        		maxDiffIndex=i;
+        		maxDiffAprop=(cumulA/totalA);
+        		scalingRatio = cumulB>0 ? cumulA/cumulB : 1;
+        	}
+        	i++;
+        }
+        
+        System.err.println(String.format("Scaling ratio estimated as %.3f based on %d regions of size %d",
+        		scalingRatio, counts.size(), windowSize));
+        
+		return(scalingRatio);
+	}
+	
+	/**
+	 * Calculate the background proportion of an IP experiment by correcting the scaling ratio by the read count ratio.
+	 * Be careful with this method, there are a couple of assumptions:
+	 *  - The scaling ratio was calculated between IP and control experiments
+	 *  - The method used to calculate the scaling ratio attempted to normalize to background and not all regions (e.g. SES method attempts background normalization) 
+	 * @return
+	 */
+	public Double calculateBackgroundFromScalingRatio(){
+		if(scalingRatio==-1)
+			return(-1.0); //scaling not yet performed
+		
+		return(scalingRatio / (exptA.getHitCount()/exptB.getHitCount()));
 	}
 	
 	/**
@@ -139,9 +216,35 @@ public class ExperimentScaler {
 						
 						double regRatio = scaler.scalingRatioByRegression(10000);
 						System.out.println("Scaling ratio by regression = "+regRatio);
+						
+						double sesRatio = scaler.scalingRatioBySES(200);
+						System.out.println("Scaling ratio by SES = "+sesRatio);
+						
+						double backProp = scaler.calculateBackgroundFromScalingRatio();
+						System.out.println("Estimated background proportion = "+backProp);
 					}
 				}
 			}			
 		}
+	}
+	
+	
+	/**
+	 * Simple class for storing paired counts that are sortable in first dimension
+	 * @author mahony
+	 *
+	 */
+	public class PairedCounts  implements Comparable<PairedCounts>{
+		public Double x,y;
+		public PairedCounts(double a, double b){
+			x=a;
+			y=b;
+		}
+		//Sort on the X variables
+		public int compareTo(PairedCounts pc) {
+			if(x<pc.x){return -1;}
+			if(x>pc.x){return 1;}
+			return 0;
+		}		
 	}
 }

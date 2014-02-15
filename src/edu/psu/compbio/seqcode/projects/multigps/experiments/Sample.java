@@ -164,7 +164,7 @@ public class Sample {
 				maxReadsPerBP = perBaseBack.getMaxThreshold('.');
 			capPerBaseCount(maxReadsPerBP);
 		}
-		initializeBackground(); //Reinitialize given updated hit count 
+		initializeBackground(); //Reinitialize given updated hit count (again - just the per-base background model)
 	}
 	
 	

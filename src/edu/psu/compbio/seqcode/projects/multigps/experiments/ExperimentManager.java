@@ -126,7 +126,7 @@ public class ExperimentManager {
 							ctrl = allSamples.get("DEFAULT:DEFAULT:control");
 						//If no control specified, ctrl is still null
 						
-						ControlledExperiment rep = new ControlledExperiment(config, repCount, e.condition, e.replicate, sig, ctrl, e.bindingModel, config.getEstimateScaling(), config.getScalingByMedian());
+						ControlledExperiment rep = new ControlledExperiment(config, repCount, e.condition, e.replicate, sig, ctrl, e.bindingModel, config.getEstimateScaling());
 						allReplicates.put(repName, rep);
 						replicateList.add(rep);
 						repCount++;

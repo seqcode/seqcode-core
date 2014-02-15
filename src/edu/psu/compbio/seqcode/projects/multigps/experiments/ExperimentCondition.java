@@ -92,6 +92,18 @@ public class ExperimentCondition {
 			total += s.getHitCount();
 		return total;
 	}
+	
+	/**
+	 * Get the total weight count for the estimated background components in signal samples
+	 * @return
+	 */
+	public double getTotalSignalEstBackCount(){
+		double total=0;
+		for(Sample s: signalSamples)
+			total += (1-this.getSigProp())*s.getHitCount();
+		return total;
+	}
+	
 	/**
 	 * Get the total weight count for signal samples
 	 * @return

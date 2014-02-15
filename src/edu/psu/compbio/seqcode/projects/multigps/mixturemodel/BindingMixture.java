@@ -66,7 +66,7 @@ public class BindingMixture {
 		activeComponents = new HashMap<Region, List<List<BindingComponent>>>();
 		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
 			conditionBackgrounds.put(cond, new BackgroundCollection());
-			conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getSigLogConf(), cond.getTotalSignalCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), cond.getMaxModelRange(), '.', 1, true));
+			conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getSigLogConf(), cond.getTotalSignalEstBackCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), cond.getMaxModelRange(), '.', 1, true));
 			System.err.println("Alpha "+cond.getName()+"\tRange="+cond.getMaxModelRange()+"\t"+(double)conditionBackgrounds.get(cond).getMaxThreshold('.'));
 		}
 		
@@ -299,7 +299,7 @@ public class BindingMixture {
     public void updateAlphas(){
     	for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
 			conditionBackgrounds.put(cond, new BackgroundCollection());
-			conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getSigLogConf(), cond.getTotalSignalCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), cond.getMaxModelRange(), '.', 1, true));
+			conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getSigLogConf(), cond.getTotalSignalEstBackCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), cond.getMaxModelRange(), '.', 1, true));
 			System.err.println("Alpha "+cond.getName()+"\tRange="+cond.getMaxModelRange()+"\t"+(double)conditionBackgrounds.get(cond).getMaxThreshold('.'));
 		}
     }
