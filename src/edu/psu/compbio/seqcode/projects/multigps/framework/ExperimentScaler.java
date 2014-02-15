@@ -167,8 +167,8 @@ public class ExperimentScaler {
 	public Double calculateBackgroundFromScalingRatio(){
 		if(scalingRatio==-1)
 			return(-1.0); //scaling not yet performed
-		
-		return(scalingRatio / (exptA.getHitCount()/exptB.getHitCount()));
+		double ctrlCount = exptB==null ? exptA.getHitCount() : exptB.getHitCount();
+		return(scalingRatio / (exptA.getHitCount()/ctrlCount));
 	}
 	
 	/**
