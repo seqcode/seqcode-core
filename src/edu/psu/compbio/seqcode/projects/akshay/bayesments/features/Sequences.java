@@ -89,7 +89,7 @@ public class Sequences {
 			for(int j=0; j<motif_width; j++){
 				score = score+wm.matrix[j][seq.charAt(i+j)];
 			}
-			total_score = total_score+(score >0.0 ? score : 0.0);
+			total_score = total_score+(score >0.0 ? score : 0.1);
 		}
 		System.out.println(total_score);
 		return total_score;
