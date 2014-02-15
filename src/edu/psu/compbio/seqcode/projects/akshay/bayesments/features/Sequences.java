@@ -91,6 +91,7 @@ public class Sequences {
 			}
 			total_score = total_score+(score >0.0 ? score : 0.0);
 		}
+		System.out.println(total_score);
 		return total_score;
 	}
 	
@@ -99,7 +100,15 @@ public class Sequences {
 	public double[][] getXs(){return this.Xs;}
 	public int getNumMotifs(){return this.motifs_log_odds.size();}
 	// i index starts from 0
-	public String getIthSeq(int i){return this.sequences[i];} 
+	public String getIthSeq(int i){return this.sequences[i];}
+	
+	public static void main(String[] args){
+		double s = -2.0;
+		double tt=2.0;
+		
+		tt = tt + (s>0.0?s:0.0);
+		System.out.println(tt);
+	}
 	
 	
 }
