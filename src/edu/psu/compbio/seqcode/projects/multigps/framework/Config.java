@@ -74,6 +74,7 @@ public class Config {
 	protected boolean annotOverlapOnly=false;
 	protected boolean estimateScaling=true;
 	protected boolean scalingByMedian = false; //Default is to estimate scaling by regression
+	protected boolean scalingBySES = false; //Default is to estimate scaling by regression
 	protected int scalingSlidingWindow = 10000; 
 	protected boolean sequenceAvailable=false;
 	protected List<Region> regionsToPlot = new ArrayList<Region>(); //List of regions that will be printed during EM training (for debugging/demonstration)
@@ -363,6 +364,8 @@ public class Config {
 				estimateScaling = Args.parseFlags(args).contains("noscaling") ? false : true;
 				//Scale by median or regression
 				scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
+				//Scale by SES or regression
+				scalingBySES = Args.parseFlags(args).contains("sesscale") ? true : false;
 				//Regions to print during EM training
 				if(ap.hasKey("plotregions"))
 					regionsToPlot = Utils.loadRegionsFromFile(Args.parseString(args, "plotregions", null), gen, -1);
@@ -462,6 +465,7 @@ public class Config {
 	public boolean getAnnotOverlapOnly(){return annotOverlapOnly;}
 	public boolean getEstimateScaling(){return estimateScaling;}
 	public boolean getScalingByMedian(){return scalingByMedian;}
+	public boolean getScalingBySES(){return scalingBySES;}
 	public int getScalingSlidingWindow(){return scalingSlidingWindow;}
 	public boolean getSequenceAvailable(){return sequenceAvailable;}
 	public List<Region> getRegionsToPlot(){return regionsToPlot;}

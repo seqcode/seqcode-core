@@ -55,7 +55,7 @@ public class PotentialRegionFilter {
     			if(binWidth>maxBinWidth){maxBinWidth=binWidth;}
     			replicateBackgrounds.put(rep, new BackgroundCollection());
     			//global threshold
-    			replicateBackgrounds.get(rep).addBackgroundModel(new PoissonBackgroundModel(-1, config.getPRLogConf(), rep.getSignal().getHitCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), rep.getBindingModel().getInfluenceRange(), '.', 1, true));
+    			replicateBackgrounds.get(rep).addBackgroundModel(new PoissonBackgroundModel(-1, config.getPRLogConf(), (1-rep.getSigProp())*rep.getSignal().getHitCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), rep.getBindingModel().getInfluenceRange(), '.', 1, true));
     			for(Integer i : config.getLocalBackgroundWindows()){
                 	if(rep.hasControl()){//local control thresholds 
                     	//signal threshold based on what would be expected from the CONTROL locality

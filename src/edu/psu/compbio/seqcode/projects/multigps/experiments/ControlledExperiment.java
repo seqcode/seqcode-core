@@ -21,13 +21,13 @@ public class ControlledExperiment {
 	protected double ctrlScalingRatio = 1.0; //scaling signal versus control
 	protected double sigCount=0;   //Signal reads in the signal channel
 	protected double noiseCount=0; //Noise reads in the signal channel
-	protected double signalProportion= 1.0; //Fraction of reads assigned to signal
+	protected double signalProportion= 0.0; //Fraction of reads assigned to signal. Init to zero to parameterize Poisson background model in the absence of a sig/noise estimate 
 	protected BindingModel model;
 	protected String condName;
 	protected String repName;
 	protected String name;
 	
-	public ControlledExperiment(Config c, int idx, String cn, String rn, Sample sig, Sample ctrl, BindingModel initModel, boolean estimateScaling, boolean scaleByMedian){
+	public ControlledExperiment(Config c, int idx, String cn, String rn, Sample sig, Sample ctrl, BindingModel initModel, boolean estimateScaling){
 		config = c;
 		index=idx;
 		condName = cn;
@@ -40,10 +40,13 @@ public class ControlledExperiment {
 		if(estimateScaling){
 			System.err.println("Estimating scaling ratio for "+name);
 			ExperimentScaler scaler = new ExperimentScaler(signal, control);
-			if(scaleByMedian)
+			if(config.getScalingByMedian())
 				ctrlScalingRatio = scaler.scalingRatioByMedian(config.getScalingSlidingWindow());
+			else if(config.getScalingBySES())
+				ctrlScalingRatio = scaler.scalingRatioBySES(config.getScalingSlidingWindow());
 			else
 				ctrlScalingRatio = scaler.scalingRatioByRegression(config.getScalingSlidingWindow());
+			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
 		}
 	}
 	
