@@ -129,11 +129,11 @@ public class PotentialRegionFilter {
             }
         }
 		//Update signal & noise counts 
-        for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+        /*for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
     		for(ControlledExperiment rep : cond.getReplicates()){
     			rep.setSigNoiseCounts(potRegCountsSigChannel.get(rep), nonPotRegCountsSigChannel.get(rep));
     		}
-        }
+        }*/
         
         for(Region r : potentialRegions)
         	potRegionLengthTotal+=(double)r.getWidth();

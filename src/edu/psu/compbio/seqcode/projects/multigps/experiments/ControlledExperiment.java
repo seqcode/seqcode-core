@@ -40,13 +40,14 @@ public class ControlledExperiment {
 		if(estimateScaling){
 			System.err.println("Estimating scaling ratio for "+name);
 			ExperimentScaler scaler = new ExperimentScaler(signal, control);
-			if(config.getScalingByMedian())
-				ctrlScalingRatio = scaler.scalingRatioByMedian(config.getScalingSlidingWindow());
-			else if(config.getScalingBySES())
+			if(config.getScalingBySES())
 				ctrlScalingRatio = scaler.scalingRatioBySES(config.getScalingSlidingWindow());
+			else if(config.getScalingByMedian())
+				ctrlScalingRatio = scaler.scalingRatioByMedian(config.getScalingSlidingWindow());
 			else
 				ctrlScalingRatio = scaler.scalingRatioByRegression(config.getScalingSlidingWindow());
 			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
+			System.err.println("Signal proportion estimate from scaling for "+name+" = "+signalProportion);
 		}
 	}
 	

@@ -366,6 +366,8 @@ public class Config {
 				scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
 				//Scale by SES or regression
 				scalingBySES = Args.parseFlags(args).contains("sesscale") ? true : false;
+				//Scaling window
+				scalingSlidingWindow = Args.parseInteger(args,"scalewin",scalingSlidingWindow);
 				//Regions to print during EM training
 				if(ap.hasKey("plotregions"))
 					regionsToPlot = Utils.loadRegionsFromFile(Args.parseString(args, "plotregions", null), gen, -1);
@@ -581,6 +583,8 @@ public class Config {
 				"\t--mlconfignotshared [flag to not share component configs in the ML step]\n" +
 				"\t--noscaling [flag to turn off signal vs control scaling]\n" +
 				"\t--medianscale [flag to use scaling by median (default = regression)]\n" +
+				"\t--sesscale [flag to use scaling by SES (default = regression)]\n" +
+				"\t--scalewin <window size for scaling procedure>\n" +
 				"\t--exclude <file of regions to ignore>\n" +
 				"\t--plotregions <regions to print during EM training>\n" +
 				"\t--noposprior [flag to turn off multi-cond pos prior]\n" +

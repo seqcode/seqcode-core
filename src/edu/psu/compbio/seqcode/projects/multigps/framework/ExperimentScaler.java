@@ -58,7 +58,7 @@ public class ExperimentScaler {
         r.calculate();                                                                                                                                                      
         Map<String, Double> map = r.collectCoefficients();                                                                                                                  
         scalingRatio = map.get("y");                                                                                                                                        
-        System.err.println(String.format("Scaling ratio estimated as %.3f based on %d regions of size %d",
+        System.err.println(String.format("Scaling ratio estimated by regression = %.3f based on %d regions of size %d",
         		scalingRatio, scalingData.size(), windowSize));
         return(scalingRatio);
 	}
@@ -90,7 +90,7 @@ public class ExperimentScaler {
         }
         Collections.sort(ratios);
 		scalingRatio = ratios.get(ratios.size() / 2);
-        System.err.println(String.format("Scaling ratio estimated as %.3f based on %d regions of size %d",
+        System.err.println(String.format("Scaling ratio estimated by median scaling = %.3f based on %d regions of size %d",
         		scalingRatio, ratios.size(), windowSize));
 		
 		return(scalingRatio);
@@ -151,7 +151,7 @@ public class ExperimentScaler {
         	i++;
         }
         
-        System.err.println(String.format("Scaling ratio estimated as %.3f based on %d regions of size %d",
+        System.err.println(String.format("Scaling ratio estimated by SES = %.3f based on %d regions of size %d",
         		scalingRatio, counts.size(), windowSize));
         
 		return(scalingRatio);
