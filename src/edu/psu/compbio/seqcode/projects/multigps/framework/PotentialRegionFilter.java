@@ -63,7 +63,7 @@ public class PotentialRegionFilter {
                 	}else{
                 		//local signal threshold -- this may bias against locally enriched signal regions, and so should only be used if there is no control or if the control is not yet scaled
                     	if(i.intValue()>=10000) // we don't want the window too small in this case
-                    		replicateBackgrounds.get(rep).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), config.getPRLogConf(), rep.getSignal().getHitCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), rep.getBindingModel().getInfluenceRange(), '.', 1, true));
+                    		replicateBackgrounds.get(rep).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), config.getPRLogConf(), (1-rep.getSigProp())*rep.getSignal().getHitCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), rep.getBindingModel().getInfluenceRange(), '.', 1, true));
                 	}	
                 }
     			
@@ -128,12 +128,14 @@ public class PotentialRegionFilter {
                 }
             }
         }
-		//Update signal & noise counts 
-        /*for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+        
+		//Initialize signal & noise counts based on potential region calls
+        for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
     		for(ControlledExperiment rep : cond.getReplicates()){
-    			rep.setSigNoiseCounts(potRegCountsSigChannel.get(rep), nonPotRegCountsSigChannel.get(rep));
+    			if(rep.getSigProp()==0) //Only update if not already initialized
+    				rep.setSigNoiseCounts(potRegCountsSigChannel.get(rep), nonPotRegCountsSigChannel.get(rep));
     		}
-        }*/
+        }
         
         for(Region r : potentialRegions)
         	potRegionLengthTotal+=(double)r.getWidth();

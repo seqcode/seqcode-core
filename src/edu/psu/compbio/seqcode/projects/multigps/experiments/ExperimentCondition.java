@@ -99,8 +99,9 @@ public class ExperimentCondition {
 	 */
 	public double getTotalSignalEstBackCount(){
 		double total=0;
-		for(Sample s: signalSamples)
-			total += (1-this.getSigProp())*s.getHitCount();
+		for(ControlledExperiment r : replicates){
+			total+=r.getNoiseCount();
+		}
 		return total;
 	}
 	

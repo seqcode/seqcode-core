@@ -46,8 +46,11 @@ public class ControlledExperiment {
 				ctrlScalingRatio = scaler.scalingRatioByMedian(config.getScalingSlidingWindow());
 			else
 				ctrlScalingRatio = scaler.scalingRatioByRegression(config.getScalingSlidingWindow());
+			
 			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
-			System.err.println("Signal proportion estimate from scaling for "+name+" = "+signalProportion);
+			sigCount = signalProportion*signal.getHitCount();
+			noiseCount = (1-signalProportion)*signal.getHitCount();
+			System.err.println("Signal proportion estimate from scaling for "+name+" = "+String.format("%.3f", signalProportion));
 		}
 	}
 	
