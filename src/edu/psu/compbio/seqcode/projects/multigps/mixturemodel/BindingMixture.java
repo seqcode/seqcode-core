@@ -324,14 +324,17 @@ public class BindingMixture {
     }
 
     /**
-     * Initialize the global noise parameters, using only non-potential region counts
+     * Initialize the global noise parameters. Inferred either from:
+     *  - non-potential region read counts, or
+     *  - noise proportion of reads from SES
      */
     protected void initializeGlobalNoise(){
     	for(int e=0; e<manager.getNumConditions(); e++){
     		ExperimentCondition cond = manager.getExperimentSet().getIndexedCondition(e);
+    		
+    		// Part that deals with read counts from non-potential regions... calculate values anyway whether using them or not
     		double potRegLengthTotal = potRegFilter.getPotRegionLengthTotal();
     		double nonPotRegLengthTotal = config.getGenome().getGenomeLength() - potRegLengthTotal;
-    		
     		//Combine control channel counts (avoiding duplication)
     		double potRegCountsSigChannel=0, nonPotRegCountsSigChannel=0; 
     		double potRegCountsCtrlChannel=0, nonPotRegCountsCtrlChannel=0; 
@@ -346,12 +349,17 @@ public class BindingMixture {
     			potRegCountsSigChannel+=potRegFilter.getPotRegCountsSigChannel(rep);
 				nonPotRegCountsSigChannel+=potRegFilter.getNonPotRegCountsSigChannel(rep);
     		}
-    		noisePerBase[e] = nonPotRegCountsSigChannel/nonPotRegLengthTotal;  //Signal channel noise per base
-    		System.err.println("Global noise per base initialization for "+cond.getName()+" = "+noisePerBase[e]);
     		//relativeCtrlNoise just tells us if there is a systemic over/under representation of reads in potential regions (in the control)
     		//NOTE: not used for anything right now. 
     		relativeCtrlNoise[e] = (potRegCountsCtrlChannel==0 && nonPotRegCountsCtrlChannel==0) ? 
     				1 : (potRegCountsCtrlChannel/potRegLengthTotal)/(nonPotRegCountsCtrlChannel/nonPotRegLengthTotal);
+
+    		
+    		if(config.getScalingBySES())
+    			noisePerBase[e] = cond.getSigProp() * config.getMappableGenomeLength();
+    		else
+    			noisePerBase[e] = nonPotRegCountsSigChannel/nonPotRegLengthTotal;  //Signal channel noise per base
+    		System.err.println("Global noise per base initialization for "+cond.getName()+" = "+noisePerBase[e]);
     	}
     }
     
