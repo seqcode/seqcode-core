@@ -159,7 +159,7 @@ public class BindingMLAssignment {
         		sigRepHitCountTotals[rep.getIndex()]=0;
         		for(StrandedBaseCount s : signals.get(rep.getIndex()))
         			sigRepHitCountTotals[rep.getIndex()]+=s.getCount();
-        		uniformRepHitCountTotals[rep.getIndex()] = (rep.getSigCount()/config.getMappableGenomeLength())*(double)w.getWidth();
+        		uniformRepHitCountTotals[rep.getIndex()] = ((rep.getNoiseCount()/config.getMappableGenomeLength())*(double)w.getWidth())/rep.getControlScaling(); //Normalizing by control scaling is a hack - usually control scaling will be 1 when the replicate has no control... however, it is not 1 for SES. 
         	}
         	
         	//Load replicate index for each read
@@ -275,7 +275,7 @@ public class BindingMLAssignment {
 				            if(!controlsSeen.contains(rep.getControl()))
 				            	condCtrlResp+=ccount;
 				            controlsSeen.add(rep.getControl());
-			            }else{  //If there is no control channel, assign pseudo-control counts as if the reads were distributed perfectly uniformly
+			            }else{  //If there is no control channel, assign pseudo-control counts as if the noise reads in the IP channel were distributed perfectly uniformly
 			            	repCtrlResp = uniformRepHitCountTotals[rep.getIndex()]*pi[c][j];
 			            	if(!uniformBackAdded)
 			            		condCtrlResp+=repCtrlResp;
