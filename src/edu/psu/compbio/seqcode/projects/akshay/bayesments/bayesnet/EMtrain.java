@@ -68,6 +68,13 @@ public class EMtrain {
 	double[][][] trainMUs;
 	double[][][] trainSIGMAs;
 	
+	double[][][] trainMUc; 
+	double[][][] trainMUf; 
+	double[][][] trainSIGMAc;
+	double[][][] trainSIGMAf;
+	double[][] trainPIj; 
+	double[][][] trainBjk; 
+	
 	//Current round of EM. This remembers, if the model was run previously in non-seq mode and hence globally defined
 	protected int itr_no=0;
 	//Total number of EM iters, both, in seq and non-seq mode (Should be given when the class object is initialized)
@@ -355,17 +362,25 @@ public class EMtrain {
 	public void runEM(int itrs, boolean plot){
 		
 		// Initializing the arrays to store the parameters for all training rounds
-		double[][][] trainMUc = new double[this.total_itrs+1][numChromStates][C]; //initial random params plus itrs 
-		double[][][] trainMUf = new double[this.total_itrs+1][numFacBindingStates][F];
-		double[][][] trainSIGMAc = new double[this.total_itrs+1][numChromStates][C];
-		double[][][] trainSIGMAf = new double[this.total_itrs+1][numFacBindingStates][F];
-		double[][] trainPIj = new double[this.total_itrs+1][numChromStates];
-		double[][][] trainBjk = new double[this.total_itrs+1][numChromStates][numFacBindingStates];
+		//double[][][] trainMUc = new double[this.total_itrs+1][numChromStates][C]; //initial random params plus itrs 
+		//double[][][] trainMUf = new double[this.total_itrs+1][numFacBindingStates][F];
+		//double[][][] trainSIGMAc = new double[this.total_itrs+1][numChromStates][C];
+		//double[][][] trainSIGMAf = new double[this.total_itrs+1][numFacBindingStates][F];
+		//double[][] trainPIj = new double[this.total_itrs+1][numChromStates];
+		//double[][][] trainBjk = new double[this.total_itrs+1][numChromStates][numFacBindingStates];
 		
 		
 		for(int t=0; t<itrs; t++){ // training for the given number of iterations
 			
 			if(itr_no==0){      //Copy the initial set of random parameters. True on the first round of EM
+				
+				trainMUc = new double[this.total_itrs+1][numChromStates][C];
+				trainMUf = new double[this.total_itrs+1][numFacBindingStates][F];
+				trainSIGMAc = new double[this.total_itrs+1][numChromStates][C];
+				trainSIGMAf = new double[this.total_itrs+1][numFacBindingStates][F];
+				trainPIj = new double[this.total_itrs+1][numChromStates];
+				trainBjk = new double[this.total_itrs+1][numChromStates][numFacBindingStates];
+				
 				trainMUc[0] = MUc;
 				trainMUf[0] = MUf;
 				trainSIGMAc[0] = SIGMAc;
@@ -461,78 +476,70 @@ public class EMtrain {
 				piplotter.plot();
 				
 				//Plotting Mu-c
-				Xaxes = new double[C*numChromStates][this.total_itrs+1];
-				Yaxes = new double[C*numChromStates][this.total_itrs+1];
-				int count=0;
-				for(int j=0; j<numChromStates; j++){
-					for(int c=0; c<C; c++){
-						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[count][itr] = itr;
-							Yaxes[count][itr] = trainMUc[itr][j][c];
-						}
-						count++;
-					}
-				}
-				EMIterPlotter MUcPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MU-C");
-				MUcPlotter.plot();
+				Xaxes = new double[numChromStates][this.total_itrs+1];
+				Yaxes = new double[numChromStates][this.total_itrs+1];
 				
-				//Plotting SIGMAc
-				Xaxes = new double[C*numChromStates][this.total_itrs+1];
-				Yaxes = new double[C*numChromStates][this.total_itrs+1];
-				count=0;
-				for(int j=0; j<numChromStates; j++){
-					for(int c=0; c<C; c++){
+				for(int c=0; c<C; c++){
+					for(int j=0; j<numChromStates; j++){
 						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[count][itr] = itr;
-							Yaxes[count][itr] = trainSIGMAc[itr][j][c];
+							Xaxes[j][itr] = itr;
+							Yaxes[j][itr] = trainMUc[itr][j][c];
 						}
-						count++;
 					}
+					EMIterPlotter MUcPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MU-C_"+Integer.toString(c));
+					MUcPlotter.plot();
 				}
-				EMIterPlotter SIGMAcPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "SIGMA-C");
-				SIGMAcPlotter.plot();
+				//Plotting SIGMAc
+				Xaxes = new double[numChromStates][this.total_itrs+1];
+				Yaxes = new double[numChromStates][this.total_itrs+1];
+				for(int c=0; c<C; c++){
+					for(int j=0; j<numChromStates; j++){
+						for(int itr=0; itr<this.total_itrs+1; itr++){
+							Xaxes[j][itr] = itr;
+							Yaxes[j][itr] = trainSIGMAc[itr][j][c];
+						}
+					}
+					EMIterPlotter SIGMACPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "SIGMA-C_"+Integer.toString(c));
+					SIGMACPlotter.plot();
+				}
 				
 				//Plotting Muf
-				Xaxes = new double[F*numFacBindingStates][this.total_itrs+1];
-				Yaxes = new double[C*numFacBindingStates][this.total_itrs+1];
-				
-				count=0;
-				for(int k=0; k<numFacBindingStates; k++){
-					for(int nf=0; nf<F; nf++){
+				Xaxes = new double[numFacBindingStates][this.total_itrs+1];
+				Yaxes = new double[numFacBindingStates][this.total_itrs+1];
+				for(int f=0; f<F; f++){
+					for(int k=0; k<numFacBindingStates; k++){
 						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[count][itr] = itr;
-							Yaxes[count][itr] = trainMUf[itr][k][nf];
+							Xaxes[k][itr] = itr;
+							Yaxes[k][itr] = trainMUf[itr][k][f];
 						}
-						count++;
 					}
+					EMIterPlotter MUfPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MF-F_"+Integer.toString(f));
+					MUfPlotter.plot();
 				}
-				EMIterPlotter MUfPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MF-f");
-				MUfPlotter.plot();
+				
 				
 				//Plotting SIGMAf
 				
-				Xaxes = new double[F*numFacBindingStates][this.total_itrs+1];
-				Yaxes = new double[C*numFacBindingStates][this.total_itrs+1];
+				Xaxes = new double[numFacBindingStates][this.total_itrs+1];
+				Yaxes = new double[numFacBindingStates][this.total_itrs+1];
 				
-				count=0;
-				for(int k=0; k<numFacBindingStates; k++){
-					for(int nf=0; nf<F; nf++){
+				for(int f=0; f<F; f++){
+					for(int k=0; k<numFacBindingStates; k++){
 						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[count][itr] = itr;
-							Yaxes[count][itr] = trainSIGMAf[itr][k][nf];
+							Xaxes[k][itr] = itr;
+							Yaxes[k][itr] = trainSIGMAf[itr][k][f];
 						}
-						count++;
 					}
+					EMIterPlotter SIGMAfPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "SIGMA-f_"+Integer.toString(f));
+					SIGMAfPlotter.plot();
 				}
 				
-				EMIterPlotter SIGMAfPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "SIGMA-f");
-				SIGMAfPlotter.plot();
 				
 				//Plotting Bjk
 				Xaxes = new double[numFacBindingStates*numChromStates][this.total_itrs+1];
 				Yaxes = new double[numFacBindingStates*numChromStates][this.total_itrs+1];
 				
-				count=0;
+				int count=0;
 				for(int j=0; j<numChromStates; j++){
 					for(int k=0; k<numFacBindingStates; k++){
 						for(int itr=0; itr<this.total_itrs+1; itr++){
@@ -551,36 +558,32 @@ public class EMtrain {
 				double[][] Xaxes = new double[numChromStates][this.total_itrs+1];  // plus 1 for initial random parameters
 				double[][] Yaxes = new double[numChromStates][this.total_itrs+1];
 				//Plotting Mus
-				Xaxes = new double[M*numChromStates][this.total_itrs+1];
-				Yaxes = new double[M*numChromStates][this.total_itrs+1];
-				int count=0;
-				for(int j=0; j<numChromStates; j++){
-					for(int m=0; m<M; m++){
+				for(int m=0; m<M; m++){
+					for(int j=0; j<numChromStates; j++){
 						for(int itr=0; itr<itrs+1; itr++){
-							Xaxes[count][itr] = itr;
-							Yaxes[count][itr] = trainMUs[itr][j][m];
+							Xaxes[m][itr] = itr;
+							Yaxes[m][itr] = trainMUs[itr][j][m];
 						}
-						count++;
 					}
+					EMIterPlotter MUsPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MU-s_"+Integer.toString(m));
+					MUsPlotter.plot();
 				}
-				EMIterPlotter MUsPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MU-s");
-				MUsPlotter.plot();
+				
 				
 				//Plotting SIIGMAs
-				Xaxes = new double[M*numChromStates][this.total_itrs+1];
-				Yaxes = new double[M*numChromStates][this.total_itrs+1];
-				count=0;
-				for(int j=0; j<numChromStates; j++){
-					for(int m=0; m<M; m++){
+				Xaxes = new double[numChromStates][this.total_itrs+1];
+				Yaxes = new double[numChromStates][this.total_itrs+1];
+				for(int m=0; m>M; m++){
+					for(int j=0; j<numChromStates; j++){
 						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[count][itr] = itr;
-							Yaxes[count][itr] = trainSIGMAs[itr][j][m];
+							Xaxes[j][itr] = itr;
+							Yaxes[j][itr] = trainSIGMAs[itr][j][m];
 						}
-						count++;
 					}
+					EMIterPlotter SIGMAsPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "SIGMA-s_"+Integer.toString(m));
+					SIGMAsPlotter.plot();
 				}
-				EMIterPlotter SIGMAsPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "SIGMA-s");
-				SIGMAsPlotter.plot();
+				
 			}
 			
 		}
