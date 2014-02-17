@@ -71,6 +71,8 @@ public class EMrunner {
 			//Thirdly, scan these motifs over the peak- pair locations and convert them into chip like signals
 			this.seqdata.setMotifs(globalListOfMotifs);
 			this.seqdata.setXc();
+				// And also plot the seq scores
+            seqdata.plotSeqScores();
 			//Finaly, run the remaining EM iterations with thses new seqence features
 			this.model.setSeqMode(seqdata, seqdata.getXs());
 			model.runEM(num_seq_itrs, config.doEMplot());

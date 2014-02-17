@@ -94,13 +94,13 @@ public class Sequences {
 	private double calculateLogOddinRegion(WeightMatrix wm, String seq){
 		int motif_width = wm.length();
 		int seq_length = seq.length();
-		double total_score=0.0;
+		double total_score=-10000.0;
 		for(int i=0; i< seq_length-motif_width+1; i++){
 			double score =0.0;
 			for(int j=0; j<motif_width; j++){
 				score = score+wm.matrix[j][seq.charAt(i+j)];
 			}
-			total_score = total_score+(score >0.0 ? score : 0.1);
+			total_score = (total_score < score ? score : total_score);
 		}
 		System.out.println(total_score);
 		return total_score;
