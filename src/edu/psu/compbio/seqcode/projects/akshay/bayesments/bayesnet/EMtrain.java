@@ -674,20 +674,20 @@ public class EMtrain {
 		}
 		
 		//Making sure PI-j for any state does not go to zero
-		for(int j=0; j<numChromStates; j++){
-			if(PIj[j] < 0.01){
-				PIj[j] = 0.01;
-			}
-		}
+		//for(int j=0; j<numChromStates; j++){
+		//	if(PIj[j] < 0.01){
+		//		PIj[j] = 0.01;
+		//	}
+		//}
 		
 		//Re-normalize
-		denPIj = 0.0;
-		for(int j=0; j< numChromStates; j++){
-			denPIj = denPIj + PIj[j];
-		}
-		for(int j=0; j<numChromStates; j++){
-			PIj[j] = PIj[j]/denPIj;
-		}
+		//denPIj = 0.0;
+		//for(int j=0; j< numChromStates; j++){
+		//	denPIj = denPIj + PIj[j];
+		//}
+		//for(int j=0; j<numChromStates; j++){
+		//	PIj[j] = PIj[j]/denPIj;
+		//}
 		
 		//-----------------------MUc update------------------------------------
 		

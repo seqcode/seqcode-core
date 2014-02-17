@@ -11,6 +11,7 @@ import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.CoutPlotter;
 import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
 
 public class Sequences {
@@ -78,7 +79,17 @@ public class Sequences {
 	
 	public void setMotifs(List<WeightMatrix> wm){this.motifs_log_odds = wm;}
 	
-	
+	public void plotSeqScores(){
+		for(int m=0; m<	this.motifs_log_odds.size()	; m++){
+			float[] counts = new float[locations.size()];
+			for(int i=0; i<locations.size(); i++){
+				counts[i] = (float)Xs[i][m];
+			}
+			String name_tag = "Motif_"+Integer.toString(m);
+			CoutPlotter cp = new CoutPlotter(counts, conf, name_tag);
+			cp.plot();
+		}
+	}
 	
 	private double calculateLogOddinRegion(WeightMatrix wm, String seq){
 		int motif_width = wm.length();

@@ -104,8 +104,8 @@ public class Config {
 				this.numBindingStates = Args.parseInteger(args, "nFacStates", 3);
 				
 				this.numItrs = Args.parseInteger(args, "numItrs", 50);
-				this.chrom_itrs = Args.parseInteger(args, "", 10);
-				this.seq_itrs = Args.parseInteger(args, "", 40);
+				this.chrom_itrs = Args.parseInteger(args, "numChromItrs", 10);
+				this.seq_itrs = Args.parseInteger(args, "numSeqItrs", 40);
 				
 				if(!Args.parseFlags(args).contains("onlyChrom")){
 					this.numItrs = this.chrom_itrs+this.seq_itrs;
