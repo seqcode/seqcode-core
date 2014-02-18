@@ -222,7 +222,7 @@ public class EMtrain {
 	 * This is internally called by seqSeqMode setter when the class enters seq mode
 	 * The method initializes the parameters for the seq features of the bayesian network
 	 */
-	private void initializeSeqParams(){
+	private void initializeSeqParams(ExperimentManager manager){
 		
 		this.MUs = new double[numChromStates][M];
 		this.SIGMAs = new double[numChromStates][M];
@@ -238,6 +238,9 @@ public class EMtrain {
 			}
 		}
 		
+		//printing params
+		BayesmentsSandbox.printArray(MUs, "MUs", "MUs", manager);
+		
 		for(int m=0; m< M; m++){
 			double[] observedValues = new double[N];
 			for(int i=0; i<N; i++){
@@ -250,6 +253,8 @@ public class EMtrain {
 				SIGMAs[j][m] = max-min;
 			}
 		}
+		BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", manager);
+		
 	}
 	
 	
@@ -449,6 +454,8 @@ public class EMtrain {
 				for(int j=0; j<numChromStates; j++){
 					for(int m=0; m<M; m++){
 						trainMUs[itr_no][j][m]= MUs[j][m];
+						//debug
+						System.out.println(Integer.toString(j)+"\t"+Double.toString(MUs[j][m]));
 					}
 				}
 				for(int j=0; j<numChromStates; j++){
@@ -560,7 +567,7 @@ public class EMtrain {
 				//Plotting Mus
 				for(int m=0; m<M; m++){
 					for(int j=0; j<numChromStates; j++){
-						for(int itr=0; itr<itrs+1; itr++){
+						for(int itr=0; itr<this.total_itrs+1; itr++){
 							Xaxes[m][itr] = itr;
 							Yaxes[m][itr] = trainMUs[itr][j][m];
 						}
@@ -573,7 +580,7 @@ public class EMtrain {
 				//Plotting SIIGMAs
 				Xaxes = new double[numChromStates][this.total_itrs+1];
 				Yaxes = new double[numChromStates][this.total_itrs+1];
-				for(int m=0; m>M; m++){
+				for(int m=0; m<M; m++){
 					for(int j=0; j<numChromStates; j++){
 						for(int itr=0; itr<this.total_itrs+1; itr++){
 							Xaxes[j][itr] = itr;
@@ -852,19 +859,19 @@ public class EMtrain {
 	
 	
 	//setters
-	public void setSeqMode(Sequences seqs, double[][] Xs){
+	public void setSeqMode(Sequences seqs, double[][] Xs, ExperimentManager manager){
 		this.seqState = true;
 		this.setXs(Xs);
 		this.M = Xs[0].length;
 		this.setSequences(seqs);
-		this.setInitialSeqParams();
+		this.setInitialSeqParams(manager);
 		this.trainMUs = new double[this.total_itrs+1][this.numChromStates][this.M];
 		this.trainSIGMAs = new double[this.total_itrs+1][this.numChromStates][this.M];
 		
 	}
 	private void setSequences(Sequences seqs){this.seqs = seqs;}
 	private void setXs(double[][] Xs){this.Xs = Xs;}
-	private void setInitialSeqParams(){this.initializeSeqParams();}
+	private void setInitialSeqParams(ExperimentManager manager){this.initializeSeqParams(manager);}
 	
 	//Accessors
 	public double[] getPIj(){return this.PIj;}

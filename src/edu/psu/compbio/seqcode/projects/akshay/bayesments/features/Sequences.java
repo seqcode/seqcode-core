@@ -102,7 +102,7 @@ public class Sequences {
 			}
 			total_score = (total_score < score ? score : total_score);
 		}
-		System.out.println(total_score);
+		//System.out.println(total_score);
 		return total_score;
 	}
 	
