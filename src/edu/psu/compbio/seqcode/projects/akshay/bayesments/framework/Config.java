@@ -52,6 +52,9 @@ public class Config {
 	protected int chrom_itrs;
 	protected int seq_itrs;
 	
+	protected double chromatin_weightage;
+	protected double sequence_weightage;
+	
 	
 	
 	
@@ -213,6 +216,9 @@ public class Config {
 					}
 				}
 				
+				this.chromatin_weightage = Args.parseDouble(args, "chromWeight", -1.0);
+				this.sequence_weightage = Args.parseDouble(args, "seqWeight", -1.0);
+				
 				onlyChrom = Args.parseFlags(args).contains("onlyChrom") ? true : false;
 				
 				//MEME path
@@ -279,6 +285,8 @@ public class Config {
 	public String getMEMEargs(){return this.MEMEargs;}
 	public int getNumChromIters(){return this.chrom_itrs;}
 	public int getNumSeqIters(){return this.seq_itrs;}
+	public double getChromWeight(){return this.chromatin_weightage;}
+	public double getSeqWeight(){return this.sequence_weightage;}
 	
 	
 	//Some accessors to allow modification of options after config
@@ -363,6 +371,8 @@ public class Config {
 				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
 				"\t--mememaxw <maxw arg for MEME (default="+MEMEmaxw+")>\n"+
 				"\t--memenmotifs <number of motifs you want to include>\n"+
+				"\t--chromWeight <weightage for chromatin features to take responsibility for state>\n"+
+				"\t--seqWeight<weightage for seq features to take responsibility for state>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	

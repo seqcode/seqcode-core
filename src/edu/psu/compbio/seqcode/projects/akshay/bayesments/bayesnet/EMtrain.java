@@ -627,7 +627,7 @@ public class EMtrain {
 					}
 					
 					if(this.seqState){
-						Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd*seqGaussianProd;
+						Qijk[i][j][k] = PIj[j]*Math.pow(chromGausssianProd, -1*config.getChromWeight())*Bjk[j][k]*facGaussianProd*Math.pow(seqGaussianProd, -1*config.getSeqWeight());
 					}else{Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;}
 					
 					
