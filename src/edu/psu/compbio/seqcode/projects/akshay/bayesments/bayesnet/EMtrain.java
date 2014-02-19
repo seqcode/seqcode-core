@@ -124,6 +124,9 @@ public class EMtrain {
 		MUc = new double[numChromStates][C];
 		MUf = new double[numFacBindingStates][F];
 		
+		this.capSIGMAc = new double[C];
+		this.capSIGMAf = new double[F];
+		
 		//Initialization from emperical means
 		
 		for(int c=0; c< C; c++){
@@ -909,6 +912,7 @@ public class EMtrain {
 		this.setInitialSeqParams(manager);
 		this.trainMUs = new double[this.total_itrs+1][this.numChromStates][this.M];
 		this.trainSIGMAs = new double[this.total_itrs+1][this.numChromStates][this.M];
+		this.capSIGMAs = new double[M];
 		
 	}
 	private void setSequences(Sequences seqs){this.seqs = seqs;}
