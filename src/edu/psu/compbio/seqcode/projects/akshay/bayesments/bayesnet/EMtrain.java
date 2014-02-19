@@ -169,7 +169,7 @@ public class EMtrain {
 			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int j=0; j<numChromStates; j++){
-				SIGMAc[j][c] = max-min/config.getNumChrmStates();
+				SIGMAc[j][c] = (max-min)/config.getNumChrmStates();
 				//debug
 				System.out.println(max);
 				System.out.println(min);
@@ -255,7 +255,7 @@ public class EMtrain {
 			double max = observedValues[this.getPercentileIndex(85.0, observedValues)];
 			
 			for(int j=0; j<numChromStates; j++){
-				SIGMAs[j][m] = max-min;
+				SIGMAs[j][m] = (max-min)/config.getNumChrmStates();
 			}
 		}
 		BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", manager);
