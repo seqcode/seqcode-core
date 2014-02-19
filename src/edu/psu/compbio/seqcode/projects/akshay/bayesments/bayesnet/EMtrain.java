@@ -66,15 +66,19 @@ public class EMtrain {
 	//The 3-d arrays store the values of seq parameters over all iterations of EM. They are globally defined unlike other non-seq parameters 
 	//because of some technical details
 	//These are initializes when the model enters the seq Mode (setSeqMode)
-	double[][][] trainMUs;
-	double[][][] trainSIGMAs;
+	protected double[][][] trainMUs;
+	protected double[][][] trainSIGMAs;
 	
-	double[][][] trainMUc; 
-	double[][][] trainMUf; 
-	double[][][] trainSIGMAc;
-	double[][][] trainSIGMAf;
-	double[][] trainPIj; 
-	double[][][] trainBjk; 
+	protected double[][][] trainMUc; 
+	protected double[][][] trainMUf; 
+	protected double[][][] trainSIGMAc;
+	protected double[][][] trainSIGMAf;
+	protected double[][] trainPIj; 
+	protected double[][][] trainBjk;
+	
+	protected double[] capSIGMAc;
+	protected double[] capSIGMAf;
+	protected double[] capSIGMAs;
 	
 	//Current round of EM. This remembers, if the model was run previously in non-seq mode and hence globally defined
 	protected int itr_no=0;
@@ -170,10 +174,7 @@ public class EMtrain {
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int j=0; j<numChromStates; j++){
 				SIGMAc[j][c] = (max-min)/config.getNumChrmStates();
-				//debug
-				System.out.println(max);
-				System.out.println(min);
-				System.out.println(config.getNumChrmStates());
+				this.capSIGMAc[c] = (max-min)/config.getNumChrmStates();
 			}
 		}
 		
@@ -186,6 +187,7 @@ public class EMtrain {
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int k=0; k<numFacBindingStates; k++){
 				SIGMAf[k][f] = (max-min)/config.getNumFacStates();
+				this.capSIGMAf[f] = (max-min)/config.getNumFacStates();
 			}
 		}
 		
@@ -256,6 +258,7 @@ public class EMtrain {
 			
 			for(int j=0; j<numChromStates; j++){
 				SIGMAs[j][m] = (max-min)/config.getNumChrmStates();
+				this.capSIGMAs[m] = (max-min)/config.getNumChrmStates();
 			}
 		}
 		BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", manager);
@@ -469,7 +472,7 @@ public class EMtrain {
 					for(int m=0; m<M; m++){
 						trainMUs[itr_no][j][m]= MUs[j][m];
 						//debug
-						System.out.println(Integer.toString(j)+"\t"+Double.toString(MUs[j][m]));
+						//System.out.println(Integer.toString(j)+"\t"+Double.toString(MUs[j][m]));
 					}
 				}
 				for(int j=0; j<numChromStates; j++){
@@ -806,7 +809,7 @@ public class EMtrain {
 		if(config.capSigma()){
 			for(int j=0; j<numChromStates; j++){
 				for(int c=0; c<C; c++){
-					SIGMAc[j][c] = (SIGMAc[j][c] > trainSIGMAc[0][0][c]) ?trainSIGMAc[0][0][c] : SIGMAc[j][c];
+					SIGMAc[j][c] = (SIGMAc[j][c] > this.capSIGMAc[c]) ? this.capSIGMAc[c] : SIGMAc[j][c];
 				}
 			}
 		}
@@ -836,7 +839,7 @@ public class EMtrain {
 		if(config.capSigma()){
 			for(int k=0; k<numFacBindingStates; k++){
 				for(int f=0; f<F; f++){
-					SIGMAf[k][f] = (SIGMAf[k][f] > trainSIGMAf[0][0][f]) ?trainSIGMAf[0][0][f] : SIGMAf[k][f];
+					SIGMAf[k][f] = (SIGMAf[k][f] > this.capSIGMAf[f]) ? this.capSIGMAf[f] : SIGMAf[k][f];
 				}
 			}
 		}
@@ -869,7 +872,7 @@ public class EMtrain {
 			if(config.capSigma()){
 				for(int j=0; j<numChromStates; j++){
 					for(int m=0; m<M; m++){
-						SIGMAs[j][m] = (SIGMAs[j][m] > trainSIGMAs[config.getNumChromIters()][0][m]) ? trainSIGMAs[config.getNumChromIters()][0][m] : SIGMAs[j][m];
+						SIGMAs[j][m] = (SIGMAs[j][m] > this.capSIGMAf[m]) ? this.capSIGMAs[m] : SIGMAs[j][m];
 					}
 				}
 			}
