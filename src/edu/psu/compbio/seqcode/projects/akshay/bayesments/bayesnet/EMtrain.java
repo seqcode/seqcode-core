@@ -875,7 +875,7 @@ public class EMtrain {
 			if(config.capSigma()){
 				for(int j=0; j<numChromStates; j++){
 					for(int m=0; m<M; m++){
-						SIGMAs[j][m] = (SIGMAs[j][m] > this.capSIGMAf[m]) ? this.capSIGMAs[m] : SIGMAs[j][m];
+						SIGMAs[j][m] = (SIGMAs[j][m] > this.capSIGMAs[m]) ? this.capSIGMAs[m] : SIGMAs[j][m];
 					}
 				}
 			}
