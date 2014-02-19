@@ -170,6 +170,10 @@ public class EMtrain {
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int j=0; j<numChromStates; j++){
 				SIGMAc[j][c] = max-min/config.getNumChrmStates();
+				//debug
+				System.out.println(max);
+				System.out.println(min);
+				System.out.println(config.getNumChrmStates());
 			}
 		}
 		
@@ -181,7 +185,7 @@ public class EMtrain {
 			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int k=0; k<numFacBindingStates; k++){
-				SIGMAf[k][f] = max-min/config.getNumFacStates();
+				SIGMAf[k][f] = (max-min)/config.getNumFacStates();
 			}
 		}
 		
