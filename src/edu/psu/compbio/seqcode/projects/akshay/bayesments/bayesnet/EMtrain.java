@@ -832,7 +832,7 @@ public class EMtrain {
 		if(config.capSigma()){
 			for(int k=0; k<numFacBindingStates; k++){
 				for(int f=0; f<F; f++){
-					SIGMAc[k][f] = (SIGMAc[k][f] > trainSIGMAf[0][0][f]) ?trainSIGMAf[0][0][f] : SIGMAc[k][f];
+					SIGMAf[k][f] = (SIGMAf[k][f] > trainSIGMAf[0][0][f]) ?trainSIGMAf[0][0][f] : SIGMAf[k][f];
 				}
 			}
 		}
