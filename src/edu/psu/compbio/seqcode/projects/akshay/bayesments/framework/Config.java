@@ -55,6 +55,8 @@ public class Config {
 	protected double chromatin_weightage;
 	protected double sequence_weightage;
 	
+	protected boolean boundSigma;
+	
 	
 	
 	
@@ -221,6 +223,8 @@ public class Config {
 				
 				onlyChrom = Args.parseFlags(args).contains("onlyChrom") ? true : false;
 				
+				boundSigma = Args.parseFlags(args).contains("capSigma") ? true : false;
+				
 				//MEME path
 				MEMEpath = Args.parseString(args, "memepath", MEMEpath);
 				//MEME args
@@ -287,6 +291,7 @@ public class Config {
 	public int getNumSeqIters(){return this.seq_itrs;}
 	public double getChromWeight(){return this.chromatin_weightage;}
 	public double getSeqWeight(){return this.sequence_weightage;}
+	public boolean capSigma(){return this.boundSigma;}
 	
 	
 	//Some accessors to allow modification of options after config
@@ -371,6 +376,7 @@ public class Config {
 				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
 				"\t--mememaxw <maxw arg for MEME (default="+MEMEmaxw+")>\n"+
 				"\t--memenmotifs <number of motifs you want to include>\n"+
+				"\t--capSigma <flag to turn on an upperbound cap on sigma for each guassian>\n"+
 				"\t--chromWeight <weightage for chromatin features to take responsibility for state>\n"+
 				"\t--seqWeight<weightage for seq features to take responsibility for state>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));

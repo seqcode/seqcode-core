@@ -1,6 +1,7 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
@@ -165,10 +166,10 @@ public class EMtrain {
 			for(int i=0; i<N; i++){
 				observedValues[i] = Xc[i][c];
 			}
-			double min = observedValues[this.getMinindex(observedValues)];
-			double max = observedValues[this.getMaxindex(observedValues)];
+			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
+			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int j=0; j<numChromStates; j++){
-				SIGMAc[j][c] = max-min;
+				SIGMAc[j][c] = max-min/config.getNumChrmStates();
 			}
 		}
 		
@@ -177,10 +178,10 @@ public class EMtrain {
 			for(int i=0; i<N; i++){
 				observedValues[i] = Xf[i][f];
 			}
-			double min = observedValues[this.getMinindex(observedValues)];
-			double max = observedValues[this.getMaxindex(observedValues)];
+			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
+			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int k=0; k<numFacBindingStates; k++){
-				SIGMAf[k][f] = max-min;
+				SIGMAf[k][f] = max-min/config.getNumFacStates();
 			}
 		}
 		
@@ -246,8 +247,8 @@ public class EMtrain {
 			for(int i=0; i<N; i++){
 				observedValues[i] = Xs[i][m];
 			}
-			double min = observedValues[this.getMinindex(observedValues)];
-			double max = observedValues[this.getMaxindex(observedValues)];
+			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
+			double max = observedValues[this.getPercentileIndex(85.0, observedValues)];
 			
 			for(int j=0; j<numChromStates; j++){
 				SIGMAs[j][m] = max-min;
@@ -360,6 +361,15 @@ public class EMtrain {
 		}
 		return ret;
 	}
+	
+	public int getPercentileIndex(double percentile, double[] list){
+		
+		Arrays.sort(list);
+		int index = (int) percentile*list.length/100;
+		return index;
+	}	
+	
+	
 	
 	/**
 	 * Runs the EM algorithm for a given number of iterations and also plots the parameters over the learning rounds if plot parameter is true
@@ -789,6 +799,14 @@ public class EMtrain {
 			}
 		}
 		
+		if(config.capSigma()){
+			for(int j=0; j<numChromStates; j++){
+				for(int c=0; c<C; c++){
+					SIGMAc[j][c] = (SIGMAc[j][c] > trainSIGMAc[0][0][c]) ?trainSIGMAc[0][0][c] : SIGMAc[j][c];
+				}
+			}
+		}
+		
 		//------------------SIGMAf update------------------------------------------
 		
 		//Compute
@@ -811,6 +829,15 @@ public class EMtrain {
 			}
 		}
 		
+		if(config.capSigma()){
+			for(int k=0; k<numFacBindingStates; k++){
+				for(int f=0; f<F; f++){
+					SIGMAc[k][f] = (SIGMAc[k][f] > trainSIGMAf[0][0][f]) ?trainSIGMAf[0][0][f] : SIGMAc[k][f];
+				}
+			}
+		}
+		
+		
 		
 		//--------------------SIGMAs update, if in seqState ------------------------
 		
@@ -832,6 +859,14 @@ public class EMtrain {
 			for(int j=0; j<numChromStates; j++){
 				for(int m=0; m<M; m++){
 					SIGMAs[j][m] = Math.sqrt(SIGMAs[j][m]/denSIGMAs[j][m]);
+				}
+			}
+			
+			if(config.capSigma()){
+				for(int j=0; j<numChromStates; j++){
+					for(int m=0; m<M; m++){
+						SIGMAs[j][m] = (SIGMAs[j][m] > trainSIGMAs[config.getNumChromIters()][0][m]) ? trainSIGMAs[config.getNumChromIters()][0][m] : SIGMAs[j][m];
+					}
 				}
 			}
 		}
