@@ -10,6 +10,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
+import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.CoutPlotter;
 import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
@@ -94,6 +95,7 @@ public class Sequences {
 	private double calculateLogOddinRegion(WeightMatrix wm, String seq){
 		int motif_width = wm.length();
 		int seq_length = seq.length();
+		//given string
 		double total_score=-10000.0;
 		for(int i=0; i< seq_length-motif_width+1; i++){
 			double score =0.0;
@@ -102,7 +104,15 @@ public class Sequences {
 			}
 			total_score = (total_score < score ? score : total_score);
 		}
-		//System.out.println(total_score);
+		//rev complement 
+		String rev_seq = SequenceUtils.reverseComplement(seq);
+		for(int i=0; i< seq_length-motif_width+1; i++){
+			double score =0.0;
+			for(int j=0; j<motif_width; j++){
+				score = score+wm.matrix[j][rev_seq.charAt(i+j)];
+			}
+			total_score = (total_score < score ? score : total_score);
+		}
 		return total_score;
 	}
 	
