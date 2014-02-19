@@ -908,11 +908,12 @@ public class EMtrain {
 		this.seqState = true;
 		this.setXs(Xs);
 		this.M = Xs[0].length;
+		this.capSIGMAs = new double[M];
 		this.setSequences(seqs);
 		this.setInitialSeqParams(manager);
 		this.trainMUs = new double[this.total_itrs+1][this.numChromStates][this.M];
 		this.trainSIGMAs = new double[this.total_itrs+1][this.numChromStates][this.M];
-		this.capSIGMAs = new double[M];
+		
 		
 	}
 	private void setSequences(Sequences seqs){this.seqs = seqs;}
