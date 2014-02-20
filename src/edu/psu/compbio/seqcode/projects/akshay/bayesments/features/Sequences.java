@@ -113,6 +113,9 @@ public class Sequences {
 			}
 			total_score = (total_score < score ? score : total_score);
 		}
+		if(conf.doSeqAshin()){
+			total_score = Math.log(total_score+ Math.sqrt(Math.pow(total_score, 2.0)+1.0));
+		}
 		return total_score;
 	}
 	
@@ -125,10 +128,10 @@ public class Sequences {
 	
 	public static void main(String[] args){
 		double s = -2.0;
-		double tt=2.0;
+		double tt=10;
 		
-		tt = tt + (s>0.0?s:0.0);
-		System.out.println(tt);
+		
+		System.out.println(Math.log(tt));
 	}
 	
 	

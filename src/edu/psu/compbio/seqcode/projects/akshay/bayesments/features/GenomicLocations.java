@@ -110,7 +110,7 @@ public class GenomicLocations {
 			}
 			
 			// If flag is on, do asinh transformation
-			if(config.doAffine()){
+			if(config.doChipAshin()){
 				updataAsineTransformation();
 			}
 		}

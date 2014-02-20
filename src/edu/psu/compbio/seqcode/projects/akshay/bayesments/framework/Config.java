@@ -37,7 +37,8 @@ public class Config {
 	protected String out_base;
 	protected File out_dir=null, images_dir=null;
 	protected boolean loadReads;
-	protected boolean doAffine;
+	protected boolean doashin;
+	protected boolean doSeqAshin;
 	protected File inter_dir=null;
 	protected boolean includeSeqFeatures;
 	protected String genomeSequencePath;
@@ -207,7 +208,8 @@ public class Config {
 				out_name = Args.parseString(args, "out", "bayesments_out");
 				out_dir =  new File(out_name); //Output directory
 				out_base = out_dir.getName(); //Last part of name
-				doAffine = Args.parseArgs(args).contains("affine") ? true : false;
+				this.doashin = Args.parseArgs(args).contains("ashin") ? true : false;
+				this.doSeqAshin = Args.parseFlags(args).contains("ashinSeq")? true : false;
 				includeSeqFeatures = Args.parseFlags(args).contains("noSeq") ? false :true;
 				
 				if(includeSeqFeatures){ //Do we need to load sequences?
@@ -224,6 +226,7 @@ public class Config {
 				onlyChrom = Args.parseFlags(args).contains("onlyChrom") ? true : false;
 				
 				boundSigma = Args.parseFlags(args).contains("capSigma") ? true : false;
+				
 				
 				//MEME path
 				MEMEpath = Args.parseString(args, "memepath", MEMEpath);
@@ -280,7 +283,8 @@ public class Config {
 	public File getOutputImagesDir(){return images_dir;}
 	public File getOutputInterDir(){return inter_dir;}
 	public boolean loadReads(){return loadReads;}
-	public boolean doAffine(){return doAffine;}
+	public boolean doChipAshin(){return this.doashin;}
+	public boolean doSeqAshin(){return this.doSeqAshin;}
 	public int getSeqWinSize(){return factorWindow;}
 	public boolean includeSeqFeatures(){return includeSeqFeatures;}
 	public String getGenomeSeqPath(){return genomeSequencePath;}
@@ -367,7 +371,8 @@ public class Config {
 				"\t--plotEM <flag to plot the EM steps>\n"+
 				"\t--out <name of the output directory>\n"+
 				"\t--noreads <flag to turn off loading rads>\n"+
-				"\t--affine <flag to turn on affine transcormation>\n"+
+				"\t--ashin <flag to turn on ashin transcormation for chip experiments>\n"+
+				"\t--ashinSeq <flag to turn on ashin transformation on seq scores>\n"+
 				"\t--noSeq <flag to turn off sequence features>\n"+
 				"\t--seq<Path to seq fasta dir>\n"+
 				"\t--onlyChrom<flag to turn only only chromatin tracks as features>\n"+
