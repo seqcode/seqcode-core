@@ -114,6 +114,16 @@ public class MAPassignment {
 						assignment[0] = j; //Chromatin assignment
 						assignment[1] = k; //Factor assignment
 					}
+					//printing probabilities for each marks
+					// First, priniting chromatin marks
+					for(int c=0; c<C; c++){
+						NormalDistribution gaussian = new NormalDistribution(MUc[(int)assignment[0]][c],Math.pow(SIGMAc[(int)assignment[0]][c], 2.0));
+						System.out.println(Integer.toString(c)+"\t"+Double.toString(gaussian.calcProbability((double) Xc[i][c])));
+					}
+					for(int m=0; m<M; m++){
+						NormalDistribution gaussian = new NormalDistribution(MUs[(int)assignment[0]][m],Math.pow(SIGMAs[(int)assignment[0]][m], 2.0));
+						System.out.println(Integer.toString(m)+"\t"+Double.toString(gaussian.calcProbability((double) Xs[i][m])));
+					}
 				}
 			}
 			this.MapAssignment[i][0] = assignment[0];
