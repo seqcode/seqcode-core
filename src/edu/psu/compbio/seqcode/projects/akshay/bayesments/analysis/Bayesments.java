@@ -73,6 +73,14 @@ public class Bayesments {
 		
 			System.out.println("Bjk values\n");
 			BayesmentsSandbox.printArray(trainer.getBjk(),"chromatin_State" , "factor_state", manager);
+			
+			if(c.doRegularization()){
+				System.out.println("Chromatin Weight values\n");
+				BayesmentsSandbox.printArray(trainer.getChromWeights(), "Chromatin Feature");
+				
+				System.out.println("Sequence Weight values\n");
+				BayesmentsSandbox.printArray(trainer.getSeqWeights(), "Sequence Feature");
+			}
 		}
 	}	
 }

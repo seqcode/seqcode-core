@@ -10,6 +10,7 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocati
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Sequences;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.Cubic;
 
 /**
  * EMtrain class the initializes and trains the parameters of the Bayesian network using the EM framework
@@ -80,6 +81,13 @@ public class EMtrain {
 	protected double[] capSIGMAf;
 	protected double[] capSIGMAs;
 	
+	protected double[] WCnorm;
+	protected double[] WSnorm;
+	
+	protected double lambda;
+	
+	protected boolean regularize;
+	
 	//Current round of EM. This remembers, if the model was run previously in non-seq mode and hence globally defined
 	protected int itr_no=0;
 	//Total number of EM iters, both, in seq and non-seq mode (Should be given when the class object is initialized)
@@ -100,6 +108,10 @@ public class EMtrain {
 		this.total_itrs = config.getNumItrs();
 		this.onlyChrom = config.runOnlyChrom();
 		this.seqState = false;
+		this.regularize = config.doRegularization();
+		if(regularize){
+			this.lambda = config.getLambda();
+		}
 	}
 	
 	/**
@@ -123,6 +135,14 @@ public class EMtrain {
 		//Initializing mu's
 		MUc = new double[numChromStates][C];
 		MUf = new double[numFacBindingStates][F];
+		
+		if(regularize){
+			WCnorm = new double[C];
+			// Setting all initial weights to 1
+			for(int c=0; c<C; c++){
+				WCnorm[c] = 1.0;
+			}
+		}
 		
 		this.capSIGMAc = new double[C];
 		this.capSIGMAf = new double[F];
@@ -150,14 +170,6 @@ public class EMtrain {
 				MUf[k][f] = means[k];
 			}
 		}
-		
-		// random initialization
-		//for(int i=0; i<numChromStates; i++){
-		//	MUc[i] = this.getRandomList(C, false);
-		//}
-		//for(int i=0; i<numFacBindingStates; i++){
-		//	MUf[i] = this.getRandomList(F, false);
-		//}
 		
 		//Printing the initial Mu's
 		BayesmentsSandbox.printArray(MUc, "MUc", "MUc", manager);
@@ -193,15 +205,6 @@ public class EMtrain {
 				this.capSIGMAf[f] = (max-min)/config.getNumFacStates();
 			}
 		}
-		
-		
-		//random initialization
-		//for(int i=0; i<numChromStates; i++){
-		//	SIGMAc[i] = this.getRandomList(C, false);
-		//}
-		//for(int i=0; i<numFacBindingStates; i++){
-		//	SIGMAf[i] = this.getRandomList(F, false);
-		//}
 		
 		//Printing the initial SIGMA's
 		BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", manager);
@@ -635,7 +638,8 @@ public class EMtrain {
 					double seqGaussianProd = 0.0;
 					for(int c=0; c<C; c++){
 						NormalDistribution gaussian = new NormalDistribution(MUc[j][c],Math.pow(SIGMAc[j][c], 2.0));
-						chromGausssianProd = (c==0 ? gaussian.calcProbability((double) Xc[i][c]): chromGausssianProd* gaussian.calcProbability((double) Xc[i][c]));
+						double que_pusher = (this.regularize) ?Math.pow(gaussian.calcProbability((double) Xc[i][c]), 1/(1+WCnorm[c])): gaussian.calcProbability((double) Xc[i][c])  ;
+						chromGausssianProd = c==0 ? que_pusher: chromGausssianProd* que_pusher;
 					}
 					for(int f=0; f< F; f++){
 						NormalDistribution gaussian = new NormalDistribution(MUf[k][f],Math.pow(SIGMAf[k][f], 2.0));
@@ -648,16 +652,15 @@ public class EMtrain {
 					if(this.seqState){
 						for(int m=0; m<M; m++){
 							NormalDistribution gaussian = new NormalDistribution(MUs[j][m],Math.pow(SIGMAs[j][m], 2.0));
-							seqGaussianProd = (m==0 ? gaussian.calcProbability((double) Xs[i][m]): seqGaussianProd* gaussian.calcProbability((double) Xs[i][m]));
+							double que_pusher = this.regularize ? Math.pow(gaussian.calcProbability((double) Xs[i][m]), 1/(1+WSnorm[m])) : gaussian.calcProbability((double) Xs[i][m]);
+							seqGaussianProd = m==0 ? que_pusher: seqGaussianProd* que_pusher;
 						}
 						seqGaussianProd = (Double.isNaN(seqGaussianProd)) ? 0.0: seqGaussianProd;
 					}
 					
 					if(this.seqState){
 						Qijk[i][j][k] = PIj[j]*Math.pow(chromGausssianProd, -1*config.getChromWeight())*Bjk[j][k]*facGaussianProd*Math.pow(seqGaussianProd, -1*config.getSeqWeight());
-					}else{Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;}
-					
-					
+					}else{Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;}		
 					den[i] = den[i]+Qijk[i][j][k];
 				}
 			}
@@ -900,6 +903,40 @@ public class EMtrain {
 				Bjk[j][k] = Bjk[j][k]/denBjk[k];
 			}
 		}
+		
+		// ------------------------ regularization chromatin weights update (if regularization is true) ------------------------------------
+		if(this.regularize){
+			for(int c=0; c<C; c++){
+				double Z=0.0;
+				Cubic cube_root_solver = new Cubic();
+				for(int i=0; i<N; i++){
+					for(int j=0; j<numChromStates; j++){
+						for(int k=0; k<numFacBindingStates; k++){
+							NormalDistribution gaussian = new NormalDistribution(MUc[j][c],Math.pow(SIGMAc[j][c], 2.0));
+							Z = (i==0 && j==0 && k==0) ? Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xc[i][c])) : Z+Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xc[i][c]));
+						}
+					}
+				}
+				cube_root_solver.solve(1, 2, 1, Z/this.lambda);
+				this.WCnorm[c] = cube_root_solver.x1;
+			}
+			if(this.seqState){
+				for(int m=0; m<M; m++){
+					double Z=0.0;
+					Cubic cube_root_solver =  new Cubic();
+					for(int i=0; i<N; i++){
+						for(int j=0; j<numChromStates; j++){
+							for(int k=0; k< this.numFacBindingStates; k++){
+								NormalDistribution gaussian = new NormalDistribution(MUs[j][m],Math.pow(SIGMAs[j][m], 2.0));
+								Z = (i==0 && j==0 && k==0) ?  Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xs[i][m])) : Z+Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xs[i][m]));
+							}
+						}
+					}
+					cube_root_solver.solve(1, 2, 1, Z/this.lambda);
+					this.WSnorm[m] = cube_root_solver.x1;
+				}
+			}
+		}
 	}
 	
 	
@@ -908,6 +945,9 @@ public class EMtrain {
 		this.seqState = true;
 		this.setXs(Xs);
 		this.M = Xs[0].length;
+		if(this.regularize){
+			WSnorm = new double[M];
+		}
 		this.capSIGMAs = new double[M];
 		this.setSequences(seqs);
 		this.setInitialSeqParams(manager);
@@ -932,6 +972,8 @@ public class EMtrain {
 	public GenomicLocations getChromData(){return this.trainingData;}
 	public Sequences getSeqData(){return this.seqs;}
 	public boolean getSeqStateStatus(){return this.seqState;}
+	public double[] getChromWeights(){return this.WCnorm;}
+	public double[] getSeqWeights(){return this.WSnorm;}
 	// main method is only for testing puposers
 	
 	public static void main(String[] args){

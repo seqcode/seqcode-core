@@ -101,5 +101,7 @@ public class EMrunner {
 	public double[][] getSIGMAf(){return model.getSIGMAf();}
 	public double[][] getSIGMAs(){return model.getSIGMAs();}
 	public EMtrain getModel(){return this.model;}
+	public double[] getChromWeights(){return model.getChromWeights();}
+	public double[] getSeqWeights(){return model.getSeqWeights();}
 	
 }

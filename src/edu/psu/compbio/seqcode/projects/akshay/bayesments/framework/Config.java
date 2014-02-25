@@ -40,9 +40,9 @@ public class Config {
 	protected boolean doashin;
 	protected boolean doSeqAshin;
 	protected File inter_dir=null;
-	protected boolean includeSeqFeatures;
 	protected String genomeSequencePath;
 	protected boolean onlyChrom;
+	protected boolean regularize;
 	
 	protected String MEMEpath="";
 	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus ";
@@ -57,6 +57,8 @@ public class Config {
 	protected double sequence_weightage;
 	
 	protected boolean boundSigma;
+	
+	protected double lambda;
 	
 	
 	
@@ -210,9 +212,12 @@ public class Config {
 				out_base = out_dir.getName(); //Last part of name
 				this.doashin = Args.parseArgs(args).contains("ashin") ? true : false;
 				this.doSeqAshin = Args.parseFlags(args).contains("ashinSeq")? true : false;
-				includeSeqFeatures = Args.parseFlags(args).contains("noSeq") ? false :true;
+				onlyChrom = Args.parseFlags(args).contains("onlyChrom") ? true : false;
+				regularize = Args.parseFlags(args).contains("regularize") ? true : false;
 				
-				if(includeSeqFeatures){ //Do we need to load sequences?
+				this.lambda = Args.parseDouble(args, "regWeight", 10);
+				
+				if(!onlyChrom){ //Do we need to load sequences?
 					genomeSequencePath = ap.hasKey("seq") ? ap.getKeyValue("seq") : null;
 					if(genomeSequencePath==null){
 						System.err.println("You have requested to include sequence features, but no genome sequence data was provided with --seq");
@@ -223,7 +228,7 @@ public class Config {
 				this.chromatin_weightage = Args.parseDouble(args, "chromWeight", -1.0);
 				this.sequence_weightage = Args.parseDouble(args, "seqWeight", -1.0);
 				
-				onlyChrom = Args.parseFlags(args).contains("onlyChrom") ? true : false;
+				
 				
 				boundSigma = Args.parseFlags(args).contains("capSigma") ? true : false;
 				
@@ -286,7 +291,6 @@ public class Config {
 	public boolean doChipAshin(){return this.doashin;}
 	public boolean doSeqAshin(){return this.doSeqAshin;}
 	public int getSeqWinSize(){return factorWindow;}
-	public boolean includeSeqFeatures(){return includeSeqFeatures;}
 	public String getGenomeSeqPath(){return genomeSequencePath;}
 	public boolean runOnlyChrom(){return this.onlyChrom;}
 	public String getMEMEpath(){return this.MEMEpath;}
@@ -296,6 +300,8 @@ public class Config {
 	public double getChromWeight(){return this.chromatin_weightage;}
 	public double getSeqWeight(){return this.sequence_weightage;}
 	public boolean capSigma(){return this.boundSigma;}
+	public boolean doRegularization(){return this.regularize;}
+	public double getLambda(){return this.lambda;}
 	
 	
 	//Some accessors to allow modification of options after config
@@ -373,9 +379,10 @@ public class Config {
 				"\t--noreads <flag to turn off loading rads>\n"+
 				"\t--ashin <flag to turn on ashin transcormation for chip experiments>\n"+
 				"\t--ashinSeq <flag to turn on ashin transformation on seq scores>\n"+
-				"\t--noSeq <flag to turn off sequence features>\n"+
 				"\t--seq<Path to seq fasta dir>\n"+
+				"\t--regWeight <(lambda) weight for regularaization>\n"+
 				"\t--onlyChrom<flag to turn only only chromatin tracks as features>\n"+
+				"\t--regularize<flag to turn on regularization of features>\n"+
 				"\t--memepath <path to the meme bin dir (default: meme is in $PATH)>\n" +
 				"\t--memenmotifs <number of motifs MEME should find for each condition>\n" +
 				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
