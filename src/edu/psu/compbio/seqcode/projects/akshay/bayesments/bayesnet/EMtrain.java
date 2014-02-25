@@ -914,7 +914,11 @@ public class EMtrain {
 					for(int j=0; j<numChromStates; j++){
 						for(int k=0; k<numFacBindingStates; k++){
 							NormalDistribution gaussian = new NormalDistribution(MUc[j][c],Math.pow(SIGMAc[j][c], 2.0));
-							Z = (i==0 && j==0 && k==0) ? Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xc[i][c])) : Z+Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xc[i][c]));
+							if(!Double.isNaN(gaussian.calcProbability((double)Xc[i][c]))){
+								Z = (i==0 && j==0 && k==0) ? Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xc[i][c])) : Z+Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xc[i][c]));
+							}else{
+								Z = (i==0 && j==0 && k==0) ? 0.0 : Z+0.0;
+							}
 						}
 					}
 				}
@@ -929,7 +933,11 @@ public class EMtrain {
 						for(int j=0; j<numChromStates; j++){
 							for(int k=0; k< this.numFacBindingStates; k++){
 								NormalDistribution gaussian = new NormalDistribution(MUs[j][m],Math.pow(SIGMAs[j][m], 2.0));
-								Z = (i==0 && j==0 && k==0) ?  Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xs[i][m])) : Z+Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xs[i][m]));
+								if(!Double.isNaN(gaussian.calcProbability((double)Xs[i][m]))){
+									Z = (i==0 && j==0 && k==0) ?  Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xs[i][m])) : Z+Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xs[i][m]));
+								}else{
+									Z = (i==0 && j==0 && k==0) ? 0.0 : Z+0.0;
+								}
 							}
 						}
 					}
