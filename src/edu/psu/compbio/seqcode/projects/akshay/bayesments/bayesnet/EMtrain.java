@@ -102,16 +102,17 @@ public class EMtrain {
 	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager) {
 		this.config = config;
 		this.trainingData = trainingData;
+		this.regularize = config.doRegularization();
+		if(regularize){
+			this.lambda = config.getLambda();
+		}
 		
 		//Initializing the model
 		initializeEM(manager);
 		this.total_itrs = config.getNumItrs();
 		this.onlyChrom = config.runOnlyChrom();
 		this.seqState = false;
-		this.regularize = config.doRegularization();
-		if(regularize){
-			this.lambda = config.getLambda();
-		}
+		
 	}
 	
 	/**
@@ -140,7 +141,7 @@ public class EMtrain {
 			WCnorm = new double[C];
 			// Setting all initial weights to 1
 			for(int c=0; c<C; c++){
-				WCnorm[c] = 1.0;
+				WCnorm[c] = 0.0;
 			}
 		}
 		
