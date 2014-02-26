@@ -922,8 +922,11 @@ public class EMtrain {
 						}
 					}
 				}
+				System.out.println("the value of Z-chrom is: "+Double.toString(Z));
 				cube_root_solver.solve(1, 2, 1, Z/this.lambda);
 				this.WCnorm[c] = cube_root_solver.x1;
+				System.out.println("Number of roots-chrom: "+Integer.toString(cube_root_solver.nRoots));
+				System.out.println("Value of Highest root is-chrom: "+Double.toString(cube_root_solver.x1));
 			}
 			if(this.seqState){
 				for(int m=0; m<M; m++){
@@ -942,11 +945,11 @@ public class EMtrain {
 						}
 					}
 					//Debug lines
-					System.out.println("the value of Z is: "+Double.toString(Z));
+					System.out.println("the value of Z-seq is: "+Double.toString(Z));
 					cube_root_solver.solve(1, 2, 1, Z/this.lambda);
 					this.WSnorm[m] = cube_root_solver.x1;
-					System.out.println("Number of roots: "+Integer.toString(cube_root_solver.nRoots));
-					System.out.println("Value of Highest root is: "+Double.toString(cube_root_solver.x1));
+					System.out.println("Number of roots-seq: "+Integer.toString(cube_root_solver.nRoots));
+					System.out.println("Value of Highest root is-seq: "+Double.toString(cube_root_solver.x1));
 				}
 			}
 		}
