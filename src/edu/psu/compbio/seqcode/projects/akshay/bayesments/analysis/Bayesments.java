@@ -47,8 +47,8 @@ public class Bayesments {
 			map.execute(true);
 			
 			// Print all the learned parameters
-			System.out.println("PI-C values\n");
-			BayesmentsSandbox.printArray(trainer.getPIj(), "chrom_state");
+			//System.out.println("PI-C values\n");
+			//BayesmentsSandbox.printArray(trainer.getPIj(), "chrom_state");
 		
 			System.out.println("MU-C values\n");
 			BayesmentsSandbox.printArray(trainer.getMUc(),"MUc" , "MUc", manager);

@@ -92,7 +92,7 @@ public class EMrunner {
 	}
 	
 	//Accessors
-	public double[] getPIj(){return model.getPIj();}
+	//public double[] getPIj(){return model.getPIj();}
 	public double[][] getBjk(){return model.getBjk();}
 	public double[][] getMUc(){return model.getMUc();}
 	public double[][] getMUf(){return model.getMUf();}

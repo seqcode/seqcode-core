@@ -18,7 +18,7 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 public class MAPassignment {
 	
 	//All the parameters of the Bayesian network
-	protected double[] PIj;
+	//protected double[] PIj;
 	protected double[][] MUc;
 	protected double[][] MUf;
 	protected double[][] SIGMAc;
@@ -46,7 +46,7 @@ public class MAPassignment {
 	public MAPassignment(EMtrain model, Config conf) {
 		this.model = model;
 		this.conf = conf;
-		PIj = model.getPIj();
+		//PIj = model.getPIj();
 		MUc = model.getMUc();
 		MUf = model.getMUf();
 		SIGMAc = model.getSIGMAc();
@@ -104,9 +104,9 @@ public class MAPassignment {
 					chromGausssianProd = ( Double.isNaN(chromGausssianProd)) ? 0.0 : chromGausssianProd;
 					facGaussianProd = (Double.isNaN(facGaussianProd)) ? 0.0: facGaussianProd;
 					if(inSeqMode){
-						liklehood = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd*seqGaussianProd;
+						liklehood = chromGausssianProd*Bjk[j][k]*facGaussianProd*seqGaussianProd;
 					}else{
-						liklehood = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;
+						liklehood = chromGausssianProd*Bjk[j][k]*facGaussianProd;
 					}
 					liklehood = Double.isNaN(liklehood) ? 0 : liklehood;
 					if(liklehood > maxLiklehood){
