@@ -915,8 +915,15 @@ public class EMtrain {
 						for(int k=0; k<numFacBindingStates; k++){
 							NormalDistribution gaussian = new NormalDistribution(MUc[j][c],Math.pow(SIGMAc[j][c], 2.0));
 							if(!Double.isNaN(gaussian.calcProbability((double)Xc[i][c]))){
-								Z = (i==0 && j==0 && k==0) ? Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xc[i][c])) : Z+Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xc[i][c]));
-							}else{
+								double que_pusher=0.0;
+								if(Double.isInfinite(Math.log(gaussian.calcProbability((double)Xc[i][c])))){
+									que_pusher = Math.log(Double.MIN_VALUE);
+									Z = (i==0 && j==0 && k==0) ? Qijk[i][j][k]*que_pusher : Z+Qijk[i][j][k]*que_pusher;
+								}else{
+									que_pusher = Math.log(gaussian.calcProbability((double)Xc[i][c]));
+									Z =  (i==0 && j==0 && k==0) ? Qijk[i][j][k]*que_pusher : Z+Qijk[i][j][k]*que_pusher;
+								}
+								}else{
 								Z = (i==0 && j==0 && k==0) ? 0.0 : Z+0.0;
 							}
 						}
@@ -997,6 +1004,9 @@ public class EMtrain {
 		//System.out.println(test[0]);
 		//System.out.println(test[1]);
 		//System.out.println(test[2]);
+		double a = 4.0/0.0;
+		
+		System.out.println(Math.log(0));
 		
 	}
 	
