@@ -941,8 +941,12 @@ public class EMtrain {
 							}
 						}
 					}
+					//Debug lines
+					System.out.println("the value of Z is: "+Double.toString(Z));
 					cube_root_solver.solve(1, 2, 1, Z/this.lambda);
 					this.WSnorm[m] = cube_root_solver.x1;
+					System.out.println("Number of roots: "+Integer.toString(cube_root_solver.nRoots));
+					System.out.println("Value of Highest root is: "+Double.toString(cube_root_solver.x1));
 				}
 			}
 		}
