@@ -60,6 +60,8 @@ public class Config {
 	
 	protected double lambda;
 	
+	protected int buffer_Sigma;
+	
 	
 	
 	
@@ -214,6 +216,7 @@ public class Config {
 				this.doSeqAshin = Args.parseFlags(args).contains("ashinSeq")? true : false;
 				onlyChrom = Args.parseFlags(args).contains("onlyChrom") ? true : false;
 				regularize = Args.parseFlags(args).contains("regularize") ? true : false;
+				buffer_Sigma = Args.parseInteger(args, "bufferSigma", 0);
 				
 				this.lambda = Args.parseDouble(args, "regWeight", 10);
 				
@@ -302,6 +305,7 @@ public class Config {
 	public boolean capSigma(){return this.boundSigma;}
 	public boolean doRegularization(){return this.regularize;}
 	public double getLambda(){return this.lambda;}
+	public int getBufferSigmaVal(){return this.buffer_Sigma;}
 	
 	
 	//Some accessors to allow modification of options after config
@@ -391,6 +395,7 @@ public class Config {
 				"\t--capSigma <flag to turn on an upperbound cap on sigma for each guassian>\n"+
 				"\t--chromWeight <weightage for chromatin features to take responsibility for state>\n"+
 				"\t--seqWeight<weightage for seq features to take responsibility for state>\n"+
+				"\t--bufferSigma<int for testing purpose>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	
