@@ -51,7 +51,7 @@ public class EMtrain {
 	//2-d array of transition probabilities, with rows as chromatin states and colums as factor states
 	protected double[][] Bjk;
 	//1-d array of probabilities for different chromatin states
-	protected double[] PIj;
+	//protected double[] PIj;
 	//Expectation of unobserved variables for the E step in EM algorithm
 	protected double[][][] Qijk;
 	//no of chromatin states
@@ -189,8 +189,8 @@ public class EMtrain {
 			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int j=0; j<numChromStates; j++){
-				SIGMAc[j][c] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
-				this.capSIGMAc[c] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
+				SIGMAc[j][c] = (max-min);//(config.getNumChrmStates()+config.getBufferSigmaVal());
+				this.capSIGMAc[c] = (max-min);//(config.getNumChrmStates()+config.getBufferSigmaVal());
 			}
 		}
 		
@@ -202,8 +202,8 @@ public class EMtrain {
 			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int k=0; k<numFacBindingStates; k++){
-				SIGMAf[k][f] = (max-min)/config.getNumFacStates();
-				this.capSIGMAf[f] = (max-min)/config.getNumFacStates();
+				SIGMAf[k][f] = (max-min);//config.getNumFacStates();
+				this.capSIGMAf[f] = (max-min);//config.getNumFacStates();
 			}
 		}
 		
@@ -221,11 +221,11 @@ public class EMtrain {
 		BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", manager);
 		
 		// Initializing PIj ... Using Uniform initialization
-		PIj = new double[numChromStates];
-		PIj = this.getUniformList(numChromStates);
+		//PIj = new double[numChromStates];
+		//PIj = this.getUniformList(numChromStates);
 		
 		//Printing the initial PIj's
-		BayesmentsSandbox.printArray(PIj, "chrom_state");
+		//BayesmentsSandbox.printArray(PIj, "chrom_state");
 		
 		//Initializing the dimensions of Qijk's
 		Qijk = new double[N][numChromStates][numFacBindingStates];
@@ -264,8 +264,8 @@ public class EMtrain {
 			double max = observedValues[this.getPercentileIndex(85.0, observedValues)];
 			
 			for(int j=0; j<numChromStates; j++){
-				SIGMAs[j][m] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
-				this.capSIGMAs[m] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
+				SIGMAs[j][m] = (max-min);//(config.getNumChrmStates()+config.getBufferSigmaVal());
+				this.capSIGMAs[m] = (max-min);//(config.getNumChrmStates()+config.getBufferSigmaVal());
 			}
 		}
 		BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", manager);
@@ -414,7 +414,7 @@ public class EMtrain {
 				trainMUf[0] = MUf;
 				trainSIGMAc[0] = SIGMAc;
 				trainSIGMAf[0] = SIGMAf;
-				trainPIj[0] = PIj;
+				//trainPIj[0] = PIj;
 				trainBjk[0] = Bjk;
 				itr_no++;
 			}
@@ -464,9 +464,9 @@ public class EMtrain {
 				}
 			}
 			
-			for(int j=0; j<numChromStates; j++){
-				trainPIj[itr_no][j] = PIj[j];
-			}
+			//for(int j=0; j<numChromStates; j++){
+			//	trainPIj[itr_no][j] = PIj[j];
+			//}
 			
 			for(int j=0; j< numChromStates; j++){
 				for(int k=0; k<numFacBindingStates; k++){
@@ -660,8 +660,8 @@ public class EMtrain {
 					}
 					
 					if(this.seqState){
-						Qijk[i][j][k] = PIj[j]*Math.pow(chromGausssianProd, -1*config.getChromWeight())*Bjk[j][k]*facGaussianProd*Math.pow(seqGaussianProd, -1*config.getSeqWeight());
-					}else{Qijk[i][j][k] = PIj[j]*chromGausssianProd*Bjk[j][k]*facGaussianProd;}		
+						Qijk[i][j][k] = Math.pow(chromGausssianProd, -1*config.getChromWeight())*Bjk[j][k]*facGaussianProd*Math.pow(seqGaussianProd, -1*config.getSeqWeight());
+					}else{Qijk[i][j][k] = chromGausssianProd*Bjk[j][k]*facGaussianProd;}		
 					den[i] = den[i]+Qijk[i][j][k];
 				}
 			}
@@ -689,20 +689,20 @@ public class EMtrain {
 		//-------------------------PIj update-----------------------------
 		
 		//Compute
-		double denPIj = 0.0;
-		for(int j=0; j<numChromStates; j++){
-			for(int i=0; i<N; i++){
-				for(int k=0; k<numFacBindingStates; k++){
-					PIj[j] = k==0 && i==0 ? Qijk[i][j][k] : PIj[j]+Qijk[i][j][k];
-					denPIj = denPIj + Qijk[i][j][k];
-				}
-			}
-		}
+		//double denPIj = 0.0;
+		//for(int j=0; j<numChromStates; j++){
+		//	for(int i=0; i<N; i++){
+		//		for(int k=0; k<numFacBindingStates; k++){
+		//			PIj[j] = k==0 && i==0 ? Qijk[i][j][k] : PIj[j]+Qijk[i][j][k];
+		//			denPIj = denPIj + Qijk[i][j][k];
+		//		}
+		//	}
+		//}
 		
 		//Normalize
-		for(int j=0; j<numChromStates; j++){
-			PIj[j] = PIj[j]/denPIj;
-		}
+		//for(int j=0; j<numChromStates; j++){
+		//	PIj[j] = PIj[j]/denPIj;
+		//}
 		
 		//Making sure PI-j for any state does not go to zero
 		//for(int j=0; j<numChromStates; j++){
@@ -794,96 +794,96 @@ public class EMtrain {
 		//--------------------SIGMAc update --------------------------------------
 		
 		//Compute
-		double[][] denSIGMAc = new double[numChromStates][C];
-		for(int j=0; j<numChromStates; j++){
-			for(int c=0; c<C; c++){
-				for(int i=0; i<N; i++){
-					for(int k=0; k<numFacBindingStates; k++){
-						SIGMAc[j][c] = k==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0): SIGMAc[j][c]+Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0);
-						denSIGMAc[j][c] = denSIGMAc[j][c]+Qijk[i][j][k];
-					}
-				}
-			}
-		}
+		//double[][] denSIGMAc = new double[numChromStates][C];
+		//for(int j=0; j<numChromStates; j++){
+		//	for(int c=0; c<C; c++){
+		//		for(int i=0; i<N; i++){
+		//			for(int k=0; k<numFacBindingStates; k++){
+		//				SIGMAc[j][c] = k==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0): SIGMAc[j][c]+Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0);
+		//				denSIGMAc[j][c] = denSIGMAc[j][c]+Qijk[i][j][k];
+		//			}
+		//		}
+		//	}
+		//}
 		
 		//Normalize and taking the square root
-		for(int j=0; j<numChromStates; j++){
-			for(int c=0; c<C; c++){
-				SIGMAc[j][c] = Math.sqrt(SIGMAc[j][c]/denSIGMAc[j][c]);
-			}
-		}
+		//for(int j=0; j<numChromStates; j++){
+		//	for(int c=0; c<C; c++){
+		//		SIGMAc[j][c] = Math.sqrt(SIGMAc[j][c]/denSIGMAc[j][c]);
+		//	}
+		//}
 		
-		if(config.capSigma()){
-			for(int j=0; j<numChromStates; j++){
-				for(int c=0; c<C; c++){
-					SIGMAc[j][c] = (SIGMAc[j][c] > this.capSIGMAc[c]) ? this.capSIGMAc[c] : SIGMAc[j][c];
-				}
-			}
-		}
+		//if(config.capSigma()){
+		//	for(int j=0; j<numChromStates; j++){
+		//		for(int c=0; c<C; c++){
+		//			SIGMAc[j][c] = (SIGMAc[j][c] > this.capSIGMAc[c]) ? this.capSIGMAc[c] : SIGMAc[j][c];
+		//		}
+		//	}
+		//}
 		
 		//------------------SIGMAf update------------------------------------------
 		
 		//Compute
-		double[][] denSIGMAf = new double[numFacBindingStates][F];
-		for(int k=0; k<numFacBindingStates; k++){
-			for(int f=0; f<F; f++){
-				for(int i=0; i<N; i++){
-					for(int j=0; j< numChromStates; j++){
-						SIGMAf[k][f] = j==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0) : SIGMAf[k][f]+Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0);
-						denSIGMAf[k][f] = denSIGMAf[k][f]+Qijk[i][j][k];
-					}
-				}
-			}
-		}
+		//double[][] denSIGMAf = new double[numFacBindingStates][F];
+		//for(int k=0; k<numFacBindingStates; k++){
+		//	for(int f=0; f<F; f++){
+		//		for(int i=0; i<N; i++){
+		//			for(int j=0; j< numChromStates; j++){
+		//				SIGMAf[k][f] = j==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0) : SIGMAf[k][f]+Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0);
+		//				denSIGMAf[k][f] = denSIGMAf[k][f]+Qijk[i][j][k];
+		//			}
+		//		}
+		//	}
+		//}
 		
 		//Normalize and taking the square root
-		for(int k=0; k<numFacBindingStates; k++){
-			for(int f=0; f<F; f++){
-				SIGMAf[k][f] = Math.sqrt(SIGMAf[k][f]/denSIGMAf[k][f]);
-			}
-		}
+		//for(int k=0; k<numFacBindingStates; k++){
+		//	for(int f=0; f<F; f++){
+		//		SIGMAf[k][f] = Math.sqrt(SIGMAf[k][f]/denSIGMAf[k][f]);
+		//	}
+		//}
 		
-		if(config.capSigma()){
-			for(int k=0; k<numFacBindingStates; k++){
-				for(int f=0; f<F; f++){
-					SIGMAf[k][f] = (SIGMAf[k][f] > this.capSIGMAf[f]) ? this.capSIGMAf[f] : SIGMAf[k][f];
-				}
-			}
-		}
+		//if(config.capSigma()){
+		//	for(int k=0; k<numFacBindingStates; k++){
+		//		for(int f=0; f<F; f++){
+		//			SIGMAf[k][f] = (SIGMAf[k][f] > this.capSIGMAf[f]) ? this.capSIGMAf[f] : SIGMAf[k][f];
+		//		}
+		//	}
+		//}
 		
 		
 		
 		//--------------------SIGMAs update, if in seqState ------------------------
 		
 		//Compute
-		if(this.seqState){
-			double[][] denSIGMAs = new double[numChromStates][M];
-			for(int j=0; j<numChromStates; j++){
-				for(int m=0; m<M; m++){
-					for(int i=0; i<N; i++){
-						for(int k=0; k<numFacBindingStates; k++){
-							SIGMAs[j][m] = k==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xs[i][m] - MUs[j][m]) , 2.0): SIGMAs[j][m]+Qijk[i][j][k]*Math.pow(((double)Xs[i][m] - MUs[j][m]) , 2.0);
-							denSIGMAs[j][m] = denSIGMAs[j][m]+Qijk[i][j][k];
-						}
-					}
-				}
-			}
+		//if(this.seqState){
+		//	double[][] denSIGMAs = new double[numChromStates][M];
+		//	for(int j=0; j<numChromStates; j++){
+		//		for(int m=0; m<M; m++){
+		//			for(int i=0; i<N; i++){
+		//				for(int k=0; k<numFacBindingStates; k++){
+		//					SIGMAs[j][m] = k==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xs[i][m] - MUs[j][m]) , 2.0): SIGMAs[j][m]+Qijk[i][j][k]*Math.pow(((double)Xs[i][m] - MUs[j][m]) , 2.0);
+		//					denSIGMAs[j][m] = denSIGMAs[j][m]+Qijk[i][j][k];
+		//				}
+		//			}
+		//		}
+		//	}
 			
 			//Normalize and taking the square root
-			for(int j=0; j<numChromStates; j++){
-				for(int m=0; m<M; m++){
-					SIGMAs[j][m] = Math.sqrt(SIGMAs[j][m]/denSIGMAs[j][m]);
-				}
-			}
+		//	for(int j=0; j<numChromStates; j++){
+		//		for(int m=0; m<M; m++){
+		//			SIGMAs[j][m] = Math.sqrt(SIGMAs[j][m]/denSIGMAs[j][m]);
+		//		}
+		//	}
 			
-			if(config.capSigma()){
-				for(int j=0; j<numChromStates; j++){
-					for(int m=0; m<M; m++){
-						SIGMAs[j][m] = (SIGMAs[j][m] > this.capSIGMAs[m]) ? this.capSIGMAs[m] : SIGMAs[j][m];
-					}
-				}
-			}
-		}
+		//	if(config.capSigma()){
+		//		for(int j=0; j<numChromStates; j++){
+		//			for(int m=0; m<M; m++){
+		//				SIGMAs[j][m] = (SIGMAs[j][m] > this.capSIGMAs[m]) ? this.capSIGMAs[m] : SIGMAs[j][m];
+		//			}
+		//		}
+		//	}
+		//}
 		
 		//---------------------Bjk update -------------------------------------------
 		
@@ -984,7 +984,7 @@ public class EMtrain {
 	private void setInitialSeqParams(ExperimentManager manager){this.initializeSeqParams(manager);}
 	
 	//Accessors
-	public double[] getPIj(){return this.PIj;}
+	//public double[] getPIj(){return this.PIj;}
 	public double[][] getMUc(){return this.MUc;}
 	public double[][] getMUf(){return this.MUf;}
 	public double[][] getSIGMAc(){return this.SIGMAc;}
