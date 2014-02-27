@@ -189,8 +189,8 @@ public class EMtrain {
 			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int j=0; j<numChromStates; j++){
-				SIGMAc[j][c] = (max-min)/config.getNumChrmStates();//(config.getNumChrmStates()+config.getBufferSigmaVal());
-				this.capSIGMAc[c] = (max-min)/config.getNumChrmStates();//(config.getNumChrmStates()+config.getBufferSigmaVal());
+				SIGMAc[j][c] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
+				this.capSIGMAc[c] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
 			}
 		}
 		
@@ -202,8 +202,8 @@ public class EMtrain {
 			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int k=0; k<numFacBindingStates; k++){
-				SIGMAf[k][f] = (max-min)/config.getNumFacStates();//config.getNumFacStates();
-				this.capSIGMAf[f] = (max-min)/config.getNumFacStates();//config.getNumFacStates();
+				SIGMAf[k][f] = (max-min)/config.getNumFacStates();
+				this.capSIGMAf[f] = (max-min)/config.getNumFacStates();
 			}
 		}
 		
@@ -264,8 +264,8 @@ public class EMtrain {
 			double max = observedValues[this.getPercentileIndex(85.0, observedValues)];
 			
 			for(int j=0; j<numChromStates; j++){
-				SIGMAs[j][m] = (max-min)/config.getNumChrmStates();//(config.getNumChrmStates()+config.getBufferSigmaVal());
-				this.capSIGMAs[m] = (max-min)/config.getNumChrmStates();//(config.getNumChrmStates()+config.getBufferSigmaVal());
+				SIGMAs[j][m] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
+				this.capSIGMAs[m] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
 			}
 		}
 		BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", manager);

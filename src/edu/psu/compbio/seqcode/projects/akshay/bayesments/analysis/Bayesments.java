@@ -78,8 +78,11 @@ public class Bayesments {
 				System.out.println("Chromatin Weight values\n");
 				BayesmentsSandbox.printArray(trainer.getChromWeights(), "Chromatin Feature");
 				
-				System.out.println("Sequence Weight values\n");
-				BayesmentsSandbox.printArray(trainer.getSeqWeights(), "Sequence Feature");
+				if(!c.runOnlyChrom()){
+					System.out.println("Sequence Weight values\n");
+					BayesmentsSandbox.printArray(trainer.getSeqWeights(), "Sequence Feature");
+				}
+				
 			}
 		}
 	}	
