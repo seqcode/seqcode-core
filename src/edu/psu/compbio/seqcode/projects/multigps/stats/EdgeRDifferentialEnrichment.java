@@ -29,11 +29,11 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
 	
 	/**
 	 * execute: make & run an appropriate EdgeR script 
-	 */
+	 */ 
 	public CountsDataset execute(CountsDataset dat) {
 		this.data = dat;
 		String repCountsFilename = config.getOutputParentDir()+File.separator+config.getOutBase()+".replicates.counts";
-		String scriptFilename = config.getOutputParentDir()+File.separator+"call_DE_GLM.R";
+		String scriptFilename = config.getOutputParentDir()+File.separator+"call_DE_GLM"+fileIDname+".R";
 		
 		//Write the R script
 		try {
@@ -91,7 +91,8 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
     		fout.close();
 
     		//Run the R script
-    		Process proc = Runtime.getRuntime().exec("Rscript "+scriptFilename+" "+repCountsFilename+" "+config.getEdgeROverDisp());
+    		String Rscriptcmd = config.getRpath()+"Rscript ";
+    		Process proc = Runtime.getRuntime().exec(Rscriptcmd+scriptFilename+" "+repCountsFilename+" "+config.getEdgeROverDisp());
     		// any error message? 
 			StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
 			// any output? 

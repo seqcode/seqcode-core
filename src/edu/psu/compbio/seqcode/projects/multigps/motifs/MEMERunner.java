@@ -70,7 +70,7 @@ public class MEMERunner {
 				config.deleteDirectory(memeOutPath);
 			
 			//Call MEME
-			String MEMEcmd = MEMEpath+"/meme ";
+			String MEMEcmd = MEMEpath+"meme ";
 			Process proc = Runtime.getRuntime().exec(MEMEcmd+" "+seqFilename+" "+MEMEargs +" -o "+memeOutDir);
 			// any error message? 
 			StreamGobbler errorGobbler = new 

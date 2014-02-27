@@ -249,7 +249,33 @@ public class ExperimentManager {
 			}
 		}
 	}
-	
+	/**
+	 * Count the binding events present in a given condition
+	 * @param cond
+	 * @return
+	 */
+	public int countEventsInCondition(ExperimentCondition cond){
+		int count=0;
+		for(BindingEvent e : events){
+			if(e.isFoundInCondition(cond) && e.getCondSigVCtrlP(cond) <=config.getQMinThres())
+				count++;
+		}
+		return count;
+	}
+	/**
+	 * Count the differential binding events present in a given pair of conditions
+	 * @param cond
+	 * @return
+	 */
+	public int countDiffEventsBetweenConditions(ExperimentCondition cond, ExperimentCondition othercond){
+		int count=0;
+		for(BindingEvent e : events){
+			if(e.isFoundInCondition(cond) && e.getCondSigVCtrlP(cond) <=config.getQMinThres())
+    			if(e.getInterCondP(cond, othercond)<=config.getDiffPMinThres() && e.getInterCondFold(cond, othercond)>0)
+    				count++;
+		}
+		return count;
+	}
     /**
      * Print all binding events to files
      */
@@ -272,7 +298,7 @@ public class ExperimentManager {
 	    			Collections.sort(events, new Comparator<BindingEvent>(){
 	    	            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
 	    	        });
-	    			//Print
+	    			//Print events
 	    			String condName = cond.getName(); 
 	    			condName = condName.replaceAll("/", "-");
 	    			filename = filePrefix+"_"+condName+".events";
@@ -285,6 +311,39 @@ public class ExperimentManager {
 			    			fout.write(e.getConditionString(cond)+"\n");
 			    	}
 					fout.close();
+	    		}
+	    		
+	    		//Differential event files
+	    		if(getNumConditions()>1 && config.getRunDiffTests()){
+	    			for(ExperimentCondition cond : experiments.getConditions()){
+		    			//Sort on the current condition
+		    			BindingEvent.setSortingCond(cond);
+		    			Collections.sort(events, new Comparator<BindingEvent>(){
+		    	            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
+		    	        });
+		    			
+		    			for(ExperimentCondition othercond : experiments.getConditions()){
+		    				if(!cond.equals(othercond)){
+				    			//Print diff events
+				    			String condName = cond.getName(); 
+				    			String othercondName = othercond.getName(); 
+				    			condName = condName.replaceAll("/", "-");
+				    			filename = filePrefix+"_"+condName+"_gt_"+othercondName+".diff.events";
+								fout = new FileWriter(filename);
+								fout.write(BindingEvent.conditionShortHeadString(cond)+"\n");
+						    	for(BindingEvent e : events){
+						    		double Q = e.getCondSigVCtrlP(cond);
+						    		//Because of the ML step and component sharing, I think that an event could be assigned a significant number of reads without being "present" in the condition's EM model.
+						    		if(e.isFoundInCondition(cond) && Q <=config.getQMinThres()){
+						    			if(e.getInterCondP(cond, othercond)<=config.getDiffPMinThres() && e.getInterCondFold(cond, othercond)>0){
+						    				fout.write(e.getConditionString(cond)+"\n");
+						    			}
+						    		}
+						    	}
+								fout.close();
+		    				}
+		    			}
+		    		}
 	    		}
 			} catch (IOException e) {
 				e.printStackTrace();

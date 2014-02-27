@@ -15,6 +15,7 @@ import edu.psu.compbio.seqcode.projects.shaun.viz.ScatterPlotConfigured;
 public abstract class DifferentialEnrichment {
 
 	protected final int MV_IMAGE_FITLINE_POINTS=200;
+	protected String fileIDname="";
 	
 	public DifferentialEnrichment(){
 		
@@ -87,4 +88,9 @@ public abstract class DifferentialEnrichment {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Set a file name identifier for the scripts that are produced by the differential enrichment implementation
+	 */
+	public void setFileIDname(String fid){fileIDname = fid;}
 }

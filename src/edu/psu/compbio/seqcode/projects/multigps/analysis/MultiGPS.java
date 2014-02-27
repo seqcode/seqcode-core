@@ -18,7 +18,6 @@ import edu.psu.compbio.seqcode.projects.multigps.framework.OutputFormatter;
 import edu.psu.compbio.seqcode.projects.multigps.framework.PotentialRegionFilter;
 import edu.psu.compbio.seqcode.projects.multigps.mixturemodel.BindingMixture;
 import edu.psu.compbio.seqcode.projects.multigps.stats.CountsDataset;
-import edu.psu.compbio.seqcode.projects.multigps.stats.DESeqDifferentialEnrichment;
 import edu.psu.compbio.seqcode.projects.multigps.stats.DifferentialEnrichment;
 import edu.psu.compbio.seqcode.projects.multigps.stats.EdgeRDifferentialEnrichment;
 import edu.psu.compbio.seqcode.projects.multigps.stats.Normalization;
@@ -133,6 +132,7 @@ public class MultiGPS {
 				data = new CountsDataset(manager, manager.getEvents(), ref);
 				//normalizer.normalize(data);
 				//data.calcScMeanAndFold();
+				edgeR.setFileIDname("_"+manager.getExperimentSet().getIndexedCondition(ref).getName());
 				data = edgeR.execute(data);
 				data.updateEvents(manager.getEvents(), manager);
 				
@@ -149,7 +149,7 @@ public class MultiGPS {
         // Print final events to files
 		manager.writeBindingEventFiles(config.getOutputParentDir()+File.separator+config.getOutBase());
 		manager.writeMotifFile(config.getOutputParentDir()+File.separator+config.getOutBase()+".motifs");
-        System.err.println("Finished! Binding events are printed to files in "+config.getOutputParentDir()+" beginning with: "+config.getOutName());
+        System.err.println("Binding event detection finished!\nBinding events are printed to files in "+config.getOutputParentDir()+" beginning with: "+config.getOutName());
         
         //Post-analysis of peaks
         EventsPostAnalysis postAnalyzer = new EventsPostAnalysis(config, manager, manager.getEvents(), mixtureModel.getMotifFinder());
@@ -161,27 +161,27 @@ public class MultiGPS {
 	 * @param args
 	 */
 	public static void main(String[] args){
+		System.setProperty("java.awt.headless", "true");
 		
 		Config config = new Config(args);
 		if(config.helpWanted()){
-			System.err.println("MultiGPS:");
-			System.err.println(config.getArgsList());
+			System.out.println(MultiGPS.getMultiGPSArgsList());
 		}else{
+			System.err.println("Welcome to MultiGPS");
+			
 			ExperimentManager manager = new ExperimentManager(config);
 			
-			//System.err.println("Welcome to MultiGPS:\n\tStarted at "+new Date());
 			//Just a test to see if we've loaded all conditions
 			ExperimentSet eset = manager.getExperimentSet();
 			if(eset.getConditions().size()==0){
-				System.err.println("No experiments specified."); System.exit(1);
+				System.err.println("No experiments specified. Use --expt or --design options."); System.exit(1);
 			}
-			System.err.println("Conditions:\t"+eset.getConditions().size());
+			
+			System.err.println("Loaded experiments:");
 			for(ExperimentCondition c : eset.getConditions()){
-				System.err.println("Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
-			}
-			for(ExperimentCondition c : eset.getConditions()){
+				System.err.println(" Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
 				for(ControlledExperiment r : c.getReplicates()){
-					System.err.println("Condition "+c.getName()+":\tRep "+r.getName());
+					System.err.println(" Condition "+c.getName()+":\tRep "+r.getName());
 					if(r.getControl()==null)
 						System.err.println("\tSignal:\t"+r.getSignal().getHitCount());
 					else
@@ -195,4 +195,70 @@ public class MultiGPS {
 			manager.close();
 		}
 	}
+	
+	/**
+	 * returns a string describing the arguments for the public version of MultiGPS. 
+	 * @return String
+	 */
+	public static String getMultiGPSArgsList(){
+		return(new String("" +
+				"MultiGPS version 0.5\n\n" +
+				"Copyright (C) Shaun Mahony 2012-2014\n" +
+				"<http://mahonylab.org/software/multigps>\n" +
+				"\n" +
+				"MultiGPS comes with ABSOLUTELY NO WARRANTY.  This is free software, and you\n"+
+				"are welcome to redistribute it under certain conditions.  See the MIT license \n"+
+				"for details.\n"+
+				"\n OPTIONS:\n" +
+				" General:\n"+
+				"\t--out <output file prefix>\n" +
+				"\t--threads <number of threads to use>\n" +
+				"\t--verbose [flag to print intermediate files and extra output]\n" +
+				"\t--config <config file: all options here can be specified in a name<space>value text file, over-ridden by command-line args>\n" +
+				" Genome:\n" +
+				"\t--geninfo <genome info file> AND --seq <fasta seq directory reqd if using motif prior>\n" +
+				" Loading Data:\n" +
+				"\t--expt <file name> AND --format <SAM/BED/IDX>\n" +
+				"\t--ctrl <file name (optional argument. must be same format as expt files)>" +
+				"\t--design <experiment design file name to use instead of --expt and --ctrl; see website for format>\n"+
+				"\t--fixedpb <fixed per base limit>\n" +
+				"\t--poissongausspb <filter per base using a Poisson threshold parameterized by a local Gaussian sliding window>\n" +
+				"\t--nonunique [flag to use non-unique reads]\n" +
+				" Scaling data:\n"+
+				"\t--noscaling [flag to turn off signal vs control scaling (default = scaling by regression)]\n" +
+				"\t--medianscale [flag to use scaling by median (default = scaling by regression)]\n" +
+				"\t--sesscale [flag to use scaling by SES (default = scaling by regression)]\n" +
+				"\t--scalewin <window size for scaling procedure>\n" +
+				" Running MultiGPS:\n" +
+				"\t--d <binding event read distribution file>\n" +
+				"\t--r <max. model update rounds>\n" +
+				"\t--exclude <file of regions to ignore>\n" +
+				"\t--nomodelupdate [flag to turn off binding model updates]\n" +
+				"\t--minmodelupdateevents <minimum number of events to support an update>\n" +
+				"\t--nomodelsmoothing [flag to turn off binding model smoothing]\n" +
+				"\t--splinesmoothparam <spline smoothing parameter>\n" +
+				"\t--gaussmodelsmoothing [flag to turn on Gaussian model smoothing (default = cubic spline)]\n" +
+				"\t--gausssmoothparam <Gaussian smoothing std dev>\n" +
+				"\t--jointinmodel [flag to allow joint events in model updates (default=do not)]\n" +
+				"\t--mlconfignotshared [flag to not share component configs in the ML step]\n" +
+				" MultiGPS priors:\n"+
+				"\t--noposprior [flag to turn off inter-experiment positional prior (default=on)]\n" +
+				"\t--probshared <probability that events are shared across conditions (default=0.9)>\n" +
+				"\t--nomotifs [flag to turn off motif-finding & motif priors]\n" +
+				"\t--nomotifprior [flag to turn off motif priors only]\n" +
+				"\t--memepath <path to the meme bin dir (default: meme is in $PATH)>\n" +
+				"\t--memenmotifs <number of motifs MEME should find for each condition (default=3)>\n" +
+				"\t--mememinw <minw arg for MEME (default=6)>\n"+
+				"\t--mememaxw <maxw arg for MEME (default=18)>\n"+
+				"\t--memeargs <additional args for MEME (default=  -dna -mod zoops -revcomp -nostatus)>\n"+
+				" Reporting binding events:\n" +
+				"\t--q <Q-value minimum (corrected p-value)>\n" +
+				"\t--minfold <minimum event fold-change vs scaled control>\n" +
+				"\t--nodifftests [flag to turn off differential enrichment tests]\n" +
+				"\t--Rpath <path to the R bin dir (default: R is in $PATH). Note that you need to install edgeR separately>\n" +
+				"\t--edgerod <EdgeR overdispersion parameter>\n" +
+				"\t--diffp <minimum p-value for reporting differential enrichment>\n" +
+				""));
+	}
+
 }

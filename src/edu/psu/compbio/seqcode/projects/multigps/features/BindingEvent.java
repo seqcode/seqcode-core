@@ -366,6 +366,25 @@ public class BindingEvent implements Comparable<BindingEvent>{
 	}
 	
 	/**
+	 * Returns a single-line string suitable for use as the header of a table of differential binding events
+	 */
+	public static String conditionShortHeadString(ExperimentCondition c){
+		String head = "#Point";
+		head = head +"\t"+c.getName()+"_Sig"+"\t"+c.getName()+"_Ctrl"+"\t"+c.getName()+"_log2Fold"+"\t"+c.getName()+"_log2P";
+		
+		for(ExperimentCondition c2 : experiments.getConditions()){
+			if(c!=c2){
+				head = head +"\t"+c.getName()+"_vs_"+c2.getName()+"_log2CPM"+"\t"+c.getName()+"_vs_"+c2.getName()+"_log2Fold"+"\t"+c.getName()+"_vs_"+c2.getName()+"_log2P";
+			}
+		}
+		if(config.isAddingSequences());
+			head = head +"\tSequence\tMotifScore";
+		if(config.isAddingAnnotations())
+			head = head +"\tnearestGene\tdistToGene";
+		return head;
+	}
+	
+	/**
 	 * Print info on a single condition and associated inter-condition tests
 	 */
 	public String getConditionString(ExperimentCondition c) {

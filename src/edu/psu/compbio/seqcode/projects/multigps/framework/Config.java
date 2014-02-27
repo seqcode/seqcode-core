@@ -35,9 +35,10 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
  * @version	%I%, %G%
  */
 public class Config {
+	public final String version = "0.5";
 	protected Genome gen=null;
 	protected List<ExptDescriptor> expts = new ArrayList<ExptDescriptor>();
-	protected String outName="gps", outBase="gps";
+	protected String outName="multigps", outBase="multigps";
 	protected File outDir=null, interDir=null, imagesDir=null;
 	protected boolean nonUnique=false;
 	protected boolean printHelp=false;
@@ -47,7 +48,7 @@ public class Config {
 	protected double perBaseLogConf=-7;
 	protected boolean poissonGaussWinPerBaseFilter = false; //Filter using a poisson Gaussian window
 	protected double qMinThres=0.001;		//Minimum  Q-value for reported binding events
-	protected double differentialSignificanceP = 0.001;
+	protected double differentialSignificanceP = 0.01;
 	protected double mappableGenome = 0.8;
 	protected int maxModelUpdateRounds=3;
 	protected List<Integer> localBackgroundWindows=new ArrayList<Integer>(); 
@@ -86,9 +87,10 @@ public class Config {
 	protected String genomeSequencePath=null; //Path to sequence data file directories
 	protected String MEMEpath="";
 	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus ";
-	protected int MEMEminw=6;
-	protected int MEMEmaxw=18;
+	public int MEMEminw=6;
+	public int MEMEmaxw=18;
 	protected boolean runDiffTests = true; //Run differential enrichment testing
+	protected String Rpath="";
 	protected double edger_overdispersion = 0.15; //Overdispersion used by EdgeR differential enrichment tests
 	protected boolean verbose = false; //Print extra output
 	
@@ -121,9 +123,16 @@ public class Config {
 	public final boolean CALC_COMP_LL=false; //Calculate component-wise log-likelihoods during ML 
     
 	protected String[] args;
+	public String getArgs(){
+		String a="";
+		for(int i=0; i<args.length; i++)
+			a = a+" "+args[i];
+		return a;
+	}
 	
 	public Config(String[] arguments){this(arguments, true);}
 	public Config(String[] arguments, boolean isGPS){
+		System.setProperty("java.awt.headless", "true");
 		this.args=arguments; 
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h")){
@@ -251,54 +260,69 @@ public class Config {
 				            if(words.length >=3){
 				            	String cond="", rep="";
 				            	BindingModel currModel=null;
-					            boolean signal = words[0].toUpperCase().equals("SIGNAL") ? true : false;
-					            Pair<String, String> src = new Pair<String, String>(words[1], words[2]);
-					            if(words.length>=4 && !words[3].equals("")){
-					            	cond = words[3];
-					            }else
-					            	cond = signal ? "EXPERIMENT" :"DEFAULT";
 					            
-					            if(words.length>=5 &&  !words[4].equals("")){
-					            	rep = words[4];
+				            	boolean validLine = true;
+					            Pair<String, String> src=null;
+					            boolean signal= true;
+					            if(words[0].toUpperCase().equals("SIGNAL") || words[0].toUpperCase().equals("CONTROL")){
+					            	signal = words[0].toUpperCase().equals("SIGNAL") ? true : false;
+					            	src = new Pair<String, String>(words[1], words[2]);
+					            }else if(words[1].toUpperCase().equals("SIGNAL") || words[1].toUpperCase().equals("CONTROL")){
+					            	signal = words[1].toUpperCase().equals("SIGNAL") ? true : false;
+					            	src = new Pair<String, String>(words[0], words[2]);
 					            }else{
-					            	rep = signal ? "Rep1" : "DEFAULT";
+					            	System.err.println("Incorrectly formatted line in design file:\n\t"+line+"\n");
+					            	validLine=false;
 					            }
 					            
-					            //Read distribution in field 6
-					            if(words.length>=6 && !words[5].equals("") && !words[5].equals("NULL")){
-					            	String currModFile = words[5];
-					            	File pFile = new File(currModFile);
-									if(!pFile.isFile()){
-										System.err.println("\nCannot find read distribution file: "+currModFile);
-										System.exit(1);
-									}
-									currModel = new BindingModel(pFile);
-					            }
-					            if(currModel==null && signal)
-					            	currModel = defaultModel;
-					            
-					            //Per-base read limit in field 7
-					            float currCondPerBaseReads = perBaseReadLimit;
-					            if(words.length>=7 && !words[6].equals("")){
-					            	if(words[6].equals("P"))
-					            		currCondPerBaseReads=0;
-					            	else
-					            		currCondPerBaseReads = new Float(words[6]);
-					            }
-					            
-					            //Check if we have other entries for this experiment
-					            boolean found=false;
-					            for(ExptDescriptor e : expts){
-					            	if(e.signal==signal && e.condition.equals(cond) && e.replicate.equals(rep)){
-					            		found = true;
-					            		e.sources.add(src);
-					            	}
-					            }
-					            if(!found){
-					            	expts.add(new ExptDescriptor(cond, rep, signal, src, currModel, currCondPerBaseReads));
+					            if(validLine){
+						            if(words.length>=4 && !words[3].equals("")){
+						            	cond = words[3];
+						            }else
+						            	cond = signal ? "EXPERIMENT" :"DEFAULT";
+						            
+						            if(words.length>=5 &&  !words[4].equals("")){
+						            	rep = words[4];
+						            }else{
+						            	rep = signal ? "Rep1" : "DEFAULT";
+						            }
+						            
+						            //Read distribution in field 6
+						            if(words.length>=6 && !words[5].equals("") && !words[5].equals("NULL")){
+						            	String currModFile = words[5];
+						            	File pFile = new File(currModFile);
+										if(!pFile.isFile()){
+											System.err.println("\nCannot find read distribution file: "+currModFile);
+											System.exit(1);
+										}
+										currModel = new BindingModel(pFile);
+						            }
+						            if(currModel==null && signal)
+						            	currModel = defaultModel;
+						            
+						            //Per-base read limit in field 7
+						            float currCondPerBaseReads = perBaseReadLimit;
+						            if(words.length>=7 && !words[6].equals("")){
+						            	if(words[6].equals("P"))
+						            		currCondPerBaseReads=0;
+						            	else
+						            		currCondPerBaseReads = new Float(words[6]);
+						            }
+						            
+						            //Check if we have other entries for this experiment
+						            boolean found=false;
+						            for(ExptDescriptor e : expts){
+						            	if(e.signal==signal && e.condition.equals(cond) && e.replicate.equals(rep)){
+						            		found = true;
+						            		e.sources.add(src);
+						            	}
+						            }
+						            if(!found){
+						            	expts.add(new ExptDescriptor(cond, rep, signal, src, currModel, currCondPerBaseReads));
+						            }
 					            }
 				            }else{
-				            	System.err.println("Error in design file. Cannot parse line: \n"+line);
+				            	System.err.println("Incorrectly formatted line in design file:\n\t"+line+"\n");
 				            }
 			            }
 			    	}
@@ -380,17 +404,19 @@ public class Config {
 				prob_shared_binding = Args.parseDouble(args,"probshared",prob_shared_binding);
 				//Turn off motif-finding 
 				findMotifs = Args.parseFlags(args).contains("nomotifs") ? false : true;
-				if(findMotifs){ //Do we need to load sequences?
-					genomeSequencePath = ap.hasKey("seq") ? ap.getKeyValue("seq") : null;
-					if(genomeSequencePath==null && isGPS){
-						System.err.println("You have requested motif-finding, but no genome sequence data was provided with --seq");
-						System.exit(1);
-					}
-				}
 				//Turn off motif prior only
 				motif_posprior = (findMotifs && Args.parseFlags(args).contains("nomotifprior")) ? false : true;
+				
+				genomeSequencePath = ap.hasKey("seq") ? ap.getKeyValue("seq") : null;
+				if(genomeSequencePath==null && isGPS){
+					findMotifs=false;
+					motif_posprior=false;
+					System.err.println("No genome sequence data was provided with --seq, so motif-finding and the motif prior are switched off.");
+				}
+				
 				//MEME path
 				MEMEpath = Args.parseString(args, "memepath", MEMEpath);
+				if(!MEMEpath.equals("") && !MEMEpath.endsWith("/")){ MEMEpath= MEMEpath+"/";}
 				//MEME args
 				MEMEargs = Args.parseString(args, "memeargs", MEMEargs);
 				//MEME minw
@@ -400,10 +426,15 @@ public class Config {
 				//MEME nmotifs option
 				int MEMEnmotifs = Args.parseInteger(args,"memenmotifs", 3);
 				MEMEargs = MEMEargs + " -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
+				
 				//Turn off DE testing
 				runDiffTests = Args.parseFlags(args).contains("nodifftests") ? false : true;
+				//R path
+				Rpath = Args.parseString(args, "Rpath", Rpath);
+				if(!Rpath.equals("") && !Rpath.endsWith("/")){ Rpath= Rpath+"/";}
 				//EdgeR overdispersion parameter
 				edger_overdispersion = Args.parseDouble(args,"edgerod",edger_overdispersion);
+				
 				//Extra output
 				verbose = Args.parseFlags(args).contains("verbose") ? true : false;
 				//Shared component config in ML step
@@ -489,6 +520,7 @@ public class Config {
 	public String getMEMEpath(){return MEMEpath;}
 	public String getMEMEargs(){return MEMEargs;}
 	public boolean getRunDiffTests(){return runDiffTests;}
+	public String getRpath(){return Rpath;}
 	public double getEdgeROverDisp(){return edger_overdispersion;}
 	public boolean isVerbose(){return verbose;}
 	
@@ -568,7 +600,7 @@ public class Config {
 				"\t--q <Q-value minimum (corrected p-value)>\n" +
 				"\t--minfold <min event fold-change>\n" +
 				"\t--fixedpb <fixed per base limit>\n" +
-				"\t--poissongausspb <filter per base using Poisson Gaussian sliding window>\n" +
+				"\t--poissongausspb <filter per base using a Poisson threshold parameterized by a local Gaussian sliding window>\n" +
 				"\t--prlogconf <Poisson log threshold for potential region scanning>\n" +
 				"\t--alphascale <alpha scaling factor>\n" +
 				"\t--nomodelupdate [flag to turn off binding model updates]\n" +
@@ -596,10 +628,11 @@ public class Config {
 				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
 				"\t--mememaxw <maxw arg for MEME (default="+MEMEmaxw+")>\n"+
 				"\t--nodifftests [flag to turn off DE tests]\n" +
+				"\t--Rpath <path to the R bin dir (default: R is in $PATH). Note that you need to install edgeR separately>\n" +
 				"\t--edgerod <EdgeR overdispersion>\n" +
 				"\t--diffp <minimum p-value for differential enrichment>\n" +
 				"\t--verbose [flag to print intermediate files and extra output]\n" +
 				"\t--config <config file: all options can be specified in a name<space>value text file, over-ridden by command-line args>\n" +
 				""));
 	}
-}
+	}
