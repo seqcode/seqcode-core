@@ -46,7 +46,7 @@ public class EventsPostAnalysis {
 		String pcmfilename = config.getOutputIntermediateDir()+File.separator+config.getOutBase()+".peaks2motifs.histo.txt";
 		String ppdscfilename = config.getOutputIntermediateDir()+File.separator+config.getOutBase()+".intraCondPeakDistances.histo.txt";
 		String ppdicfilename = config.getOutputIntermediateDir()+File.separator+config.getOutBase()+".interCondPeakDistances.histo.txt";
-		String htmlfilename = config.getOutputIntermediateDir()+File.separator+"multiGPS_"+config.getOutBase()+"_results.html";
+		String htmlfilename = config.getOutputParentDir()+File.separator+"multiGPS_"+config.getOutBase()+"_results.html";
 		
 		//0) Set up hash map structure for events by chromosome
 		List<HashMap<String,List<Integer>>> eventStruct = new ArrayList<HashMap<String,List<Integer>>>();
@@ -68,7 +68,7 @@ public class EventsPostAnalysis {
 		//1) Histograms of peak-closestMotif distances
 		try {
 			if(config.getFindingMotifs()){
-				System.err.println("Peak-motif distance histograms");	    		
+				System.err.println("\tPeak-motif distance histograms");	    		
 	    		FileWriter fout = new FileWriter(pcmfilename);
 	    		fout.write("#Peaks to closest motifs distance histograms\n\n");
 				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
@@ -106,7 +106,7 @@ public class EventsPostAnalysis {
 		
 		//2) Histograms of peak-peak distances (same condition)
 		try {
-			System.err.println("Peak-peak distance histograms (same condition)");    		
+			System.err.println("\tPeak-peak distance histograms (same condition)");    		
     		FileWriter fout = new FileWriter(ppdscfilename);
     		fout.write("#Peaks to other peaks in same condition distance histograms\n\n");
 			for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
@@ -136,7 +136,7 @@ public class EventsPostAnalysis {
 		//3) Histograms of peak-peak distances (inter-condition)
 		try {
 			if(manager.getNumConditions()>1){
-				System.err.println("Peak-peak distance histograms (different conditions)");	    		
+				System.err.println("\tPeak-peak distance histograms (different conditions)");	    		
 	    		FileWriter fout = new FileWriter(ppdicfilename);
 	    		fout.write("#Peaks to peaks in other conditions distance histograms\n\n");
 				for(ExperimentCondition condA : manager.getExperimentSet().getConditions()){
@@ -169,7 +169,7 @@ public class EventsPostAnalysis {
 		
 		//4) HTML report
 		try {
-			System.err.println("Results report written to: "+htmlfilename);
+			System.err.println("Writing results report to: "+htmlfilename);
 			
 			//Write motif images
 			HashMap<ExperimentCondition, String> motifImageNames = new HashMap<ExperimentCondition, String>();
@@ -250,7 +250,7 @@ public class EventsPostAnalysis {
 	    				"\t\t<td>"+rep.getSignal().getHitCount()+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.getControlScaling())+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.getSigProp())+"</td>\n");
-	    		fout.write("\t\t<td><a href='#' onclick='return popitup(\""+distribFilename+"\")'><img src='"+distribFilename+"'></a></td>\n");
+	    		fout.write("\t\t<td><a href='#' onclick='return popitup(\""+distribFilename+"\")'><img src='"+distribFilename+"' height='200' width='200'></a></td>\n");
 	    		fout.write("\t\t</tr>\n");
 			}fout.write("\t</table>\n");
 	    	

@@ -162,12 +162,12 @@ public class MultiGPS {
 	 */
 	public static void main(String[] args){
 		System.setProperty("java.awt.headless", "true");
+		System.err.println("MultiGPS version "+Config.version+"\n\n");
 		
 		Config config = new Config(args);
 		if(config.helpWanted()){
 			System.out.println(MultiGPS.getMultiGPSArgsList());
 		}else{
-			System.err.println("Welcome to MultiGPS");
 			
 			ExperimentManager manager = new ExperimentManager(config);
 			
@@ -202,7 +202,6 @@ public class MultiGPS {
 	 */
 	public static String getMultiGPSArgsList(){
 		return(new String("" +
-				"MultiGPS version 0.5\n\n" +
 				"Copyright (C) Shaun Mahony 2012-2014\n" +
 				"<http://mahonylab.org/software/multigps>\n" +
 				"\n" +

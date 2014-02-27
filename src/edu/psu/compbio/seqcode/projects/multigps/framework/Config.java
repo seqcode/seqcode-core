@@ -35,7 +35,7 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
  * @version	%I%, %G%
  */
 public class Config {
-	public final String version = "0.5";
+	public static String version = "0.5";
 	protected Genome gen=null;
 	protected List<ExptDescriptor> expts = new ArrayList<ExptDescriptor>();
 	protected String outName="multigps", outBase="multigps";
