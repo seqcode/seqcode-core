@@ -23,7 +23,7 @@ public class EMtrain {
 	protected Config config;
 	protected GenomicLocations trainingData;
 	
-	//The following 4 lines are variables needed when the model is in seq state. The should be initiated using a setter mrthod (setSeqMode)
+	//The following 4 lines are variables needed when the model is in seq state. The should be initiated using a setter method(setSeqMode)
 	protected Sequences seqs;
 	protected double[][] Xs;
 	protected double[][] MUs;
