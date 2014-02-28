@@ -9,19 +9,23 @@ public class WeightMatrixPainter {
 	public final static int X_MARGIN = 5;
 	public final static int Y_MARGIN = 2;
 	public final static int YLABEL_SIZE = 12;
-    /* paints a representation of a weight matrix wherein the height of the letters roughly indicates
+	public void paint(WeightMatrix wm, Graphics g, int x1, int y1, int x2, int y2) {this.paint(wm, g, x1, y1, x2, y2, null);}
+	/* paints a representation of a weight matrix wherein the height of the letters roughly indicates
        their relative probability at each base.  The image is painted in g in the
        bounding box defined by the upper left corner x1,y1 and lower right corner x2,y2 */
-    public void paint(WeightMatrix wm, Graphics g, int x1, int y1, int x2, int y2) {
+    public void paint(WeightMatrix wm, Graphics g, int x1, int y1, int x2, int y2, String name) {
 
         wm.toLogOdds();
 
+        String label = wm.toString();
+        if(name!=null)
+        	label = name;
+        
         int w = x2 - x1;
         int h = y2 - y1;
         Font labelFont = new Font("Arial",Font.PLAIN,YLABEL_SIZE);
         g.setFont(labelFont);
         FontMetrics fontmetrics = g.getFontMetrics();
-        String label = wm.toString();
         LineMetrics linemetrics = fontmetrics.getLineMetrics(label,g);
         g.setColor(Color.BLACK);
         g.drawString(label,x1+X_MARGIN + w/2 - fontmetrics.charsWidth(label.toCharArray(),0,label.length()) / 2,y2-Y_MARGIN);

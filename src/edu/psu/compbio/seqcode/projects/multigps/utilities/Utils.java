@@ -1,5 +1,10 @@
 package edu.psu.compbio.seqcode.projects.multigps.utilities;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,10 +13,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrixPainter;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.PointParser;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.RegionParser;
@@ -219,5 +228,29 @@ public class Utils {
 			e.printStackTrace();
 		}
 		return(points);
+	}
+	
+	/**
+	 * Print a motif logo
+	 * @param wm
+	 * @param f
+	 * @param pixheight
+	 */
+	public static void printMotifLogo(WeightMatrix wm, File f, int pixheight, String label){
+		int pixwidth = (pixheight-WeightMatrixPainter.Y_MARGIN*3-WeightMatrixPainter.YLABEL_SIZE) * wm.length() /2 +WeightMatrixPainter.X_MARGIN*2;
+		System.setProperty("java.awt.headless", "true");
+		BufferedImage im = new BufferedImage(pixwidth, pixheight,BufferedImage.TYPE_INT_ARGB);
+        Graphics g = im.getGraphics();
+        Graphics2D g2 = (Graphics2D)g;
+        g2.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+        WeightMatrixPainter wmp = new WeightMatrixPainter();
+        g2.setColor(Color.WHITE);
+        g2.fillRect(0,0,pixwidth, pixheight);
+        wmp.paint(wm,g2,0,0,pixwidth,pixheight, label);
+        try {
+            ImageIO.write(im,"png",f);
+        }  catch (IOException ex) {
+            ex.printStackTrace();
+        }
 	}
 }

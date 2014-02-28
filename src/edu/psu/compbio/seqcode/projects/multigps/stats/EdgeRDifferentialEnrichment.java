@@ -93,7 +93,7 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
 
     		//Run the R script
     		String Rscriptcmd = config.getRpath()+"Rscript ";
-    		System.err.println("Running "+Rscriptcmd);
+    		System.err.println("Running: "+Rscriptcmd+" "+scriptFilename+" "+repCountsFilename+" "+config.getEdgeROverDisp());
     		Process proc = Runtime.getRuntime().exec(Rscriptcmd+" "+scriptFilename+" "+repCountsFilename+" "+config.getEdgeROverDisp());
     		// any error message? 
 			StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 

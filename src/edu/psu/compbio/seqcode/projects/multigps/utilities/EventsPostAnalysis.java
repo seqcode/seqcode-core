@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.deepseq.utilities.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentCondition;
@@ -179,12 +178,14 @@ public class EventsPostAnalysis {
 					if(cond.getMotif()!=null){
 						String imName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_"+cond.getName()+"_motif.png";
 						String imName2 = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif.png";
-						CommonUtils.printMotifLogo(cond.getMotif(), new File(imName), 75);
+						String motifLabel = cond.getName()+" motif, MEME";
+						Utils.printMotifLogo(cond.getMotif(), new File(imName), 75, motifLabel);
 						motifImageNames.put(cond,  imName2);
 						WeightMatrix wm_rc = WeightMatrix.reverseComplement(cond.getMotif());
 						imName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_"+cond.getName()+"_motif_rc.png";
 						imName2 = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif_rc.png";
-						CommonUtils.printMotifLogo(wm_rc, new File(imName), 75);
+						motifLabel = cond.getName()+" revcomp motif, MEME";
+						Utils.printMotifLogo(wm_rc, new File(imName), 75, motifLabel);
 						motifRCImageNames.put(cond,  imName2);
 					}else{
 						motifImageNames.put(cond,  null);
@@ -199,15 +200,16 @@ public class EventsPostAnalysis {
 	    	FileWriter fout = new FileWriter(htmlfilename);
 	    	fout.write("<html>\n" +
 	    			"\t<head><title>MultiGPS results ("+config.getOutBase()+")</title></head>\n" +
-	    			"\t<style type='text/css'>/* <![CDATA[ */ table, td{border-color: #600;border-style: solid;} table{border-width: 0 0 1px 1px; border-spacing: 0;border-collapse: collapse;} td{margin: 0;padding: 4px;border-width: 1px 1px 0 0;} /* ]]> */</style>\n" +
-	    			"\t<script language='javascript' type='text/javascript'><!--\nfunction popitup(url) {	newwindow=window.open(url,'name','height=75,width=400');	if (window.focus) {newwindow.focus()}	return false;}// --></script>\n" +
+	    			"\t<style type='text/css'>/* <![CDATA[ */ table, th{border-color: #600;border-style: solid;} td{border-color: #600;border-style: solid;} table{border-width: 0 0 1px 1px; border-spacing: 0;border-collapse: collapse;} th{margin: 0;padding: 4px;border-width: 1px 1px 0 0;} td{margin: 0;padding: 4px;border-width: 1px 1px 0 0;} /* ]]> */</style>\n" +
+	    			"\t<script language='javascript' type='text/javascript'><!--\nfunction motifpopitup(url) {	newwindow=window.open(url,'name','height=75');	if (window.focus) {newwindow.focus()}	return false;}// --></script>\n" +
+	    			"\t<script language='javascript' type='text/javascript'><!--\nfunction fullpopitup(url) {	newwindow=window.open(url,'name');	if (window.focus) {newwindow.focus()}	return false;}// --></script>\n" +
 	    			"\t<body>\n" +
 	    			"\t<h1>MultiGPS results ("+config.getOutBase()+")</h1>\n" +
 	    			"");
 	    	DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	    	Date date = new Date();
-	    	fout.write("\t<p>MultiGPS version "+config.version+"run completed on: "+dateFormat.format(date));
-	    	fout.write(" with arguments:\n"+config.getArgs()+"\n</p>\n");
+	    	fout.write("\t<p>MultiGPS version "+config.version+" run completed on: "+dateFormat.format(date));
+	    	fout.write(" with arguments:\n "+config.getArgs()+"\n</p>\n");
 	    	
 	    	
 	    	//Binding event information (per condition)
@@ -218,7 +220,8 @@ public class EventsPostAnalysis {
 	    			"\t\t<th>Events</th>\n" +
 	    			"\t\t<th>File</th>\n");
 	    	if(config.getFindingMotifs())
-	    		fout.write("\t\t<th>Positional Prior Motif</th>\n");
+	    		fout.write("\t\t<th>Positional Prior Motif</th>\n" +
+	    				"\t\t<th>Motif Relative Offset</th>\n");
 	    	fout.write("\t\t</tr>\n");
 	    	for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
 	    		String eventFileName=config.getOutBase()+"_"+cond.getName()+".events";
@@ -228,9 +231,11 @@ public class EventsPostAnalysis {
 		    			"\t\t<td><a href='"+eventFileName+"'>"+eventFileName+"</a></td>\n");
 		    	if(config.getFindingMotifs()){
 		    		if(motifImageNames.get(cond)!=null)
-		    			fout.write("\t\t<td><img src='"+motifImageNames.get(cond)+"'><a href='#' onclick='return popitup(\""+motifRCImageNames.get(cond)+"\")'>rc</a></td>\n");
+		    			fout.write("\t\t<td><img src='"+motifImageNames.get(cond)+"'><a href='#' onclick='return motifpopitup(\""+motifRCImageNames.get(cond)+"\")'>rc</a></td>\n" +
+		    					"\t\t<td>"+cond.getMotifOffset()+"</td>\n");
 		    		else
-		    			fout.write("\t\t<td>No motif found</td>\n");
+		    			fout.write("\t\t<td>No motif found</td>\n" +
+		    					"\t\t<td>NA</td>\n");
 		    	}
 		    	fout.write("\t\t</tr>\n");
 			}fout.write("\t</table>\n");
@@ -247,14 +252,14 @@ public class EventsPostAnalysis {
 	    			"\t\t<th>ReadDistributionModel</th>\n");
 	    	fout.write("\t\t</tr>\n");
 	    	for(ControlledExperiment rep : manager.getExperimentSet().getReplicates()){
-	    		String replicateName = rep.getCondName()+"-"+rep.getRepName();
-				String distribFilename = "images/"+config.getOutBase()+"_"+replicateName + "_Read_Distributions.png";
+	    		String replicateName = rep.getCondName()+":"+rep.getRepName();
+				String distribFilename = "images/"+config.getOutBase()+"_"+rep.getCondName()+"-"+rep.getRepName() + "_Read_Distributions.png";
 	    		fout.write("\t\t<tr>" +
 		    			"\t\t<td>"+replicateName+"</td>\n" +
 	    				"\t\t<td>"+rep.getSignal().getHitCount()+"</td>\n" +
-	    				"\t\t<td>"+String.format("%.3f",rep.getControlScaling())+"</td>\n" +
+	    				"\t\t<td>"+String.format("%.3f",rep.hasControl()?rep.getControlScaling():"NA")+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.getSigProp())+"</td>\n");
-	    		fout.write("\t\t<td><a href='#' onclick='return popitup(\""+distribFilename+"\")'><img src='"+distribFilename+"' height='200'></a></td>\n");
+	    		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+distribFilename+"\")'><img src='"+distribFilename+"' height='400'></a></td>\n");
 	    		fout.write("\t\t</tr>\n");
 			}fout.write("\t</table>\n");
 	    	
@@ -274,8 +279,29 @@ public class EventsPostAnalysis {
 					fout.write("\t\t<tr>\n" +
 							"\t\t<td>"+cond.getName()+"</td>\n");
 					for(ExperimentCondition othercond : manager.getExperimentSet().getConditions()){
-						String filename = config.getOutBase()+"_"+cond.getName()+"_gt_"+othercond.getName()+".diff.events";
-						fout.write("\t\t<td><a href='"+filename+"'>"+manager.countDiffEventsBetweenConditions(cond, othercond)+"</a></td>\n");
+						if(cond.equals(othercond)){
+							fout.write("\t\t<td>-</td>\n");
+						}else{
+							String filename = config.getOutBase()+"_"+cond.getName()+"_gt_"+othercond.getName()+".diff.events";
+							fout.write("\t\t<td><a href='"+filename+"'>"+manager.countDiffEventsBetweenConditions(cond, othercond)+"</a></td>\n");
+						}
+					}fout.write("\t\t</tr>\n");
+				}fout.write("\t</table>\n");
+				
+				//Differential scatterplots matrix
+				fout.write("\t<h2>Differential enrichment scatterplots</h2>\n" +
+						"\t<table>\n" +
+						"\t\t<tr>\n" +
+						"\t\t<th>Diff</th>\n");
+				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+					fout.write("\t\t<th>"+cond.getName()+"</th>\n");
+				}fout.write("\t\t</tr>\n");
+				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+					fout.write("\t\t<tr>\n" +
+							"\t\t<td>"+cond.getName()+"</td>\n");
+					for(ExperimentCondition othercond : manager.getExperimentSet().getConditions()){
+						String filename = "images/"+cond.getName()+"_vs_"+othercond.getName()+".XY.png";
+						fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+filename+"\")'><img src='"+filename+"'></a></td>\n");
 					}fout.write("\t\t</tr>\n");
 				}fout.write("\t</table>\n");
 				
@@ -291,20 +317,23 @@ public class EventsPostAnalysis {
 					fout.write("\t\t<tr>\n" +
 							"\t\t<td>"+cond.getName()+"</td>\n");
 					for(ExperimentCondition othercond : manager.getExperimentSet().getConditions()){
-						String filename = "intermediate-results/"+cond.getName()+"_vs_"+othercond.getName()+".MA.png";
-						fout.write("\t\t<td><a href='#' onclick='return popitup(\""+filename+"\")'><img src='"+filename+"'></a></td>\n");
+						String filename = "images/"+cond.getName()+"_vs_"+othercond.getName()+".MA.png";
+						fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+filename+"\")'><img src='"+filename+"'></a></td>\n");
 					}fout.write("\t\t</tr>\n");
-				}
-			}fout.write("\t</table>\n");
+				}fout.write("\t</table>\n");
+				
+			}
 			
 			
 			//File list of extras (histograms, etc)
 			fout.write("\t<h2>Miscellaneous files</h2>\n");
-			fout.write("\t<p><a href='intermediate-results/"+config.getOutBase()+".intraCondPeakDistances.histo.txt'>Peak-peak distance histograms (same condition)</a>\n");
-			if(manager.getNumConditions()>1)
-				fout.write("\t<a href='intermediate-results/"+config.getOutBase()+".interCondPeakDistances.histo.txt'>Peak-peak distance histograms (between conditions)</a>\n");
 			if(config.getFindingMotifs())
-				fout.write("\t<a href='intermediate-results/"+config.getOutBase()+".peaks2motifs.histo.txt'>Peak-motif distance histograms</a>\n");
+				fout.write("\t<p><a href='"+config.getOutBase()+".motifs'>Positional prior motifs.</a> Try inputting these motifs into <a href='http://www.benoslab.pitt.edu/stamp/'>STAMP</a> for validation.</p>\n");
+			fout.write("\t<p><a href='intermediate-results/"+config.getOutBase()+".intraCondPeakDistances.histo.txt'>Peak-peak distance histograms (same condition)</a></p>\n");
+			if(manager.getNumConditions()>1)
+				fout.write("\t<p><a href='intermediate-results/"+config.getOutBase()+".interCondPeakDistances.histo.txt'>Peak-peak distance histograms (between conditions)</a></p>\n");
+			if(config.getFindingMotifs())
+				fout.write("\t<p><a href='intermediate-results/"+config.getOutBase()+".peaks2motifs.histo.txt'>Peak-motif distance histograms</a></p>\n");
 	    	
 	    	
 	    	fout.write("\t</body>\n</html>\n");
