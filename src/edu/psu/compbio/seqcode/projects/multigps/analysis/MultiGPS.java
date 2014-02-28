@@ -231,7 +231,6 @@ public class MultiGPS {
 				" Running MultiGPS:\n" +
 				"\t--d <binding event read distribution file>\n" +
 				"\t--r <max. model update rounds>\n" +
-				"\t--exclude <file of regions to ignore>\n" +
 				"\t--nomodelupdate [flag to turn off binding model updates]\n" +
 				"\t--minmodelupdateevents <minimum number of events to support an update>\n" +
 				"\t--nomodelsmoothing [flag to turn off binding model smoothing]\n" +
@@ -240,6 +239,7 @@ public class MultiGPS {
 				"\t--gausssmoothparam <Gaussian smoothing std dev>\n" +
 				"\t--jointinmodel [flag to allow joint events in model updates (default=do not)]\n" +
 				"\t--mlconfignotshared [flag to not share component configs in the ML step]\n" +
+				"\t--exclude <file of regions to ignore>\n" +
 				" MultiGPS priors:\n"+
 				"\t--noposprior [flag to turn off inter-experiment positional prior (default=on)]\n" +
 				"\t--probshared <probability that events are shared across conditions (default=0.9)>\n" +

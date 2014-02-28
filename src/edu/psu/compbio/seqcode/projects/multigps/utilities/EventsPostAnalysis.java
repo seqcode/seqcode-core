@@ -198,7 +198,9 @@ public class EventsPostAnalysis {
 			//Header and run information 
 	    	FileWriter fout = new FileWriter(htmlfilename);
 	    	fout.write("<html>\n" +
-	    			"\t<head>MultiGPS results ("+config.getOutBase()+")</html>\n" +
+	    			"\t<head><title>MultiGPS results ("+config.getOutBase()+")</title></head>\n" +
+	    			"\t<style type='text/css'>/* <![CDATA[ */ table, td{border-color: #600;border-style: solid;} table{border-width: 0 0 1px 1px; border-spacing: 0;border-collapse: collapse;} td{margin: 0;padding: 4px;border-width: 1px 1px 0 0;} /* ]]> */</style>\n" +
+	    			"\t<script language='javascript' type='text/javascript'><!--\nfunction popitup(url) {	newwindow=window.open(url,'name','height=75,width=400');	if (window.focus) {newwindow.focus()}	return false;}// --></script>\n" +
 	    			"\t<body>\n" +
 	    			"\t<h1>MultiGPS results ("+config.getOutBase()+")</h1>\n" +
 	    			"");
@@ -252,7 +254,7 @@ public class EventsPostAnalysis {
 	    				"\t\t<td>"+rep.getSignal().getHitCount()+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.getControlScaling())+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.getSigProp())+"</td>\n");
-	    		fout.write("\t\t<td><a href='#' onclick='return popitup(\""+distribFilename+"\")'><img src='"+distribFilename+"' height='200' width='200'></a></td>\n");
+	    		fout.write("\t\t<td><a href='#' onclick='return popitup(\""+distribFilename+"\")'><img src='"+distribFilename+"' height='200'></a></td>\n");
 	    		fout.write("\t\t</tr>\n");
 			}fout.write("\t</table>\n");
 	    	
@@ -275,7 +277,7 @@ public class EventsPostAnalysis {
 						String filename = config.getOutBase()+"_"+cond.getName()+"_gt_"+othercond.getName()+".diff.events";
 						fout.write("\t\t<td><a href='"+filename+"'>"+manager.countDiffEventsBetweenConditions(cond, othercond)+"</a></td>\n");
 					}fout.write("\t\t</tr>\n");
-				}
+				}fout.write("\t</table>\n");
 				
 				//Differential MA plots matrix
 				fout.write("\t<h2>Differential enrichment MA plots</h2>\n" +
@@ -293,7 +295,7 @@ public class EventsPostAnalysis {
 						fout.write("\t\t<td><a href='#' onclick='return popitup(\""+filename+"\")'><img src='"+filename+"'></a></td>\n");
 					}fout.write("\t\t</tr>\n");
 				}
-			}
+			}fout.write("\t</table>\n");
 			
 			
 			//File list of extras (histograms, etc)
