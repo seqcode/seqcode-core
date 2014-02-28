@@ -35,7 +35,7 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
  * @version	%I%, %G%
  */
 public class Config {
-	public final String version = "0.5";
+	public static String version = "0.5";
 	protected Genome gen=null;
 	protected List<ExptDescriptor> expts = new ArrayList<ExptDescriptor>();
 	protected String outName="multigps", outBase="multigps";
@@ -136,7 +136,7 @@ public class Config {
 		this.args=arguments; 
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h")){
-			printHelp=true;
+			printHelp=true;			
 		}else{
 			try{
 				//Test for a config file... if there is concatenate the contents into the args
@@ -430,7 +430,7 @@ public class Config {
 				//Turn off DE testing
 				runDiffTests = Args.parseFlags(args).contains("nodifftests") ? false : true;
 				//R path
-				Rpath = Args.parseString(args, "Rpath", Rpath);
+				Rpath = Args.parseString(args, "rpath", Rpath);
 				if(!Rpath.equals("") && !Rpath.endsWith("/")){ Rpath= Rpath+"/";}
 				//EdgeR overdispersion parameter
 				edger_overdispersion = Args.parseDouble(args,"edgerod",edger_overdispersion);
@@ -628,7 +628,7 @@ public class Config {
 				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
 				"\t--mememaxw <maxw arg for MEME (default="+MEMEmaxw+")>\n"+
 				"\t--nodifftests [flag to turn off DE tests]\n" +
-				"\t--Rpath <path to the R bin dir (default: R is in $PATH). Note that you need to install edgeR separately>\n" +
+				"\t--rpath <path to the R bin dir (default: R is in $PATH). Note that you need to install edgeR separately>\n" +
 				"\t--edgerod <EdgeR overdispersion>\n" +
 				"\t--diffp <minimum p-value for differential enrichment>\n" +
 				"\t--verbose [flag to print intermediate files and extra output]\n" +

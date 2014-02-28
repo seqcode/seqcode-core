@@ -162,12 +162,12 @@ public class MultiGPS {
 	 */
 	public static void main(String[] args){
 		System.setProperty("java.awt.headless", "true");
+		System.out.println("MultiGPS version "+Config.version+"\n\n");
 		
 		Config config = new Config(args);
 		if(config.helpWanted()){
 			System.out.println(MultiGPS.getMultiGPSArgsList());
 		}else{
-			System.err.println("Welcome to MultiGPS");
 			
 			ExperimentManager manager = new ExperimentManager(config);
 			
@@ -202,7 +202,6 @@ public class MultiGPS {
 	 */
 	public static String getMultiGPSArgsList(){
 		return(new String("" +
-				"MultiGPS version 0.5\n\n" +
 				"Copyright (C) Shaun Mahony 2012-2014\n" +
 				"<http://mahonylab.org/software/multigps>\n" +
 				"\n" +
@@ -219,7 +218,7 @@ public class MultiGPS {
 				"\t--geninfo <genome info file> AND --seq <fasta seq directory reqd if using motif prior>\n" +
 				" Loading Data:\n" +
 				"\t--expt <file name> AND --format <SAM/BED/IDX>\n" +
-				"\t--ctrl <file name (optional argument. must be same format as expt files)>" +
+				"\t--ctrl <file name (optional argument. must be same format as expt files)>\n" +
 				"\t--design <experiment design file name to use instead of --expt and --ctrl; see website for format>\n"+
 				"\t--fixedpb <fixed per base limit>\n" +
 				"\t--poissongausspb <filter per base using a Poisson threshold parameterized by a local Gaussian sliding window>\n" +
@@ -232,7 +231,6 @@ public class MultiGPS {
 				" Running MultiGPS:\n" +
 				"\t--d <binding event read distribution file>\n" +
 				"\t--r <max. model update rounds>\n" +
-				"\t--exclude <file of regions to ignore>\n" +
 				"\t--nomodelupdate [flag to turn off binding model updates]\n" +
 				"\t--minmodelupdateevents <minimum number of events to support an update>\n" +
 				"\t--nomodelsmoothing [flag to turn off binding model smoothing]\n" +
@@ -241,6 +239,7 @@ public class MultiGPS {
 				"\t--gausssmoothparam <Gaussian smoothing std dev>\n" +
 				"\t--jointinmodel [flag to allow joint events in model updates (default=do not)]\n" +
 				"\t--mlconfignotshared [flag to not share component configs in the ML step]\n" +
+				"\t--exclude <file of regions to ignore>\n" +
 				" MultiGPS priors:\n"+
 				"\t--noposprior [flag to turn off inter-experiment positional prior (default=on)]\n" +
 				"\t--probshared <probability that events are shared across conditions (default=0.9)>\n" +
@@ -255,7 +254,7 @@ public class MultiGPS {
 				"\t--q <Q-value minimum (corrected p-value)>\n" +
 				"\t--minfold <minimum event fold-change vs scaled control>\n" +
 				"\t--nodifftests [flag to turn off differential enrichment tests]\n" +
-				"\t--Rpath <path to the R bin dir (default: R is in $PATH). Note that you need to install edgeR separately>\n" +
+				"\t--rpath <path to the R bin dir (default: R is in $PATH). Note that you need to install edgeR separately>\n" +
 				"\t--edgerod <EdgeR overdispersion parameter>\n" +
 				"\t--diffp <minimum p-value for reporting differential enrichment>\n" +
 				""));

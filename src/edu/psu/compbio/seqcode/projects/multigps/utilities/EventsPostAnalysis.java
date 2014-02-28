@@ -46,7 +46,7 @@ public class EventsPostAnalysis {
 		String pcmfilename = config.getOutputIntermediateDir()+File.separator+config.getOutBase()+".peaks2motifs.histo.txt";
 		String ppdscfilename = config.getOutputIntermediateDir()+File.separator+config.getOutBase()+".intraCondPeakDistances.histo.txt";
 		String ppdicfilename = config.getOutputIntermediateDir()+File.separator+config.getOutBase()+".interCondPeakDistances.histo.txt";
-		String htmlfilename = config.getOutputIntermediateDir()+File.separator+"multiGPS_"+config.getOutBase()+"_results.html";
+		String htmlfilename = config.getOutputParentDir()+File.separator+"multiGPS_"+config.getOutBase()+"_results.html";
 		
 		//0) Set up hash map structure for events by chromosome
 		List<HashMap<String,List<Integer>>> eventStruct = new ArrayList<HashMap<String,List<Integer>>>();
@@ -68,7 +68,7 @@ public class EventsPostAnalysis {
 		//1) Histograms of peak-closestMotif distances
 		try {
 			if(config.getFindingMotifs()){
-				System.err.println("Peak-motif distance histograms");	    		
+				System.err.println("\tPeak-motif distance histograms");	    		
 	    		FileWriter fout = new FileWriter(pcmfilename);
 	    		fout.write("#Peaks to closest motifs distance histograms\n\n");
 				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
@@ -106,7 +106,7 @@ public class EventsPostAnalysis {
 		
 		//2) Histograms of peak-peak distances (same condition)
 		try {
-			System.err.println("Peak-peak distance histograms (same condition)");    		
+			System.err.println("\tPeak-peak distance histograms (same condition)");    		
     		FileWriter fout = new FileWriter(ppdscfilename);
     		fout.write("#Peaks to other peaks in same condition distance histograms\n\n");
 			for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
@@ -136,7 +136,7 @@ public class EventsPostAnalysis {
 		//3) Histograms of peak-peak distances (inter-condition)
 		try {
 			if(manager.getNumConditions()>1){
-				System.err.println("Peak-peak distance histograms (different conditions)");	    		
+				System.err.println("\tPeak-peak distance histograms (different conditions)");	    		
 	    		FileWriter fout = new FileWriter(ppdicfilename);
 	    		fout.write("#Peaks to peaks in other conditions distance histograms\n\n");
 				for(ExperimentCondition condA : manager.getExperimentSet().getConditions()){
@@ -169,7 +169,7 @@ public class EventsPostAnalysis {
 		
 		//4) HTML report
 		try {
-			System.err.println("Results report written to: "+htmlfilename);
+			System.err.println("Writing results report to: "+htmlfilename);
 			
 			//Write motif images
 			HashMap<ExperimentCondition, String> motifImageNames = new HashMap<ExperimentCondition, String>();
@@ -177,13 +177,15 @@ public class EventsPostAnalysis {
 			if(config.getFindingMotifs()){
 				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
 					if(cond.getMotif()!=null){
-						String imName = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif.png";
+						String imName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_"+cond.getName()+"_motif.png";
+						String imName2 = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif.png";
 						CommonUtils.printMotifLogo(cond.getMotif(), new File(imName), 75);
-						motifImageNames.put(cond,  imName);
+						motifImageNames.put(cond,  imName2);
 						WeightMatrix wm_rc = WeightMatrix.reverseComplement(cond.getMotif());
-						imName = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif_rc.png";
+						imName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_"+cond.getName()+"_motif_rc.png";
+						imName2 = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif_rc.png";
 						CommonUtils.printMotifLogo(wm_rc, new File(imName), 75);
-						motifRCImageNames.put(cond,  imName);
+						motifRCImageNames.put(cond,  imName2);
 					}else{
 						motifImageNames.put(cond,  null);
 						motifRCImageNames.put(cond,  null);
@@ -196,7 +198,9 @@ public class EventsPostAnalysis {
 			//Header and run information 
 	    	FileWriter fout = new FileWriter(htmlfilename);
 	    	fout.write("<html>\n" +
-	    			"\t<head>MultiGPS results ("+config.getOutBase()+")</html>\n" +
+	    			"\t<head><title>MultiGPS results ("+config.getOutBase()+")</title></head>\n" +
+	    			"\t<style type='text/css'>/* <![CDATA[ */ table, td{border-color: #600;border-style: solid;} table{border-width: 0 0 1px 1px; border-spacing: 0;border-collapse: collapse;} td{margin: 0;padding: 4px;border-width: 1px 1px 0 0;} /* ]]> */</style>\n" +
+	    			"\t<script language='javascript' type='text/javascript'><!--\nfunction popitup(url) {	newwindow=window.open(url,'name','height=75,width=400');	if (window.focus) {newwindow.focus()}	return false;}// --></script>\n" +
 	    			"\t<body>\n" +
 	    			"\t<h1>MultiGPS results ("+config.getOutBase()+")</h1>\n" +
 	    			"");
@@ -250,7 +254,7 @@ public class EventsPostAnalysis {
 	    				"\t\t<td>"+rep.getSignal().getHitCount()+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.getControlScaling())+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.getSigProp())+"</td>\n");
-	    		fout.write("\t\t<td><a href='#' onclick='return popitup(\""+distribFilename+"\")'><img src='"+distribFilename+"'></a></td>\n");
+	    		fout.write("\t\t<td><a href='#' onclick='return popitup(\""+distribFilename+"\")'><img src='"+distribFilename+"' height='200'></a></td>\n");
 	    		fout.write("\t\t</tr>\n");
 			}fout.write("\t</table>\n");
 	    	
@@ -273,7 +277,7 @@ public class EventsPostAnalysis {
 						String filename = config.getOutBase()+"_"+cond.getName()+"_gt_"+othercond.getName()+".diff.events";
 						fout.write("\t\t<td><a href='"+filename+"'>"+manager.countDiffEventsBetweenConditions(cond, othercond)+"</a></td>\n");
 					}fout.write("\t\t</tr>\n");
-				}
+				}fout.write("\t</table>\n");
 				
 				//Differential MA plots matrix
 				fout.write("\t<h2>Differential enrichment MA plots</h2>\n" +
@@ -291,7 +295,7 @@ public class EventsPostAnalysis {
 						fout.write("\t\t<td><a href='#' onclick='return popitup(\""+filename+"\")'><img src='"+filename+"'></a></td>\n");
 					}fout.write("\t\t</tr>\n");
 				}
-			}
+			}fout.write("\t</table>\n");
 			
 			
 			//File list of extras (histograms, etc)

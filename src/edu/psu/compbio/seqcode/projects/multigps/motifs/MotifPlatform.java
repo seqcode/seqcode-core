@@ -102,7 +102,7 @@ public class MotifPlatform {
 				}
 			//Results summary
 			if(config.isVerbose()){
-				System.err.println("MEME results for :"+cond.getName());
+				System.err.println("MEME results for: "+cond.getName());
 				for(int w=0; w<fm.size(); w++){
 					if(fm.get(w)!=null){
 						System.err.println("\t"+fm.get(w).getName()+"\t"+ WeightMatrix.getConsensus(fm.get(w))+"\tROC:"+String.format("%.2f",rocScores[w]));
