@@ -162,7 +162,7 @@ public class MultiGPS {
 	 */
 	public static void main(String[] args){
 		System.setProperty("java.awt.headless", "true");
-		System.err.println("MultiGPS version "+Config.version+"\n\n");
+		System.out.println("MultiGPS version "+Config.version+"\n\n");
 		
 		Config config = new Config(args);
 		if(config.helpWanted()){
@@ -218,7 +218,7 @@ public class MultiGPS {
 				"\t--geninfo <genome info file> AND --seq <fasta seq directory reqd if using motif prior>\n" +
 				" Loading Data:\n" +
 				"\t--expt <file name> AND --format <SAM/BED/IDX>\n" +
-				"\t--ctrl <file name (optional argument. must be same format as expt files)>" +
+				"\t--ctrl <file name (optional argument. must be same format as expt files)>\n" +
 				"\t--design <experiment design file name to use instead of --expt and --ctrl; see website for format>\n"+
 				"\t--fixedpb <fixed per base limit>\n" +
 				"\t--poissongausspb <filter per base using a Poisson threshold parameterized by a local Gaussian sliding window>\n" +
@@ -254,7 +254,7 @@ public class MultiGPS {
 				"\t--q <Q-value minimum (corrected p-value)>\n" +
 				"\t--minfold <minimum event fold-change vs scaled control>\n" +
 				"\t--nodifftests [flag to turn off differential enrichment tests]\n" +
-				"\t--Rpath <path to the R bin dir (default: R is in $PATH). Note that you need to install edgeR separately>\n" +
+				"\t--rpath <path to the R bin dir (default: R is in $PATH). Note that you need to install edgeR separately>\n" +
 				"\t--edgerod <EdgeR overdispersion parameter>\n" +
 				"\t--diffp <minimum p-value for reporting differential enrichment>\n" +
 				""));

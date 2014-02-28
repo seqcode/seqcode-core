@@ -40,6 +40,7 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
     		FileWriter fout = new FileWriter(scriptFilename);
     		fout.write(	"#!/usr/bin/Rscript --vanilla \n"+
     					"# Rscript call_DE_GLM.R repCounts.txt 0.15 \n" +
+    					"# Dataset: "+fileIDname+"\n" +
     					"library(edgeR) \n" +
     					"args <- commandArgs(TRUE) \n"+
     					"raw <- read.delim(args[1], row.names=\"Point\") \n"+
@@ -92,6 +93,7 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
 
     		//Run the R script
     		String Rscriptcmd = config.getRpath()+"Rscript ";
+    		System.err.println("Running "+Rscriptcmd);
     		Process proc = Runtime.getRuntime().exec(Rscriptcmd+" "+scriptFilename+" "+repCountsFilename+" "+config.getEdgeROverDisp());
     		// any error message? 
 			StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
