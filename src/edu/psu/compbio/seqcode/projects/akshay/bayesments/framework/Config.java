@@ -55,12 +55,13 @@ public class Config {
 	
 	protected double chromatin_weightage;
 	protected double sequence_weightage;
-	
 	protected boolean boundSigma;
-	
+	protected boolean Simulate_reads = false;
 	protected double lambda;
-	
 	protected int buffer_Sigma;
+	
+	protected int N;
+
 	
 	
 	
@@ -129,6 +130,7 @@ public class Config {
 				//Load expts from design file
 				//Format: (tab separated)
 				//Signal/Control   SrcName   Type   Condition   Replicate [Chromatin/Factor default is chromatin state] [per-base max] [window size]
+				// If the desing option is not given then it looks for the simulate flag... (If the simulate and design options are not given the program stops)
 				if(ap.hasKey("design")){
 					String dfile = ap.getKeyValue("design");
 					File df = new File(dfile);
@@ -188,6 +190,13 @@ public class Config {
 			            }
 			    	}
 			        reader.close();
+				}
+				else if(Args.parseFlags(args).contains("simulate")){
+					this.Simulate_reads = true;
+				}
+				else{
+					System.err.println("You have to either provide a desing file using the \"--design\" options or turn on the simulate datasets flag using \"--simulate\"");
+					System.exit(1);
 				}
 				
 				//Checking if the peaks/locations file exists or not (stops the program if it does not exist)
@@ -306,6 +315,7 @@ public class Config {
 	public boolean doRegularization(){return this.regularize;}
 	public double getLambda(){return this.lambda;}
 	public int getBufferSigmaVal(){return this.buffer_Sigma;}
+	public boolean doSimulation(){return this.Simulate_reads;}
 	
 	
 	//Some accessors to allow modification of options after config
