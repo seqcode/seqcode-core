@@ -5,12 +5,14 @@ import java.util.Arrays;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Sequences;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.Cubic;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Simulate;
 
 /**
  * EMtrain class the initializes and trains the parameters of the Bayesian network using the EM framework
@@ -22,6 +24,7 @@ public class EMtrain {
 
 	protected Config config;
 	protected GenomicLocations trainingData;
+	protected boolean Simulate;
 	
 	//The following 4 lines are variables needed when the model is in seq state. The should be initiated using a setter method(setSeqMode)
 	protected Sequences seqs;
@@ -84,6 +87,8 @@ public class EMtrain {
 	protected double[] WCnorm;
 	protected double[] WSnorm;
 	
+	protected String[] condition_names;
+	
 	protected double lambda;
 	
 	protected boolean regularize;
@@ -107,12 +112,54 @@ public class EMtrain {
 			this.lambda = config.getLambda();
 		}
 		
+		N = trainingData.getNumTrainingExamples();
+		C= trainingData.getNumChromatinCons();
+		F = trainingData.getNumFacCons();
+		this.numChromStates = config.getNumChrmStates();
+		this.numFacBindingStates = config.getNumFacStates();
+		
+		//Initializing and loading X's
+		this.Xc = new float[N][C];
+		this.Xf = new float[N][F];
+		this.Xc = this.trainingData.getChromatinCounts();
+		this.Xf = this.trainingData.getFactorCounts();
+		
+		this.condition_names = new String[C];
+		int c =0;
+		for(ExperimentCondition ec :manager.getChromatinConditionList()){
+			this.condition_names[c] = ec.getName();
+			c++;
+		}
+		
 		//Initializing the model
 		initializeEM(manager);
 		this.total_itrs = config.getNumItrs();
 		this.onlyChrom = config.runOnlyChrom();
 		this.seqState = false;
+		this.Simulate = false;
 		
+	}
+	
+	public EMtrain(Config config) {
+		this.config = config;
+		this.trainingData = null;
+		this.regularize = config.doRegularization();
+		if(regularize){
+			this.lambda = config.getLambda();
+		}
+		Simulate sim = new Simulate();
+		sim.simulate();
+		this.C = sim.getNumChromCondition();
+		this.N = sim.getNumTrainingEgs();
+		this.F =1;
+		this.numChromStates = config.getNumChrmStates();
+		this.numFacBindingStates = config.getNumFacStates();
+		this.onlyChrom = true;
+		this.seqState = false;
+		this.total_itrs = this.config.getNumItrs();
+		
+		//this.Xc = sim.getSimXc();
+		//this
 	}
 	
 	/**
@@ -120,12 +167,6 @@ public class EMtrain {
 	 * @param manager
 	 */
 	private void initializeEM(ExperimentManager manager){
-		// getting N, M, C, P and F
-		N=this.trainingData.getNumTrainingExamples();
-		C=this.trainingData.getNumChromatinCons();
-		F=this.trainingData.getNumFacCons();
-		numChromStates = config.getNumChrmStates();
-		numFacBindingStates = config.getNumFacStates();
 		
 		//Initializing and loading X's
 		this.Xc = new float[N][C];
