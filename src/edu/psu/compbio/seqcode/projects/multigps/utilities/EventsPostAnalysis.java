@@ -177,13 +177,15 @@ public class EventsPostAnalysis {
 			if(config.getFindingMotifs()){
 				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
 					if(cond.getMotif()!=null){
-						String imName = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif.png";
+						String imName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_"+cond.getName()+"_motif.png";
+						String imName2 = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif.png";
 						CommonUtils.printMotifLogo(cond.getMotif(), new File(imName), 75);
-						motifImageNames.put(cond,  imName);
+						motifImageNames.put(cond,  imName2);
 						WeightMatrix wm_rc = WeightMatrix.reverseComplement(cond.getMotif());
-						imName = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif_rc.png";
+						imName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_"+cond.getName()+"_motif_rc.png";
+						imName2 = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif_rc.png";
 						CommonUtils.printMotifLogo(wm_rc, new File(imName), 75);
-						motifRCImageNames.put(cond,  imName);
+						motifRCImageNames.put(cond,  imName2);
 					}else{
 						motifImageNames.put(cond,  null);
 						motifRCImageNames.put(cond,  null);
