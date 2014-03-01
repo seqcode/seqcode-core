@@ -254,10 +254,11 @@ public class EventsPostAnalysis {
 	    	for(ControlledExperiment rep : manager.getExperimentSet().getReplicates()){
 	    		String replicateName = rep.getCondName()+"-"+rep.getRepName();
 				String distribFilename = "images/"+config.getOutBase()+"_"+replicateName+"_Read_Distributions.png";
+				String tmpscale = rep.hasControl()?String.format("%.3f",rep.getControlScaling()):"NA";
 	    		fout.write("\t\t<tr>" +
 		    			"\t\t<td>"+rep.getCondName()+" "+rep.getRepName()+"</td>\n" +
 	    				"\t\t<td>"+rep.getSignal().getHitCount()+"</td>\n" +
-	    				"\t\t<td>"+String.format("%.3f",rep.hasControl()?rep.getControlScaling():"NA")+"</td>\n" +
+	    				"\t\t<td>"+tmpscale+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.getSigProp())+"</td>\n");
 	    		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+distribFilename+"\")'><img src='"+distribFilename+"' height='400'></a></td>\n");
 	    		fout.write("\t\t</tr>\n");
