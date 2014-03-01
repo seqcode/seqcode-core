@@ -260,7 +260,7 @@ public class EventsPostAnalysis {
 	    				"\t\t<td>"+rep.getSignal().getHitCount()+"</td>\n" +
 	    				"\t\t<td>"+tmpscale+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.getSigProp())+"</td>\n");
-	    		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+distribFilename+"\")'><img src='"+distribFilename+"' height='400'></a></td>\n");
+	    		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+distribFilename+"\")'><img src='"+distribFilename+"' height='300'></a></td>\n");
 	    		fout.write("\t\t</tr>\n");
 			}fout.write("\t</table>\n");
 	    	
@@ -301,8 +301,12 @@ public class EventsPostAnalysis {
 					fout.write("\t\t<tr>\n" +
 							"\t\t<td>"+cond.getName()+"</td>\n");
 					for(ExperimentCondition othercond : manager.getExperimentSet().getConditions()){
-						String filename = "images/"+cond.getName()+"_vs_"+othercond.getName()+".XY.png";
-						fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+filename+"\")'><img src='"+filename+"'></a></td>\n");
+						if(cond.equals(othercond)){
+							fout.write("\t\t<td> </td>\n");
+						}else{
+							String filename = "images/"+cond.getName()+"_vs_"+othercond.getName()+".XY.png";
+							fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+filename+"\")'><img src='"+filename+"' height='200'></a></td>\n");
+						}
 					}fout.write("\t\t</tr>\n");
 				}fout.write("\t</table>\n");
 				
@@ -318,8 +322,12 @@ public class EventsPostAnalysis {
 					fout.write("\t\t<tr>\n" +
 							"\t\t<td>"+cond.getName()+"</td>\n");
 					for(ExperimentCondition othercond : manager.getExperimentSet().getConditions()){
-						String filename = "images/"+cond.getName()+"_vs_"+othercond.getName()+".MA.png";
-						fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+filename+"\")'><img src='"+filename+"'></a></td>\n");
+						if(cond.equals(othercond)){
+							fout.write("\t\t<td> </td>\n");
+						}else{
+							String filename = "images/"+cond.getName()+"_vs_"+othercond.getName()+".MA.png";
+							fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+filename+"\")'><img src='"+filename+"' height='200'></a></td>\n");
+						}
 					}fout.write("\t\t</tr>\n");
 				}fout.write("\t</table>\n");
 				

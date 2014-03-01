@@ -51,6 +51,7 @@ public class WIGExporter {
 		
 		WIGExporter wig = new WIGExporter(args);
 		wig.execute();
+		wig.close();
 	}
 	
 	
@@ -127,6 +128,10 @@ public class WIGExporter {
 	    read3PrimeExt = Math.max(0, read3PrimeExt-readLength);
 	    expt.setFivePrimeExt(read5PrimeExt);
 	    expt.setThreePrimeExt(read3PrimeExt);
+	}
+	
+	public void close(){
+		expt.closeLoaders();
 	}
 	
 	public void execute(){
