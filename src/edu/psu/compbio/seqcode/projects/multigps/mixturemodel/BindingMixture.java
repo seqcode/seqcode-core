@@ -82,7 +82,7 @@ public class BindingMixture {
 			double L = (double)config.getGenome().getGenomeLength();
 			double infoProbAgivenB = Math.log(config.getProbSharedBinding())/Math.log(2);
 	        double infoProbAgivenNOTB =  Math.log((N-S)/(L-N+S))/Math.log(2);
-			System.err.println("Multi-condition positional priors:\tA given B:"+infoProbAgivenB+"\tA given notB:"+infoProbAgivenNOTB);
+			System.err.println("Multi-condition positional priors:\tA given B:"+String.format("%.4f", infoProbAgivenB)+"\tA given notB:"+String.format("%.4f", infoProbAgivenNOTB));
 		}
 	}
 	
@@ -359,7 +359,7 @@ public class BindingMixture {
     			noisePerBase[e] = (cond.getTotalSignalEstBackCount())/ config.getMappableGenomeLength();
     		else
     			noisePerBase[e] = nonPotRegCountsSigChannel/nonPotRegLengthTotal;  //Signal channel noise per base
-    		System.err.println("Global noise per base initialization for "+cond.getName()+" = "+noisePerBase[e]);
+    		System.err.println("Global noise per base initialization for "+cond.getName()+" = "+String.format("%.4f", noisePerBase[e]));
     	}
     }
     

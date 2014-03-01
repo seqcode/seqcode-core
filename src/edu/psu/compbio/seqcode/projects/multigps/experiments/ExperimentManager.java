@@ -245,7 +245,7 @@ public class ExperimentManager {
 				}
 				repNoiseCount = r.getSignal().getHitCount() - repSigCount;
 				r.setSigNoiseCounts(repSigCount,  repNoiseCount);
-				System.err.println(r.getName()+"\t"+r.getIndex()+"\tsignal-noise ratio:\t"+r.getSigProp());
+				System.err.println(r.getName()+"\t"+r.getIndex()+"\tsignal-noise ratio:\t"+String.format("%.4f",r.getSigProp()));
 			}
 		}
 	}

@@ -50,7 +50,8 @@ public class ControlledExperiment {
 			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
 			sigCount = signalProportion*signal.getHitCount();
 			noiseCount = (1-signalProportion)*signal.getHitCount();
-			System.err.println("Signal proportion estimate from scaling for "+name+" = "+String.format("%.3f", signalProportion));
+			if(control!=null)
+				System.err.println("Signal proportion estimate from background scaling for "+name+" = "+String.format("%.4f", signalProportion));
 		}
 	}
 	
