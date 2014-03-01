@@ -252,10 +252,10 @@ public class EventsPostAnalysis {
 	    			"\t\t<th>ReadDistributionModel</th>\n");
 	    	fout.write("\t\t</tr>\n");
 	    	for(ControlledExperiment rep : manager.getExperimentSet().getReplicates()){
-	    		String replicateName = rep.getCondName()+":"+rep.getRepName();
-				String distribFilename = "images/"+config.getOutBase()+"_"+rep.getCondName()+"-"+rep.getRepName() + "_Read_Distributions.png";
+	    		String replicateName = rep.getCondName()+"-"+rep.getRepName();
+				String distribFilename = "images/"+config.getOutBase()+"_"+replicateName+"_Read_Distributions.png";
 	    		fout.write("\t\t<tr>" +
-		    			"\t\t<td>"+replicateName+"</td>\n" +
+		    			"\t\t<td>"+rep.getCondName()+" "+rep.getRepName()+"</td>\n" +
 	    				"\t\t<td>"+rep.getSignal().getHitCount()+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.hasControl()?rep.getControlScaling():"NA")+"</td>\n" +
 	    				"\t\t<td>"+String.format("%.3f",rep.getSigProp())+"</td>\n");

@@ -40,7 +40,7 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
     		FileWriter fout = new FileWriter(scriptFilename);
     		fout.write(	"#!/usr/bin/Rscript --vanilla \n"+
     					"# Rscript call_DE_GLM.R repCounts.txt 0.15 \n" +
-    					"# Dataset: "+fileIDname+"\n" +
+    					"# Dataset: "+data.getCondName(data.getFocalCondition())+"\n" +
     					"library(edgeR) \n" +
     					"args <- commandArgs(TRUE) \n"+
     					"raw <- read.delim(args[1], row.names=\"Point\") \n"+
