@@ -200,8 +200,10 @@ public class Config {
 				}
 				
 				//Checking if the peaks/locations file exists or not (stops the program if it does not exist)
-				String peaksFileName = ap.getKeyValue("peaks");
-				this.locations = new File(peaksFileName);
+				if(!this.Simulate_reads){
+					String peaksFileName = ap.getKeyValue("peaks");
+					this.locations = new File(peaksFileName);
+				}
 				if(!locations.exists() && !this.Simulate_reads){
 					System.err.println("Peaks File does not exist\n");
 					System.exit(1);    
