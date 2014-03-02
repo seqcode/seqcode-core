@@ -89,7 +89,7 @@ public class Simulate {
 	public float[][] getSimXc(){return this.SimXc;}
 	public float[][] getSimXf(){return this.SimXf;}
 	public int getNumTrainingEgs(){return this.N;}
-	public int getNumChromCondition(){return this.C;}
+	public int getNumChromCondition(){return this.C-1;}
 	
 	
 
