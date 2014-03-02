@@ -29,13 +29,13 @@ public class BayesmentsSandbox {
 	}
 	
 	/**
-	 * Prints a 2-d double array and adds the given row and column tag names
+	 * 
 	 * @param vec
 	 * @param row_tag
 	 * @param column_tag
-	 * @param manager
+	 * @param column_names
 	 */
-	public static void printArray(double[][] vec, String row_tag, String column_tag, ExperimentManager manager){
+	public static void printArray(double[][] vec, String row_tag, String column_tag, String[] column_names){
 		String out ="";
 		String column_header = "";
 		int numRows = vec.length;
@@ -43,10 +43,10 @@ public class BayesmentsSandbox {
 		
 		for(int i=0; i< numCols; i++){
 			if(column_tag == "MUc" || column_tag == "SIGMAc"){
-				column_header = column_header + "\t"+manager.getChromatinConditionList().get(i).getName();
+				column_header = column_header + "\t"+column_names[i];
 			}
 			else if(column_tag == "MUf" || column_tag == "SIGMAf"){
-				column_header = column_header + "\t"+manager.getFacConditionList().get(i).getName();
+				column_header = column_header + "\t"+"Factor-1";
 			}
 			else{
 				column_header = column_header +"\t"+ column_tag+"_"+Integer.toString(i);

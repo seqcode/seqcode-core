@@ -23,11 +23,9 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Simulate;
 public class EMtrain {
 
 	protected Config config;
-	protected GenomicLocations trainingData;
 	protected boolean Simulate;
 	
 	//The following 4 lines are variables needed when the model is in seq state. The should be initiated using a setter method(setSeqMode)
-	protected Sequences seqs;
 	protected double[][] Xs;
 	protected double[][] MUs;
 	protected double[][] SIGMAs;
@@ -53,8 +51,6 @@ public class EMtrain {
 	protected double[][] SIGMAf;
 	//2-d array of transition probabilities, with rows as chromatin states and colums as factor states
 	protected double[][] Bjk;
-	//1-d array of probabilities for different chromatin states
-	//protected double[] PIj;
 	//Expectation of unobserved variables for the E step in EM algorithm
 	protected double[][][] Qijk;
 	//no of chromatin states
@@ -106,7 +102,7 @@ public class EMtrain {
 	 */
 	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager) {
 		this.config = config;
-		this.trainingData = trainingData;
+		//this.trainingData = trainingData;
 		this.regularize = config.doRegularization();
 		if(regularize){
 			this.lambda = config.getLambda();
@@ -121,8 +117,8 @@ public class EMtrain {
 		//Initializing and loading X's
 		this.Xc = new float[N][C];
 		this.Xf = new float[N][F];
-		this.Xc = this.trainingData.getChromatinCounts();
-		this.Xf = this.trainingData.getFactorCounts();
+		this.Xc = trainingData.getChromatinCounts();
+		this.Xf = trainingData.getFactorCounts();
 		
 		this.condition_names = new String[C];
 		int c =0;
@@ -132,7 +128,7 @@ public class EMtrain {
 		}
 		
 		//Initializing the model
-		initializeEM(manager);
+		initializeEM();
 		this.total_itrs = config.getNumItrs();
 		this.onlyChrom = config.runOnlyChrom();
 		this.seqState = false;
@@ -142,7 +138,7 @@ public class EMtrain {
 	
 	public EMtrain(Config config) {
 		this.config = config;
-		this.trainingData = null;
+		//this.trainingData = null;
 		this.regularize = config.doRegularization();
 		if(regularize){
 			this.lambda = config.getLambda();
@@ -158,21 +154,33 @@ public class EMtrain {
 		this.seqState = false;
 		this.total_itrs = this.config.getNumItrs();
 		
-		//this.Xc = sim.getSimXc();
-		//this
+		//Initializing and loading X's
+		this.Xc = new float[N][C];
+		this.Xf = new float[N][F];
+		
+		this.Xc = sim.getSimXc();
+		this.Xf = sim.getSimXf();
+		
+		this.condition_names = new String[C];
+		for(int c=0; c<C; c++){
+			this.condition_names[c] = "Sim-"+Integer.toString(c);
+		}
+		
+		this.initializeEM();
+		
+		this.total_itrs = config.getNumItrs();
+		this.onlyChrom = true; // Simulates always does not include seq features
+		this.seqState = false;
+		this.Simulate = true;
+		
+		
 	}
 	
 	/**
 	 * Method that initializes all the parameters for the Bayesian network
 	 * @param manager
 	 */
-	private void initializeEM(ExperimentManager manager){
-		
-		//Initializing and loading X's
-		this.Xc = new float[N][C];
-		this.Xf = new float[N][F];
-		this.Xc = this.trainingData.getChromatinCounts();
-		this.Xf = this.trainingData.getFactorCounts();
+	private void initializeEM(){
 		
 		//Initializing mu's
 		MUc = new double[numChromStates][C];
@@ -214,8 +222,8 @@ public class EMtrain {
 		}
 		
 		//Printing the initial Mu's
-		BayesmentsSandbox.printArray(MUc, "MUc", "MUc", manager);
-		BayesmentsSandbox.printArray(MUf, "MUf", "MUf", manager);
+		BayesmentsSandbox.printArray(MUc, "MUc", "MUc", this.condition_names);
+		BayesmentsSandbox.printArray(MUf, "MUf", "MUf", this.condition_names);
 		
 		//Initializing sigma's
 		SIGMAc = new double[numChromStates][C];
@@ -249,8 +257,8 @@ public class EMtrain {
 		}
 		
 		//Printing the initial SIGMA's
-		BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", manager);
-		BayesmentsSandbox.printArray(SIGMAf, "SIGMAf", "SIGMAf", manager);
+		BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", this.condition_names);
+		BayesmentsSandbox.printArray(SIGMAf, "SIGMAf", "SIGMAf", this.condition_names);
 		
 		// Initializing Bjk .. Using random initialization 
 		Bjk = new double[numChromStates][numFacBindingStates];
@@ -259,7 +267,7 @@ public class EMtrain {
 		}
 		
 		//printing the initial Bjk's
-		BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", manager);
+		BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", this.condition_names);
 		
 		// Initializing PIj ... Using Uniform initialization
 		//PIj = new double[numChromStates];
@@ -294,7 +302,7 @@ public class EMtrain {
 		}
 		
 		//printing params
-		BayesmentsSandbox.printArray(MUs, "MUs", "MUs", manager);
+		BayesmentsSandbox.printArray(MUs, "MUs", "MUs", this.condition_names);
 		
 		for(int m=0; m< M; m++){
 			double[] observedValues = new double[N];
@@ -309,7 +317,7 @@ public class EMtrain {
 				this.capSIGMAs[m] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
 			}
 		}
-		BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", manager);
+		BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", this.condition_names);
 		
 	}
 	
@@ -1013,19 +1021,18 @@ public class EMtrain {
 			WSnorm = new double[M];
 		}
 		this.capSIGMAs = new double[M];
-		this.setSequences(seqs);
+		//this.setSequences(seqs);
 		this.setInitialSeqParams(manager);
 		this.trainMUs = new double[this.total_itrs+1][this.numChromStates][this.M];
 		this.trainSIGMAs = new double[this.total_itrs+1][this.numChromStates][this.M];
 		
 		
 	}
-	private void setSequences(Sequences seqs){this.seqs = seqs;}
+	
 	private void setXs(double[][] Xs){this.Xs = Xs;}
 	private void setInitialSeqParams(ExperimentManager manager){this.initializeSeqParams(manager);}
 	
 	//Accessors
-	//public double[] getPIj(){return this.PIj;}
 	public double[][] getMUc(){return this.MUc;}
 	public double[][] getMUf(){return this.MUf;}
 	public double[][] getSIGMAc(){return this.SIGMAc;}
@@ -1033,11 +1040,17 @@ public class EMtrain {
 	public double[][] getBjk(){return this.Bjk;}
 	public double[][] getMUs(){return this.MUs;}
 	public double[][] getSIGMAs(){return this.SIGMAs;}
-	public GenomicLocations getChromData(){return this.trainingData;}
-	public Sequences getSeqData(){return this.seqs;}
+	public int getNumTrainingEgs(){return this.N;}
+	public int getNumMotifs(){return this.M;}
+	public int getnumChromConds(){return this.C;}
+	public int getnumFacConds(){return this.F;}
+	public float[][] getXc(){return this.Xc;}
+	public float[][] getXf(){return this.Xf;}
+	public double[][] getXs(){return this.Xs;}
 	public boolean getSeqStateStatus(){return this.seqState;}
 	public double[] getChromWeights(){return this.WCnorm;}
 	public double[] getSeqWeights(){return this.WSnorm;}
+	public String[] getConditionNames(){return this.condition_names;}
 	// main method is only for testing puposers
 	
 	public static void main(String[] args){

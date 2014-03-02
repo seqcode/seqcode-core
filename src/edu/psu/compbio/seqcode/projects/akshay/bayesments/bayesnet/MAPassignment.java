@@ -3,7 +3,9 @@ package edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
+import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Sequences;
@@ -18,7 +20,6 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 public class MAPassignment {
 	
 	//All the parameters of the Bayesian network
-	//protected double[] PIj;
 	protected double[][] MUc;
 	protected double[][] MUf;
 	protected double[][] SIGMAc;
@@ -26,13 +27,22 @@ public class MAPassignment {
 	protected double[][] Bjk;
 	protected double[][] MUs;
 	protected double[][] SIGMAs;
-	protected GenomicLocations trainingdata;
-	protected Sequences seqs;
+	//protected GenomicLocations trainingdata;
+	//protected Sequences seqs;
 	protected EMtrain model;
 	protected Config conf;
 	protected boolean inSeqMode;
+	protected int N;
+	protected int F;
+	protected int C;
 	protected int M;
+	
+	protected List<Point> locations;
+	protected int numChromStates;
+	protected int numFacState;
 	protected double[][] Xs;
+	protected float[][] Xc;
+	protected float[][] Xf;
 	
 	// A 2-d array that stores the map-assignment values. Rows as training example and colums as a list of size "2".
 	//The first element being he chromatin assignment and the second one being the factor assignment
@@ -43,39 +53,33 @@ public class MAPassignment {
 	 * @param model
 	 * @param conf
 	 */
-	public MAPassignment(EMtrain model, Config conf) {
+	public MAPassignment(EMtrain model, Config conf, List<Point> locations) {
 		this.model = model;
+		this.N = model.getNumTrainingEgs();
+		this.C = model.getnumChromConds();
+		this.F = model.getnumFacConds();
+		this.Xc = model.getXc();
+		this.Xf = model.getXf();
 		this.conf = conf;
-		//PIj = model.getPIj();
 		MUc = model.getMUc();
 		MUf = model.getMUf();
 		SIGMAc = model.getSIGMAc();
 		SIGMAf = model.getSIGMAf();
 		Bjk = model.getBjk();
-		trainingdata = model.getChromData();
-		MapAssignment = new double[trainingdata.getNumTrainingExamples()][2];
+		this.numChromStates =conf.getNumChrmStates();
+		this.numFacState = conf.getNumFacStates();
+		MapAssignment = new double[N][2];
 		this.inSeqMode = model.getSeqStateStatus();
 		if(inSeqMode){
 			this.setSeqParameters();
 		}
+		this.locations = locations;
 	}
 	
 	/**
 	 * Performs the MAP assignment
 	 */
 	public void execute(boolean print){
-		int N = trainingdata.getNumTrainingExamples();
-		int numChromStates = conf.getNumChrmStates();
-		int numFacState = conf.getNumFacStates();
-		int C = trainingdata.getNumChromatinCons();
-		int F = trainingdata.getNumFacCons();
-		
-		
-		
-		float[][] Xc = trainingdata.getChromatinCounts();
-		float[][] Xf = trainingdata.getFactorCounts();
-		
-		
 		for(int i=0; i<N; i++){ // over all training examples
 			double[] assignment = new double[2];
 			double maxLiklehood = 0.0;
@@ -142,7 +146,7 @@ public class MAPassignment {
 						FileWriter fw = new FileWriter(outfile);
 						for(int i=0; i<N; i++){
 							if((int) MapAssignment[i][0] == j && (int) MapAssignment[i][1] == k){
-								fw.write(trainingdata.getLocations().get(i).getLocationString()+"\n");
+								fw.write(locations.get(i).getLocationString()+"\n");
 							}
 						}
 						fw.close();
@@ -160,11 +164,11 @@ public class MAPassignment {
 		if(!this.inSeqMode){
 			this.inSeqMode = true;
 		}
-		this.seqs = model.getSeqData();
+		
 		this.MUs = model.getMUs();
 		this.SIGMAs = model.getSIGMAs();
-		this.M = seqs.getNumMotifs();
-		this.Xs = seqs.getXs();
+		this.M = model.getNumMotifs();
+		this.Xs = model.getXs();
 	}
 	
 	//Accessors

@@ -24,55 +24,70 @@ public class Bayesments {
 			// Make the output directories using the provided root name
 			c.makeGPSOutputDirs(c.doEMplot());
 			
-			// Store the reads by building the ExperimentManager
-			System.out.println("Loading Reads\n");
-			ExperimentManager manager = new ExperimentManager(c,c.loadReads());
+			ExperimentManager manager = null;
+			GenomicLocations trainingData = null;
+			EMrunner trainer = null;
 			
-			// Read and store the training data in a GenomicLocations object
-			System.out.println("Filling Training Data\n");
-			GenomicLocations trainingData = new GenomicLocations(manager,c);
 			
-			// Plot the cumulative plots of the training data
-			System.out.println("Plotting the traning data");
-			trainingData.plotData(c, manager);
-			
+			if(!c.doSimulation()){
+				// Store the reads by building the ExperimentManager
+				System.out.println("Loading Reads\n");
+				manager = new ExperimentManager(c,c.loadReads());
+				
+				// Read and store the training data in a GenomicLocations object
+				System.out.println("Filling Training Data\n");
+				trainingData = new GenomicLocations(manager,c);
+				
+				// Plot the cumulative plots of the training data
+				System.out.println("Plotting the traning data");
+				trainingData.plotData(c, manager);
+				
+				trainer = new EMrunner(c, trainingData, manager );
+				
+			}else{
+				trainer = new EMrunner(c);
+			}
 			//Initialize EMrunner and train the model
-			
-			EMrunner trainer = new EMrunner(c, trainingData, manager );
 			trainer.trainModel();
 			
 			//Do MAP assignament
+			if(!c.doSimulation()){
+				MAPassignment map =  new MAPassignment(trainer.getModel(), c, trainingData.getLocations());
+				map.execute(true);
+			}else{
+				MAPassignment map =  new MAPassignment(trainer.getModel(), c, null);
+				map.execute(false);
+			}
 			
-			MAPassignment map =  new MAPassignment(trainer.getModel(), c);
-			map.execute(true);
+			
 			
 			// Print all the learned parameters
 			//System.out.println("PI-C values\n");
 			//BayesmentsSandbox.printArray(trainer.getPIj(), "chrom_state");
 		
 			System.out.println("MU-C values\n");
-			BayesmentsSandbox.printArray(trainer.getMUc(),"MUc" , "MUc", manager);
+			BayesmentsSandbox.printArray(trainer.getMUc(),"MUc" , "MUc", trainer.getModel().getConditionNames());
 		
 			System.out.println("MU-F values\n");
-			BayesmentsSandbox.printArray(trainer.getMUf(),"MUf" , "MUf", manager);
+			BayesmentsSandbox.printArray(trainer.getMUf(),"MUf" , "MUf", trainer.getModel().getConditionNames());
 			if(!c.runOnlyChrom()){
 				System.out.println("MU-S values\n");
-				BayesmentsSandbox.printArray(trainer.getMUs(),"MUS" , "MUS", manager);
+				BayesmentsSandbox.printArray(trainer.getMUs(),"MUS" , "MUS", trainer.getModel().getConditionNames());
 			}
 		
 			System.out.println("SIGMA-C values\n");
-			BayesmentsSandbox.printArray(trainer.getSIGMAc(),"SIGMAc" , "SIGMAc", manager);
+			BayesmentsSandbox.printArray(trainer.getSIGMAc(),"SIGMAc" , "SIGMAc", trainer.getModel().getConditionNames());
 		
 			System.out.println("SIGMA-F values\n");
-			BayesmentsSandbox.printArray(trainer.getSIGMAf(),"SIGMAf" , "SIGMAf", manager);
+			BayesmentsSandbox.printArray(trainer.getSIGMAf(),"SIGMAf" , "SIGMAf", trainer.getModel().getConditionNames());
 			
 			if(!c.runOnlyChrom()){
 				System.out.println("SIGMA-S values\n");
-				BayesmentsSandbox.printArray(trainer.getSIGMAs(),"SIGMAs" , "SIGMAs", manager);
+				BayesmentsSandbox.printArray(trainer.getSIGMAs(),"SIGMAs" , "SIGMAs", trainer.getModel().getConditionNames());
 			}
 		
 			System.out.println("Bjk values\n");
-			BayesmentsSandbox.printArray(trainer.getBjk(),"chromatin_State" , "factor_state", manager);
+			BayesmentsSandbox.printArray(trainer.getBjk(),"chromatin_State" , "factor_state", trainer.getModel().getConditionNames());
 			
 			if(c.doRegularization()){
 				System.out.println("Chromatin Weight values\n");

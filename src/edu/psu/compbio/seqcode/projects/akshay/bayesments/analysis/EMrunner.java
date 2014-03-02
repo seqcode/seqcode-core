@@ -10,6 +10,7 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.MAPassignment
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Sequences;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Simulate;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 
 public class EMrunner {
@@ -24,6 +25,7 @@ public class EMrunner {
 	protected boolean finishedTraining;
 	protected ExperimentManager manager;
 	protected List<WeightMatrix> globalListOfMotifs;
+	protected boolean Sim;
 	
 	protected Config config;
 	
@@ -35,12 +37,29 @@ public class EMrunner {
 		this.num_seq_itrs = conf.getNumSeqIters();
 		this.total_itrs = conf.getNumItrs();
 		this.manager = manager;
+		this.Sim= false;
+	}
+	
+	public EMrunner(Config conf) {
+		config = conf;
+		this.chromdata = null;
+		this.onlyChrom = true;
+		this.num_chrom_itrs = conf.getNumChromIters();
+		this.num_seq_itrs = conf.getNumSeqIters();
+		this.total_itrs = conf.getNumItrs();
+		this.manager = null;
+		this.Sim = true;
 	}
 	
 	public void trainModel(){
 		//Initializing the EM train class
 		// Since we are just initializing the model, it is not in seq state
-		this.model = new EMtrain(this.config, this.chromdata,this.manager);
+		if(!config.doSimulation()){
+			this.model = new EMtrain(this.config, this.chromdata,this.manager);
+		}else{
+			this.model = new EMtrain(this.config);
+		}
+		
 		// Running the EM only on chromatin features
 		model.runEM(num_chrom_itrs, onlyChrom && config.doEMplot());
 		if(!this.onlyChrom){ // Now we have to initialze the seq data and features
@@ -48,7 +67,7 @@ public class EMrunner {
 			this.seqdata = new Sequences(config,chromdata.getLocations());
 			// Firsly, get the top 200 (or all, whichever is maximum) sites for all chromatin state assignments
 				// To do that , lets us first do a Map assignment
-			MAPassignment onlyChromAddignment = new MAPassignment(model,config);
+			MAPassignment onlyChromAddignment = new MAPassignment(model,config, chromdata.getLocations());
 			double[][] assignment = onlyChromAddignment.getMapAssignments();
 				// Now get the top 200 seqs and add them to alltopseqs
 			List<String> alltopseqs = new ArrayList<String>();
