@@ -9,7 +9,7 @@ public class Simulate {
 	protected double[][] mean_matrix={{2.0,3.0,3.0,2.0,4.0},
 			{2.0,3.0,2.0,4.0,1.0},
 			{2.0,1.0,1.0,0.5,2.0}};
-	protected double[][] sigma_matrix={{1.5,1.5,1.0,2.0},
+	protected double[][] sigma_matrix={{1.5,1.5,1.0,1.0,2.0},
 			{1.5,1.5,0.5,2.0,0.5},
 			{1.5,1.0,1.0,0.15,1.0}};
 	protected int N=9000;
