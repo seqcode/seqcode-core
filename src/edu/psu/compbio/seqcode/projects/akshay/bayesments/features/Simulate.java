@@ -31,7 +31,7 @@ public class Simulate {
 			}	
 		}
 		for(int i=0; i<3000; i++){
-			Pair<Float, Float> temp = this.doBoxMuller(mean_matrix[0][C], sigma_matrix[0][C]);
+			Pair<Float, Float> temp = this.doBoxMuller(mean_matrix[0][C-1], sigma_matrix[0][C-1]);
 			SimXf[i][0] = temp.car();
 			i++;
 			SimXf[i][0] = temp.cdr();
@@ -46,7 +46,7 @@ public class Simulate {
 			}	
 		}
 		for(int i=3000; i<5000; i++){
-			Pair<Float, Float> temp = this.doBoxMuller(mean_matrix[1][C], sigma_matrix[1][C]);
+			Pair<Float, Float> temp = this.doBoxMuller(mean_matrix[1][C-1], sigma_matrix[1][C-1]);
 			SimXf[i][0] = temp.car();
 			i++;
 			SimXf[i][0] = temp.cdr();
@@ -61,7 +61,7 @@ public class Simulate {
 			}	
 		}
 		for(int i=5000; i<9000; i++){
-			Pair<Float, Float> temp = this.doBoxMuller(mean_matrix[2][C], sigma_matrix[2][C]);
+			Pair<Float, Float> temp = this.doBoxMuller(mean_matrix[2][C-1], sigma_matrix[2][C-1]);
 			SimXf[i][0] = temp.car();
 			i++;
 			SimXf[i][0] = temp.cdr();
