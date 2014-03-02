@@ -81,7 +81,7 @@ public class Simulate {
 		y1 = x1 * w;
 		y2 = x2 * w;
 
-		return new Pair<Float,Float>(y1,y2);
+		return new Pair<Float,Float>((float)(m+y1*s),(float)(m+y2*s));
 	}
 	
 	//Accesors
