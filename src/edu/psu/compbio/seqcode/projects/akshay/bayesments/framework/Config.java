@@ -203,11 +203,12 @@ public class Config {
 				if(!this.Simulate_reads){
 					String peaksFileName = ap.getKeyValue("peaks");
 					this.locations = new File(peaksFileName);
+					if(!locations.exists()){
+						System.err.println("Peaks File does not exist\n");
+						System.exit(1);    
+					}
 				}
-				if(!locations.exists() && !this.Simulate_reads){
-					System.err.println("Peaks File does not exist\n");
-					System.exit(1);    
-				}
+				
 				
 				/****Miscellaneous arguments****/
 				
