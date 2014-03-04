@@ -90,6 +90,14 @@ public class ExperimentCondition {
 		return count;
 	}
 	
+	public float getTotalSignalCountInARegion(int i){
+		float count=0;
+		for(ControlledExperiment ce: this.replicates){
+			count = count + ce.getSignalHitCount(i);
+		}
+		return count;
+	}
+	
 	/**
 	 * Get the total weight count for signal samples
 	 * @return

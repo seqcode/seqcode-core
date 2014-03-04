@@ -37,6 +37,8 @@ public class Sample {
 	protected float maxReadsPerBP=-1;
 	protected int winsize;
 	
+	protected float[] RegionCounts;
+	
 	/**
 	 * Five prime ends of the read hits. <br>
 	 * First dimension represents the corresponding chromosome ID. <br>
@@ -80,6 +82,21 @@ public class Sample {
 	public void setGenome(Genome g){gen=g;}
 	public BackgroundCollection getPerBaseBackground(){return perBaseBack;}
 	public int getWinSize(){return this.winsize;}
+	public float getRegionCount(int i){return this.RegionCounts[i];}
+	
+	//settors
+	public void setRegionCounts(Region[] regs){
+		
+		for(int i=0; i<regs.length; i++){
+			RegionCounts[i] = this.countHits(regs[i]);
+		}
+	}
+	
+	//Flushers
+	public void flushCounts(){
+		this.fivePrimeCounts = null;
+		this.fivePrimePos = null;
+	}
 
 	/**
 	 * Add a HitLoader to the set

@@ -90,8 +90,7 @@ public class GenomicLocations {
 			for(Point p : locations){
 				int conCount=0;
 				for(ExperimentCondition ec : chromConds){
-					Region r = chromatinRegions[pointCount][conCount];
-					chromatinCounts[pointCount][conCount] = ec.getTotalSignalCountInARegion(r);
+					chromatinCounts[pointCount][conCount] = ec.getTotalSignalCountInARegion(pointCount);
 					conCount++;
 				}
 				pointCount++;
@@ -102,8 +101,7 @@ public class GenomicLocations {
 			for(Point p: locations){
 				int conCount=0;
 				for(ExperimentCondition ec : facConds){
-					Region r = factorRegions[pointCount][conCount];
-					factorCounts[pointCount][conCount] = ec.getTotalSignalCountInARegion(r);
+					factorCounts[pointCount][conCount] = ec.getTotalSignalCountInARegion(pointCount);
 					conCount++;
 				}
 				pointCount++;

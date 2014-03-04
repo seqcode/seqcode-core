@@ -48,6 +48,13 @@ public class ControlledExperiment {
 		}
 	}
 	
+	//flushers
+	
+	public void flushReads(){
+		this.signal.flushCounts();
+		this.control.flushCounts();
+	}
+	
 	//Accessors
 	public int getIndex(){return index;}
 	public String getName(){return name;}
@@ -69,6 +76,12 @@ public class ControlledExperiment {
 		Sample sig = this.signal;
 		float count = sig.countHits(r);
 		count = count*(float)this.ctrlScalingRatio;
+		return count;
+	}
+	
+	public float getSignalHitCount(int i){
+		float count = this.signal.getRegionCount(i);
+		count = count *(float)this.ctrlScalingRatio;
 		return count;
 	}
 	

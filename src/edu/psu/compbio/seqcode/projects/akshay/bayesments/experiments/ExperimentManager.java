@@ -1,8 +1,11 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
+import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
@@ -19,6 +22,7 @@ import edu.psu.compbio.seqcode.projects.multigps.hitloaders.NovoFileHitLoader;
 import edu.psu.compbio.seqcode.projects.multigps.hitloaders.ReadDBHitLoader;
 import edu.psu.compbio.seqcode.projects.multigps.hitloaders.SAMFileHitLoader;
 import edu.psu.compbio.seqcode.projects.multigps.hitloaders.TophatFileHitLoader;
+import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
 
 public class ExperimentManager {
 	
@@ -33,11 +37,20 @@ public class ExperimentManager {
 	protected List<ExperimentFeature> featureList = new ArrayList<ExperimentFeature>();
 	protected HashMap<String, ExperimentFeature> allFeatures = new HashMap<String, ExperimentFeature>();
 	protected ExperimentSet experiments;
+	protected List<Point> locations;
 	
 	public ExperimentManager(Config conf, boolean loadReads) {
 		this.config = conf;
 		this.gen = this.config.getGenome();
 		int repCount=0, conCount=0, samCount=0, feaCount=0;
+		
+		//loading the genomic locations (factor binding locations of the focus factor)
+		File peaksFile = config.getPeaksFile();
+		try {
+			locations = EventMetaMaker.loadPoints(peaksFile, this.gen);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		
 		// loading hitloaders in loaders hashmap
 		for(ExptDescriptor e: this.config.getExperiments()){
@@ -95,25 +108,57 @@ public class ExperimentManager {
 				if(!allReplicates.containsKey(repName)){
 					Sample sig=null, ctrl=null;
 					if(allSamples.containsKey(repName+":signal")){ //Require that there is a signal (in case of orphan/default controls)
+						if(!loadReads)
+							allSamples.get(repName+":signal").loadHits();
 						sig = allSamples.get(repName+":signal");
-						
-						if(allSamples.containsKey(repName+":control"))           //Ctrl1: if there is a control defined for this condition & replicate
-							ctrl = allSamples.get(repName+":control");
-						else if(allSamples.containsKey(e.feature+":"+e.condition+":DEFAULT:control")) //Ctrl2: if there is a default control for this condition 
-							ctrl = allSamples.get(e.feature+":"+e.condition+":DEFAULT:control");
-						else if(allSamples.containsKey("DEFAULT:DEFAULT:DEFAULT:control"))             //Ctrl3: if there is a global default control
-							ctrl = allSamples.get("DEFAULT:DEFAULT:DEFAULT:control");
-						//If no control specified, ctrl is still null
-						
-						ControlledExperiment rep = new ControlledExperiment(this.config, repCount, e.feature, e.condition, e.replicate, 
-								sig, ctrl, e.bindingmodel, this.config.getEstimateScaling(), this.config.getScalingByMedian());
-						allReplicates.put(repName, rep);
-						replicateList.add(rep);
-						repCount++;
 					}
+					Region[] reg= new Region[locations.size()];
+					int pointCount = 0;
+					for(Point p : locations){
+						reg[pointCount] = new Region(this.gen,p.getChrom()
+									,p.getLocation()-sig.getWinSize(),p.getLocation()+sig.getWinSize());
+						pointCount++;
+					}
+					sig.setRegionCounts(reg);
+					String cntrl_name="";	
+					if(allSamples.containsKey(repName+":control")){           //Ctrl1: if there is a control defined for this condition & replicate
+						if(!loadReads)
+							allSamples.get(repName+":control").loadHits();
+						ctrl = allSamples.get(repName+":control");
+						ctrl.setRegionCounts(reg);
+						cntrl_name = repName+":control";
+					}
+					else if(allSamples.containsKey(e.feature+":"+e.condition+":DEFAULT:control")){ //Ctrl2: if there is a default control for this condition 
+						if(!loadReads)
+							allSamples.get(e.feature+":"+e.condition+":DEFAULT:control").loadHits();
+						ctrl = allSamples.get(e.feature+":"+e.condition+":DEFAULT:control");
+						ctrl.setRegionCounts(reg);
+						cntrl_name = e.feature+":"+e.condition+":DEFAULT:control";
+					}
+					else if(allSamples.containsKey("DEFAULT:DEFAULT:DEFAULT:control")){             //Ctrl3: if there is a global default control
+						if(!loadReads)	
+							allSamples.get("DEFAULT:DEFAULT:DEFAULT:control").loadHits();
+						ctrl = allSamples.get("DEFAULT:DEFAULT:DEFAULT:control");
+						ctrl.setRegionCounts(reg);
+						cntrl_name = "DEFAULT:DEFAULT:DEFAULT:control";
+					}	
+					//If no control specified, ctrl is still null
+						
+					ControlledExperiment rep = new ControlledExperiment(this.config, repCount, e.feature, e.condition, e.replicate, 
+							sig, ctrl, e.bindingmodel, this.config.getEstimateScaling(), this.config.getScalingByMedian());
+					if(!loadReads){
+						rep.flushReads();
+						allSamples.get(repName+":signal").flushCounts();
+						allSamples.get(cntrl_name).flushCounts();
+					}
+					
+					allReplicates.put(repName, rep);
+					replicateList.add(rep);
+					repCount++;
 				}
 			}
 		}
+		
 		
 		//initializing the condition lists
 		List<String> replicatesByConditionNames = new ArrayList<String>();
@@ -210,5 +255,14 @@ public class ExperimentManager {
 		return currReader;
 	}
 	
+	public static void main(String[] args){
+		List<Integer> tert = new ArrayList<Integer>();
+		tert.add(1);
+		tert.add(4);
+		int fet = tert.get(0);
+		fet = 777;
+		System.out.println(tert.get(0));
+		
+	}
 
 }
