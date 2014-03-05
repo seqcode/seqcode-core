@@ -86,7 +86,7 @@ public class Sample {
 	
 	//settors
 	public void setRegionCounts(Region[] regs){
-		
+		RegionCounts =  new float[regs.length];
 		for(int i=0; i<regs.length; i++){
 			RegionCounts[i] = this.countHits(regs[i]);
 		}
