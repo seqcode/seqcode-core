@@ -149,7 +149,8 @@ public class ExperimentManager {
 					if(!loadReads){
 						rep.flushReads();
 						allSamples.get(repName+":signal").flushCounts();
-						allSamples.get(cntrl_name).flushCounts();
+						if(cntrl_name != "")
+							allSamples.get(cntrl_name).flushCounts();
 					}
 					
 					allReplicates.put(repName, rep);

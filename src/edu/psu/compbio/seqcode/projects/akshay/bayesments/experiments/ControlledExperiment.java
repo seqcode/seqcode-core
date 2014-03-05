@@ -52,7 +52,8 @@ public class ControlledExperiment {
 	
 	public void flushReads(){
 		this.signal.flushCounts();
-		this.control.flushCounts();
+		if(!(control == null))
+			this.control.flushCounts();
 	}
 	
 	//Accessors
