@@ -49,7 +49,7 @@ public class EMplotter {
 	 * @param C
 	 * @param F
 	 */
-	public EMplotter(Config config, double[][][] trainMUc, double[][][] trainMUf, double[][][] trainSIGMAc, double[][][] trainSIGMAf, double[][] trainPIj, double[][][] trainBjk, int C, int F)  {
+	public EMplotter(Config config, double[][][] trainMUc, double[][][] trainMUf, double[][][] trainSIGMAc, double[][][] trainSIGMAf, double[][] trainPIj, double[][][] trainBjk, int C, int F, int nChromStates, int nFacStates)  {
 		this.trainMUc = trainMUc;
 		this.trainMUf = trainMUf;
 		this.trainSIGMAc = trainSIGMAc;
@@ -57,8 +57,8 @@ public class EMplotter {
 		this.trainPIj = trainPIj;
 		this.trainBjk = trainBjk;
 		this.itrs = config.getNumItrs();
-		int numChromStates = config.getNumChrmStates();
-		int numFacBindingStates = config.getNumFacStates();
+		int numChromStates = nChromStates;
+		int numFacBindingStates = nFacStates;
 		this.w = config.W;
 		this.h = config.H;
 		this.wmargin = config.W_MARGIN;

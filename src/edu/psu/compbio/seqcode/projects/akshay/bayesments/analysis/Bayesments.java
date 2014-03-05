@@ -42,20 +42,20 @@ public class Bayesments {
 				System.out.println("Plotting the traning data");
 				trainingData.plotData(c, manager);
 				
-				trainer = new EMrunner(c, trainingData, manager );
+				trainer = new EMrunner(c, trainingData, manager, c.getNumChrmStates(), c.getMaxFacStates() );
 				
 			}else{
-				trainer = new EMrunner(c);
+				trainer = new EMrunner(c, c.getNumChrmStates(), c.getNumFacStates());
 			}
 			//Initialize EMrunner and train the model
 			trainer.trainModel();
 			
 			//Do MAP assignament
 			if(!c.doSimulation()){
-				MAPassignment map =  new MAPassignment(trainer.getModel(), c, trainingData.getLocations());
+				MAPassignment map =  new MAPassignment(trainer.getModel(), c, trainingData.getLocations(), c.getNumChrmStates(), c.getNumFacStates());
 				map.execute(true);
 			}else{
-				MAPassignment map =  new MAPassignment(trainer.getModel(), c, null);
+				MAPassignment map =  new MAPassignment(trainer.getModel(), c, null, c.getNumChrmStates(), c.getNumFacStates());
 				map.execute(false);
 			}
 			

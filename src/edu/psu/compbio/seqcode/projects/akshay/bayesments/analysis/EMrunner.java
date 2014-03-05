@@ -27,9 +27,12 @@ public class EMrunner {
 	protected List<WeightMatrix> globalListOfMotifs;
 	protected boolean Sim;
 	
+	protected int numChromStates;
+	protected int numFacStates;
+	
 	protected Config config;
 	
-	public EMrunner(Config conf, GenomicLocations chromdata, ExperimentManager manager) {
+	public EMrunner(Config conf, GenomicLocations chromdata, ExperimentManager manager, int nChromStates, int nFacStates) {
 		config = conf;
 		this.chromdata = chromdata;
 		this.onlyChrom = conf.runOnlyChrom();
@@ -38,9 +41,11 @@ public class EMrunner {
 		this.total_itrs = conf.getNumItrs();
 		this.manager = manager;
 		this.Sim= false;
+		this.numChromStates = nChromStates;
+		this.numFacStates = nFacStates;
 	}
 	
-	public EMrunner(Config conf) {
+	public EMrunner(Config conf, int nChromStates, int nFacStates) {
 		config = conf;
 		this.chromdata = null;
 		this.onlyChrom = true;
@@ -49,15 +54,17 @@ public class EMrunner {
 		this.total_itrs = conf.getNumItrs();
 		this.manager = null;
 		this.Sim = true;
+		this.numChromStates = nChromStates;
+		this.numFacStates = nFacStates;
 	}
 	
 	public void trainModel(){
 		//Initializing the EM train class
 		// Since we are just initializing the model, it is not in seq state
 		if(!config.doSimulation()){
-			this.model = new EMtrain(this.config, this.chromdata,this.manager);
+			this.model = new EMtrain(this.config, this.chromdata,this.manager, this.numChromStates, this.numFacStates);
 		}else{
-			this.model = new EMtrain(this.config);
+			this.model = new EMtrain(this.config, this.numChromStates, this.numFacStates);
 		}
 		
 		// Running the EM only on chromatin features
@@ -67,11 +74,11 @@ public class EMrunner {
 			this.seqdata = new Sequences(config,chromdata.getLocations());
 			// Firsly, get the top 200 (or all, whichever is maximum) sites for all chromatin state assignments
 				// To do that , lets us first do a Map assignment
-			MAPassignment onlyChromAddignment = new MAPassignment(model,config, chromdata.getLocations());
+			MAPassignment onlyChromAddignment = new MAPassignment(model,config, chromdata.getLocations(), this.numChromStates, this.numFacStates);
 			double[][] assignment = onlyChromAddignment.getMapAssignments();
 				// Now get the top 200 seqs and add them to alltopseqs
 			List<String> alltopseqs = new ArrayList<String>();
-			for(int j=0; j<config.getNumChrmStates(); j++){
+			for(int j=0; j<this.numChromStates; j++){
 				List<String> seqs = new ArrayList<String>();
 				for(int i=0; i<chromdata.getNumTrainingExamples();i++){
 					if(j==assignment[i][0]){

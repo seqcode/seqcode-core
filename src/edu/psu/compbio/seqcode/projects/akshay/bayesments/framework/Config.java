@@ -61,6 +61,12 @@ public class Config {
 	protected int buffer_Sigma;
 	
 	protected int N;
+	
+	protected int minChromStates;
+	protected int maxChromStates;
+	
+	protected int minFacStates;
+	protected int maxFacStates;
 
 	
 	
@@ -229,6 +235,11 @@ public class Config {
 				onlyChrom = Args.parseFlags(args).contains("onlyChrom") ? true : false;
 				regularize = Args.parseFlags(args).contains("regularize") ? true : false;
 				buffer_Sigma = Args.parseInteger(args, "bufferSigma", 0);
+				this.minChromStates = Args.parseInteger(args, "minChromStates", 1);
+				this.maxChromStates = Args.parseInteger(args, "maxChromStates", 10);
+				this.minFacStates = Args.parseInteger(args, "minFacStates", 1);
+				this.maxFacStates = Args.parseInteger(args, "maxFacStates", 5);
+				
 				
 				this.lambda = Args.parseDouble(args, "regWeight", 10);
 				
@@ -319,6 +330,10 @@ public class Config {
 	public double getLambda(){return this.lambda;}
 	public int getBufferSigmaVal(){return this.buffer_Sigma;}
 	public boolean doSimulation(){return this.Simulate_reads;}
+	public int getMaxChromStates(){return this.maxChromStates;}
+	public int getMinChromStates(){return this.minChromStates;}
+	public int getMaxFacStates(){return this.maxFacStates;}
+	public int getMinFacStates(){return this.minFacStates;}
 	
 	
 	//Some accessors to allow modification of options after config
@@ -409,6 +424,10 @@ public class Config {
 				"\t--chromWeight <weightage for chromatin features to take responsibility for state>\n"+
 				"\t--seqWeight<weightage for seq features to take responsibility for state>\n"+
 				"\t--bufferSigma<int for testing purpose>\n"+
+				"\t--minChromStates<min no of chrom states to test>\n"+
+				"\t--maxChromStates<max no of chrom states to test>\n"+
+				"\t--minFacStates<>\n"+
+				"\t--maxFacStates<>\n"+
 				"\t--poissongausspb <flag to filter per base using Poisson Gaussian sliding window> (overrides --fixedpb)"));
 	}
 	

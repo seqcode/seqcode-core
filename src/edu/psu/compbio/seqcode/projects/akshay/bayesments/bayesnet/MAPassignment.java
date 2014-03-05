@@ -53,7 +53,7 @@ public class MAPassignment {
 	 * @param model
 	 * @param conf
 	 */
-	public MAPassignment(EMtrain model, Config conf, List<Point> locations) {
+	public MAPassignment(EMtrain model, Config conf, List<Point> locations, int nChromStates, int nFacStates) {
 		this.model = model;
 		this.N = model.getNumTrainingEgs();
 		this.C = model.getnumChromConds();
@@ -66,8 +66,8 @@ public class MAPassignment {
 		SIGMAc = model.getSIGMAc();
 		SIGMAf = model.getSIGMAf();
 		Bjk = model.getBjk();
-		this.numChromStates =conf.getNumChrmStates();
-		this.numFacState = conf.getNumFacStates();
+		this.numChromStates =nChromStates;;
+		this.numFacState = nFacStates;
 		MapAssignment = new double[N][2];
 		this.inSeqMode = model.getSeqStateStatus();
 		if(inSeqMode){

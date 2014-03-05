@@ -100,7 +100,7 @@ public class EMtrain {
 	 * @param trainingData
 	 * @param manager
 	 */
-	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager) {
+	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager, int nChromStates, int nFacStates) {
 		this.config = config;
 		//this.trainingData = trainingData;
 		this.regularize = config.doRegularization();
@@ -111,8 +111,8 @@ public class EMtrain {
 		N = trainingData.getNumTrainingExamples();
 		C= trainingData.getNumChromatinCons();
 		F = trainingData.getNumFacCons();
-		this.numChromStates = config.getNumChrmStates();
-		this.numFacBindingStates = config.getNumFacStates();
+		this.numChromStates = nChromStates;
+		this.numFacBindingStates = nFacStates;
 		
 		//Initializing and loading X's
 		this.Xc = new float[N][C];
@@ -136,7 +136,7 @@ public class EMtrain {
 		
 	}
 	
-	public EMtrain(Config config) {
+	public EMtrain(Config config, int nChromStates, int nFacStates) {
 		this.config = config;
 		//this.trainingData = null;
 		this.regularize = config.doRegularization();
@@ -148,8 +148,8 @@ public class EMtrain {
 		this.C = sim.getNumChromCondition();
 		this.N = sim.getNumTrainingEgs();
 		this.F =1;
-		this.numChromStates = config.getNumChrmStates();
-		this.numFacBindingStates = config.getNumFacStates();
+		this.numChromStates = nChromStates;
+		this.numFacBindingStates = nFacStates;
 		this.onlyChrom = true;
 		this.seqState = false;
 		this.total_itrs = this.config.getNumItrs();
@@ -238,8 +238,8 @@ public class EMtrain {
 			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int j=0; j<numChromStates; j++){
-				SIGMAc[j][c] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
-				this.capSIGMAc[c] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
+				SIGMAc[j][c] = (max-min)/(this.numChromStates+config.getBufferSigmaVal());
+				this.capSIGMAc[c] = (max-min)/(this.numChromStates+config.getBufferSigmaVal());
 			}
 		}
 		
@@ -251,8 +251,8 @@ public class EMtrain {
 			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
 			double max = observedValues[this.getPercentileIndex(85, observedValues)];
 			for(int k=0; k<numFacBindingStates; k++){
-				SIGMAf[k][f] = (max-min)/config.getNumFacStates();
-				this.capSIGMAf[f] = (max-min)/config.getNumFacStates();
+				SIGMAf[k][f] = (max-min)/this.numFacBindingStates;
+				this.capSIGMAf[f] = (max-min)/this.numFacBindingStates;
 			}
 		}
 		
@@ -313,8 +313,8 @@ public class EMtrain {
 			double max = observedValues[this.getPercentileIndex(85.0, observedValues)];
 			
 			for(int j=0; j<numChromStates; j++){
-				SIGMAs[j][m] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
-				this.capSIGMAs[m] = (max-min)/(config.getNumChrmStates()+config.getBufferSigmaVal());
+				SIGMAs[j][m] = (max-min)/(this.numChromStates+config.getBufferSigmaVal());
+				this.capSIGMAs[m] = (max-min)/(this.numFacBindingStates+config.getBufferSigmaVal());
 			}
 		}
 		BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", this.condition_names);

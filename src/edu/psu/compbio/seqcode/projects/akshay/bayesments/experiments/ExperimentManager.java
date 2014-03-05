@@ -151,6 +151,9 @@ public class ExperimentManager {
 						allSamples.get(repName+":signal").flushCounts();
 						if(cntrl_name != "")
 							allSamples.get(cntrl_name).flushCounts();
+							ctrl.flushCounts();
+						sig.flushCounts();
+						
 					}
 					
 					allReplicates.put(repName, rep);
