@@ -50,9 +50,9 @@ public class Bayesments {
 			for(int i=0; i<nRows; i++){
 				for(int j=0; j<nCols; j++){
 					if(!c.doSimulation()){
-						trainer = new EMrunner(c, trainingData, manager, i+c.getMinChromStates(), j+c.getMinFacStates(), false);
+						trainer = new EMrunner(c, trainingData, manager, i+c.getMinChromStates(), j+c.getMinFacStates(), false, false);
 					}else{
-						trainer = new EMrunner(c, i+c.getMinChromStates(), j+c.getMinFacStates(), false);
+						trainer = new EMrunner(c, i+c.getMinChromStates(), j+c.getMinFacStates(), false, false);
 					}
 					trainer.trainModel();
 					BIC temp_bic = new BIC(c, trainer.getModel(), i+c.getMinChromStates(), j+c.getMinFacStates());
@@ -72,10 +72,10 @@ public class Bayesments {
 			
 			
 			if(!c.doSimulation()){
-				trainer = new EMrunner(c, trainingData, manager, nChromStates, nFacStates,c.doRegularization());
+				trainer = new EMrunner(c, trainingData, manager, nChromStates, nFacStates,c.doRegularization(), true);
 				
 			}else{
-				trainer = new EMrunner(c, nChromStates, nFacStates,c.doRegularization());
+				trainer = new EMrunner(c, nChromStates, nFacStates,c.doRegularization(),true);
 			}
 			//Initialize EMrunner and train the model
 			trainer.trainModel();
