@@ -85,7 +85,7 @@ public class BIC {
 					}
 					for(int f=0; f<F; f++){
 						NormalDistribution gaussian = new NormalDistribution(MUf[k][f],Math.pow(SIGMAf[k][f], 2.0));
-						factorProduct = (f==0)? gaussian.calcLogProbability((double) Xf[i][f]) : factorProduct*gaussian.calcLogProbability((double) Xf[i][f]);
+						factorProduct = (f==0)? gaussian.calcProbability((double) Xf[i][f]) : factorProduct*gaussian.calcProbability((double) Xf[i][f]);
 					}
 					if(inSeqMode){
 						for(int m=0; m<M; m++){
