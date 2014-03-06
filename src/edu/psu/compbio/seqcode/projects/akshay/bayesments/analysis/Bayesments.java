@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.analysis;
 
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.BIC;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.EMtrain;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.MAPassignment;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
@@ -26,9 +27,8 @@ public class Bayesments {
 			
 			ExperimentManager manager = null;
 			GenomicLocations trainingData = null;
-			EMrunner trainer = null;
 			
-			
+			//Loading/reading tags
 			if(!c.doSimulation()){
 				// Store the reads by building the ExperimentManager
 				System.out.println("Loading Reads\n");
@@ -41,11 +41,37 @@ public class Bayesments {
 				// Plot the cumulative plots of the training data
 				System.out.println("Plotting the traning data");
 				trainingData.plotData(c, manager);
-				
-				trainer = new EMrunner(c, trainingData, manager, c.getNumChrmStates(), c.getMaxFacStates() );
+			}
+			EMrunner trainer = null;
+			
+			double[][] bic_vals = new double[c.getMaxChromStates()-c.getMinChromStates()+1][c.getMaxFacStates()-c.getMinFacStates()+1];
+			int nRows = c.getMaxChromStates()-c.getMinChromStates()+1;
+			int nCols = c.getMaxFacStates()-c.getMinFacStates()+1;
+			for(int i=0; i<nRows; i++){
+				for(int j=0; j<nCols; j++){
+					if(!c.doSimulation()){
+						trainer = new EMrunner(c, trainingData, manager, i, j, false);
+					}else{
+						trainer = new EMrunner(c, i, j, false);
+					}
+					trainer.trainModel();
+					BIC temp_bic = new BIC(c, trainer.getModel(), i, j);
+					bic_vals[i][j] = temp_bic.calculateBicScore();
+				}
+			}
+			
+			int nChromStates = BayesmentsSandbox.getMinIndex(bic_vals).car();
+			int nFacStates = BayesmentsSandbox.getMinIndex(bic_vals).cdr();
+			
+			
+			trainer = null;
+			
+			
+			if(!c.doSimulation()){
+				trainer = new EMrunner(c, trainingData, manager, nChromStates, nFacStates,c.doRegularization());
 				
 			}else{
-				trainer = new EMrunner(c, c.getNumChrmStates(), c.getNumFacStates());
+				trainer = new EMrunner(c, nChromStates, nFacStates,c.doRegularization());
 			}
 			//Initialize EMrunner and train the model
 			trainer.trainModel();

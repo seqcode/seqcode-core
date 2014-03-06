@@ -30,9 +30,11 @@ public class EMrunner {
 	protected int numChromStates;
 	protected int numFacStates;
 	
+	protected boolean regularize;
+	
 	protected Config config;
 	
-	public EMrunner(Config conf, GenomicLocations chromdata, ExperimentManager manager, int nChromStates, int nFacStates) {
+	public EMrunner(Config conf, GenomicLocations chromdata, ExperimentManager manager, int nChromStates, int nFacStates, boolean Regularize) {
 		config = conf;
 		this.chromdata = chromdata;
 		this.onlyChrom = conf.runOnlyChrom();
@@ -43,9 +45,10 @@ public class EMrunner {
 		this.Sim= false;
 		this.numChromStates = nChromStates;
 		this.numFacStates = nFacStates;
+		this.regularize = Regularize;
 	}
 	
-	public EMrunner(Config conf, int nChromStates, int nFacStates) {
+	public EMrunner(Config conf, int nChromStates, int nFacStates, boolean Regularize) {
 		config = conf;
 		this.chromdata = null;
 		this.onlyChrom = true;
@@ -56,15 +59,16 @@ public class EMrunner {
 		this.Sim = true;
 		this.numChromStates = nChromStates;
 		this.numFacStates = nFacStates;
+		this.regularize = Regularize;
 	}
 	
 	public void trainModel(){
 		//Initializing the EM train class
 		// Since we are just initializing the model, it is not in seq state
 		if(!config.doSimulation()){
-			this.model = new EMtrain(this.config, this.chromdata,this.manager, this.numChromStates, this.numFacStates);
+			this.model = new EMtrain(this.config, this.chromdata,this.manager, this.numChromStates, this.numFacStates, this.regularize);
 		}else{
-			this.model = new EMtrain(this.config, this.numChromStates, this.numFacStates);
+			this.model = new EMtrain(this.config, this.numChromStates, this.numFacStates,this.regularize);
 		}
 		
 		// Running the EM only on chromatin features

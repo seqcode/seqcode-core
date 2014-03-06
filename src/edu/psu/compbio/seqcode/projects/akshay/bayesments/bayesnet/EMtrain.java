@@ -100,10 +100,10 @@ public class EMtrain {
 	 * @param trainingData
 	 * @param manager
 	 */
-	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager, int nChromStates, int nFacStates) {
+	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager, int nChromStates, int nFacStates, boolean Regularize) {
 		this.config = config;
 		//this.trainingData = trainingData;
-		this.regularize = config.doRegularization();
+		this.regularize = Regularize;
 		if(regularize){
 			this.lambda = config.getLambda();
 		}
@@ -136,10 +136,10 @@ public class EMtrain {
 		
 	}
 	
-	public EMtrain(Config config, int nChromStates, int nFacStates) {
+	public EMtrain(Config config, int nChromStates, int nFacStates, boolean Regularize) {
 		this.config = config;
 		//this.trainingData = null;
-		this.regularize = config.doRegularization();
+		this.regularize = Regularize;
 		if(regularize){
 			this.lambda = config.getLambda();
 		}

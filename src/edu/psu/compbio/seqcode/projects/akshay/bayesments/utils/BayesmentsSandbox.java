@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.utils;
 
+import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 
 /**
@@ -73,6 +74,22 @@ public class BayesmentsSandbox {
 			if(val > list[i]){
 				ret = i;
 				val = list[i];
+			}
+		}
+		return ret;
+	}
+	
+	public static Pair<Integer, Integer> getMinIndex(double[][] list){
+		double val =  Double.MAX_VALUE;
+		Pair<Integer,Integer> ret= new Pair<Integer, Integer>(0,0);
+		int nrow = list.length;
+		int ncol = list[0].length;
+		for(int i=0; i<nrow; i++){
+			for(int j=0; j<ncol; j++){
+				if(list[i][j] < val){
+					ret = new Pair<Integer, Integer>(i,j);
+					val = list[i][j];
+				}
 			}
 		}
 		return ret;
