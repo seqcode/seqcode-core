@@ -63,6 +63,10 @@ public class Bayesments {
 			int nChromStates = BayesmentsSandbox.getMinIndex(bic_vals).car()+c.getMinChromStates();
 			int nFacStates = BayesmentsSandbox.getMinIndex(bic_vals).cdr()+c.getMinFacStates();
 			
+			//Printing 
+			
+			System.out.println("BIC values:");
+			BayesmentsSandbox.printArray(trainer.getBjk(),"chromatin_State" , "factor_state", trainer.getModel().getConditionNames());
 			
 			trainer = null;
 			
