@@ -50,18 +50,18 @@ public class Bayesments {
 			for(int i=0; i<nRows; i++){
 				for(int j=0; j<nCols; j++){
 					if(!c.doSimulation()){
-						trainer = new EMrunner(c, trainingData, manager, i, j, false);
+						trainer = new EMrunner(c, trainingData, manager, i+c.getMinChromStates(), j+c.getMinFacStates(), false);
 					}else{
-						trainer = new EMrunner(c, i, j, false);
+						trainer = new EMrunner(c, i+c.getMinChromStates(), j+c.getMinFacStates(), false);
 					}
 					trainer.trainModel();
-					BIC temp_bic = new BIC(c, trainer.getModel(), i, j);
+					BIC temp_bic = new BIC(c, trainer.getModel(), i+c.getMinChromStates(), j+c.getMinFacStates());
 					bic_vals[i][j] = temp_bic.calculateBicScore();
 				}
 			}
 			
-			int nChromStates = BayesmentsSandbox.getMinIndex(bic_vals).car();
-			int nFacStates = BayesmentsSandbox.getMinIndex(bic_vals).cdr();
+			int nChromStates = BayesmentsSandbox.getMinIndex(bic_vals).car()+c.getMinChromStates();
+			int nFacStates = BayesmentsSandbox.getMinIndex(bic_vals).cdr()+c.getMinFacStates();
 			
 			
 			trainer = null;
