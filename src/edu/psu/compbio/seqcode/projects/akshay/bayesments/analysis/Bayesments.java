@@ -78,10 +78,10 @@ public class Bayesments {
 			
 			//Do MAP assignament
 			if(!c.doSimulation()){
-				MAPassignment map =  new MAPassignment(trainer.getModel(), c, trainingData.getLocations(), c.getNumChrmStates(), c.getNumFacStates());
+				MAPassignment map =  new MAPassignment(trainer.getModel(), c, trainingData.getLocations(), nChromStates, nFacStates);
 				map.execute(true);
 			}else{
-				MAPassignment map =  new MAPassignment(trainer.getModel(), c, null, c.getNumChrmStates(), c.getNumFacStates());
+				MAPassignment map =  new MAPassignment(trainer.getModel(), c, null, nChromStates, nFacStates);
 				map.execute(false);
 			}
 			
