@@ -57,7 +57,7 @@ public class BIC {
 			this.setSeqParams();
 		}
 		this.numChromStates = nChromStates;
-		this.numFacStates = nChromStates;
+		this.numFacStates = nFacStates;
 		
 	}
 	
