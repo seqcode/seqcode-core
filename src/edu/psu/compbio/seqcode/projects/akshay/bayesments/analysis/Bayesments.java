@@ -66,7 +66,7 @@ public class Bayesments {
 			//Printing 
 			
 			System.out.println("BIC values:");
-			BayesmentsSandbox.printArray(trainer.getBjk(),"chromatin_State" , "factor_state", trainer.getModel().getConditionNames());
+			BayesmentsSandbox.printArray(bic_vals,"chromatin_State" , "factor_state", trainer.getModel().getConditionNames());
 			
 			trainer = null;
 			

@@ -89,6 +89,8 @@ public class EMtrain {
 	
 	protected boolean regularize;
 	
+	protected boolean printIntialVals;
+	
 	//Current round of EM. This remembers, if the model was run previously in non-seq mode and hence globally defined
 	protected int itr_no=0;
 	//Total number of EM iters, both, in seq and non-seq mode (Should be given when the class object is initialized)
@@ -100,7 +102,7 @@ public class EMtrain {
 	 * @param trainingData
 	 * @param manager
 	 */
-	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager, int nChromStates, int nFacStates, boolean Regularize) {
+	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager, int nChromStates, int nFacStates, boolean Regularize, boolean printVals) {
 		this.config = config;
 		//this.trainingData = trainingData;
 		this.regularize = Regularize;
@@ -127,8 +129,9 @@ public class EMtrain {
 			c++;
 		}
 		
+		this.printIntialVals = printVals;
 		//Initializing the model
-		initializeEM();
+		initializeEM(this.printIntialVals);
 		this.total_itrs = config.getNumItrs();
 		this.onlyChrom = config.runOnlyChrom();
 		this.seqState = false;
@@ -136,7 +139,7 @@ public class EMtrain {
 		
 	}
 	
-	public EMtrain(Config config, int nChromStates, int nFacStates, boolean Regularize) {
+	public EMtrain(Config config, int nChromStates, int nFacStates, boolean Regularize, boolean printVals) {
 		this.config = config;
 		//this.trainingData = null;
 		this.regularize = Regularize;
@@ -165,8 +168,8 @@ public class EMtrain {
 		for(int c=0; c<C; c++){
 			this.condition_names[c] = "Sim-"+Integer.toString(c);
 		}
-		
-		this.initializeEM();
+		this.printIntialVals = printVals;
+		this.initializeEM(this.printIntialVals);
 		
 		this.total_itrs = config.getNumItrs();
 		this.onlyChrom = true; // Simulates always does not include seq features
@@ -180,7 +183,7 @@ public class EMtrain {
 	 * Method that initializes all the parameters for the Bayesian network
 	 * @param manager
 	 */
-	private void initializeEM(){
+	private void initializeEM(boolean printVals){
 		
 		//Initializing mu's
 		MUc = new double[numChromStates][C];
@@ -222,9 +225,10 @@ public class EMtrain {
 		}
 		
 		//Printing the initial Mu's
-		BayesmentsSandbox.printArray(MUc, "MUc", "MUc", this.condition_names);
-		BayesmentsSandbox.printArray(MUf, "MUf", "MUf", this.condition_names);
-		
+		if(this.printIntialVals){
+			BayesmentsSandbox.printArray(MUc, "MUc", "MUc", this.condition_names);
+			BayesmentsSandbox.printArray(MUf, "MUf", "MUf", this.condition_names);
+		}
 		//Initializing sigma's
 		SIGMAc = new double[numChromStates][C];
 		SIGMAf = new double[numFacBindingStates][F];
@@ -257,9 +261,10 @@ public class EMtrain {
 		}
 		
 		//Printing the initial SIGMA's
-		BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", this.condition_names);
-		BayesmentsSandbox.printArray(SIGMAf, "SIGMAf", "SIGMAf", this.condition_names);
-		
+		if(this.printIntialVals){
+			BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", this.condition_names);
+			BayesmentsSandbox.printArray(SIGMAf, "SIGMAf", "SIGMAf", this.condition_names);
+		}
 		// Initializing Bjk .. Using random initialization 
 		Bjk = new double[numChromStates][numFacBindingStates];
 		for(int i=0; i<numChromStates; i++){
@@ -267,8 +272,9 @@ public class EMtrain {
 		}
 		
 		//printing the initial Bjk's
-		BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", this.condition_names);
-		
+		if(this.printIntialVals){
+			BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", this.condition_names);
+		}
 		// Initializing PIj ... Using Uniform initialization
 		//PIj = new double[numChromStates];
 		//PIj = this.getUniformList(numChromStates);
@@ -978,11 +984,11 @@ public class EMtrain {
 						}
 					}
 				}
-				System.out.println("the value of Z-chrom is: "+Double.toString(Z));
+				//System.out.println("the value of Z-chrom is: "+Double.toString(Z));
 				cube_root_solver.solve(1, 2, 1, Z/this.lambda);
 				this.WCnorm[c] = cube_root_solver.x1;
-				System.out.println("Number of roots-chrom: "+Integer.toString(cube_root_solver.nRoots));
-				System.out.println("Value of Highest root is-chrom: "+Double.toString(cube_root_solver.x1));
+				//System.out.println("Number of roots-chrom: "+Integer.toString(cube_root_solver.nRoots));
+				//System.out.println("Value of Highest root is-chrom: "+Double.toString(cube_root_solver.x1));
 			}
 			if(this.seqState){
 				for(int m=0; m<M; m++){
@@ -1001,11 +1007,11 @@ public class EMtrain {
 						}
 					}
 					//Debug lines
-					System.out.println("the value of Z-seq is: "+Double.toString(Z));
+					//System.out.println("the value of Z-seq is: "+Double.toString(Z));
 					cube_root_solver.solve(1, 2, 1, Z/this.lambda);
 					this.WSnorm[m] = cube_root_solver.x1;
-					System.out.println("Number of roots-seq: "+Integer.toString(cube_root_solver.nRoots));
-					System.out.println("Value of Highest root is-seq: "+Double.toString(cube_root_solver.x1));
+					//System.out.println("Number of roots-seq: "+Integer.toString(cube_root_solver.nRoots));
+					//System.out.println("Value of Highest root is-seq: "+Double.toString(cube_root_solver.x1));
 				}
 			}
 		}
