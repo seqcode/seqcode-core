@@ -84,7 +84,7 @@ public class BIC {
 						chromatinProduct = (c==0) ? gaussian.calcProbability((double) Xc[i][c]) : chromatinProduct*gaussian.calcProbability((double) Xc[i][c]);
 					}
 					for(int f=0; f<F; f++){
-						NormalDistribution gaussian = new NormalDistribution(MUf[j][f],Math.pow(SIGMAf[j][f], 2.0));
+						NormalDistribution gaussian = new NormalDistribution(MUf[k][f],Math.pow(SIGMAf[k][f], 2.0));
 						factorProduct = (f==0)? gaussian.calcLogProbability((double) Xf[i][f]) : factorProduct*gaussian.calcLogProbability((double) Xf[i][f]);
 					}
 					if(inSeqMode){
