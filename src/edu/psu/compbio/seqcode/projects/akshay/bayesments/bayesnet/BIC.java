@@ -90,7 +90,7 @@ public class BIC {
 					if(inSeqMode){
 						for(int m=0; m<M; m++){
 							NormalDistribution gaussian = new NormalDistribution(MUs[j][m],Math.pow(SIGMAs[j][m], 2.0));
-							seqProduct = (m==0) ? gaussian.calcLogProbability((double) Xs[i][m]) : seqProduct*gaussian.calcLogProbability((double) Xs[i][m]);
+							seqProduct = (m==0) ? gaussian.calcProbability((double) Xs[i][m]) : seqProduct*gaussian.calcProbability((double) Xs[i][m]);
 						}
 					}
 					if(inSeqMode){
