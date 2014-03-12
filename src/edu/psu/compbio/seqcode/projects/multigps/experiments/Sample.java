@@ -16,6 +16,7 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundCollection;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.framework.PoissonBackgroundModel;
+import edu.psu.compbio.seqcode.projects.multigps.framework.ReadHit;
 import edu.psu.compbio.seqcode.projects.multigps.framework.StrandedBaseCount;
 import edu.psu.compbio.seqcode.projects.multigps.hitloaders.*;
 
@@ -496,4 +497,30 @@ public class Sample {
 		updateTotalHits();
 	}
 
+	/**
+	 * Convert all reads to ReadHits
+	 * @return
+	 */
+	public List<ReadHit> exportReadHits(int readLen){
+		List<ReadHit> allhits = new ArrayList<ReadHit>();
+		
+		for(int i = 0; i < fivePrimeCounts.length; i++){
+			String chr = id2Chrom.get(i);
+			for(int j = 0; j < fivePrimeCounts[i].length; j++){
+				char strand = j==0 ? '+' : '-';
+				float counts[] = fivePrimeCounts[i][j];
+				int pos[] = fivePrimePos[i][j]; 
+				if(counts!=null){
+					for(int k = 0; k < counts.length; k++){
+						float w = counts[k]; 
+						int fp = pos[k];
+						int start = j==0 ? fp : fp-readLen+1;
+						int end = j==0 ? fp+readLen-1 : fp;
+						allhits.add(new ReadHit(chr, start, end, strand, w));
+					}
+				}
+			}
+		}
+		return(allhits);
+	}
 }

@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.multigps.utilities;
+package edu.psu.compbio.seqcode.projects.sequtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,7 +23,7 @@ public class CountDataSimulator {
 
 	//Parameters
 	private int numReplicates=1;
-	private final int numConditions=2;
+	private int numConditions=2;
 	private int numDataPoints = 10000;
 	private Double alpha = 0.15; //Parameter for biological variance. Poisson distribution (technical variance only) is alpha=0
 	private Double upRegFrac=0.1; //Fraction of genes that are up-regulated B vs A
@@ -45,6 +45,7 @@ public class CountDataSimulator {
 	
 	//Modifiers
 	public void setDataPoints(int nd){numDataPoints=nd;}
+	public void setConditions(int c){numConditions=c;}
 	public void setReplicates(int r){numReplicates=r;}
 	//public void setConditions(int c){numConditions=c;}
 	public void setAlpha(Double a){alpha=a;}
@@ -308,10 +309,10 @@ public class CountDataSimulator {
 	}
 	
 	public class SimCounts{
-		double absolute; //The absolute value of binding enrichment (mean before differential)
-		double [] counts; //The simulated counts
-		double [] backup; //Extra counts used by the multi-condition read simulator
-		boolean isDiff=false;
+		public double absolute; //The absolute value of binding enrichment (mean before differential)
+		public double [] counts; //The simulated counts
+		public double [] backup; //Extra counts used by the multi-condition read simulator
+		public boolean isDiff=false;
 	}
 }
 

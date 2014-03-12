@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.multigps.utilities; 
+package edu.psu.compbio.seqcode.projects.sequtils; 
 
 import java.io.File;
 import java.io.FileWriter;
@@ -13,26 +13,32 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.projects.multigps.experiments.ExptDescriptor;
+import edu.psu.compbio.seqcode.projects.multigps.experiments.Sample;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
+import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.framework.ReadHit;
-import edu.psu.compbio.seqcode.projects.sequtils.CountDataSimulator;
+import edu.psu.compbio.seqcode.projects.multigps.hitloaders.HitLoader;
 import edu.psu.compbio.seqcode.projects.sequtils.CountDataSimulator.SimCounts;
 
 /**
- * Simulates multi-condition reads using BindingModels. <br> 
+ * Simulates single or double condition fragments and reads using BindingModels. <br> 
+ * 
+ * Extended from edu.psu.compbio.seqcode.projects.multigps.utilities.MultiConditionReadSimulator
  * 
  * In any given simulated replicate experiment, reads are simulated according to a BindingModel.
  * Read counts for each binding event in each condition are determined from a CountDataSimulator,
  * which allows for differential binding between two conditions, and negative-binomial sampled
  * read counts in each replicate. 
- * Noise reads are distributed uniformly across the genome. 
+ * Noise reads are distributed uniformly across the genome or sampled from an input tag file.
+ * 
  * 
  * @author Shaun Mahony
  *
  */
-public class MultiConditionReadSimulator {
+public class ChIPReadSimulator {
 
-	
 	private BindingModel model;
 	private int numConditions = 2;
 	private int numReplicates = 1;
@@ -45,7 +51,8 @@ public class MultiConditionReadSimulator {
 	private int rLen=32;
 	private long genomeLength=-1;
 	private double noiseProbabilities[][];
-	private int numSigReads[][], numTotalReads[][];
+	private int numSigFrags[][], numTotalFrags[][];
+	private int numReads =1000000;
 	private List<SimCounts> simCounts;
 	
 	private int numEvents=0;
@@ -54,8 +61,9 @@ public class MultiConditionReadSimulator {
 	private int jointEventSpacing = 200;
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
 	private HashMap<Point, Boolean> eventIsJoint = new HashMap<Point, Boolean>();
+	private List<ReadHit> noiseSource=null;
 	
-	public MultiConditionReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, int jointSpacing, String outPath){
+	public ChIPReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, int jointSpacing, String outPath){
 		model=m;
 		numConditions = numCond;
 		numReplicates = numRep;
@@ -75,13 +83,13 @@ public class MultiConditionReadSimulator {
 		}
 		
 		noiseProbabilities = new double[numConditions][numReplicates];
-		numSigReads = new int[numConditions][numReplicates];
-		numTotalReads = new int[numConditions][numReplicates];
+		numSigFrags = new int[numConditions][numReplicates];
+		numTotalFrags = new int[numConditions][numReplicates];
 		for(int co=0; co<numConditions; co++)
 			for(int r=0; r<numReplicates; r++){
 				noiseProbabilities[co][r]=noiseProb;
-				numSigReads[co][r]=0;
-				numTotalReads[co][r]=0;
+				numSigFrags[co][r]=0;
+				numTotalFrags[co][r]=0;
 			}
 		
 		try {
@@ -92,7 +100,6 @@ public class MultiConditionReadSimulator {
 					writers[co][r]=fout;
 				}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -107,11 +114,11 @@ public class MultiConditionReadSimulator {
 				for(int co=0; co<numConditions; co++)
 					for(int r=0; r<numReplicates; r++){
 						if(!eventIsJoint.get(event.car())){
-							numSigReads[co][r]+=event.cdr().counts[index];
+							numSigFrags[co][r]+=event.cdr().counts[index];
 						}else{
-							numSigReads[co][r]+=event.cdr().backup[index];
+							numSigFrags[co][r]+=event.cdr().backup[index];
 						}
-						numTotalReads[co][r] = (int)((double)numSigReads[co][r]/(1-noiseProbabilities[co][r]));
+						numTotalFrags[co][r] = (int)((double)numSigFrags[co][r]/(1-noiseProbabilities[co][r]));
 						index++;
 					}
 			}
@@ -160,57 +167,12 @@ public class MultiConditionReadSimulator {
 		}
 	}
 	
-	/**
-	 * Simulate a set of noise reads for each replicate in each condition.
-	 * Numbers of reads are predefined;
-	 */
-	private void simulateNoiseReads(){
-		try {
-			Random noiseGenerator = new Random();
-			Random strandGenerator = new Random();
-			for(int co=0; co<numConditions; co++)
-				for(int r=0; r<numReplicates; r++){
-					List<ReadHit> reads = new ArrayList<ReadHit>();
-					int noiseReads = (int)((double)numTotalReads[co][r]*noiseProbabilities[co][r]);
-					for(int i=0; i<noiseReads; i++){
-						ReadHit rh=null;
-						double noiserand = noiseGenerator.nextDouble();
-						double strandrand = strandGenerator.nextDouble();
-	
-						long pos = (long)(noiserand*(genomeLength));
-						
-						//Translate from pos to chromosome name and start
-						int c=0; long offset=0;
-						String chr = fakeGen.getChromList().get(0);
-						while(pos>(offset+chromLens[c]) && c<fakeGen.getChromList().size()-1){
-							c++;
-							chr = fakeGen.getChromList().get(c);
-							offset = chromOffsets.get(chr);
-						}
-						long start = pos-offset;
-						
-						//Add the ReadHit
-						if (strandrand<0.5)
-							rh = new ReadHit(chr, (int)start, (int)start+rLen-1, '+');
-						else
-							rh = new ReadHit(chr, Math.max(1, (int)start-rLen+1), (int)start, '-');
-						reads.add(rh);
-					}
-					for(ReadHit rh : reads){
-						writers[co][r].write(rh.getChrom()+"\t"+rh.getStart()+"\t"+rh.getEnd()+"\tU\t0\t"+rh.getStrand()+"\n");
-					}
-				}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 	
 	/**
 	 * Simulate a set of binding event reads for each replicate in each condition. 
 	 * Number of reads, number of events, and strengths of events are all pre-determined. 
 	 */
-	private void simulateBindingReads(){
+	private void simulateReads(){
 		//Initialize the probability landscape
 		int eventWidth=1000; int evoff = eventWidth/2;
 		double[] forProbLand=new double[eventWidth]; double[] revProbLand=new double[eventWidth];
@@ -246,14 +208,15 @@ public class MultiConditionReadSimulator {
 		
 		
 		//Generate the reads
-		try {
-			Random sigGenerator = new Random();
-			Random strandGenerator = new Random();
-			for(int co=0; co<numConditions; co++)
-				for(int r=0; r<numReplicates; r++){
-					List<ReadHit> reads = new ArrayList<ReadHit>();
-					
-					// Generate reads for each event
+		Random sigGenerator = new Random();
+		Random noiseGenerator = new Random();
+		Random strandGenerator = new Random();
+		for(int co=0; co<numConditions; co++)
+			for(int r=0; r<numReplicates; r++){
+				List<ReadHit> frags = new ArrayList<ReadHit>();
+				
+				// Generate event reads
+				if(noiseProbabilities[co][r]<1){
 					for(Pair<Point, SimCounts> ps : events){
 						Point coord = ps.car();
 						String chr = coord.getChrom();
@@ -288,32 +251,87 @@ public class MultiConditionReadSimulator {
 								//Make the ReadHit
 								rh = new ReadHit(chr, Math.max(1, fivePrimeEnd-rLen+1), fivePrimeEnd, '-');
 							}
-							reads.add(rh);
+							frags.add(rh);
 						}
 					}
-					//Write the reads to the file
-					for(ReadHit rh : reads){
-						writers[co][r].write(rh.getChrom()+"\t"+rh.getStart()+"\t"+rh.getEnd()+"\tU\t0\t"+rh.getStrand()+"\n");
+				}
+				
+				//Generate noise reads
+				Random readSampler = new Random();
+				int noiseReads = (int)((double)numTotalFrags[co][r]*noiseProbabilities[co][r]);
+				if(noiseSource==null) //Poisson
+					for(int i=0; i<noiseReads; i++){
+						ReadHit rh=null;
+						double noiserand = noiseGenerator.nextDouble();
+						double strandrand = strandGenerator.nextDouble();
+	
+						long pos = (long)(noiserand*(genomeLength));
+						
+						//Translate from pos to chromosome name and start
+						int c=0; long offset=0;
+						String chr = fakeGen.getChromList().get(0);
+						while(pos>(offset+chromLens[c]) && c<fakeGen.getChromList().size()-1){
+							c++;
+							chr = fakeGen.getChromList().get(c);
+							offset = chromOffsets.get(chr);
+						}
+						long start = pos-offset;
+						
+						//Add the ReadHit
+						if (strandrand<0.5)
+							rh = new ReadHit(chr, (int)start, (int)start+rLen-1, '+');
+						else
+							rh = new ReadHit(chr, Math.max(1, (int)start-rLen+1), (int)start, '-');
+						frags.add(rh);
+					}
+				else{
+					int noiseSourceSize = noiseSource.size();
+					for(int i=0; i<noiseReads; i++){
+						double rand = readSampler.nextDouble();
+						int index = (int)((double)noiseSourceSize*rand);
+						ReadHit rh = noiseSource.get(index);
+						frags.add(rh);
 					}
 				}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+				
+				//Sample reads from the fragments & print
+				try {
+					int numFrags = frags.size();
+					for(int x=0; x<numReads; x++){
+						double rand = readSampler.nextDouble();
+						int index = (int)((double)numFrags*rand);
+						ReadHit rh = frags.get(index);
+						writers[co][r].write(rh.getChrom()+"\t"+rh.getStart()+"\t"+rh.getEnd()+"\tU\t0\t"+rh.getStrand()+"\n");
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		
+		
 	}
 		
 	//Accessors
-	public void setTotalReads(int totReadsA, int totReadsB){
+	public void setTotalFrags(int totFrags){
 		for(int co=0; co<numConditions; co++)
 			for(int r=0; r<numReplicates; r++){
-				if(co==0)
-					numTotalReads[co][r] = totReadsA;
-				else
-					numTotalReads[co][r] = totReadsB;
+					numTotalFrags[co][r] = totFrags;
+			}
+	}
+	public void setTotalReads(int totReads){
+		for(int co=0; co<numConditions; co++)
+			for(int r=0; r<numReplicates; r++){
+					numReads = totReads;
 			}
 	}
 	public void setJointEventRate(double jointRate){
 		this.jointEventRate = jointRate;
+	}
+	public void setNoiseSource(List<Sample> controls){
+		noiseSource = new ArrayList<ReadHit>();
+		for(Sample s : controls)
+			noiseSource.addAll(s.exportReadHits(rLen));
+		System.err.println("Noise reads will be sourced from "+noiseSource.size()+" loaded read hit locations");
 	}
 
 	// clean up
@@ -343,7 +361,6 @@ public class MultiConditionReadSimulator {
 					fout.write("\tC"+co+"_R"+r);
 			fout.write("\n");
 			
-			// Generate reads for each event
 			for(Pair<Point, SimCounts> ps : events){
 				Point coord = ps.car();
 				SimCounts sc = ps.cdr();
@@ -368,56 +385,59 @@ public class MultiConditionReadSimulator {
 	 */
 	public static void main(String[] args) {
 		String empFile, outFile="out";
-		int r=2, numdata, jointSpacing=200;
-		double rA=1000000, rB=100000, a, up, down, diff, jointRate=0.0;
+		int c=2, r=2, numdata, jointSpacing=200;
+		double frags=1000000, reads=1000000, a, up, down, diff, jointRate=0.0;
 		String bmfile;
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h") || !ap.hasKey("emp")){
-			System.err.println("MultiConditionReadSimulator:\n" +
+			System.err.println("ChIPReadSimulator:\n" +
 					"\t--geninfo <genome info file>\n" +
 					"\t--emp <empirical data file>\n" +
 					"\t--numdata <number of events to simulate>\n" +
+					"\t--c <num conditions>\n" +
 					"\t--r <num replicates per condition>\n" +
 					"\t--a <over-dispersion param>\n" +
-					"\t--readsA <avg total reads in cond A>\n" +
-					"\t--readsB <avg total reads in cond B>\n" +
+					"\t--frags <avg total fragments>\n" +
+					"\t--reads <avg total reads>\n" +
 					"\t--up <up-regulated fraction>\n" +
 					"\t--down <down-regulated fraction>\n" +
 					"\t--diff <basis of differential expression>\n" +
 					"\t--model <binding model file>\n" +
 					"\t--noise <noise probability per replicate>\n" +
+					"\t--ctrl <control experiment to replace Poisson for noise data>\n" +
+					"\t--format <SAM/IDX>\n" +
 					"\t--jointrate <proportion of peaks that are joint binding events>\n" +
 					"\t--jointspacing <spacing between joint events>\n" +
 					"\t--out <output file>\n" +
 					"");
 		}else{
-			Genome gen = null;
+			Config config = new Config(args);
+			Genome gen = config.getGenome();
 			CountDataSimulator cdsim = new CountDataSimulator();
 			
 			//////////////////////////////////////////////////
 			// Read in parameters 
-			if(Args.parseArgs(args).contains("geninfo")){
-				//Make fake genome... chr lengths provided
-				String fName = Args.parseString(args, "geninfo", null);
-				gen = new Genome("Genome", new File(fName), true);
-			}
 			if(ap.hasKey("emp")){
 				empFile = ap.getKeyValue("emp");
 				cdsim.loadEmpiricalFromFile(empFile);
 			}if(ap.hasKey("numdata")){
 				numdata = new Integer(ap.getKeyValue("numdata"));
 				cdsim.setDataPoints(numdata);
+			}if(ap.hasKey("c")){
+				c = new Integer(ap.getKeyValue("c"));
+				cdsim.setConditions(c);
 			}if(ap.hasKey("r")){
 				r = new Integer(ap.getKeyValue("r"));
 				cdsim.setReplicates(r);
 			}if(ap.hasKey("a")){
 				a = new Double(ap.getKeyValue("a"));
 				cdsim.setAlpha(a);
-			}if(ap.hasKey("readsA")){
-				rA = new Double(ap.getKeyValue("readsA"));
-			}if(ap.hasKey("readsB")){
-				rB = new Double(ap.getKeyValue("readsB"));
-				cdsim.setReadsB(rB);
+			}if(ap.hasKey("frags")){
+				frags = new Double(ap.getKeyValue("frags"));
+				cdsim.setReadsA(frags);
+				cdsim.setReadsB(frags);
+			}if(ap.hasKey("reads")){
+				reads = new Double(ap.getKeyValue("reads"));				
 			}if(ap.hasKey("up")){
 				up = new Double(ap.getKeyValue("up"));
 				cdsim.setUpRegFrac(up);
@@ -439,13 +459,12 @@ public class MultiConditionReadSimulator {
 			for(int x=0; x<2; x++)
 				for(int y=0; y<noiseProbs.length; y++)
 					noiseProbs[x][y]=noiseProb;
-			cdsim.setReadsA(rA*(1-noiseProb));
-			cdsim.setReadsB(rB*(1-noiseProb));
+			cdsim.setReadsA(frags*(1-noiseProb));
+			cdsim.setReadsB(frags*(1-noiseProb));
 			
 			bmfile  = Args.parseString(args, "model", null);
 			File mFile = new File(bmfile);
 			if(!mFile.isFile()){System.err.println("Invalid file name");System.exit(1);}
-			
 			
 			//////////////////////////////////////////////////
 			// Simulate counts 
@@ -459,15 +478,19 @@ public class MultiConditionReadSimulator {
 			// Simulate reads according to counts and binding model
 			BindingModel bm = new BindingModel(mFile);
 	        //Initialize the MultiConditionReadSimulator
-	        MultiConditionReadSimulator sim = new MultiConditionReadSimulator(bm, gen, counts, 2, r, noiseProb, jointRate, jointSpacing, outFile);
+			ChIPReadSimulator sim = new ChIPReadSimulator(bm, gen, counts, 2, r, noiseProb, jointRate, jointSpacing, outFile);
 	        if(noiseProb==1.0)
-	        	sim.setTotalReads((int)rA, (int)rB);
-
-	        if(noiseProb<1){
-	        	sim.printEvents();
-	        	sim.simulateBindingReads();
-	        }
-			sim.simulateNoiseReads();
+	        	sim.setTotalFrags((int) reads);
+	        
+	        if(ap.hasKey("ctrl")){
+				List<ExptDescriptor> descriptors = config.getExperiments();
+				ExperimentManager manager = new ExperimentManager(config);
+				sim.setNoiseSource(manager.getExperimentSet().getSamples());
+			}
+			
+	        if(noiseProb<1)
+	        	sim.printEvents();	      
+			sim.simulateReads();
 			sim.close();
 		}
 	}
