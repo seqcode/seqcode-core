@@ -13,8 +13,13 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.projects.multigps.experiments.ExptDescriptor;
+import edu.psu.compbio.seqcode.projects.multigps.experiments.Sample;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
+import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.framework.ReadHit;
+import edu.psu.compbio.seqcode.projects.multigps.hitloaders.HitLoader;
 import edu.psu.compbio.seqcode.projects.sequtils.CountDataSimulator.SimCounts;
 
 /**
@@ -47,6 +52,7 @@ public class ChIPReadSimulator {
 	private long genomeLength=-1;
 	private double noiseProbabilities[][];
 	private int numSigFrags[][], numTotalFrags[][];
+	private int numReads =1000000;
 	private List<SimCounts> simCounts;
 	
 	private int numEvents=0;
@@ -55,6 +61,7 @@ public class ChIPReadSimulator {
 	private int jointEventSpacing = 200;
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
 	private HashMap<Point, Boolean> eventIsJoint = new HashMap<Point, Boolean>();
+	private List<ReadHit> noiseSource=null;
 	
 	public ChIPReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, int jointSpacing, String outPath){
 		model=m;
@@ -250,35 +257,45 @@ public class ChIPReadSimulator {
 				}
 				
 				//Generate noise reads
+				Random readSampler = new Random();
 				int noiseReads = (int)((double)numTotalFrags[co][r]*noiseProbabilities[co][r]);
-				for(int i=0; i<noiseReads; i++){
-					ReadHit rh=null;
-					double noiserand = noiseGenerator.nextDouble();
-					double strandrand = strandGenerator.nextDouble();
-
-					long pos = (long)(noiserand*(genomeLength));
-					
-					//Translate from pos to chromosome name and start
-					int c=0; long offset=0;
-					String chr = fakeGen.getChromList().get(0);
-					while(pos>(offset+chromLens[c]) && c<fakeGen.getChromList().size()-1){
-						c++;
-						chr = fakeGen.getChromList().get(c);
-						offset = chromOffsets.get(chr);
+				if(noiseSource==null) //Poisson
+					for(int i=0; i<noiseReads; i++){
+						ReadHit rh=null;
+						double noiserand = noiseGenerator.nextDouble();
+						double strandrand = strandGenerator.nextDouble();
+	
+						long pos = (long)(noiserand*(genomeLength));
+						
+						//Translate from pos to chromosome name and start
+						int c=0; long offset=0;
+						String chr = fakeGen.getChromList().get(0);
+						while(pos>(offset+chromLens[c]) && c<fakeGen.getChromList().size()-1){
+							c++;
+							chr = fakeGen.getChromList().get(c);
+							offset = chromOffsets.get(chr);
+						}
+						long start = pos-offset;
+						
+						//Add the ReadHit
+						if (strandrand<0.5)
+							rh = new ReadHit(chr, (int)start, (int)start+rLen-1, '+');
+						else
+							rh = new ReadHit(chr, Math.max(1, (int)start-rLen+1), (int)start, '-');
+						frags.add(rh);
 					}
-					long start = pos-offset;
-					
-					//Add the ReadHit
-					if (strandrand<0.5)
-						rh = new ReadHit(chr, (int)start, (int)start+rLen-1, '+');
-					else
-						rh = new ReadHit(chr, Math.max(1, (int)start-rLen+1), (int)start, '-');
-					frags.add(rh);
+				else{
+					int noiseSourceSize = noiseSource.size();
+					for(int i=0; i<noiseReads; i++){
+						double rand = readSampler.nextDouble();
+						int index = (int)((double)noiseSourceSize*rand);
+						ReadHit rh = noiseSource.get(index);
+						frags.add(rh);
+					}
 				}
 				
 				//Sample reads from the fragments & print
 				try {
-					Random readSampler = new Random();
 					int numFrags = frags.size();
 					for(int x=0; x<numReads; x++){
 						double rand = readSampler.nextDouble();
@@ -295,14 +312,26 @@ public class ChIPReadSimulator {
 	}
 		
 	//Accessors
+	public void setTotalFrags(int totFrags){
+		for(int co=0; co<numConditions; co++)
+			for(int r=0; r<numReplicates; r++){
+					numTotalFrags[co][r] = totFrags;
+			}
+	}
 	public void setTotalReads(int totReads){
 		for(int co=0; co<numConditions; co++)
 			for(int r=0; r<numReplicates; r++){
-					numTotalFrags[co][r] = totReads;
+					numReads = totReads;
 			}
 	}
 	public void setJointEventRate(double jointRate){
 		this.jointEventRate = jointRate;
+	}
+	public void setNoiseSource(List<Sample> controls){
+		noiseSource = new ArrayList<ReadHit>();
+		for(Sample s : controls)
+			noiseSource.addAll(s.exportReadHits(rLen));
+		System.err.println("Noise reads will be sourced from "+noiseSource.size()+" loaded read hit locations");
 	}
 
 	// clean up
@@ -361,7 +390,7 @@ public class ChIPReadSimulator {
 		String bmfile;
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h") || !ap.hasKey("emp")){
-			System.err.println("MultiConditionReadSimulator:\n" +
+			System.err.println("ChIPReadSimulator:\n" +
 					"\t--geninfo <genome info file>\n" +
 					"\t--emp <empirical data file>\n" +
 					"\t--numdata <number of events to simulate>\n" +
@@ -375,21 +404,19 @@ public class ChIPReadSimulator {
 					"\t--diff <basis of differential expression>\n" +
 					"\t--model <binding model file>\n" +
 					"\t--noise <noise probability per replicate>\n" +
+					"\t--ctrl <control experiment to replace Poisson for noise data>\n" +
+					"\t--format <SAM/IDX>\n" +
 					"\t--jointrate <proportion of peaks that are joint binding events>\n" +
 					"\t--jointspacing <spacing between joint events>\n" +
 					"\t--out <output file>\n" +
 					"");
 		}else{
-			Genome gen = null;
+			Config config = new Config(args);
+			Genome gen = config.getGenome();
 			CountDataSimulator cdsim = new CountDataSimulator();
 			
 			//////////////////////////////////////////////////
 			// Read in parameters 
-			if(Args.parseArgs(args).contains("geninfo")){
-				//Make fake genome... chr lengths provided
-				String fName = Args.parseString(args, "geninfo", null);
-				gen = new Genome("Genome", new File(fName), true);
-			}
 			if(ap.hasKey("emp")){
 				empFile = ap.getKeyValue("emp");
 				cdsim.loadEmpiricalFromFile(empFile);
@@ -439,7 +466,6 @@ public class ChIPReadSimulator {
 			File mFile = new File(bmfile);
 			if(!mFile.isFile()){System.err.println("Invalid file name");System.exit(1);}
 			
-			
 			//////////////////////////////////////////////////
 			// Simulate counts 
 			List<SimCounts> counts = null;
@@ -454,8 +480,14 @@ public class ChIPReadSimulator {
 	        //Initialize the MultiConditionReadSimulator
 			ChIPReadSimulator sim = new ChIPReadSimulator(bm, gen, counts, 2, r, noiseProb, jointRate, jointSpacing, outFile);
 	        if(noiseProb==1.0)
-	        	sim.setTotalReads((int) reads);
-
+	        	sim.setTotalFrags((int) reads);
+	        
+	        if(ap.hasKey("ctrl")){
+				List<ExptDescriptor> descriptors = config.getExperiments();
+				ExperimentManager manager = new ExperimentManager(config);
+				sim.setNoiseSource(manager.getExperimentSet().getSamples());
+			}
+			
 	        if(noiseProb<1)
 	        	sim.printEvents();	      
 			sim.simulateReads();
