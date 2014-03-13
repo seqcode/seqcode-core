@@ -1023,6 +1023,7 @@ public class EMtrain {
 		this.seqState = true;
 		this.setXs(Xs);
 		this.M = Xs[0].length;
+		System.out.println("2-time "+Integer.toString(M));
 		if(this.regularize){
 			WSnorm = new double[M];
 		}

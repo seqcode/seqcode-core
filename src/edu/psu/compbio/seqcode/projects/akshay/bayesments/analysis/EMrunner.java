@@ -104,6 +104,7 @@ public class EMrunner {
 			this.globalListOfMotifs = this.runMeme(alltopseqs);
 			//Thirdly, scan these motifs over the peak- pair locations and convert them into chip like signals
 			this.seqdata.setMotifs(globalListOfMotifs);
+			System.out.println("1-time "+Integer.toString(this.globalListOfMotifs.size()));
 			this.seqdata.setXc();
 				// And also plot the seq scores
             seqdata.plotSeqScores();
