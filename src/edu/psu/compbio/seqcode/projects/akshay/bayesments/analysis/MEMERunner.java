@@ -106,9 +106,11 @@ public class MEMERunner {
 					//System.out.println(WeightMatrix.printMatrix(bestMotif));
 				}else{
 					for(Pair<WeightMatrix,Double> m : currFM){
-						fm.add(m.car());
-						WeightMatrix wMatrix = WeightMatrix.getLogOddsVersion(m.car(), back);
-						wm.add(wMatrix);
+						if(m.cdr() < config.getMotifCuttof()){
+							fm.add(m.car());
+							WeightMatrix wMatrix = WeightMatrix.getLogOddsVersion(m.car(), back);
+							wm.add(wMatrix);
+						}
 					}
 				}
             }

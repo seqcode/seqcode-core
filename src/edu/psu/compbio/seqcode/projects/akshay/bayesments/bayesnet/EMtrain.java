@@ -1064,9 +1064,9 @@ public class EMtrain {
 		//System.out.println(test[0]);
 		//System.out.println(test[1]);
 		//System.out.println(test[2]);
-		double a = 4.0/0.0;
+		double a = Double.valueOf("9.0e-09");//.longValue();
 		
-		System.out.println(Math.log(0));
+		System.out.println(a);
 		
 	}
 	
