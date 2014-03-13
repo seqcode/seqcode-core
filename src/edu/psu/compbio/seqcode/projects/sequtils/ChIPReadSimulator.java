@@ -56,7 +56,7 @@ public class ChIPReadSimulator {
 	private List<SimCounts> simCounts;
 	
 	private int numEvents=0;
-	private int eventSpacing = 10000;
+	private int eventSpacing = 2000;
 	private double jointEventRate = 0.0;
 	private int jointEventSpacing = 200;
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
@@ -128,11 +128,14 @@ public class ChIPReadSimulator {
 	/**
 	 * Make binding positions corresponding to all simulated counts.
 	 * By default, shared events are in chr1, and diff events are in chrX
+	 * If there is no chrX (e.g. yeast), shared and diff events are interspersed along all chroms
 	 */
 	private void setBindingPositions(){
 		Random jointDice = new Random();
-		long sharedOffset=chromOffsets.get("1"), diffOffset=chromOffsets.get("X");
-		
+		long sharedOffset=eventSpacing, diffOffset=eventSpacing/2;
+		if(chromOffsets.containsKey("X")){
+			sharedOffset=chromOffsets.get("1"); diffOffset=chromOffsets.get("X");
+		}		
 		
 		for(SimCounts s : simCounts){
 			long curroff =0;
@@ -300,6 +303,7 @@ public class ChIPReadSimulator {
 					for(int x=0; x<numReads; x++){
 						double rand = readSampler.nextDouble();
 						int index = (int)((double)numFrags*rand);
+						System.out.println(numFrags+"\t"+rand+"\t"+index);
 						ReadHit rh = frags.get(index);
 						writers[co][r].write(rh.getChrom()+"\t"+rh.getStart()+"\t"+rh.getEnd()+"\tU\t0\t"+rh.getStrand()+"\n");
 					}
@@ -411,7 +415,7 @@ public class ChIPReadSimulator {
 					"\t--out <output file>\n" +
 					"");
 		}else{
-			Config config = new Config(args);
+			Config config = new Config(args, false);
 			Genome gen = config.getGenome();
 			CountDataSimulator cdsim = new CountDataSimulator();
 			
@@ -425,6 +429,10 @@ public class ChIPReadSimulator {
 				cdsim.setDataPoints(numdata);
 			}if(ap.hasKey("c")){
 				c = new Integer(ap.getKeyValue("c"));
+				if(c!=1 && c!=2){
+					System.err.println("Number of conditions must be either 1 or 2");
+					System.exit(1);
+				}
 				cdsim.setConditions(c);
 			}if(ap.hasKey("r")){
 				r = new Integer(ap.getKeyValue("r"));
@@ -455,12 +463,11 @@ public class ChIPReadSimulator {
 				outFile = ap.getKeyValue("out");
 			}
 			double noiseProb   = Args.parseDouble(args, "noise", 0.9);
-			double [][] noiseProbs = new double[2][r];
-			for(int x=0; x<2; x++)
-				for(int y=0; y<noiseProbs.length; y++)
+			double [][] noiseProbs = new double[c][r];
+			for(int x=0; x<c; x++)
+				for(int y=0; y<noiseProbs[x].length; y++)
 					noiseProbs[x][y]=noiseProb;
-			cdsim.setReadsA(frags*(1-noiseProb));
-			cdsim.setReadsB(frags*(1-noiseProb));
+			cdsim.setReads(frags*(1-noiseProb));
 			
 			bmfile  = Args.parseString(args, "model", null);
 			File mFile = new File(bmfile);
@@ -478,16 +485,17 @@ public class ChIPReadSimulator {
 			// Simulate reads according to counts and binding model
 			BindingModel bm = new BindingModel(mFile);
 	        //Initialize the MultiConditionReadSimulator
-			ChIPReadSimulator sim = new ChIPReadSimulator(bm, gen, counts, 2, r, noiseProb, jointRate, jointSpacing, outFile);
+			ChIPReadSimulator sim = new ChIPReadSimulator(bm, gen, counts, c, r, noiseProb, jointRate, jointSpacing, outFile);
 	        if(noiseProb==1.0)
-	        	sim.setTotalFrags((int) reads);
+	        	sim.setTotalFrags((int) frags);
 	        
 	        if(ap.hasKey("ctrl")){
-				List<ExptDescriptor> descriptors = config.getExperiments();
 				ExperimentManager manager = new ExperimentManager(config);
 				sim.setNoiseSource(manager.getExperimentSet().getSamples());
 			}
 			
+	        sim.setTotalReads((int) reads);
+	        
 	        if(noiseProb<1)
 	        	sim.printEvents();	      
 			sim.simulateReads();

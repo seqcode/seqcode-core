@@ -5,10 +5,20 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.optimization.GoalType;
+import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
+import org.apache.commons.math3.optimization.univariate.UnivariateOptimizer;
+import org.apache.commons.math3.optimization.univariate.UnivariatePointValuePair;
+
+import cern.jet.random.Poisson;
+import cern.jet.random.engine.DRand;
+
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
+import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
@@ -21,6 +31,11 @@ public class SeqQC {
 	ExperimentManager manager;
 	float[] startcounts =null;
 	float densityWindow = 500;
+	double testQuantile = 0.1; //Base per-read count distribution on this proportion of the lowest-ranked densities
+	int histoMax = 200;
+	int poissLowerBound = 1;
+	int poissUpperBound = 10; 
+	boolean verbose=false;
 	
 	/**
 	 * Constructor
@@ -34,13 +49,20 @@ public class SeqQC {
 	}
 	
 	/**
+	 * Run all implemented QC checks
+	 */
+	public void execute(){
+		this.estimateLibrarySize();
+	}
+	
+	/**
 	 * estimateLibrarySize
 	 */
 	public void estimateLibrarySize(){
 	
 		//If we have multiple experiments, process one at a time
 		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
-			
+			System.out.println("Experiment: "+expt.getName()+" = "+String.format("%.1f", expt.getSignal().getHitCount())+ " mapped tags.");
 			// 1: Find the density of covered bases surrounding each read
 			List<DensityCountPair> densities = new ArrayList<DensityCountPair>();
 			Iterator<Region> chroms = new ChromosomeGenerator().execute(gen);
@@ -88,6 +110,65 @@ public class SeqQC {
 			Collections.sort(densities); //Sort the density pairs in increasing order
 			
 			//2: Generate a read count per base distribution for the lowest density sites. 
+			double currWeight=0, quantileLimit=testQuantile*expt.getSignal().getHitCount();
+			RealValuedHistogram histo = new RealValuedHistogram(0,histoMax,histoMax);
+			for(DensityCountPair dcp : densities){
+				histo.addValue(dcp.getCount());
+				currWeight+=dcp.getCount();
+				if(currWeight>quantileLimit)
+					break;
+			}
+			
+			//3: Fit a distribution to the histogram (Poisson for now)
+			DRand re = new DRand();
+			int left=poissLowerBound, right=poissUpperBound;
+			double xsum=0, xcount=0;
+			for(double i=left; i<=right; i++){
+				xsum += i*histo.getBin( histo.getBinContainingVal(i));
+				xcount += histo.getBin( histo.getBinContainingVal(i));
+			}
+			double xavg = xsum/xcount;
+			UnivariateFunction func = new truncPoisson(xavg, left, right);
+			double relativeAccuracy = 1.0e-6;
+			double absoluteAccuracy = 1.0e-4;
+			UnivariateOptimizer solver = new BrentOptimizer(relativeAccuracy, absoluteAccuracy);
+			UnivariatePointValuePair pvp = solver.optimize(100, func, GoalType.MINIMIZE, 0.001, 50.0, xavg);
+			double lambda = pvp.getPoint();
+			if(verbose)
+				System.out.println(String.format("xavg: %.5f\tlambda %.5f", xavg, lambda));
+			
+			//4: Calculate the library size
+			Poisson poiss = new Poisson(lambda, re);
+			double librarySize = (xcount / (poiss.cdf(right) - poiss.cdf(left - 1))) / testQuantile;
+			double libraryCoverage = 1-Math.exp(-expt.getSignal().getHitCount()/librarySize);
+			double libraryCoverageDoubledSeq = 1-Math.exp(-(2*expt.getSignal().getHitCount())/librarySize);
+			System.out.println("Initial mappable library size = "+String.format("%.1f", librarySize) +" fragments");
+			double novelFragsUnderDoubleSeq = (libraryCoverageDoubledSeq-libraryCoverage)*librarySize;
+			System.out.println(String.format("Each fragment was sequenced on average %.5f times", lambda));
+			System.out.println(String.format("Proportion of library sequenced: %.3f", libraryCoverage));
+			System.out.println(String.format("Proportion of library sequenced if you double the number of reads: %.3f (approx %.0f previously unsequenced fragments)", libraryCoverageDoubledSeq, novelFragsUnderDoubleSeq ));
+		}
+	}
+	
+	//A truncated Poisson function
+	private class truncPoisson implements UnivariateFunction {
+		protected DRand re = new DRand();
+		protected double xavg;
+		protected int left, right;
+		
+		public truncPoisson(double xavg, int left, int right){
+			this.xavg = xavg;
+			this.left = left;
+			this.right = right;
+		}
+		public double value(double L){
+			return -(-Math.log(K(L, left, right, true)) - L + xavg * Math.log(L));		
+		}
+		public double K(double L, int left, int right, boolean out){
+			Poisson poiss = new Poisson(L, re); 
+		    if(out && verbose)
+		        System.out.println(String.format("K: %.5f %.5f %.5f %d %d",poiss.cdf(right),poiss.cdf(left - 1), L, left, right));
+		    return poiss.cdf(right) - poiss.cdf(left - 1);
 		}
 	}
 	
@@ -109,18 +190,23 @@ public class SeqQC {
 	}
 	
 	/**
-
+	 * Main driver method
 	 */
 	public static void main(String[] args) {
 		ArgParser ap = new ArgParser(args);
-		if(args.length==0 || ap.hasKey("h") || !ap.hasKey("emp")){
+		if(args.length==0 || ap.hasKey("h")){
 			System.err.println("SeqQC:\n" +
-					"");
+					"\t--geninfo <genome info file>\n" +
+					"\t--expt <experiment to test QC>\n" +
+					"\t--ctrl <control for this experiment>\n" +
+					"\t--format <format of experiment files (SAM/BED/IDX)>\n");
 		}else{
 			Config con = new Config(args, false);
+			con.setPerBaseReadFiltering(false);
 			ExperimentManager man = new ExperimentManager(con);
 			
-			
+			SeqQC qc = new SeqQC(con, man);
+			qc.execute();
 		}
 	}
 	

@@ -49,6 +49,7 @@ public class CountDataSimulator {
 	public void setReplicates(int r){numReplicates=r;}
 	//public void setConditions(int c){numConditions=c;}
 	public void setAlpha(Double a){alpha=a;}
+	public void setReads(Double r){condATotalReads = r; condBTotalReads = r;}
 	public void setReadsA(Double r){condATotalReads = r;}
 	public void setReadsB(Double r){condBTotalReads = r;}
 	public void setUpRegFrac(Double f){upRegFrac=f;}
@@ -138,7 +139,8 @@ public class CountDataSimulator {
 			condAMols[d]=currAMol;
 			condBMols[d]=currBMol;
 			condMolTotals[0]+=currAMol;
-			condMolTotals[1]+=currBMol;
+			if(numConditions==2)
+				condMolTotals[1]+=currBMol;
 			absTotal+=empMol;
 		}
 
