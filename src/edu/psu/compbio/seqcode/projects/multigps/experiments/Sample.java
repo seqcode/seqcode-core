@@ -158,12 +158,14 @@ public class Sample {
 		//maxReadsPerBP = 0 : poisson/gauss
 		//maxReadsPerBP = -1 : global poisson
 		//maxReadsPerBP > 0 : fixed
-		if(config.doPoissonGaussWinPerBaseFiltering() || maxReadsPerBP==0){ //global poisson/gauss model
-			capPerBaseCountWithPoissonGaussianFilter(10e-3, 20);
-		}else{
-			if(maxReadsPerBP == -1)
-				maxReadsPerBP = perBaseBack.getMaxThreshold('.');
-			capPerBaseCount(maxReadsPerBP);
+		if(config.doPerBaseFiltering()){
+			if(config.doPoissonGaussWinPerBaseFiltering() || maxReadsPerBP==0){ //global poisson/gauss model
+				capPerBaseCountWithPoissonGaussianFilter(10e-3, 20);
+			}else{
+				if(maxReadsPerBP == -1)
+					maxReadsPerBP = perBaseBack.getMaxThreshold('.');
+				capPerBaseCount(maxReadsPerBP);
+			}
 		}
 		initializeBackground(); //Reinitialize given updated hit count (again - just the per-base background model)
 	}

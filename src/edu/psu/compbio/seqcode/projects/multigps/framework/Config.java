@@ -45,14 +45,15 @@ public class Config {
 	protected BindingModel defaultModel=null;
 	protected double sigLogConf=-7; 
 	protected double prLogConf=-7; 
-	protected double perBaseLogConf=-7;
-	protected boolean poissonGaussWinPerBaseFilter = false; //Filter using a poisson Gaussian window
 	protected double qMinThres=0.001;		//Minimum  Q-value for reported binding events
 	protected double differentialSignificanceP = 0.01;
 	protected double mappableGenome = 0.8;
 	protected int maxModelUpdateRounds=3;
 	protected List<Integer> localBackgroundWindows=new ArrayList<Integer>(); 
+	protected double perBaseLogConf=-7;
+	protected boolean poissonGaussWinPerBaseFilter = false; //Filter using a poisson Gaussian window
 	protected float perBaseReadLimit = -1;
+	protected boolean perBaseReadFiltering = true;
 	protected int maxThreads=8;
 	protected double alphaScalingFactor = 1.0; //Scale the condition-specific alpha value by this factor
 	protected boolean multicondition_posprior=true; //Multiple condition positional prior
@@ -203,6 +204,8 @@ public class Config {
 				perBaseReadLimit = Args.parseInteger(args,"fixedpb",-1);
 				//Do per base filtering with a Poisson Gaussian window
 				poissonGaussWinPerBaseFilter = Args.parseFlags(args).contains("poissongausspb");
+				//Switch off per-base read filtering?
+				perBaseReadFiltering = !Args.parseFlags(args).contains("nopbfilter");
 				
 				//Parse command-line experiments
 				String fileFormat = Args.parseString(args, "format", "SAM").toUpperCase();
@@ -482,6 +485,7 @@ public class Config {
 	public double getPRLogConf(){return prLogConf;}
 	public double getPerBaseLogConf(){return perBaseLogConf;}
 	public boolean doPoissonGaussWinPerBaseFiltering(){return poissonGaussWinPerBaseFilter;}
+	public boolean doPerBaseFiltering(){return perBaseReadFiltering;}
 	public double getMappableGenomeProp(){return mappableGenome;}
 	public double getMappableGenomeLength(){return mappableGenome*gen.getGenomeLength();}
 	public List<Integer> getLocalBackgroundWindows(){return localBackgroundWindows;}
@@ -525,6 +529,7 @@ public class Config {
 	public boolean isVerbose(){return verbose;}
 	
 	//Some accessors to allow modification of options after config .
+	public void setPerBaseReadFiltering(boolean pbrf){perBaseReadFiltering = pbrf;}
 	public void setMedianScaling(boolean ms){scalingByMedian = ms;}
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
 	
