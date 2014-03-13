@@ -76,6 +76,7 @@ public class Config {
 	public final int H_MARGIN = 60;
 	public final int W = 800;
 	public final int H = 800;
+	public final double Motif_EVal_Cutoff = Double.valueOf("1.0e-08");
 	
 	
 	
@@ -334,7 +335,7 @@ public class Config {
 	public int getMinChromStates(){return this.minChromStates;}
 	public int getMaxFacStates(){return this.maxFacStates;}
 	public int getMinFacStates(){return this.minFacStates;}
-	
+	public double getMotifCuttof(){return this.Motif_EVal_Cutoff;}
 	
 	//Some accessors to allow modification of options after config
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
