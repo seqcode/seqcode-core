@@ -106,7 +106,9 @@ public class EMrunner {
 			this.seqdata.setMotifs(globalListOfMotifs);
 			this.seqdata.setXc();
 				// And also plot the seq scores
-            seqdata.plotSeqScores();
+			if(this.printInitVals){
+				seqdata.plotSeqScores();
+			}
 			//Finaly, run the remaining EM iterations with thses new seqence features
 			this.model.setSeqMode(seqdata, seqdata.getXs(), this.manager);
 			model.runEM(num_seq_itrs, config.doEMplot());

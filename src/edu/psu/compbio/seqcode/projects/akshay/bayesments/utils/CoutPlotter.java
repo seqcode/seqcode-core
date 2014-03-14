@@ -56,7 +56,8 @@ public class CoutPlotter {
 			rout.write("dat = read.table("+"\""+fdata+"\""+")\n"+
 						"dat_sorted = sort(dat[,1])\n"+
 						"maxx = max(dat_sorted)\n"+
-						"breaks = seq(0,maxx,10)\n"+
+						"minn = min(dat_sorted)\n"+
+						"breaks = seq(minn,maxx,(maxx-minn)/100)\n"+
 						"cuts = cut(dat_sorted,breaks,right=FALSE)\n"+
 						"freqs=table(cuts)\n"+
 						"cumfreq0 = c(0, cumsum(freqs))\n"+

@@ -310,7 +310,9 @@ public class EMtrain {
 		}
 		
 		//printing params
-		BayesmentsSandbox.printArray(MUs, "MUs", "MUs", this.condition_names);
+		if(this.printIntialVals){
+			BayesmentsSandbox.printArray(MUs, "MUs", "MUs", this.condition_names);
+		}
 		
 		for(int m=0; m< M; m++){
 			double[] observedValues = new double[N];
@@ -325,7 +327,6 @@ public class EMtrain {
 				this.capSIGMAs[m] = (max-min)/(this.numFacBindingStates+config.getBufferSigmaVal());
 			}
 		}
-		BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", this.condition_names);
 		
 	}
 	
