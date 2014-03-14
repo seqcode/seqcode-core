@@ -142,18 +142,20 @@ public class ExperimentScaler {
         	cumulA+=pc.x;
         	cumulB+=pc.y;
         	currDiff = (cumulB/totalB)-(cumulA/totalA);
-        	if(currDiff>maxDiffAB){
+        	if(currDiff>maxDiffAB && cumulA>0 && cumulB>0){
         		maxDiffAB=currDiff;
         		maxDiffIndex=i;
         		maxDiffAprop=(cumulA/totalA);
         		scalingRatio = cumulB>0 ? cumulA/cumulB : 1;
         	}
-        	/*if(i%50==0){
+        	/*if(i%500==0){
         		double ratio = cumulB>0 ? cumulA/cumulB : 1;
     			System.out.println(i+"\t"+cumulA+"\t"+cumulB+"\t"+currDiff+"\t"+ratio);
         	}*/
         	i++;
         }
+        //double ratio = cumulB>0 ? cumulA/cumulB : 1;
+        //System.out.println(i+"\t"+cumulA+"\t"+cumulB+"\t"+currDiff+"\t"+ratio);
         
         System.err.println(String.format("Scaling ratio estimated by SES = %.3f based on %d regions of size %d",
         		scalingRatio, counts.size(), windowSize));

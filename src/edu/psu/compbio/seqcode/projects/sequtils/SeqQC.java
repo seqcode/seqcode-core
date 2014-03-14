@@ -102,7 +102,8 @@ public class SeqQC {
 					float negCounts[] = startcounts.clone();
 		            
 					int halfDWin = (int)densityWindow/2;
-					for(int i=currSubRegion.getStart()+halfDWin; i<currSubRegion.getEnd()-halfDWin; i++){  //Note that this means a tiny fraction of reads that are located on the large block boundaries will be ignored
+					for(int index=currSubRegion.getStart()+halfDWin; index<currSubRegion.getEnd()-halfDWin; index++){  //Note that this means a tiny fraction of reads that are located on the large block boundaries will be ignored
+						int i = index-currSubRegion.getStart();
 						if(posCounts[i]>0){ //Treat fragments on opposite strands separately
 							float dens =0; 
 							for(int j=i-halfDWin; j<i+halfDWin; j++){
@@ -199,12 +200,12 @@ public class SeqQC {
 			System.out.println(String.format("Signal proportion via scaling for: %s = %.5f", expt.getName(), expt.getSigProp()));
 		}
 		
-		//Estimate proportion via distribution-fitting
+		/*//Estimate proportion via distribution-fitting
 		BackgroundDetector detector = new BackgroundDetector(config, manager, 200, 100);
 		HashMap<Sample, Double> detectedBP = detector.execute();
 		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
 			System.out.println(String.format("Signal proportion via fitting for: %s = %.5f", expt.getName(), 1-detectedBP.get(expt.getSignal())));
-		}
+		}*/
 		
 		return sigProps;
 	}
