@@ -36,6 +36,7 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
  */
 public class Config {
 	public static String version = "0.5";
+	public boolean isGPS=true;
 	protected Genome gen=null;
 	protected List<ExptDescriptor> expts = new ArrayList<ExptDescriptor>();
 	protected String outName="multigps", outBase="multigps";
@@ -135,6 +136,7 @@ public class Config {
 	public Config(String[] arguments, boolean isGPS){
 		System.setProperty("java.awt.headless", "true");
 		this.args=arguments; 
+		this.isGPS=isGPS;
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h")){
 			printHelp=true;			
@@ -531,6 +533,7 @@ public class Config {
 	//Some accessors to allow modification of options after config .
 	public void setPerBaseReadFiltering(boolean pbrf){perBaseReadFiltering = pbrf;}
 	public void setMedianScaling(boolean ms){scalingByMedian = ms;}
+	public void setSESScaling(boolean ses){scalingBySES = ses;}
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
 	
 	/**

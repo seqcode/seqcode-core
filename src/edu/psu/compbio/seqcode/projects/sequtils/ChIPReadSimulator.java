@@ -14,12 +14,10 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExptDescriptor;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.Sample;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.framework.ReadHit;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.HitLoader;
 import edu.psu.compbio.seqcode.projects.sequtils.CountDataSimulator.SimCounts;
 
 /**
@@ -303,7 +301,6 @@ public class ChIPReadSimulator {
 					for(int x=0; x<numReads; x++){
 						double rand = readSampler.nextDouble();
 						int index = (int)((double)numFrags*rand);
-						System.out.println(numFrags+"\t"+rand+"\t"+index);
 						ReadHit rh = frags.get(index);
 						writers[co][r].write(rh.getChrom()+"\t"+rh.getStart()+"\t"+rh.getEnd()+"\tU\t0\t"+rh.getStrand()+"\n");
 					}
@@ -392,6 +389,7 @@ public class ChIPReadSimulator {
 		int c=2, r=2, numdata, jointSpacing=200;
 		double frags=1000000, reads=1000000, a, up, down, diff, jointRate=0.0;
 		String bmfile;
+		boolean printEvents=true;
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h") || !ap.hasKey("emp")){
 			System.err.println("ChIPReadSimulator:\n" +
@@ -412,6 +410,7 @@ public class ChIPReadSimulator {
 					"\t--format <SAM/IDX>\n" +
 					"\t--jointrate <proportion of peaks that are joint binding events>\n" +
 					"\t--jointspacing <spacing between joint events>\n" +
+					"\t--noevents [flag to turn off making some files]\n" +
 					"\t--out <output file>\n" +
 					"");
 		}else{
@@ -461,6 +460,8 @@ public class ChIPReadSimulator {
 				jointSpacing = new Integer(ap.getKeyValue("jointspacing"));
 			}if(ap.hasKey("out")){
 				outFile = ap.getKeyValue("out");
+			}if(ap.hasKey("noevents")){
+				printEvents=false;
 			}
 			double noiseProb   = Args.parseDouble(args, "noise", 0.9);
 			double [][] noiseProbs = new double[c][r];
@@ -478,7 +479,8 @@ public class ChIPReadSimulator {
 			List<SimCounts> counts = null;
 			if(noiseProb<1.0){
 				counts = cdsim.simulate();
-				cdsim.printOutput(outFile, true);
+				if(printEvents)
+					cdsim.printOutput(outFile, true);
 			}
 			
 			//////////////////////////////////////////////////
@@ -496,7 +498,7 @@ public class ChIPReadSimulator {
 			
 	        sim.setTotalReads((int) reads);
 	        
-	        if(noiseProb<1)
+	        if(noiseProb<1 && printEvents)
 	        	sim.printEvents();	      
 			sim.simulateReads();
 			sim.close();

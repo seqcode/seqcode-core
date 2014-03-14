@@ -315,6 +315,20 @@ public class CountDataSimulator {
 		public double [] counts; //The simulated counts
 		public double [] backup; //Extra counts used by the multi-condition read simulator
 		public boolean isDiff=false;
+		public String toString(){
+			String str = new String("Absolute: "+absolute+"\n");
+			str = str+"Counts:";
+			for(int i=0; i<counts.length; i++)
+				str = str+"\t"+counts[i];
+			str = str+"\nBackup:";
+			for(int i=0; i<backup.length; i++)
+				str = str+"\t"+backup[i];
+			if(isDiff)
+				str = str+"\nisDiff:true";
+			else
+				str = str+"\nisDiff:false";
+			return str;
+		}
 	}
 }
 

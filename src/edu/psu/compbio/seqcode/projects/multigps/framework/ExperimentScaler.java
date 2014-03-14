@@ -148,6 +148,10 @@ public class ExperimentScaler {
         		maxDiffAprop=(cumulA/totalA);
         		scalingRatio = cumulB>0 ? cumulA/cumulB : 1;
         	}
+        	/*if(i%50==0){
+        		double ratio = cumulB>0 ? cumulA/cumulB : 1;
+    			System.out.println(i+"\t"+cumulA+"\t"+cumulB+"\t"+currDiff+"\t"+ratio);
+        	}*/
         	i++;
         }
         

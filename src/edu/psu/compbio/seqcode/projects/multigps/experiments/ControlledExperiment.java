@@ -21,7 +21,8 @@ public class ControlledExperiment {
 	protected double ctrlScalingRatio = 1.0; //scaling signal versus control
 	protected double sigCount=0;   //Signal reads in the signal channel
 	protected double noiseCount=0; //Noise reads in the signal channel
-	protected double signalProportion= 0.0; //Fraction of reads assigned to signal. Init to zero to parameterize Poisson background model in the absence of a sig/noise estimate 
+	protected double signalProportion= 0.0; //Fraction of reads assigned to signal. Init to zero to parameterize Poisson background model in the absence of a sig/noise estimate
+	protected boolean estimateScaling=true;
 	protected BindingModel model;
 	protected String condName;
 	protected String repName;
@@ -36,9 +37,11 @@ public class ControlledExperiment {
 		signal=sig;
 		control = ctrl;
 		model = initModel;
+		this.estimateScaling = estimateScaling;
 		
 		if(estimateScaling){
-			System.err.println("Estimating scaling ratio for "+name);
+			if(config.isGPS)
+				System.err.println("Estimating scaling ratio for "+name);
 			ExperimentScaler scaler = new ExperimentScaler(signal, control);
 			if(config.getScalingBySES())
 				ctrlScalingRatio = scaler.scalingRatioBySES(config.getScalingSlidingWindow());
@@ -50,7 +53,7 @@ public class ControlledExperiment {
 			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
 			sigCount = signalProportion*signal.getHitCount();
 			noiseCount = (1-signalProportion)*signal.getHitCount();
-			if(control!=null)
+			if(control!=null && config.isGPS)
 				System.err.println("Signal proportion estimate from background scaling for "+name+" = "+String.format("%.4f", signalProportion));
 		}
 	}
@@ -73,5 +76,30 @@ public class ControlledExperiment {
 	public void setScaling(double s){ctrlScalingRatio = s;}
 	public void setSigProp(double s){signalProportion = s;}
 	public void setBindingModel(BindingModel bm){model = bm;}
+	
+	/**
+	 * Call linear count correction method in signal and recalculate necessary variables here 
+	 * @param perBaseScaling
+	 */
+	public void correctSignalCounts(float perBaseScaling){
+		signal.linearCountCorrection(perBaseScaling);
+		if(estimateScaling){
+			if(config.isGPS)
+				System.err.println("Estimating scaling ratio for "+name);
+			ExperimentScaler scaler = new ExperimentScaler(signal, control);
+			if(config.getScalingBySES())
+				ctrlScalingRatio = scaler.scalingRatioBySES(config.getScalingSlidingWindow());
+			else if(config.getScalingByMedian())
+				ctrlScalingRatio = scaler.scalingRatioByMedian(config.getScalingSlidingWindow());
+			else
+				ctrlScalingRatio = scaler.scalingRatioByRegression(config.getScalingSlidingWindow());
+			
+			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
+			sigCount = signalProportion*signal.getHitCount();
+			noiseCount = (1-signalProportion)*signal.getHitCount();
+			if(control!=null && config.isGPS)
+				System.err.println("Signal proportion estimate from background scaling for "+name+" = "+String.format("%.4f", signalProportion));
+		}
+	}
 		
 }

@@ -500,6 +500,29 @@ public class Sample {
 	}
 
 	/**
+	 * Simple count correction with a scaling factor and a floor of one.
+	 * @param perBaseScaling float threshold
+	 */
+	public void linearCountCorrection(float perBaseScaling){
+		if(perBaseScaling<1)
+			System.err.println("linearCountCorrection: perBaseScaling is less than 1 - makes no sense to scale");
+		else{
+			for(int i = 0; i < fivePrimeCounts.length; i++)
+				for(int j = 0; j < fivePrimeCounts[i].length; j++)
+					if(fivePrimeCounts[i][j]!=null)
+						for(int k = 0; k < fivePrimeCounts[i][j].length; k++)
+							if (fivePrimeCounts[i][j][k] > 0){
+								fivePrimeCounts[i][j][k] = fivePrimeCounts[i][j][k]/perBaseScaling;
+								if(fivePrimeCounts[i][j][k]<1)
+									fivePrimeCounts[i][j][k]=1;
+							}
+							
+			updateTotalHits();
+			initializeBackground(); //Reinitialize given updated hit count (again - just the per-base background model)
+		}
+	}
+	
+	/**
 	 * Convert all reads to ReadHits
 	 * @return
 	 */
