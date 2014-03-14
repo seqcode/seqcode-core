@@ -2,8 +2,10 @@ package edu.psu.compbio.seqcode.projects.sequtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.optimization.GoalType;
@@ -21,6 +23,8 @@ import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.projects.multigps.experiments.Sample;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundDetector;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.framework.StrandedBaseCount;
 
@@ -35,6 +39,7 @@ public class SeqQC {
 	int histoMax = 200;
 	int poissLowerBound = 1;
 	int poissUpperBound = 10; 
+	int sesScalingWin=1000;
 	boolean verbose=false;
 	
 	/**
@@ -42,24 +47,40 @@ public class SeqQC {
 	 * @param c
 	 * @param man
 	 */
-	public SeqQC(Config c, ExperimentManager man){
+	public SeqQC(Config c){
 		config = c;
 		gen = config.getGenome();
-		manager = man;
+		config.setPerBaseReadFiltering(false);
+		config.setSESScaling(true);
+		config.setScalingSlidingWindow(sesScalingWin);
+		manager = new ExperimentManager(config);
 	}
+	
+	//Accessors & settors
+	public void setTestQuantile(double tq){
+		if(tq>0 && tq<=1.0)
+			testQuantile=tq;
+	}
+	public void setVerbose(boolean v){verbose=v;}
 	
 	/**
 	 * Run all implemented QC checks
 	 */
 	public void execute(){
-		this.estimateLibrarySize();
+		//Library size calculation
+		Map<ControlledExperiment, Double> meanFragmentCoverage = estimateLibrarySize();
+		
+		//Estimate signal proportion
+		Map<ControlledExperiment, Double> sigProps = estimateSignalProportions(meanFragmentCoverage);
 	}
 	
 	/**
 	 * estimateLibrarySize
+	 * returns the mean coverage of each fragment
 	 */
-	public void estimateLibrarySize(){
-	
+	public Map<ControlledExperiment,Double> estimateLibrarySize(){
+		Map<ControlledExperiment, Double> meanFragmentCoverage = new HashMap<ControlledExperiment, Double>();
+		
 		//If we have multiple experiments, process one at a time
 		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
 			System.out.println("Experiment: "+expt.getName()+" = "+String.format("%.1f", expt.getSignal().getHitCount())+ " mapped tags.");
@@ -139,6 +160,7 @@ public class SeqQC {
 			
 			//4: Calculate the library size
 			Poisson poiss = new Poisson(lambda, re);
+			meanFragmentCoverage.put(expt,  lambda);
 			double librarySize = (xcount / (poiss.cdf(right) - poiss.cdf(left - 1))) / testQuantile;
 			double libraryCoverage = 1-Math.exp(-expt.getSignal().getHitCount()/librarySize);
 			double libraryCoverageDoubledSeq = 1-Math.exp(-(2*expt.getSignal().getHitCount())/librarySize);
@@ -147,7 +169,44 @@ public class SeqQC {
 			System.out.println(String.format("Each fragment was sequenced on average %.5f times", lambda));
 			System.out.println(String.format("Proportion of library sequenced: %.3f", libraryCoverage));
 			System.out.println(String.format("Proportion of library sequenced if you double the number of reads: %.3f (approx %.0f previously unsequenced fragments)", libraryCoverageDoubledSeq, novelFragsUnderDoubleSeq ));
+			
+			//Print observed and estimated histos
+			if(verbose){
+				System.out.println("Observed/Expected per-base counts");
+				for(int i=0; i<histoMax; i++){
+					double obs = histo.getBin(histo.getBinContainingVal(i));
+					double exp = librarySize * testQuantile * poiss.pdf(i);
+					System.out.println(String.format("%d\t%.0f\t%.0f",i, obs, exp));
+				}
+			}
 		}
+		return meanFragmentCoverage;
+	}
+	
+	/**
+	 * estimateSignalProportions
+	 * @param meanFragmentCoverage
+	 */
+	public Map<ControlledExperiment,Double> estimateSignalProportions(Map<ControlledExperiment,Double> meanFragmentCoverage){
+		Map<ControlledExperiment, Double> sigProps = new HashMap<ControlledExperiment, Double>();
+		
+		//Estimate proportion via scaling
+		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
+			float scaling = meanFragmentCoverage.get(expt).floatValue();
+			if(scaling>1)
+				expt.correctSignalCounts(scaling);
+			sigProps.put(expt, expt.getSigProp());
+			System.out.println(String.format("Signal proportion via scaling for: %s = %.5f", expt.getName(), expt.getSigProp()));
+		}
+		
+		//Estimate proportion via distribution-fitting
+		BackgroundDetector detector = new BackgroundDetector(config, manager, 200, 100);
+		HashMap<Sample, Double> detectedBP = detector.execute();
+		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
+			System.out.println(String.format("Signal proportion via fitting for: %s = %.5f", expt.getName(), 1-detectedBP.get(expt.getSignal())));
+		}
+		
+		return sigProps;
 	}
 	
 	//A truncated Poisson function
@@ -199,13 +258,17 @@ public class SeqQC {
 					"\t--geninfo <genome info file>\n" +
 					"\t--expt <experiment to test QC>\n" +
 					"\t--ctrl <control for this experiment>\n" +
-					"\t--format <format of experiment files (SAM/BED/IDX)>\n");
+					"\t--format <format of experiment files (SAM/BED/IDX)>\n" +
+					"\t--testquantile <proportion of lowest ranked density reads to build distribution from>\n" +
+					"\t--verbose\n");
 		}else{
 			Config con = new Config(args, false);
-			con.setPerBaseReadFiltering(false);
-			ExperimentManager man = new ExperimentManager(con);
 			
-			SeqQC qc = new SeqQC(con, man);
+			SeqQC qc = new SeqQC(con);
+			if(ap.hasKey("testquantile"))
+				qc.setTestQuantile(new Double(ap.getKeyValue("testquantile")));
+			if(ap.hasKey("verbose"))
+				qc.setVerbose(true);
 			qc.execute();
 		}
 	}

@@ -19,6 +19,8 @@ import cern.jet.random.engine.DRand;
 public class NegativeBinomialDistrib {
 	protected double r;	//Number of successes 
 	protected double p;	//Probability of success
+	protected double mean;
+	protected double var;
 	protected Gamma gamma; //Gamma distribution
 	protected Poisson poisson; //Poisson
 	protected NegativeBinomialDist nb; //SSJ NegativeBinomial
@@ -44,6 +46,8 @@ public class NegativeBinomialDistrib {
 	public void setRandP(double r, double p){
 		this.r = r;
 		this.p = p;
+		mean = r*(1-p)/p;
+		var = r*(1-p)/(p*p);
 	}
 	
 	/**
@@ -54,15 +58,10 @@ public class NegativeBinomialDistrib {
 	public void setMeanVar(double mean, double var){
 		r = (mean*mean)/(var-mean);
 		p = mean/var;
+		this.mean = mean;
+		this.var = var;
 	}
 	
-	/**
-	 * Returns a random number from the distribution.
-	 * @return integer
-	 */
-	public int nextInt(){
-		return nextInt(r, p);
-	}
 
 	/**
 	 * Returns a random number from the distribution, bypassing internal state
@@ -78,9 +77,17 @@ public class NegativeBinomialDistrib {
 	 * @return integer
 	 */
 	public int nextInt(double nb_r, double nb_p){
-		double x = (1.0 - nb_p)/nb_p;
-		double y = x * gamma.nextDouble(nb_r, 1.0);
-		return poisson.nextInt(y);
+		setRandP(nb_r, nb_p);
+		return nextInt();
+	}
+	public int nextInt(){
+		if(mean==var)
+			return poisson.nextInt(mean);
+		else{
+			double x = (1.0 - p)/p;
+			double y = x * gamma.nextDouble(r, 1.0);
+			return poisson.nextInt(y);
+		}
 	}
 	
 	/**
