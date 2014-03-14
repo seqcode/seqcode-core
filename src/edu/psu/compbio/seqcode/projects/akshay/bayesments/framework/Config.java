@@ -76,7 +76,7 @@ public class Config {
 	public final int H_MARGIN = 60;
 	public final int W = 800;
 	public final int H = 800;
-	public final double Motif_EVal_Cutoff = Double.valueOf("1.0e-08");
+	public final double Motif_EVal_Cutoff = Double.valueOf("1.0e-10");
 	
 	
 	

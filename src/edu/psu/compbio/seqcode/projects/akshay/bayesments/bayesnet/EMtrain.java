@@ -226,8 +226,10 @@ public class EMtrain {
 		
 		//Printing the initial Mu's
 		if(this.printIntialVals){
+			System.out.println("----------------------------------Intial MUc and MUf values----------------------------------------");
 			BayesmentsSandbox.printArray(MUc, "MUc", "MUc", this.condition_names);
 			BayesmentsSandbox.printArray(MUf, "MUf", "MUf", this.condition_names);
+			System.out.println("---------------------------------------------------------------------------------------------------");
 		}
 		//Initializing sigma's
 		SIGMAc = new double[numChromStates][C];
@@ -261,10 +263,10 @@ public class EMtrain {
 		}
 		
 		//Printing the initial SIGMA's
-		if(this.printIntialVals){
-			BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", this.condition_names);
-			BayesmentsSandbox.printArray(SIGMAf, "SIGMAf", "SIGMAf", this.condition_names);
-		}
+		//if(this.printIntialVals){
+		//	BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", this.condition_names);
+		//	BayesmentsSandbox.printArray(SIGMAf, "SIGMAf", "SIGMAf", this.condition_names);
+		//}
 		// Initializing Bjk .. Using random initialization 
 		Bjk = new double[numChromStates][numFacBindingStates];
 		for(int i=0; i<numChromStates; i++){
@@ -272,9 +274,9 @@ public class EMtrain {
 		}
 		
 		//printing the initial Bjk's
-		if(this.printIntialVals){
-			BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", this.condition_names);
-		}
+		//if(this.printIntialVals){
+		//	BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", this.condition_names);
+		//}
 		// Initializing PIj ... Using Uniform initialization
 		//PIj = new double[numChromStates];
 		//PIj = this.getUniformList(numChromStates);
@@ -647,8 +649,8 @@ public class EMtrain {
 				for(int m=0; m<M; m++){
 					for(int j=0; j<numChromStates; j++){
 						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[m][itr] = itr;
-							Yaxes[m][itr] = trainMUs[itr][j][m];
+							Xaxes[j][itr] = itr;
+							Yaxes[j][itr] = trainMUs[itr][j][m];
 						}
 					}
 					EMIterPlotter MUsPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MU-s_"+Integer.toString(m));

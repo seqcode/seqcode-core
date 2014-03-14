@@ -1,5 +1,7 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.analysis;
 
+import java.awt.Color;
+
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.BIC;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.EMtrain;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.MAPassignment;
@@ -65,8 +67,9 @@ public class Bayesments {
 			
 			//Printing 
 			
-			System.out.println("BIC values:");
+			System.out.println("-------------------------------------------------------------BIC values:----------------------------------------------------------");
 			BayesmentsSandbox.printArray(bic_vals,"chromatin_State" , "factor_state", trainer.getModel().getConditionNames());
+			System.out.println("----------------------------------------------------------------------------------------------------------------------------------");
 			
 			trainer = null;
 			
@@ -89,12 +92,6 @@ public class Bayesments {
 				map.execute(false);
 			}
 			
-			
-			
-			// Print all the learned parameters
-			//System.out.println("PI-C values\n");
-			//BayesmentsSandbox.printArray(trainer.getPIj(), "chrom_state");
-		
 			System.out.println("MU-C values\n");
 			BayesmentsSandbox.printArray(trainer.getMUc(),"MUc" , "MUc", trainer.getModel().getConditionNames());
 		
@@ -105,16 +102,6 @@ public class Bayesments {
 				BayesmentsSandbox.printArray(trainer.getMUs(),"MUS" , "MUS", trainer.getModel().getConditionNames());
 			}
 		
-			System.out.println("SIGMA-C values\n");
-			BayesmentsSandbox.printArray(trainer.getSIGMAc(),"SIGMAc" , "SIGMAc", trainer.getModel().getConditionNames());
-		
-			System.out.println("SIGMA-F values\n");
-			BayesmentsSandbox.printArray(trainer.getSIGMAf(),"SIGMAf" , "SIGMAf", trainer.getModel().getConditionNames());
-			
-			if(!c.runOnlyChrom()){
-				System.out.println("SIGMA-S values\n");
-				BayesmentsSandbox.printArray(trainer.getSIGMAs(),"SIGMAs" , "SIGMAs", trainer.getModel().getConditionNames());
-			}
 		
 			System.out.println("Bjk values\n");
 			BayesmentsSandbox.printArray(trainer.getBjk(),"chromatin_State" , "factor_state", trainer.getModel().getConditionNames());
@@ -129,6 +116,43 @@ public class Bayesments {
 				}
 				
 			}
+			// Merging chromatin and sequence matrices
+			double[][] chromatin_Mu = new double[trainer.getMUc().length][trainer.getMUc()[0].length+trainer.getMUs()[0].length];
+			for(int row=0; row<chromatin_Mu.length;row++){
+				for(int col=0; col<trainer.getMUc()[0].length;col++){
+					chromatin_Mu[row][col] = trainer.getMUc()[row][col];
+				}
+			}
+			for(int row = 0; row< chromatin_Mu.length; row++){
+				for(int col=trainer.getMUc()[0].length;col<chromatin_Mu[0].length; col++){
+					chromatin_Mu[row][col] = trainer.getMUs()[row][col-trainer.getMUc()[0].length];
+				}
+			}
+			
+			// Generating xlabs 
+			
+			String[] chromatin_name = new String[chromatin_Mu[0].length];
+			for(int col=0; col<trainer.getMUc()[0].length; col++ ){
+				chromatin_name[col] = trainer.getModel().getConditionNames()[col];
+			}
+			for(int col= trainer.getMUc()[0].length; col<chromatin_Mu[0].length; col++){
+				chromatin_name[col] = "Motif "+Integer.toString(col-trainer.getMUc()[0].length);
+			}
+			
+			//plotting MUc and MUs heats
+			
+			HeatMapper map = new HeatMapper(c, chromatin_Mu, "Experimental_Track", "State", chromatin_name, "Mu_chromatin");
+			map.plot(new Color(221,20,20));
+			
+			// Plotting factor states
+			
+			map = new HeatMapper(c, trainer.getMUf(), "Factor-Expt", "State", null, "Mu_factor");
+			map.plot(new Color(20,221,20));
+			
+			//Plotting transitions
+			
+			map =  new HeatMapper(c, trainer.getBjk(), "Fac-State", "Chrom-State", null, "Transitions");
+			
 		}
 	}	
 }

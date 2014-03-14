@@ -12,43 +12,56 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbo
 
 public class HeatMapper {
 	double[][] matrix;
-	String Xtitle;
-	String Ytitle;
+	String Xtitle=null;
+	String Ytitle=null;
+	String[] xlab;
 	Config conf;
 	int nrow;
 	int ncol;
+	String chart_name;
 	
 	
-	public HeatMapper(double[][] matrix, String Xtitle, String Ytitle) {
+	public HeatMapper(Config c, double[][] matrix, String Xtitle, String Ytitle, String[] xlab, String chart_name) {
 		this.matrix = matrix;
 		this.nrow = matrix.length;
 		this.ncol = matrix[0].length;
 		this.Xtitle = Xtitle;
 		this.Ytitle = Ytitle;
-		//this.conf = conf;
+		this.conf = c;
+		this.xlab = xlab;
+		this.chart_name = chart_name;
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void plot(){
+	public void plot(Color c){
 		this.scaleMatrix();
 		HeatChart map = new HeatChart(this.matrix);
-		map.setHighValueColour(new Color(221,20,20));
+		//map.setHighValueColour(new Color(221,20,20));
+		map.setHighValueColour(c);
+		
 		map.setChartMargin(600);
 		map.setCellHeight(200);
 		map.setCellWidth(200);
+		
 		map.setAxisLabelsFont(new Font("Ariel", Font.PLAIN, 55));
-		//map.setXAxisLabel(Xtitle);
-		//String[] xlabs = new String[] {"K27me3","K4me1","K4me3","K27ac","DNase","K4me2","K9me3","K20me3","CTCF","OCT4","STAT3","SMAD1","SOX2","Cdx2-motif"};
-		String[] xlabs = new String[] {"Sim-1","Sim-2","Sim-3","Sim-4"};
-		map.setXValues(xlabs);
+		
+		if(Xtitle != null){
+			map.setXAxisLabel(Xtitle);
+		}
+		
+		if(xlab != null){
+			map.setXValues(xlab);
+		}
 		map.setAxisValuesFont(new Font("Ariel", Font.PLAIN, 55));
 		map.setShowYAxisValues(false);
 		map.setShowXAxisValues(false);
 		map.setBackgroundColour(new Color(0, 0, 0, 0));
-		//map.setYAxisLabel(Ytitle);
+		if(Ytitle != null){
+			map.setYAxisLabel(Ytitle);
+		}
 		try {
-			map.saveToFile(new File("/Users/akshaykakumanu/map.png"));
-			//map.saveToFile(new File(conf.getOutputImagesDir().getAbsolutePath()+File.separator+"mu_heat.png"));
+			File f = new File(conf.getOutputImagesDir().getAbsoluteFile()+File.separator+this.chart_name+".png"); 
+			map.saveToFile(f);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -84,10 +97,7 @@ public class HeatMapper {
 		//		{0.018751178312337323,0.12384066063219165,0.7458420770572993},
 		//		{0,0.6014384040049419,0}
 		//};
-		
-		
-		HeatMapper map = new HeatMapper(matri, "Experimental Track", "Chromatin State");
-		map.plot();
+
 	}
 }
 	
