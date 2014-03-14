@@ -25,7 +25,7 @@ public class Bayesments {
 			System.err.println(c.getArgsList());
 		}else{
 			// Make the output directories using the provided root name
-			c.makeGPSOutputDirs(c.doEMplot());
+			c.makeGPSOutputDirs(true);
 			
 			ExperimentManager manager = null;
 			GenomicLocations trainingData = null;
