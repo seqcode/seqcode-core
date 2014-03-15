@@ -53,7 +53,11 @@ public class HeatMapper {
 			map.setXValues(xlab);
 		}
 		map.setAxisValuesFont(new Font("Ariel", Font.PLAIN, 55));
-		map.setShowYAxisValues(false);
+		if(xlab != null){
+			map.setShowYAxisValues(true);
+		}else{
+			map.setShowXAxisValues(false);
+		}
 		map.setShowXAxisValues(false);
 		map.setBackgroundColour(new Color(0, 0, 0, 0));
 		if(Ytitle != null){

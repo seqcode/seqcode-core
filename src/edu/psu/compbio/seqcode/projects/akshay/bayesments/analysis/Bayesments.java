@@ -152,6 +152,7 @@ public class Bayesments {
 			//Plotting transitions
 			
 			map =  new HeatMapper(c, trainer.getBjk(), "Fac-State", "Chrom-State", null, "Transitions");
+			map.plot(new Color(20,20,221));
 			
 		}
 	}	
