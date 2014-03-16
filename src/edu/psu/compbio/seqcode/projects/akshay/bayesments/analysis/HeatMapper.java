@@ -33,12 +33,14 @@ public class HeatMapper {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void plot(Color c){
+	public void plot(Color c, boolean log_scale){
 		this.scaleMatrix();
 		HeatChart map = new HeatChart(this.matrix);
 		//map.setHighValueColour(new Color(221,20,20));
 		map.setHighValueColour(c);
-		
+		if(log_scale){
+			map.setColourScale(map.SCALE_LOGARITHMIC);
+		}
 		map.setChartMargin(600);
 		map.setCellHeight(200);
 		map.setCellWidth(200);
@@ -54,11 +56,11 @@ public class HeatMapper {
 		}
 		map.setAxisValuesFont(new Font("Ariel", Font.PLAIN, 55));
 		if(xlab != null){
-			map.setShowYAxisValues(true);
+			map.setShowXAxisValues(true);
 		}else{
 			map.setShowXAxisValues(false);
 		}
-		map.setShowXAxisValues(false);
+		map.setShowYAxisValues(false);
 		map.setBackgroundColour(new Color(0, 0, 0, 0));
 		if(Ytitle != null){
 			map.setYAxisLabel(Ytitle);

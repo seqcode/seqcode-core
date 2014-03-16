@@ -142,17 +142,17 @@ public class Bayesments {
 			//plotting MUc and MUs heats
 			
 			HeatMapper map = new HeatMapper(c, chromatin_Mu, "Experimental_Track", "State", chromatin_name, "Mu_chromatin");
-			map.plot(new Color(221,20,20));
+			map.plot(new Color(221,20,20),true);
 			
 			// Plotting factor states
 			
 			map = new HeatMapper(c, trainer.getMUf(), "Factor-Expt", "State", null, "Mu_factor");
-			map.plot(new Color(20,221,20));
+			map.plot(new Color(20,221,20),true);
 			
 			//Plotting transitions
 			
 			map =  new HeatMapper(c, trainer.getBjk(), "Fac-State", "Chrom-State", null, "Transitions");
-			map.plot(new Color(20,20,221));
+			map.plot(new Color(20,20,221),false);
 			
 		}
 	}	
