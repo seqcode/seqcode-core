@@ -36,4 +36,5 @@ public class ReadHit{
 	public float getWeight(){return(weight);}
 	public void setWeight(float w){weight=w;}
 	public double getReadLength(){return(this.getEnd()-this.getStart()+1);}
+	public String toString(){return chrom+":"+getFivePrime()+":"+strand;}
 }

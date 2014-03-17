@@ -26,6 +26,7 @@ public abstract class FileHitLoader extends HitLoader{
 		super();
 		this.file = file;
 		this.useNonUnique=useNonUnique;
+		this.sourceName = file.getName();
 	}
 	
 	/**

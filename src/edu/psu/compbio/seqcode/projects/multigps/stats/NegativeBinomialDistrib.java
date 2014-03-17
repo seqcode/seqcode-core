@@ -27,6 +27,7 @@ public class NegativeBinomialDistrib {
 	
 	/**
 	 * NegativeBinomial (r p parameterization)
+	 * Parameterized as the distribution of the number of failures (X) before the rth success in independent trials
 	 * @param r : Number of successes 
 	 * @param p : Probability of success in each trial
 	 */
@@ -39,7 +40,7 @@ public class NegativeBinomialDistrib {
 	}
 	
 	/**
-	 * Update the r & p parameters direcctly
+	 * Update the r & p parameters directly
 	 * @param r
 	 * @param p
 	 */

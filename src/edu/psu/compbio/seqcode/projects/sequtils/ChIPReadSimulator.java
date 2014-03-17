@@ -295,6 +295,18 @@ public class ChIPReadSimulator {
 					}
 				}
 				
+				//Count unique fragments
+				HashMap<String, Integer> uniqueFragLabels = new HashMap<String, Integer>();
+				for(ReadHit hit : frags){
+					String label = hit.toString();
+					int count =0;
+					if(uniqueFragLabels.containsKey(label))
+						count = uniqueFragLabels.get(label);
+					uniqueFragLabels.put(label, count+1);
+				}
+				int uniqueFrags = uniqueFragLabels.keySet().size();
+				System.out.println(uniqueFrags+" unique positions generated.");
+				
 				//Sample reads from the fragments & print
 				try {
 					int numFrags = frags.size();

@@ -7,12 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.optimization.GoalType;
-import org.apache.commons.math3.optimization.univariate.BrentOptimizer;
-import org.apache.commons.math3.optimization.univariate.UnivariateOptimizer;
-import org.apache.commons.math3.optimization.univariate.UnivariatePointValuePair;
-
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
@@ -23,8 +17,6 @@ import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.Sample;
-import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundDetector;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.framework.StrandedBaseCount;
 
@@ -35,12 +27,12 @@ public class SeqQC {
 	ExperimentManager manager;
 	float[] startcounts =null;
 	float densityWindow = 500;
-	double testQuantile = 0.1; //Base per-read count distribution on this proportion of the lowest-ranked densities
-	int histoMax = 200;
-	int poissLowerBound = 1;
-	int poissUpperBound = 10; 
+	double testQuantile = 0.05; //Base per-read count distribution on this proportion of the lowest-ranked densities
+	int histoMax = 100;
 	int sesScalingWin=1000;
 	boolean verbose=false;
+	boolean printNonVerboseHeader=true;
+	HashMap<ControlledExperiment, String> infoStrings=new HashMap<ControlledExperiment, String>();
 	
 	/**
 	 * Constructor
@@ -54,6 +46,11 @@ public class SeqQC {
 		config.setSESScaling(true);
 		config.setScalingSlidingWindow(sesScalingWin);
 		manager = new ExperimentManager(config);
+		
+		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
+			String name = expt.getSignal().getName().startsWith("EXPERIMENT") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
+			infoStrings.put(expt, new String(name));
+		}
 	}
 	
 	//Accessors & settors
@@ -62,16 +59,24 @@ public class SeqQC {
 			testQuantile=tq;
 	}
 	public void setVerbose(boolean v){verbose=v;}
+	public void setPrintHeader(boolean v){printNonVerboseHeader=v;}
 	
 	/**
 	 * Run all implemented QC checks
 	 */
 	public void execute(){
+		if(!verbose && printNonVerboseHeader)
+			printHeader();
+		
 		//Library size calculation
 		Map<ControlledExperiment, Double> meanFragmentCoverage = estimateLibrarySize();
 		
 		//Estimate signal proportion
 		Map<ControlledExperiment, Double> sigProps = estimateSignalProportions(meanFragmentCoverage);
+		
+		if(!verbose)
+			for(ControlledExperiment expt : manager.getExperimentSet().getReplicates())
+				System.out.println(infoStrings.get(expt));
 	}
 	
 	/**
@@ -83,7 +88,6 @@ public class SeqQC {
 		
 		//If we have multiple experiments, process one at a time
 		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
-			System.out.println("Experiment: "+expt.getName()+" = "+String.format("%.1f", expt.getSignal().getHitCount())+ " mapped tags.");
 			// 1: Find the density of covered bases surrounding each read
 			List<DensityCountPair> densities = new ArrayList<DensityCountPair>();
 			Iterator<Region> chroms = new ChromosomeGenerator().execute(gen);
@@ -134,51 +138,115 @@ public class SeqQC {
 			//2: Generate a read count per base distribution for the lowest density sites. 
 			double currWeight=0, quantileLimit=testQuantile*expt.getSignal().getHitCount();
 			RealValuedHistogram histo = new RealValuedHistogram(0,histoMax,histoMax);
+			RealValuedHistogram fullHisto = new RealValuedHistogram(0,histoMax,histoMax);
 			for(DensityCountPair dcp : densities){
-				histo.addValue(dcp.getCount());
+				fullHisto.addValue(dcp.getCount());
+				if(currWeight<quantileLimit)
+					histo.addValue(dcp.getCount());
 				currWeight+=dcp.getCount();
-				if(currWeight>quantileLimit)
-					break;
 			}
 			
-			//3: Fit a distribution to the histogram (Poisson for now)
-			DRand re = new DRand();
-			int left=poissLowerBound, right=poissUpperBound;
-			double xsum=0, xcount=0;
-			for(double i=left; i<=right; i++){
-				xsum += i*histo.getBin( histo.getBinContainingVal(i));
-				xcount += histo.getBin( histo.getBinContainingVal(i));
-			}
-			double xavg = xsum/xcount;
-			UnivariateFunction func = new truncPoisson(xavg, left, right);
-			double relativeAccuracy = 1.0e-6;
-			double absoluteAccuracy = 1.0e-4;
-			UnivariateOptimizer solver = new BrentOptimizer(relativeAccuracy, absoluteAccuracy);
-			UnivariatePointValuePair pvp = solver.optimize(100, func, GoalType.MINIMIZE, 0.001, 50.0, xavg);
-			double lambda = pvp.getPoint();
-			if(verbose)
-				System.out.println(String.format("xavg: %.5f\tlambda %.5f", xavg, lambda));
+			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 20);
+			census.setVerbose(verbose);
+			census.execute();
 			
-			//4: Calculate the library size
-			Poisson poiss = new Poisson(lambda, re);
-			meanFragmentCoverage.put(expt,  lambda);
-			double librarySize = (xcount / (poiss.cdf(right) - poiss.cdf(left - 1))) / testQuantile;
-			double libraryCoverage = 1-Math.exp(-expt.getSignal().getHitCount()/librarySize);
-			double libraryCoverageDoubledSeq = 1-Math.exp(-(2*expt.getSignal().getHitCount())/librarySize);
-			System.out.println("Initial mappable library size = "+String.format("%.1f", librarySize) +" fragments");
-			double novelFragsUnderDoubleSeq = (libraryCoverageDoubledSeq-libraryCoverage)*librarySize;
-			System.out.println(String.format("Each fragment was sequenced on average %.5f times", lambda));
-			System.out.println(String.format("Proportion of library sequenced: %.3f", libraryCoverage));
-			System.out.println(String.format("Proportion of library sequenced if you double the number of reads: %.3f (approx %.0f previously unsequenced fragments)", libraryCoverageDoubledSeq, novelFragsUnderDoubleSeq ));
+			CensusLibraryComplexity fullCensus = new CensusLibraryComplexity(fullHisto, 1, 10);
+			fullCensus.setVerbose(verbose);
+			fullCensus.execute();
 			
-			//Print observed and estimated histos
+			meanFragmentCoverage.put(expt,  census.getEstimatedNegBinomialMean());
+			
+			//Get statistics on Fragments (i.e. partial histogram)
+			double pLibrarySize = census.getEstimatedPoissonLibSize() / testQuantile;
+			double pMean = census.getEstimatedPoissonLambda();
+			double pLibraryCoverage = census.getEstimatedPoissonObservedCoverage();
+			double pLibraryCoverageDoubledSeq = census.getEstimatedPoissonObservedGivenCount(2*currWeight);
+			double pNovelFragsUnderDoubleSeq = (pLibraryCoverageDoubledSeq-pLibraryCoverage)*pLibrarySize;
+			double nbLibrarySize = census.getEstimatedNegBinomialLibSize() / testQuantile;
+			double nbLibraryCoverage = census.getEstimatedNegBinomialObservedCoverage();
+			double nbLibraryCoverageDoubledSeq = census.getEstimatedNegBinomialObservedGivenCount(2*currWeight);
+			double nbMean = census.getEstimatedNegBinomialMean();
+			double nbVar = census.getEstimatedNegBinomialVariance();
+			double nbNovelFragsUnderDoubleSeq = (nbLibraryCoverageDoubledSeq-nbLibraryCoverage)*nbLibrarySize;
+			double lnLibrarySize = census.getEstimatedLogNormLibSize() / testQuantile;
+			double lnLibraryCoverage = census.getEstimatedLogNormObservedCoverage();
+			double lnLibraryCoverageDoubledSeq = census.getEstimatedLogNormObservedGivenCount(2*currWeight);
+			double lnMean = census.getEstimatedLogNormMean();
+			//double lnNovelFragsUnderDoubleSeq = (lnLibraryCoverageDoubledSeq-lnLibraryCoverage)*lnLibrarySize;
+			
+			//Get statistics on Positions (i.e. full histogram)
+			double pPosLibrarySize = fullCensus.getEstimatedPoissonLibSize();
+			double pPosMean = fullCensus.getEstimatedPoissonLambda();
+			double pPosLibraryCoverage = fullCensus.getEstimatedPoissonObservedCoverage();
+			double pPosLibraryCoverageDoubledSeq = fullCensus.getEstimatedPoissonObservedGivenCount(2*currWeight);
+			double pPosNovelFragsUnderDoubleSeq = (pPosLibraryCoverageDoubledSeq-pPosLibraryCoverage)*pPosLibrarySize;
+			double nbPosLibrarySize = fullCensus.getEstimatedNegBinomialLibSize();
+			double nbPosLibraryCoverage = fullCensus.getEstimatedNegBinomialObservedCoverage();
+			double nbPosLibraryCoverageDoubledSeq = fullCensus.getEstimatedNegBinomialObservedGivenCount(2*currWeight);
+			double nbPosMean = fullCensus.getEstimatedNegBinomialMean();
+			double nbPosVar = fullCensus.getEstimatedNegBinomialVariance();
+			double nbPosNovelFragsUnderDoubleSeq = (nbPosLibraryCoverageDoubledSeq-nbPosLibraryCoverage)*nbPosLibrarySize;
+			double lnPosLibrarySize = fullCensus.getEstimatedLogNormLibSize();
+			double lnPosLibraryCoverage = fullCensus.getEstimatedLogNormObservedCoverage();
+			double lnPosLibraryCoverageDoubledSeq = fullCensus.getEstimatedLogNormObservedGivenCount(2*currWeight);
+			double lnPosMean = fullCensus.getEstimatedLogNormMean();
+			
+			
 			if(verbose){
-				System.out.println("Observed/Expected per-base counts");
-				for(int i=0; i<histoMax; i++){
-					double obs = histo.getBin(histo.getBinContainingVal(i));
-					double exp = librarySize * testQuantile * poiss.pdf(i);
-					System.out.println(String.format("%d\t%.0f\t%.0f",i, obs, exp));
-				}
+				String name = expt.getSignal().getName().startsWith("EXPERIMENT") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
+				System.out.println("Experiment: "+name+" = "+String.format("%.1f mapped tags at %.0f unique positions", expt.getSignal().getHitCount(),expt.getSignal().getHitPositionCount()));
+				
+				System.out.println("\nPer-Fragment Estimated Poisson statistics:");
+				System.out.println("Estimated initial mappable library size = "+String.format("%.1f", pLibrarySize) +" fragments");
+				System.out.println(String.format("Each fragment was sequenced on average %.5f times", pMean));
+				System.out.println(String.format("Proportion of library sequenced: %.3f", pLibraryCoverage));
+				System.out.println(String.format("Proportion of library sequenced if you double the number of reads: %.3f (approx %.0f previously unsequenced fragments)", pLibraryCoverageDoubledSeq, pNovelFragsUnderDoubleSeq ));
+				
+				System.out.println("\nPer-Fragment Estimated Negative Binomial statistics:");
+				System.out.println("Estimated initial mappable library size = "+String.format("%.1f", nbLibrarySize) +" fragments");
+				System.out.println(String.format("Each fragment was sequenced on average %.5f times (%.5f variance, r = %.5f, p = %.5f, k = %.5f)", nbMean, nbVar, census.getEstimatedNegBinomialRP()[0], census.getEstimatedNegBinomialRP()[1], census.getEstimatedNegBinomialGammaK()));
+				System.out.println(String.format("Proportion of library sequenced: %.3f", nbLibraryCoverage));
+				System.out.println(String.format("Proportion of library sequenced if you double the number of reads: %.3f (approx %.0f previously unsequenced fragments)", nbLibraryCoverageDoubledSeq, nbNovelFragsUnderDoubleSeq ));
+				
+				System.out.println("\nPer-Fragment Estimated LogNormal statistics:");
+				System.out.println("Estimated initial mappable library size = "+String.format("%.1f", lnLibrarySize) +" fragments");
+				System.out.println(String.format("Each fragment was sequenced on average %.5f times ", lnMean));
+				System.out.println(String.format("Proportion of library sequenced: %.3f", lnLibraryCoverage));
+				//System.out.println(String.format("Proportion of library sequenced if you double the number of reads: %.3f (approx %.0f previously unsequenced fragments)", lnLibraryCoverageDoubledSeq, lnNovelFragsUnderDoubleSeq ));
+				
+				System.out.println("\nPer-Position Estimated Poisson statistics:");
+				System.out.println("Estimated initial mappable positions = "+String.format("%.1f", pPosLibrarySize) +" fragments");
+				System.out.println(String.format("Each fragment was sequenced on average %.5f times", pPosMean));
+				System.out.println(String.format("Proportion of positions sequenced: %.3f", pPosLibraryCoverage));
+				System.out.println(String.format("Proportion of positions sequenced if you double the number of reads: %.3f (approx %.0f previously unsequenced fragments)", pPosLibraryCoverageDoubledSeq, pPosNovelFragsUnderDoubleSeq ));
+				
+				System.out.println("\nPer-Position Estimated Negative Binomial statistics:");
+				System.out.println("Estimated initial mappable positions = "+String.format("%.1f", nbPosLibrarySize) +" positions");
+				System.out.println(String.format("Each position was sequenced on average %.5f times (%.5f variance, r = %.5f, p = %.5f, k = %.5f)", nbPosMean, nbPosVar, fullCensus.getEstimatedNegBinomialRP()[0], fullCensus.getEstimatedNegBinomialRP()[1], fullCensus.getEstimatedNegBinomialGammaK()));
+				System.out.println(String.format("Proportion of positions sequenced: %.3f", nbPosLibraryCoverage));
+				System.out.println(String.format("Proportion of positions sequenced if you double the number of reads: %.3f (approx %.0f previously unsequenced fragments)", nbPosLibraryCoverageDoubledSeq, nbPosNovelFragsUnderDoubleSeq ));
+				
+				System.out.println("\nPer-Position Estimated LogNormal statistics:");
+				System.out.println("Estimated initial mappable positions = "+String.format("%.1f", lnPosLibrarySize) +" positions");
+				System.out.println(String.format("Each position was sequenced on average %.5f times", lnPosMean));
+				System.out.println(String.format("Proportion of positions sequenced: %.3f", lnPosLibraryCoverage));
+				//System.out.println(String.format("Proportion of positions sequenced if you double the number of reads: %.3f (approx %.0f previously unsequenced fragments)", lnPosLibraryCoverageDoubledSeq, lnPosNovelFragsUnderDoubleSeq ));
+				
+			}else{
+				String currInfo = infoStrings.get(expt);
+				currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.1f\t%.3f\t%.3f\t%.3f\t%.3f", 
+						expt.getSignal().getHitCount(),
+						expt.getSignal().getHitPositionCount(),
+						nbMean,
+						nbVar,
+						nbLibrarySize,
+						nbPosLibrarySize,
+						nbLibraryCoverage,
+						nbPosLibraryCoverage,
+						nbLibraryCoverageDoubledSeq,
+						nbPosLibraryCoverageDoubledSeq
+						);
+				infoStrings.put(expt, currInfo);
 			}
 		}
 		return meanFragmentCoverage;
@@ -191,13 +259,38 @@ public class SeqQC {
 	public Map<ControlledExperiment,Double> estimateSignalProportions(Map<ControlledExperiment,Double> meanFragmentCoverage){
 		Map<ControlledExperiment, Double> sigProps = new HashMap<ControlledExperiment, Double>();
 		
+		if(verbose)
+			System.out.println("\nEstimating signal proportion");
+		
 		//Estimate proportion via scaling
 		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
+			
 			float scaling = meanFragmentCoverage.get(expt).floatValue();
 			if(scaling>1)
 				expt.correctSignalCounts(scaling);
-			sigProps.put(expt, expt.getSigProp());
-			System.out.println(String.format("Signal proportion via scaling for: %s = %.5f", expt.getName(), expt.getSigProp()));
+			
+			if(expt.hasControl()){
+				double readRatio = expt.getSignal().getHitCount()/expt.getControl().getHitCount();
+				sigProps.put(expt, expt.getSigProp());
+				
+				if(verbose){
+					System.out.println(String.format("Read count ratio for: %s vs %s = %.5f", expt.getSignal().getName(), expt.getControl().getName(), readRatio));
+					System.out.println(String.format("Scaling factor via SES scaling for: %s = %.5f", expt.getName(), expt.getControlScaling()));
+					System.out.println(String.format("Signal proportion via SES scaling for: %s = %.5f", expt.getName(), expt.getSigProp()));
+				}else{
+					String currInfo = infoStrings.get(expt);
+					currInfo = currInfo + String.format("\t%.5f\t%.5f",
+							expt.getControlScaling(), expt.getSigProp());
+					infoStrings.put(expt, currInfo);
+				}
+				//ExperimentScaler scaler = new ExperimentScaler(expt.getSignal(), expt.getControl());
+				//scaler.scalingRatioByMedian(1000);
+				//scaler.scalingRatioByRegression(1000);
+			}else{
+				String currInfo = infoStrings.get(expt);
+				currInfo = currInfo + "\tNA\tNA";
+				infoStrings.put(expt, currInfo);
+			}
 		}
 		
 		/*//Estimate proportion via distribution-fitting
@@ -210,27 +303,6 @@ public class SeqQC {
 		return sigProps;
 	}
 	
-	//A truncated Poisson function
-	private class truncPoisson implements UnivariateFunction {
-		protected DRand re = new DRand();
-		protected double xavg;
-		protected int left, right;
-		
-		public truncPoisson(double xavg, int left, int right){
-			this.xavg = xavg;
-			this.left = left;
-			this.right = right;
-		}
-		public double value(double L){
-			return -(-Math.log(K(L, left, right, true)) - L + xavg * Math.log(L));		
-		}
-		public double K(double L, int left, int right, boolean out){
-			Poisson poiss = new Poisson(L, re); 
-		    if(out && verbose)
-		        System.out.println(String.format("K: %.5f %.5f %.5f %d %d",poiss.cdf(right),poiss.cdf(left - 1), L, left, right));
-		    return poiss.cdf(right) - poiss.cdf(left - 1);
-		}
-	}
 	
 	//Makes integer arrays corresponding to the read starts over the current region
 	protected void makeHitStartArray(List<StrandedBaseCount> hits, Region currReg, char strand){
@@ -261,7 +333,8 @@ public class SeqQC {
 					"\t--ctrl <control for this experiment>\n" +
 					"\t--format <format of experiment files (SAM/BED/IDX)>\n" +
 					"\t--testquantile <proportion of lowest ranked density reads to build distribution from>\n" +
-					"\t--verbose\n");
+					"\t--verbose\n" +
+					"\t--noheader\n");
 		}else{
 			Config con = new Config(args, false);
 			
@@ -270,10 +343,26 @@ public class SeqQC {
 				qc.setTestQuantile(new Double(ap.getKeyValue("testquantile")));
 			if(ap.hasKey("verbose"))
 				qc.setVerbose(true);
+			if(ap.hasKey("noheader"))
+				qc.setPrintHeader(false);
 			qc.execute();
 		}
 	}
 	
+	private void printHeader(){
+		System.out.println("Dataset\t" +
+				"MappedTags\t" +
+				"MappedPositions\t" +
+				"EstNBMean\t" +
+				"EstNBVar\t" +
+				"EstFragmentLibSize\t" +
+				"EstTotalPositions\t" +
+				"EstFragmentCoverage\t" +
+				"EstPositionCoverage\t" +
+				"EstFragmentCoverageDoubleSeq\t" +
+				"EstPositionCoverageDoubleSeq\t" +
+				"");
+	}
 	
 	private class DensityCountPair implements Comparable<DensityCountPair>{
 		private float density;
