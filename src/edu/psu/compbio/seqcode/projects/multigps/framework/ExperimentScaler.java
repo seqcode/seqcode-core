@@ -106,7 +106,7 @@ public class ExperimentScaler {
 		scalingRatio=1;
 		ArrayList<PairedCounts> counts = new ArrayList<PairedCounts>();
 		
-		//Either A alone if no experiment B, or A & B otherwise
+        //Collect counts        
 		double totalA=0, totalB=0, numWin=0;
 		for(String chrom:genome.getChromList()) {
             int chrlen = genome.getChromLength(chrom);
@@ -136,26 +136,28 @@ public class ExperimentScaler {
         Collections.sort(counts);
         
         //SES procedure
+        double readRatio = totalA/totalB;
+        double minScaling = readRatio*.05;
         double cumulA=0, cumulB=0, maxDiffAB=0, maxDiffAprop=0, currDiff=0;
         int maxDiffIndex=0, i=0;
         for(PairedCounts pc : counts){
         	cumulA+=pc.x;
         	cumulB+=pc.y;
         	currDiff = (cumulB/totalB)-(cumulA/totalA);
-        	if(currDiff>maxDiffAB && cumulA>0 && cumulB>0){
+        	if(currDiff>maxDiffAB && cumulA>0 && cumulB>0 && cumulA/cumulB>minScaling){
         		maxDiffAB=currDiff;
         		maxDiffIndex=i;
         		maxDiffAprop=(cumulA/totalA);
-        		scalingRatio = cumulB>0 ? cumulA/cumulB : 1;
+        		scalingRatio = cumulA/cumulB;
         	}
         	/*if(i%500==0){
         		double ratio = cumulB>0 ? cumulA/cumulB : 1;
-    			System.out.println(i+"\t"+cumulA+"\t"+cumulB+"\t"+currDiff+"\t"+ratio);
+    			System.out.println(i+"\t"+cumulA/totalA+"\t"+cumulB/totalB+"\t"+currDiff+"\t"+ratio);
         	}*/
         	i++;
         }
         //double ratio = cumulB>0 ? cumulA/cumulB : 1;
-        //System.out.println(i+"\t"+cumulA+"\t"+cumulB+"\t"+currDiff+"\t"+ratio);
+        //System.out.println(i+"\t"+cumulA/totalA+"\t"+cumulB/totalB+"\t"+currDiff+"\t"+ratio);
         
         System.err.println(String.format("Scaling ratio estimated by SES = %.3f based on %d regions of size %d",
         		scalingRatio, counts.size(), windowSize));

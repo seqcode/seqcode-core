@@ -50,7 +50,9 @@ public class Sample {
 	private Config config;
 	private Genome gen;
 	protected String name;
+	protected String sourceName=""; //String describing the source files or DBIDs 
 	protected double totalHits; //totalHits is the sum of alignment weights
+	protected double uniqueHits; //count of unique mapped positions (just counts the number of bases with non-zero counts - does not treat non-uniquely mapped positions differently)
 	private int numChroms;
 	protected BackgroundCollection perBaseBack=new BackgroundCollection();
 	protected float maxReadsPerBP=-1;
@@ -93,7 +95,9 @@ public class Sample {
 	public int getIndex(){return index;}
 	public Genome getGenome(){return(gen);}
 	public String getName(){return name;}
+	public String getSourceName(){return sourceName;}
 	public double getHitCount(){return(totalHits);}
+	public double getHitPositionCount(){return(uniqueHits);}
 	public void setGenome(Genome g){gen=g;}
 	public BackgroundCollection getPerBaseBackground(){return perBaseBack;}
 
@@ -101,7 +105,10 @@ public class Sample {
 	 * Add a HitLoader to the set
 	 * @param h HitLoader
 	 */
-	public void addHitLoader(HitLoader h){loaders.add(h);}
+	public void addHitLoader(HitLoader h){
+		loaders.add(h); 
+		sourceName= sourceName.equals("") ? h.getSourceName() : sourceName+";"+h.getSourceName();
+	}
 	
 	/**
 	 * Load hits from the loaders. Store everything in the primitive arrays.
@@ -394,11 +401,15 @@ public class Sample {
 	 */
 	protected void updateTotalHits(){
 		totalHits = 0.0;
+		uniqueHits = 0.0;
 		for(int i = 0; i < fivePrimeCounts.length; i++)
 			for(int j = 0; j < fivePrimeCounts[i].length; j++)
 				if(fivePrimeCounts[i][j]!=null)
-					for(int k = 0; k < fivePrimeCounts[i][j].length; k++)
+					for(int k = 0; k < fivePrimeCounts[i][j].length; k++){
 						totalHits += fivePrimeCounts[i][j][k];
+						if(fivePrimeCounts[i][j][k]>0)
+							uniqueHits++;
+					}
 	}
 	
 	/**

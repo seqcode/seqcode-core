@@ -24,6 +24,7 @@ import edu.psu.compbio.seqcode.projects.multigps.framework.ReadHit;
 public abstract class HitLoader {
 
 	protected double totalHits; //totalHits is the sum of alignment weights
+	protected String sourceName=""; //String describing the source
 	/**
 	 * Five prime ends of the read hits. <br>
 	 * HashMap is indexed by chromosome name. <br>
@@ -47,6 +48,7 @@ public abstract class HitLoader {
 
 //Accessors
 	public double getHitCount(){return(totalHits);}
+	public String getSourceName(){return sourceName;}
 	public HashMap<String, ArrayList<Integer>[]> getFivePrimePositions(){return fivePrimePosList;}
 	public HashMap<String, ArrayList<Float>[]> getFivePrimeCounts(){return fivePrimeCountsList;}
 	
