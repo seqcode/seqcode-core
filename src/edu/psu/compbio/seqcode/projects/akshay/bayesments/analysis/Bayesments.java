@@ -47,6 +47,7 @@ public class Bayesments {
 			EMrunner trainer = null;
 			
 			double[][] bic_vals = new double[c.getMaxChromStates()-c.getMinChromStates()+1][c.getMaxFacStates()-c.getMinFacStates()+1];
+			double[][] aic_vals = new double[c.getMaxChromStates()-c.getMinChromStates()+1][c.getMaxFacStates()-c.getMinFacStates()+1];
 			int nRows = c.getMaxChromStates()-c.getMinChromStates()+1;
 			int nCols = c.getMaxFacStates()-c.getMinFacStates()+1;
 			for(int i=0; i<nRows; i++){
@@ -59,6 +60,7 @@ public class Bayesments {
 					trainer.trainModel();
 					BIC temp_bic = new BIC(c, trainer.getModel(), i+c.getMinChromStates(), j+c.getMinFacStates());
 					bic_vals[i][j] = temp_bic.calculateBicScore();
+					aic_vals[i][j] = temp_bic.calculateAicScore();
 				}
 			}
 			
@@ -69,6 +71,10 @@ public class Bayesments {
 			
 			System.out.println("-------------------------------------------------------------BIC values:----------------------------------------------------------");
 			BayesmentsSandbox.printArray(bic_vals,"chromatin_State" , "factor_state", trainer.getModel().getConditionNames());
+			System.out.println("----------------------------------------------------------------------------------------------------------------------------------");
+			
+			System.out.println("-------------------------------------------------------------AIC values:----------------------------------------------------------");
+			BayesmentsSandbox.printArray(aic_vals,"chromatin_State" , "factor_state", trainer.getModel().getConditionNames());
 			System.out.println("----------------------------------------------------------------------------------------------------------------------------------");
 			
 			trainer = null;
