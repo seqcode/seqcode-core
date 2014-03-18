@@ -29,6 +29,7 @@ public class BIC {
 	protected int M;
 	
 	protected boolean inSeqMode;
+	public double[][] assignment;
 	
 	
 	
@@ -58,6 +59,9 @@ public class BIC {
 		}
 		this.numChromStates = nChromStates;
 		this.numFacStates = nFacStates;
+		MAPassignment MLE = new MAPassignment(model, conf, null, this.numChromStates, this.numFacStates);
+		MLE.execute(false);
+		this.assignment = MLE.getMapAssignments();
 		
 	}
 	
@@ -67,42 +71,41 @@ public class BIC {
 		return bic;
 	}
 	
+	public double calculateAicScore(){
+		double aic  =  -2*this.getLikleHood()+(this.numChromStates*C+this.numFacStates*F+this.numChromStates*this.numFacStates);
+		return aic;
+	}
 	
 	private double getLikleHood(){
 		double L=0;
 		
 		for(int i=0; i<N; i++){
-			double P_x=0.0;
-			for(int j=0; j<this.numChromStates; j++){
-				for(int k=0; k<this.numFacStates; k++){
-					double P_x_c_b =0.0;
-					double chromatinProduct = 1.0;
-					double factorProduct = 1.0;
-					double seqProduct = 1.0;
-					for(int c=0; c<C; c++){
-						NormalDistribution gaussian = new NormalDistribution(MUc[j][c],Math.pow(SIGMAc[j][c], 2.0));
-						chromatinProduct = (c==0) ? gaussian.calcProbability((double) Xc[i][c]) : chromatinProduct*gaussian.calcProbability((double) Xc[i][c]);
-					}
-					for(int f=0; f<F; f++){
-						NormalDistribution gaussian = new NormalDistribution(MUf[k][f],Math.pow(SIGMAf[k][f], 2.0));
-						factorProduct = (f==0)? gaussian.calcProbability((double) Xf[i][f]) : factorProduct*gaussian.calcProbability((double) Xf[i][f]);
-					}
-					if(inSeqMode){
-						for(int m=0; m<M; m++){
-							NormalDistribution gaussian = new NormalDistribution(MUs[j][m],Math.pow(SIGMAs[j][m], 2.0));
-							seqProduct = (m==0) ? gaussian.calcProbability((double) Xs[i][m]) : seqProduct*gaussian.calcProbability((double) Xs[i][m]);
-						}
-					}
-					if(inSeqMode){
-						P_x_c_b = chromatinProduct*seqProduct*Bjk[j][k]*factorProduct;
-					}else{
-						P_x_c_b = chromatinProduct*Bjk[j][k]*factorProduct;
-					}
-					P_x = P_x + P_x_c_b;
+			double P_x_c_b =0.0;
+			double chromatinProduct = 1.0;
+			double factorProduct = 1.0;
+			double seqProduct = 1.0;
+			for(int c=0; c<C; c++){
+				NormalDistribution gaussian = new NormalDistribution(MUc[(int)assignment[i][0]][c],Math.pow(SIGMAc[(int)assignment[i][0]][c], 2.0));
+				chromatinProduct = (c==0) ? gaussian.calcProbability((double) Xc[i][c]) : chromatinProduct*gaussian.calcProbability((double) Xc[i][c]);
+			}
+			for(int f=0; f<F; f++){
+				NormalDistribution gaussian = new NormalDistribution(MUf[(int)assignment[i][1]][f],Math.pow(SIGMAf[(int)assignment[i][1]][f], 2.0));
+				factorProduct = (f==0)? gaussian.calcProbability((double) Xf[i][f]) : factorProduct*gaussian.calcProbability((double) Xf[i][f]);
+			}
+			if(inSeqMode){
+				for(int m=0; m<M; m++){
+					NormalDistribution gaussian = new NormalDistribution(MUs[(int)assignment[i][0]][m],Math.pow(SIGMAs[(int)assignment[i][0]][m], 2.0));
+					seqProduct = (m==0) ? gaussian.calcProbability((double) Xs[i][m]) : seqProduct*gaussian.calcProbability((double) Xs[i][m]);
 				}
 			}
-			L= L+Math.log(P_x);
+			if(inSeqMode){
+				P_x_c_b = chromatinProduct*seqProduct*Bjk[(int)assignment[i][0]][(int)assignment[i][1]]*factorProduct;
+			}else{
+				P_x_c_b = chromatinProduct*Bjk[(int)assignment[i][0]][(int)assignment[i][1]]*factorProduct;
+			}
+			L = L+Math.log(P_x_c_b);
 		}
+			
 		return L;
 		
 	}
