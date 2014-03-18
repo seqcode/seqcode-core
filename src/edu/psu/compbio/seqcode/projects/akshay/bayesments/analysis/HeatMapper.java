@@ -38,9 +38,9 @@ public class HeatMapper {
 		HeatChart map = new HeatChart(this.matrix);
 		//map.setHighValueColour(new Color(221,20,20));
 		map.setHighValueColour(c);
-		if(log_scale){
-			map.setColourScale(map.SCALE_LOGARITHMIC);
-		}
+		//if(log_scale){
+		//	map.setColourScale(map.SCALE_LOGARITHMIC);
+		//}
 		map.setChartMargin(600);
 		map.setCellHeight(200);
 		map.setCellWidth(200);
@@ -81,8 +81,9 @@ public class HeatMapper {
 				mu[j] = matrix[j][c];
 			}
 			int maxind = BayesmentsSandbox.getMaxindex(mu);
+			int minind = BayesmentsSandbox.getMinindex(mu);
 			for(int j=0; j<nrow; j++){
-				matrix[j][c] = mu[j]/mu[maxind];
+				matrix[j][c] = (mu[j]-mu[minind])/(mu[maxind]-mu[minind]);
 			}
 		}
 	}
