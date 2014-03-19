@@ -252,8 +252,8 @@ public class Config {
 					}
 				}
 				
-				this.chromatin_weightage = Args.parseDouble(args, "chromWeight", -1.0);
-				this.sequence_weightage = Args.parseDouble(args, "seqWeight", -1.0);
+				this.chromatin_weightage = Args.parseDouble(args, "chromWeight", 1.0);
+				this.sequence_weightage = Args.parseDouble(args, "seqWeight", 1.0);
 				
 				
 				

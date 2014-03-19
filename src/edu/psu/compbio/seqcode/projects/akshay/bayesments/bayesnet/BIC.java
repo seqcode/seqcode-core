@@ -99,7 +99,7 @@ public class BIC {
 				}
 			}
 			if(inSeqMode){
-				P_x_c_b = chromatinProduct*seqProduct*Bjk[(int)assignment[i][0]][(int)assignment[i][1]]*factorProduct;
+				P_x_c_b = chromatinProduct*Math.pow(seqProduct,conf.getSeqWeight())*Bjk[(int)assignment[i][0]][(int)assignment[i][1]]*factorProduct;
 			}else{
 				P_x_c_b = chromatinProduct*Bjk[(int)assignment[i][0]][(int)assignment[i][1]]*factorProduct;
 			}
