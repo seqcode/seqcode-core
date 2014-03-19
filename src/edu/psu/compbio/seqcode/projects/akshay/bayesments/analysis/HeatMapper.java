@@ -82,8 +82,14 @@ public class HeatMapper {
 			}
 			int maxind = BayesmentsSandbox.getMaxindex(mu);
 			int minind = BayesmentsSandbox.getMinindex(mu);
-			for(int j=0; j<nrow; j++){
-				matrix[j][c] = (mu[j]-mu[minind])/(mu[maxind]-mu[minind]);
+			if(mu[minind] < 0){
+				for(int j=0; j<nrow; j++){
+					matrix[j][c] = (mu[j]-mu[minind])/(mu[maxind]-mu[minind]);
+				}
+			}else{
+				for(int j=0; j<nrow; j++){
+					matrix[j][c] = mu[j]/mu[maxind];
+				}
 			}
 		}
 	}
