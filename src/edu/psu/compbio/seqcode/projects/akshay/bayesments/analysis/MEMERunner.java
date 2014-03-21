@@ -106,14 +106,13 @@ public class MEMERunner {
 					//System.out.println(WeightMatrix.printMatrix(bestMotif));
 				}else{
 					for(Pair<WeightMatrix,Double> m : currFM){
-						if(m.cdr() < config.getMotifCuttof()){
-							fm.add(m.car());
-							WeightMatrix wMatrix = WeightMatrix.getLogOddsVersion(m.car(), back);
-							wm.add(wMatrix);
-						}
+						fm.add(m.car());
+						WeightMatrix wMatrix = WeightMatrix.getLogOddsVersion(m.car(), back);
+						wm.add(wMatrix);
 					}
 				}
-            }
+			}
+         
             //Clean up intermediate files (fasta, etc)
             if(seqFile.exists())
             	seqFile.delete();
