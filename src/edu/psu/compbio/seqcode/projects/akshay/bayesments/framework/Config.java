@@ -29,6 +29,7 @@ public class Config {
 	protected int chromatinWindow;
 	protected double mappableGenome = 0.8;
 	protected File locations;
+	protected File Top_Locations;
 	protected int numChromStates;
 	protected int numBindingStates;
 	protected boolean plotEM;
@@ -253,6 +254,14 @@ public class Config {
 						System.err.println("You have requested to include sequence features, but no genome sequence data was provided with --seq");
 						System.exit(1);
 					}
+					
+					//Read the locations to do meme search provided by the user
+					String top_locs = ap.getKeyValue("meme_search_regions");
+					this.Top_Locations = new File(top_locs);
+					if(!this.Top_Locations.exists()){
+						System.err.println("Top locations File does not exist\n");
+						System.exit(1);    
+					}
 				}
 				
 				this.chromatin_weightage = Args.parseDouble(args, "chromWeight", 1.0);
@@ -339,6 +348,7 @@ public class Config {
 	public int getMaxFacStates(){return this.maxFacStates;}
 	public int getMinFacStates(){return this.minFacStates;}
 	public double getMotifCuttof(){return this.Motif_EVal_Cutoff;}
+	public File getTopLocations(){return this.Top_Locations;}
 	
 	//Some accessors to allow modification of options after config
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}

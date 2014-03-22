@@ -35,7 +35,7 @@ public class EMtrain {
 	protected boolean seqState;
 	
 	// True if only chromatin features are used. i.e sequence features are never used
-	protected boolean onlyChrom;
+	//protected boolean onlyChrom;
 	
 	// 2-d array of chromatin counts, with rows as locations and columns as conditions
 	protected float[][] Xc;
@@ -63,17 +63,12 @@ public class EMtrain {
 	protected int M; // number of motifs to be included as features (this number is initialized when the models enters the seq state mode (setSeqMode))
 	// flag to turn on plotting of the parameters as the function of iterations step in EM
 	
-	//The 3-d arrays store the values of seq parameters over all iterations of EM. They are globally defined unlike other non-seq parameters 
-	//because of some technical details
-	//These are initializes when the model enters the seq Mode (setSeqMode)
-	protected double[][][] trainMUs;
-	protected double[][][] trainSIGMAs;
+	//The 3-d arrays store the values of seq parameters over all iterations of EM.
 	
+	protected double[][][] trainMUs;
 	protected double[][][] trainMUc; 
 	protected double[][][] trainMUf; 
-	protected double[][][] trainSIGMAc;
-	protected double[][][] trainSIGMAf;
-	protected double[][] trainPIj; 
+	
 	protected double[][][] trainBjk;
 	
 	protected double[] capSIGMAc;
@@ -90,19 +85,17 @@ public class EMtrain {
 	protected boolean regularize;
 	
 	protected boolean printIntialVals;
-	
-	//Current round of EM. This remembers, if the model was run previously in non-seq mode and hence globally defined
-	protected int itr_no=0;
-	//Total number of EM iters, both, in seq and non-seq mode (Should be given when the class object is initialized)
+
+	//Total number of EM iterations
 	protected int total_itrs=0;
 	
 	/**
-	 * When initializing this class object, it is always in seq off mode
+	 * This constructor is used only for real data. (Use the other constructor for simulated datasets)
 	 * @param config
 	 * @param trainingData
 	 * @param manager
 	 */
-	public EMtrain(Config config, GenomicLocations trainingData, ExperimentManager manager, int nChromStates, int nFacStates, boolean Regularize, boolean printVals) {
+	public EMtrain(Config config, GenomicLocations trainingData, Sequences seqs, ExperimentManager manager, int nChromStates, int nFacStates, boolean Regularize, boolean printVals, boolean SeqState) {
 		this.config = config;
 		//this.trainingData = trainingData;
 		this.regularize = Regularize;
@@ -133,8 +126,11 @@ public class EMtrain {
 		//Initializing the model
 		initializeEM(this.printIntialVals);
 		this.total_itrs = config.getNumItrs();
-		this.onlyChrom = config.runOnlyChrom();
-		this.seqState = false;
+		this.seqState = SeqState;
+		if(SeqState){
+			this.setSeqMode(seqs, manager);
+			this.initializeSeqParams(manager);
+		}
 		this.Simulate = false;
 		
 	}
@@ -153,7 +149,6 @@ public class EMtrain {
 		this.F =1;
 		this.numChromStates = nChromStates;
 		this.numFacBindingStates = nFacStates;
-		this.onlyChrom = true;
 		this.seqState = false;
 		this.total_itrs = this.config.getNumItrs();
 		
@@ -172,7 +167,6 @@ public class EMtrain {
 		this.initializeEM(this.printIntialVals);
 		
 		this.total_itrs = config.getNumItrs();
-		this.onlyChrom = true; // Simulates always does not include seq features
 		this.seqState = false;
 		this.Simulate = true;
 		
@@ -263,10 +257,12 @@ public class EMtrain {
 		}
 		
 		//Printing the initial SIGMA's
-		//if(this.printIntialVals){
-		//	BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", this.condition_names);
-		//	BayesmentsSandbox.printArray(SIGMAf, "SIGMAf", "SIGMAf", this.condition_names);
-		//}
+		if(this.printIntialVals){
+			System.out.println("----------------------------------Intial SIGMAc and SIGMAf values----------------------------------------");
+			BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", this.condition_names);
+			BayesmentsSandbox.printArray(SIGMAf, "SIGMAf", "SIGMAf", this.condition_names);
+			System.out.println("----------------------------------Intial SIGMAc and SIGMAf values----------------------------------------");
+		}
 		// Initializing Bjk .. Using random initialization 
 		Bjk = new double[numChromStates][numFacBindingStates];
 		for(int i=0; i<numChromStates; i++){
@@ -274,15 +270,11 @@ public class EMtrain {
 		}
 		
 		//printing the initial Bjk's
-		//if(this.printIntialVals){
-		//	BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", this.condition_names);
-		//}
-		// Initializing PIj ... Using Uniform initialization
-		//PIj = new double[numChromStates];
-		//PIj = this.getUniformList(numChromStates);
-		
-		//Printing the initial PIj's
-		//BayesmentsSandbox.printArray(PIj, "chrom_state");
+		if(this.printIntialVals){
+			System.out.println("----------------------------------Intial Bjk values----------------------------------------");
+			BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", this.condition_names);
+			System.out.println("----------------------------------Intial Bjk values----------------------------------------");
+		}
 		
 		//Initializing the dimensions of Qijk's
 		Qijk = new double[N][numChromStates][numFacBindingStates];
@@ -311,7 +303,9 @@ public class EMtrain {
 		
 		//printing params
 		if(this.printIntialVals){
+			System.out.println("----------------------------------Intial MUs values----------------------------------------");
 			BayesmentsSandbox.printArray(MUs, "MUs", "MUs", this.condition_names);
+			System.out.println("----------------------------------Intial MUs values----------------------------------------");
 		}
 		
 		for(int m=0; m< M; m++){
@@ -326,6 +320,12 @@ public class EMtrain {
 				SIGMAs[j][m] = (max-min)/(this.numChromStates+config.getBufferSigmaVal());
 				this.capSIGMAs[m] = (max-min)/(this.numFacBindingStates+config.getBufferSigmaVal());
 			}
+		}
+		
+		if(this.printIntialVals){
+			System.out.println("----------------------------------Intial SIGMAs values----------------------------------------");
+			BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", this.condition_names);
+			System.out.println("----------------------------------Intial SIGMAs values----------------------------------------");
 		}
 		
 	}
@@ -446,51 +446,21 @@ public class EMtrain {
 	/**
 	 * Runs the EM algorithm for a given number of iterations and also plots the parameters over the learning rounds if plot parameter is true
 	 */
-	public void runEM(int itrs, boolean plot){
+	public void runEM(boolean plot){
 		
-		// Initializing the arrays to store the parameters for all training rounds
-		//double[][][] trainMUc = new double[this.total_itrs+1][numChromStates][C]; //initial random params plus itrs 
-		//double[][][] trainMUf = new double[this.total_itrs+1][numFacBindingStates][F];
-		//double[][][] trainSIGMAc = new double[this.total_itrs+1][numChromStates][C];
-		//double[][][] trainSIGMAf = new double[this.total_itrs+1][numFacBindingStates][F];
-		//double[][] trainPIj = new double[this.total_itrs+1][numChromStates];
-		//double[][][] trainBjk = new double[this.total_itrs+1][numChromStates][numFacBindingStates];
-		
-		
-		for(int t=0; t<itrs; t++){ // training for the given number of iterations
+		for(int t=0; t<this.total_itrs; t++){ // training for the given number of iterations
 			
-			if(itr_no==0){      //Copy the initial set of random parameters. True on the first round of EM
+			if(t==0){      //Copy the initial set of random parameters. True on the first round of EM
 				
 				trainMUc = new double[this.total_itrs+1][numChromStates][C];
 				trainMUf = new double[this.total_itrs+1][numFacBindingStates][F];
-				trainSIGMAc = new double[this.total_itrs+1][numChromStates][C];
-				trainSIGMAf = new double[this.total_itrs+1][numFacBindingStates][F];
-				trainPIj = new double[this.total_itrs+1][numChromStates];
 				trainBjk = new double[this.total_itrs+1][numChromStates][numFacBindingStates];
-				
 				trainMUc[0] = MUc;
 				trainMUf[0] = MUf;
-				trainSIGMAc[0] = SIGMAc;
-				trainSIGMAf[0] = SIGMAf;
 				//trainPIj[0] = PIj;
 				trainBjk[0] = Bjk;
-				itr_no++;
-			}
-			if(this.seqState){ //When the model is in seq state
-				if(t == 0){  // First EM iteration after the model entered seq state
-					for(int p=0; p< this.itr_no-1 ; p++){ // indexe's form 0 to itr_no-2 are all zeros
-						for(int j=0; j<this.numChromStates; j++){
-							for(int m=0; m<M; m++){
-									trainMUs[p][j][m] =0.0; 
-							}
-						}
-					}
-					for(int j=0; j<this.numChromStates; j++){ // index no itr_no-1 is initial random seq parameters
-						for(int m=0; m<M; m++){
-							trainMUs[itr_no-1] = MUs;
-							trainSIGMAs[itr_no-1] = SIGMAs;
-						}
-					}
+				if(this.seqState){
+					trainMUs[0] = MUs;
 				}
 			}
 			
@@ -500,152 +470,83 @@ public class EMtrain {
 			// Copy the updated parameters
 			for(int j=0; j<numChromStates; j++){
 				for(int c=0; c<C; c++){
-					trainMUc[itr_no][j][c]= MUc[j][c];
+					trainMUc[t+1][j][c]= MUc[j][c];
 				}
 			}
 			
 			for(int k=0; k<numFacBindingStates; k++){
 				for(int f=0; f<F; f++){
-					trainMUf[itr_no][k][f]= MUf[k][f];
+					trainMUf[t+1][k][f]= MUf[k][f];
 				}
 			}
 			
-			for(int j=0; j<numChromStates; j++){
-				for(int c=0; c<C; c++){
-					trainSIGMAc[itr_no][j][c]= SIGMAc[j][c];
-				}
-			}
-			
-			for(int k=0; k<numFacBindingStates; k++){
-				for(int f=0; f<F; f++){
-					trainSIGMAf[itr_no][k][f]= SIGMAf[k][f];
-				}
-			}
-			
-			//for(int j=0; j<numChromStates; j++){
-			//	trainPIj[itr_no][j] = PIj[j];
-			//}
 			
 			for(int j=0; j< numChromStates; j++){
 				for(int k=0; k<numFacBindingStates; k++){
-					trainBjk[itr_no][j][k] = Bjk[j][k];
+					trainBjk[t+1][j][k] = Bjk[j][k];
 				}
 			}
 			
 			if(this.seqState){
 				for(int j=0; j<numChromStates; j++){
 					for(int m=0; m<M; m++){
-						trainMUs[itr_no][j][m]= MUs[j][m];
-						//debug
-						//System.out.println(Integer.toString(j)+"\t"+Double.toString(MUs[j][m]));
-					}
-				}
-				for(int j=0; j<numChromStates; j++){
-					for(int m=0; m<M; m++){
-						trainSIGMAs[itr_no][j][m]= SIGMAs[j][m];
+						trainMUs[t+1][j][m]= MUs[j][m];
 					}
 				}
 			}
-			this.itr_no++; // increment the EM iteration number
 		}
 		
 		// Plot if asked for
 		if(plot){
-			if(this.onlyChrom || this.seqState){
-				//Plotting Pi values
-				double[][] Xaxes = new double[numChromStates][this.total_itrs+1];  // plus 1 for initial random parameters
-				double[][] Yaxes = new double[numChromStates][this.total_itrs+1];
+			//Plotting Pi values
+			double[][] Xaxes = new double[numChromStates][this.total_itrs+1];  // plus 1 for initial random parameters
+			double[][] Yaxes = new double[numChromStates][this.total_itrs+1];
+				
+			for(int c=0; c<C; c++){
 				for(int j=0; j<numChromStates; j++){
-					for(int itr =0; itr<this.total_itrs+1; itr++){
+					for(int itr=0; itr<this.total_itrs+1; itr++){
 						Xaxes[j][itr] = itr;
-						Yaxes[j][itr] = trainPIj[itr][j];
+						Yaxes[j][itr] = trainMUc[itr][j][c];
 					}
 				}
-				EMIterPlotter piplotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "PI-C");
-				piplotter.plot();
-				
-				//Plotting Mu-c
-				Xaxes = new double[numChromStates][this.total_itrs+1];
-				Yaxes = new double[numChromStates][this.total_itrs+1];
-				
-				for(int c=0; c<C; c++){
-					for(int j=0; j<numChromStates; j++){
-						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[j][itr] = itr;
-							Yaxes[j][itr] = trainMUc[itr][j][c];
-						}
-					}
-					EMIterPlotter MUcPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MU-C_"+Integer.toString(c));
-					MUcPlotter.plot();
-				}
-				//Plotting SIGMAc
-				Xaxes = new double[numChromStates][this.total_itrs+1];
-				Yaxes = new double[numChromStates][this.total_itrs+1];
-				for(int c=0; c<C; c++){
-					for(int j=0; j<numChromStates; j++){
-						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[j][itr] = itr;
-							Yaxes[j][itr] = trainSIGMAc[itr][j][c];
-						}
-					}
-					EMIterPlotter SIGMACPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "SIGMA-C_"+Integer.toString(c));
-					SIGMACPlotter.plot();
-				}
-				
-				//Plotting Muf
-				Xaxes = new double[numFacBindingStates][this.total_itrs+1];
-				Yaxes = new double[numFacBindingStates][this.total_itrs+1];
-				for(int f=0; f<F; f++){
-					for(int k=0; k<numFacBindingStates; k++){
-						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[k][itr] = itr;
-							Yaxes[k][itr] = trainMUf[itr][k][f];
-						}
-					}
-					EMIterPlotter MUfPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MF-F_"+Integer.toString(f));
-					MUfPlotter.plot();
-				}
-				
-				
-				//Plotting SIGMAf
-				
-				Xaxes = new double[numFacBindingStates][this.total_itrs+1];
-				Yaxes = new double[numFacBindingStates][this.total_itrs+1];
-				
-				for(int f=0; f<F; f++){
-					for(int k=0; k<numFacBindingStates; k++){
-						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[k][itr] = itr;
-							Yaxes[k][itr] = trainSIGMAf[itr][k][f];
-						}
-					}
-					EMIterPlotter SIGMAfPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "SIGMA-f_"+Integer.toString(f));
-					SIGMAfPlotter.plot();
-				}
-				
-				
-				//Plotting Bjk
-				Xaxes = new double[numFacBindingStates*numChromStates][this.total_itrs+1];
-				Yaxes = new double[numFacBindingStates*numChromStates][this.total_itrs+1];
-				
-				int count=0;
-				for(int j=0; j<numChromStates; j++){
-					for(int k=0; k<numFacBindingStates; k++){
-						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[count][itr] = itr;
-							Yaxes[count][itr] = trainBjk[itr][j][k];
-						}
-						count++;
-					}
-				}
-				
-				EMIterPlotter BjkPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "Bjk");
-				BjkPlotter.plot();
+				EMIterPlotter MUcPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MU-C_"+Integer.toString(c));
+				MUcPlotter.plot();
 			}
-			if(this.seqState){
+			
+			//Plotting Muf
+			Xaxes = new double[numFacBindingStates][this.total_itrs+1];
+			Yaxes = new double[numFacBindingStates][this.total_itrs+1];
+			for(int f=0; f<F; f++){
+				for(int k=0; k<numFacBindingStates; k++){
+					for(int itr=0; itr<this.total_itrs+1; itr++){
+						Xaxes[k][itr] = itr;
+						Yaxes[k][itr] = trainMUf[itr][k][f];
+					}
+				}
+				EMIterPlotter MUfPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MF-F_"+Integer.toString(f));
+				MUfPlotter.plot();
+			}
 				
-				double[][] Xaxes = new double[numChromStates][this.total_itrs+1];  // plus 1 for initial random parameters
-				double[][] Yaxes = new double[numChromStates][this.total_itrs+1];
+			//Plotting Bjk
+			Xaxes = new double[numFacBindingStates*numChromStates][this.total_itrs+1];
+			Yaxes = new double[numFacBindingStates*numChromStates][this.total_itrs+1];
+				
+			int count=0;
+			for(int j=0; j<numChromStates; j++){
+				for(int k=0; k<numFacBindingStates; k++){
+					for(int itr=0; itr<this.total_itrs+1; itr++){
+						Xaxes[count][itr] = itr;
+						Yaxes[count][itr] = trainBjk[itr][j][k];
+					}
+					count++;
+				}
+			}
+			EMIterPlotter BjkPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "Bjk");
+			BjkPlotter.plot();
+			
+			if(this.seqState){
+				Xaxes = new double[numChromStates][this.total_itrs+1];  // plus 1 for initial random parameters
+				Yaxes = new double[numChromStates][this.total_itrs+1];
 				//Plotting Mus
 				for(int m=0; m<M; m++){
 					for(int j=0; j<numChromStates; j++){
@@ -657,27 +558,8 @@ public class EMtrain {
 					EMIterPlotter MUsPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MU-s_"+Integer.toString(m));
 					MUsPlotter.plot();
 				}
-				
-				
-				//Plotting SIIGMAs
-				Xaxes = new double[numChromStates][this.total_itrs+1];
-				Yaxes = new double[numChromStates][this.total_itrs+1];
-				for(int m=0; m<M; m++){
-					for(int j=0; j<numChromStates; j++){
-						for(int itr=0; itr<this.total_itrs+1; itr++){
-							Xaxes[j][itr] = itr;
-							Yaxes[j][itr] = trainSIGMAs[itr][j][m];
-						}
-					}
-					EMIterPlotter SIGMAsPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "SIGMA-s_"+Integer.toString(m));
-					SIGMAsPlotter.plot();
-				}
-				
 			}
-			
 		}
-		
-		
 		
 	}
 	
@@ -743,40 +625,6 @@ public class EMtrain {
 	 * Executes the M step. Updates all the parameters of the model
 	 */
 	private void executeMStep(){
-		
-		//-------------------------PIj update-----------------------------
-		
-		//Compute
-		//double denPIj = 0.0;
-		//for(int j=0; j<numChromStates; j++){
-		//	for(int i=0; i<N; i++){
-		//		for(int k=0; k<numFacBindingStates; k++){
-		//			PIj[j] = k==0 && i==0 ? Qijk[i][j][k] : PIj[j]+Qijk[i][j][k];
-		//			denPIj = denPIj + Qijk[i][j][k];
-		//		}
-		//	}
-		//}
-		
-		//Normalize
-		//for(int j=0; j<numChromStates; j++){
-		//	PIj[j] = PIj[j]/denPIj;
-		//}
-		
-		//Making sure PI-j for any state does not go to zero
-		//for(int j=0; j<numChromStates; j++){
-		//	if(PIj[j] < 0.01){
-		//		PIj[j] = 0.01;
-		//	}
-		//}
-		
-		//Re-normalize
-		//denPIj = 0.0;
-		//for(int j=0; j< numChromStates; j++){
-		//	denPIj = denPIj + PIj[j];
-		//}
-		//for(int j=0; j<numChromStates; j++){
-		//	PIj[j] = PIj[j]/denPIj;
-		//}
 		
 		//-----------------------MUc update------------------------------------
 		
@@ -847,101 +695,6 @@ public class EMtrain {
 				}
 			}
 		}
-		
-
-		//--------------------SIGMAc update --------------------------------------
-		
-		//Compute
-		//double[][] denSIGMAc = new double[numChromStates][C];
-		//for(int j=0; j<numChromStates; j++){
-		//	for(int c=0; c<C; c++){
-		//		for(int i=0; i<N; i++){
-		//			for(int k=0; k<numFacBindingStates; k++){
-		//				SIGMAc[j][c] = k==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0): SIGMAc[j][c]+Qijk[i][j][k]*Math.pow(((double)Xc[i][c] - MUc[j][c]) , 2.0);
-		//				denSIGMAc[j][c] = denSIGMAc[j][c]+Qijk[i][j][k];
-		//			}
-		//		}
-		//	}
-		//}
-		
-		//Normalize and taking the square root
-		//for(int j=0; j<numChromStates; j++){
-		//	for(int c=0; c<C; c++){
-		//		SIGMAc[j][c] = Math.sqrt(SIGMAc[j][c]/denSIGMAc[j][c]);
-		//	}
-		//}
-		
-		//if(config.capSigma()){
-		//	for(int j=0; j<numChromStates; j++){
-		//		for(int c=0; c<C; c++){
-		//			SIGMAc[j][c] = (SIGMAc[j][c] > this.capSIGMAc[c]) ? this.capSIGMAc[c] : SIGMAc[j][c];
-		//		}
-		//	}
-		//}
-		
-		//------------------SIGMAf update------------------------------------------
-		
-		//Compute
-		//double[][] denSIGMAf = new double[numFacBindingStates][F];
-		//for(int k=0; k<numFacBindingStates; k++){
-		//	for(int f=0; f<F; f++){
-		//		for(int i=0; i<N; i++){
-		//			for(int j=0; j< numChromStates; j++){
-		//				SIGMAf[k][f] = j==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0) : SIGMAf[k][f]+Qijk[i][j][k]*Math.pow(((double)Xf[i][f] - MUf[k][f]) , 2.0);
-		//				denSIGMAf[k][f] = denSIGMAf[k][f]+Qijk[i][j][k];
-		//			}
-		//		}
-		//	}
-		//}
-		
-		//Normalize and taking the square root
-		//for(int k=0; k<numFacBindingStates; k++){
-		//	for(int f=0; f<F; f++){
-		//		SIGMAf[k][f] = Math.sqrt(SIGMAf[k][f]/denSIGMAf[k][f]);
-		//	}
-		//}
-		
-		//if(config.capSigma()){
-		//	for(int k=0; k<numFacBindingStates; k++){
-		//		for(int f=0; f<F; f++){
-		//			SIGMAf[k][f] = (SIGMAf[k][f] > this.capSIGMAf[f]) ? this.capSIGMAf[f] : SIGMAf[k][f];
-		//		}
-		//	}
-		//}
-		
-		
-		
-		//--------------------SIGMAs update, if in seqState ------------------------
-		
-		//Compute
-		//if(this.seqState){
-		//	double[][] denSIGMAs = new double[numChromStates][M];
-		//	for(int j=0; j<numChromStates; j++){
-		//		for(int m=0; m<M; m++){
-		//			for(int i=0; i<N; i++){
-		//				for(int k=0; k<numFacBindingStates; k++){
-		//					SIGMAs[j][m] = k==0 && i==0? Qijk[i][j][k]*Math.pow(((double)Xs[i][m] - MUs[j][m]) , 2.0): SIGMAs[j][m]+Qijk[i][j][k]*Math.pow(((double)Xs[i][m] - MUs[j][m]) , 2.0);
-		//					denSIGMAs[j][m] = denSIGMAs[j][m]+Qijk[i][j][k];
-		//				}
-		//			}
-		//		}
-		//	}
-			
-			//Normalize and taking the square root
-		//	for(int j=0; j<numChromStates; j++){
-		//		for(int m=0; m<M; m++){
-		//			SIGMAs[j][m] = Math.sqrt(SIGMAs[j][m]/denSIGMAs[j][m]);
-		//		}
-		//	}
-			
-		//	if(config.capSigma()){
-		//		for(int j=0; j<numChromStates; j++){
-		//			for(int m=0; m<M; m++){
-		//				SIGMAs[j][m] = (SIGMAs[j][m] > this.capSIGMAs[m]) ? this.capSIGMAs[m] : SIGMAs[j][m];
-		//			}
-		//		}
-		//	}
-		//}
 		
 		//---------------------Bjk update -------------------------------------------
 		
@@ -1022,9 +775,9 @@ public class EMtrain {
 	
 	
 	//setters
-	public void setSeqMode(Sequences seqs, double[][] Xs, ExperimentManager manager){
+	public void setSeqMode(Sequences seqs, ExperimentManager manager){
 		this.seqState = true;
-		this.setXs(Xs);
+		this.setXs(seqs.getXs());
 		this.M = Xs[0].length;
 		System.out.println("2-time "+Integer.toString(M));
 		if(this.regularize){
@@ -1033,10 +786,7 @@ public class EMtrain {
 		this.capSIGMAs = new double[M];
 		//this.setSequences(seqs);
 		this.setInitialSeqParams(manager);
-		this.trainMUs = new double[this.total_itrs+1][this.numChromStates][this.M];
-		this.trainSIGMAs = new double[this.total_itrs+1][this.numChromStates][this.M];
-		
-		
+		this.trainMUs = new double[this.total_itrs+1][this.numChromStates][this.M];		
 	}
 	
 	private void setXs(double[][] Xs){this.Xs = Xs;}
