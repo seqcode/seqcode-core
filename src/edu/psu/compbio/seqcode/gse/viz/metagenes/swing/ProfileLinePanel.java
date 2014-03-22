@@ -48,7 +48,7 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
 		clusteringHandler = new ProfileClusteringHandler(params);
 		
 		if(width%params.getNumBins()!=0)
-			width = params.getNumBins();
+			width = params.getNumBins()*((int)width/params.getNumBins());
 		setPreferredSize(new Dimension(width, 300));
 	}
 	
