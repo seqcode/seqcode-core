@@ -73,7 +73,8 @@ public class ChipSeqProfiler implements PointProfiler<Point,PointProfile> {
 		int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom()));
 		
 		Region query = new Region(a.getGenome(), a.getChrom(), start, end);
-		Region extQuery = new Region(a.getGenome(), a.getChrom(), start-extension>0 ? start-extension : 1, end+extension < a.getGenome().getChromLength(a.getChrom()) ? end+extension : a.getGenome().getChromLength(a.getChrom()) );
+		int ext = 200;
+		Region extQuery = new Region(a.getGenome(), a.getChrom(), start-ext>0 ? start-ext : 1, end+ext < a.getGenome().getChromLength(a.getChrom()) ? end+ext : a.getGenome().getChromLength(a.getChrom()) );
 		
 		double[] array = new double[params.getNumBins()];
 		for(int i = 0; i < array.length; i++) { array[i] = 0; }

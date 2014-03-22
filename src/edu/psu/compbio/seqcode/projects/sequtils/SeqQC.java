@@ -136,13 +136,15 @@ public class SeqQC {
 			Collections.sort(densities); //Sort the density pairs in increasing order
 			
 			//2: Generate a read count per base distribution for the lowest density sites. 
-			double currWeight=0, quantileLimit=testQuantile*expt.getSignal().getHitCount();
+			double currWeight=0, fracWeight=0, quantileLimit=testQuantile*expt.getSignal().getHitCount();
 			RealValuedHistogram histo = new RealValuedHistogram(0,histoMax,histoMax);
 			RealValuedHistogram fullHisto = new RealValuedHistogram(0,histoMax,histoMax);
 			for(DensityCountPair dcp : densities){
 				fullHisto.addValue(dcp.getCount());
-				if(currWeight<quantileLimit)
+				if(currWeight<quantileLimit){
 					histo.addValue(dcp.getCount());
+					fracWeight+=dcp.getCount();
+				}
 				currWeight+=dcp.getCount();
 			}
 			
@@ -160,17 +162,17 @@ public class SeqQC {
 			double pLibrarySize = census.getEstimatedPoissonLibSize() / testQuantile;
 			double pMean = census.getEstimatedPoissonLambda();
 			double pLibraryCoverage = census.getEstimatedPoissonObservedCoverage();
-			double pLibraryCoverageDoubledSeq = census.getEstimatedPoissonObservedGivenCount(2*currWeight);
+			double pLibraryCoverageDoubledSeq = census.getEstimatedPoissonObservedGivenCount(2*fracWeight);
 			double pNovelFragsUnderDoubleSeq = (pLibraryCoverageDoubledSeq-pLibraryCoverage)*pLibrarySize;
 			double nbLibrarySize = census.getEstimatedNegBinomialLibSize() / testQuantile;
 			double nbLibraryCoverage = census.getEstimatedNegBinomialObservedCoverage();
-			double nbLibraryCoverageDoubledSeq = census.getEstimatedNegBinomialObservedGivenCount(2*currWeight);
+			double nbLibraryCoverageDoubledSeq = census.getEstimatedNegBinomialObservedGivenCount(2*fracWeight);
 			double nbMean = census.getEstimatedNegBinomialMean();
 			double nbVar = census.getEstimatedNegBinomialVariance();
 			double nbNovelFragsUnderDoubleSeq = (nbLibraryCoverageDoubledSeq-nbLibraryCoverage)*nbLibrarySize;
 			double lnLibrarySize = census.getEstimatedLogNormLibSize() / testQuantile;
 			double lnLibraryCoverage = census.getEstimatedLogNormObservedCoverage();
-			double lnLibraryCoverageDoubledSeq = census.getEstimatedLogNormObservedGivenCount(2*currWeight);
+			double lnLibraryCoverageDoubledSeq = census.getEstimatedLogNormObservedGivenCount(2*fracWeight);
 			double lnMean = census.getEstimatedLogNormMean();
 			//double lnNovelFragsUnderDoubleSeq = (lnLibraryCoverageDoubledSeq-lnLibraryCoverage)*lnLibrarySize;
 			
