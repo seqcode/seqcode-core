@@ -51,9 +51,6 @@ public class Config {
 	protected int MEMEmaxw=18;
 	protected int MEMEnmotifs;
 	
-	protected int chrom_itrs;
-	protected int seq_itrs;
-	
 	protected double chromatin_weightage;
 	protected double sequence_weightage;
 	protected boolean boundSigma;
@@ -126,17 +123,6 @@ public class Config {
 				this.numBindingStates = Args.parseInteger(args, "nFacStates", 3);
 				
 				this.numItrs = Args.parseInteger(args, "numItrs", 50);
-				this.chrom_itrs = Args.parseInteger(args, "numChromItrs", 10);
-				this.seq_itrs = Args.parseInteger(args, "numSeqItrs", 40);
-				
-				if(!Args.parseFlags(args).contains("onlyChrom")){
-					this.numItrs = this.chrom_itrs+this.seq_itrs;
-				}else{
-					this.chrom_itrs = this.numItrs;
-					this.seq_itrs=0;
-				}
-				
-				
 				
 				//Load expts from design file
 				//Format: (tab separated)
@@ -334,8 +320,6 @@ public class Config {
 	public boolean runOnlyChrom(){return this.onlyChrom;}
 	public String getMEMEpath(){return this.MEMEpath;}
 	public String getMEMEargs(){return this.MEMEargs;}
-	public int getNumChromIters(){return this.chrom_itrs;}
-	public int getNumSeqIters(){return this.seq_itrs;}
 	public double getChromWeight(){return this.chromatin_weightage;}
 	public double getSeqWeight(){return this.sequence_weightage;}
 	public boolean capSigma(){return this.boundSigma;}
