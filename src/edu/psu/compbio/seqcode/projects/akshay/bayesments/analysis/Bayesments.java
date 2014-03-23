@@ -60,6 +60,9 @@ public class Bayesments {
 					MotifPlatform motif_profiler = new MotifPlatform(c,top_regions);
 					motif_profiler.findMotifs();
 					motifs = motif_profiler.getMotifs();
+					seqs.setMotifs(motifs);
+					seqs.setXc();
+					seqs.plotSeqScores();
 				}
 			}
 			
