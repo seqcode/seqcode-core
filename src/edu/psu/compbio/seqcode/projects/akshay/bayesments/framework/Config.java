@@ -77,7 +77,7 @@ public class Config {
 	public final double Motif_EVal_Cutoff = Double.valueOf("1.0e-10");
 	public final int MOTIF_FINDING_NEGSEQ=5000; //Number of negative sequences for motif significance tests
     public final double MOTIF_FINDING_ALLOWED_REPETITIVE = 0.2; //Percentage of the examined sequence window allowed to be lowercase or N
-    public final double MOTIF_MIN_ROC = 0.7; //Motif prior is used only if the ROC is greater than this .
+    public final double MOTIF_MIN_ROC = 0.6; //Motif prior is used only if the ROC is greater than this .
 	
 	
 	
