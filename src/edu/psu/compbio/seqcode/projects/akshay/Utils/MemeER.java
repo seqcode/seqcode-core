@@ -301,7 +301,7 @@ public class MemeER {
 			
 			if(wm.size()>0){
 				//Evaluate the significance of the discovered motifs
-				double rocScores[] = motifROCScores(wm,seqs,randomSequences);
+				double rocScores[] = meme.motifROCScores(wm,seqs,randomSequences);
 				System.err.println("MEME results for:" );
 				for(int w=0; w<fm.size(); w++){
 					if(fm.get(w)!=null){
@@ -328,7 +328,7 @@ public class MemeER {
 		return count/(double)seq.length();
 	}
 	
-	protected static double[] motifROCScores(List<WeightMatrix> matrices, List<String> posSeqs, String[] negSeqs){
+	protected  double[] motifROCScores(List<WeightMatrix> matrices, List<String> posSeqs, String[] negSeqs){
 		double[] rocScores = new double[matrices.size()];
 		int m=0;
 		for(WeightMatrix motif : matrices){
@@ -351,7 +351,7 @@ public class MemeER {
 		return rocScores;
 	}
 	
-	protected static double calcROCAUC(List<Double> posMaxScores, List<Double> negMaxScores) {
+	protected  double calcROCAUC(List<Double> posMaxScores, List<Double> negMaxScores) {
 		double auc = 0;
 		if(posMaxScores.size()==0)
 			return 0;
