@@ -392,7 +392,7 @@ public class MemeER {
 		return auc;
 	}
 	
-	protected static class LabeledDouble implements Comparable<LabeledDouble>{
+	protected  class LabeledDouble implements Comparable<LabeledDouble>{
 		public Double dat;
 		public Integer label;
 		public LabeledDouble(Double d, Integer i){dat=d; label=i;}
