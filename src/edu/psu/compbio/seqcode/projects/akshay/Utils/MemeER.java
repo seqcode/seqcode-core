@@ -67,7 +67,7 @@ public class MemeER {
 			//Test if meme directory exists. If it does, recursively delete contents
 			File memeOutPath = new File(memeOutDir);
 			if(memeOutPath.exists())
-				BayesmentsSandbox.deleteDirectory(workingDir);
+				BayesmentsSandbox.deleteDirectory(memeOutPath);
 			
 			//Call MEME
 			String MEMEcmd = MEMEpath+"/meme ";
