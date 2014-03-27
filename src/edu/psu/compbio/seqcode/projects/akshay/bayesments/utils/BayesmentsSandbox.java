@@ -1,5 +1,7 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.utils;
 
+import java.io.File;
+
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 
@@ -112,5 +114,19 @@ public class BayesmentsSandbox {
 		return ret;
 	}
 	
+	public static boolean deleteDirectory(File path) {
+	    if( path.exists() ) {
+	      File[] files = path.listFiles();
+	      for(int i=0; i<files.length; i++) {
+	         if(files[i].isDirectory()) {
+	           deleteDirectory(files[i]);
+	         }
+	         else {
+	           files[i].delete();
+	         }
+	      }
+	    }
+	    return( path.delete() );
+	}
 
 }
