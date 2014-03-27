@@ -29,7 +29,7 @@ public class Config {
 	protected int chromatinWindow;
 	protected double mappableGenome = 0.8;
 	protected File locations;
-	protected File Top_Locations;
+	protected List<File> Top_Locations;
 	protected int numChromStates;
 	protected int numBindingStates;
 	protected boolean plotEM;
@@ -243,10 +243,22 @@ public class Config {
 					
 					//Read the locations to do meme search provided by the user
 					String top_locs = ap.getKeyValue("meme_search_regions");
-					this.Top_Locations = new File(top_locs);
-					if(!this.Top_Locations.exists()){
-						System.err.println("Top locations File does not exist\n");
-						System.exit(1);    
+					this.Top_Locations = new ArrayList<File>();
+					if(top_locs.contains(";")){
+						String[] locs = top_locs.split(";");
+						for(int s =0; s<locs.length; s++){
+							this.Top_Locations.add(new File(locs[s]));
+							if(!this.Top_Locations.get(s).exists()){
+								System.err.println("Top locations File does not exist\n");
+								System.exit(1);    
+							}
+						}
+					}else{
+						this.Top_Locations.add(new File(top_locs));
+						if(!this.Top_Locations.get(0).exists()){
+							System.err.println("Top locations File does not exist\n");
+							System.exit(1);    
+						}
 					}
 				}
 				
@@ -332,7 +344,7 @@ public class Config {
 	public int getMaxFacStates(){return this.maxFacStates;}
 	public int getMinFacStates(){return this.minFacStates;}
 	public double getMotifCuttof(){return this.Motif_EVal_Cutoff;}
-	public File getTopLocations(){return this.Top_Locations;}
+	public List<File> getTopLocations(){return this.Top_Locations;}
 	
 	//Some accessors to allow modification of options after config
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}

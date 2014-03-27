@@ -1,7 +1,9 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.analysis;
 
 import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
@@ -36,7 +38,7 @@ public class Bayesments {
 			ExperimentManager manager = null;
 			GenomicLocations trainingData = null;
 			Sequences seqs = null;
-			List<WeightMatrix> motifs = null;
+			List<WeightMatrix> motifs = new ArrayList<WeightMatrix>();
 			
 			//Loading/reading tags
 			if(!c.doSimulation()){
@@ -56,10 +58,16 @@ public class Bayesments {
 					//Reading the genome sequence and intializing the sequences class object
 					System.out.println("Reading the genome sequence");
 					seqs = new Sequences(c,trainingData.getLocations());
-					List<Point> top_regions = EventMetaMaker.loadPoints(c.getTopLocations(), c.getGenome());
-					MotifPlatform motif_profiler = new MotifPlatform(c,top_regions);
-					motif_profiler.findMotifs();
-					motifs = motif_profiler.getMotifs();
+					List<File> top_locs = c.getTopLocations();
+					for(int f=0; f<top_locs.size(); f++){
+						List<Point> top_regions = EventMetaMaker.loadPoints(top_locs.get(f), c.getGenome());
+						MotifPlatform motif_profiler = new MotifPlatform(c,top_regions);
+						motif_profiler.findMotifs();
+						List<WeightMatrix> temp_motifs = motif_profiler.getMotifs();
+						for(int m=0; m< temp_motifs.size(); m++){
+							motifs.add(temp_motifs.get(m));
+						}
+					}
 					seqs.setMotifs(motifs);
 					seqs.setXc();
 					seqs.plotSeqScores();
