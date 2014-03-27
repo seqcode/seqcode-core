@@ -275,7 +275,7 @@ public class MemeER {
 			seqgen.useLocalFiles(true);
 			seqgen.setGenomePath(GenPath);
 			
-			String[] randomSequences;
+			String[] randomSequences=new String[5000];
 			
 			if (!seqgen.isRegionCached()){
 				System.err.println("Caching sequences");
