@@ -186,7 +186,7 @@ public class MotifPlatform {
 	 * @author Shaun Mahony
 	 * @version	%I%, %G%
 	 */
-	protected class LabeledDouble implements Comparable<LabeledDouble>{
+	public class LabeledDouble implements Comparable<LabeledDouble>{
 		public Double dat;
 		public Integer label;
 		public LabeledDouble(Double d, Integer i){dat=d; label=i;}
