@@ -8,6 +8,7 @@ import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.BIC;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.EMtrain;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.MAPassignment;
@@ -68,6 +69,7 @@ public class Bayesments {
 						for(int m=0; m< temp_motifs.size(); m++){
 							motifs.add(temp_motifs.get(m));
 						}
+						SequenceGenerator.clearCache();
 					}
 					seqs.setMotifs(motifs);
 					seqs.setXc();
