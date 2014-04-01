@@ -242,24 +242,20 @@ public class Config {
 					}
 					
 					//Read the locations to do meme search provided by the user
-					String top_locs = ap.getKeyValue("meme_search_regions");
+					String loc_file_name = ap.getKeyValue("meme_search_regions");
+					File locsf = new File(loc_file_name);
+					BufferedReader reader = new BufferedReader(new FileReader(locsf));
 					this.Top_Locations = new ArrayList<File>();
-					if(top_locs.contains(";")){
-						String[] locs = top_locs.split(";");
-						for(int s =0; s<locs.length; s++){
-							this.Top_Locations.add(new File(locs[s]));
-							if(!this.Top_Locations.get(s).exists()){
+					String line;
+			        while ((line = reader.readLine()) != null) {
+						this.Top_Locations.add(new File(line));
+						if(!this.Top_Locations.get(this.Top_Locations.size()-1).exists()){
 								System.err.println("Top locations File does not exist\n");
 								System.exit(1);    
-							}
-						}
-					}else{
-						this.Top_Locations.add(new File(top_locs));
-						if(!this.Top_Locations.get(0).exists()){
-							System.err.println("Top locations File does not exist\n");
-							System.exit(1);    
 						}
 					}
+			        reader.close();
+					
 				}
 				
 				this.chromatin_weightage = Args.parseDouble(args, "chromWeight", 1.0);
