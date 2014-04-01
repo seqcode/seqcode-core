@@ -59,11 +59,12 @@ public class Bayesments {
 					System.out.println("Reading the genome sequence");
 					seqs = new Sequences(c,trainingData.getLocations());
 					List<File> top_locs = c.getTopLocations();
+					List<MotifPlatform> platforms = new ArrayList<MotifPlatform>();
 					for(int f=0; f<top_locs.size(); f++){
 						List<Point> top_regions = EventMetaMaker.loadPoints(top_locs.get(f), c.getGenome());
-						MotifPlatform motif_profiler = new MotifPlatform(c,top_regions);
-						motif_profiler.findMotifs();
-						List<WeightMatrix> temp_motifs = motif_profiler.getMotifs();
+						platforms.add(new MotifPlatform(c,top_regions));
+						platforms.get(f).findMotifs();
+						List<WeightMatrix> temp_motifs = platforms.get(f).getMotifs();
 						for(int m=0; m< temp_motifs.size(); m++){
 							motifs.add(temp_motifs.get(m));
 						}
