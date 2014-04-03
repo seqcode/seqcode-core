@@ -69,7 +69,6 @@ public class Bayesments {
 						for(int m=0; m< temp_motifs.size(); m++){
 							motifs.add(temp_motifs.get(m));
 						}
-						SequenceGenerator.clearCache();
 					}
 					seqs.setMotifs(motifs);
 					seqs.setXc();

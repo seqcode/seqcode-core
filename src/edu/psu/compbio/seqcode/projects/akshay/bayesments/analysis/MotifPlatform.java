@@ -52,6 +52,7 @@ public class MotifPlatform {
 	
 	public List<WeightMatrix> getMotifs(){return this.enriched_motifs;}
 	
+	@SuppressWarnings("static-access")
 	public void findMotifs(){
 		List<String> seqs = new ArrayList<String>();
 		for(int i=0; i<this.motif_search_locations.size(); i++){
@@ -94,6 +95,7 @@ public class MotifPlatform {
 				this.enriched_motifs = null;
 			}
 		}
+		seqgen.clearCache();
 	}
 	
 	
