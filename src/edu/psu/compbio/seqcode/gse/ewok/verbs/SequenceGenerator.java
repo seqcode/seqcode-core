@@ -295,6 +295,10 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
             cache.clear();
         }
     }
+    
+    // the following method has bee add by akshay
+    public static void setOffRegionCache(){regionIsCached = false;}
+    
     private static final String[] inputNames = { "Regions" };
     private static final EchoType[] inputTypes = { new ClassType(Region.class) };
     private static final EchoType outputType = new ClassType(String.class);

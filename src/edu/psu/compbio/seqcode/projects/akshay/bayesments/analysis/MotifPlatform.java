@@ -38,12 +38,13 @@ public class MotifPlatform {
 		seqgen.useCache(true);
 		seqgen.useLocalFiles(true);
 		seqgen.setGenomePath(conf.getGenomeSeqPath());
-		
-		System.err.println("Caching sequences");
-		randomRegions = randomRegionPick(null, conf.MOTIF_FINDING_NEGSEQ, conf.getSeqWinSize());
-		randomSequences = seqgen.setupRegionCache(this.motif_search_locations, randomRegions);
-		System.err.println("Caching completed");
-		
+		SequenceGenerator.setOffRegionCache();
+		if(!seqgen.isRegionCached()){
+			System.err.println("Caching sequences");
+			randomRegions = randomRegionPick(null, conf.MOTIF_FINDING_NEGSEQ, conf.getSeqWinSize());
+			randomSequences = seqgen.setupRegionCache(this.motif_search_locations, randomRegions);
+			System.err.println("Caching completed");
+		}
 		
 		this.meme = new MEMERunner(this.conf);
 	}

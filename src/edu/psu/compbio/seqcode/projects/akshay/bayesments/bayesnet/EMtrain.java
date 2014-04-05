@@ -2,6 +2,8 @@ package edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
@@ -819,8 +821,13 @@ public class EMtrain {
 		//System.out.println(test[1]);
 		//System.out.println(test[2]);
 		double a = Double.valueOf("9.0e-09");//.longValue();
+		Map<Integer,String> cache;
 		
-		System.out.println(a);
+		cache = new HashMap<Integer,String>();
+		
+		if(cache !=  null){
+			System.out.println(a);
+		}
 		
 	}
 	
