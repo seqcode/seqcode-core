@@ -99,9 +99,9 @@ public class BIC {
 				}
 			}
 			if(inSeqMode){
-				P_x_c_b = chromatinProduct*Math.pow(seqProduct,conf.getSeqWeight())*Bjk[(int)assignment[i][0]][(int)assignment[i][1]]*factorProduct;
+				P_x_c_b = Math.pow(chromatinProduct,conf.getChromWeight())*Math.pow(seqProduct,conf.getSeqWeight())*Bjk[(int)assignment[i][0]][(int)assignment[i][1]]*factorProduct;
 			}else{
-				P_x_c_b = chromatinProduct*Bjk[(int)assignment[i][0]][(int)assignment[i][1]]*factorProduct;
+				P_x_c_b = Math.pow(chromatinProduct,conf.getChromWeight())*Bjk[(int)assignment[i][0]][(int)assignment[i][1]]*factorProduct;
 			}
 			L = L+Math.log(P_x_c_b);
 		}

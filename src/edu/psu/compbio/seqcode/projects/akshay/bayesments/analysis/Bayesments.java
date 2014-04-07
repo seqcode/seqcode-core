@@ -43,6 +43,9 @@ public class Bayesments {
 			
 			//Loading/reading tags
 			if(!c.doSimulation()){
+				
+				// Name of the conditions
+				String[] fac_cons_names = {"K562", "GM12878", "H1-hESC"}; 
 				// Store the reads by building the ExperimentManager
 				System.out.println("Loading Reads\n");
 				manager = new ExperimentManager(c,c.loadReads());
@@ -63,7 +66,7 @@ public class Bayesments {
 					List<MotifPlatform> platforms = new ArrayList<MotifPlatform>();
 					for(int f=0; f<top_locs.size(); f++){
 						List<Point> top_regions = EventMetaMaker.loadPoints(top_locs.get(f), c.getGenome());
-						platforms.add(new MotifPlatform(c,top_regions));
+						platforms.add(new MotifPlatform(c,top_regions, fac_cons_names[f]));
 						platforms.get(f).findMotifs();
 						List<WeightMatrix> temp_motifs = platforms.get(f).getMotifs();
 						for(int m=0; m< temp_motifs.size(); m++){

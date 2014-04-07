@@ -26,8 +26,9 @@ public class MotifPlatform {
 	protected MEMERunner meme;
 	protected SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
 	protected List<WeightMatrix> enriched_motifs;
+	protected String outname;
 	
-	public MotifPlatform(Config c, List<Point> search_regions){
+	public MotifPlatform(Config c, List<Point> search_regions, String name){
 		this.conf = c;
 
 		for(Point p: search_regions){
@@ -47,6 +48,7 @@ public class MotifPlatform {
 		}
 		
 		this.meme = new MEMERunner(this.conf);
+		this.outname = name;
 	}
 	
 	//Accesors
@@ -64,7 +66,7 @@ public class MotifPlatform {
 		}
 		
 		//Execute MEME
-		Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, "results", false);
+		Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, this.outname, false);
 		List<WeightMatrix> wm = matrices.car();
 		List<WeightMatrix> fm = matrices.cdr();
 		

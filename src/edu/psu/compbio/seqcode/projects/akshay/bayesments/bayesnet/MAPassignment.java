@@ -108,9 +108,9 @@ public class MAPassignment {
 					chromGausssianProd = ( Double.isNaN(chromGausssianProd)) ? 0.0 : chromGausssianProd;
 					facGaussianProd = (Double.isNaN(facGaussianProd)) ? 0.0: facGaussianProd;
 					if(inSeqMode){
-						liklehood = chromGausssianProd*Bjk[j][k]*facGaussianProd*Math.pow(seqGaussianProd,conf.getSeqWeight());
+						liklehood = Math.pow(chromGausssianProd,conf.getChromWeight())*Bjk[j][k]*facGaussianProd*Math.pow(seqGaussianProd,conf.getSeqWeight());
 					}else{
-						liklehood = chromGausssianProd*Bjk[j][k]*facGaussianProd;
+						liklehood = Math.pow(chromGausssianProd,conf.getChromWeight())*Bjk[j][k]*facGaussianProd;
 					}
 					liklehood = Double.isNaN(liklehood) ? 0 : liklehood;
 					if(liklehood > maxLiklehood){
