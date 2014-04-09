@@ -69,16 +69,17 @@ public class Bayesments {
 						platforms.add(new MotifPlatform(c,top_regions, fac_cons_names[f]));
 						platforms.get(f).findMotifs();
 						List<WeightMatrix> temp_motifs = platforms.get(f).getMotifs();
-						for(int m=0; m< temp_motifs.size(); m++){
-							motifs.add(temp_motifs.get(m));
+						if(temp_motifs != null){ // If none of the motifs passed the ROC cutoff
+							for(int m=0; m< temp_motifs.size(); m++){
+								motifs.add(temp_motifs.get(m));
+							}
 						}
+						seqs.setMotifs(motifs);
+						seqs.setXc();
+						seqs.plotSeqScores();
 					}
-					seqs.setMotifs(motifs);
-					seqs.setXc();
-					seqs.plotSeqScores();
 				}
 			}
-			
 			
 			EMtrain trainer = null;
 			
