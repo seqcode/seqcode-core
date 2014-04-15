@@ -85,6 +85,7 @@ public class PeaksAnalysis {
                                "  --win <window of sequence around peaks> \n"+
                                " Options: \n" +
                                "  --out output filename\n" +
+                               "  --cache [flag to cache sequences] \n" +
                                "  --printseqs [flag to print sequences under peaks] \n" +
                                "  --printseqkmers [flag to print k-mer counts for sequences under peaks] \n" +
                                "  --printxy [flag to print hit counts under peaks for two expts]\n" +
@@ -136,6 +137,7 @@ public class PeaksAnalysis {
 	        boolean orderByCounts = ap.hasKey("orderbycounts");
 	        boolean quick = ap.hasKey("quick");
 	        boolean repeatScreen = ap.hasKey("repscreen");
+	        boolean useCache = ap.hasKey("cache");
 	        
         	/////////////////////////////////////////////////////////////////////////
 	        ///////////// START 
@@ -157,7 +159,7 @@ public class PeaksAnalysis {
 			if(printSeqs)
 				analyzer.printPeakSeqs(repeatScreen);
 			if(printSeqKmers)
-				analyzer.printPeakSeqKmers(printSeqKmersK);
+				analyzer.printPeakSeqKmers(printSeqKmersK, useCache);
 			
 			//analyzer.printMotifInfo();
 			
@@ -225,8 +227,9 @@ public class PeaksAnalysis {
 	}
 	
 	//Print the k-mers in the sequences for each peak 
-	public void printPeakSeqKmers(int k){
+	public void printPeakSeqKmers(int k, boolean useCache){
 		SequenceGenerator seqgen = new SequenceGenerator();
+		seqgen.useCache(useCache);
 		int numK = (int)Math.pow(4, k);
 		int [] kmerCounts = new int[numK];
 		System.out.print("Region");
