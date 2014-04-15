@@ -85,7 +85,7 @@ public class PeaksAnalysis {
                                "  --win <window of sequence around peaks> \n"+
                                " Options: \n" +
                                "  --out output filename\n" +
-                               "  --cache [flag to cache sequences] \n" +
+                               "  --cache [flag to cache sequences] AND --seq <path to genome files>\n" +
                                "  --printseqs [flag to print sequences under peaks] \n" +
                                "  --printseqkmers [flag to print k-mer counts for sequences under peaks] \n" +
                                "  --printxy [flag to print hit counts under peaks for two expts]\n" +
@@ -138,6 +138,10 @@ public class PeaksAnalysis {
 	        boolean quick = ap.hasKey("quick");
 	        boolean repeatScreen = ap.hasKey("repscreen");
 	        boolean useCache = ap.hasKey("cache");
+	        String genomePath = "";
+	        if(useCache){
+	        	genomePath = ap.getKeyValue("seq");
+	        }
 	        
         	/////////////////////////////////////////////////////////////////////////
 	        ///////////// START 
@@ -159,7 +163,7 @@ public class PeaksAnalysis {
 			if(printSeqs)
 				analyzer.printPeakSeqs(repeatScreen);
 			if(printSeqKmers)
-				analyzer.printPeakSeqKmers(printSeqKmersK, useCache);
+				analyzer.printPeakSeqKmers(printSeqKmersK, useCache, genomePath);
 			
 			//analyzer.printMotifInfo();
 			
@@ -227,9 +231,13 @@ public class PeaksAnalysis {
 	}
 	
 	//Print the k-mers in the sequences for each peak 
-	public void printPeakSeqKmers(int k, boolean useCache){
+	public void printPeakSeqKmers(int k, boolean useCache, String genPath ){
 		SequenceGenerator seqgen = new SequenceGenerator();
 		seqgen.useCache(useCache);
+		if(useCache){
+			seqgen.useLocalFiles(true);
+			seqgen.setGenomePath(genPath);
+		}
 		int numK = (int)Math.pow(4, k);
 		int [] kmerCounts = new int[numK];
 		System.out.print("Region");
