@@ -820,14 +820,15 @@ public class EMtrain {
 		//System.out.println(test[0]);
 		//System.out.println(test[1]);
 		//System.out.println(test[2]);
-		double a = Double.valueOf("9.0e-09");//.longValue();
-		Map<Integer,String> cache;
+		//double a = Double.valueOf("9.0e-09");//.longValue();
+		//Map<Integer,String> cache;
 		
-		cache = new HashMap<Integer,String>();
-		
-		if(cache !=  null){
-			System.out.println(a);
-		}
+		//cache = new HashMap<Integer,String>();
+		int x=13;
+		System.out.println(x<<2);
+		//if(cache !=  null){
+		//	System.out.println(a);
+		//}
 		
 	}
 	
