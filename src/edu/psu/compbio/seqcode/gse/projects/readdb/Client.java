@@ -52,8 +52,8 @@ public class Client implements ReadOnlyClient {
     /* temporary space for receiving data; contents not persistent between method calls */
     byte[] buffer;
     private static final int BUFFERLEN = 8192*20;
-    private final int socketReadTimeout = 10000; //socket timeout in ms
-    private final int threadSleepTime = 3000; //check alive thread sleep time in ms
+    private final int socketReadTimeout = 30000; //socket timeout in ms
+    private final int threadSleepTime = 5000; //check alive thread sleep time in ms
     private Request request;
     private boolean connectionOpen=false;
     private boolean printErrors;
@@ -175,11 +175,14 @@ public class Client implements ReadOnlyClient {
      * @return true if the server pongs 
      */
     public boolean connectionAlive(){
-        request.clear(); 
-        request.type="ping";
-        try{
-	        sendString(request.toString());
-	        String response = readLine();
+    	String response="";
+    	try{
+        	synchronized (this){
+    	    	request.clear(); 
+    	        request.type="ping";
+    	        sendString(request.toString());
+    	        response = readLine();
+        	}
 	        if (response.equals("pong")) {
 	            return true;
 	        } else {
@@ -1001,13 +1004,15 @@ public class Client implements ReadOnlyClient {
        is either read, write, or admin. 
     */
     private void fillPartACL(Map<String,Set<String>> output) throws IOException {
-        String type = readLine();
-        int entries = Integer.parseInt(readLine());
-        Set<String> out = new HashSet<String>();
-        while (entries-- > 0) {
-            out.add(readLine());
-        }
-        output.put(type,out);
+    	synchronized(this){
+    		String type = readLine();
+    		int entries = Integer.parseInt(readLine());
+	        Set<String> out = new HashSet<String>();
+	        while (entries-- > 0) {
+	            out.add(readLine());
+	        }
+	        output.put(type,out);
+    	}
     }
     /**
      * Applies the specified ACLChangeEntry objects to the acl for this experiment/chromosome.
@@ -1100,14 +1105,12 @@ public class Client implements ReadOnlyClient {
 				try {
 	                Thread.sleep(threadSleepTime);
 	            
-	                synchronized(this.parent){
-	                	if(!connectionAlive()){
-	                		connectionOpen=false;
-	                	//	System.err.println("ReadDB Client connection closed at:\t"+System.currentTimeMillis());
-	                	}else{
-	                		connectionOpen=true;
+	                if(!connectionAlive()){
+	                	connectionOpen=false;
+	                //	System.err.println("ReadDB Client connection closed at:\t"+System.currentTimeMillis());
+	                }else{
+	                	connectionOpen=true;
 	                	//	System.err.println("ReadDB Client connection open at:\t"+System.currentTimeMillis()); //Debug
-	                	}
 	                }
 				} catch (InterruptedException e) { 
 					Thread.currentThread().interrupt();
