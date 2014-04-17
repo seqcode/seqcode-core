@@ -44,6 +44,11 @@ public class MotifMetaMaker {
 			double minthres = Args.parseDouble(args, "mthres", 0);
 			String peakFile = Args.parseString(args, "peaks", null);
 			String outName = Args.parseString(args, "out", "meta");
+			boolean useCache = Args.parseFlags(args).contains("cache") ? true : false;
+			String seqPathName="";
+			if(useCache){
+				seqPathName = Args.parseString(args, "seq", "");
+			}
 			if(Args.parseFlags(args).contains("batch")){batchRun=true;}
 			if(Args.parseFlags(args).contains("cluster")){cluster=true;}
 			if(Args.parseArgs(args).contains("quanta")){
@@ -87,7 +92,7 @@ public class MotifMetaMaker {
 					motifs.add(wm);
 				}
 				System.out.println("Loading data...");
-				profiler = new MotifProfiler(params, gen, motifs.get(0), minthres);
+				profiler = new MotifProfiler(params, gen, motifs.get(0), minthres, useCache, seqPathName);
 			}
 			
 			if(batchRun){
@@ -141,6 +146,7 @@ public class MotifMetaMaker {
 				"--peaks <peaks file name> --out <output root name> \n" +
 				"--color <red/green/blue> \n" +
 				"--cluster [flag to cluster in batch mode] \n" +
+				"--cache <flag to use cache while loading sequences> AND --seq <Full path of the sequence> \n"+
 				"--batch [a flag to run without displaying the window]");
 		System.exit(1);
 	}

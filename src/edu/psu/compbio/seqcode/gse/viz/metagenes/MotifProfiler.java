@@ -23,13 +23,17 @@ public class MotifProfiler implements PointProfiler<Point, Profile>{
 	private BinningParameters params=null;
 	private double minThreshold=0;
 	
-	public MotifProfiler(BinningParameters bp, Genome g, WeightMatrix wm, double minThres){
+	public MotifProfiler(BinningParameters bp, Genome g, WeightMatrix wm, double minThres, boolean useCache, String seqPath){
 		minThreshold=minThres;
 		gen=g;
 		params=bp; 
 		motif=wm;
 		scorer = new WeightMatrixScorer(motif);
 		seqgen = new SequenceGenerator();
+		seqgen.useCache(useCache);
+		if(useCache){
+			seqgen.setGenomePath(seqPath);
+		}
 	}
 
 	public BinningParameters getBinningParameters() {
