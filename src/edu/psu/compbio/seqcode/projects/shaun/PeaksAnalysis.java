@@ -249,6 +249,9 @@ public class PeaksAnalysis {
 				kmerCounts[i]=0;
 			
 			String seq = seqgen.execute(r).toUpperCase();
+			//Check if the sequence (seq) contains any N's if present ignore them
+			if(seq.contains("N"))
+				continue;
 			for(int i=0; i<(seq.length()-k+1); i++){
 				String currK = seq.substring(i, i+k);
 				String revCurrK =SequenceUtils.reverseComplement(currK);
