@@ -15,6 +15,7 @@ import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
+import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 public class FastaExporter {
 	
@@ -31,7 +32,7 @@ public class FastaExporter {
 		this.win = win;
 		this.gen = gen;
 		for(Point p: points){
-			Region reg = p.expand(win);
+			Region reg = p.expand(win/2);
 			regs.add(reg);
 		}
 		if(cache){
@@ -56,14 +57,14 @@ public class FastaExporter {
 	public static void main(String[] args){
 		try{
 			ArgParser ap =  new ArgParser(args);
-			int window = Args.parseInteger(args, "win", 100);
+			int window = Args.parseInteger(args, "win", 200);
 			boolean cache = ap.hasKey("cache");
 			String seqPathName = "";
 			if(cache){
 				seqPathName = Args.parseString(args, "seq", "");
 			}
 			String points = ap.getKeyValue("locations");
-			File locs = new File(points);
+			
 			Genome gen;
 			if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
 				Pair<Organism, Genome> orggen = Args.parseGenome(args);
@@ -78,15 +79,12 @@ public class FastaExporter {
 					gen = null;
 				}
 			}
-			List<Point> search_locs = EventMetaMaker.loadPoints(locs, gen);
+			List<Point> search_locs = Utilities.loadPeaksFromPeakFile(gen, points, window);
 			FastaExporter exporter = new FastaExporter(window, search_locs, gen, cache, seqPathName);
 			exporter.printFasta();
 		}catch(NotFoundException e){
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 	}
 
 }

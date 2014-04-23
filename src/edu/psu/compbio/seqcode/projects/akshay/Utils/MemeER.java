@@ -31,6 +31,7 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
 import edu.psu.compbio.seqcode.projects.multigps.stats.StreamGobbler;
 import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
+import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 public class MemeER {
 	
@@ -242,13 +243,13 @@ public class MemeER {
 			int MEMEmaxw = Args.parseInteger(args, "mememaxw", 18);
 			//MEME nmotifs option
 			int MEMEnmotifs = Args.parseInteger(args,"memenmotifs", 3);
-			int WinSize = Args.parseInteger(args, "win", 100);
+			int WinSize = Args.parseInteger(args, "win", 200);
 			String GenPath = ap.getKeyValue("seq");
 			memeargs = memeargs + " -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
 			
 		
 			String points = ap.getKeyValue("locations");
-			File locs = new File(points);
+			
 			Genome gen;
 			if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
 				Pair<Organism, Genome> orggen = Args.parseGenome(args);
@@ -264,12 +265,11 @@ public class MemeER {
 				}
 			}
 			
-			List<Point> search_locs = EventMetaMaker.loadPoints(locs, gen);
-			List<Region> search_regs = new ArrayList<Region>();
-			for(Point p: search_locs){
-				Region reg = p.expand(WinSize);
-				search_regs.add(reg);
-			}
+			
+			
+			List<Region> search_regs = Utilities.loadRegionsFromPeakFile(gen, points, WinSize);
+			
+			
 			SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
 			seqgen.useCache(true);
 			seqgen.useLocalFiles(true);
@@ -287,7 +287,7 @@ public class MemeER {
 			MemeER meme = new MemeER(Args.parseString(args, "memepath", ""), memeargs);
 			
 			List<String> seqs = new ArrayList<String>();
-			for(int i=0; i<search_locs.size(); i++){
+			for(int i=0; i<search_regs.size(); i++){
 				String currSeq = seqgen.execute(search_regs.get(i));
 				if(lowercaseFraction(currSeq)<=MOTIF_FINDING_ALLOWED_REPETITIVE){
 					seqs.add(currSeq);
@@ -311,9 +311,6 @@ public class MemeER {
 				
 				
 		}catch (NotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
