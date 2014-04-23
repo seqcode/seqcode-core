@@ -22,7 +22,7 @@ public class FastaExporter {
 	public List<Region> regs;
 	public Genome gen;
 	public int win;
-	public SequenceGenerator<Region> seqgen;
+	public SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();;
 	public List<String> fasta;
 	
 	
