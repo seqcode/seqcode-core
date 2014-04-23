@@ -125,7 +125,7 @@ public class EventMetaMaker {
 		System.exit(1);
 	}
 	public static ArrayList<Point> loadPoints(File f, Genome g) throws IOException {
-		System.out.println("Loading points");
+		System.err.println("Loading points");
 		ArrayList<Point> pts = new ArrayList<Point>();
 		BufferedReader br = new BufferedReader(new FileReader(f));
 		Pattern ptpatt = Pattern.compile("([^:\\s]+):(\\d+)");
