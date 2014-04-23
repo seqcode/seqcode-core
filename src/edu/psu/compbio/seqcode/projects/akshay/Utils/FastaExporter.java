@@ -23,7 +23,7 @@ public class FastaExporter {
 	public Genome gen;
 	public int win;
 	public SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();;
-	public List<String> fasta;
+	public List<String> fasta = new ArrayList<String>();
 	
 	
 	public FastaExporter(int win, List<Point> points, Genome gen, boolean cache, String seqPathName) {
