@@ -52,8 +52,9 @@ public class Client implements ReadOnlyClient {
     /* temporary space for receiving data; contents not persistent between method calls */
     byte[] buffer;
     private static final int BUFFERLEN = 8192*20;
-    private final int socketReadTimeout = 30000; //socket timeout in ms
-    private final int threadSleepTime = 5000; //check alive thread sleep time in ms
+    private final int socketLoadDataReadTimeout = 1000*60*30; //socket timeout in ms: set to 30 minutes because we should only be relying on the timeout to server shutdowns, and some uses of Client (e.g. loading a lot of reads to ReadDB) can take a long time on the Server.
+    private final int socketQueryReadTimeout = 15000; //socket timeout in ms for queries
+    private final int threadSleepTime = 3000; //check alive thread sleep time in ms
     private Request request;
     private boolean connectionOpen=false;
     private boolean printErrors;
@@ -136,7 +137,7 @@ public class Client implements ReadOnlyClient {
 	           other cases lets the server figure out that we've disappeared
 	        */
 	        socket.setSoLinger(true,0);
-	        socket.setSoTimeout(socketReadTimeout);
+	        socket.setSoTimeout(socketQueryReadTimeout);
 	        outstream = socket.getOutputStream();
 	        outstream.flush();
 	        instream = new BufferedInputStream(socket.getInputStream());
@@ -331,19 +332,20 @@ public class Client implements ReadOnlyClient {
      
      */
     public void storeSingle(String alignid, List<SingleHit> allhits) throws IOException, ClientException {
-    	synchronized(this){
-	        int step = 20000000;
-	        for (int pos = 0; pos < allhits.size(); pos += step) {
-	            Map<Integer, List<SingleHit>> map = new HashMap<Integer,List<SingleHit>>();
-	            for (int i = pos; i < pos + step && i < allhits.size(); i++) {
-	                SingleHit h = allhits.get(i);
-	                if (!map.containsKey(h.chrom)) {
-	                    map.put(h.chrom, new ArrayList<SingleHit>());
-	                }
-	                map.get(h.chrom).add(h);
-	            }
-	            for (int chromid : map.keySet()) {
-	                List<SingleHit> hits = map.get(chromid);
+    	socket.setSoTimeout(socketLoadDataReadTimeout);
+	    int step = 10000000;
+        for (int pos = 0; pos < allhits.size(); pos += step) {
+            Map<Integer, List<SingleHit>> map = new HashMap<Integer,List<SingleHit>>();
+            for (int i = pos; i < pos + step && i < allhits.size(); i++) {
+                SingleHit h = allhits.get(i);
+                if (!map.containsKey(h.chrom)) {
+                    map.put(h.chrom, new ArrayList<SingleHit>());
+                }
+                map.get(h.chrom).add(h);
+            }
+            for (int chromid : map.keySet()) {
+            	synchronized(this){
+            	    List<SingleHit> hits = map.get(chromid);
 	                Collections.sort(hits);
 	                int chunk = step;
 	                for (int startindex = 0; startindex < hits.size(); startindex += chunk) {
@@ -353,36 +355,44 @@ public class Client implements ReadOnlyClient {
 	                    request.alignid=alignid;
 	                    request.chromid = chromid;
 	                    request.map.put("numhits",Integer.toString(count));
-	                    sendString(request.toString());
-	                    String response = readLine();
-	                    if (!response.equals("OK")) {
-	                        System.err.println("not-OK response to request: " + response);
-	                        System.err.println("request was " + request);
-	                        throw new ClientException(response);
-	                    }
-	                    int[] ints = new int[count];
-	                    for (int i = startindex; i < startindex + count; i++) {
-	                        ints[i - startindex] = hits.get(i).pos;
-	                    }        
-	                    Bits.sendInts(ints, outstream,buffer);
-	                    float[] floats = new float[count];
-	                    for (int i = startindex; i < startindex + count; i++) {
-	                        floats[i - startindex] = hits.get(i).weight;
-	                        ints[i - startindex] = Hits.makeLAS(hits.get(i).length, hits.get(i).strand);
-	                    }
-	                    Bits.sendFloats(floats, outstream,buffer);
-	                    Bits.sendInts(ints, outstream,buffer);
-	            
-	                    System.err.println("Sent " + count + " hits to the server for " + chromid + "," + alignid);
-	                    outstream.flush();        
-	                    response = readLine();
-	                    if (!response.equals("OK")) {
-	                        throw new ClientException(response);
+	                    try{
+	                    	sendString(request.toString());
+		                    String response = readLine();
+		                    if (!response.equals("OK")) {
+		                        System.err.println("not-OK response to request: " + response);
+		                        System.err.println("request was " + request);
+		                        throw new ClientException(response);
+		                    }
+		                    int[] ints = new int[count];
+		                    for (int i = startindex; i < startindex + count; i++) {
+		                        ints[i - startindex] = hits.get(i).pos;
+		                    }   
+		                    Bits.sendInts(ints, outstream,buffer);
+		                    float[] floats = new float[count];
+		                    for (int i = startindex; i < startindex + count; i++) {
+		                        floats[i - startindex] = hits.get(i).weight;
+		                        ints[i - startindex] = Hits.makeLAS(hits.get(i).length, hits.get(i).strand);
+		                    }
+		                    Bits.sendFloats(floats, outstream,buffer);
+		                    Bits.sendInts(ints, outstream,buffer);
+		            
+		                    System.err.println("Sent " + count + " hits to the server for " + chromid + "," + alignid);
+		                    outstream.flush();        
+		                    response = readLine();
+		                    if (!response.equals("OK")) {
+		                        throw new ClientException(response);
+		                    }
+	                    }catch (IOException ioe){
+	                    	//IOException here is probably a socket time-out. 
+	                    	//I think it's best to kill the process at this point, since we won't know if the sent reads actually got loaded.
+	                    	System.err.println(ioe);
+	                    	System.exit(1);
 	                    }
 	                }
 	            }
 	        }
     	}
+        socket.setSoTimeout(socketQueryReadTimeout);
     }
     /**
      * Stores a set of PairedHit objects (representing an paired-ended read
@@ -390,18 +400,19 @@ public class Client implements ReadOnlyClient {
      * to any hits that have already been stored in the alignment
      */
     public void storePaired(String alignid, List<PairedHit> allhits) throws IOException, ClientException {
-    	synchronized(this){
-    		Map<Integer, List<PairedHit>> map = new HashMap<Integer,List<PairedHit>>();
-	    	for (PairedHit h : allhits) {
-	            if (!map.containsKey(h.leftChrom)) {
-	                map.put(h.leftChrom, new ArrayList<PairedHit>());
-	            }
-	            map.get(h.leftChrom).add(h);
-	        }
-	        for (int chromid : map.keySet()) {            
+    	socket.setSoTimeout(socketLoadDataReadTimeout);
+    	Map<Integer, List<PairedHit>> map = new HashMap<Integer,List<PairedHit>>();
+    	for (PairedHit h : allhits) {
+            if (!map.containsKey(h.leftChrom)) {
+                map.put(h.leftChrom, new ArrayList<PairedHit>());
+            }
+            map.get(h.leftChrom).add(h);
+        }
+        for (int chromid : map.keySet()) {
+        	synchronized(this){
 	            List<PairedHit> hits = map.get(chromid);
 	            System.err.println("SENDING PAIRED HITS n="+hits.size() + " for chrom " + chromid);
-	            int chunk = 10000000;
+	            int chunk = 1000000;
 	            for (int startindex = 0; startindex < hits.size(); startindex += chunk) {
 	                int count = ((startindex + chunk) < hits.size()) ? chunk : (hits.size() - startindex);
 	
@@ -411,51 +422,59 @@ public class Client implements ReadOnlyClient {
 	                request.chromid=chromid;
 	                request.isLeft=true;
 	                request.map.put("numhits",Integer.toString(count));
-	                sendString(request.toString());
-	                String response = readLine();
-	                if (!response.equals("OK")) {
-	                    System.err.println("not-OK response to request: " + response);
-	                    System.err.println("request was " + request);
-	                    throw new ClientException(response);
-	                }
-	                int[] ints = new int[count];
-	                for (int i = startindex; i < startindex + count; i++) {
-	                    ints[i-startindex] = hits.get(i).leftPos;
-	                }        
-	                Bits.sendInts(ints, outstream,buffer);
-	                float[] floats = new float[count];
-	                int[] codes = new int[count];
-	                for (int i = startindex; i < startindex + count; i++) {
-	                	floats[i-startindex] = hits.get(i).weight;
-	                    codes[i-startindex] = hits.get(i).pairCode;
-	                    ints[i-startindex] = Hits.makeLAS(hits.get(i).leftLength, hits.get(i).leftStrand,
-	                                                      hits.get(i).rightLength, hits.get(i).rightStrand);
-	
-	                }
-	                Bits.sendFloats(floats, outstream,buffer);
-	                Bits.sendInts(codes, outstream,buffer);
-	                Bits.sendInts(ints, outstream,buffer);
-	                for (int i = startindex; i < startindex + count; i++) {
-	                    ints[i-startindex] = hits.get(i).rightChrom;
-	                }        
-	                Bits.sendInts(ints, outstream,buffer);
-	                for (int i = startindex; i < startindex + count; i++) {
-	                    ints[i-startindex] = hits.get(i).rightPos;
-	                }        
-	                Bits.sendInts(ints, outstream,buffer);
-	                System.err.println("Sent " + count + " hits to the server");
-	                outstream.flush();        
-	                response = readLine();
-	                if (!response.equals("OK")) {
-	                    if (printErrors) {
-	                        System.err.println("not-OK response to request: " + response);
-	                        System.err.println("request was " + request);
-	                    }
-	                    throw new ClientException(response);
-	                }
+	                try{
+		                sendString(request.toString());
+		                String response = readLine();
+		                if (!response.equals("OK")) {
+		                    System.err.println("not-OK response to request: " + response);
+		                    System.err.println("request was " + request);
+		                    throw new ClientException(response);
+		                }
+		                int[] ints = new int[count];
+		                for (int i = startindex; i < startindex + count; i++) {
+		                    ints[i-startindex] = hits.get(i).leftPos;
+		                }        
+		                Bits.sendInts(ints, outstream,buffer);
+		                float[] floats = new float[count];
+		                int[] codes = new int[count];
+		                for (int i = startindex; i < startindex + count; i++) {
+		                	floats[i-startindex] = hits.get(i).weight;
+		                    codes[i-startindex] = hits.get(i).pairCode;
+		                    ints[i-startindex] = Hits.makeLAS(hits.get(i).leftLength, hits.get(i).leftStrand,
+		                                                      hits.get(i).rightLength, hits.get(i).rightStrand);
+		
+		                }
+		                Bits.sendFloats(floats, outstream,buffer);
+		                Bits.sendInts(codes, outstream,buffer);
+		                Bits.sendInts(ints, outstream,buffer);
+		                for (int i = startindex; i < startindex + count; i++) {
+		                    ints[i-startindex] = hits.get(i).rightChrom;
+		                }        
+		                Bits.sendInts(ints, outstream,buffer);
+		                for (int i = startindex; i < startindex + count; i++) {
+		                    ints[i-startindex] = hits.get(i).rightPos;
+		                }        
+		                Bits.sendInts(ints, outstream,buffer);
+		                System.err.println("Sent " + count + " hits to the server");
+		                outstream.flush();        
+		                response = readLine();
+		                if (!response.equals("OK")) {
+		                    if (printErrors) {
+		                        System.err.println("not-OK response to request: " + response);
+		                        System.err.println("request was " + request);
+		                    }
+		                    throw new ClientException(response);
+		                }
+	                }catch (IOException ioe){
+                    	//IOException here is probably a socket time-out. 
+                    	//I think it's best to kill the process at this point, since we won't know if the sent reads actually got loaded.
+                    	System.err.println(ioe);
+                    	System.exit(1);
+                    }
 	            }
 	        }
     	}
+        socket.setSoTimeout(socketQueryReadTimeout);
     }
     
     /** Returns true if the alignment and chromosome exist and are accessible
