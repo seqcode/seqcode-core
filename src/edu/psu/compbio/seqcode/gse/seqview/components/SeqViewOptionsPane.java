@@ -257,10 +257,6 @@ public class SeqViewOptionsPane
         addTab("Annotations",new JScrollPane(dummy));
 
         addTab("Seq Data", seqPanel);
-        //addTab("Paired Seq", pairedSeqPanel);
-        //addTab("Interactions", interactionArcPanel);
-
-        //dummy = new JPanel(); dummy.add(chiapettracks); dummy.add(new JPanel());
 
         dummy = new JPanel();  dummy.add(filetracks); dummy.add(new JPanel());
         addTab("File Tracks",new JScrollPane(dummy));
@@ -464,8 +460,6 @@ public class SeqViewOptionsPane
         Genome lg = loadGenome();
         Genome g = lg;
         
-        System.err.println("Updating experiment selection for genome: " + g);
-
         seqSelect.setGenome(lg);
 
         // update the set of Gene annotations

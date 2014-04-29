@@ -1,39 +1,48 @@
-/*
- * Created on Jan 11, 2008
- *
- * TODO 
- * 
- * To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
-package edu.psu.compbio.seqcode.gse.seqview.components;
+package edu.psu.compbio.seqcode.gse.tools.seqdata.editor;
 
-import java.util.*;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.regex.*;
-import java.awt.*;
-import javax.swing.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
+
+import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.border.Border;
 
-import java.sql.*;
-
 import edu.psu.compbio.seqcode.gse.datasets.general.ExptType;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedExpt;
+import edu.psu.compbio.seqcode.gse.seqview.components.SeqTableModel;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.gse.viz.components.GenericSelectPanel;
 
-public class SeqSelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
-    
-	private SeqDataLoader seqLoader;
+public class SeqExptListPanel {
+private SeqDataLoader seqLoader;
     
     private TreeSet<SeqLocatorMatchedExpt> lme;
     private ArrayList<SeqAlignment> alignments;
     private JComboBox jcbType;
     private JTextField regexLab, regexCond, regexTarget, regexCell, regexAlign, regexRep;
-    private SeqTableModel selectedModel, filteredModel;
+    private SeqTableModel filteredModel;
 
-    public SeqSelectPanel() { 
+    public SeqExptListPanel() { 
         try {
             seqLoader = new SeqDataLoader(true);
         } catch (Exception e) {
@@ -42,9 +51,7 @@ public class SeqSelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
         }
         lme = new TreeSet<SeqLocatorMatchedExpt>();
         alignments = new ArrayList<SeqAlignment>();
-        selectedModel = new SeqTableModel();
         filteredModel = new SeqTableModel();
-        init(filteredModel,selectedModel);
     }
     public JPanel getInputsPanel() {
     	JPanel inputPanel = new JPanel();
@@ -268,33 +275,7 @@ public class SeqSelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
         }
     }
 
-    /*
-    public static Collection<SeqLocator> collapseLocatorsByName(Collection<SeqLocator> locs) { 
-        LinkedHashMap<String,Map<String,Set<String>>> map = 
-            new LinkedHashMap<String,Map<String,Set<String>>>();
-        
-        for(SeqLocator loc : locs) { 
-            String exptName = loc.getExptName();
-            String alignName = loc.getAlignName();
-            if(!map.containsKey(exptName)) { map.put(exptName, new LinkedHashMap<String,Set<String>>()); }
-            if(!map.get(exptName).containsKey(alignName)) { map.get(exptName).put(alignName, new TreeSet<String>()); }
-            map.get(exptName).get(alignName).addAll(loc.getReplicates());
-        }
-        
-        LinkedList<SeqLocator> collapsed = new LinkedList<SeqLocator>();
-        
-        for(String exptName : map.keySet()) { 
-            for(String alignName : map.get(exptName).keySet()) { 
-                SeqLocator newloc = new SeqLocator(exptName, map.get(exptName).get(alignName), alignName);
-                collapsed.add(newloc);
-            }
-        }
-        
-        return collapsed;
-    }*/
-
     public void close() {
-        super.close();
         if (seqLoader != null) {
             seqLoader.close();
         }
