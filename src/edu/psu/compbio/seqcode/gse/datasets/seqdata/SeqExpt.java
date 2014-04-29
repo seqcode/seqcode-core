@@ -1,5 +1,5 @@
 /*
- * Created as "ChipSeqExpt" on Sep 8, 2006
+ *  Created as "ChipSeqExpt" on Sep 8, 2006
  */
 package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
@@ -39,7 +39,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 		primary key (name, replicate)
 	)Type=InnoDB;
  */
-public class SeqExpt {
+public class SeqExpt implements Comparable<SeqExpt>{
     
     private int dbid;
     private String name, replicate;
@@ -53,7 +53,7 @@ public class SeqExpt {
     private int readlength, numReads;
     private String collabID, publicSource, publicDBID, fqFile, exptNote;
     
-    public SeqExpt(ResultSet rs, SeqDataLoader loader) throws SQLException { 
+    public SeqExpt(ResultSet rs, SeqDataLoader loader)  throws SQLException { 
         dbid = rs.getInt(1);
         name = rs.getString(2);
         replicate = rs.getString(3);
@@ -109,6 +109,9 @@ public class SeqExpt {
     	return String.format("%s (%s)", name, replicate);
     }
     
+    public int compareTo(SeqExpt o){
+    	return name.compareTo(o.name);
+    }
     public boolean equals(Object o) { 
         if(!(o instanceof SeqExpt)) { return false; }
         SeqExpt c = (SeqExpt)o;

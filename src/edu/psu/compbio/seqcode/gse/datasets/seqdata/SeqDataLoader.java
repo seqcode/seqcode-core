@@ -17,6 +17,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.Lab;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.general.ReadType;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.general.SeqDataUser;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -74,6 +75,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
     private Collection<CellLine> celllines = null;
     private Collection<ReadType> readTypes = null;
     private Collection<AlignType> alignTypes = null;
+    private Collection<SeqDataUser> seqDataUsers=null;
     public Collection<ExptType> getExptTypes() throws SQLException {if(exptTypes==null){exptTypes=getMetadataLoader().loadAllExptTypes();} return exptTypes;}
     public Collection<Lab> getLabs() throws SQLException {if(labs==null){labs=getMetadataLoader().loadAllLabs();} return labs;}
     public Collection<ExptTarget> getExptTargets() throws SQLException {if(exptTargets==null){exptTargets = getMetadataLoader().loadAllExptTargets();} return exptTargets;}
@@ -81,6 +83,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
     public Collection<CellLine> getCellLines() throws SQLException {if(celllines==null){celllines = getMetadataLoader().loadAllCellLines();} return celllines;}
 	public Collection<ReadType> getReadTypes() throws SQLException {if(readTypes==null){readTypes = getMetadataLoader().loadAllReadTypes();} return readTypes;}
 	public Collection<AlignType> getAlignTypes() throws SQLException {if(alignTypes==null){alignTypes = getMetadataLoader().loadAllAlignTypes();} return alignTypes;}
+	public Collection<SeqDataUser> getSeqDataUsers() throws SQLException {if(seqDataUsers==null){seqDataUsers = getMetadataLoader().loadAllSeqDataUsers();} return seqDataUsers;}
         
     public SeqDataLoader() throws SQLException, IOException{this(true);}
 	public SeqDataLoader(boolean openClient) throws SQLException, IOException {
@@ -147,6 +150,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         celllines = getMetadataLoader().loadAllCellLines();
         readTypes = getMetadataLoader().loadAllReadTypes();
         alignTypes = getMetadataLoader().loadAllAlignTypes();
+        seqDataUsers = getMetadataLoader().loadAllSeqDataUsers();
         System.err.println("Loading seqdata experiment info...");
         PreparedStatement ps = SeqExpt.createLoadAll(getConnection());
         ps.setFetchSize(1000);

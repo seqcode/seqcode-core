@@ -12,6 +12,9 @@ import java.util.*;
 import java.util.List;
 import java.util.regex.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 
@@ -23,7 +26,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.components.GenericSelectPanel;
 
-public class SeqSelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
+public class SeqLMESelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
     
 	private SeqDataLoader seqLoader;
     
@@ -31,9 +34,9 @@ public class SeqSelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
     private ArrayList<SeqAlignment> alignments;
     private JComboBox jcbType;
     private JTextField regexLab, regexCond, regexTarget, regexCell, regexAlign, regexRep;
-    private SeqTableModel selectedModel, filteredModel;
+    private SeqLMETableModel selectedModel, filteredModel;
 
-    public SeqSelectPanel() { 
+    public SeqLMESelectPanel() { 
         try {
             seqLoader = new SeqDataLoader(true);
         } catch (Exception e) {
@@ -42,8 +45,8 @@ public class SeqSelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
         }
         lme = new TreeSet<SeqLocatorMatchedExpt>();
         alignments = new ArrayList<SeqAlignment>();
-        selectedModel = new SeqTableModel();
-        filteredModel = new SeqTableModel();
+        selectedModel = new SeqLMETableModel();
+        filteredModel = new SeqLMETableModel();
         init(filteredModel,selectedModel);
     }
     public JPanel getInputsPanel() {
@@ -57,13 +60,14 @@ public class SeqSelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
 				types.add(e.getName());
 			Collections.sort(types);
 			jcbType = new JComboBox(types.toArray()); jcbType.setEditable(true);
+			jcbType.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){filter();}});
 			
-	        regexLab = new JTextField();
-	        regexCond = new JTextField(); 
-	        regexTarget = new JTextField(); 
-	        regexCell = new JTextField(); 
-	        regexAlign = new JTextField(); 
-	        regexRep = new JTextField();
+	        regexLab = new JTextField(); regexLab.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){filter();}});
+	        regexCond = new JTextField(); regexCond.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){filter();}});
+	        regexTarget = new JTextField(); regexTarget.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){filter();}});
+	        regexCell = new JTextField(); regexCell.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){filter();}});
+	        regexAlign = new JTextField(); regexAlign.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){filter();}});
+	        regexRep = new JTextField(); regexRep.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){filter();}});
 	        
 	        Font labelFont = new Font("SansSerif", Font.PLAIN, 10);
 	        Border paddingBorder = BorderFactory.createEmptyBorder(5,5,5,5);

@@ -4,7 +4,7 @@ import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedExpt;
 import edu.psu.compbio.seqcode.gse.viz.components.ObjectTableModel;
 
-public class SeqTableModel extends ObjectTableModel<SeqLocatorMatchedExpt> {
+public class SeqLMETableModel extends ObjectTableModel<SeqLocatorMatchedExpt> {
     
     private int compareNameVersions(String n1, String v1, String n2, String v2) { 
         int c = v1.compareTo(v2);

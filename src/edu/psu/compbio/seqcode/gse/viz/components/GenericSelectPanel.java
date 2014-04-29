@@ -2,6 +2,7 @@ package edu.psu.compbio.seqcode.gse.viz.components;
 
 import java.util.*;
 import java.awt.*;
+
 import javax.swing.*;
 import java.awt.event.*;
 import javax.swing.event.*;
@@ -10,6 +11,13 @@ import javax.swing.table.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
+/**
+ * GenericSelectPanel is a panel with two table areas - one to hold a filterable list, and one to hold selected items from that list.
+ *  
+ * @author mahony
+ *
+ * @param <X>
+ */
 public abstract class GenericSelectPanel<X> extends JSplitPane implements Closeable, Runnable {
 
     private JButton addButton, removeButton, infoButton, filterButton;
@@ -110,6 +118,11 @@ public abstract class GenericSelectPanel<X> extends JSplitPane implements Closea
         this.selectedList = selectedList;
         this.filteredModel = filteredModel;
         this.selectedModel = selectedModel;
+        
+        Font tableFont = new Font("SansSerif", Font.PLAIN, 11);
+        this.filteredList.setFont(tableFont);
+        this.selectedList.setFont(tableFont);
+        
         addButton = new JButton("Add");
         removeButton = new JButton("Remove");
         infoButton = new JButton("Info");

@@ -53,6 +53,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
     private Map<String,ExptType> exptTypeNames;
     private Map<String,ReadType> readTypeNames;
     private Map<String,AlignType> alignTypeNames;
+    private Map<String,SeqDataUser> seqDataUserNames;
 	
     private Map<Integer,Lab> labIDs;
     private Map<Integer,CellLine> cellIDs;
@@ -61,11 +62,12 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
     private Map<Integer,ExptType> exptTypeIDs;
     private Map<Integer,ReadType> readTypeIDs;
     private Map<Integer,AlignType> alignTypeIDs;
-	
+    private Map<Integer,SeqDataUser> seqDataUserIDs;
+    
     private java.sql.Connection cxn;
     
-    private PreparedStatement loadLabs, loadCells, loadCond, loadTargets, loadExptTypes, loadReadTypes, loadAlignTypes;
-    private PreparedStatement loadAllLabs, loadAllCells, loadAllCond, loadAllTargets, loadAllExptTypes, loadAllReadTypes, loadAllAlignTypes;
+    private PreparedStatement loadLabs, loadCells, loadCond, loadTargets, loadExptTypes, loadReadTypes, loadAlignTypes, loadSeqDataUsers;
+    private PreparedStatement loadAllLabs, loadAllCells, loadAllCond, loadAllTargets, loadAllExptTypes, loadAllReadTypes, loadAllAlignTypes, loadAllSeqDataUsers;
     private PreparedStatement loadLabsByName, loadCellsByName, loadCondByName, loadTargetsByName, loadExptTypesByName, loadReadTypesByName, loadAlignTypesByName;
 	
     public MetadataLoader() throws SQLException { 
@@ -82,6 +84,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         loadExptTypes = cxn.prepareStatement("select id, name from expttype where id=?");
         loadReadTypes = cxn.prepareStatement("select id, name from readtype where id=?");
         loadAlignTypes = cxn.prepareStatement("select id, name from aligntype where id=?");
+        loadSeqDataUsers = cxn.prepareStatement("select id, name, admin from seqdatauser where id=?");
 
         loadAllLabs = cxn.prepareStatement("select id, name from lab");
         loadAllCells = cxn.prepareStatement("select id, name from cellline");
@@ -90,6 +93,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         loadAllExptTypes = cxn.prepareStatement("select id, name from expttype");
         loadAllReadTypes = cxn.prepareStatement("select id, name from readtype");
         loadAllAlignTypes = cxn.prepareStatement("select id, name from aligntype");
+        loadAllSeqDataUsers = cxn.prepareStatement("select id, name, admin from seqdatauser");
 
         loadLabsByName = cxn.prepareStatement("select id, name from lab where name=?");
         loadCellsByName = cxn.prepareStatement("select id, name from cellline where name=?");
@@ -113,6 +117,8 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         readTypeIDs = new HashMap<Integer,ReadType>();
         alignTypeNames = new HashMap<String,AlignType>();
         alignTypeIDs = new HashMap<Integer,AlignType>();
+        seqDataUserNames = new HashMap<String,SeqDataUser>();
+        seqDataUserIDs = new HashMap<Integer,SeqDataUser>();
     }
 	
     public boolean isClosed() { return cxn==null; }
@@ -126,7 +132,8 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
             loadExptTypes.close(); loadExptTypes = null;
             loadReadTypes.close(); loadReadTypes = null;
             loadAlignTypes.close(); loadAlignTypes = null;
-
+            loadSeqDataUsers.close(); loadSeqDataUsers = null;
+            
             loadAllLabs.close(); loadAllLabs = null;
             loadAllCells.close(); loadAllCells = null;
             loadAllCond.close();  loadAllCond = null;
@@ -134,6 +141,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
             loadAllExptTypes.close(); loadAllExptTypes = null;
             loadAllReadTypes.close(); loadAllReadTypes = null;
             loadAllAlignTypes.close(); loadAllAlignTypes = null;
+            loadAllSeqDataUsers.close(); loadAllSeqDataUsers = null;
             
             loadLabsByName.close(); loadLabsByName=null;
             loadCellsByName.close();  loadCellsByName = null;
@@ -982,7 +990,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
     public Collection<AlignType> loadAllAlignTypes() throws SQLException {
         
         HashSet<AlignType> values = new HashSet<AlignType>();
-        ResultSet rs = loadAllReadTypes.executeQuery();
+        ResultSet rs = loadAllAlignTypes.executeQuery();
 
         while(rs.next()) { 
         	AlignType a = new AlignType(rs);
@@ -1030,5 +1038,84 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         return id;
     }
 
+	//////////////////
+	// SeqDataUser stuff
+	//////////////////
+	
+	public SeqDataUser loadSeqDataUser(int dbid) throws SQLException { 
+		if(seqDataUserIDs.containsKey(dbid)) { return seqDataUserIDs.get(dbid); }
+	
+		SeqDataUser a = null;
+		synchronized(loadSeqDataUsers) {
+			loadSeqDataUsers.setInt(1, dbid);
+			ResultSet rs = loadSeqDataUsers.executeQuery();
+			if(rs.next()) { 
+				a = new SeqDataUser(rs);
+				rs.close();
+			} else {
+				rs.close();
+				throw new IllegalArgumentException("Unknown AlignType DBID: " + dbid);
+			}
+		}        
+		seqDataUserIDs.put(dbid, a);
+		seqDataUserNames.put(a.getName(), a);
+		return a;
+	}
+	
+	public Collection<SeqDataUser> loadAllSeqDataUsers(Collection<Integer> dbids) throws SQLException {
+		LinkedList<SeqDataUser> values = new LinkedList<SeqDataUser>();
+		for(int dbid : dbids) { values.addLast(loadSeqDataUser(dbid)); }
+		return values;
+	}
+	
+	public Collection<SeqDataUser> loadAllSeqDataUsers() throws SQLException {
+		HashSet<SeqDataUser> values = new HashSet<SeqDataUser>();
+		ResultSet rs = loadAllSeqDataUsers.executeQuery();
+	
+		while(rs.next()) { 
+			SeqDataUser a = new SeqDataUser(rs);
+			values.add(a);
+			seqDataUserNames.put(a.getName(), a);
+			seqDataUserIDs.put(a.getDBID(),a);
+		}
+		rs.close();
+		return values;
+	}	
+	
+	private int insertSeqDataUser(String n) throws SQLException {
+		Statement s = null;
+		ResultSet rs = null;
+		int id=-1;
+		try{
+			s = cxn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
+						    	java.sql.ResultSet.CONCUR_UPDATABLE);
+			s.executeUpdate("insert into seqdatauser (name) values ('" + n + "')", Statement.RETURN_GENERATED_KEYS);
+			rs = s.getGeneratedKeys();
+	
+			if (rs.next())
+				id = rs.getInt(1);
+			else 
+				throw new IllegalArgumentException("Unable to insert new entry into seqdatauser table"); 
+			rs.close();
+			rs = null;
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException ex) {
+					// ignore
+				}
+			}
+	
+			if (s != null) {
+				try {
+					s.close();
+				} catch (SQLException ex) {
+					// ignore
+				}
+			}
+		}
+		return id;
+	}
 
 }

@@ -25,7 +25,15 @@ import javax.swing.JPanel;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class SeqDataExperimentEditor extends JFrame implements ActionListener {
-
+	/**
+	 * Constants for default values and limits on settings
+	 */
+	public static final int DEFAULT_WINDOW_WIDTH = 900;
+	public static final int DEFAULT_WINDOW_HEIGHT = 650;
+	public static final int DEFAULT_TOP_LEFT_X = 50;
+	public static final int DEFAULT_TOP_LEFT_Y = 50;
+		
+	//Program variables
 	private SDEEPane pane=null; 
     private JMenuBar menuBar;
     private JMenu fileMenu;
@@ -50,14 +58,11 @@ public class SeqDataExperimentEditor extends JFrame implements ActionListener {
     }
 
     private void init() {
-    	setSize(700,500);
-        setLocation(50,50);
+    	setSize(DEFAULT_WINDOW_WIDTH,DEFAULT_WINDOW_HEIGHT);
+        setLocation(DEFAULT_TOP_LEFT_X,DEFAULT_TOP_LEFT_Y);
     	
-    	JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridBagLayout());
-        Container content = getContentPane();
+    	Container content = getContentPane();
         content.setLayout(new BorderLayout());
-        content.add(buttonPanel,BorderLayout.SOUTH);
         content.add(pane,BorderLayout.CENTER);
         
         this.createMenu();

@@ -44,8 +44,8 @@ public class SeqViewOptionsPane
     // options tab
     private JCheckBox relative, hash, common, seqletters, oldchipseq;
     
-    // chipseq tab
-    private SeqSelectPanel seqSelect;
+    // seqdata tab
+    private SeqLMESelectPanel seqSelect;
 
     // annotations tab
     private JList genes, ncrnas, otherfeats;
@@ -185,7 +185,7 @@ public class SeqViewOptionsPane
         genomeCBox.addItemListener(this);        
         
         // seqdata tab
-        seqSelect = new SeqSelectPanel();        
+        seqSelect = new SeqLMESelectPanel();        
         seqPanel.setLayout(new BorderLayout());
         seqPanel.add(seqSelect, BorderLayout.CENTER);
 

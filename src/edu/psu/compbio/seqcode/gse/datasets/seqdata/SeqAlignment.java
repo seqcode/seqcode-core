@@ -176,6 +176,16 @@ public class SeqAlignment {
 		return c.prepareStatement(query);
 	}
 	
+	public static PreparedStatement createUpdatePermissions(java.sql.Connection c) throws SQLException { 
+		String query = "update seqalignment set permissions=? where id=?";
+		return c.prepareStatement(query);
+	}
+	
+	public static PreparedStatement createUpdatePermissionsByExpt(java.sql.Connection c) throws SQLException { 
+		String query = "update seqalignment set permissions=? where expt=?";
+		return c.prepareStatement(query);
+	}
+	
 	public static PreparedStatement createUpdateHitsAndWeights(java.sql.Connection c) throws SQLException { 
 		String query = "update seqalignment set numhits=?, totalweight=?, numpairs=?, totalpairweight=? where id=?";
 		return c.prepareStatement(query);

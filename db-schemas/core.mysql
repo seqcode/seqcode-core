@@ -122,3 +122,13 @@ CREATE TABLE aligntype (
 	PRIMARY KEY (name)
 ) Type=InnoDB;
 
+--
+-- Table: seqdb user
+--
+CREATE TABLE seqdatauser (
+	id int(10) NOT NULL auto_increment,
+	name varchar(50) NOT NULL,
+	admin int(2),
+	UNIQUE (id),
+	PRIMARY KEY (name)
+) Type=InnoDB;
