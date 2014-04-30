@@ -187,6 +187,12 @@ public class SeqExpt implements Comparable<SeqExpt>{
                 " where id=?");
     	return c.prepareStatement(query);
     }
+    public static PreparedStatement createShortUpdateWithID(java.sql.Connection c) throws SQLException { 
+    	String query = String.format(
+                "update seqexpt set name=?, replicate=?, species=?, expttype=?, lab=?, exptcondition=?, expttarget=?, cellline=?, collabid=?, publicsource=?, publicdbid=? " +
+                " where id=?");
+    	return c.prepareStatement(query);
+    }
     public static PreparedStatement createDeleteByDBID(java.sql.Connection c) throws SQLException { 
         return c.prepareStatement("delete from seqexpt where id=?");
     }

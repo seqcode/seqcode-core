@@ -83,7 +83,10 @@ public class SeqDataExperimentEditor extends JFrame implements ActionListener {
     	
     	exitItem = new JMenuItem("Exit", KeyEvent.VK_X);
     	exitItem.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) { 
+        	public void actionPerformed(ActionEvent e) {
+        		if(pane!=null && !pane.isClosed())
+                	pane.close();
+                dispose();
         		System.exit(0);
         	}
         });        
@@ -181,6 +184,6 @@ public class SeqDataExperimentEditor extends JFrame implements ActionListener {
     }
 
 	public void actionPerformed(ActionEvent e) {
-		
+		repaint();
 	}
 }
