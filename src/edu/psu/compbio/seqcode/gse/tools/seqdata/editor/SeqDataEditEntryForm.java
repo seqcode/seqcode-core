@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -35,6 +37,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.SeqDataUser;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
+import edu.psu.compbio.seqcode.gse.projects.readdb.ACLChangeEntry;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
@@ -52,6 +55,7 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 	public static final int DEFAULT_WINDOW_HEIGHT = 350;
 	public static final int DEFAULT_TOP_LEFT_X = 100;
 	public static final int DEFAULT_TOP_LEFT_Y = 100;
+	public static final String FINISHED = "SDEEFinished";
 	
 	private SeqDataLoader seqLoader;
 	private List<SeqExpt> editExpts;
@@ -132,6 +136,7 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
                 public void actionPerformed(ActionEvent e) {
                 	try {
 						updateSeqExpts();
+						firePropertyChange(FINISHED, false, true);
 						//Flash a message confirming update?
 						dispose();
 					} catch (SQLException e1) {
@@ -141,6 +146,7 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
             });
 			cancelButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
+                	firePropertyChange(FINISHED, true, false);
                 	dispose();
                 }
             });
@@ -150,18 +156,18 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 	        buttonPanel.setLayout(new GridBagLayout());
 	        buttonPanel.add(okButton);
 	        buttonPanel.add(cancelButton);
-	        JPanel inputsPanel = getInputsPanel();
+	        JPanel inputsPanel = getInputsPanel(); 
 	        JPanel permPanel = getPermissionsPanel();
 	        JPanel allInputsPanel = new JPanel(); allInputsPanel.setLayout(new BoxLayout(allInputsPanel, BoxLayout.PAGE_AXIS));
 	        allInputsPanel.add(inputsPanel);
 	        allInputsPanel.add(Box.createHorizontalGlue());
 	        allInputsPanel.add(permPanel);
-	        allInputsPanel.add(Box.createHorizontalGlue());
 	        allInputsPanel.add(Box.createVerticalGlue());
 	        allInputsPanel.add(buttonPanel);
 	        actPanel.add(allInputsPanel,BorderLayout.CENTER);
 	        add(actPanel);
-			this.setVisible(true);
+	        this.setVisible(true);
+	        this.repaint();
 		}
 	}
 	
@@ -272,9 +278,8 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 		Font labelFont = new Font("SansSerif", Font.BOLD, 12);
 		Border paddingBorder = BorderFactory.createEmptyBorder(5,5,5,5);
 		JLabel labelPerm = new JLabel("Permissions"); labelPerm.setFont(labelFont); labelPerm.setBorder(paddingBorder); labelPerm.setAlignmentX(Component.LEFT_ALIGNMENT);
-		permissionsPanel.setLayout(new BoxLayout(permissionsPanel, BoxLayout.X_AXIS));
+		permissionsPanel.setLayout(new BoxLayout(permissionsPanel, BoxLayout.Y_AXIS));
 		permissionsPanel.add(labelPerm);
-		permissionsPanel.add(Box.createHorizontalGlue());
 		
 		JPanel permCBPanel = new JPanel();
 		permCBPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -287,7 +292,6 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 			permCBPanel.add(cb);
 		}
 		permissionsPanel.add(permCBPanel);
-		permissionsPanel.add(Box.createHorizontalGlue());
 		permissionsPanel.add(Box.createVerticalGlue());
 		return permissionsPanel;
 	}
@@ -321,10 +325,10 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 			String updatePubSrc = newPubSrc.equals("") ? expt.getPublicSource() : newPubSrc;
 			String updatePubID = newPubID.equals("") ? expt.getPublicDBID() : newPubID;
 			String updateCollabExptID = newCollabExptID.equals("") ? expt.getCollabID() : newCollabExptID;
-			String updateName = updateLab+" "+updateCond+" "+updateTarget+" "+updateCell+" ";
+			String updateName = updateLab+" "+updateCond+" "+updateTarget+" "+updateCell;
 			
-			System.out.println(updateName+"\t"+updateExptType+"\t"+updateLab+"\t"+updateCond+"\t"+updateTarget+"\t"+updateCell+"\t"+updateRep+"\t"+updatePubSrc+"\t"+updatePubID+"\t"+updateCollabExptID+"\t"+expt.getDBID());
-			/*PreparedStatement update = SeqExpt.createShortUpdateWithID(seqLoader.getConnection());
+			System.err.println("UPDATING:\t"+updateName+"\t"+updateExptType+"\t"+updateLab+"\t"+updateCond+"\t"+updateTarget+"\t"+updateCell+"\t"+updateRep+"\t"+updatePubSrc+"\t"+updatePubID+"\t"+updateCollabExptID+"\t"+expt.getDBID());
+			PreparedStatement update = SeqExpt.createShortUpdateWithID(seqLoader.getConnection());
 			update.setString(1, updateName);
             update.setString(2, updateRep);
             update.setInt(3, expt.getOrganism().getDBID());
@@ -335,7 +339,7 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
             update.setInt(8, seqLoader.getMetadataLoader().getCellLine(updateCell).getDBID());
             update.setString(9, updateCollabExptID);
             update.setString(10, updatePubSrc);
-            update.setString(11, updatePubId);
+            update.setString(11, updatePubID);
             update.setInt(12, expt.getDBID());
             update.execute();	            
 		
@@ -354,15 +358,25 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
             	permUpdate.setInt(2, align.getDBID());
             	permUpdate.execute();
             }
-			*/
-			for(SeqAlignment align : seqLoader.loadAllAlignments(expt)){
-				System.out.println(align.getDBID()+"\t"+newPermissions);
+			
+            for(SeqAlignment align : seqLoader.loadAllAlignments(expt)){
+				//System.out.println(align.getDBID()+"\t"+newPermissions);
+				String[] princs = new String[users.size()];
+				String[] ops = new String[users.size()];
+				String[] acls = new String[users.size()];
+				int i=0;
+				for(SeqDataUser u : users){
+					princs[i] = u.getName();
+					ops[i] = userCheckboxes.get(u).getState() ? "add" : "delete";
+					acls[i] = "read";                            
+					i++;
+				}
+				seqLoader.changeAlignmentACLmulti(align, princs, ops, acls);
 			}
 		}
-		//seqLoader.getConnection().commit();
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-	
+		
 	}
 }

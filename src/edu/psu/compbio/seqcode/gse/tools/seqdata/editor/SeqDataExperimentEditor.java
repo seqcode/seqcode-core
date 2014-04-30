@@ -34,7 +34,7 @@ public class SeqDataExperimentEditor extends JFrame implements ActionListener {
 	public static final int DEFAULT_TOP_LEFT_Y = 50;
 		
 	//Program variables
-	private SDEEPane pane=null; 
+	private SeqDataExptEditPane pane=null; 
     private JMenuBar menuBar;
     private JMenu fileMenu;
     private JMenuItem exitItem;
@@ -42,7 +42,7 @@ public class SeqDataExperimentEditor extends JFrame implements ActionListener {
 
 	public SeqDataExperimentEditor() throws NotFoundException, SQLException, IOException {
 		setTitle("SeqDataExperimentEditor");
-        pane = new SDEEPane();
+        pane = new SeqDataExptEditPane();
         init();
         
         //Close operations

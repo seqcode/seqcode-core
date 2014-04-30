@@ -4,6 +4,8 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +37,7 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.components.GenericEditTablePanel;
 
 public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
+
 	private SeqDataLoader seqLoader;
     private TreeSet<SeqExpt> expts;
     private JComboBox jcbType;
@@ -42,7 +45,7 @@ public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
     private SeqExptTableModel filteredModel;
 
     public SeqExptEditTablePanel() { 
-        try {
+    	try {
             seqLoader = new SeqDataLoader(true);
         } catch (Exception e) {
             e.printStackTrace();
@@ -169,6 +172,14 @@ public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
 
     public void edit(Collection<SeqExpt> toEdit){
     	SeqDataEditEntryForm editForm = new SeqDataEditEntryForm(seqLoader, toEdit);
+    	editForm.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent pcEvt) {
+               if (pcEvt.getPropertyName().equals(SeqDataEditEntryForm.FINISHED)) {
+                  updateData();
+                  filter();
+               }
+            }
+         });
     }
     
     public void close() {

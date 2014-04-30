@@ -110,7 +110,9 @@ public class SeqExpt implements Comparable<SeqExpt>{
     }
     
     public int compareTo(SeqExpt o){
-    	return name.compareTo(o.name);
+    	String namerep = name+";"+replicate;
+    	String onamerep = o.name+";"+o.replicate;
+    	return namerep.compareTo(onamerep);
     }
     public boolean equals(Object o) { 
         if(!(o instanceof SeqExpt)) { return false; }

@@ -21,6 +21,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.SeqDataUser;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.gse.projects.readdb.ACLChangeEntry;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.SingleHit;
@@ -159,6 +160,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 		while (rs.next()) {
 			expts.addLast(new SeqExpt(rs, this));
 		}
+		Collections.sort(expts);
 		rs.close();
 		ps.close();
 
@@ -512,7 +514,55 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 		del.execute("delete from alignmentparameters where alignment = " + align.getDBID());
 	}
     
+	/**
+	 * Update the permissions for a SeqAlignment
+	 * SeqAlignment align: alignment to change
+	 * String princ : user name
+	 * String op : operation [add|delete] 
+	 * String acl [read|write|admin]
+	 * @param princ
+	 */
+	public void changeAlignmentACL(SeqAlignment align, String princ, String op, String acl){
+		Set<ACLChangeEntry> changes = new HashSet<ACLChangeEntry>();
+		changes.add(new ACLChangeEntry(ACLChangeEntry.opCode(op),
+                                   ACLChangeEntry.aclCode(acl),
+                                   princ));
+		try {
+			client.setACL(new Integer(align.getDBID()).toString(), changes);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClientException e) {
+			e.printStackTrace();
+		}
+	}
 	
+	/**
+	 * Update multiple permissions for a SeqAlignment
+	 * SeqAlignment align: alignment to change
+	 * String[] princs : user name
+	 * String[] ops : operation [add|delete] 
+	 * String[] acls [read|write|admin]
+	 * @param princ
+	 */
+	public void changeAlignmentACLmulti(SeqAlignment align, String[] princs, String[] ops, String[] acls){
+		if(princs.length==ops.length && ops.length==acls.length){
+			Set<ACLChangeEntry> changes = new HashSet<ACLChangeEntry>();
+			for(int i=0; i<princs.length; i++)
+				changes.add(new ACLChangeEntry(ACLChangeEntry.opCode(ops[i]),
+	                                   ACLChangeEntry.aclCode(acls[i]),
+	                                   princs[i]));
+			try {
+				client.setACL(new Integer(align.getDBID()).toString(), changes);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ClientException e) {
+				e.printStackTrace();
+			}
+		}else{
+			System.err.println("changeAlignmentACLmulti: input arrays should be the same lengths");
+		}
+	}
+
 	/*
 	 * SeqHit loading: problem with this is that SingleHits are assumed.  
 	 */

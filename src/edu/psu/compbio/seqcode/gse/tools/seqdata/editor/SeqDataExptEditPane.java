@@ -14,14 +14,14 @@ import javax.swing.JTabbedPane;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
-public class SDEEPane extends JTabbedPane implements ItemListener, ActionListener, Closeable {
+public class SeqDataExptEditPane extends JTabbedPane implements ItemListener, ActionListener, Closeable {
 
 	private JPanel seqPanel;
 	private SeqExptEditTablePanel seqSelect=null;
 	private boolean handlingChange, closed;
 	private JButton donebutton;
 
-	public SDEEPane ()throws NotFoundException {
+	public SeqDataExptEditPane ()throws NotFoundException {
         super();
         handlingChange=false;
         init();
