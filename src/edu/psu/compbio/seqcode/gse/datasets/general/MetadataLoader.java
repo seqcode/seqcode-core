@@ -68,7 +68,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
     
     private PreparedStatement loadLabs, loadCells, loadCond, loadTargets, loadExptTypes, loadReadTypes, loadAlignTypes, loadSeqDataUsers;
     private PreparedStatement loadAllLabs, loadAllCells, loadAllCond, loadAllTargets, loadAllExptTypes, loadAllReadTypes, loadAllAlignTypes, loadAllSeqDataUsers;
-    private PreparedStatement loadLabsByName, loadCellsByName, loadCondByName, loadTargetsByName, loadExptTypesByName, loadReadTypesByName, loadAlignTypesByName;
+    private PreparedStatement loadLabsByName, loadCellsByName, loadCondByName, loadTargetsByName, loadExptTypesByName, loadReadTypesByName, loadAlignTypesByName, loadSeqDataUsersByName;
 	
     public MetadataLoader() throws SQLException { 
         try {
@@ -102,7 +102,8 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         loadExptTypesByName = cxn.prepareStatement("select id, name from expttype where name=?");
         loadReadTypesByName = cxn.prepareStatement("select id, name from readtype where name=?");
         loadAlignTypesByName = cxn.prepareStatement("select id, name from aligntype where name=?");
-
+        loadSeqDataUsersByName = cxn.prepareStatement("select id, name, admin from seqdatauser where name=?");
+        
         labNames = new HashMap<String,Lab>();
         labIDs = new HashMap<Integer,Lab>();
         cellNames = new HashMap<String,CellLine>();
@@ -150,6 +151,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
             loadExptTypesByName.close(); loadExptTypesByName = null;
             loadReadTypesByName.close(); loadReadTypesByName = null;
             loadAlignTypesByName.close(); loadAlignTypesByName = null;
+            loadSeqDataUsersByName.close(); loadSeqDataUsersByName=null;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1041,7 +1043,46 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
 	//////////////////
 	// SeqDataUser stuff
 	//////////////////
-	
+    public SeqDataUser getSeqDataUser(String name) throws SQLException { 
+        synchronized (loadSeqDataUsersByName) {
+            loadSeqDataUsersByName.setString(1, name);
+            ResultSet rs = loadSeqDataUsersByName.executeQuery();
+            
+            if(rs.next()) { 
+            	SeqDataUser a = new SeqDataUser(rs);
+                rs.close();
+                
+                if(!seqDataUserIDs.containsKey(a.getDBID())) { 
+                    seqDataUserIDs.put(a.getDBID(), a);
+                    seqDataUserNames.put(a.getName(), a);
+                }
+                return a;
+            }
+            rs.close();
+        }
+        int id = insertSeqDataUser(name);
+        return loadSeqDataUser(id);
+    }
+    
+    public SeqDataUser findSeqDataUser(String name) throws SQLException { 
+        synchronized (loadSeqDataUsersByName) {
+            loadSeqDataUsersByName.setString(1, name);
+            ResultSet rs = loadSeqDataUsersByName.executeQuery();
+            
+            if(rs.next()) { 
+            	SeqDataUser a = new SeqDataUser(rs);
+                rs.close();
+                
+                if(!seqDataUserIDs.containsKey(a.getDBID())) { 
+                    seqDataUserIDs.put(a.getDBID(), a);
+                    seqDataUserNames.put(a.getName(), a);
+                }
+                return a;
+            }            
+            rs.close();
+            return null;
+        }
+    }
 	public SeqDataUser loadSeqDataUser(int dbid) throws SQLException { 
 		if(seqDataUserIDs.containsKey(dbid)) { return seqDataUserIDs.get(dbid); }
 	

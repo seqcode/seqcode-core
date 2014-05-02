@@ -10,6 +10,7 @@ import java.awt.GridLayout;
 import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.AccessControlException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.ExptType;
 import edu.psu.compbio.seqcode.gse.datasets.general.SeqDataUser;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataModifier;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ACLChangeEntry;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -58,6 +60,7 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 	public static final String FINISHED = "SDEEFinished";
 	
 	private SeqDataLoader seqLoader;
+	private SeqDataModifier seqModifier;
 	private List<SeqExpt> editExpts;
 	private List<SeqAlignment> editAligns=new ArrayList<SeqAlignment>();
 	private JComboBox jcbType;
@@ -73,6 +76,13 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 	public SeqDataEditEntryForm(SeqDataLoader loader, Collection<SeqExpt> expts){
 		super("Edit SeqExperiment Metadata");
 		seqLoader = loader;
+		try {
+			seqModifier = new SeqDataModifier(seqLoader);
+		} catch (AccessControlException e1) {
+			e1.printStackTrace();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
 		editExpts = new ArrayList(expts);
 		
 		if(editExpts!=null && editExpts.size()>0){
@@ -328,35 +338,11 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 			String updateName = updateLab+" "+updateCond+" "+updateTarget+" "+updateCell;
 			
 			System.err.println("UPDATING:\t"+updateName+"\t"+updateExptType+"\t"+updateLab+"\t"+updateCond+"\t"+updateTarget+"\t"+updateCell+"\t"+updateRep+"\t"+updatePubSrc+"\t"+updatePubID+"\t"+updateCollabExptID+"\t"+expt.getDBID());
-			PreparedStatement update = SeqExpt.createShortUpdateWithID(seqLoader.getConnection());
-			update.setString(1, updateName);
-            update.setString(2, updateRep);
-            update.setInt(3, expt.getOrganism().getDBID());
-            update.setInt(4, seqLoader.getMetadataLoader().getExptType(updateExptType).getDBID());
-            update.setInt(5, seqLoader.getMetadataLoader().getLab(updateLab).getDBID());
-            update.setInt(6, seqLoader.getMetadataLoader().getExptCondition(updateCond).getDBID());
-            update.setInt(7, seqLoader.getMetadataLoader().getExptTarget(updateTarget).getDBID());
-            update.setInt(8, seqLoader.getMetadataLoader().getCellLine(updateCell).getDBID());
-            update.setString(9, updateCollabExptID);
-            update.setString(10, updatePubSrc);
-            update.setString(11, updatePubID);
-            update.setInt(12, expt.getDBID());
-            update.execute();	            
-		
-            try {
-			    SeqExpt testExpt = seqLoader.loadExperiment(updateName, updateRep);
-			} catch (NotFoundException e2) {
-                // failed again means the insert failed.  you lose 
-            	seqLoader.getConnection().rollback();
-                throw new DatabaseException("Couldn't update experiment for " + updateName + "," + updateRep);
-            }
+			seqModifier.updateSeqExpt(expt, updateExptType, updateLab, updateCond, updateTarget, updateCell, updateRep, updatePubSrc, updatePubID, updateCollabExptID);
 			
 			//Update the permissions of each alignment
             for(SeqAlignment align : seqLoader.loadAllAlignments(expt)){
-            	PreparedStatement permUpdate = SeqAlignment.createUpdatePermissions(seqLoader.getConnection());
-            	permUpdate.setString(1, newPermissions);
-            	permUpdate.setInt(2, align.getDBID());
-            	permUpdate.execute();
+            	seqModifier.updateSeqAlignmentPermissions(align, newPermissions);
             }
 			
             for(SeqAlignment align : seqLoader.loadAllAlignments(expt)){
@@ -371,9 +357,11 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 					acls[i] = "read";                            
 					i++;
 				}
-				seqLoader.changeAlignmentACLmulti(align, princs, ops, acls);
+				seqModifier.changeAlignmentACLmulti(align, princs, ops, acls);
 			}
 		}
+		//This will delete any now-redundant Lab, ExptTargets, etc from the db
+		seqModifier.coreCleanup();
 	}
 	
 	public void actionPerformed(ActionEvent e) {

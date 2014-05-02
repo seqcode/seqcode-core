@@ -34,7 +34,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
  * @author tdanford
  * @author mahony
  * 
- * SeqDataLoader serves as a clearinghouse for interacting with the seqdata database and
+ * SeqDataLoader serves as a clearinghouse for query interactions with the seqdata database and
  * associated metadata from tables in the core database (via the MetadataLoader). 
  * 
  * Implements a simple access control by checking if the username is in the permissions field
@@ -66,6 +66,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	private boolean closeMetaLoader;
 	private java.sql.Connection cxn=null;
 	private String myusername = "";
+	private SeqDataUser myUser=null;
     private Client client=null;
     
     //Experiment descriptors
@@ -84,8 +85,10 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
     public Collection<CellLine> getCellLines() throws SQLException {if(celllines==null){celllines = getMetadataLoader().loadAllCellLines();} return celllines;}
 	public Collection<ReadType> getReadTypes() throws SQLException {if(readTypes==null){readTypes = getMetadataLoader().loadAllReadTypes();} return readTypes;}
 	public Collection<AlignType> getAlignTypes() throws SQLException {if(alignTypes==null){alignTypes = getMetadataLoader().loadAllAlignTypes();} return alignTypes;}
+	public SeqDataUser findSeqDataUser(String name) throws SQLException {return getMetadataLoader().findSeqDataUser(name);}
 	public Collection<SeqDataUser> getSeqDataUsers() throws SQLException {if(seqDataUsers==null){seqDataUsers = getMetadataLoader().loadAllSeqDataUsers();} return seqDataUsers;}
-        
+    public SeqDataUser getMyUser(){return myUser;}    
+	
     public SeqDataLoader() throws SQLException, IOException{this(true);}
 	public SeqDataLoader(boolean openClient) throws SQLException, IOException {
 		if(openClient){
@@ -101,12 +104,14 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
             try {
                 cxn = DatabaseFactory.getConnection(role);
                 myusername = DatabaseFactory.getUsername(role);
+                myUser = findSeqDataUser(myusername);
             } catch (SQLException e) {
                 throw new DatabaseException(e.toString(),e);
             }
         }
         return cxn;
     }
+    public Client getClient(){return client;}
     
 	public MetadataLoader getMetadataLoader() {
         if (metaLoader == null) {
@@ -509,59 +514,6 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 	}
 
-	public void deleteAlignmentParameters(SeqAlignment align) throws SQLException {
-		Statement del = getConnection().createStatement();
-		del.execute("delete from alignmentparameters where alignment = " + align.getDBID());
-	}
-    
-	/**
-	 * Update the permissions for a SeqAlignment
-	 * SeqAlignment align: alignment to change
-	 * String princ : user name
-	 * String op : operation [add|delete] 
-	 * String acl [read|write|admin]
-	 * @param princ
-	 */
-	public void changeAlignmentACL(SeqAlignment align, String princ, String op, String acl){
-		Set<ACLChangeEntry> changes = new HashSet<ACLChangeEntry>();
-		changes.add(new ACLChangeEntry(ACLChangeEntry.opCode(op),
-                                   ACLChangeEntry.aclCode(acl),
-                                   princ));
-		try {
-			client.setACL(new Integer(align.getDBID()).toString(), changes);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClientException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * Update multiple permissions for a SeqAlignment
-	 * SeqAlignment align: alignment to change
-	 * String[] princs : user name
-	 * String[] ops : operation [add|delete] 
-	 * String[] acls [read|write|admin]
-	 * @param princ
-	 */
-	public void changeAlignmentACLmulti(SeqAlignment align, String[] princs, String[] ops, String[] acls){
-		if(princs.length==ops.length && ops.length==acls.length){
-			Set<ACLChangeEntry> changes = new HashSet<ACLChangeEntry>();
-			for(int i=0; i<princs.length; i++)
-				changes.add(new ACLChangeEntry(ACLChangeEntry.opCode(ops[i]),
-	                                   ACLChangeEntry.aclCode(acls[i]),
-	                                   princs[i]));
-			try {
-				client.setACL(new Integer(align.getDBID()).toString(), changes);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (ClientException e) {
-				e.printStackTrace();
-			}
-		}else{
-			System.err.println("changeAlignmentACLmulti: input arrays should be the same lengths");
-		}
-	}
 
 	/*
 	 * SeqHit loading: problem with this is that SingleHits are assumed.  
