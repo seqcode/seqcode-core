@@ -173,6 +173,21 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	}
 
 
+	public SeqExpt findExperiment(String name, String rep) throws SQLException {
+		PreparedStatement ps = SeqExpt.createLoadByNameReplicate(getConnection());
+		ps.setString(1, name);
+		ps.setString(2, rep);
+		ResultSet rs = ps.executeQuery();
+		SeqExpt expt = null;
+		if (rs.next()) {
+			expt = new SeqExpt(rs, this);
+		}
+		rs.close();
+		ps.close();
+
+		return expt;
+	}
+	
 	public SeqExpt loadExperiment(String name, String rep) throws NotFoundException, SQLException {
 		PreparedStatement ps = SeqExpt.createLoadByNameReplicate(getConnection());
 		ps.setString(1, name);

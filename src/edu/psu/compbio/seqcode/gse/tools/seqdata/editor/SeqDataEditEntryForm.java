@@ -38,6 +38,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.SeqDataUser;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataModifier;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataModifier.DuplicateDatabaseEntryException;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ACLChangeEntry;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -338,7 +339,12 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 			String updateName = updateLab+" "+updateCond+" "+updateTarget+" "+updateCell;
 			
 			System.err.println("UPDATING:\t"+updateName+"\t"+updateExptType+"\t"+updateLab+"\t"+updateCond+"\t"+updateTarget+"\t"+updateCell+"\t"+updateRep+"\t"+updatePubSrc+"\t"+updatePubID+"\t"+updateCollabExptID+"\t"+expt.getDBID());
-			seqModifier.updateSeqExpt(expt, updateExptType, updateLab, updateCond, updateTarget, updateCell, updateRep, updatePubSrc, updatePubID, updateCollabExptID);
+			try {
+				seqModifier.updateSeqExpt(expt, updateExptType, updateLab, updateCond, updateTarget, updateCell, updateRep, updatePubSrc, updatePubID, updateCollabExptID);
+			} catch (DuplicateDatabaseEntryException e) {
+				System.err.println("Cannot update "+expt.getName()+";"+expt.getReplicate()+" to "+updateName+";"+updateRep+" as this will result in a duplicate SeqExpt key.");
+				JOptionPane.showMessageDialog(null, "Cannot update "+expt.getName()+";"+expt.getReplicate()+" to "+updateName+";"+updateRep+" as this will result in a duplicate SeqExpt key.", "Error: attempted duplicate", JOptionPane.INFORMATION_MESSAGE);
+			}
 			
 			//Update the permissions of each alignment
             for(SeqAlignment align : seqLoader.loadAllAlignments(expt)){

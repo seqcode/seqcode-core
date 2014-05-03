@@ -124,31 +124,36 @@ public class SeqDataModifier  implements edu.psu.compbio.seqcode.gse.utils.Close
     	}
 	}
 	
-	public void updateSeqExpt(SeqExpt expt, String updateExptType, String updateLab, String updateCond, String updateTarget, String updateCell, String updateRep, String updatePubSrc, String updatePubID, String updateCollabExptID) throws SQLException{
+	public void updateSeqExpt(SeqExpt expt, String updateExptType, String updateLab, String updateCond, String updateTarget, String updateCell, String updateRep, String updatePubSrc, String updatePubID, String updateCollabExptID) throws SQLException, DuplicateDatabaseEntryException{
 		String updateName = updateLab+" "+updateCond+" "+updateTarget+" "+updateCell;
 		
-		PreparedStatement update = SeqExpt.createShortUpdateWithID(seqLoader.getConnection());
-		update.setString(1, updateName);
-        update.setString(2, updateRep);
-        update.setInt(3, expt.getOrganism().getDBID());
-        update.setInt(4, seqLoader.getMetadataLoader().getExptType(updateExptType).getDBID());
-        update.setInt(5, seqLoader.getMetadataLoader().getLab(updateLab).getDBID());
-        update.setInt(6, seqLoader.getMetadataLoader().getExptCondition(updateCond).getDBID());
-        update.setInt(7, seqLoader.getMetadataLoader().getExptTarget(updateTarget).getDBID());
-        update.setInt(8, seqLoader.getMetadataLoader().getCellLine(updateCell).getDBID());
-        update.setString(9, updateCollabExptID);
-        update.setString(10, updatePubSrc);
-        update.setString(11, updatePubID);
-        update.setInt(12, expt.getDBID());
-        update.execute();	            
-	
-        try {
-		    SeqExpt testExpt = seqLoader.loadExperiment(updateName, updateRep);
-		} catch (NotFoundException e2) {
-            // failed again means the insert failed.  you lose 
-        	seqLoader.getConnection().rollback();
-            throw new DatabaseException("Couldn't update experiment for " + updateName + "," + updateRep);
-        }
+		SeqExpt testExpt  = seqLoader.findExperiment(updateName, updateRep);
+		if(testExpt!=null)
+			throw new DuplicateDatabaseEntryException("SeqDataModifier.updateSeqExpt wants to create a duplicate SeqExpt");
+		else{
+			PreparedStatement update = SeqExpt.createShortUpdateWithID(seqLoader.getConnection());
+			update.setString(1, updateName);
+	        update.setString(2, updateRep);
+	        update.setInt(3, expt.getOrganism().getDBID());
+	        update.setInt(4, seqLoader.getMetadataLoader().getExptType(updateExptType).getDBID());
+	        update.setInt(5, seqLoader.getMetadataLoader().getLab(updateLab).getDBID());
+	        update.setInt(6, seqLoader.getMetadataLoader().getExptCondition(updateCond).getDBID());
+	        update.setInt(7, seqLoader.getMetadataLoader().getExptTarget(updateTarget).getDBID());
+	        update.setInt(8, seqLoader.getMetadataLoader().getCellLine(updateCell).getDBID());
+	        update.setString(9, updateCollabExptID);
+	        update.setString(10, updatePubSrc);
+	        update.setString(11, updatePubID);
+	        update.setInt(12, expt.getDBID());
+	        update.execute();	            
+		
+	        try {
+			    SeqExpt testExpt2 = seqLoader.loadExperiment(updateName, updateRep);
+			} catch (NotFoundException e2) {
+	            // failed again means the insert failed.  you lose 
+	        	seqLoader.getConnection().rollback();
+	            throw new DatabaseException("Couldn't update experiment for " + updateName + "," + updateRep);
+	        }
+		}
 	}
 	
 	public void updateSeqAlignmentHitCounts(SeqAlignment align, Integer singlecount, Float singleweight, Integer paircount, Float pairweight) throws SQLException{
@@ -231,6 +236,12 @@ public class SeqDataModifier  implements edu.psu.compbio.seqcode.gse.utils.Close
 	}
 	public boolean isClosed() {
 		return cxn == null;
+	}
+	
+	public class DuplicateDatabaseEntryException extends Exception{
+		public DuplicateDatabaseEntryException(String message){
+			super(message);
+		}
 	}
 
 }
