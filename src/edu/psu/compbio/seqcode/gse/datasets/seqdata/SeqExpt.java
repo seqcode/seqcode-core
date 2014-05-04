@@ -1,5 +1,5 @@
 /*
- * Created as "ChipSeqExpt" on Sep 8, 2006
+ *  Created as "ChipSeqExpt" on Sep 8, 2006
  */
 package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
@@ -39,7 +39,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 		primary key (name, replicate)
 	)Type=InnoDB;
  */
-public class SeqExpt {
+public class SeqExpt implements Comparable<SeqExpt>{
     
     private int dbid;
     private String name, replicate;
@@ -53,7 +53,7 @@ public class SeqExpt {
     private int readlength, numReads;
     private String collabID, publicSource, publicDBID, fqFile, exptNote;
     
-    public SeqExpt(ResultSet rs, SeqDataLoader loader) throws SQLException { 
+    public SeqExpt(ResultSet rs, SeqDataLoader loader)  throws SQLException { 
         dbid = rs.getInt(1);
         name = rs.getString(2);
         replicate = rs.getString(3);
@@ -109,6 +109,11 @@ public class SeqExpt {
     	return String.format("%s (%s)", name, replicate);
     }
     
+    public int compareTo(SeqExpt o){
+    	String namerep = name+";"+replicate;
+    	String onamerep = o.name+";"+o.replicate;
+    	return namerep.compareTo(onamerep);
+    }
     public boolean equals(Object o) { 
         if(!(o instanceof SeqExpt)) { return false; }
         SeqExpt c = (SeqExpt)o;
@@ -181,6 +186,12 @@ public class SeqExpt {
     public static PreparedStatement createUpdateWithID(java.sql.Connection c) throws SQLException { 
     	String query = String.format(
                 "update seqexpt set name=?, replicate=?, species=?, expttype=?, lab=?, exptcondition=?, expttarget=?, cellline=?, readtype=?, readlength=?, numreads=?, collabid=?, publicsource=?, publicdbid=?, fqfile=?, exptnote=? " +
+                " where id=?");
+    	return c.prepareStatement(query);
+    }
+    public static PreparedStatement createShortUpdateWithID(java.sql.Connection c) throws SQLException { 
+    	String query = String.format(
+                "update seqexpt set name=?, replicate=?, species=?, expttype=?, lab=?, exptcondition=?, expttarget=?, cellline=?, collabid=?, publicsource=?, publicdbid=? " +
                 " where id=?");
     	return c.prepareStatement(query);
     }

@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.tools.seqdata;
+package edu.psu.compbio.seqcode.gse.tools.sequence;
 
 import java.util.*;
 import java.io.*;

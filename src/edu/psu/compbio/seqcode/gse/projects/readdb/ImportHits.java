@@ -30,7 +30,7 @@ public class ImportHits {
     String hostname;
     String username, password;
     int portnum;
-    private Client client;
+    private Client client=null;
     private int chunk = 10000000;
 
     public static void main(String args[])  {
@@ -42,9 +42,7 @@ public class ImportHits {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (importer != null && importer.client != null) {
-                importer.client.close();
-            }
+            importer.close();
         }
     }
 
@@ -205,4 +203,9 @@ public class ImportHits {
         System.err.println("Stored");
     }
 
+    public void close(){
+    	if (client != null) {
+            client.close();
+        }
+    }
 }

@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
 import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
 import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.general.Lab;
-import edu.psu.compbio.seqcode.gse.datasets.general.MetadataDeleter;
+import edu.psu.compbio.seqcode.gse.datasets.general.MetadataModifier;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
@@ -28,7 +28,7 @@ public class DeleteAlignment {
         Integer id = Args.parseInteger(args,"id", -1);
         
         SeqDataLoader loader = new SeqDataLoader();
-        MetadataDeleter metaDeleter = new MetadataDeleter();
+        SeqDataModifier seqDatamodifier = new SeqDataModifier(loader);
         
         SeqAlignment align = loader.loadAlignment(id);
         
@@ -44,52 +44,19 @@ public class DeleteAlignment {
 	        
 	        //Find and delete the AlignmentParameters (if exist)
 	        System.err.println("Deleting alignment parameters for: "+align.getName());
-	        loader.deleteAlignmentParameters(align);
+	        seqDatamodifier.deleteAlignmentParameters(align);
 	        
 	        //Delete the SeqAlignment
 	        System.err.println("Deleting alignment: "+align.getName()+"\t"+align.getDBID());
-	        PreparedStatement deleteAlign = SeqAlignment.createDeleteByIDStatement(cxn);
-	        deleteAlign.setInt(1, align.getDBID());
-	        deleteAlign.execute();
-	        deleteAlign.close();
-	        cxn.commit();
+	        seqDatamodifier.deleteSeqAlignment(align);
 	        
 	        //Delete the SeqExpt if no other SeqAlignments depend
 	        if(loader.loadAllAlignments(expt).size()==0){
 	        	System.err.println("Deleting experiment: "+expt.getName()+"\t"+expt.getDBID());
-	        	PreparedStatement deleteExpt = SeqExpt.createDeleteByDBID(cxn);
-	        	deleteExpt.setInt(1, expt.getDBID());
-	        	deleteExpt.execute();
-	        	deleteExpt.close();
-	        	cxn.commit();
-	        	
-	        	//Delete core.lab if no other SeqExpts depend
-	        	if(loader.loadExperiments(lab).size()==0){
-	        		System.err.println("Deleting lab: "+lab.getName()+"\t"+lab.getDBID());
-	        		metaDeleter.deleteLab(lab.getDBID());
-	        	}
-	        	
-		        //Delete core.exptcondition if no other SeqExpts depend
-	        	if(loader.loadExperiments(cond).size()==0){
-	        		System.err.println("Deleting condition: "+cond.getName()+"\t"+cond.getDBID());
-	        		metaDeleter.deleteCond(cond.getDBID());
-	        	}
-	        	
-		        //Delete core.expttarget if no other SeqExpts depend
-	        	if(loader.loadExperiments(target).size()==0){
-	        		System.err.println("Deleting target: "+target.getName()+"\t"+target.getDBID());
-	        		metaDeleter.deleteTarget(target.getDBID());
-	        	}
-	        	
-		        //Delete core.cellline if no other SeqExpts depend
-	        	if(loader.loadExperiments(cells).size()==0){
-	        		System.err.println("Deleting cell-line: "+cells.getName()+"\t"+cells.getDBID());
-	        		metaDeleter.deleteCell(cells.getDBID());
-	        	}
+	        	seqDatamodifier.deleteSeqExpt(expt);
 	        }
         }
         loader.close();
-        metaDeleter.close();
         cxn.close();
     }
 }

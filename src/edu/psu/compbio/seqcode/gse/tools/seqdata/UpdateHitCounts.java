@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataModifier;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -26,6 +27,7 @@ public class UpdateHitCounts {
 	        Integer id = Args.parseInteger(args,"id", -1);
 	        
 	        SeqDataLoader loader = new SeqDataLoader();
+	        SeqDataModifier modifier = new SeqDataModifier(loader);
 	        SeqAlignment align = loader.loadAlignment(id);
 	        
 	        Integer oldsinglecount = align.getNumHits();
@@ -38,23 +40,9 @@ public class UpdateHitCounts {
 	        Float singleweight = Args.parseFloat(args,"singleweight", oldsingleweight);
 	        Float pairweight = Args.parseFloat(args,"pairweight", oldpairweight);
 	        
-	        
-	        PreparedStatement update = SeqAlignment.createUpdateHitsAndWeights(cxn);
-	        System.err.println("Updating counts for alignment: "+id+" ("+align.getName()+")");
-	        System.err.println("\tnumhits="+singlecount);
-	        System.err.println("\ttotalweight="+singleweight);
-	        System.err.println("\tnumpairs="+paircount);
-	        System.err.println("\ttotalpairweight="+pairweight);
-	        update.setInt(1, singlecount);
-	        update.setFloat(2, singleweight);
-	        update.setInt(3, paircount);
-	        update.setFloat(4, pairweight);
-	        update.setInt(5, id);
-	        update.execute();
-	        update.close();
-	        
+	        modifier.updateSeqAlignmentHitCounts(align, singlecount, singleweight, paircount, pairweight);
+		     
 	        loader.close();
-	        cxn.commit();
 	        cxn.close();
         }else{
         	System.err.println("UpdateHitCounts:\n" +

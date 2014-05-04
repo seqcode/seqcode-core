@@ -17,9 +17,11 @@ import edu.psu.compbio.seqcode.gse.datasets.general.Lab;
 import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.general.ReadType;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.general.SeqDataUser;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.gse.projects.readdb.ACLChangeEntry;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.SingleHit;
@@ -32,7 +34,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
  * @author tdanford
  * @author mahony
  * 
- * SeqDataLoader serves as a clearinghouse for interacting with the seqdata database and
+ * SeqDataLoader serves as a clearinghouse for query interactions with the seqdata database and
  * associated metadata from tables in the core database (via the MetadataLoader). 
  * 
  * Implements a simple access control by checking if the username is in the permissions field
@@ -64,6 +66,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	private boolean closeMetaLoader;
 	private java.sql.Connection cxn=null;
 	private String myusername = "";
+	private SeqDataUser myUser=null;
     private Client client=null;
     
     //Experiment descriptors
@@ -74,6 +77,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
     private Collection<CellLine> celllines = null;
     private Collection<ReadType> readTypes = null;
     private Collection<AlignType> alignTypes = null;
+    private Collection<SeqDataUser> seqDataUsers=null;
     public Collection<ExptType> getExptTypes() throws SQLException {if(exptTypes==null){exptTypes=getMetadataLoader().loadAllExptTypes();} return exptTypes;}
     public Collection<Lab> getLabs() throws SQLException {if(labs==null){labs=getMetadataLoader().loadAllLabs();} return labs;}
     public Collection<ExptTarget> getExptTargets() throws SQLException {if(exptTargets==null){exptTargets = getMetadataLoader().loadAllExptTargets();} return exptTargets;}
@@ -81,7 +85,10 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
     public Collection<CellLine> getCellLines() throws SQLException {if(celllines==null){celllines = getMetadataLoader().loadAllCellLines();} return celllines;}
 	public Collection<ReadType> getReadTypes() throws SQLException {if(readTypes==null){readTypes = getMetadataLoader().loadAllReadTypes();} return readTypes;}
 	public Collection<AlignType> getAlignTypes() throws SQLException {if(alignTypes==null){alignTypes = getMetadataLoader().loadAllAlignTypes();} return alignTypes;}
-        
+	public SeqDataUser findSeqDataUser(String name) throws SQLException {return getMetadataLoader().findSeqDataUser(name);}
+	public Collection<SeqDataUser> getSeqDataUsers() throws SQLException {if(seqDataUsers==null){seqDataUsers = getMetadataLoader().loadAllSeqDataUsers();} return seqDataUsers;}
+    public SeqDataUser getMyUser(){return myUser;}    
+	
     public SeqDataLoader() throws SQLException, IOException{this(true);}
 	public SeqDataLoader(boolean openClient) throws SQLException, IOException {
 		if(openClient){
@@ -97,12 +104,14 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
             try {
                 cxn = DatabaseFactory.getConnection(role);
                 myusername = DatabaseFactory.getUsername(role);
+                myUser = findSeqDataUser(myusername);
             } catch (SQLException e) {
                 throw new DatabaseException(e.toString(),e);
             }
         }
         return cxn;
     }
+    public Client getClient(){return client;}
     
 	public MetadataLoader getMetadataLoader() {
         if (metaLoader == null) {
@@ -147,6 +156,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         celllines = getMetadataLoader().loadAllCellLines();
         readTypes = getMetadataLoader().loadAllReadTypes();
         alignTypes = getMetadataLoader().loadAllAlignTypes();
+        seqDataUsers = getMetadataLoader().loadAllSeqDataUsers();
         System.err.println("Loading seqdata experiment info...");
         PreparedStatement ps = SeqExpt.createLoadAll(getConnection());
         ps.setFetchSize(1000);
@@ -155,6 +165,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 		while (rs.next()) {
 			expts.addLast(new SeqExpt(rs, this));
 		}
+		Collections.sort(expts);
 		rs.close();
 		ps.close();
 
@@ -162,6 +173,21 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	}
 
 
+	public SeqExpt findExperiment(String name, String rep) throws SQLException {
+		PreparedStatement ps = SeqExpt.createLoadByNameReplicate(getConnection());
+		ps.setString(1, name);
+		ps.setString(2, rep);
+		ResultSet rs = ps.executeQuery();
+		SeqExpt expt = null;
+		if (rs.next()) {
+			expt = new SeqExpt(rs, this);
+		}
+		rs.close();
+		ps.close();
+
+		return expt;
+	}
+	
 	public SeqExpt loadExperiment(String name, String rep) throws NotFoundException, SQLException {
 		PreparedStatement ps = SeqExpt.createLoadByNameReplicate(getConnection());
 		ps.setString(1, name);
@@ -503,12 +529,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 	}
 
-	public void deleteAlignmentParameters(SeqAlignment align) throws SQLException {
-		Statement del = getConnection().createStatement();
-		del.execute("delete from alignmentparameters where alignment = " + align.getDBID());
-	}
-    
-	
+
 	/*
 	 * SeqHit loading: problem with this is that SingleHits are assumed.  
 	 */

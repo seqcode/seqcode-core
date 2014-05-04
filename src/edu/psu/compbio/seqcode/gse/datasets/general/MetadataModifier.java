@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 
 
-public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closeable {
+public class MetadataModifier implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     
     public static final String role = "core";
 	
@@ -15,7 +15,7 @@ public class MetadataDeleter implements edu.psu.compbio.seqcode.gse.utils.Closea
     
     private PreparedStatement deleteLabs, deleteCells, deleteCond, deleteTargets;
 	
-    public MetadataDeleter() throws SQLException { 
+    public MetadataModifier() throws SQLException { 
         try {
             cxn = DatabaseFactory.getConnection(role);
             cxn.setAutoCommit(false);
