@@ -30,7 +30,8 @@ public class MemeOutputParser {
 	            memeReader2.close();
 	            
 	            for(int i=0; i< currFM.size(); i++){
-	            	WeightMatrix.printTransfacMatrix(currFM.get(i).car(),"Motif_"+Integer.toString(i));
+	            	String out = WeightMatrix.printTransfacMatrix(currFM.get(i).car(),"Motif_"+Integer.toString(i));
+	            	System.out.println(out);
 	            }
 	            
 			}
