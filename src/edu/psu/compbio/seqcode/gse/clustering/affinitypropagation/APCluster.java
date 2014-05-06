@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import edu.psu.compbio.seqcode.gse.clustering.Clusterable;
+import edu.psu.compbio.seqcode.gse.clustering.ClusterablePair;
 
 /**
  * 
@@ -16,8 +17,8 @@ public class APCluster {
 	public static double cluster(Vector<Clusterable> objects, SimilarityMeasure<Clusterable> s, double lam, int convit, int maxit) {
 
 		s.addNoise();
-		HashMap<Pair, Double> a = new HashMap<Pair, Double>();
-		HashMap<Pair, Double> r = new HashMap<Pair, Double>();
+		HashMap<ClusterablePair, Double> a = new HashMap<ClusterablePair, Double>();
+		HashMap<ClusterablePair, Double> r = new HashMap<ClusterablePair, Double>();
 		double max1 = SimilarityMeasure.NEGINF, max2 = SimilarityMeasure.NEGINF;
 		int i1=0;
 		double tmp = 0.0;
@@ -30,7 +31,7 @@ public class APCluster {
 		//initialize variables
 		for (int i=0; i<s.size(); i++) {
 			for (int j=0; j<s.size(); j++) {
-				Pair ijpair = new Pair(objects.get(i), objects.get(j));
+				ClusterablePair ijpair = new ClusterablePair(objects.get(i), objects.get(j));
 				if (s.exists(ijpair)) {
 					a.put(ijpair, 0.0);
 					r.put(ijpair, 0.0);
@@ -64,7 +65,7 @@ public class APCluster {
 				max1 = SimilarityMeasure.NEGINF; max2 = SimilarityMeasure.NEGINF;
 				i1=0;
 				for (int k=0; k<s.size(); k++) {
-					Pair ikpair = new Pair(objects.get(i), objects.get(k));
+					ClusterablePair ikpair = new ClusterablePair(objects.get(i), objects.get(k));
 					if (!s.exists(ikpair)) {
 						//System.out.println("!exists");
 						continue;
@@ -81,7 +82,7 @@ public class APCluster {
 				}
 				System.err.println("MAX1: " + max1 + " MAX2: " + max2);
 				for (int k=0; k<s.size(); k++) {
-					Pair ikpair = new Pair(objects.get(i), objects.get(k));
+					ClusterablePair ikpair = new ClusterablePair(objects.get(i), objects.get(k));
 					if (!s.exists(ikpair)) continue;
 					if (k==i1) {
 						double message = lam*r.get(ikpair) + (1.0-lam)*(s.evaluate(ikpair) - max2);
@@ -123,14 +124,14 @@ public class APCluster {
 			for (int k=0; k<s.size(); k++) {
 				tmp = 0.0;
 				for (int i=0; i<s.size(); i++) {
-					Pair ikpair = new Pair(objects.get(i), objects.get(k));
+					ClusterablePair ikpair = new ClusterablePair(objects.get(i), objects.get(k));
 					if (!s.exists(ikpair)) continue;
 					if ((i!=k)&&(r.get(ikpair)>0)) {
 						tmp += r.get(ikpair);
 					}
 				}
 				for (int i=0; i<s.size(); i++) {
-					Pair ikpair = new Pair(objects.get(i), objects.get(k));
+					ClusterablePair ikpair = new ClusterablePair(objects.get(i), objects.get(k));
 					if (!s.exists(ikpair)) continue;
 					double tmp2 = tmp;
 					double ikr = r.get(ikpair);
@@ -138,7 +139,7 @@ public class APCluster {
 						tmp2 -= ikr;
 					}
 					if (i!=k) {
-						tmp2 += r.get(new Pair(objects.get(k),objects.get(k)));
+						tmp2 += r.get(new ClusterablePair(objects.get(k),objects.get(k)));
 					}
 					if (i==k) {
 						double message = lam*a.get(ikpair) + (1.0 - lam)*tmp2;
@@ -158,7 +159,7 @@ public class APCluster {
 
 			//check for convergence
 			for (int j = 0; j<s.size(); j++) {
-				Pair jjpair = new Pair(objects.get(j), objects.get(j));
+				ClusterablePair jjpair = new ClusterablePair(objects.get(j), objects.get(j));
 				if (a.get(jjpair)+r.get(jjpair) > 0) {
 					e[j][decit] = 1;
 				} else {
@@ -211,7 +212,7 @@ public class APCluster {
 		for (int i=0; i<s.size(); i++) {
 			max1 = SimilarityMeasure.NEGINF;
 			for (int j=0; j<exidx.size(); j++) {
-				Pair ijpair = new Pair(objects.get(i), objects.get(exidx.get(j)));
+				ClusterablePair ijpair = new ClusterablePair(objects.get(i), objects.get(exidx.get(j)));
 				if (s.evaluate(ijpair) > max1) {
 					max1 = s.evaluate(ijpair);
 					assgn[i] = j;
@@ -229,7 +230,7 @@ public class APCluster {
 		
 		double netsim = 0.0;
 		for (int i=0; i<s.size(); i++) {
-    		netsim += s.evaluate(new Pair(objects.get(i), objects.get(exidx.get(assgn[i]))));
+    		netsim += s.evaluate(new ClusterablePair(objects.get(i), objects.get(exidx.get(assgn[i]))));
     	}
 		
 		return netsim;

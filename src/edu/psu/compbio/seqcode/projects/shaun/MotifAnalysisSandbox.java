@@ -40,7 +40,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.motifs.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
-import edu.psu.compbio.seqcode.gse.viz.metagenes.BinningParameters;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.BinningParameters;
 
 public class MotifAnalysisSandbox {
 	private Genome gen;
