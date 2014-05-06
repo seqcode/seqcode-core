@@ -589,8 +589,8 @@ public class MotifAnalysisSandbox {
 					double currScore= profiler.getMaxScore(z);
 					if(currScore>=motifThres){
 						numHits++;
-						String subseq = seq.substring(z, z+motif.length());
-						Region hitreg =new Region(gen, r.getChrom(), r.getStart()+z, r.getStart()+z+motif.length()-1);
+						String subseq = seq.substring(z, z+motifList.get(m).length());
+						Region hitreg =new Region(gen, r.getChrom(), r.getStart()+z, r.getStart()+z+motifList.get(m).length()-1);
 						hits.add(new ScoredStrandedRegion(gen, r.getChrom(), hitreg.getStart(), hitreg.getEnd(), currScore, profiler.getMaxStrand(z)));
 						if(profiler.getMaxStrand(z)=='+'){hitseqs.add(subseq);
 						}else{hitseqs.add(SequenceUtils.reverseComplement(subseq));}
