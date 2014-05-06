@@ -40,6 +40,7 @@ public class MemeER {
 	protected Float pseudo = (float)0.001;
 	public static final int MOTIF_FINDING_NEGSEQ=5000;
 	public static final double MOTIF_FINDING_ALLOWED_REPETITIVE = 0.2;
+	public static final double MOTIF_MIN_ROC = 0.70;
 	public MemeER(String path, String args) {
 		this.MEMEpath = path;
 		this.MEMEargs = args;
@@ -248,7 +249,12 @@ public class MemeER {
 			memeargs = memeargs + " -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
 			
 		
-			String points = ap.getKeyValue("locations");
+			
+			
+			// Multiple input files
+			String[] points = ap.getKeyValue("locations").split(";"); 
+			List<WeightMatrix> selectedMotifs = new ArrayList<WeightMatrix>();
+			
 			
 			Genome gen;
 			if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
@@ -265,50 +271,59 @@ public class MemeER {
 				}
 			}
 			
-			
-			
-			List<Region> search_regs = Utilities.loadRegionsFromPeakFile(gen, points, WinSize);
-			
-			
-			SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
-			seqgen.useCache(true);
-			seqgen.useLocalFiles(true);
-			seqgen.setGenomePath(GenPath);
-			
-			String[] randomSequences=new String[5000];
-			
-			if (!seqgen.isRegionCached()){
-				System.err.println("Caching sequences");
-				List<Region> randomRegions = randomRegionPick(gen, null, MemeER.MOTIF_FINDING_NEGSEQ,WinSize);
-				randomSequences = seqgen.setupRegionCache(search_regs, randomRegions);
-				System.err.println("Caching completed");
-			}
-			
 			MemeER meme = new MemeER(Args.parseString(args, "memepath", ""), memeargs);
+			for(int p=0; p<points.length; p++){
+				List<Region> search_regs = Utilities.loadRegionsFromPeakFile(gen, points[p], WinSize);
 			
-			List<String> seqs = new ArrayList<String>();
-			for(int i=0; i<search_regs.size(); i++){
-				String currSeq = seqgen.execute(search_regs.get(i));
-				if(lowercaseFraction(currSeq)<=MOTIF_FINDING_ALLOWED_REPETITIVE){
-					seqs.add(currSeq);
+			
+				SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
+				seqgen.useCache(true);
+				seqgen.useLocalFiles(true);
+				seqgen.setGenomePath(GenPath);
+			
+				String[] randomSequences=new String[5000];
+			
+				if (!seqgen.isRegionCached()){
+					System.err.println("Caching sequences");
+					List<Region> randomRegions = randomRegionPick(gen, null, MemeER.MOTIF_FINDING_NEGSEQ,WinSize);
+					randomSequences = seqgen.setupRegionCache(search_regs, randomRegions);
+					System.err.println("Caching completed");
 				}
-			}
+				
+				List<String> seqs = new ArrayList<String>();
 			
-			Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, "results", false);
-			List<WeightMatrix> wm = matrices.car();
-			List<WeightMatrix> fm = matrices.cdr();
+				for(int i=0; i<search_regs.size(); i++){
+					String currSeq = seqgen.execute(search_regs.get(i));
+					if(lowercaseFraction(currSeq)<=MOTIF_FINDING_ALLOWED_REPETITIVE){
+						seqs.add(currSeq);
+					}
+				}
 			
-			if(wm.size()>0){
-				//Evaluate the significance of the discovered motifs
-				double rocScores[] = meme.motifROCScores(wm,seqs,randomSequences);
-				System.err.println("MEME results for:" );
-				for(int w=0; w<fm.size(); w++){
-					if(fm.get(w)!=null){
-						System.err.println("\t"+fm.get(w).getName()+"\t"+ WeightMatrix.getConsensus(fm.get(w))+"\tROC:"+String.format("%.2f",rocScores[w]));
+				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, "results", false);
+				List<WeightMatrix> wm = matrices.car();
+				List<WeightMatrix> fm = matrices.cdr();
+			
+				if(wm.size()>0){
+					//Evaluate the significance of the discovered motifs
+					double rocScores[] = meme.motifROCScores(wm,seqs,randomSequences);
+					System.err.println("MEME results for:" );
+					for(int w=0; w<fm.size(); w++){
+						if(fm.get(w)!=null){
+							System.err.println("\t"+fm.get(w).getName()+"\t"+ WeightMatrix.getConsensus(fm.get(w))+"\tROC:"+String.format("%.2f",rocScores[w]));
+						}
+						if(rocScores[w] > MemeER.MOTIF_MIN_ROC){
+							selectedMotifs.add(fm.get(w));
+						}
 					}
 				}
 			}
-				
+			
+			//Printing the selected motifs
+			
+			for(int m =0; m<selectedMotifs.size(); m++){
+				String out = WeightMatrix.printTransfacMatrix(selectedMotifs.get(m),"Motif_"+Integer.toString(m));
+				System.out.print(out);
+			}
 				
 		}catch (NotFoundException e) {
 			// TODO Auto-generated catch block
