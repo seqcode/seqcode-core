@@ -9,7 +9,6 @@ import java.io.File;
 import java.util.EventObject;
 import java.util.HashMap;
 
-import edu.psu.compbio.seqcode.gse.deepseq.ReadHit;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.seqview.model.InteractionArcModel;
 import edu.psu.compbio.seqcode.gse.seqview.model.SeqPairedEndModel;

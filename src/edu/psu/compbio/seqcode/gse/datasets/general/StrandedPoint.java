@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.deepseq.utilities.CommonUtils;
+import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
 
 public class StrandedPoint extends Point implements Stranded {
 	

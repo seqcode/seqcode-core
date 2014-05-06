@@ -8,8 +8,8 @@ import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 
 /**
  *

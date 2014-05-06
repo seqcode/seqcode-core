@@ -4,8 +4,8 @@ import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.*;
+import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 /**

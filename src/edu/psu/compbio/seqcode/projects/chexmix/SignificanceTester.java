@@ -13,7 +13,6 @@ import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.GFFEntry;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.ParseGFF;
-import edu.psu.compbio.seqcode.projects.multigps.analysis.PointsToEvents;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
@@ -25,6 +24,7 @@ import edu.psu.compbio.seqcode.projects.multigps.stats.CountsDataset;
 import edu.psu.compbio.seqcode.projects.multigps.stats.DifferentialEnrichment;
 import edu.psu.compbio.seqcode.projects.multigps.stats.EdgeRDifferentialEnrichment;
 import edu.psu.compbio.seqcode.projects.multigps.stats.Normalization;
+import edu.psu.compbio.seqcode.projects.sequtils.PointsToEvents;
 
 /**
  * Utility to quantify enrichment and assess significance of a set of peaks (from GFF file). 

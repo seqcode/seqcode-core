@@ -9,7 +9,7 @@ import java.util.List;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
+import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class SeqExptInfo {

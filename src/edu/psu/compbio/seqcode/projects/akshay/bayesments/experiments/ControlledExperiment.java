@@ -1,10 +1,10 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.ExperimentScaler;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.Sample;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
 
 /**
  * 

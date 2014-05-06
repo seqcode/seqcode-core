@@ -14,7 +14,7 @@ import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
+import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.motifs.BackgroundModelIO;
 import edu.psu.compbio.seqcode.projects.shaun.FreqMatrixImport;

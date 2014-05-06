@@ -6,8 +6,8 @@ import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
-import edu.psu.compbio.seqcode.gse.deepseq.ExtReadHit;
+import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
+import edu.psu.compbio.seqcode.gse.projects.gps.ExtReadHit;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 public class DeepSeqDataSource extends DataSource{

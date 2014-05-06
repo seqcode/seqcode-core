@@ -6,7 +6,7 @@ import java.util.Map;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.deepseq.PairedCountData;
+import edu.psu.compbio.seqcode.gse.projects.gps.PairedCountData;
 import edu.psu.compbio.seqcode.gse.utils.models.Model;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataFrame;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataRegression;
@@ -53,7 +53,7 @@ public class ExperimentScaler {
             }
         }
 		//Scaling ratio via Tim's regression                                                                                                                               
-        DataFrame df = new DataFrame(edu.psu.compbio.seqcode.gse.deepseq.PairedCountData.class, scalingData.iterator());                                                                      
+        DataFrame df = new DataFrame(edu.psu.compbio.seqcode.gse.projects.gps.PairedCountData.class, scalingData.iterator());                                                                      
         DataRegression r = new DataRegression(df, "x~y - 1");                                                                                                               
         r.calculate();                                                                                                                                                      
         Map<String, Double> map = r.collectCoefficients();                                                                                                                  

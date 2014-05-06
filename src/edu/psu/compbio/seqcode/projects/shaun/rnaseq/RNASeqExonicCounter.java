@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import edu.psu.compbio.seqcode.gse.deepseq.DeepSeqExpt;
-import edu.psu.compbio.seqcode.gse.deepseq.ReadHit;
+import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
+import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
 import edu.psu.compbio.seqcode.projects.shaun.rnaseq.genemodels.GeneTUnit;
 import edu.psu.compbio.seqcode.projects.shaun.rnaseq.genemodels.TUnit;
 
