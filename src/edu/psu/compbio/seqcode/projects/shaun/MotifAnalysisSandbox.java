@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
@@ -45,7 +46,12 @@ import edu.psu.compbio.seqcode.gse.viz.metagenes.BinningParameters;
 public class MotifAnalysisSandbox {
 	private Genome gen;
 	private WeightMatrix motif;
+	// Added by akshay, to read and store more than one motif. The above motif variable stores the first matrix in this list (not removed for compatibility)
+	private List<WeightMatrix> motifList = new ArrayList<WeightMatrix>();
+	
 	private WeightMatrixScorer scorer;
+	private List<WeightMatrixScorer> scorerList;
+	
 	private SequenceGenerator seqgen;
 	private ArrayList<Region> regions=null;
 	private ArrayList<Point> peaks=null;
@@ -65,6 +71,8 @@ public class MotifAnalysisSandbox {
 		String seqFile=null;
 		String genomeSequencePath=null;
 		MotifAnalysisSandbox tools;
+		// Added by akshay. Tools list for multiple motifs. The above tools variable stores the first tool in this list (not removed for compatibility)
+		List<MotifAnalysisSandbox> toolsList = new ArrayList<MotifAnalysisSandbox>();
 		
 		ArgParser ap = new ArgParser(args);
         if((!ap.hasKey("species") && !ap.hasKey("geninfo")) || (!ap.hasKey("motiffile") && !ap.hasKey("motifname"))) { 
@@ -184,8 +192,11 @@ public class MotifAnalysisSandbox {
 			
 			//Load motif
 			WeightMatrix matrix = null;
+			List<WeightMatrix> matrixList = new ArrayList<WeightMatrix>();
+			
 			if(loadFromFile){
-			    matrix = loadMotifFromFile(motiffile, backfile, currgen);
+				matrixList = loadMotifFromFile(motiffile, backfile, currgen);
+			    matrix = matrixList.get(0);
 			}else{
 				if(currorg!=null){
 					int wmid = WeightMatrix.getWeightMatrixID(currorg.getDBID(), motifname, motifversion);
@@ -256,7 +267,10 @@ public class MotifAnalysisSandbox {
 	        }
 	        
             ////////////////////////////////////////////////////////////////////////
-	        tools = new MotifAnalysisSandbox(currgen, matrix, posLines, posPeaks, posRegs, minscore, genomeSequencePath);
+	        for(WeightMatrix wm : matrixList){
+	        	toolsList.add(new MotifAnalysisSandbox(currgen, wm, matrixList, posLines, posPeaks, posRegs, minscore, genomeSequencePath));
+	        }
+	        tools = new MotifAnalysisSandbox(currgen, matrix, matrixList,posLines, posPeaks, posRegs, minscore, genomeSequencePath);
 	        
 	        if(printHits){
 	        	if(wholeGenome)
@@ -323,9 +337,10 @@ public class MotifAnalysisSandbox {
 	
 
 	//Constructor 
-	public MotifAnalysisSandbox(Genome g, WeightMatrix wm, ArrayList<String> inL, ArrayList<Point> pospeak, ArrayList<Region> posreg, double minscore, String genomeSequencePath){
+	public MotifAnalysisSandbox(Genome g, WeightMatrix wm, List<WeightMatrix> wmList,ArrayList<String> inL, ArrayList<Point> pospeak, ArrayList<Region> posreg, double minscore, String genomeSequencePath){
 		gen=g;
 		motif= wm;
+		motifList = wmList;
 		inFileLines = inL;
 		peaks=pospeak;
 		regions=posreg;
@@ -339,13 +354,18 @@ public class MotifAnalysisSandbox {
 			seqgen.setGenomePath(genomeSequencePath);
 		}
 		scorer = new WeightMatrixScorer(motif, seqgen);
+		
+		scorerList = new ArrayList<WeightMatrixScorer>();
+		for(WeightMatrix w : motifList){
+			scorerList.add(new WeightMatrixScorer(w, seqgen));
+		}
 	}
 	//Load freq matrix
-	public static WeightMatrix loadMotifFromFile(String filename, String backname, Genome gen) throws IOException, ParseException {
+	public static List<WeightMatrix> loadMotifFromFile(String filename, String backname, Genome gen) throws IOException, ParseException {
 		FreqMatrixImport motifImport = new FreqMatrixImport();
 		MarkovBackgroundModel back = BackgroundModelIO.parseMarkovBackgroundModel(backname, gen);
     	motifImport.setBackground(back);
-		return(motifImport.readTransfacMatrices(filename).getFirst());		
+		return motifImport.readTransfacMatrices(filename);		
 	}
 	private int findAvgWidth(ArrayList<Region> regs){
 		long total=0, num=0;
@@ -554,32 +574,38 @@ public class MotifAnalysisSandbox {
 	public void printHitInfo(){
 		ArrayList<ScoredStrandedRegion> hits = new ArrayList<ScoredStrandedRegion>();
 		ArrayList<String> hitseqs = new ArrayList<String>();
-		double conc = Math.exp(-1*motif.getMaxScore());
-		
 		for(int i=0; i<regions.size(); i++){
+			String outString=peaks.get(i).getLocationString();
 			Region r = regions.get(i);
 			String seq = seqgen.execute(r);
-			int numHits=0;
-			
-			WeightMatrixScoreProfile profiler = scorer.execute(r);
-			int bestMotifIndex = profiler.getMaxIndex();
-			double bestMotifScore = profiler.getMaxScore(bestMotifIndex);
-			for(int z=0; z<r.getWidth()-motif.length()+1; z++){
-				double currScore= profiler.getMaxScore(z);
-				if(currScore>=motifThres){
-					numHits++;
-					String subseq = seq.substring(z, z+motif.length());
-					Region hitreg =new Region(gen, r.getChrom(), r.getStart()+z, r.getStart()+z+motif.length()-1);
-					hits.add(new ScoredStrandedRegion(gen, r.getChrom(), hitreg.getStart(), hitreg.getEnd(), currScore, profiler.getMaxStrand(z)));
-					if(profiler.getMaxStrand(z)=='+'){hitseqs.add(subseq);
-					}else{hitseqs.add(SequenceUtils.reverseComplement(subseq));}
-					
+			double conc = 0.0;
+			for(int m=0; m< motifList.size(); m++){
+				int numHits=0;
+				conc = Math.exp(-1*motifList.get(m).getMaxScore());
+				WeightMatrixScoreProfile profiler = scorerList.get(m).execute(r);
+				int bestMotifIndex = profiler.getMaxIndex();
+				double bestMotifScore = profiler.getMaxScore(bestMotifIndex);
+				for(int z=0; z<r.getWidth()-motifList.get(m).length()+1; z++){
+					double currScore= profiler.getMaxScore(z);
+					if(currScore>=motifThres){
+						numHits++;
+						String subseq = seq.substring(z, z+motif.length());
+						Region hitreg =new Region(gen, r.getChrom(), r.getStart()+z, r.getStart()+z+motif.length()-1);
+						hits.add(new ScoredStrandedRegion(gen, r.getChrom(), hitreg.getStart(), hitreg.getEnd(), currScore, profiler.getMaxStrand(z)));
+						if(profiler.getMaxStrand(z)=='+'){hitseqs.add(subseq);
+						}else{hitseqs.add(SequenceUtils.reverseComplement(subseq));}
+					}
 				}
+				double pOcc = profiler2ProbOcc(profiler, conc);
+				outString = outString + "\t"+ bestMotifScore +"\t"+ numHits +"\t"+ pOcc+"\t";
+				
 			}
-			double pOcc = profiler2ProbOcc(profiler, conc);
+			while (outString.endsWith("\t")) {
+			    outString = outString.substring(0, outString.length()-1);
+			}
 			//Print info
-			System.out.println(peaks.get(i).getLocationString() +"\t"+ bestMotifScore +"\t"+ numHits +"\t"+ pOcc);
-        }
+			System.out.println(outString);
+		}
 	}
 	//printing the hit closest to the peak
 	public void printPeakClosestMotifHits(){
