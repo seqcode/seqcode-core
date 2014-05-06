@@ -280,6 +280,8 @@ public class MemeER {
 				seqgen.useCache(true);
 				seqgen.useLocalFiles(true);
 				seqgen.setGenomePath(GenPath);
+				
+				SequenceGenerator.setOffRegionCache();
 			
 				String[] randomSequences=new String[5000];
 			
