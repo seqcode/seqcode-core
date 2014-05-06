@@ -3,6 +3,7 @@ package edu.psu.compbio.seqcode.gse.clustering.affinitypropagation;
 import java.io.PrintStream;
 
 import edu.psu.compbio.seqcode.gse.clustering.Clusterable;
+import edu.psu.compbio.seqcode.gse.clustering.ClusterablePair;
 import edu.psu.compbio.seqcode.gse.clustering.PairwiseElementMetric;
 
 /**
@@ -21,8 +22,8 @@ public abstract class SimilarityMeasure<X extends Clusterable> implements Pairwi
     public abstract double get(int idx1, int idx2);
     public abstract int size();
     public abstract String getName(int idx);
-    public abstract boolean exists(Pair p);
-    public abstract double evaluate(Pair p);
+    public abstract boolean exists(ClusterablePair p);
+    public abstract double evaluate(ClusterablePair p);
     
     /**
      * 

@@ -9,6 +9,7 @@ import java.util.List;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.EventMetaMaker;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.BIC;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.EMtrain;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.MAPassignment;
@@ -17,7 +18,6 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocati
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Sequences;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
-import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
 
 /**
  * The main driver class for the Bayesments project

@@ -14,7 +14,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.EventMetaMaker;
 import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 public class FastaExporter {

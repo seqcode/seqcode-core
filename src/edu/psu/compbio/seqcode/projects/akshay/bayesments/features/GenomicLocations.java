@@ -8,12 +8,12 @@ import java.util.List;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.EventMetaMaker;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentSet;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.CoutPlotter;
-import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
 
 /**
  * Class the reads and stores the training data for the Bayesian network

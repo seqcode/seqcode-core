@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import edu.psu.compbio.seqcode.gse.clustering.Clusterable;
+import edu.psu.compbio.seqcode.gse.clustering.ClusterablePair;
 import edu.psu.compbio.seqcode.gse.clustering.SimpleClusterable;
 
 /**
@@ -18,14 +19,14 @@ public class FileSimilarityMeasure<X extends Clusterable> extends SimilarityMeas
 
 	Vector<Vector<Double>> simValues = new Vector<Vector<Double>>();
 	Vector<Clusterable> objects = new Vector<Clusterable>();
-	HashMap<Pair, Double> valuemap;
+	HashMap<ClusterablePair, Double> valuemap;
 	double prefvalue;
 	
 	public FileSimilarityMeasure(String simfile, String divider, double prefvalue) {
 		this.prefvalue = prefvalue;
 		String line = "init";
 		String[] splitline = new String[1];
-		valuemap = new HashMap<Pair, Double>();
+		valuemap = new HashMap<ClusterablePair, Double>();
 		try {
 			BufferedReader dataIn = new BufferedReader(new FileReader(simfile));
 			while (!((line = dataIn.readLine())==null)) {
@@ -38,7 +39,7 @@ public class FileSimilarityMeasure<X extends Clusterable> extends SimilarityMeas
 				if (!objects.contains(object2)) {
 					objects.add(object2);
 				}
-				valuemap.put(new Pair(object1, object2), Double.valueOf(splitline[2]));
+				valuemap.put(new ClusterablePair(object1, object2), Double.valueOf(splitline[2]));
 			}
 			System.err.println("Measures: "+valuemap.size());
 		} catch (Exception e) {
@@ -136,7 +137,7 @@ public class FileSimilarityMeasure<X extends Clusterable> extends SimilarityMeas
 		}
 	}
 	
-	public double evaluate(Pair p) {
+	public double evaluate(ClusterablePair p) {
 		if (p.symmetric()) {
 			return prefvalue;
 		} else if (valuemap.containsKey(p)) {
@@ -151,7 +152,7 @@ public class FileSimilarityMeasure<X extends Clusterable> extends SimilarityMeas
 			(valuemap.containsKey(e1.name()+"SEP"+e1.name()));
 	}
 	
-	public boolean exists(Pair p) {
+	public boolean exists(ClusterablePair p) {
 		return p.symmetric() || valuemap.containsKey(p);
 	}
 	

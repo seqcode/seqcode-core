@@ -9,6 +9,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.EventMetaMaker;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentCondition;
@@ -22,7 +23,6 @@ import edu.psu.compbio.seqcode.projects.multigps.hitloaders.NovoFileHitLoader;
 import edu.psu.compbio.seqcode.projects.multigps.hitloaders.ReadDBHitLoader;
 import edu.psu.compbio.seqcode.projects.multigps.hitloaders.SAMFileHitLoader;
 import edu.psu.compbio.seqcode.projects.multigps.hitloaders.TophatFileHitLoader;
-import edu.psu.compbio.seqcode.projects.shaun.EventMetaMaker;
 
 public class ExperimentManager {
 	

@@ -19,12 +19,12 @@ import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScorer;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.gse.viz.metagenes.BinningParameters;
-import edu.psu.compbio.seqcode.gse.viz.metagenes.Stranded5PrimeProfiler;
-import edu.psu.compbio.seqcode.gse.viz.metagenes.MetaNonFrame;
-import edu.psu.compbio.seqcode.gse.viz.metagenes.MetaProfile;
-import edu.psu.compbio.seqcode.gse.viz.metagenes.MetaProfileHandler;
-import edu.psu.compbio.seqcode.gse.viz.metagenes.PointProfile;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.BinningParameters;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.MetaProfile;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.MetaProfileHandler;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.PointProfile;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.Stranded5PrimeProfiler;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.swing.MetaNonFrame;
 
 public class ChipSeqStats {
 
