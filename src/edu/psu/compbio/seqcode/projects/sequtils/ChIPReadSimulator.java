@@ -8,16 +8,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import edu.psu.compbio.seqcode.deepseq.ReadHit;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.Sample;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
-import edu.psu.compbio.seqcode.projects.multigps.framework.ReadHit;
 import edu.psu.compbio.seqcode.projects.sequtils.CountDataSimulator.SimCounts;
 
 /**

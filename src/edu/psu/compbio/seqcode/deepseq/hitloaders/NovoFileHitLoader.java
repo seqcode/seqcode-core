@@ -1,12 +1,20 @@
-package edu.psu.compbio.seqcode.projects.multigps.hitloaders;
+package edu.psu.compbio.seqcode.deepseq.hitloaders;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.projects.multigps.framework.*;
+import edu.psu.compbio.seqcode.deepseq.Read;
+import edu.psu.compbio.seqcode.deepseq.ReadHit;
 
+/**
+ * NovoFileHitLoader: a FileHitLoader from NovoAlign output.
+ * This loader has not been tested for a while since we don't use NovoAlign. 
+ * 
+ * @author mahony
+ *
+ */
 public class NovoFileHitLoader extends FileHitLoader {
 
 	public NovoFileHitLoader(File f, boolean nonUnique) {

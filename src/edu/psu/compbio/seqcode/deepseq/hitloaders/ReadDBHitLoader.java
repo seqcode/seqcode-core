@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.multigps.hitloaders;
+package edu.psu.compbio.seqcode.deepseq.hitloaders;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -20,7 +20,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 /**
- * ReadDBHitLoader: load read alignment five primes from a collection of ReadDB alignments (ChipSeqLocators)
+ * ReadDBHitLoader: load read alignment five primes from a collection of ReadDB alignments (SeqLocators)
  * @author mahony
  *
  */

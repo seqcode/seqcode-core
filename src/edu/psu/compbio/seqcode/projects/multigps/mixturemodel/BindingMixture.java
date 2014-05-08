@@ -9,22 +9,22 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.Sample;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundCollection;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.framework.PoissonBackgroundModel;
 import edu.psu.compbio.seqcode.projects.multigps.framework.PotentialRegionFilter;
-import edu.psu.compbio.seqcode.projects.multigps.framework.StrandedBaseCount;
 import edu.psu.compbio.seqcode.projects.multigps.motifs.MotifPlatform;
 
 /**

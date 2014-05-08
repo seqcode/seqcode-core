@@ -10,6 +10,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
@@ -22,12 +27,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentSet;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
-import edu.psu.compbio.seqcode.projects.multigps.framework.StrandedBaseCount;
 
 public class SeqSlidingWindow {
 

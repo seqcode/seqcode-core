@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.projects.multigps.mixturemodel;
 
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 
 public class EMState{

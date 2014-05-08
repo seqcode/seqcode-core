@@ -1,9 +1,9 @@
 package edu.psu.compbio.seqcode.projects.multigps.mixturemodel;
 
+import edu.psu.compbio.seqcode.deepseq.ReadHit;
+import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
-import edu.psu.compbio.seqcode.projects.multigps.framework.ReadHit;
-import edu.psu.compbio.seqcode.projects.multigps.framework.StrandedBaseCount;
 
 /**
  * BindingComponents are used in mixture models to represent potential binding events.

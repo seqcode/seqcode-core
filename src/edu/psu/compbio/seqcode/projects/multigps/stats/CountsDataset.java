@@ -6,10 +6,10 @@ import java.util.List;
 
 import Jama.Matrix;
 
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.ScatterPlotMaker;
 

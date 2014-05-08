@@ -10,11 +10,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.motifs.MotifPlatform;

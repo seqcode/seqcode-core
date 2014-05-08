@@ -1,8 +1,8 @@
 package edu.psu.compbio.seqcode.projects.multigps.mixturemodel;
 
+import edu.psu.compbio.seqcode.deepseq.ReadHit;
+import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.projects.multigps.framework.ReadHit;
-import edu.psu.compbio.seqcode.projects.multigps.framework.StrandedBaseCount;
 
 /**
  * NoiseComponents are used in mixture models to soak up noise reads.

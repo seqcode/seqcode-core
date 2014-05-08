@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.multigps.hitloaders;
+package edu.psu.compbio.seqcode.deepseq.hitloaders;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -9,8 +9,15 @@ import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
 import net.sf.samtools.util.CloseableIterator;
 
-import edu.psu.compbio.seqcode.projects.multigps.framework.*;
+import edu.psu.compbio.seqcode.deepseq.Read;
+import edu.psu.compbio.seqcode.deepseq.ReadHit;
 
+/**
+ * SAMFileHitLoader: A FileHitLoader for SAM and BAM files.
+ * 
+ * @author mahony
+ *
+ */
 public class SAMFileHitLoader extends FileHitLoader{
 
     public SAMFileHitLoader(File f, boolean nonUnique) {

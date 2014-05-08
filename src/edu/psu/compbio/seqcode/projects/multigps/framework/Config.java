@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptDescriptor;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
@@ -22,7 +23,6 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExptDescriptor;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.AnnotationLoader;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 

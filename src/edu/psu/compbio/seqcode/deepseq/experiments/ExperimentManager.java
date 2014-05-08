@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.multigps.experiments;
+package edu.psu.compbio.seqcode.deepseq.experiments;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -9,21 +9,20 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.hitloaders.BEDFileHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.BowtieFileHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.HitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.IDXFileHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.NovoFileHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.ReadDBHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.SAMFileHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.TophatFileHitLoader;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.BEDFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.BowtieFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.ElandFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.HitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.IDXFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.NovoFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.ReadDBHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.SAMFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.TophatFileHitLoader;
 
 /** 
  * ExperimentManager acts as an interface to all experiment conditions and replicates.
@@ -213,8 +212,6 @@ public class ExperimentManager {
 			currReader = new SAMFileHitLoader(file,useNonUnique);
 		}else if(format.equals("TOPSAM")){
 			currReader = new TophatFileHitLoader(file,useNonUnique);
-		}else if(format.equals("ELAND")){
-			currReader = new ElandFileHitLoader(file,useNonUnique);
 		}else if(format.equals("NOVO")){
 			currReader = new NovoFileHitLoader(file,useNonUnique);
 		}else if(format.equals("BOWTIE")){

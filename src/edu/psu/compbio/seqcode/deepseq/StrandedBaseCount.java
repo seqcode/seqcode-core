@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.multigps.framework;
+package edu.psu.compbio.seqcode.deepseq;
 
 /**
  * StrandedBaseCount represents the sum of hit weights at a stranded base position in the genome.

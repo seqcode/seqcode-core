@@ -1,12 +1,19 @@
-package edu.psu.compbio.seqcode.projects.multigps.hitloaders;
+package edu.psu.compbio.seqcode.deepseq.hitloaders;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.projects.multigps.framework.*;
+import edu.psu.compbio.seqcode.deepseq.Read;
+import edu.psu.compbio.seqcode.deepseq.ReadHit;
 
+/**
+ * IDXFileHitLoader: a FileHitLoader from Pugh lab IDX format
+ * 
+ * @author mahony
+ *
+ */
 public class IDXFileHitLoader extends FileHitLoader {
 
 	public IDXFileHitLoader(File f, boolean nonUnique) {

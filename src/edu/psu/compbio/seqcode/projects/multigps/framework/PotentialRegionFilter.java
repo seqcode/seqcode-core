@@ -9,14 +9,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ExperimentSet;
 
 /**
  * PotentialRegionFilter: Find a set of regions that are above a threshold in at least one replicate. 

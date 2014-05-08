@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.multigps.framework;
+package edu.psu.compbio.seqcode.deepseq;
 
 /**
  * <tt>ReadHit</tt> represents the stranded coordinates of a mapped alignment hit

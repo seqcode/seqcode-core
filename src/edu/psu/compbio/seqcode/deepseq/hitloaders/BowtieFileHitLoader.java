@@ -1,17 +1,16 @@
-package edu.psu.compbio.seqcode.projects.multigps.hitloaders;
+package edu.psu.compbio.seqcode.deepseq.hitloaders;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.projects.multigps.framework.*;
+import edu.psu.compbio.seqcode.deepseq.Read;
+import edu.psu.compbio.seqcode.deepseq.ReadHit;
 
 /**
- * Here:  <br>
- * <tt>totalHits</tt>: total number of hits for this file. (Only unique reads are
- * counted if the corresponding boolean parameter <tt>useNonUnique</tt> is set to false. <br>
- * <tt>totalWeight = totalHits</tt>
+ * BowtieFileHitLoader: a FileHitLoader from Bowtie native format
+ * 
  * @author mahony
  *
  */

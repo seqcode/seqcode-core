@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.multigps.experiments;
+package edu.psu.compbio.seqcode.deepseq.experiments;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +9,9 @@ import java.util.List;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
+import edu.psu.compbio.seqcode.deepseq.ReadHit;
+import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
@@ -16,9 +19,6 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundCollection;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.framework.PoissonBackgroundModel;
-import edu.psu.compbio.seqcode.projects.multigps.framework.ReadHit;
-import edu.psu.compbio.seqcode.projects.multigps.framework.StrandedBaseCount;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.*;
 
 /**
  * Sample represents a single experimental sample whose reads are sourced from one or more HitLoaders. 

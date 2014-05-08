@@ -14,8 +14,8 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.multigps.experiments.ControlledExperiment;
 
 public class OutputFormatter {
 

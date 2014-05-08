@@ -9,6 +9,8 @@ import java.util.List;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
+import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.*;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
@@ -16,8 +18,6 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundCollection;
 import edu.psu.compbio.seqcode.projects.multigps.framework.PoissonBackgroundModel;
-import edu.psu.compbio.seqcode.projects.multigps.framework.StrandedBaseCount;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.*;
 
 /**
  *

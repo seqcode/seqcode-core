@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.multigps.experiments;
+package edu.psu.compbio.seqcode.deepseq.experiments;
 
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;

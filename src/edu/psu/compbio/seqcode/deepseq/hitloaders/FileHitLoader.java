@@ -1,11 +1,11 @@
-package edu.psu.compbio.seqcode.projects.multigps.hitloaders;
+package edu.psu.compbio.seqcode.deepseq.hitloaders;
 
 import java.io.File;
 
 /**
  * FileHitLoader: Loads reads from a collection of files. 
  * Formats supported:
- * ELAND, NOVO, BOWTIE, BED	, SAM, TOPSAM
+ * BOWTIE, BED, SAM, TOPSAM, NOVO
  * 
  * @author shaun
  *

@@ -1,11 +1,11 @@
-package edu.psu.compbio.seqcode.projects.multigps.hitloaders;
+package edu.psu.compbio.seqcode.deepseq.hitloaders;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import edu.psu.compbio.seqcode.projects.multigps.framework.Read;
-import edu.psu.compbio.seqcode.projects.multigps.framework.ReadHit;
+import edu.psu.compbio.seqcode.deepseq.Read;
+import edu.psu.compbio.seqcode.deepseq.ReadHit;
 
 /**
  * HitLoaders load alignment hits from various sources, including ReadDB and various files.

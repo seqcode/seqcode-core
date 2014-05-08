@@ -4,6 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import edu.psu.compbio.seqcode.deepseq.hitloaders.BEDFileHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.BowtieFileHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.HitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.IDXFileHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.NovoFileHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.ReadDBHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.SAMFileHitLoader;
+import edu.psu.compbio.seqcode.deepseq.hitloaders.TophatFileHitLoader;
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
@@ -14,15 +22,6 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.Sample;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.BEDFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.BowtieFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.ElandFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.HitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.IDXFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.NovoFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.ReadDBHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.SAMFileHitLoader;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.TophatFileHitLoader;
 
 public class ExperimentManager {
 	
@@ -242,8 +241,6 @@ public class ExperimentManager {
 			currReader = new SAMFileHitLoader(file,useNonUnique);
 		}else if(format.equals("TOPSAM")){
 			currReader = new TophatFileHitLoader(file,useNonUnique);
-		}else if(format.equals("ELAND")){
-			currReader = new ElandFileHitLoader(file,useNonUnique);
 		}else if(format.equals("NOVO")){
 			currReader = new NovoFileHitLoader(file,useNonUnique);
 		}else if(format.equals("BOWTIE")){

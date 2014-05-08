@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.multigps.experiments;
+package edu.psu.compbio.seqcode.deepseq.experiments;
 
 import java.util.ArrayList;
 import java.util.List;

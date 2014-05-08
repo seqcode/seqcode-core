@@ -2,9 +2,10 @@ package edu.psu.compbio.seqcode.projects.akshay.chexmix.analysis;
 
 import java.io.File;
 import java.util.*;
+
+import edu.psu.compbio.seqcode.deepseq.hitloaders.*;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
-import edu.psu.compbio.seqcode.projects.multigps.hitloaders.*;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 public class LoadTags {
@@ -76,8 +77,6 @@ public class LoadTags {
 			currReader = new SAMFileHitLoader(file,useNonUnique);
 		}else if(format.equals("TOPSAM")){
 			currReader = new TophatFileHitLoader(file,useNonUnique);
-		}else if(format.equals("ELAND")){
-			currReader = new ElandFileHitLoader(file,useNonUnique);
 		}else if(format.equals("NOVO")){
 			currReader = new NovoFileHitLoader(file,useNonUnique);
 		}else if(format.equals("BOWTIE")){
