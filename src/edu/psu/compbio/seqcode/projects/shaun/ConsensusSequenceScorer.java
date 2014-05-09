@@ -1,7 +1,6 @@
 package edu.psu.compbio.seqcode.projects.shaun;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
@@ -20,11 +19,23 @@ public class ConsensusSequenceScorer {
 	}
 	
 	public ConsensusSequenceScoreProfile execute(Region r) {return execute(r, '.');}
-	public ConsensusSequenceScoreProfile execute(Region r, char strand) {
+	public ConsensusSequenceScoreProfile execute(Region r, char watsoncrick) {
         String seq = seqgen.execute(r);
         seq = seq.toUpperCase();
         int[] fscores=null, rscores=null;
-
+        char strand = '.';
+        
+        if(watsoncrick!='.'){
+	        if(r instanceof StrandedRegion){
+	        	char rstrand = ((StrandedRegion)r).getStrand(); 
+	        	if((watsoncrick=='W' && rstrand=='+') || (watsoncrick=='C' && rstrand=='-'))
+	        		strand='+';
+	        	else
+	        		strand='-';
+	        }else
+	        	strand = watsoncrick=='W' ? '+' : '-';
+        }
+        
         try {
         	if(strand=='.' || strand=='+')
         		fscores = score(consensus, seq.toCharArray(), '+');

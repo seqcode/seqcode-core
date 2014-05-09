@@ -19,9 +19,10 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.motifs.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.swing.MetaFrame;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.swing.MetaNonFrame;
+import edu.psu.compbio.seqcode.projects.shaun.ConsensusSequence;
 import edu.psu.compbio.seqcode.projects.shaun.FreqMatrixImport;
 
-public class MotifMetaMaker {
+public class ConsensusMetaMaker {
 	private static boolean batchRun = false;
 	private static boolean cluster = false;
 	private static boolean usingColorQuanta=false;
@@ -35,10 +36,11 @@ public class MotifMetaMaker {
 			Genome gen = pair.cdr();
 			int winLen = Args.parseInteger(args,"win", 10000);
 			int bins = Args.parseInteger(args,"bins", 100);
-			String profilerType = Args.parseString(args, "profiler", "motif");	
-			String motifName = Args.parseString(args,"motif", null);
-			String backName = Args.parseString(args,"mback", null);
-			double minthres = Args.parseDouble(args, "mthres", 0);
+			String profilerType = Args.parseString(args, "profiler", "consensus");	
+			String cons = Args.parseString(args,"consensus", null);
+			ConsensusSequence consensus = new ConsensusSequence(cons);
+			double mismatchthres = Args.parseDouble(args, "mismatch", 0);
+			char watsoncrick =  Args.parseString(args,"watsoncrick", ".").charAt(0);
 			String peakFile = Args.parseString(args, "peaks", null);
 			String outName = Args.parseString(args, "out", "meta");
 			boolean useCache = Args.parseFlags(args).contains("cache") ? true : false;
@@ -59,7 +61,7 @@ public class MotifMetaMaker {
 						}
 					}
 				}
-				minthres = colorQuanta[0];
+				mismatchthres = colorQuanta[0];
 			}
 			Color c = Color.blue;
 			String newCol = Args.parseString(args, "color", "blue");
@@ -71,25 +73,17 @@ public class MotifMetaMaker {
 				c=Color.black;
 		
 			
-			if(gen==null || motifName==null){printError();}
+			if(gen==null || consensus==null){printError();}
 	
 			BinningParameters params = new BinningParameters(winLen, bins);
 			System.out.println("Binding Parameters:\tWindow size: "+params.getWindowSize()+"\tBins: "+params.getNumBins());
 		
+			
 			PointProfiler profiler=null;
 			boolean normalizeProfile=false;
-			if(profilerType.equals("motif")){
-				ArrayList<WeightMatrix> motifs = new ArrayList<WeightMatrix>();
-				//Load the background
-				MarkovBackgroundModel back = BackgroundModelIO.parseMarkovBackgroundModel(backName, gen);
-		    	//Load the motifs
-		    	FreqMatrixImport motifImport = new FreqMatrixImport();
-				motifImport.setBackground(back);
-				for(WeightMatrix wm : motifImport.readTransfacMatrices(motifName)){
-					motifs.add(wm);
-				}
+			if(profilerType.equals("consensus")){
 				System.out.println("Loading data...");
-				profiler = new MotifProfiler(params, gen, motifs.get(0), minthres, useCache, seqPathName);
+				profiler = new ConsensusProfiler(params, gen, consensus, mismatchthres, useCache, seqPathName, watsoncrick);
 			}
 			
 			if(batchRun){
@@ -135,15 +129,18 @@ public class MotifMetaMaker {
 	}
 	
 	private static void printError(){
-		System.err.println("Usage: MotifMetaMaker --species <organism;genome> \n" +
+		System.err.println("Usage: ConsensusMetaMaker --species <organism;genome> \n" +
 				"--win <profile width> --bins <num bins> \n" +
-				"--profiler <motif> \n" +
-				"--motif <motif names> --mback <background model name> --mthres <threshold>\n" +
+				"--profiler <consensus> \n" +
+				"--consensus <IUPAC consensus> \n" +
+				"--mismatch <mismatch threshold> \n" +
 				"--peaks <peaks file name> --out <output root name> \n" +
 				"--color <red/green/blue> \n" +
 				"--cluster [flag to cluster in batch mode] \n" +
-				"--cache <flag to use cache while loading sequences> AND --seq <Full path of the sequence> \n"+
+				"--cache <flag to use cache while loading sequences> AND --seq <Full path of the sequence> \n" +
+				"--watsoncrick <W/C/.>"+
 				"--batch [a flag to run without displaying the window]");
 		System.exit(1);
 	}
+
 }

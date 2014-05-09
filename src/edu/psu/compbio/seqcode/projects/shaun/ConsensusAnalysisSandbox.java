@@ -7,19 +7,24 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Point;
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.gse.datasets.general.ScoredStrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
+import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
+import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.FASTALoader;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.BinningParameters;
 
 public class ConsensusAnalysisSandbox {
@@ -48,12 +53,19 @@ public class ConsensusAnalysisSandbox {
                                "--mismatch <mismatch limit>\n" +
                                "--peaks <file containing coordinates of peaks> \n" +
                                "--win <window of sequence to take around peaks> \n" +
-                               "--strand <+/-/.>"+
+                               "--strand <W/C/.>"+
                                "\nOPTIONS:\n" +
+                               "--printhits \n" +
                                "--printpeakswithconsensus \n" +
                                "--printpeaksnoconsensus \n" +
+                               "--printpeakswithconsensusbounds \n" +
+                               "--printpeaksnoconsensusbounds \n" +
+                               "--lbound <left> \n"+
+                               "--rbound <right> \n" +
+                               "--filterseqs <seqFile> \n"+
                                "--printprofiles [motif-profiler style vectors] --bins <num bin for profile>\n"+
                                "");
+            System.exit(0);
         }
         String consensusStr = ap.getKeyValue("consensus");
         int maxMismatch = ap.hasKey("mismatch") ? new Integer(ap.getKeyValue("mismatch")).intValue():0;
@@ -64,10 +76,17 @@ public class ConsensusAnalysisSandbox {
         int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():-1;
         boolean usingWin= win>0;
         String searchStrand =  ap.hasKey("strand") ? ap.getKeyValue("strand") : ".";
+        boolean printHits = ap.hasKey("printhits");
         boolean printPeaksNoConsensus = ap.hasKey("printpeaksnoconsensus");
         boolean printPeaksWithConsensus = ap.hasKey("printpeakswithconsensus");
+        boolean printPeaksNoConsensusBounds = ap.hasKey("printpeaksnoconsensusbounds");
+        boolean printPeaksWithConsensusBounds = ap.hasKey("printpeakswithconsensusbounds");
+        int lbound = ap.hasKey("lbound") ? new Integer(ap.getKeyValue("lbound")).intValue():-1;
+        int rbound = ap.hasKey("rbound") ? new Integer(ap.getKeyValue("rbound")).intValue():0;
         boolean printprofiles = ap.hasKey("printprofiles");
         int bins = ap.hasKey("bins") ? new Integer(ap.getKeyValue("bins")).intValue():1; //Used by profile printing
+        boolean screenfasta = ap.hasKey("filterseqs");
+        String fastaFile = ap.getKeyValue("filterseqs");
         List<Region> posRegs = new ArrayList<Region>();
         List<Point> posPeaks = new ArrayList<Point>();
         List<String> posLines= new ArrayList<String>();
@@ -121,15 +140,19 @@ public class ConsensusAnalysisSandbox {
 	        					rstart = Math.max(0, location-(win/2));
 	        					rend = Math.min(0, location+(win/2));
 	        				}
-	        				if(strand!='?')
+	        				if(strand!='?'){
 	        					pt = new StrandedPoint(currgen, chrom, location, strand);
-	        				else
+	        					if(usingWin)
+	        						reg = new StrandedRegion(pt.expand(win/2), strand);
+	        					else
+	        						reg = new StrandedRegion(currgen, chrom, rstart, rend, strand);
+	        				}else{
 	        					pt = new Point(currgen, chrom, location);
-	        				
-	        				if(usingWin)
-	        					reg = pt.expand(win/2);
-	        				else
-	        					reg = new Region(currgen, chrom, rstart, rend);
+	        					if(usingWin)
+	        						reg = pt.expand(win/2);
+	        					else
+	        						reg = new Region(currgen, chrom, rstart, rend);
+	        				}
 	        			}
                 	
 	                    if(pt!=null && reg!=null){
@@ -142,12 +165,20 @@ public class ConsensusAnalysisSandbox {
 	        }
 	        
 	        tools = new ConsensusAnalysisSandbox(currgen, consensus, maxMismatch, posLines, posPeaks, posRegs, genomeSequencePath, searchStrand);
+	        if(printHits)
+	        	tools.printConsensusHits();
 	        if(printPeaksWithConsensus)
 	        	tools.printPeaksWithConsensus();
 	        if(printPeaksNoConsensus)
 	        	tools.printPeaksWithoutConsensus();
+	        if(printPeaksWithConsensusBounds)
+	        	tools.printPeaksWithConsensusBoundedRegion(lbound, rbound);
+	        if(printPeaksNoConsensusBounds)
+	        	tools.printPeaksWithoutConsensusBoundedRegion(lbound, rbound);
 	        if(printprofiles)
 	        	tools.printConsensusProfiles(win, bins);
+	        if(screenfasta)
+	        	tools.filterFastaFile(fastaFile);
 	        
         } catch (NotFoundException e) {
 			e.printStackTrace();
@@ -167,6 +198,10 @@ public class ConsensusAnalysisSandbox {
 		regions=posreg;
 		misMatchThreshold = maxMismatch;
 		searchStrand = strand.charAt(0);
+		if(searchStrand!='.' && searchStrand!='W' && searchStrand!='C'){
+			System.err.println("Ignoring search strand options; should be W for Watson or C for Crick");
+			searchStrand='.';
+		}
 		seqgen = new SequenceGenerator(g);
 		if(genomeSequencePath != null){
 			seqgen.useCache(true);
@@ -174,6 +209,42 @@ public class ConsensusAnalysisSandbox {
 			seqgen.setGenomePath(genomeSequencePath);
 		}
 		scorer = new ConsensusSequenceScorer(consensus, seqgen);
+	}
+	
+	//printing the hit sequences
+	public void printConsensusHits(){
+		int numHits=0, peaksWithHits=0, totalPeaks=0;
+		List<ScoredStrandedRegion> hits = new ArrayList<ScoredStrandedRegion>();
+		List<String> hitseqs = new ArrayList<String>();
+		
+		for(int i=0; i<regions.size(); i++){
+			totalPeaks++;
+			Region r = regions.get(i);
+			String seq = seqgen.execute(r);
+			
+			ConsensusSequenceScoreProfile profiler = scorer.execute(r, searchStrand);
+			boolean goodMotif=false;
+			for(int z=0; z<r.getWidth()-consensus.getLength()+1; z++){
+				int currScore= profiler.getLowestMismatch(z);
+				if(currScore<=misMatchThreshold){
+					numHits++;
+					goodMotif=true;
+					String subseq = seq.substring(z, z+consensus.getLength());
+					Region hitreg =new Region(gen, r.getChrom(), r.getStart()+z, r.getStart()+z+consensus.getLength()-1);
+					hits.add(new ScoredStrandedRegion(gen, r.getChrom(), hitreg.getStart(), hitreg.getEnd(), currScore, profiler.getLowestMismatchStrand(z)));
+					if(profiler.getLowestMismatchStrand(z)=='+'){hitseqs.add(subseq);
+					}else{hitseqs.add(SequenceUtils.reverseComplement(subseq));}
+				}
+			}
+			if(goodMotif){
+				peaksWithHits++;
+			}
+        }
+		double perc = (double)peaksWithHits/(double)totalPeaks;
+		System.out.println(consensus.getSequence()+" hits: "+numHits+" hits in "+peaksWithHits+" regions from "+totalPeaks+" total peaks ("+perc+").");
+		for(int h=0; h<hits.size(); h++){
+			System.out.println(hits.get(h).toTabString()+"\t"+hitseqs.get(h));
+		}
 	}
 	
 	//Print peaks that contain the consensus
@@ -196,7 +267,107 @@ public class ConsensusAnalysisSandbox {
 		}
 	}
 	
-	//Print vectors showing presence/absense of consensus matches at binwidth resolution
+	//Print peaks that contain the consensus within a bounded region with respect to the region center
+	public void printPeaksWithConsensusBoundedRegion(int left, int right){
+		for(int x=0; x<peaks.size(); x++){
+			Point a = peaks.get(x);
+			int halfwin = Math.max(Math.abs(left), Math.abs(right))+consensus.getLength()+1;
+			int start = Math.max(1, a.getLocation()-halfwin);
+			int end = Math.min(a.getLocation()+halfwin, a.getGenome().getChromLength(a.getChrom()));
+			Region query = new Region(gen, a.getChrom(), start, end);
+			
+			char strand = (a instanceof StrandedPoint) ? 
+					((StrandedPoint)a).getStrand() : '.';
+			String seq = seqgen.execute(query);
+			if(strand=='-')
+				seq = SequenceUtils.reverseComplement(seq);
+			
+			ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
+			boolean matchFound=false;
+			for(int i=0; i<seq.length(); i++){
+				int offset = strand=='-' ?
+						(a.getLocation() - (i+query.getStart())) :
+						(i+query.getStart() - a.getLocation());
+				if(offset>=left && offset<=right)
+					if(profiler.getLowestMismatch(i)<=misMatchThreshold)
+						matchFound=true;
+			}
+			if(matchFound)
+				System.out.println(inFileLines.get(x));
+		}
+	}
+	
+	//Print peaks that don't contain the consensus within a bounded region with respect to the region center
+	public void printPeaksWithoutConsensusBoundedRegion(int left, int right){
+		for(int x=0; x<peaks.size(); x++){
+			Point a = peaks.get(x);
+			int halfwin = Math.max(Math.abs(left), Math.abs(right))+consensus.getLength()+1;
+			int start = Math.max(1, a.getLocation()-halfwin);
+			int end = Math.min(a.getLocation()+halfwin, a.getGenome().getChromLength(a.getChrom()));
+			Region query = new Region(gen, a.getChrom(), start, end);
+			
+			char strand = (a instanceof StrandedPoint) ? 
+					((StrandedPoint)a).getStrand() : '.';
+			String seq = seqgen.execute(query);
+			if(strand=='-')
+				seq = SequenceUtils.reverseComplement(seq);
+			
+			ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
+			boolean matchFound=false;
+			for(int i=0; i<seq.length(); i++){
+				int offset = strand=='-' ?
+						(a.getLocation() - (i+query.getStart())) :
+						(i+query.getStart() - a.getLocation());
+				if(offset>=left && offset<=right)
+					if(profiler.getLowestMismatch(i)<=misMatchThreshold)
+						matchFound=true;
+			}
+			if(!matchFound)
+				System.out.println(inFileLines.get(x));
+		}
+	}
+	
+	/**
+	 * Print FastA entries that contain matches to the consensus
+	 * @param inFile
+	 */
+	public void filterFastaFile(String inFile){
+		FASTALoader loader = new FASTALoader();
+		File f = new File(inFile);
+		Iterator<Pair<String, String>> it = loader.execute(f);
+		while(it.hasNext()){
+			Pair<String, String> p = it.next();
+			String name = p.car();
+			String sequence = p.cdr();
+			ConsensusSequenceScoreProfile profiler = scorer.execute(sequence, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
+			
+			if(profiler.getLowestMismatch()<=misMatchThreshold){
+				System.out.println(name+"\n"+sequence);
+			}
+		}
+				
+	}
+	
+	//return an indicator array for covered/uncovered by good motif
+	private boolean[] motifCoverage(String seq){
+		boolean [] covered = new boolean [seq.length()];
+		for(int i=0; i<seq.length(); i++){covered[i]=false;}
+		ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
+		for(int z=0; z<seq.length(); z++){
+			double currScore= profiler.getLowestMismatch(z);
+			if(currScore<=misMatchThreshold){
+				for(int j=0; j<consensus.getLength() && z+j<seq.length(); j++){
+					covered[z+j]=true;
+				}
+			}
+		}
+		return(covered);
+	}
+	/**
+	 * Print vectors showing presence/absence of consensus matches at binwidth resolution
+	 * @param winLen
+	 * @param bins
+	 */
 	public void printConsensusProfiles(int winLen, int bins){
 		BinningParameters params = new BinningParameters(winLen, bins);
 		for(int x=0; x<peaks.size(); x++){
@@ -211,11 +382,14 @@ public class ConsensusAnalysisSandbox {
 			int start = Math.max(1, a.getLocation()-left);
 			int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom()));
 			Region query = new Region(gen, a.getChrom(), start, end);
-			boolean strand = (a instanceof StrandedPoint) ? 
-					((StrandedPoint)a).getStrand() == '+' : true;
 			
+			char strand = (a instanceof StrandedPoint) ? 
+					((StrandedPoint)a).getStrand() : '.';
 			String seq = seqgen.execute(query);
-			ConsensusSequenceScoreProfile profiler = scorer.execute(seq);
+			if(strand=='-')
+				seq = SequenceUtils.reverseComplement(seq);
+			
+			ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
 			for(int i=query.getStart(); i<query.getEnd(); i+=params.getBinSize()){
 				for(int j=i; j<i+params.getBinSize() && j<query.getEnd(); j++){
 					int offset = j-query.getStart();
