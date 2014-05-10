@@ -38,16 +38,11 @@ public class ConsensusProfiler  implements PointProfiler<Point, Profile>{
 	}
 
 	public Profile execute(Point a) {
-		double[] array = new double[params.getNumBins()];
+		double[] array = new double[params.getNumBins()+1];
 		for(int i = 0; i < array.length; i++) { array[i] = 0; }
 		
 		int window = params.getWindowSize();
-		int left = window/2;
-		int right = window-left-1;
-		
-		int start = Math.max(1, a.getLocation()-left);
-		int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom()));
-		Region query = new Region(gen, a.getChrom(), start, end);
+		Region query = a.expand(window/2);
 		
 		char rstrand = (a instanceof StrandedPoint) ? 
 				((StrandedPoint)a).getStrand() : '.';
@@ -58,11 +53,11 @@ public class ConsensusProfiler  implements PointProfiler<Point, Profile>{
 		ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
 		for(int i=query.getStart(); i<query.getEnd(); i+=params.getBinSize()){
 			for(int j=i; j<i+params.getBinSize() && j<query.getEnd(); j++){
-				int offset = j-query.getStart();
+				int offset = rstrand=='-' ?
+						(a.getLocation() - (query.getEnd()-i)) :
+						(i+query.getStart() - a.getLocation());
 				
 				if(profiler.getLowestMismatch(offset)<=mismatchThreshold){
-					if(profiler.getLowestMismatchStrand(offset)=='-')
-						offset+=(consensus.getLength()-1);
 					int bin = params.findBin(offset);
 					addToArray(bin, bin, array, 1);
 				}

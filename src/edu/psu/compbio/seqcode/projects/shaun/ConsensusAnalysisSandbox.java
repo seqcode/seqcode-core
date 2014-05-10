@@ -285,7 +285,7 @@ public class ConsensusAnalysisSandbox {
 			boolean matchFound=false;
 			for(int i=0; i<seq.length(); i++){
 				int offset = strand=='-' ?
-						(a.getLocation() - (i+query.getStart())) :
+						(a.getLocation() - (query.getEnd()-i)) :
 						(i+query.getStart() - a.getLocation());
 				if(offset>=left && offset<=right)
 					if(profiler.getLowestMismatch(i)<=misMatchThreshold)
@@ -315,7 +315,7 @@ public class ConsensusAnalysisSandbox {
 			boolean matchFound=false;
 			for(int i=0; i<seq.length(); i++){
 				int offset = strand=='-' ?
-						(a.getLocation() - (i+query.getStart())) :
+						(a.getLocation() - (query.getEnd()-i)) :
 						(i+query.getStart() - a.getLocation());
 				if(offset>=left && offset<=right)
 					if(profiler.getLowestMismatch(i)<=misMatchThreshold)
@@ -371,16 +371,10 @@ public class ConsensusAnalysisSandbox {
 		BinningParameters params = new BinningParameters(winLen, bins);
 		for(int x=0; x<peaks.size(); x++){
 			Point a = peaks.get(x);
-			double[] array = new double[params.getNumBins()];
+			double[] array = new double[params.getNumBins()+1];
 			for(int i = 0; i < array.length; i++) { array[i] = 0; }
 			
-			int window = params.getWindowSize();
-			int left = window/2;
-			int right = window-left-1;
-			
-			int start = Math.max(1, a.getLocation()-left);
-			int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom()));
-			Region query = new Region(gen, a.getChrom(), start, end);
+			Region query = a.expand(winLen/2);
 			
 			char strand = (a instanceof StrandedPoint) ? 
 					((StrandedPoint)a).getStrand() : '.';
@@ -391,11 +385,11 @@ public class ConsensusAnalysisSandbox {
 			ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
 			for(int i=query.getStart(); i<query.getEnd(); i+=params.getBinSize()){
 				for(int j=i; j<i+params.getBinSize() && j<query.getEnd(); j++){
-					int offset = j-query.getStart();
+					int offset = strand=='-' ?
+							(a.getLocation() - (query.getEnd()-i)) :
+							(i+query.getStart() - a.getLocation());
 					
 					if(profiler.getLowestMismatch(offset)<=misMatchThreshold){
-						if(profiler.getLowestMismatchStrand(offset)=='-')
-							offset+=(consensus.getLength()-1);
 						int bin = params.findBin(offset);
 						array[bin]++;
 					}
