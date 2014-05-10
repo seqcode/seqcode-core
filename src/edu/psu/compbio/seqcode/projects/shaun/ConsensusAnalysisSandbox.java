@@ -371,7 +371,7 @@ public class ConsensusAnalysisSandbox {
 		BinningParameters params = new BinningParameters(winLen, bins);
 		for(int x=0; x<peaks.size(); x++){
 			Point a = peaks.get(x);
-			double[] array = new double[params.getNumBins()+1];
+			double[] array = new double[params.getNumBins()];
 			for(int i = 0; i < array.length; i++) { array[i] = 0; }
 			
 			Region query = a.expand(winLen/2);
@@ -383,16 +383,14 @@ public class ConsensusAnalysisSandbox {
 				seq = SequenceUtils.reverseComplement(seq);
 			
 			ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
-			for(int i=query.getStart(); i<query.getEnd(); i+=params.getBinSize()){
-				for(int j=i; j<i+params.getBinSize() && j<query.getEnd(); j++){
-					int offset = j-query.getStart();
-					
-					if(profiler.getLowestMismatch(offset)<=misMatchThreshold){
-						if(profiler.getLowestMismatchStrand(offset)=='-')
-							offset+=(consensus.getLength()-1);
-						int bin = params.findBin(offset);
-						array[bin]++;
-					}
+			for(int i=0; i<seq.length() && i<winLen; i+=params.getBinSize()){
+				int offset = strand=='-' ?
+						(a.getLocation() - (query.getEnd()-i)) :
+						(i+query.getStart() - a.getLocation());
+				
+				if(profiler.getLowestMismatch(offset)<=misMatchThreshold){
+					int bin = params.findBin(offset);
+					array[bin]++;
 				}
 			}
 			//Print the vector
