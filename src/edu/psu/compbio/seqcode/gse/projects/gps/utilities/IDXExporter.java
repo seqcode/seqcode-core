@@ -47,6 +47,8 @@ public class IDXExporter {
 		
 		IDXExporter wig = new IDXExporter(args);
 		wig.execute();
+		wig.close();
+			
 	}
 	
 	
@@ -154,6 +156,11 @@ public class IDXExporter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public void close(){
+		if(expt!=null)
+			expt.closeLoaders();
 	}
 	
 	protected double[] make5PrimeLandscape(ArrayList<ReadHit> hits, Region currReg, int perBaseMax, char strand){
