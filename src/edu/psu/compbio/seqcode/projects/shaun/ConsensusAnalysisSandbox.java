@@ -396,7 +396,7 @@ public class ConsensusAnalysisSandbox {
 					
 					if(profiler.getLowestMismatch(offset)<=misMatchThreshold){
 						int bin = params.findBin(offset);
-						array[bin] = Math.max(array[bin],1);
+						array[bin]++;
 					}
 				}
 			}
