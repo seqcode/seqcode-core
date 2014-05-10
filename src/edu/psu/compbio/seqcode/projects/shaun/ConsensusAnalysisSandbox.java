@@ -383,13 +383,9 @@ public class ConsensusAnalysisSandbox {
 				seq = SequenceUtils.reverseComplement(seq);
 			
 			ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
-			for(int i=0; i<seq.length() && i<winLen; i+=params.getBinSize()){
-				int offset = strand=='-' ?
-						(a.getLocation() - (query.getEnd()-i)) :
-						(i+query.getStart() - a.getLocation());
-				
-				if(profiler.getLowestMismatch(offset)<=misMatchThreshold){
-					int bin = params.findBin(offset);
+			for(int i=0; i<seq.length() && i<winLen; i++){
+				if(profiler.getLowestMismatch(i)<=misMatchThreshold){
+					int bin = params.findBin(i);
 					array[bin]++;
 				}
 			}
