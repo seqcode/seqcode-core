@@ -65,21 +65,17 @@ public class ConsensusProfiler  implements PointProfiler<Point, Profile>{
         }
 		ConsensusSequenceScoreProfile profiler = scorer.execute(seq, strandChar);
 		for(int i=query.getStart(); i<query.getEnd(); i+=params.getBinSize()){
-			boolean hasMatch=false;
 			int matchOffset=-1;
 			for(int j=i; j<i+params.getBinSize() && j<query.getEnd(); j++){
 				int offset = j-query.getStart();
 				if(profiler.getLowestMismatch(offset)<=mismatchThreshold){
-					hasMatch=true;
 					matchOffset = offset;
+					if(!strand) {
+						matchOffset = query.getEnd()-(j+consensus.getLength())-1;
+					}
+					int bin = params.findBin(matchOffset);
+					addToArray(bin, bin, array, 1);
 				}
-			}
-			if(hasMatch){
-				int bin = params.findBin(matchOffset);
-				if(!strand) { 
-					bin = (params.getNumBins()-bin)-1;
-				}
-				addToArray(bin, bin, array, 1);
 			}
 		}
 		
