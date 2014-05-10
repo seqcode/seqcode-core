@@ -79,7 +79,7 @@ public class ConsensusProfiler  implements PointProfiler<Point, Profile>{
 				if(!strand) { 
 					bin = (params.getNumBins()-bin)-1;
 				}
-				maxToArray(bin, bin, array, 1);
+				addToArray(bin, bin, array, 1);
 			}
 		}
 		
