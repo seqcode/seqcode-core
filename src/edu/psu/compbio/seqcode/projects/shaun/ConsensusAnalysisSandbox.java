@@ -19,7 +19,6 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.FASTALoader;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -395,6 +394,8 @@ public class ConsensusAnalysisSandbox {
 					int offset = j-query.getStart();
 					
 					if(profiler.getLowestMismatch(offset)<=misMatchThreshold){
+						if(profiler.getLowestMismatchStrand(offset)=='-')
+							offset+=(consensus.getLength()-1);
 						int bin = params.findBin(offset);
 						array[bin]++;
 					}

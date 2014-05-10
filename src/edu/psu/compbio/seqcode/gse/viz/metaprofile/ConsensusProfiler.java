@@ -5,6 +5,7 @@ import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
+import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.shaun.ConsensusSequence;
 import edu.psu.compbio.seqcode.projects.shaun.ConsensusSequenceScoreProfile;
 import edu.psu.compbio.seqcode.projects.shaun.ConsensusSequenceScorer;
@@ -47,33 +48,22 @@ public class ConsensusProfiler  implements PointProfiler<Point, Profile>{
 		int start = Math.max(1, a.getLocation()-left);
 		int end = Math.min(a.getLocation()+right, a.getGenome().getChromLength(a.getChrom()));
 		Region query = new Region(gen, a.getChrom(), start, end);
-		boolean strand = (a instanceof StrandedPoint) ? 
-				((StrandedPoint)a).getStrand() == '+' : true;
 		
+		char rstrand = (a instanceof StrandedPoint) ? 
+				((StrandedPoint)a).getStrand() : '.';
 		String seq = seqgen.execute(query);
+		if(rstrand=='-')
+			seq = SequenceUtils.reverseComplement(seq);
 		
-		char strandChar = '.';
-        if(searchStrand!='.'){
-	        if(a instanceof StrandedPoint){
-	        	char rstrand = ((StrandedPoint)a).getStrand(); 
-	        	if((searchStrand=='W' && rstrand=='+') || (searchStrand=='C' && rstrand=='-'))
-	        		strandChar='+';
-	        	else
-	        		strandChar='-';
-	        }else
-	        	strandChar = searchStrand=='W' ? '+' : '-';
-        }
-		ConsensusSequenceScoreProfile profiler = scorer.execute(seq, strandChar);
+		ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
 		for(int i=query.getStart(); i<query.getEnd(); i+=params.getBinSize()){
-			int matchOffset=-1;
 			for(int j=i; j<i+params.getBinSize() && j<query.getEnd(); j++){
 				int offset = j-query.getStart();
+				
 				if(profiler.getLowestMismatch(offset)<=mismatchThreshold){
-					matchOffset = offset;
-					if(!strand) {
-						matchOffset = query.getEnd()-(j+consensus.getLength())-1;
-					}
-					int bin = params.findBin(matchOffset);
+					if(profiler.getLowestMismatchStrand(offset)=='-')
+						offset+=(consensus.getLength()-1);
+					int bin = params.findBin(offset);
 					addToArray(bin, bin, array, 1);
 				}
 			}
