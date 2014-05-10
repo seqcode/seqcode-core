@@ -53,11 +53,11 @@ public class ConsensusProfiler  implements PointProfiler<Point, Profile>{
 		ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
 		for(int i=query.getStart(); i<query.getEnd(); i+=params.getBinSize()){
 			for(int j=i; j<i+params.getBinSize() && j<query.getEnd(); j++){
-				int offset = rstrand=='-' ?
-						(a.getLocation() - (query.getEnd()-i)) :
-						(i+query.getStart() - a.getLocation());
+				int offset = j-query.getStart();
 				
 				if(profiler.getLowestMismatch(offset)<=mismatchThreshold){
+					if(profiler.getLowestMismatchStrand(offset)=='-')
+						offset+=(consensus.getLength()-1);
 					int bin = params.findBin(offset);
 					addToArray(bin, bin, array, 1);
 				}
