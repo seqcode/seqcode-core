@@ -87,6 +87,7 @@ public class ConsensusMetaMaker {
 			}
 			
 			if(batchRun){
+				System.setProperty("java.awt.headless", "true");
 				System.out.println("Batch running...");
 				MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile, false);
 				if(usingColorQuanta)

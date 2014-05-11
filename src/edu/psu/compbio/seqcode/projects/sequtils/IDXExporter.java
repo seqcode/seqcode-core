@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.projects.gps.utilities;
+package edu.psu.compbio.seqcode.projects.sequtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -47,6 +47,8 @@ public class IDXExporter {
 		
 		IDXExporter wig = new IDXExporter(args);
 		wig.execute();
+		wig.close();
+			
 	}
 	
 	
@@ -135,7 +137,7 @@ public class IDXExporter {
 						double sum = posHits+negHits;
 						
 						if(posHits>0 || negHits>0){
-							fw.write("chr"+currSubRegion.getChrom()+"\t"+i+"\t"+String.format("%.1f\t%.1f\t%.1f", posHits, negHits, sum) +"\n");
+							fw.write("chr"+currSubRegion.getChrom()+"\t"+i+"\t"+String.format("%.0f\t%.0f\t%.0f", posHits, negHits, sum) +"\n");
 						}
 						//Print out progress
 						basesDone++;
@@ -154,6 +156,11 @@ public class IDXExporter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public void close(){
+		if(expt!=null)
+			expt.closeLoaders();
 	}
 	
 	protected double[] make5PrimeLandscape(ArrayList<ReadHit> hits, Region currReg, int perBaseMax, char strand){
