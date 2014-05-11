@@ -21,7 +21,7 @@ import org.w3c.dom.Document;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.*;
 import edu.psu.compbio.seqcode.gse.viz.paintable.PaintableScale;
 
-public class ProfileLinePanel extends JPanel { 
+public class ProfileLinePanel extends JPanel implements ProfileListener{ 
 	
 	private BinningParameters params;
 	private PaintableScale scale;
@@ -194,6 +194,16 @@ public class ProfileLinePanel extends JPanel {
 		}
 	}
 	
+	public void profileChanged(ProfileEvent p) {
+		if(p.getType().equals(ProfileEvent.EventType.ADDED)) { 
+			Profile added = p.addedProfile();
+			ProfileLinePaintable plp = new ProfileLinePaintable(scale, added);
+			scale.updateScale(added.max());
+			scale.updateScale(added.min());
+					
+			addProfileLinePaintable(plp);
+		}
+	}
 	public Action createSaveImageAction() { 
 	    return new AbstractAction("Save Profile Image...") { 
             /**

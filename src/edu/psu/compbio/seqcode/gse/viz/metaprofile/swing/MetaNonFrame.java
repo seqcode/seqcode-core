@@ -32,6 +32,7 @@ public class MetaNonFrame{
 		handler = new MetaProfileHandler("MetaProfile", params, pp, normalizedMeta);
 		profile = handler.getProfile();
 		linePanel = new ProfileLinePanel(params, lineScale);
+		profile.addProfileListener(linePanel);
 		utils = new MetaUtils(genome);
 		saveSVG = svg;
 		panel = new ProfilePanel(profile, peakScale);
