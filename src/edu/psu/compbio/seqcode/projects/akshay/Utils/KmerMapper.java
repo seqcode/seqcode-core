@@ -41,10 +41,11 @@ public class KmerMapper {
 	public WeightMatrixScorer scorer;
 	public double motifThres;
 	
-	public KmerMapper(Genome g, int win, double threshold) {
+	public KmerMapper(Genome g, int win, double threshold, WeightMatrix mot) {
 		this.gen=g;
 		this.winSize=win;
 		this.motifThres = threshold;
+		this.motif = mot;
 	}
 	
 	//Settors
@@ -308,7 +309,7 @@ public class KmerMapper {
 		
 		String peaksFile = ap.getKeyValue("peaks");
 		
-		KmerMapper mapper = new KmerMapper(gen,winSize,minscore);
+		KmerMapper mapper = new KmerMapper(gen,winSize,minscore,matrix);
 		mapper.setRegions(peaksFile, SeqFilePath);
 		mapper.setMapMatrix(SeqFilePath);
 		
