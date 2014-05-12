@@ -41,11 +41,12 @@ public class KmerMapper {
 	public WeightMatrixScorer scorer;
 	public double motifThres;
 	
-	public KmerMapper(Genome g, int win, double threshold, WeightMatrix mot) {
+	public KmerMapper(Genome g, int win, double threshold, WeightMatrix mot, int ksize) {
 		this.gen=g;
 		this.winSize=win;
 		this.motifThres = threshold;
 		this.motif = mot;
+		this.k = ksize;
 	}
 	
 	//Settors
@@ -89,17 +90,16 @@ public class KmerMapper {
 					points.add(new StrandedPoint(addP,closestStrand));
 				}
 			}
-			for(StrandedPoint sp : points){
-				regions.add(new StrandedRegion(sp.expand(winSize/2),sp.getStrand()));
-			}
-			
+		}
+		for(StrandedPoint sp : points){
+			regions.add(new StrandedRegion(sp.expand(winSize/2),sp.getStrand()));
 		}
 	}
 	
 	
 	public void setMapMatrix(String SeqPathFile){
 		int numk = (int)Math.pow(4, k);
-		this.MapMatrix = new int[numk][points.size()][winSize];
+		this.MapMatrix = new int[numk][regions.size()][winSize];
 		seqgen.useCache(true);
 		seqgen.setGenomePath(SeqPathFile);
 		
@@ -130,8 +130,8 @@ public class KmerMapper {
 			boolean pass = false;
 			for(int j=0; j<kmerMap[0].length; j++){ // over all positions
 				int rowSum =0;
-				for(int k=0; k<kmerMap.length; k++){ // over all peaks
-					rowSum = rowSum + kmerMap[j][k];
+				for(int h=0; h<kmerMap.length; h++){ // over all peaks
+					rowSum = rowSum + kmerMap[h][j];
 				}
 				if((int)((rowSum*100)/kmerMap.length) > percCutoff){
 					pass = true;
@@ -149,8 +149,8 @@ public class KmerMapper {
 			boolean pass = false;
 			for(int j=0; j<kmerMap[0].length; j++){
 				int rowSum =0;
-				for(int k=0; k<kmerMap.length; k++){
-					rowSum = rowSum + kmerMap[j][k];
+				for(int h=0; h<kmerMap.length; h++){
+					rowSum = rowSum + kmerMap[h][j];
 				}
 				if((int)((rowSum*100)/kmerMap.length) > percCutoff){
 					pass = true;
@@ -170,8 +170,8 @@ public class KmerMapper {
 			int midP = (int)(kmerMap[0].length/2);
 			for(int j=(midP-distance); j<(midP+distance); j++){ // over all locations
 				int rowSum =0;
-				for(int k=0; k<kmerMap.length; k++){ // over all peaks
-					rowSum = rowSum + kmerMap[j][k];
+				for(int h=0; h<kmerMap.length; h++){ // over all peaks
+					rowSum = rowSum + kmerMap[h][j];
 				}
 				if((int)((rowSum*100)/kmerMap.length) > percCutoff){
 					pass = true;
@@ -192,8 +192,8 @@ public class KmerMapper {
 			int midP = (int)(kmerMap[0].length/2);
 			for(int j=(midP-distance); j<(midP+distance); j++){ // over all locations
 				int rowSum =0;
-				for(int k=0; k<kmerMap.length; k++){ // over all peaks
-					rowSum = rowSum + kmerMap[j][k];
+				for(int h=0; h<kmerMap.length; h++){ // over all peaks
+					rowSum = rowSum + kmerMap[h][j];
 				}
 				if((int)((rowSum*100)/kmerMap.length) > percCutoff){
 					pass = true;
@@ -217,8 +217,8 @@ public class KmerMapper {
 			int midP = (int)(kmerMap[0].length/2);
 			for(int j=(midP-distance); j<(midP+distance); j++){ // over all locations
 				int rowSum =0;
-				for(int k=0; k<kmerMap.length; k++){ // over all peaks
-					rowSum = rowSum + kmerMap[j][k];
+				for(int h=0; h<kmerMap.length; h++){ // over all peaks
+					rowSum = rowSum + kmerMap[h][j];
 				}
 				if((int)((rowSum*100)/kmerMap.length) > percCutoff && (j<midP || j> (midP+motif.length()-k))){
 					pass = true;
@@ -238,8 +238,8 @@ public class KmerMapper {
 			int midP = (int)(kmerMap[0].length/2);
 			for(int j=(midP-distance); j<(midP+distance); j++){ // over all locations
 				int rowSum =0;
-				for(int k=0; k<kmerMap.length; k++){ // over all peaks
-					rowSum = rowSum + kmerMap[j][k];
+				for(int h=0; h<kmerMap.length; h++){ // over all peaks
+					rowSum = rowSum + kmerMap[h][j];
 				}
 				if((int)((rowSum*100)/kmerMap.length) > percCutoff && (j<midP || j> (midP+motif.length()-k))){
 					pass = true;
@@ -306,10 +306,10 @@ public class KmerMapper {
 		WeightMatrix matrix = null;
 		matrix = MotifAnalysisSandbox.loadMotifFromFile(motiffile, backfile, gen).get(0);
 		double minscore = (ap.hasKey("minscore")) ? new Double(ap.getKeyValue("minscore")).doubleValue() : 6.4;
-		
+		int ksize = ap.hasKey("ksize") ? new Integer(ap.getKeyValue("ksize")).intValue() : 4;
 		String peaksFile = ap.getKeyValue("peaks");
 		
-		KmerMapper mapper = new KmerMapper(gen,winSize,minscore,matrix);
+		KmerMapper mapper = new KmerMapper(gen,winSize,minscore,matrix,ksize);
 		mapper.setRegions(peaksFile, SeqFilePath);
 		mapper.setMapMatrix(SeqFilePath);
 		
