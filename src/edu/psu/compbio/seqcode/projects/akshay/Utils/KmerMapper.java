@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,11 +16,16 @@ import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScorer;
+import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
+import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
+import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
+import edu.psu.compbio.seqcode.projects.shaun.MotifAnalysisSandbox;
 import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 public class KmerMapper {
@@ -33,9 +39,9 @@ public class KmerMapper {
 	public Genome gen;
 	public WeightMatrix motif;
 	public WeightMatrixScorer scorer;
-	public int motifThres;
+	public double motifThres;
 	
-	public KmerMapper(Genome g, int win, int threshold) {
+	public KmerMapper(Genome g, int win, double threshold) {
 		this.gen=g;
 		this.winSize=win;
 		this.motifThres = threshold;
@@ -116,9 +122,9 @@ public class KmerMapper {
 	
 	// Calculators
 	
-	public void printInformativeKmersFromSet(String[] kmerSet, int percCutoff){
-		for(int i=0; i<kmerSet.length; i++){
-			int kmerID = Utilities.seq2int(kmerSet[i]);
+	public void printInformativeKmersFromSet(List<String> kmerSet, int percCutoff){
+		for(int i=0; i<kmerSet.size(); i++){
+			int kmerID = Utilities.seq2int(kmerSet.get(i));
 			int[][] kmerMap = MapMatrix[kmerID];
 			boolean pass = false;
 			for(int j=0; j<kmerMap[0].length; j++){ // over all positions
@@ -131,7 +137,7 @@ public class KmerMapper {
 				}
 			}
 			if(pass){
-				System.out.println(kmerSet[i]);
+				System.out.println(kmerSet.get(i));
 			}
 		}
 	}
@@ -177,9 +183,9 @@ public class KmerMapper {
 		
 	}
 	
-	public void printInformativeKmerWithinDistanceFromSet(String[] kmerSet, int percCutoff, int distance){
-		for(int i=0; i<kmerSet.length; i++){
-			int kmerID = Utilities.seq2int(kmerSet[i]);
+	public void printInformativeKmerWithinDistanceFromSet(List<String> kmerSet, int percCutoff, int distance){
+		for(int i=0; i<kmerSet.size(); i++){
+			int kmerID = Utilities.seq2int(kmerSet.get(i));
 			int[][] kmerMap = MapMatrix[kmerID];
 			boolean pass = false;
 			int midP = (int)(kmerMap[0].length/2);
@@ -193,7 +199,7 @@ public class KmerMapper {
 				}
 			}
 			if(pass){
-				System.out.println(Utilities.int2seq(i, k));
+				System.out.println(kmerSet.get(i));
 			}
 		}
 	}
@@ -223,9 +229,9 @@ public class KmerMapper {
 		}
 	}
 	
-	public void printInformativeKmerFlanksFromSet(String[] kmerSet, int percCutoff, int distance){
-		for(int i=0; i<kmerSet.length; i++){
-			int kmerID = Utilities.seq2int(kmerSet[i]);
+	public void printInformativeKmerFlanksFromSet(List<String> kmerSet, int percCutoff, int distance){
+		for(int i=0; i<kmerSet.size(); i++){
+			int kmerID = Utilities.seq2int(kmerSet.get(i));
 			int[][] kmerMap = MapMatrix[kmerID];
 			boolean pass = false;
 			int midP = (int)(kmerMap[0].length/2);
@@ -239,12 +245,12 @@ public class KmerMapper {
 				}
 			}
 			if(pass){
-				System.out.println(Utilities.int2seq(i, k));
+				System.out.println(kmerSet.get(i));
 			}
 		}
 	}
 	
-	public static void main(String[] args) throws IOException{
+	public static void main(String[] args) throws IOException, NotFoundException, ParseException{
 		ArgParser ap = new ArgParser(args);
 		System.err.println("Usage:\n"
 		);
@@ -253,13 +259,89 @@ public class KmerMapper {
 		File kmerF = new File(kmerFile);
 		BufferedReader reader = new BufferedReader(new FileReader(kmerF));
 		String line;
-		String[] kmers;
+		List<String> kmers = new ArrayList<String>();
 		while((line = reader.readLine()) != null){
 			line = line.trim();
 			line.replace("\n", "");
-			
+			kmers.add(line);
+		}
+		reader.close();
+		
+		boolean printInfKmersS = false, printInfKmers = false, printInfKmersWDis = false, printInfKmersWDisS = false,
+				printInfKmerFlanks = false, printInfKmerFlanksS = false;
+		
+		printInfKmersS = ap.hasKey("printInfKmersS");
+		printInfKmers = ap.hasKey("printInfKmers");
+		printInfKmersWDis = ap.hasKey("printKmersInfWDis");
+		printInfKmersWDisS = ap.hasKey("printInfKmersWDisS");
+		printInfKmerFlanks = ap.hasKey("printInfFlanks");
+		printInfKmerFlanksS = ap.hasKey("printInfFlanksS");
+		
+		
+		String SeqFilePath = ap.getKeyValue("seq");
+		int winSize = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue() : 200;
+		Genome gen = null;
+		if(ap.hasKey("species")){
+			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			if(pair != null){
+				
+				gen = pair.cdr();
+			}
+		}else{
+			if(ap.hasKey("geninfo") || ap.hasKey("g")){
+				//Make fake genome... chr lengths provided
+				String fName = ap.hasKey("geninfo") ? ap.getKeyValue("geninfo") : ap.getKeyValue("g");
+				gen = new Genome("Genome", new File(fName), true);
+			}else{
+				gen = null;
+			}
 		}
 		
+		String motiffile, backfile;
+		
+		motiffile = ap.getKeyValue("motiffile");
+		backfile = ap.getKeyValue("back");
+		
+		WeightMatrix matrix = null;
+		matrix = MotifAnalysisSandbox.loadMotifFromFile(motiffile, backfile, gen).get(0);
+		double minscore = (ap.hasKey("minscore")) ? new Double(ap.getKeyValue("minscore")).doubleValue() : 6.4;
+		
+		String peaksFile = ap.getKeyValue("peaks");
+		
+		KmerMapper mapper = new KmerMapper(gen,winSize,minscore);
+		mapper.setRegions(peaksFile, SeqFilePath);
+		mapper.setMapMatrix(SeqFilePath);
+		
+		int percCutoff = ap.hasKey("percentAlign") ? new Integer(ap.getKeyValue("percentAlign")).intValue() : 30;
+		int distance = ap.hasKey("flankSize")? new Integer(ap.getKeyValue("flankSize")).intValue() : 30;
+		if(printInfKmers){
+			System.out.println("Printing all Kmers that are aligned with respect to the primary motifs: ");
+			mapper.printInformativeKmers(percCutoff);
+		}
+		
+		if(printInfKmersS){
+			System.out.println("Printing Kmers that are aligned with respect to the primary motif and have high weight in SVM classification");
+			mapper.printInformativeKmersFromSet(kmers, percCutoff);
+		}
+		
+		if(printInfKmersWDis){
+			System.out.println("Printing all Kmers that are aligned with respect to the primary motifs and are within a small distance from the motif");
+			mapper.printInformativeKmerWithinDistance(percCutoff, distance);
+		}
+		
+		if(printInfKmersWDisS){
+			System.out.println("Printing all Kmers that are aligned with respect to the primary motifs and are within a small distance from the motif and also have high SVM weight");
+			mapper.printInformativeKmerWithinDistanceFromSet(kmers, percCutoff, distance);
+		}
+		if(printInfKmerFlanks){
+			 System.out.println("Printing informative kmer flanks that don't come from the primary motif");
+			 mapper.printInformativeKmerFlanks(percCutoff, distance);
+		}
+		
+		if(printInfKmerFlanksS){
+			System.out.println("Printing informative kmer flanks that don't come from the primart motif and have a high SVM score");
+			mapper.printInformativeKmerFlanksFromSet(kmers, percCutoff, distance);
+		}
 		
 	}
 
