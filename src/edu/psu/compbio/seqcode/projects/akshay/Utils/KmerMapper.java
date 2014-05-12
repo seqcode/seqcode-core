@@ -1,5 +1,10 @@
 package edu.psu.compbio.seqcode.projects.akshay.Utils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +18,7 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
 import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScorer;
+import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
@@ -238,7 +244,21 @@ public class KmerMapper {
 		}
 	}
 	
-	public static void main(String[] args){
+	public static void main(String[] args) throws IOException{
+		ArgParser ap = new ArgParser(args);
+		System.err.println("Usage:\n"
+		);
+		
+		String kmerFile = ap.getKeyValue("kmers");
+		File kmerF = new File(kmerFile);
+		BufferedReader reader = new BufferedReader(new FileReader(kmerF));
+		String line;
+		String[] kmers;
+		while((line = reader.readLine()) != null){
+			line = line.trim();
+			line.replace("\n", "");
+			
+		}
 		
 		
 	}
