@@ -30,8 +30,8 @@ import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 public class KmerMapper {
 	
-	public List<StrandedPoint> points;
-	public List<StrandedRegion> regions;
+	public List<StrandedPoint> points = new ArrayList<StrandedPoint>();
+	public List<StrandedRegion> regions = new ArrayList<StrandedRegion>();
 	public int k;
 	public SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
 	public int[][][] MapMatrix;
