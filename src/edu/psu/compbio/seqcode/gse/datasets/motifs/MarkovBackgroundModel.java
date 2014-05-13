@@ -144,18 +144,18 @@ public class MarkovBackgroundModel extends BackgroundModel {
 	  prevBases = prevBases.toUpperCase();
 	  if (BackgroundModel.isKmerValid(prevBases)) {
 	    double total = aProb + cProb + gProb + tProb;
-	    if ((aProb >= 0) && (cProb >= 0) && (gProb >= 0) && (tProb >= 0) 
-	        && (Fmath.isEqualWithinLimits(total, 1.0, BackgroundModel.EPSILON)
-	            || (total == 0))) {
+	    //if ((aProb >= 0) && (cProb >= 0) && (gProb >= 0) && (tProb >= 0) 
+	    //    && (Fmath.isEqualWithinLimits(total, 1.0, BackgroundModel.EPSILON)
+	    //        || (total == 0))) {
 	      int kmerLen = prevBases.length() + 1;
-	      modelProbs[kmerLen].put(prevBases + "A", aProb);
-	      modelProbs[kmerLen].put(prevBases + "C", cProb);
-	      modelProbs[kmerLen].put(prevBases + "G", gProb);
-	      modelProbs[kmerLen].put(prevBases + "T", tProb);
-	    }
-	    else {
-	      throw new IllegalArgumentException("Probabilities must sum to 1 or must all be 0, but instead sum to " + total + " for prevBases " + prevBases);
-	    }
+	      modelProbs[kmerLen].put(prevBases + "A", aProb/total);
+	      modelProbs[kmerLen].put(prevBases + "C", cProb/total);
+	      modelProbs[kmerLen].put(prevBases + "G", gProb/total);
+	      modelProbs[kmerLen].put(prevBases + "T", tProb/total);
+	    //}
+	    //else {
+	    //  throw new IllegalArgumentException("Probabilities must sum to 1 or must all be 0, but instead sum to " + total + " for prevBases " + prevBases);
+	    //}
 
 	    //reset the isStranded variable to null to indicate unknown strandedness
 	    isStranded = null;
