@@ -61,7 +61,12 @@ public class ConsensusAnalysisSandbox {
                                "--printpeaksnoconsensusbounds \n" +
                                "--lbound <left> \n"+
                                "--rbound <right> \n" +
-                               "--filterseqs <seqFile> \n"+
+                               "--printseqshits \n"+
+                               "--printseqswithconsensus \n"+
+                               "--printseqsnoconsensus \n"+
+                               "--printseqswithconsensusbounds \n"+
+                               "--printseqsnoconsensusbounds \n"+
+                               "--fasta <seqFile for 4 above options>\n" +
                                "--printprofiles [motif-profiler style vectors] --bins <num bin for profile>\n"+
                                "");
             System.exit(0);
@@ -84,8 +89,12 @@ public class ConsensusAnalysisSandbox {
         int rbound = ap.hasKey("rbound") ? new Integer(ap.getKeyValue("rbound")).intValue():0;
         boolean printprofiles = ap.hasKey("printprofiles");
         int bins = ap.hasKey("bins") ? new Integer(ap.getKeyValue("bins")).intValue():1; //Used by profile printing
-        boolean screenfasta = ap.hasKey("filterseqs");
-        String fastaFile = ap.getKeyValue("filterseqs");
+        boolean printSeqsHits = ap.hasKey("printseqshits");
+        boolean printSeqsWithConsensus = ap.hasKey("printseqswithconsensus");
+        boolean printSeqsNoConsensus = ap.hasKey("printseqsnoconsensus");
+        boolean printSeqsWithConsensusBounds = ap.hasKey("printseqswithconsensusbounds");
+        boolean printSeqsNoConsensusBounds = ap.hasKey("printseqsnoconsensusbounds");
+        String fastaFile = ap.getKeyValue("fasta");
         List<Region> posRegs = new ArrayList<Region>();
         List<Point> posPeaks = new ArrayList<Point>();
         List<String> posLines= new ArrayList<String>();
@@ -176,8 +185,16 @@ public class ConsensusAnalysisSandbox {
 	        	tools.printPeaksWithoutConsensusBoundedRegion(lbound, rbound);
 	        if(printprofiles)
 	        	tools.printConsensusProfiles(win, bins);
-	        if(screenfasta)
-	        	tools.filterFastaFile(fastaFile);
+	        if(printSeqsHits)
+	        	tools.printFastaConsensusHits(fastaFile);
+	        if(printSeqsWithConsensus)
+	        	tools.printFastaWithConsensus(fastaFile);
+	        if(printSeqsNoConsensus)
+	        	tools.printFastaWithoutConsensus(fastaFile);
+	        if(printSeqsWithConsensusBounds)
+	        	tools.printFastaWithConsensusBoundedRegion(fastaFile, lbound, rbound);
+	        if(printSeqsNoConsensusBounds)
+	        	tools.printFastaWithoutConsensusBoundedRegion(fastaFile, lbound, rbound);
 	        
         } catch (NotFoundException e) {
 			e.printStackTrace();
@@ -327,10 +344,47 @@ public class ConsensusAnalysisSandbox {
 	}
 	
 	/**
+	 * Print FastA entries hits that contain matches to the consensus
+	 * @param inFile
+	 */
+	public void printFastaConsensusHits(String inFile){
+		int numHits=0, peaksWithHits=0, totalPeaks=0;
+		List<ScoredStrandedRegion> hits = new ArrayList<ScoredStrandedRegion>();
+		List<String> hitseqs = new ArrayList<String>();
+		
+		FASTALoader loader = new FASTALoader();
+		File f = new File(inFile);
+		Iterator<Pair<String, String>> it = loader.execute(f);
+		while(it.hasNext()){
+			Pair<String, String> p = it.next();
+			String name = p.car();
+			String seq = p.cdr();
+			ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
+			boolean goodMotif=false;
+			for(int z=0; z<seq.length()-consensus.getLength()+1; z++){
+				int currScore= profiler.getLowestMismatch(z);
+				if(currScore<=misMatchThreshold){
+					numHits++;
+					goodMotif=true;
+					char strand = profiler.getLowestMismatchStrand(z);
+					String subseq = seq.substring(z, z+consensus.getLength());
+					System.out.println(name+"\t"+currScore+"\t"+z+"\t"+strand+"\t"+subseq);
+				}
+			}
+			if(goodMotif){
+				peaksWithHits++;
+			}
+        }
+		double perc = (double)peaksWithHits/(double)totalPeaks;
+		System.out.println(consensus.getSequence()+" hits: "+numHits+" hits in "+peaksWithHits+" regions from "+totalPeaks+" total peaks ("+perc+").");
+		
+	}
+	
+	/**
 	 * Print FastA entries that contain matches to the consensus
 	 * @param inFile
 	 */
-	public void filterFastaFile(String inFile){
+	public void printFastaWithConsensus(String inFile){
 		FASTALoader loader = new FASTALoader();
 		File f = new File(inFile);
 		Iterator<Pair<String, String>> it = loader.execute(f);
@@ -344,7 +398,76 @@ public class ConsensusAnalysisSandbox {
 				System.out.println(name+"\n"+sequence);
 			}
 		}
-				
+	}
+	/**
+	 * Print FastA entries that doesn't contain matches to the consensus
+	 * @param inFile
+	 */
+	public void printFastaWithoutConsensus(String inFile){
+		FASTALoader loader = new FASTALoader();
+		File f = new File(inFile);
+		Iterator<Pair<String, String>> it = loader.execute(f);
+		while(it.hasNext()){
+			Pair<String, String> p = it.next();
+			String name = p.car();
+			String sequence = p.cdr();
+			ConsensusSequenceScoreProfile profiler = scorer.execute(sequence, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
+			
+			if(profiler.getLowestMismatch()>misMatchThreshold){
+				System.out.println(name+"\n"+sequence);
+			}
+		}
+	}
+	
+	/**
+	 * Print FastA entries that contain matches to the consensus within bounds
+	 * @param inFile
+	 */
+	public void printFastaWithConsensusBoundedRegion(String inFile, int left, int right){
+		FASTALoader loader = new FASTALoader();
+		File f = new File(inFile);
+		Iterator<Pair<String, String>> it = loader.execute(f);
+		while(it.hasNext()){
+			Pair<String, String> p = it.next();
+			String name = p.car();
+			String sequence = p.cdr();
+			ConsensusSequenceScoreProfile profiler = scorer.execute(sequence, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
+			boolean matchFound=false;
+			for(int i=0; i<sequence.length(); i++){
+				int offset = i-(sequence.length()/2);
+				if(offset>=left && offset<=right)
+					if(profiler.getLowestMismatch(i)<=misMatchThreshold)
+						matchFound=true;
+			}
+			if(matchFound){
+				System.out.println(name+"\n"+sequence);
+			}
+		}
+	}
+	/**
+	 * Print FastA entries that doesn't contain matches to the consensus within bounds
+	 * @param inFile
+	 */
+	public void printFastaWithoutConsensusBoundedRegion(String inFile, int left, int right){
+		FASTALoader loader = new FASTALoader();
+		File f = new File(inFile);
+		Iterator<Pair<String, String>> it = loader.execute(f);
+		while(it.hasNext()){
+			Pair<String, String> p = it.next();
+			String name = p.car();
+			String sequence = p.cdr();
+			ConsensusSequenceScoreProfile profiler = scorer.execute(sequence, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
+			boolean matchFound=false;
+			for(int i=0; i<sequence.length(); i++){
+				int offset = i-(sequence.length()/2);
+				if(offset>=left && offset<=right)
+					if(profiler.getLowestMismatch(i)<=misMatchThreshold)
+						matchFound=true;
+			}
+			if(!matchFound){
+				System.out.println(name+"\n"+sequence);
+			}
+		}
 	}
 	
 	//return an indicator array for covered/uncovered by good motif
