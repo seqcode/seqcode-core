@@ -61,8 +61,10 @@ public class RandomSequenceGenerator {
 			while(sum<prob){
 				String test = seq.concat(int2base(j));
 				sum += markov.getMarkovProb(test);
-				if(sum>=prob)
+				if(sum>=prob){
 					seq = test;
+					break;
+				}
 				j++;
 			}
 		}
@@ -74,8 +76,10 @@ public class RandomSequenceGenerator {
 			while(sum<prob){
 				String test = lmer.concat(int2base(j));
 				sum += markov.getMarkovProb(test);
-				if(sum>=prob)
+				if(sum>=prob){
 					seq =seq.concat(int2base(j));
+					break;
+				}
 				j++;
 			}
 		}
