@@ -521,7 +521,7 @@ public class ConsensusAnalysisSandbox {
 						array[hits.get(0)]++;
 					else{
 						int rand = (int)(Math.floor((Math.random() * (double)hits.size())));
-						int bin = params.findBin(hits.get(rand));
+						int bin = hits.get(rand);
 						array[bin]++;
 					}
 				}
