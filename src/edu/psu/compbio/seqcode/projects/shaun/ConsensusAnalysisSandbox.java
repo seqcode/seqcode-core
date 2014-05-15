@@ -67,7 +67,8 @@ public class ConsensusAnalysisSandbox {
                                "--printseqswithconsensusbounds \n"+
                                "--printseqsnoconsensusbounds \n"+
                                "--fasta <seqFile for 4 above options>\n" +
-                               "--printprofiles [motif-profiler style vectors] --bins <num bin for profile>\n"+
+                               "--printprofiles [motif-profiler style vectors] --bins <num bin for profile>\n" +
+                               "--oneperseq [flag to add one hit per sequence (profiles only)]\n" +
                                "");
             System.exit(0);
         }
@@ -79,6 +80,7 @@ public class ConsensusAnalysisSandbox {
         String posFile = ap.getKeyValue("peaks");
         int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():-1;
         boolean usingWin= win>0;
+        boolean oneperseq = ap.hasKey("oneperseq");
         String searchStrand =  ap.hasKey("strand") ? ap.getKeyValue("strand") : ".";
         boolean printHits = ap.hasKey("printhits");
         boolean printPeaksNoConsensus = ap.hasKey("printpeaksnoconsensus");
@@ -184,7 +186,7 @@ public class ConsensusAnalysisSandbox {
 	        if(printPeaksNoConsensusBounds)
 	        	tools.printPeaksWithoutConsensusBoundedRegion(lbound, rbound);
 	        if(printprofiles)
-	        	tools.printConsensusProfiles(win, bins);
+	        	tools.printConsensusProfiles(win, bins, oneperseq);
 	        if(printSeqsHits)
 	        	tools.printFastaConsensusHits(fastaFile);
 	        if(printSeqsWithConsensus)
@@ -490,7 +492,7 @@ public class ConsensusAnalysisSandbox {
 	 * @param winLen
 	 * @param bins
 	 */
-	public void printConsensusProfiles(int winLen, int bins){
+	public void printConsensusProfiles(int winLen, int bins, boolean oneperseq){
 		BinningParameters params = new BinningParameters(winLen, bins);
 		for(int x=0; x<peaks.size(); x++){
 			Point a = peaks.get(x);
@@ -506,10 +508,28 @@ public class ConsensusAnalysisSandbox {
 				seq = SequenceUtils.reverseComplement(seq);
 			
 			ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
-			for(int i=0; i<seq.length() && i<winLen; i++){
-				if(profiler.getLowestMismatch(i)<=misMatchThreshold){
-					int bin = params.findBin(i);
-					array[bin]++;
+			if(oneperseq){
+				List<Integer> hits = new ArrayList<Integer>();
+				for(int i=0; i<seq.length() && i<winLen; i++){
+					if(profiler.getLowestMismatch(i)<=misMatchThreshold){
+						int bin = params.findBin(i);
+						hits.add(i);
+					}
+				}
+				if(hits.size()>0){
+					if(hits.size()==1)
+						array[hits.get(0)]++;
+					else{
+						int rand = (int)(Math.random() * (double)hits.size()); 
+						array[rand]++;
+					}
+				}
+			}else{
+				for(int i=0; i<seq.length() && i<winLen; i++){
+					if(profiler.getLowestMismatch(i)<=misMatchThreshold){
+						int bin = params.findBin(i);
+						array[bin]++;
+					}
 				}
 			}
 			//Print the vector
