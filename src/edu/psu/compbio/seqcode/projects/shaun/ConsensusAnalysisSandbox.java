@@ -513,15 +513,16 @@ public class ConsensusAnalysisSandbox {
 				for(int i=0; i<seq.length() && i<winLen; i++){
 					if(profiler.getLowestMismatch(i)<=misMatchThreshold){
 						int bin = params.findBin(i);
-						hits.add(i);
+						hits.add(bin);
 					}
 				}
 				if(hits.size()>0){
 					if(hits.size()==1)
 						array[hits.get(0)]++;
 					else{
-						int rand = (int)(Math.floor((Math.random() * (double)hits.size()))); 
-						array[hits.get(rand)]++;
+						int rand = (int)(Math.floor((Math.random() * (double)hits.size())));
+						int bin = params.findBin(hits.get(rand));
+						array[bin]++;
 					}
 				}
 			}else{
