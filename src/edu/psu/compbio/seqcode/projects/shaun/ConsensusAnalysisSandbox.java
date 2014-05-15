@@ -520,8 +520,8 @@ public class ConsensusAnalysisSandbox {
 					if(hits.size()==1)
 						array[hits.get(0)]++;
 					else{
-						int rand = (int)(Math.random() * (double)hits.size()); 
-						array[rand]++;
+						int rand = (int)(Math.floor((Math.random() * (double)hits.size()))); 
+						array[hits.get(rand)]++;
 					}
 				}
 			}else{
