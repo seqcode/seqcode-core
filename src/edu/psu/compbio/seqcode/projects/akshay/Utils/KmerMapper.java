@@ -24,6 +24,9 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+
+
+import edu.psu.compbio.seqcode.gse.utils.probability.Hypergeometric;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.shaun.MotifAnalysisSandbox;
 import edu.psu.compbio.seqcode.projects.shaun.Utilities;
@@ -40,6 +43,8 @@ public class KmerMapper {
 	public WeightMatrix motif;
 	public WeightMatrixScorer scorer;
 	public double motifThres;
+	
+	public List<String> motif_kmers = new ArrayList<String>();
 	
 	public KmerMapper(Genome g, int win, double threshold, WeightMatrix mot, int ksize) {
 		this.gen=g;
@@ -120,9 +125,54 @@ public class KmerMapper {
 		
 	}
 	
+	public void setMotifKmers(int percCutoff){
+		for(int i=0; i< MapMatrix.length; i++){
+			String kmer = Utilities.int2seq(i, k);
+			String revkmer = SequenceUtils.reverseComplement(kmer);
+			int[][] kmerMap = MapMatrix[i];
+			int revi = Utilities.seq2int(revkmer);
+			if(i>revi)
+				continue;
+			boolean isMotifKmer = false;
+			int midP = winSize/2;
+			for(int j=midP; j<midP+motif.length()-k; j++){
+				int rowSum = 0;
+				for(int h=0; h< kmerMap.length; h++){
+					rowSum = rowSum +kmerMap[h][j];
+				}
+				if((int)((rowSum*100)/kmerMap.length) > percCutoff)
+					isMotifKmer = true;
+			}
+			if(isMotifKmer)
+				motif_kmers.add(kmer);
+		}
+	}
 	
+	public void printMotifKmerPvalue(List<String> kmerSet){
+		int popSize = 136;
+		int motSize = motif_kmers.size();
+		int markedSize = 0;
+		for(String kmer : kmerSet){
+			boolean ismarked = false;
+			int i=0;
+			while(!ismarked  && i<motif_kmers.size()){
+				if(kmer == motif_kmers.get(i)){
+					ismarked = true;
+					markedSize++;
+				}
+				i++;
+			}
+		}
+		
+		Hypergeometric tester = new Hypergeometric();
+		double log_pvalue = tester.log_hypgeomPValue(popSize, motSize, kmerSet.size(), markedSize);
+		double prob = Math.exp(log_pvalue);
+		System.out.println("Prob: "+prob );
+
+	}
+
 	// Calculators
-	
+		
 	public void printInformativeKmersFromSet(List<String> kmerSet, int percCutoff){
 		for(int i=0; i<kmerSet.size(); i++){
 			int kmerID = Utilities.seq2int(kmerSet.get(i));
@@ -277,6 +327,7 @@ public class KmerMapper {
 		printInfKmersWDisS = ap.hasKey("printInfKmersWDisS");
 		printInfKmerFlanks = ap.hasKey("printInfFlanks");
 		printInfKmerFlanksS = ap.hasKey("printInfFlanksS");
+		boolean printMotifKmerPvalue = ap.hasKey("motifKmerPval");
 		
 		
 		String SeqFilePath = ap.getKeyValue("seq");
@@ -313,8 +364,17 @@ public class KmerMapper {
 		mapper.setRegions(peaksFile, SeqFilePath);
 		mapper.setMapMatrix(SeqFilePath);
 		
+		
 		int percCutoff = ap.hasKey("percentAlign") ? new Integer(ap.getKeyValue("percentAlign")).intValue() : 30;
 		int distance = ap.hasKey("flankSize")? new Integer(ap.getKeyValue("flankSize")).intValue() : 30;
+		
+		mapper.setMotifKmers(percCutoff);
+		
+		if(printMotifKmerPvalue){
+			System.out.println("HyperGeometric test result: ");
+			mapper.printMotifKmerPvalue(kmers);
+			
+		}
 		if(printInfKmers){
 			System.out.println("Printing all Kmers that are aligned with respect to the primary motifs: ");
 			mapper.printInformativeKmers(percCutoff);

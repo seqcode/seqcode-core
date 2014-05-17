@@ -222,10 +222,19 @@ public class PeaksAnalysis {
                         repOver=true;
                     }
                 }
-                if(!repOver)
-                	System.out.println(">"+r.toString()+"\n"+seq);
+                if(!repOver){
+                	if(r instanceof StrandedRegion && ((StrandedRegion)r).getStrand()=='-'){
+                		seq = SequenceUtils.reverseComplement(seq);
+        	        	System.out.println(">"+r.toString()+"\n"+seq);
+                	}else
+                		System.out.println(">"+r.toString()+"\n"+seq);
+                }
 			}else{
-				System.out.println(">"+r.toString()+"\n"+seq);
+				if(r instanceof StrandedRegion && ((StrandedRegion)r).getStrand()=='-'){
+            		seq = SequenceUtils.reverseComplement(seq);
+    	        	System.out.println(">"+r.toString()+"\n"+seq);
+            	}else
+            		System.out.println(">"+r.toString()+"\n"+seq);
 			}
 		}
 	}
