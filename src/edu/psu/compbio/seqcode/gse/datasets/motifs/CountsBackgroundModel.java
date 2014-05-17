@@ -237,16 +237,18 @@ public class CountsBackgroundModel extends BackgroundModel implements Background
     //Put in the last few kmers
     int start = sequence.length() - maxLen + 1;
     for (int i = start; i < sequence.length(); i++) {
-      currSub = sequence.substring(i);
-      for (int k = 1; k <= currSub.length(); k++) {
-        String currKmer = currSub.substring(0, k);
-        if (!currKmer.contains(" ") && !currKmer.contains("N")) {
-          this.addToKmerCount(currKmer, 1);
-          if (addRevComp) {
-            this.addToKmerCount(SequenceUtils.reverseComplement(currKmer), 1);
-          }
-        }
-      }
+    	if(sequence.length()>1){
+	      currSub = sequence.substring(i);
+	      for (int k = 1; k <= currSub.length(); k++) {
+	        String currKmer = currSub.substring(0, k);
+	        if (!currKmer.contains(" ") && !currKmer.contains("N")) {
+	          this.addToKmerCount(currKmer, 1);
+	          if (addRevComp) {
+	            this.addToKmerCount(SequenceUtils.reverseComplement(currKmer), 1);
+	          }
+	        }
+	      }
+    	}
     }
   	isStranded = !addRevComp;
   	
