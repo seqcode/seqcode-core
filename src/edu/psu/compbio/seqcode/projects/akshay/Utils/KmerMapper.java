@@ -152,15 +152,12 @@ public class KmerMapper {
 		int popSize = 136;
 		int motSize = motif_kmers.size();
 		int markedSize = 0;
-		for(String kmer : kmerSet){
-			boolean ismarked = false;
-			int i=0;
-			while(!ismarked  && i<motif_kmers.size()){
-				if(kmer == motif_kmers.get(i)){
-					ismarked = true;
+		for(int i=0; i<kmerSet.size(); i++){
+			for(int j=0; j< motif_kmers.size(); j++){
+				if(kmerSet.get(i) == motif_kmers.get(j)){
 					markedSize++;
+					continue;
 				}
-				i++;
 			}
 		}
 		
