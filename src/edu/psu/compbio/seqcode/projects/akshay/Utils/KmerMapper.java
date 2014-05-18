@@ -164,6 +164,7 @@ public class KmerMapper {
 		Hypergeometric tester = new Hypergeometric();
 		double log_pvalue = tester.log_hypgeomPValue(popSize, motSize, kmerSet.size(), markedSize);
 		double prob = Math.exp(log_pvalue);
+		System.out.println(popSize+" "+motSize+" "+kmerSet.size()+" "+markedSize);
 		System.out.println("Prob: "+prob );
 
 	}
