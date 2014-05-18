@@ -154,7 +154,7 @@ public class KmerMapper {
 		int markedSize = 0;
 		for(int i=0; i<kmerSet.size(); i++){
 			for(int j=0; j< motif_kmers.size(); j++){
-				if(kmerSet.get(i) == motif_kmers.get(j)){
+				if(kmerSet.get(i).equals(motif_kmers.get(j))){
 					markedSize++;
 					continue;
 				}
