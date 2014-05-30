@@ -163,7 +163,7 @@ public class KmerMapper {
 				int currKInt = Utilities.seq2int(currK);
 				int revCurrKInt = Utilities.seq2int(revCurrK);
 				int kmer = currKInt < revCurrKInt ? currKInt : revCurrKInt;
-				MapMatrix[kmer][i][j] = kmer;
+				PairWiseMatrix[kmer][i][j] = kmer;
 			}
 		}
 		
@@ -192,7 +192,53 @@ public class KmerMapper {
 		}
 	}
 	
-	public void setPairWiseDistMatrix(){
+	public void setPairWiseDistMatrix(List<String> kmerSet){
+		int numk = (int)Math.pow(4, k);
+		this.PairWiseDistMatrix =  new int[this.winSize][numk][numk];
+		for(int i=0; i<kmerSet.size(); i++){
+			for(int j=i; j<kmerSet.size(); j++){
+				int kmerXind = (Utilities.seq2int(kmerSet.get(i)) > Utilities.seq2int(kmerSet.get(j))) ? Utilities.seq2int(kmerSet.get(i)) :  Utilities.seq2int(kmerSet.get(j));
+				int kmerYind =  (Utilities.seq2int(kmerSet.get(i)) > Utilities.seq2int(kmerSet.get(j))) ? Utilities.seq2int(kmerSet.get(j)) : Utilities.seq2int(kmerSet.get(i));
+				for(int l=0; l<regions.size(); i++){ // over all locations 
+					int[] Xmap = this.PairWiseMatrix[kmerXind][l];
+					int[] Ymap = this.PairWiseMatrix[kmerYind][l];
+					int[] XYmap = new int[Xmap.length];
+					for(int k=0; k<XYmap.length; k++){
+						XYmap[k] = Xmap[k]+Ymap[k];
+					}
+					int distance = 0;
+					boolean counting = false;
+					int leftInd = 0;
+					for(int k=0; k<XYmap.length; k++){
+						if(!counting && XYmap[k] != 0){
+							counting = true;
+							leftInd = XYmap[k];
+							distance = 1;
+						}
+						if(counting && XYmap[k] == 0){
+							distance++;
+						}
+						if(counting && XYmap[k] !=0 && XYmap[k] == leftInd){
+							if(kmerXind == kmerYind){
+								this.PairWiseDistMatrix[distance][kmerXind][kmerYind]++;
+								distance = 1;
+								leftInd = XYmap[k];
+							}
+							else{
+								distance =1;
+								leftInd = XYmap[k];
+							}
+						}
+						if(counting && XYmap[k] !=0 && XYmap[k] != leftInd){
+							this.PairWiseDistMatrix[distance][kmerXind][kmerYind]++;
+							distance = 1;
+							leftInd = XYmap[k];
+						}
+					}
+				}
+			
+			}
+		}
 		
 	}
 	
