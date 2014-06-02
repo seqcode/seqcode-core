@@ -33,8 +33,8 @@ public class KmerPosConstraintsFinder {
 	public List<Region> neg_regions;
 	public int[][][] negMapMatrix;
 	public int[][][] posMapMatrix;
-	public double[][][] negPairMatrix;
-	public double[][][] posPairMatrix;
+	public int[][][] negPairMatrix; // location, xkmer-id, ykmer-id, min distance
+	public int[][][] posPairMatrix;
 	
 	public double[][][] pvalues;
 	public static int sample_size = 100;
@@ -107,9 +107,10 @@ public class KmerPosConstraintsFinder {
 	
 	public int[][][] getPosMapMat(){return this.posMapMatrix;}
 	public int[][][] getNegMapMat(){return this.negMapMatrix;}
-	public int[][][] getSubMapMatrix(int[][][] mapmat){
+	public Pair<int[][][], double[][][]> getSubMatricies(int[][][] mapmat, int[][][] pairmat){
 		int numk = (int)Math.pow(4, k);
-		int[][][] ret = new int[numk][KmerPosConstraintsFinder.sample_size][this.winSize];
+		int[][][] retMap = new int[numk][KmerPosConstraintsFinder.sample_size][this.winSize];
+		double[][][] retPair = new double[this.winSize][numk][numk];
 		List<Integer> randIndexes = new ArrayList<Integer>();
 		Random rand = new Random();
 		int r = 0;
@@ -123,17 +124,31 @@ public class KmerPosConstraintsFinder {
 		
 		for(int nk = 0; nk < mapmat.length; nk++){
 			for(int id = 0; id < randIndexes.size(); id++){
-				ret[nk][id] = mapmat[nk][randIndexes.get(id)];
+				retMap[nk][id] = mapmat[nk][randIndexes.get(id)];
 			}
 		}
 		
-		return ret;
+		for(int d=0; d<this.winSize; d++){
+			for(int nkx=0; nkx<numk; nkx++){
+				for(int nky=nkx; nky<numk; nky++){
+					int c = 0;
+					for(int l=0; l<randIndexes.size(); l++){
+						if(pairmat[randIndexes.get(l)][nkx][nky]  == d){
+							c++;
+						}
+					}
+					retPair[d][nkx][nky] = c/randIndexes.size();
+				}
+			}
+		}
+		
+		return new Pair<int[][][], double[][][]>(retMap, retPair);
 	}
 	
-	public double[][][] getPairMatrix(int[][][] mapmat){
+	public int[][][] getPairMatrix(int[][][] mapmat){
 		int numk = (int)Math.pow(4, k);
-		double[][][] ret;
-		ret =  new double[this.winSize][numk][numk];
+		int[][][] ret;
+		ret =  new int[mapmat[0].length][numk][numk];
 		for(int i=0; i<numk; i++){
 			for(int j=i; j<numk; j++){
 				int kmerXind = i;
@@ -179,12 +194,17 @@ public class KmerPosConstraintsFinder {
 							leftInd = XYmap[k];
 						}
 					}
-					ret[currMinDistance][kmerXind][kmerYind]++;
+					if(currMinDistance == Integer.MAX_VALUE){
+						ret[l][kmerXind][kmerYind] = 200;
+					}else{
+						ret[l][kmerXind][kmerYind] = currMinDistance ;
+					}
+					
 				}
 				
-				for(int l=0; l<this.winSize; l++){
-					ret[l][kmerXind][kmerYind] = ret[l][kmerXind][kmerYind]/mapmat[0].length;
-				}
+				//for(int l=0; l<this.winSize; l++){
+				//	ret[l][kmerXind][kmerYind] = ret[l][kmerXind][kmerYind]/mapmat[0].length;
+				//}
 			
 			}
 		}
@@ -194,8 +214,10 @@ public class KmerPosConstraintsFinder {
 	}
 	
 	
+	
+	
 
-	public void setPvalues(int[][][] negMapmat, int[][][] posMapmat){
+	public void setPvalues(){
 		int numk = (int)Math.pow(4, k);
 		this.pvalues = new double[numk][numk][this.winSize];
 		//double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
@@ -207,10 +229,10 @@ public class KmerPosConstraintsFinder {
 				double[][] NegPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
 				
 				for(int itr = 0; itr <KmerPosConstraintsFinder.num_samples; itr++){
-					int[][][] tempPosMap = getSubMapMatrix(posMapmat);
-					double[][][] tempPosPair = getPairMatrix(tempPosMap);
-					int[][][] tempNegMap = getSubMapMatrix(negMapmat);
-					double[][][] tempNegPair = getPairMatrix(tempNegMap);
+					
+					double[][][] tempPosPair = getSubMatricies(this.posMapMatrix, this.posPairMatrix).cdr();
+					
+					double[][][] tempNegPair = getSubMatricies(this.negMapMatrix, this.negPairMatrix).cdr();
 					for(int d=0; d<this.winSize; d++){
 						PosPDF[d][itr] = tempPosPair[d][i][j];
 						NegPDF[d][itr] = tempNegPair[d][i][j];
@@ -359,7 +381,7 @@ public class KmerPosConstraintsFinder {
 		analysis.setMapMatrices(SeqFilePath);
 		analysis.setPairMatrices();
 		
-		analysis.setPvalues(analysis.getNegMapMat(), analysis.getPosMapMat());
+		analysis.setPvalues();
 		
 		analysis.printSigFIConstrains(kmers);
 		
