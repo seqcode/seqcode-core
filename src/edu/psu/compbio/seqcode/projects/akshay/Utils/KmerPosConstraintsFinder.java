@@ -198,30 +198,26 @@ public class KmerPosConstraintsFinder {
 	public void setPvalues(int[][][] negMapmat, int[][][] posMapmat){
 		int numk = (int)Math.pow(4, k);
 		this.pvalues = new double[numk][numk][this.winSize];
-		double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
-		double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
-		for(int itr = 0; itr <KmerPosConstraintsFinder.num_samples; itr++){
-			int[][][] tempPosMap = getSubMapMatrix(posMapmat);
-			double[][][] tempPosPair = getPairMatrix(tempPosMap);
-			int[][][] tempNegMap = getSubMapMatrix(negMapmat);
-			double[][][] tempNegPair = getPairMatrix(tempNegMap);
-			
-			for(int d=0; d<this.winSize; d++){
-				for(int i=0; i<numk; i++){
-					for(int j=i; j<numk; j++){
-						PosPDF[d][i][j][itr] = tempPosPair[d][i][j];
-						NegPDF[d][i][j][itr] = tempNegPair[d][i][j];
+		//double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
+		//double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
+		
+		for(int i=0; i<numk; i++){
+			for(int j=i; j<numk; j++){
+				double[][] PosPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
+				double[][] NegPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
+				
+				for(int itr = 0; itr <KmerPosConstraintsFinder.num_samples; itr++){
+					int[][][] tempPosMap = getSubMapMatrix(posMapmat);
+					double[][][] tempPosPair = getPairMatrix(tempPosMap);
+					int[][][] tempNegMap = getSubMapMatrix(negMapmat);
+					double[][][] tempNegPair = getPairMatrix(tempNegMap);
+					for(int d=0; d<this.winSize; d++){
+						PosPDF[d][itr] = tempPosPair[d][i][j];
+						NegPDF[d][itr] = tempNegPair[d][i][j];
 					}
 				}
-			}
-		}
-		
-	
-		
-		for(int d=0; d< this.winSize; d++){	
-			for(int i=0; i<numk; i++){
-				for(int j=i; j<numk; j++){
-					double maxD = computeD(PosPDF[d][i][j], NegPDF[d][i][j]);
+				for(int d=0; d< this.winSize; d++){	
+					double maxD = computeD(PosPDF[d], NegPDF[d]);
 					double test = KmerPosConstraintsFinder.pvalue_c_level * (Math.sqrt(2/KmerPosConstraintsFinder.num_samples));
 					if(maxD > test){
 						this.pvalues[i][j][d] = 0.005;
