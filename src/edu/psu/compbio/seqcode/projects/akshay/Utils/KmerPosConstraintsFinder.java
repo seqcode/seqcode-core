@@ -273,7 +273,6 @@ public class KmerPosConstraintsFinder {
 
 	public double computeD(double[] vecx, double[] vecy){
 		double maxDis;
-		System.out.println(vecx);
 		double[] vecCumX = new double[101];
 		double[] vecCumY = new double[101];
 		for(int i=0; i<=100; i++){
