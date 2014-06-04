@@ -8,7 +8,9 @@ import edu.psu.compbio.seqcode.gse.utils.*;
 public class Printexpttable {
 	
 	public static void main(String[] args) throws IOException, SQLException, NotFoundException{
-		Scanner sc = new Scanner("/Users/akshaykakumanu/Desktop/temp");
+		ArgParser ap = new ArgParser(args);
+		String com_file = ap.getKeyValue("commands");
+		Scanner sc = new Scanner(com_file);
 		Map<String, String[]> map = sc.getMap();
 		for(String[] command : map.values()){
 			Pullexpttable gexp = new Pullexpttable(command);

@@ -129,7 +129,7 @@ public class KmerPosConstraintsFinder {
 					c++;
 				}
 			}
-			retPair[d]= c/randIndexes.size();
+			retPair[d]= (float)c/randIndexes.size();
 		}
 		return retPair;
 	}
@@ -159,10 +159,10 @@ public class KmerPosConstraintsFinder {
 							leftInd = XYmap[k];
 							distance = 1;
 						}
-						if(counting && XYmap[k] == 0){
+						else if(counting && XYmap[k] == 0){
 							distance++;
 						}
-						if(counting && XYmap[k] !=0 && XYmap[k] == leftInd){
+						else if(counting && XYmap[k] !=0 && XYmap[k] == leftInd){
 							if(kmerXind == kmerYind){
 								if(distance < currMinDistance){
 									currMinDistance = distance;
@@ -175,7 +175,7 @@ public class KmerPosConstraintsFinder {
 								leftInd = XYmap[k];
 							}
 						}
-						if(counting && XYmap[k] !=0 && XYmap[k] != leftInd){
+						else if(counting && XYmap[k] !=0 && XYmap[k] != leftInd){
 							if(distance < currMinDistance){
 								currMinDistance = distance;
 							}
@@ -207,7 +207,8 @@ public class KmerPosConstraintsFinder {
 	
 
 	public void setPvalues(List<String> kmerSet){
-		this.pvalues = new double[kmerSet.size()][kmerSet.size()][this.winSize];
+		int numk = (int)Math.pow(4, k);
+		this.pvalues = new double[numk][numk][this.winSize];
 		//double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		//double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		
@@ -232,9 +233,9 @@ public class KmerPosConstraintsFinder {
 					double maxD = computeD(PosPDF[d], NegPDF[d]);
 					double test = KmerPosConstraintsFinder.pvalue_c_level * (Math.sqrt(2/KmerPosConstraintsFinder.num_samples));
 					if(maxD > test){
-						this.pvalues[i][j][d] = 0.005;
+						this.pvalues[kmerXind][kmerYind][d] = 0.005;
 					}else{
-						this.pvalues[i][j][d] = 1.0;
+						this.pvalues[kmerXind][kmerYind][d] = 1.0;
 					}
 				}
 			}
@@ -251,7 +252,7 @@ public class KmerPosConstraintsFinder {
 				int kmerYind = Utilities.seq2int(kmer_set.get(j)) > Utilities.seq2int(kmer_set.get(j)) ? Utilities.seq2int(kmer_set.get(j)) : Utilities.seq2int(kmer_set.get(i));
 				List<Integer> posCon = new ArrayList<Integer>(); 
 				for(int d=0; d< this.winSize; d++){
-					if(this.pvalues[d][kmerXind][kmerYind] == 0.005){
+					if(this.pvalues[kmerXind][kmerYind][d] == 0.005){
 						posCon.add(d);
 					}
 				}
@@ -272,9 +273,10 @@ public class KmerPosConstraintsFinder {
 
 	public double computeD(double[] vecx, double[] vecy){
 		double maxDis;
-		double[] vecCumX = new double[100];
-		double[] vecCumY = new double[100];
-		for(int i=1; i<=100; i++){
+		System.out.println(vecx);
+		double[] vecCumX = new double[101];
+		double[] vecCumY = new double[101];
+		for(int i=0; i<=100; i++){
 			double val = 0+i*0.01;
 			for(int j=0; j<vecx.length; j++){
 				if(vecx[j] <= val){
@@ -287,8 +289,8 @@ public class KmerPosConstraintsFinder {
 		}
 		double[] distances = new double[100];
 		for(int i=0; i<distances.length; i++){
-			double dis = vecCumX[i] - vecCumY[i];
-			distances[i] = dis>0? dis : -dis;
+			double dis = (vecCumX[i]/vecx.length) - (vecCumY[i]/vecy.length);
+			distances[i] = dis>0? dis : -1*dis;
 		}
 		
 		maxDis = distances[getMaxIndex(distances)];
