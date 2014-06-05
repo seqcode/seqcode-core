@@ -139,7 +139,14 @@ public class KmerPosConstraintsFinder {
 		int[][][] ret;
 		ret =  new int[mapmat[0].length][numk][numk];
 		for(int i=0; i<numk; i++){
+			int irev = Utilities.seq2int(SequenceUtils.reverseComplement(Utilities.int2seq(i, k)));
+			if(i>irev)
+				continue;
 			for(int j=i; j<numk; j++){
+				int jrev = Utilities.seq2int(SequenceUtils.reverseComplement(Utilities.int2seq(j, k)));
+				if(j>jrev)
+					continue;
+				
 				int kmerXind = i;
 				int kmerYind =  j;
 				for(int l=0; l< mapmat[0].length; l++){ // over all locations 
@@ -214,8 +221,17 @@ public class KmerPosConstraintsFinder {
 		
 		for(int i=0; i<kmerSet.size(); i++){
 			for(int j=i; j<kmerSet.size(); j++){
-				int kmerXind = Utilities.seq2int(kmerSet.get(i)) < Utilities.seq2int(kmerSet.get(j)) ? Utilities.seq2int(kmerSet.get(i)): Utilities.seq2int(kmerSet.get(j));
-				int kmerYind = Utilities.seq2int(kmerSet.get(i)) < Utilities.seq2int(kmerSet.get(j)) ? Utilities.seq2int(kmerSet.get(j)): Utilities.seq2int(kmerSet.get(i));
+				int iInd = Utilities.seq2int(kmerSet.get(i));
+				int iRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i)));
+				int Xind = iInd < iRevInd ? iInd: iRevInd;
+				
+				int jInd = Utilities.seq2int(kmerSet.get(j));
+				int jRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
+				int Yind = jInd < jRevInd ? jInd : jRevInd;
+				
+				int kmerXind = Xind < Yind ? Xind: Yind;
+				int kmerYind = Xind < Yind ? Yind : Xind;
+				
 				double[][] PosPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
 				double[][] NegPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
 				
@@ -231,7 +247,7 @@ public class KmerPosConstraintsFinder {
 				}
 				for(int d=0; d< this.winSize; d++){	
 					double maxD = computeD(PosPDF[d], NegPDF[d]);
-					double test = KmerPosConstraintsFinder.pvalue_c_level * (Math.sqrt(2/KmerPosConstraintsFinder.num_samples));
+					double test = KmerPosConstraintsFinder.pvalue_c_level * (Math.sqrt(2/(float)KmerPosConstraintsFinder.num_samples));
 					if(maxD > test){
 						this.pvalues[kmerXind][kmerYind][d] = 0.005;
 					}else{
@@ -245,11 +261,19 @@ public class KmerPosConstraintsFinder {
 	
 	// Calculators and printers
 	
-	public void printSigFIConstrains(List<String> kmer_set){
-		for(int i=0; i<kmer_set.size(); i++){
-			for(int j=i; j<kmer_set.size(); j++){
-				int kmerXind = Utilities.seq2int(kmer_set.get(i)) < Utilities.seq2int(kmer_set.get(j)) ? Utilities.seq2int(kmer_set.get(i)): Utilities.seq2int(kmer_set.get(j));
-				int kmerYind = Utilities.seq2int(kmer_set.get(j)) > Utilities.seq2int(kmer_set.get(j)) ? Utilities.seq2int(kmer_set.get(j)) : Utilities.seq2int(kmer_set.get(i));
+	public void printSigFIConstrains(List<String> kmerSet){
+		for(int i=0; i<kmerSet.size(); i++){
+			for(int j=i; j<kmerSet.size(); j++){
+				int iInd = Utilities.seq2int(kmerSet.get(i));
+				int iRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i)));
+				int Xind = iInd < iRevInd ? iInd: iRevInd;
+				
+				int jInd = Utilities.seq2int(kmerSet.get(j));
+				int jRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
+				int Yind = jInd < jRevInd ? jInd : jRevInd;
+				
+				int kmerXind = Xind < Yind ? Xind: Yind;
+				int kmerYind = Xind < Yind ? Yind : Xind;
 				List<Integer> posCon = new ArrayList<Integer>(); 
 				for(int d=0; d< this.winSize; d++){
 					if(this.pvalues[kmerXind][kmerYind][d] == 0.005){
