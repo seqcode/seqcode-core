@@ -37,6 +37,9 @@ public class KmerPosConstraintsFinder {
 	public int[][][] posPairMatrix;
 	
 	public double[][][] pvalues;
+	public double[][][] mean_pos;
+	public double[][][] mean_neg;
+	
 	public static int sample_size = 100;
 	public static int num_samples = 100;
 	public static double pvalue_c_level = 1.73;
@@ -230,6 +233,8 @@ public class KmerPosConstraintsFinder {
 	public void setPvalues(List<String> kmerSet){
 		int numk = (int)Math.pow(4, k);
 		this.pvalues = new double[numk][numk][this.winSize];
+		this.mean_neg = new double[numk][numk][this.winSize];
+		this.mean_pos = new double[numk][numk][this.winSize];
 		double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		//double[][] PosPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
@@ -283,6 +288,8 @@ public class KmerPosConstraintsFinder {
 					double test = KmerPosConstraintsFinder.pvalue_c_level * (Math.sqrt(2/(float)KmerPosConstraintsFinder.num_samples));
 					if(maxD > test){
 						this.pvalues[kmerXind][kmerYind][d] = 0.005;
+						this.mean_pos[kmerXind][kmerYind][d] = getMean(PosPDF[d][kmerXind][kmerYind]);
+						this.mean_neg[kmerXind][kmerYind][d] = getMean(NegPDF[d][kmerXind][kmerYind]);
 					}else{
 						this.pvalues[kmerXind][kmerYind][d] = 1.0;
 					}
@@ -309,7 +316,7 @@ public class KmerPosConstraintsFinder {
 				int kmerYind = Xind < Yind ? Yind : Xind;
 				List<Integer> posCon = new ArrayList<Integer>(); 
 				for(int d=0; d< this.winSize; d++){
-					if(this.pvalues[kmerXind][kmerYind][d] == 0.005){
+					if(this.pvalues[kmerXind][kmerXind][d] == 0.005){
 						posCon.add(d);
 					}
 				}
@@ -317,7 +324,7 @@ public class KmerPosConstraintsFinder {
 				if(posCon.size() > 0){
 					String out = "";
 					for(int d :  posCon){
-						out = out+Integer.toString(d)+":";
+						out = out+Integer.toString(d)+"("+Double.toString(this.mean_pos[kmerXind][kmerXind][d])+","+Double.toString(this.mean_neg[kmerXind][kmerXind][d])+")"+":";
 					}
 					System.out.println(Utilities.int2seq(kmerXind, k)+" - "+Utilities.int2seq(kmerYind, k)+"\t"+out);
 				}
@@ -353,7 +360,15 @@ public class KmerPosConstraintsFinder {
 		return maxDis;
 	}
 	
-	
+	public double getMean(double[] vec){
+		double ret=0.0;
+		
+		for(int i=0; i<vec.length; i++){
+			ret = ret + vec[i];
+		}
+		
+		return ret/vec.length;
+	}
 	public int getMinIndex(double[] vec){
 		int ret=0;
 		double currMin = Double.MAX_VALUE;
