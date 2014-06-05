@@ -230,8 +230,10 @@ public class KmerPosConstraintsFinder {
 	public void setPvalues(List<String> kmerSet){
 		int numk = (int)Math.pow(4, k);
 		this.pvalues = new double[numk][numk][this.winSize];
-		//double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
-		//double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
+		double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
+		double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
+		//double[][] PosPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
+		//double[][] NegPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
 		for(int itr = 0; itr <KmerPosConstraintsFinder.num_samples; itr++){
 			double[][][] tempPosPair = getSubMatricies(this.posMapMatrix, this.posPairMatrix, kmerSet);
 			double[][][] tempNegPair = getSubMatricies(this.negMapMatrix, this.negPairMatrix, kmerSet);
@@ -249,20 +251,40 @@ public class KmerPosConstraintsFinder {
 					int kmerXind = Xind < Yind ? Xind: Yind;
 					int kmerYind = Xind < Yind ? Yind : Xind;
 				
-					double[][] PosPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
-					double[][] NegPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
+					
 				
 				
 					for(int d=0; d<this.winSize; d++){
-						PosPDF[d][itr] = tempPosPair[d][kmerXind][kmerYind];
-						NegPDF[d][itr] = tempNegPair[d][kmerXind][kmerYind];
-						double maxD = computeD(PosPDF[d], NegPDF[d]);
-						double test = KmerPosConstraintsFinder.pvalue_c_level * (Math.sqrt(2/(float)KmerPosConstraintsFinder.num_samples));
-						if(maxD > test){
-							this.pvalues[kmerXind][kmerYind][d] = 0.005;
-						}else{
-							this.pvalues[kmerXind][kmerYind][d] = 1.0;
-						}
+						PosPDF[d][kmerXind][kmerYind][itr] = tempPosPair[d][kmerXind][kmerYind];
+						NegPDF[d][kmerXind][kmerYind][itr] = tempNegPair[d][kmerXind][kmerYind];
+						
+					}
+				}
+			}
+		}
+		for(int i=0; i<kmerSet.size(); i++){
+			for(int j=i; j<kmerSet.size(); j++){
+				int iInd = Utilities.seq2int(kmerSet.get(i));
+				int iRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i)));
+				int Xind = iInd < iRevInd ? iInd: iRevInd;
+			
+				int jInd = Utilities.seq2int(kmerSet.get(j));
+				int jRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
+				int Yind = jInd < jRevInd ? jInd : jRevInd;
+			
+				int kmerXind = Xind < Yind ? Xind: Yind;
+				int kmerYind = Xind < Yind ? Yind : Xind;
+			
+				
+			
+			
+				for(int d=0; d<this.winSize; d++){
+					double maxD = computeD(PosPDF[d][kmerXind][kmerYind], NegPDF[d][kmerXind][kmerYind]);
+					double test = KmerPosConstraintsFinder.pvalue_c_level * (Math.sqrt(2/(float)KmerPosConstraintsFinder.num_samples));
+					if(maxD > test){
+						this.pvalues[kmerXind][kmerYind][d] = 0.005;
+					}else{
+						this.pvalues[kmerXind][kmerYind][d] = 1.0;
 					}
 				}
 			}
