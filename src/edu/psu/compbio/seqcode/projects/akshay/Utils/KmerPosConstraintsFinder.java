@@ -316,7 +316,7 @@ public class KmerPosConstraintsFinder {
 				int kmerYind = Xind < Yind ? Yind : Xind;
 				List<Integer> posCon = new ArrayList<Integer>(); 
 				for(int d=0; d< this.winSize; d++){
-					if(this.pvalues[kmerXind][kmerXind][d] == 0.005 && this.mean_pos[kmerXind][kmerYind][d] > this.mean_neg[kmerXind][kmerYind][d] && this.mean_pos[kmerXind][kmerYind][d] > 0.1 && d!= 199){
+					if(this.pvalues[kmerXind][kmerYind][d] == 0.005 && this.mean_pos[kmerXind][kmerYind][d] > this.mean_neg[kmerXind][kmerYind][d] && this.mean_pos[kmerXind][kmerYind][d] > 0.1 && d!= 199){
 						posCon.add(d);
 					}
 				}
@@ -324,7 +324,7 @@ public class KmerPosConstraintsFinder {
 				if(posCon.size() > 0){
 					String out = "";
 					for(int d :  posCon){
-						out = out+Integer.toString(d)+"("+Double.toString(this.mean_pos[kmerXind][kmerXind][d])+","+Double.toString(this.mean_neg[kmerXind][kmerXind][d])+")"+":";
+						out = out+Integer.toString(d)+"("+Double.toString(this.mean_pos[kmerXind][kmerYind][d])+","+Double.toString(this.mean_neg[kmerXind][kmerYind][d])+")"+":";
 					}
 					System.out.println(Utilities.int2seq(kmerXind, k)+" - "+Utilities.int2seq(kmerYind, k)+"\t"+out);
 				}
