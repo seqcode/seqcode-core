@@ -107,9 +107,9 @@ public class KmerPosConstraintsFinder {
 	
 	public int[][][] getPosMapMat(){return this.posMapMatrix;}
 	public int[][][] getNegMapMat(){return this.negMapMatrix;}
-	public double[] getSubMatricies(int[][][] mapmat, int[][][] pairmat, int kmerXind, int kmerYind){
-		
-		double[] retPair = new double[this.winSize];
+	public double[][][] getSubMatricies(int[][][] mapmat, int[][][] pairmat, List<String> kmerSet){
+		int numk = (int)Math.pow(4, k);
+		double[][][] retPair = new double[this.winSize][numk][numk];
 		List<Integer> randIndexes = new ArrayList<Integer>();
 		Random rand = new Random();
 		int r = 0;
@@ -121,15 +121,29 @@ public class KmerPosConstraintsFinder {
 			
 		}while(randIndexes.size() < KmerPosConstraintsFinder.sample_size);
 		
-		
-		for(int d=0; d<this.winSize; d++){
-			int c = 0;
-			for(int l=0; l<randIndexes.size(); l++){
-				if(pairmat[randIndexes.get(l)][kmerXind][kmerYind]  == d+1){
-					c++;
+		for(int i=0; i<kmerSet.size(); i++){
+			for(int j=i; j<kmerSet.size(); j++){
+				int iInd = Utilities.seq2int(kmerSet.get(i));
+				int iRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i)));
+				int Xind = iInd < iRevInd ? iInd: iRevInd;
+			
+				int jInd = Utilities.seq2int(kmerSet.get(j));
+				int jRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
+				int Yind = jInd < jRevInd ? jInd : jRevInd;
+			
+				int kmerXind = Xind < Yind ? Xind: Yind;
+				int kmerYind = Xind < Yind ? Yind : Xind;
+				for(int d=0; d<this.winSize; d++){
+					int c = 0;
+					for(int l=0; l<randIndexes.size(); l++){
+						if(pairmat[randIndexes.get(l)][kmerXind][kmerYind]  == d+1){
+							c++;
+						}
+					}
+					retPair[d][kmerXind][kmerYind]= (float)c/randIndexes.size();
 				}
+				
 			}
-			retPair[d]= (float)c/randIndexes.size();
 		}
 		return retPair;
 	}
@@ -218,40 +232,37 @@ public class KmerPosConstraintsFinder {
 		this.pvalues = new double[numk][numk][this.winSize];
 		//double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		//double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
-		
-		for(int i=0; i<kmerSet.size(); i++){
-			for(int j=i; j<kmerSet.size(); j++){
-				int iInd = Utilities.seq2int(kmerSet.get(i));
-				int iRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i)));
-				int Xind = iInd < iRevInd ? iInd: iRevInd;
+		for(int itr = 0; itr <KmerPosConstraintsFinder.num_samples; itr++){
+			double[][][] tempPosPair = getSubMatricies(this.posMapMatrix, this.posPairMatrix, kmerSet);
+			double[][][] tempNegPair = getSubMatricies(this.negMapMatrix, this.negPairMatrix, kmerSet);
+			
+			for(int i=0; i<kmerSet.size(); i++){
+				for(int j=i; j<kmerSet.size(); j++){
+					int iInd = Utilities.seq2int(kmerSet.get(i));
+					int iRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i)));
+					int Xind = iInd < iRevInd ? iInd: iRevInd;
 				
-				int jInd = Utilities.seq2int(kmerSet.get(j));
-				int jRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
-				int Yind = jInd < jRevInd ? jInd : jRevInd;
+					int jInd = Utilities.seq2int(kmerSet.get(j));
+					int jRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
+					int Yind = jInd < jRevInd ? jInd : jRevInd;
 				
-				int kmerXind = Xind < Yind ? Xind: Yind;
-				int kmerYind = Xind < Yind ? Yind : Xind;
+					int kmerXind = Xind < Yind ? Xind: Yind;
+					int kmerYind = Xind < Yind ? Yind : Xind;
 				
-				double[][] PosPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
-				double[][] NegPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
+					double[][] PosPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
+					double[][] NegPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
 				
-				for(int itr = 0; itr <KmerPosConstraintsFinder.num_samples; itr++){
-					
-					double[] tempPosPair = getSubMatricies(this.posMapMatrix, this.posPairMatrix, kmerXind, kmerYind);
-					
-					double[] tempNegPair = getSubMatricies(this.negMapMatrix, this.negPairMatrix, kmerXind, kmerYind);
+				
 					for(int d=0; d<this.winSize; d++){
-						PosPDF[d][itr] = tempPosPair[d];
-						NegPDF[d][itr] = tempNegPair[d];
-					}
-				}
-				for(int d=0; d< this.winSize; d++){	
-					double maxD = computeD(PosPDF[d], NegPDF[d]);
-					double test = KmerPosConstraintsFinder.pvalue_c_level * (Math.sqrt(2/(float)KmerPosConstraintsFinder.num_samples));
-					if(maxD > test){
-						this.pvalues[kmerXind][kmerYind][d] = 0.005;
-					}else{
-						this.pvalues[kmerXind][kmerYind][d] = 1.0;
+						PosPDF[d][itr] = tempPosPair[d][kmerXind][kmerYind];
+						NegPDF[d][itr] = tempNegPair[d][kmerXind][kmerYind];
+						double maxD = computeD(PosPDF[d], NegPDF[d]);
+						double test = KmerPosConstraintsFinder.pvalue_c_level * (Math.sqrt(2/(float)KmerPosConstraintsFinder.num_samples));
+						if(maxD > test){
+							this.pvalues[kmerXind][kmerYind][d] = 0.005;
+						}else{
+							this.pvalues[kmerXind][kmerYind][d] = 1.0;
+						}
 					}
 				}
 			}
@@ -313,7 +324,7 @@ public class KmerPosConstraintsFinder {
 		double[] distances = new double[100];
 		for(int i=0; i<distances.length; i++){
 			double dis = (vecCumX[i]/vecx.length) - (vecCumY[i]/vecy.length);
-			distances[i] = dis>0? dis : -1*dis;
+			distances[i] = dis;
 		}
 		
 		maxDis = distances[getMaxIndex(distances)];
