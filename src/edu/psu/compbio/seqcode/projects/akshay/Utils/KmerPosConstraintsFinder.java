@@ -352,7 +352,7 @@ public class KmerPosConstraintsFinder {
 		double[] distances = new double[100];
 		for(int i=0; i<distances.length; i++){
 			double dis = (vecCumX[i]/vecx.length) - (vecCumY[i]/vecy.length);
-			distances[i] = dis;
+			distances[i] = dis>0? dis : -1*dis;
 		}
 		
 		maxDis = distances[getMaxIndex(distances)];
