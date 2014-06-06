@@ -336,8 +336,8 @@ public class KmerPosConstraintsFinder {
 						outZscore = outZscore + Double.toString(zscore)+":";
 					}
 					
-					System.out.println(Utilities.int2seq(kmerXind, k)+" - "+Utilities.int2seq(kmerYind, k)+"\t"+outPOS.substring(0,outPOS.length() )+"\t"+outPropPos.substring(0, outPropPos.length())
-							+outPropNeg.substring(0, outPropNeg.length())+"\t"+outZscore.substring(0, outZscore.length()));
+					System.out.println(Utilities.int2seq(kmerXind, k)+" - "+Utilities.int2seq(kmerYind, k)+"\t"+outPOS.substring(0,outPOS.length()-1 )+"\t"+outPropPos.substring(0, outPropPos.length()-1)
+							+"\t"+outPropNeg.substring(0, outPropNeg.length()-1)+"\t"+outZscore.substring(0, outZscore.length()-1));
 				}
 				
 				
