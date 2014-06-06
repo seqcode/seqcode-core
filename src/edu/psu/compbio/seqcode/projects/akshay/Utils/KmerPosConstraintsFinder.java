@@ -39,6 +39,7 @@ public class KmerPosConstraintsFinder {
 	public double[][][] pvalues;
 	public double[][][] mean_pos;
 	public double[][][] mean_neg;
+	public double[][][] std_neg;
 	
 	public static int sample_size = 100;
 	public static int num_samples = 100;
@@ -237,6 +238,7 @@ public class KmerPosConstraintsFinder {
 		this.pvalues = new double[numk][numk][this.winSize];
 		this.mean_neg = new double[numk][numk][this.winSize];
 		this.mean_pos = new double[numk][numk][this.winSize];
+		this.std_neg = new double[numk][numk][this.winSize];
 		//double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		//double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		
@@ -287,6 +289,7 @@ public class KmerPosConstraintsFinder {
 						this.pvalues[kmerXind][kmerYind][d] = 0.005;
 						this.mean_pos[kmerXind][kmerYind][d] = getMean(PosPDF[d]);
 						this.mean_neg[kmerXind][kmerYind][d] = getMean(NegPDF[d]);
+						this.std_neg[kmerXind][kmerYind][d] = this.getSTD(NegPDF[d]);
 					}else{
 						this.pvalues[kmerXind][kmerYind][d] = 1.0;
 					}
@@ -321,11 +324,17 @@ public class KmerPosConstraintsFinder {
 				}
 				
 				if(posCon.size() > 0){
-					String out = "";
+					String outPOS = "";
+					String outProp = "";
+					String outZscore = "";
 					for(int d :  posCon){
-						out = out+Integer.toString(d)+"("+Double.toString(this.mean_pos[kmerXind][kmerYind][d])+","+Double.toString(this.mean_neg[kmerXind][kmerYind][d])+")"+":";
+						outPOS = outPOS+Integer.toString(d)+":";
+						double zscore = (this.mean_pos[kmerXind][kmerYind][d] - this.mean_neg[kmerXind][kmerYind][d])/this.std_neg[kmerXind][kmerYind][d];
+						outProp = outProp + Double.toString(this.mean_pos[kmerXind][kmerYind][d])+":";
+						outZscore = outZscore + Double.toString(zscore)+":";
 					}
-					System.out.println(Utilities.int2seq(kmerXind, k)+" - "+Utilities.int2seq(kmerYind, k)+"\t"+out);
+					
+					System.out.println(Utilities.int2seq(kmerXind, k)+" - "+Utilities.int2seq(kmerYind, k)+"\t"+outPOS+"\t"+outProp+"\t"+outZscore);
 				}
 				
 				
@@ -357,6 +366,21 @@ public class KmerPosConstraintsFinder {
 		
 		maxDis = distances[getMaxIndex(distances)];
 		return maxDis;
+	}
+	
+	public double getSTD(double[] vec){
+		double ret = 0.0;
+		double mean = getMean(vec);
+		
+		for(int i=0; i<vec.length; i++){
+			ret = ret + (vec[i] - mean)*(vec[i] - mean);
+		}
+		
+		ret = ret/vec.length;
+		
+		ret = Math.sqrt(ret);
+		
+		return ret;
 	}
 	
 	public double getMean(double[] vec){
