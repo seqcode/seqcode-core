@@ -325,16 +325,19 @@ public class KmerPosConstraintsFinder {
 				
 				if(posCon.size() > 0){
 					String outPOS = "";
-					String outProp = "";
+					String outPropPos = "";
+					String outPropNeg = "";
 					String outZscore = "";
 					for(int d :  posCon){
 						outPOS = outPOS+Integer.toString(d)+":";
 						double zscore = (this.mean_pos[kmerXind][kmerYind][d] - this.mean_neg[kmerXind][kmerYind][d])/this.std_neg[kmerXind][kmerYind][d];
-						outProp = outProp + Double.toString(this.mean_pos[kmerXind][kmerYind][d])+":";
+						outPropPos = outPropPos + Double.toString(this.mean_pos[kmerXind][kmerYind][d])+":";
+						outPropNeg = outPropNeg + Double.toString(this.mean_neg[kmerXind][kmerYind][d])+":";
 						outZscore = outZscore + Double.toString(zscore)+":";
 					}
 					
-					System.out.println(Utilities.int2seq(kmerXind, k)+" - "+Utilities.int2seq(kmerYind, k)+"\t"+outPOS+"\t"+outProp+"\t"+outZscore);
+					System.out.println(Utilities.int2seq(kmerXind, k)+" - "+Utilities.int2seq(kmerYind, k)+"\t"+outPOS.substring(0,outPOS.length() )+"\t"+outPropPos.substring(0, outPropPos.length())
+							+outPropNeg.substring(0, outPropNeg.length())+"\t"+outZscore.substring(0, outZscore.length()));
 				}
 				
 				
