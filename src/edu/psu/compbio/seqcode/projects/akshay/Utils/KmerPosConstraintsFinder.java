@@ -477,7 +477,7 @@ public class KmerPosConstraintsFinder {
 		
 		analysis.setPvalues(kmers);
 		
-		analysis.printSigFIConstrains(kmers);
+		analysis.printSigFIConstrains(kmers,fractionCutoff, zscoreCutoff);
 		
 		
 	}
