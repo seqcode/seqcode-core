@@ -40,6 +40,7 @@ public class KmerPosConstraintsFinder {
 	public double[][][] mean_pos;
 	public double[][][] mean_neg;
 	public double[][][] std_neg;
+	public double[][][] z_scores;
 	
 	
 	public static int sample_size = 100;
@@ -240,6 +241,7 @@ public class KmerPosConstraintsFinder {
 		this.mean_neg = new double[numk][numk][this.winSize];
 		this.mean_pos = new double[numk][numk][this.winSize];
 		this.std_neg = new double[numk][numk][this.winSize];
+		this.z_scores = new double[numk][numk][this.winSize];
 		
 		//double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		//double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
@@ -292,6 +294,7 @@ public class KmerPosConstraintsFinder {
 						this.mean_pos[kmerXind][kmerYind][d] = getMean(PosPDF[d]);
 						this.mean_neg[kmerXind][kmerYind][d] = getMean(NegPDF[d]);
 						this.std_neg[kmerXind][kmerYind][d] = this.getSTD(NegPDF[d]);
+						this.z_scores[kmerXind][kmerYind][d] = (this.mean_pos[kmerXind][kmerYind][d] - this.mean_neg[kmerXind][kmerYind][d])/this.std_neg[kmerXind][kmerYind][d];
 						
 					}else{
 						this.pvalues[kmerXind][kmerYind][d] = 1.0;
@@ -321,7 +324,7 @@ public class KmerPosConstraintsFinder {
 				int kmerYind = Xind < Yind ? Yind : Xind;
 				List<Integer> posCon = new ArrayList<Integer>(); 
 				for(int d=0; d< this.winSize; d++){
-					if(this.pvalues[kmerXind][kmerYind][d] == 0.005 && this.mean_pos[kmerXind][kmerYind][d] > this.mean_neg[kmerXind][kmerYind][d] && this.mean_pos[kmerXind][kmerYind][d] > 0.1  && d!= 199){
+					if(this.pvalues[kmerXind][kmerYind][d] == 0.005 && this.mean_pos[kmerXind][kmerYind][d] > this.mean_neg[kmerXind][kmerYind][d] && this.mean_pos[kmerXind][kmerYind][d] > 0.1  && this.z_scores[kmerXind][kmerYind][d] > 5.0 && d!= 199){
 						posCon.add(d);
 					}
 				}
