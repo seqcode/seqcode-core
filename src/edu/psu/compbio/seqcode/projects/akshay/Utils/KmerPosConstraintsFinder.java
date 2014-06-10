@@ -40,7 +40,7 @@ public class KmerPosConstraintsFinder {
 	public double[][][] mean_pos;
 	public double[][][] mean_neg;
 	public double[][][] std_neg;
-	public double[][][] zscores;
+	
 	
 	public static int sample_size = 100;
 	public static int num_samples = 100;
@@ -240,7 +240,7 @@ public class KmerPosConstraintsFinder {
 		this.mean_neg = new double[numk][numk][this.winSize];
 		this.mean_pos = new double[numk][numk][this.winSize];
 		this.std_neg = new double[numk][numk][this.winSize];
-		this.zscores = new double[numk][numk][this.winSize];
+		
 		//double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		//double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		
@@ -292,7 +292,7 @@ public class KmerPosConstraintsFinder {
 						this.mean_pos[kmerXind][kmerYind][d] = getMean(PosPDF[d]);
 						this.mean_neg[kmerXind][kmerYind][d] = getMean(NegPDF[d]);
 						this.std_neg[kmerXind][kmerYind][d] = this.getSTD(NegPDF[d]);
-						this.zscores[kmerXind][kmerYind][d] = (this.mean_pos[kmerXind][kmerYind][d] - this.mean_neg[kmerXind][kmerYind][d])/this.std_neg[kmerXind][kmerYind][d];
+						
 					}else{
 						this.pvalues[kmerXind][kmerYind][d] = 1.0;
 					}
@@ -306,7 +306,7 @@ public class KmerPosConstraintsFinder {
 	
 	// Calculators and printers
 	
-	public void printSigFIConstrains(List<String> kmerSet, double fracCut, double zCut){
+	public void printSigFIConstrains(List<String> kmerSet){
 		for(int i=0; i<kmerSet.size(); i++){
 			for(int j=i; j<kmerSet.size(); j++){
 				int iInd = Utilities.seq2int(kmerSet.get(i));
@@ -321,7 +321,7 @@ public class KmerPosConstraintsFinder {
 				int kmerYind = Xind < Yind ? Yind : Xind;
 				List<Integer> posCon = new ArrayList<Integer>(); 
 				for(int d=0; d< this.winSize; d++){
-					if(this.pvalues[kmerXind][kmerYind][d] == 0.005 && this.mean_pos[kmerXind][kmerYind][d] > this.mean_neg[kmerXind][kmerYind][d] && this.mean_pos[kmerXind][kmerYind][d] > fracCut && this.zscores[kmerXind][kmerYind][d] > zCut && d!= 199){
+					if(this.pvalues[kmerXind][kmerYind][d] == 0.005 && this.mean_pos[kmerXind][kmerYind][d] > this.mean_neg[kmerXind][kmerYind][d] && this.mean_pos[kmerXind][kmerYind][d] > 0.1  && d!= 199){
 						posCon.add(d);
 					}
 				}
@@ -333,9 +333,10 @@ public class KmerPosConstraintsFinder {
 					String outZscore = "";
 					for(int d :  posCon){
 						outPOS = outPOS+Integer.toString(d)+":";
+						double zscore = (this.mean_pos[kmerXind][kmerYind][d] - this.mean_neg[kmerXind][kmerYind][d])/this.std_neg[kmerXind][kmerYind][d];
 						outPropPos = outPropPos + Double.toString(this.mean_pos[kmerXind][kmerYind][d])+":";
 						outPropNeg = outPropNeg + Double.toString(this.mean_neg[kmerXind][kmerYind][d])+":";
-						outZscore = outZscore + Double.toString(this.zscores[kmerXind][kmerYind][d])+":";
+						outZscore = outZscore + Double.toString(zscore)+":";
 					}
 					
 					System.out.println(Utilities.int2seq(kmerXind, k)+" - "+Utilities.int2seq(kmerYind, k)+"\t"+outPOS.substring(0,outPOS.length()-1 )+"\t"+outPropPos.substring(0, outPropPos.length()-1)
@@ -477,7 +478,7 @@ public class KmerPosConstraintsFinder {
 		
 		analysis.setPvalues(kmers);
 		
-		analysis.printSigFIConstrains(kmers,fractionCutoff, zscoreCutoff);
+		analysis.printSigFIConstrains(kmers);
 		
 		
 	}
