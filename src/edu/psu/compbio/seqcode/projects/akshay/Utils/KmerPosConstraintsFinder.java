@@ -309,7 +309,7 @@ public class KmerPosConstraintsFinder {
 	
 	// Calculators and printers
 	
-	public void printSigFIConstrains(List<String> kmerSet, double fcut, double zcut){
+	public void printSigFIConstrains(List<String> kmerSet){
 		for(int i=0; i<kmerSet.size(); i++){
 			for(int j=i; j<kmerSet.size(); j++){
 				int iInd = Utilities.seq2int(kmerSet.get(i));
@@ -324,7 +324,7 @@ public class KmerPosConstraintsFinder {
 				int kmerYind = Xind < Yind ? Yind : Xind;
 				List<Integer> posCon = new ArrayList<Integer>(); 
 				for(int d=0; d< this.winSize; d++){
-					if(this.pvalues[kmerXind][kmerYind][d] == 0.005 && this.mean_pos[kmerXind][kmerYind][d] > this.mean_neg[kmerXind][kmerYind][d] && this.mean_pos[kmerXind][kmerYind][d] > fcut  && this.z_scores[kmerXind][kmerYind][d] > zcut && d!= 199){
+					if(this.pvalues[kmerXind][kmerYind][d] == 0.005 && this.mean_pos[kmerXind][kmerYind][d] > this.mean_neg[kmerXind][kmerYind][d] && this.mean_pos[kmerXind][kmerYind][d] >0.2  && this.z_scores[kmerXind][kmerYind][d] >5.0 && d!= 199){
 						posCon.add(d);
 					}
 				}
@@ -481,7 +481,7 @@ public class KmerPosConstraintsFinder {
 		
 		analysis.setPvalues(kmers);
 		
-		analysis.printSigFIConstrains(kmers, fractionCutoff, zscoreCutoff);
+		analysis.printSigFIConstrains(kmers);
 		
 		
 	}
