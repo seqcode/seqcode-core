@@ -60,7 +60,7 @@ public class GenomicRegionStats {
 	
 	public void printOut(){
 		for(String s : this.interesect_numbers.keySet()){
-			System.out.println(s+Integer.toString(this.interesect_numbers.get(s)));
+			System.out.println(s+"\t"+Integer.toString(this.interesect_numbers.get(s)));
 		}
 	}
 	
@@ -98,9 +98,13 @@ public class GenomicRegionStats {
 			Point ref_point = ref_list.get(i);
 			for(int l=1; l<list_ids.size(); l++){
 				int mid_ind = this.getMinDistIndex(ref_point, this.points_lists.get(l));
-				int dist = ref_point.distance(this.points_lists.get(l).get(mid_ind));
-				if(dist >  this.min_dist){
-					intersect = false;
+				if(!ref_point.getChrom().equals(this.points_lists.get(l).get(mid_ind).getChrom())){
+					intersect =false;
+				}else{
+					int dist = ref_point.distance(this.points_lists.get(l).get(mid_ind));
+					if(dist >  this.min_dist){
+						intersect = false;
+					}
 				}
 			}
 			if(intersect){
@@ -110,12 +114,12 @@ public class GenomicRegionStats {
 		return ret;
 	}
 	
-	public Integer getMinDistIndex(Point a, List<Point> points_list){
+	public Integer getMinDistIndex(Point a, List<Point> pts){
 		int index=0;
 		int min = Integer.MAX_VALUE;
-		for(int i=0; i<points_list.size(); i++){
-			if(a.getChrom() == points_list.get(i).getChrom()){
-				int dist = a.distance(points_list.get(i));
+		for(int i=0; i<pts.size(); i++){
+			if(a.getChrom().equals(pts.get(i).getChrom())){
+				int dist = a.distance(pts.get(i));
 				if(dist < min){
 					min = dist;
 					index = i;
