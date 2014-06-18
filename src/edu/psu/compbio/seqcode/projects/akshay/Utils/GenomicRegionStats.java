@@ -114,10 +114,12 @@ public class GenomicRegionStats {
 		int index=0;
 		int min = Integer.MAX_VALUE;
 		for(int i=0; i<points_list.size(); i++){
-			int dist = a.distance(points_list.get(i));
-			if(dist < min){
-				min = dist;
-				index = i;
+			if(a.getChrom() == points_list.get(i).getChrom()){
+				int dist = a.distance(points_list.get(i));
+				if(dist < min){
+					min = dist;
+					index = i;
+				}	
 			}
 		}
 		return index;
