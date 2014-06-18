@@ -43,19 +43,15 @@ public class GenomicRegionStats {
 	    reader.close();
 	}
 	
-	
-	public void setIntersectNumbers(){
-		for(int i=0; i< points_lists.size()-1; i++){
-			for(int j=i; j<points_lists.size(); j++){
-				List<Integer> index_list = this.getIndexString(i, j);
-				if(i==j){
-					index_list.add(i);
-				}
-				String index_key= join(index_list,":");
-				this.interesect_numbers.put(index_key, this.getIntersectIndexes(index_list).size());
-				
-			}
+	public void setIntersectNumbers(String id_string){
+		String[] idss = id_string.split(":");
+		List<Integer> index_list = new ArrayList<Integer>();
+		for(int i=0; i<idss.length; i++){
+			index_list.add(Integer.parseInt(idss[i]));
 		}
+		String index_key= join(index_list,":");
+		
+		System.out.println(index_key+"\t"+this.getIntersectIndexes(index_list).size());
 	}
 	
 	public void printOut(){
@@ -79,16 +75,7 @@ public class GenomicRegionStats {
 	   return sb.toString();
 	}
 	
-	private List<Integer> getIndexString(int start, int rem){
-		List<Integer> ret = new ArrayList<Integer>();
-		for(int i=start; i<this.points_lists.size(); i++){
-			if(i != rem){
-				ret.add(i);
-			}
-		}
-		
-		return ret;
-	}
+	
 	
 	public List<Integer> getIntersectIndexes(List<Integer> list_ids){
 		List<Integer> ret = new ArrayList<Integer>();
@@ -152,9 +139,11 @@ public class GenomicRegionStats {
 		int mindd = ap.hasKey("mind") ? new Integer(ap.getKeyValue("mind")).intValue() : 100;
 		String input_file = ap.getKeyValue("if");
 		
+		String intersect_ids = ap.getKeyValue("ids");
+		
 		GenomicRegionStats runner = new GenomicRegionStats(g,w,input_file, mindd);
-		runner.setIntersectNumbers();
-		runner.printOut();
+		runner.setIntersectNumbers(intersect_ids);
+		
 		
 		
 	
