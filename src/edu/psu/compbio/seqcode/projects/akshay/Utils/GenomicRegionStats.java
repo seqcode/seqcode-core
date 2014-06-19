@@ -26,7 +26,7 @@ public class GenomicRegionStats {
 	public Genome gen;
 	public int winSize;
 	
-	public Map<String, Integer> interesect_numbers = new HashMap<String, Integer>();
+	
 	
 	
 	public GenomicRegionStats(Genome g, int win, String file_name, int min_d) throws IOException {
@@ -54,11 +54,6 @@ public class GenomicRegionStats {
 		System.out.println(index_key+"\t"+this.getIntersectIndexes(index_list).size());
 	}
 	
-	public void printOut(){
-		for(String s : this.interesect_numbers.keySet()){
-			System.out.println(s+"\t"+Integer.toString(this.interesect_numbers.get(s)));
-		}
-	}
 	
 	public String join(List<Integer> list, String conjunction)
 	{
@@ -84,11 +79,12 @@ public class GenomicRegionStats {
 			boolean intersect = true;
 			Point ref_point = ref_list.get(i);
 			for(int l=1; l<list_ids.size(); l++){
-				int mid_ind = this.getMinDistIndex(ref_point, this.points_lists.get(l));
-				if(!ref_point.getChrom().equals(this.points_lists.get(l).get(mid_ind).getChrom())){
+				int mid_ind = this.getMinDistIndex(ref_point, this.points_lists.get(list_ids.get(l)));
+				System.out.println(ref_point.distance(this.points_lists.get(list_ids.get(l)).get(mid_ind)));
+				if(!ref_point.getChrom().equals(this.points_lists.get(list_ids.get(l)).get(mid_ind).getChrom())){
 					intersect =false;
 				}else{
-					int dist = ref_point.distance(this.points_lists.get(l).get(mid_ind));
+					int dist = ref_point.distance(this.points_lists.get(list_ids.get(l)).get(mid_ind));
 					if(dist >  this.min_dist){
 						intersect = false;
 					}

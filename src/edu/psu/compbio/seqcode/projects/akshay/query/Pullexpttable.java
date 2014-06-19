@@ -94,9 +94,7 @@ public class Pullexpttable {
 		if (species != null){queryexpt += (and ? " and ": " ")+"species = ?"; and = true;}
 		
 		psexpt = cxn.prepareStatement(queryexpt);
-		System.out.println(queryexpt);
-		System.out.println(expttarget.getDBID());
-		System.out.println(celline.getDBID());
+		
 		Integer count = 1;
 		
 		if (lab != null){ psexpt.setInt(count, lab.getDBID()); count += 1;}
