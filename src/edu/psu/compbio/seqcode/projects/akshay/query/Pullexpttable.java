@@ -123,7 +123,7 @@ public class Pullexpttable {
 				System.out.println(rsexpt.getString(1));
 				org = new Organism(Integer.parseInt(rsexpt.getString("species")));
 				
-				table.add(rsexpt.getString(1)+"\t"+rsexpt.getString(1) + "\t"+rsexpt.getString(2)+"\t"+org.getName()+"\t"+
+				table.add(rsexpt.getString(1)+ "\t"+rsexpt.getString(2)+"\t"+ rsexpt.getString("replicate")+"\t"+org.getName()+"\t"+
 						trackback.loadExptType(Integer.parseInt(rsexpt.getString("expttype"))).getName()+"\t"+trackback.loadLab(Integer.parseInt(rsexpt.getString("lab"))).getName()+"\t"+
 						trackback.loadExptCondition(Integer.parseInt(rsexpt.getString("exptcondition"))).getName()+"\t"+trackback.loadExptTarget(Integer.parseInt(rsexpt.getString("expttarget"))).getName()+"\t"+
 						trackback.loadCellLine(Integer.parseInt(rsexpt.getString("cellline"))).getName()+"\t"+trackback.loadReadType(Integer.parseInt(rsexpt.getString("readtype"))).getName());
