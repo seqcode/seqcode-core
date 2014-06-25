@@ -80,7 +80,6 @@ public class GenomicRegionStats {
 			Point ref_point = ref_list.get(i);
 			for(int l=1; l<list_ids.size(); l++){
 				int mid_ind = this.getMinDistIndex(ref_point, this.points_lists.get(list_ids.get(l)));
-				System.out.println(ref_point.distance(this.points_lists.get(list_ids.get(l)).get(mid_ind)));
 				if(!ref_point.getChrom().equals(this.points_lists.get(list_ids.get(l)).get(mid_ind).getChrom())){
 					intersect =false;
 				}else{
