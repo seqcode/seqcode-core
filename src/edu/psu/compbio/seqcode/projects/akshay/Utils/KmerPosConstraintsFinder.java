@@ -21,19 +21,38 @@ import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 import java.util.Random;
 
+/**
+ * Given two sets of locations, the following code identifies kmer-kmer distances that are significantly found in the positive set over the negative set.
+ * Usually used to analyse the k-mer features from an SVM analysis
+ * @author akshaykakumanu
+ *
+ */
 public class KmerPosConstraintsFinder {
 	
-	public int k;
+	public int k;          // Length of the k-mer
 	public SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
-	public int winSize;
+	public int winSize;    // The size of the window around the peak-pair location to consider for mapping the location into k-mer space
 	public Genome gen;
-	public List<Point> pos_points;
-	public List<Region> pos_regions;
-	public List<Point> neg_points;
-	public List<Region> neg_regions;
-	public int[][][] negMapMatrix;
+	public List<Point> pos_points;      // List of points in the positive set
+	public List<Region> pos_regions;    // positive points extended to regions with winSize as window size
+	public List<Point> neg_points;     // List of points in the negative set
+	public List<Region> neg_regions;   // negative points extended to regions with winSize as window size
+	
+	// Map matrices are 3-d int matrices with the following schema: -
+	// 1st level :- kmer id
+	// 2nd level :- region number in the pos/neg set
+	// 3rd level :- position in the the 200bp window
+	// value :- kmer id if ther is a match at that particular position/location. Else 0.
+	// int[numk][neg_regions.size()][winSize]
+	public int[][][] negMapMatrix;      
 	public int[][][] posMapMatrix;
-	public int[][][] negPairMatrix; // location, xkmer-id, ykmer-id, min distance
+	
+	// Pair matrices are 3-d int matrices with the following schema :-
+	// 1st level :- region number in the pos/neg set
+	// 2nd level :- kmer id (x)
+	// 3rd level :- kmer id (y)
+	// value :- min distance between kmer-x and kmer-y
+	public int[][][] negPairMatrix; 
 	public int[][][] posPairMatrix;
 	
 	public double[][][] pvalues;
@@ -43,8 +62,8 @@ public class KmerPosConstraintsFinder {
 	public double[][][] z_scores;
 	
 	
-	public static int sample_size = 100;
-	public static int num_samples = 100;
+	public static int sample_size = 100; // size of the sub sample
+	public static int num_samples = 100; // number of sub somples
 	public static double pvalue_c_level = 1.73;
 	
 	public KmerPosConstraintsFinder(Genome g, int win, int ksize) {
@@ -55,6 +74,12 @@ public class KmerPosConstraintsFinder {
 	
 	
 	// Settors
+	
+	/**
+	 * loads points and regions for given filenames into pos and neg lists respectively
+	 * @param posPeaksFileName
+	 * @param negPeaksFileName
+	 */
 	public void setPointsAndRegions(String posPeaksFileName, String negPeaksFileName){
 		this.pos_points = Utilities.loadPeaksFromPeakFile(gen, posPeaksFileName, winSize);
 		this.neg_points = Utilities.loadPeaksFromPeakFile(gen, negPeaksFileName, winSize);
@@ -62,6 +87,10 @@ public class KmerPosConstraintsFinder {
 		this.neg_regions = Utilities.loadRegionsFromPeakFile(gen, negPeaksFileName, winSize);
 	}
 	
+	/**
+	 * sets the map matrices both pos and neg
+	 * @param SeqPathFile
+	 */
 	public void setMapMatrices(String SeqPathFile){
 		int numk = (int)Math.pow(4, k);
 		this.negMapMatrix = new int[numk][neg_regions.size()][winSize];
@@ -101,12 +130,19 @@ public class KmerPosConstraintsFinder {
 	}
 	
 	
-	
+	/**
+	 * setting pair matrices by calling a getPairMatrix private methods (see that method for more details)
+	 */
 	public void setPairMatrices(){
 		this.posPairMatrix = this.getPairMatrix(this.posMapMatrix);
 		this.negPairMatrix = this.getPairMatrix(this.negMapMatrix);
 	}
 	
+	/**
+	 * Generates a list of unique integers from 0 to length, the size of the list the size of the sub sample
+	 * @param length
+	 * @return
+	 */
 	public List<Integer> getRandomIndex(int length){
 		List<Integer> randIndexes = new ArrayList<Integer>();
 		Random rand = new Random();
@@ -129,20 +165,19 @@ public class KmerPosConstraintsFinder {
 	
 	public int[][][] getPosMapMat(){return this.posMapMatrix;}
 	public int[][][] getNegMapMat(){return this.negMapMatrix;}
+	
+	/**
+	 * given a mapmat and a pairmat and other input params, this method returns the proportion 
+	 * of the number of times a given distance off set is seen in the given list of ranInds
+	 * @param mapmat
+	 * @param pairmat
+	 * @param kmerXind
+	 * @param kmerYind
+	 * @param randIndexes
+	 * @return
+	 */
 	public double[] getSubMatricies(int[][][] mapmat, int[][][] pairmat, int kmerXind, int kmerYind, int[] randIndexes){
 		double[] retPair = new double[this.winSize];
-		//List<Integer> randIndexes = new ArrayList<Integer>();
-		//Random rand = new Random();
-		//int r = 0;
-		//do{
-		//	do{
-		//		r = rand.nextInt(mapmat[0].length);
-		//	}while(randIndexes.contains(r));
-		//	randIndexes.add(r);
-			
-		//}while(randIndexes.size() < KmerPosConstraintsFinder.sample_size);
-		
-		
 		for(int d=0; d<this.winSize; d++){
 			int c = 0;
 			for(int l=0; l<randIndexes.length; l++){
@@ -156,63 +191,74 @@ public class KmerPosConstraintsFinder {
 		return retPair;
 	}
 	
+	/**
+	 * Given a mapmat this generates a pairmat for that mapmat
+	 * @param mapmat
+	 * @return
+	 */
 	public int[][][] getPairMatrix(int[][][] mapmat){
 		int numk = (int)Math.pow(4, k);
 		int[][][] ret;
 		ret =  new int[mapmat[0].length][numk][numk];
-		for(int i=0; i<numk; i++){
-			int irev = Utilities.seq2int(SequenceUtils.reverseComplement(Utilities.int2seq(i, k)));
-			if(i>irev)
+		for(int i=0; i<numk; i++){ // over all kmers (x)
+			int irev = Utilities.seq2int(SequenceUtils.reverseComplement(Utilities.int2seq(i, k))); // Id of the reverse complement k-mer
+			if(i>irev) // of the 2 complements, only consider the smaller one
 				continue;
-			for(int j=i; j<numk; j++){
+			for(int j=i; j<numk; j++){   // over all kmers (y), such that x<=y 
 				int jrev = Utilities.seq2int(SequenceUtils.reverseComplement(Utilities.int2seq(j, k)));
-				if(j>jrev)
+				if(j>jrev) // of the 2 complements, only consider the smaller one
 					continue;
 				
-				int kmerXind = i;
-				int kmerYind =  j;
+				int kmerXind = i; // (x)
+				int kmerYind =  j; // (y), such that x<=y and x and y are the chosen complements (smaller ones)
 				for(int l=0; l< mapmat[0].length; l++){ // over all locations 
-					int[] Xmap = mapmat[kmerXind][l];
-					int[] Ymap = mapmat[kmerYind][l];
-					int[] XYmap = new int[Xmap.length];
+					int[] Xmap = mapmat[kmerXind][l];     // Map of (x) for location l
+					int[] Ymap = mapmat[kmerYind][l];     // Map of (y) for location l
+					int[] XYmap = new int[Xmap.length];   // Adding both maps ..
 					for(int k=0; k<XYmap.length; k++){
 						XYmap[k] = Xmap[k]+Ymap[k];
 					}
-					int distance = 0;
-					int currMinDistance = Integer.MAX_VALUE;
-					boolean counting = false;
-					int leftInd = 0;
-					for(int k=0; k<XYmap.length; k++){
-						if(!counting && XYmap[k] != 0){
-							counting = true;
-							leftInd = XYmap[k];
-							distance = 1;
+					
+					// the following code is to calculate the min distance between (x) and (y) in the location l
+					
+					int distance = 0;   // this will eventually store the min distance                       
+					int currMinDistance = Integer.MAX_VALUE; // the value of the current min distance
+					boolean counting = false;  // are you counting ?? No
+					int leftInd = 0; // value of the leftIND, set to 0 to start with (stores the kmer id of the left ind)
+					
+					for(int k=0; k<XYmap.length; k++){ // for each locaiton in the 200bp window 
+						if(!counting && XYmap[k] != 0){ // if you are not counting and (x) or (y) match to the current position 
+							counting = true; // start counting now
+							leftInd = XYmap[k]; // store value of the kmer id
+							distance = 1; // set distance to 1
 						}
-						else if(counting && XYmap[k] == 0){
+						else if(counting && XYmap[k] == 0){ // if counting and no match, continue counting
 							distance++;
 						}
-						else if(counting && XYmap[k] !=0 && XYmap[k] == leftInd){
-							if(kmerXind == kmerYind){
-								if(distance < currMinDistance){
-									currMinDistance = distance;
+						else if(counting && XYmap[k] !=0 && XYmap[k] == leftInd){ // if counting and match and match is same as left ind
+							if(kmerXind == kmerYind){ // if (x) and (y) are same
+								if(distance < currMinDistance){ // if the calc distance less than curr min distance
+									currMinDistance = distance; 
 								}
-								distance = 1;
-								leftInd = XYmap[k];
+								distance = 1; // reset distance to 1
+								leftInd = XYmap[k]; // store left ind again
 							}
-							else{
-								distance =1;
-								leftInd = XYmap[k];
+							else{ // if (x) and (y) don't match reset counting without storing anything
+								distance =1; // reset distane 
+								leftInd = XYmap[k]; // store x ind
 							}
 						}
-						else if(counting && XYmap[k] !=0 && XYmap[k] != leftInd){
-							if(distance < currMinDistance){
+						else if(counting && XYmap[k] !=0 && XYmap[k] != leftInd){ // if counting and match and different from left ind match 
+							if(distance < currMinDistance){ // compare with curr min, if less overwrite
 								currMinDistance = distance;
 							}
-							distance = 1;
-							leftInd = XYmap[k];
+							distance = 1; // reset
+							leftInd = XYmap[k]; // store left ind
 						}
 					}
-					if(currMinDistance == Integer.MAX_VALUE){
+					
+					
+					if(currMinDistance == Integer.MAX_VALUE){ // if no min distance found, store it as 200.. will remove later 
 						ret[l][kmerXind][kmerYind] = 200;
 					}else{
 						ret[l][kmerXind][kmerYind] = currMinDistance ;
@@ -234,11 +280,14 @@ public class KmerPosConstraintsFinder {
 	
 	
 	
-
+	/**
+	 * 
+	 * @param kmerSet
+	 */
 	public void setPvalues(List<String> kmerSet){
 		int numk = (int)Math.pow(4, k);
-		this.pvalues = new double[numk][numk][this.winSize];
-		this.mean_neg = new double[numk][numk][this.winSize];
+		this.pvalues = new double[numk][numk][this.winSize]; // stores the pvalue for the given config
+		this.mean_neg = new double[numk][numk][this.winSize]; 
 		this.mean_pos = new double[numk][numk][this.winSize];
 		this.std_neg = new double[numk][numk][this.winSize];
 		this.z_scores = new double[numk][numk][this.winSize];
