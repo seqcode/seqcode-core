@@ -55,6 +55,11 @@ public class KmerPosConstraintsFinder {
 	public int[][][] negPairMatrix; 
 	public int[][][] posPairMatrix;
 	
+	// All the following have the following schema
+	// 1st level :- kmer id (x)
+	// 2nd level :- kmer id (y)
+	// 3rd level :- distance beteween x and y
+	// value :- look at the name
 	public double[][][] pvalues;
 	public double[][][] mean_pos;
 	public double[][][] mean_neg;
@@ -286,7 +291,7 @@ public class KmerPosConstraintsFinder {
 	 */
 	public void setPvalues(List<String> kmerSet){
 		int numk = (int)Math.pow(4, k);
-		this.pvalues = new double[numk][numk][this.winSize]; // stores the pvalue for the given config
+		this.pvalues = new double[numk][numk][this.winSize]; 
 		this.mean_neg = new double[numk][numk][this.winSize]; 
 		this.mean_pos = new double[numk][numk][this.winSize];
 		this.std_neg = new double[numk][numk][this.winSize];
@@ -295,12 +300,14 @@ public class KmerPosConstraintsFinder {
 		//double[][][][] PosPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		//double[][][][] NegPDF = new double[this.winSize][numk][numk][KmerPosConstraintsFinder.num_samples];
 		
-		
-		int[][] PosRandIndexes = new int[KmerPosConstraintsFinder.num_samples][KmerPosConstraintsFinder.sample_size];
+		// 1st level :- sub sample id
+		// 2nd level :- sample number in the given subsample
+		// value :- index in the original data
+		int[][] PosRandIndexes = new int[KmerPosConstraintsFinder.num_samples][KmerPosConstraintsFinder.sample_size]; 
 		int[][] NegRandIndexes = new int[KmerPosConstraintsFinder.num_samples][KmerPosConstraintsFinder.sample_size];
-		for(int itr = 0; itr< KmerPosConstraintsFinder.num_samples; itr++){
-			List<Integer> tempP = this.getRandomIndex(this.pos_regions.size());
-			for(int r=0; r< tempP.size(); r++){
+		for(int itr = 0; itr< KmerPosConstraintsFinder.num_samples; itr++){ // over the number of subsamples
+			List<Integer> tempP = this.getRandomIndex(this.pos_regions.size()); // get random index list 
+			for(int r=0; r< tempP.size(); r++){ // over the no of samples in a given subsample
 				PosRandIndexes[itr][r] = tempP.get(r);
 			}
 			
@@ -310,33 +317,36 @@ public class KmerPosConstraintsFinder {
 			}
 		}
 		
+		// 1st level :- distance off set
+		// 2nd level :- subsample number
+		// value :- proportion of sites having the offset
 		double[][] PosPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
 		double[][] NegPDF = new double[this.winSize][KmerPosConstraintsFinder.num_samples];
 		
-		for(int i=0; i<kmerSet.size(); i++){
-			for(int j=i; j<kmerSet.size(); j++){
-				int iInd = Utilities.seq2int(kmerSet.get(i));
-				int iRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i)));
-				int Xind = iInd < iRevInd ? iInd: iRevInd;
-				
+		for(int i=0; i<kmerSet.size(); i++){ // over all the given list of kmers (x)
+			for(int j=i; j<kmerSet.size(); j++){ // over all the given list, such that (y) >= (x)
+				int iInd = Utilities.seq2int(kmerSet.get(i)); // geting the index of (x)
+				int iRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i))); // getting rev index of (x)
+				int Xind = iInd < iRevInd ? iInd: iRevInd; // set the smaller one to (x)
 				int jInd = Utilities.seq2int(kmerSet.get(j));
 				int jRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
 				int Yind = jInd < jRevInd ? jInd : jRevInd;
 				
-				int kmerXind = Xind < Yind ? Xind: Yind;
-				int kmerYind = Xind < Yind ? Yind : Xind;
+				int kmerXind = Xind < Yind ? Xind: Yind; // redefine (x) again
+				int kmerYind = Xind < Yind ? Yind : Xind; // redefine (y) again
 				
-				for( int itr=0; itr< KmerPosConstraintsFinder.num_samples; itr++){
+				for( int itr=0; itr< KmerPosConstraintsFinder.num_samples; itr++){ // over number of subsamples
+					// get the proportions for each subsample
 					double[] tempPosPair = this.getSubMatricies(posMapMatrix, posPairMatrix, kmerXind, kmerYind, PosRandIndexes[itr]);
 					double[] tempNegPair = this.getSubMatricies(negMapMatrix, negPairMatrix, kmerXind, kmerYind, NegRandIndexes[itr]);
-					for(int d=0; d<this.winSize; d++){
-						PosPDF[d][itr] = tempPosPair[d];
+					for(int d=0; d<this.winSize; d++){ // over all off sets
+						PosPDF[d][itr] = tempPosPair[d]; // fill
 						NegPDF[d][itr] = tempNegPair[d];
 					}
 				}
 				
-				for(int d=0; d<this.winSize; d++){
-					double maxD = computeD(PosPDF[d], NegPDF[d]);
+				for(int d=0; d<this.winSize; d++){ // over all offsets
+					double maxD = computeD(PosPDF[d], NegPDF[d]); // compute maxD (see kolmogrov-smirnov test) for each offset
 					double test = KmerPosConstraintsFinder.pvalue_c_level * (Math.sqrt(2/(float)KmerPosConstraintsFinder.num_samples));
 					if(maxD > test){
 						this.pvalues[kmerXind][kmerYind][d] = 0.005;
