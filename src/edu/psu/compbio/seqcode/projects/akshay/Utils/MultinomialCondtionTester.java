@@ -22,6 +22,7 @@ import edu.psu.compbio.seqcode.gse.utils.io.parsing.ParseGFF;
 import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.sequtils.PointsToEvents;
+import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 public class MultinomialCondtionTester {
 	
@@ -121,7 +122,7 @@ public class MultinomialCondtionTester {
 		for(ExperimentCondition c : eset.getConditions()){
 			System.err.println("Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
 		}
-		String siteFile = Args.parseString(args, "gff", null);
+		String siteFile = Args.parseString(args, "pointsFile", null);
 		if(siteFile==null){
 			 System.exit(1);
 		}
@@ -129,23 +130,9 @@ public class MultinomialCondtionTester {
 		double minFold = Args.parseDouble(args, "minfold", 2);
 		
 		List<BindingEvent> features = new ArrayList<BindingEvent>();
-		List<Point> Sites = new ArrayList<Point>();
-		HashMap<Point,GFFEntry> siteToGFFEntry = new HashMap<Point, GFFEntry>();
-		
-		try{
-			File gffFile = new File(siteFile);
-			ParseGFF parser = new ParseGFF(gffFile);
-			while(parser.hasNext()){
-				GFFEntry site = parser.next();
-				Point currPt = new Point(config.getGenome(), site.getChr(), site.getMidPoint());
-				Sites.add(currPt);
-				siteToGFFEntry.put(currPt, site);
-			}
-			
-		} catch(IOException e){
-			//silent exception
-		}
-		
+		List<Point> Sites = Utilities.loadPeaksFromPeakFile(config.getGenome(), siteFile, win);
+		 
+	
 		//Convert our points to events
 		PointsToEvents p2e = new PointsToEvents(config, manager, Sites, win,true);
 		features = p2e.execute();
