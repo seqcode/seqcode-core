@@ -27,7 +27,7 @@ public class SeqHitPair {
 		if(left.getChrom() != right.getChrom())
 			return null;
 		else{
-			return new Point(left.getGenome(), left.getChrom(), (left.getFivePrime()+right.getFivePrime()/2));
+			return new Point(left.getGenome(), left.getChrom(), (left.getFivePrime()+right.getFivePrime())/2);
 		}
 	}
 		

@@ -184,8 +184,8 @@ public class MetaMaker {
 						nonframe.clusterLinePanel();
 					//Set the panel sizes here...
 					nonframe.setStyle(profileStyle);
-					nonframe.setLineMin(lineMin);
 					nonframe.setLineMax(lineMax);
+					nonframe.setLineMin(lineMin);
 					nonframe.setLineThick(lineThick);
 					nonframe.saveImages(outName);
 					nonframe.savePointsToFile(outName);

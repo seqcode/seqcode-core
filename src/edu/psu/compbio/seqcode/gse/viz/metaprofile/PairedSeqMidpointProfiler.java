@@ -79,19 +79,13 @@ public class PairedSeqMidpointProfiler  implements PointProfiler<Point,PointProf
 							
 							int startbin = params.findBin(offset);
 							
-							addToArray(startbin, startbin, array, 1.0);
+							array[startbin] += 1.0;
 						}
 					}
 				}
 			}
 		}
 		return new PointProfile(a, params, array, (a instanceof StrandedPoint));
-	}
-
-	private void addToArray(int i, int j, double[] array, double value) { 
-		for(int k = i; k <= j; k++) { 
-			array[k] += value;
-		}
 	}
 	
 	public void cleanup(){
