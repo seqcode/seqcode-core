@@ -120,7 +120,20 @@ public class MetaMaker {
 					DeepSeqExpt dse = new DeepSeqExpt(gen, exptFiles, false, format, 40);
 					profiler = new Stranded5PrimeProfiler(params, dse, strand, pbMax);
 				}
+			}else if(profilerType.equals("nucleosome")){
+				List<SeqLocator> exptlocs = Args.parseSeqExpt(args,"expt");
+				if(exptlocs.size()>0){
+					ArrayList<SeqExpander> exptexps = new ArrayList<SeqExpander>();
+					for(SeqLocator loc : exptlocs)
+						exptexps.add(new SeqExpander(loc));
+					System.out.println("Loading data...");
+					profiler = new PairedSeqMidpointProfiler(params, exptexps, pbMax, strand);
+				}else{
+					System.err.println("Nucleosome profiler doesn't work for DeepSeqExpts");
+					System.exit(1);
+				}
 			}
+			
 			
 			if(batchRun){
 				System.out.println("Batch running...");
@@ -228,7 +241,7 @@ public class MetaMaker {
 				"--readext <read extension> \n" +
 				"--linemin <min>  --linemax <max> \n" +
 				"--pbmax <per base max>\n" +
-				"--profiler <chipseq/fiveprime> \n" +
+				"--profiler <simplechipseq/fiveprime/nucleosome> \n" +
 				"--expt <experiment names> OR --exptfile <file names> AND --format <SAM> \n" +
 				"--back <control experiment names (only applies to chipseq)> \n" +
 				"--peaks <peaks file name> --out <output root name> \n" +

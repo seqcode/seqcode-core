@@ -51,6 +51,15 @@ public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
 
 
     public Iterator<SeqHit> execute(Region a) {
+    	return this.getHits(a);
+    }
+    
+    /**
+     * Get single hits
+     * @param a
+     * @return
+     */
+    public Iterator<SeqHit> getHits(Region a) {
         try {
             getAligns(a.getGenome());
             Collection<SeqHit> hits = loader.loadByRegion(alignments, a);
@@ -62,7 +71,28 @@ public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
         }
     }
 
-
+    /**
+     * Get pairs
+     * @param a
+     * @return
+     */
+    public Iterator<SeqHitPair> getPairs(Region a) {
+        try {
+            getAligns(a.getGenome());
+            Collection<SeqHitPair> pairs = loader.loadPairsByRegion(alignments, a);
+            return pairs.iterator();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new LinkedList<SeqHitPair>().iterator();
+        }
+    }
+    
+    /**
+     * Get the single hit count
+     * @param a
+     * @return
+     */
     public int getHitCount(Region a) {
         int hits = 0;
         try {
@@ -76,7 +106,7 @@ public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
         }
     }
 
-
+    
     public Collection<Genome> alignedGenomes() {
         LinkedList<Genome> genomes = new LinkedList<Genome>();
         if (alignments != null) {

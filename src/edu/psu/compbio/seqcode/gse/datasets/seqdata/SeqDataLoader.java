@@ -24,6 +24,7 @@ import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ACLChangeEntry;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
+import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.projects.readdb.SingleHit;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
@@ -531,9 +532,15 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 
 	/*
-	 * SeqHit loading: problem with this is that SingleHits are assumed.  
+	 * SeqHit loading  
 	 */
 	
+	/**
+	 * Convert SingleHits to SeqHits 
+	 * @param input
+	 * @param align
+	 * @return
+	 */
 	public List<SeqHit> convert(Collection<SingleHit> input, SeqAlignment align) {
         Genome g = align.getGenome();
         ArrayList<SeqHit> output = new ArrayList<SeqHit>();
@@ -546,7 +553,36 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         return output;
     }
 	
-                                 
+	/**
+	 * Convert PairedHits to SeqHitsPairs 
+	 * @param input
+	 * @param align
+	 * @return
+	 */
+	public List<SeqHitPair> convertPairs(Collection<PairedHit> input, SeqAlignment align) {
+        Genome g = align.getGenome();
+        ArrayList<SeqHitPair> output = new ArrayList<SeqHitPair>();
+        for (PairedHit p : input) {
+            int lstart = p.leftPos;
+            int lend = p.leftStrand ? p.leftPos + p.leftLength : p.leftPos - p.leftLength;
+            int rstart = p.rightPos;
+            int rend = p.rightStrand ? p.rightPos + p.rightLength : p.rightPos - p.rightLength;
+            SeqHit left = new SeqHit(g, g.getChromName(p.leftChrom), Math.min(lstart,lend), Math.max(lstart,lend),
+            		p.leftStrand ? '+' : '-', p.weight);
+            SeqHit right = new SeqHit(g, g.getChromName(p.rightChrom), Math.min(rstart,rend), Math.max(rstart,rend),
+                    p.rightStrand ? '+' : '-', p.weight);
+            output.add(new SeqHitPair(left, right, p.weight, p.pairCode));
+        }
+        return output;
+    }
+
+	/**
+	 * Load a chromosome's worth of single hits 
+	 * @param a
+	 * @param chromid
+	 * @return
+	 * @throws IOException
+	 */
 	public List<SeqHit> loadByChrom(SeqAlignment a, int chromid) throws IOException {
 		List<SeqHit> data = new ArrayList<SeqHit>();
         String alignid = Integer.toString(a.getDBID());
@@ -557,7 +593,32 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         }
 		return data;
 	}
-			
+	
+	/**
+	 * Load a chromosome's worth of paired hits 
+	 * @param a
+	 * @param chromid
+	 * @return
+	 * @throws IOException
+	 */
+	public List<SeqHitPair> loadPairsByChrom(SeqAlignment a, int chromid) throws IOException {
+		List<SeqHitPair> data = new ArrayList<SeqHitPair>();
+        String alignid = Integer.toString(a.getDBID());
+        try {
+            data.addAll(convertPairs(client.getPairedHits(alignid, chromid,true,null,null,null,null),a));
+        } catch (ClientException e) {
+            throw new IllegalArgumentException(e);
+        }
+		return data;
+	}
+	
+	/**
+	 * Load single hits per region
+	 * @param align
+	 * @param r
+	 * @return
+	 * @throws IOException
+	 */
 	public List<SeqHit> loadByRegion(SeqAlignment align, Region r) throws IOException {
         try {
             return convert(client.getSingleHits(Integer.toString(align.getDBID()),
@@ -570,7 +631,35 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
             throw new IllegalArgumentException(e);
         }
 	}
-			
+	
+	/**
+	 * Load pairs per region
+	 * @param align
+	 * @param r
+	 * @return
+	 * @throws IOException
+	 */
+	public List<SeqHitPair> loadPairsByRegion(SeqAlignment align, Region r) throws IOException {
+        try {
+            return convertPairs(client.getPairedHits(Integer.toString(align.getDBID()),
+                                                r.getGenome().getChromID(r.getChrom()),
+                                                true,
+                                                r.getStart(),
+                                                r.getEnd(),
+                                                null,
+                                                null), align);
+        } catch (ClientException e) {
+            throw new IllegalArgumentException(e);
+        }
+	}
+	
+	/**
+	 * Load single hits by region
+	 * @param alignments
+	 * @param r
+	 * @return
+	 * @throws IOException
+	 */
 	public Collection<SeqHit> loadByRegion(List<SeqAlignment> alignments, Region r) throws IOException {
 		if (alignments.size() < 1) {
 			throw new IllegalArgumentException("Alignment List must not be empty.");
@@ -586,8 +675,37 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 		return output;
 	}
 	
-	    
-    /* if Region is a StrandedRegion, then the positions returned are only for that strand */
+	/**
+	 * Load pairs by region
+	 * @param alignments
+	 * @param r
+	 * @return
+	 * @throws IOException
+	 */
+	public Collection<SeqHitPair> loadPairsByRegion(List<SeqAlignment> alignments, Region r) throws IOException {
+		if (alignments.size() < 1) {
+			throw new IllegalArgumentException("Alignment List must not be empty.");
+		}
+        Collection<SeqHitPair> output = null;
+        for (SeqAlignment a : alignments) {
+            if (output == null) {
+                output = loadPairsByRegion(a,r);
+            } else {
+                output.addAll(loadPairsByRegion(a,r));
+            }
+        }
+		return output;
+	}
+	
+	/**
+	 * Load integer positions of single hits by region.
+	 * If Region is a StrandedRegion, then the positions returned are only for that strand
+	 * @param alignments
+	 * @param r
+	 * @return
+	 * @throws IOException
+	 * @throws ClientException
+	 */
     public List<Integer> positionsByRegion(List<SeqAlignment> alignments, Region r) throws IOException, ClientException {
 		if (alignments.size() < 1) {
 			throw new IllegalArgumentException("Alignment List must not be empty.");
@@ -601,13 +719,22 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
                                             r.getEnd(),
                                             null,
                                             null,
-                                            r instanceof StrandedRegion ? null : (((StrandedRegion)r).getStrand() == '+'));
+                                            r instanceof StrandedRegion ? (((StrandedRegion)r).getStrand() == '+') : null);
             for (int i = 0; i < pos.length; i++) {
                 output.add(pos[i]);
             }                                            
         }
         return output;
     }
+    /**
+	 * Load integer positions of single hits by region.
+	 * If Region is a StrandedRegion, then the positions returned are only for that strand
+	 * @param alignment
+	 * @param r
+	 * @return
+	 * @throws IOException
+	 * @throws ClientException
+	 */
     public List<Integer> positionsByRegion(SeqAlignment alignment, Region r) throws IOException {
         List<Integer> output = new ArrayList<Integer>();
         try {
@@ -618,7 +745,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
                                             r.getEnd(),
                                             null,
                                             null,
-                                            r instanceof StrandedRegion ? null : (((StrandedRegion)r).getStrand() == '+'));
+                                            r instanceof StrandedRegion ? (((StrandedRegion)r).getStrand() == '+') : null);
             for (int i = 0; i < pos.length; i++) {
                 output.add(pos[i]);
             }                                            
@@ -628,6 +755,14 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         }
     }
 
+    /**
+     * Count single hits in a region.
+     * If Region is a StrandedRegion, then the counts returned are only for that strand
+     * @param align
+     * @param r
+     * @return
+     * @throws IOException
+     */
 	public int countByRegion(SeqAlignment align, Region r) throws IOException {
         try {
             return client.getCount(Integer.toString(align.getDBID()),
@@ -637,13 +772,20 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
                                    r.getEnd(),
                                    null,
                                    null,
-                                   null);
+                                   r instanceof StrandedRegion ? (((StrandedRegion)r).getStrand() == '+') : null);
         } catch (ClientException e) {
             throw new IllegalArgumentException(e);
         }
     }
     
 
+	/**
+	 * Count single hits in a region
+	 * @param alignments
+	 * @param r
+	 * @return
+	 * @throws IOException
+	 */
 	public int countByRegion(List<SeqAlignment> alignments, Region r) throws IOException {
 		if (alignments.size() < 1) { 
 			throw new IllegalArgumentException("Alignment List must not be empty."); 
@@ -654,32 +796,15 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         }
         return total;
 	}
-	public int countByRegion(SeqAlignment align, StrandedRegion r) throws IOException {
-        try {
-            return client.getCount(Integer.toString(align.getDBID()),
-                                   r.getGenome().getChromID(r.getChrom()),
-                                   false,
-                                   r.getStart(),
-                                   r.getEnd(),
-                                   null,
-                                   null,
-                                   r.getStrand() == '+');
-        } catch (ClientException e) {
-            throw new IllegalArgumentException(e);
-        }
-	}
-	public int countByRegion(List<SeqAlignment> alignments, StrandedRegion r) throws IOException {
-		if (alignments.size() < 1) { 
-			throw new IllegalArgumentException("Alignment List must not be empty."); 
-		}
-        int total = 0;
-        for (SeqAlignment a : alignments) {
-            total += countByRegion(a,r);
-        }
-        return total;
-	}
 
-	
+	/**
+	 * Weigh single hits in a region.
+	 * If Region is a StrandedRegion, then the counts returned are only for that strand
+	 * @param alignments
+	 * @param r
+	 * @return
+	 * @throws IOException
+	 */
 	public double weightByRegion(List<SeqAlignment> alignments, Region r) throws IOException {
 		if (alignments.size() < 1) { 
 			throw new IllegalArgumentException("Alignment List must not be empty."); 
@@ -694,37 +819,17 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
                                           r.getEnd(),
                                           null,
                                           null,
-                                          null);
+                                          r instanceof StrandedRegion ? (((StrandedRegion)r).getStrand() == '+') : null);
             } catch (ClientException e) {
                 throw new IllegalArgumentException(e);
             }            
         }
         return total;
 	}
-	public double weightByRegion(List<SeqAlignment> alignments, StrandedRegion r) throws IOException {
-		if (alignments.size() < 1) { 
-			throw new IllegalArgumentException("Alignment List must not be empty."); 
-		}
-        double total = 0;
-        for (SeqAlignment a : alignments) {
-            try {
-                total += client.getWeight(Integer.toString(a.getDBID()),
-                                          r.getGenome().getChromID(r.getChrom()),
-                                          false,
-                                          r.getStart(),
-                                          r.getEnd(),
-                                          null,
-                                          null,
-                                          r.getStrand() == '+');
-            } catch (ClientException e) {
-                throw new IllegalArgumentException(e);
-            }            
-        }
-        return total;
-	}
-
+	
 
 	/**
+	 * Count all single hits in the alignment
 	 * @param align
 	 * @return
 	 * @throws SQLException
@@ -738,7 +843,12 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         }
 	}
 
-
+	/**
+	 * Weigh all single hits in the alignment
+	 * @param align
+	 * @return
+	 * @throws IOException
+	 */
 	public double weighAllHits(SeqAlignment align) throws IOException {
         try {
             return client.getWeight(Integer.toString(align.getDBID()),
