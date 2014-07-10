@@ -79,8 +79,14 @@ public class MultinomialCondtionTester {
 			for(int i=0; i<P.length; i++){
 				P[i] = 1/(this.minFold + condSigScaledCounts.length-1);
 			}
+			String tmpout = "";
 			
-			System.out.println(cf.getPoint().getLocationString()+"\t"+Double.toString(getMultinomialPval(N,X,P)));
+			for(int i=0; i < condSigScaledCounts.length; i++){
+				tmpout = tmpout + condSigScaledCounts[i]+"\t";
+			}
+			
+			System.out.println(tmpout+"\n");
+			//System.out.println(cf.getPoint().getLocationString()+"\t"+Double.toString(getMultinomialPval(N,X,P)));
 		}
 	}
 	
