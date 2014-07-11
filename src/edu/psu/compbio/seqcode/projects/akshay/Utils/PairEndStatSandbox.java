@@ -89,15 +89,17 @@ public class PairEndStatSandbox {
 	public void setFragmentsSizes(){
 		this.fragment_size = new double[500];
 		for(String chr : this.gen.getChromList()){
-			List<SeqHitPair> tmp = this.loadHitsbyChrom(chr);
-			for(SeqHitPair pair : tmp){
-				if(pair.getCode() == 1 && pair.getMidpoint() != null){
-					int dist  = pair.getLeft().getFivePrime() > pair.getRight().getFivePrime() ? pair.getLeft().getFivePrime() - pair.getRight().getFivePrime() : pair.getRight().getFivePrime() - pair.getLeft().getFivePrime();
-					if(dist <=500){
-						this.fragment_size[dist-1]++;
+			if(!chr.contains("random")){
+				List<SeqHitPair> tmp = this.loadHitsbyChrom(chr);
+				for(SeqHitPair pair : tmp){
+					if(pair.getCode() == 1 && pair.getMidpoint() != null){
+						int dist  = pair.getLeft().getFivePrime() > pair.getRight().getFivePrime() ? pair.getLeft().getFivePrime() - pair.getRight().getFivePrime() : pair.getRight().getFivePrime() - pair.getLeft().getFivePrime();
+						if(dist <=500){
+							this.fragment_size[dist-1]++;
+						}
 					}
-				}
 				
+				}
 			}
 		}
 		
