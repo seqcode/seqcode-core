@@ -36,6 +36,7 @@ public class PairEndStatSandbox {
 		this.locator = expt;
 		this.loader = new SeqDataLoader();
 		closeLoader = true;
+		this.gen = g;
 		try {
 			this.getAligns(g);
 		} catch (SQLException e) {
