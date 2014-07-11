@@ -32,9 +32,10 @@ public class PairEndStatSandbox {
 	
 	public double[] fragment_size; 
 	
-	public PairEndStatSandbox(SeqLocator expt, Genome g) {
+	public PairEndStatSandbox(SeqLocator expt, Genome g) throws SQLException, IOException {
 		this.locator = expt;
-		
+		this.loader = new SeqDataLoader();
+		closeLoader = true;
 		try {
 			this.getAligns(g);
 		} catch (SQLException e) {
@@ -133,12 +134,13 @@ public class PairEndStatSandbox {
     }
 	
 	
-	public static void main(String[] args) throws NotFoundException{
+	public static void main(String[] args) throws NotFoundException, SQLException, IOException{
 		SeqLocator expt = Args.parseSeqExpt(args, "expt").get(0);
 		Genome g = Args.parseGenome(args).cdr();
 		PairEndStatSandbox analyzer = new PairEndStatSandbox(expt, g);
 		analyzer.setFragmentsSizes();
 		double[] frags = analyzer.getFragmentSizes();
+		analyzer.close();
 		for(int i=0; i<frags.length; i++){
 			System.out.println(Integer.toString(i+1)+"\t"+Double.toString(frags[i]));
 		}
