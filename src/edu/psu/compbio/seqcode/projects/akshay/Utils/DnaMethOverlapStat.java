@@ -39,7 +39,11 @@ public class DnaMethOverlapStat {
 		for(Region r : this.regs){
 			double perc = loader.getMethPerc(r).car();
 			int num_sites = loader.getMethPerc(r).cdr();
-			System.out.println(r.getLocationString()+"\t"+Double.toString(perc)+"\t"+num_sites);
+			if(Double.isNaN(perc)){
+				System.out.println(r.getLocationString()+"\t"+"0"+"\t"+num_sites);
+			}else{
+				System.out.println(r.getLocationString()+"\t"+Double.toString(perc)+"\t"+num_sites);
+			}
 		}
 	}
 	
