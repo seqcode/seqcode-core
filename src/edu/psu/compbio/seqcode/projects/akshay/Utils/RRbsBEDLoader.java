@@ -78,6 +78,7 @@ public class RRbsBEDLoader {
 			
 			fivePrimePos  = new int[numChroms][2][];
 			fivePrimeCount = new int[numChroms][2][];
+			fivePrimeMethPerc = new float[numChroms][2][];
 			
 			for(String chr : gen.getChromList()){
 				if(this.fivePrimePosList.containsKey(chr)){
