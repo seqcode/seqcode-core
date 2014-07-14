@@ -162,7 +162,7 @@ public class RRbsBEDLoader {
 	
 	private Pair<Double,Integer> getStrandedMethPerc(Region r, char strand){
 		double totalMeth = 0;
-		float totalHits = 0;
+		
 		int num_sites = 0;
 		String chr = r.getChrom();
 		int chrID = chrom2ID.get(chr);
@@ -181,18 +181,16 @@ public class RRbsBEDLoader {
 				while (end_ind < tempStarts.length && tempStarts[end_ind] <= r.getEnd()) {
 	                end_ind++;
 	            }
+				
 				for(int k = start_ind; k < end_ind; k++) {
-	                totalHits += fivePrimeCount[chrID][j][k];
-	                num_sites++;
-	            }
-				for(int k = start_ind; k < end_ind; k++) {
-					totalMeth += this.fivePrimeCount[chrID][j][k]*this.fivePrimeMethPerc[chrID][j][k]/100.0;
+					totalMeth += this.fivePrimeMethPerc[chrID][j][k];
+					num_sites++;
 				}
 			}
 		}
 		
 		
-		return new Pair((totalHits == 0)? 0.0 :totalMeth*100/totalHits , num_sites);
+		return new Pair((num_sites == 0)? 0.0 : totalMeth/num_sites , num_sites);
 	}
 	
 	public void initialize(){
@@ -206,10 +204,14 @@ public class RRbsBEDLoader {
 	
 	public Pair<Double, Integer> getMethPerc(Region r){
 		double ret=0;
-		double ret_pos = this.getStrandedMethPerc(r, '+').car();
-		double ret_neg = this.getStrandedMethPerc(r, '-').car();
-		return new Pair((ret_pos*this.getStrandedMethPerc(r, '+').cdr()+ret_neg*this.getStrandedMethPerc(r, '-').cdr())/(this.getStrandedMethPerc(r, '+').cdr()+this.getStrandedMethPerc(r, '-').cdr()),
-				this.getStrandedMethPerc(r, '+').cdr()+this.getStrandedMethPerc(r, '-').cdr());
+		double pos_meth = this.getStrandedMethPerc(r, '+').car();
+		double neg_meth = this.getStrandedMethPerc(r, '-').car();
+		
+		double tot_meth = pos_meth*this.getStrandedMethPerc(r, '+').cdr() + neg_meth*this.getStrandedMethPerc(r, '-').cdr();
+		int tot_sites = this.getStrandedMethPerc(r, '+').cdr() + this.getStrandedMethPerc(r, '-').cdr();
+		
+		return new Pair((tot_sites == 0 ? 0 : tot_meth/tot_sites),tot_sites);
+		
 	}
 	
 	
