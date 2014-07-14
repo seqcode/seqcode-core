@@ -6,11 +6,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 public class RRbsBEDLoader {
 	
@@ -101,18 +103,28 @@ public class RRbsBEDLoader {
 					for(int j = 0; j < this.fivePrimeMethPercList.get(chr).length; j++)
 						this.fivePrimeMethPerc[chrom2ID.get(chr)][j] = list2float(this.fivePrimeMethPercList.get(chr)[j]);
 				}else{
-					this.fivePrimeCount[chrom2ID.get(chr)][0]=null;
-					this.fivePrimeCount[chrom2ID.get(chr)][1]=null;
+					this.fivePrimeMethPerc[chrom2ID.get(chr)][0]=null;
+					this.fivePrimeMethPerc[chrom2ID.get(chr)][1]=null;
 				}
 			}
 			
+			//Sorting the arrays
+			for(int i = 0; i < fivePrimePos.length; i++) {  // chr
+				for(int j = 0; j < fivePrimePos[i].length; j++){
+					if(fivePrimePos[i][j]!=null && fivePrimeCount[i][j]!=null && this.fivePrimeMethPerc[i][j] != null ){
+						int[] inds = StatUtil.findSort(fivePrimePos[i][j]);
+						fivePrimeCount[i][j] = StatUtil.permute(fivePrimeCount[i][j], inds);
+						this.fivePrimeMethPerc[i][j] = StatUtil.permute(this.fivePrimeMethPerc[i][j], inds);
+					}
+				}
+			}
 			
+			//free memenory by cleaning all the lists
 			
-			
-			
-			
-			
-			
+			this.fivePrimePosList = null;
+			this.fivePrimeCountList = null;
+			this.fivePrimeMethPercList = null;
+		
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -145,6 +157,39 @@ public class RRbsBEDLoader {
 		this.fivePrimeMethPercList.put(chr, currFpArrayList);
 	}
 	
+	private double getStrandedMethPerc(Region r, char strand){
+		double totalMeth = 0;
+		float totalHits = 0;
+		String chr = r.getChrom();
+		int chrID = chrom2ID.get(chr);
+		int j = (strand == '+') ? 0:1;
+		if(this.fivePrimePos[chrID][j] != null){
+			int[] tempStarts = this.fivePrimePos[chrID][j];
+			if(tempStarts.length !=0){
+				int start_ind = Arrays.binarySearch(tempStarts, r.getStart());
+				int end_ind   = Arrays.binarySearch(tempStarts, r.getEnd());
+				if( start_ind < 0 ) { start_ind = -start_ind - 1; }
+				if( end_ind < 0 )   { end_ind   = -end_ind - 1; }
+				
+				while (start_ind > 0 && tempStarts[start_ind - 1] >= r.getStart() ) {
+	                start_ind--;
+	            }
+				while (end_ind < tempStarts.length && tempStarts[end_ind] <= r.getEnd()) {
+	                end_ind++;
+	            }
+				for(int k = start_ind; k < end_ind; k++) {
+	                totalHits += fivePrimeCount[chrID][j][k];
+	            }
+				for(int k = start_ind; k < end_ind; k++) {
+					totalMeth += this.fivePrimeCount[chrID][j][k]*this.fivePrimeMethPerc[chrID][j][k]/100.0;
+				}
+			}
+		}
+		
+		
+		return totalMeth*100/totalHits;
+	}
+	
 	public void initialize(){
 		this.fivePrimePosList = new HashMap<String, ArrayList<Integer>[]>();
 		this.fivePrimeCountList = new HashMap<String, ArrayList<Integer>[]>();
@@ -154,13 +199,14 @@ public class RRbsBEDLoader {
 	
 	//gettors
 	
-	public float getMethPerc(Region r){
-		float ret=0;
-		
-		
-		
+	public double getMethPerc(Region r){
+		double ret=0;
+		ret += this.getStrandedMethPerc(r, '+');
+		ret += this.getStrandedMethPerc(r, '-');
 		return ret;
 	}
+	
+	
 	
 	protected float[] list2float(List<Float> list) {
 		float[] out = new float[list.size()];
@@ -176,15 +222,6 @@ public class RRbsBEDLoader {
 		return out;
 	}
 	
-	public HashMap<String, ArrayList<Integer>[]> getFivePos(){
-		return this.fivePrimePosList;
-	}
 	
-	public HashMap<String, ArrayList<Integer>[]> getFiveCounts(){
-		return this.fivePrimeCountList;
-	}
-	public HashMap<String, ArrayList<Float>[]> getFiveMethPerc(){
-		return this.fivePrimeMethPercList;
-	}
 
 }
