@@ -12,6 +12,7 @@ import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.datasets.general.Region;
 import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 public class RRbsBEDLoader {
@@ -52,6 +53,7 @@ public class RRbsBEDLoader {
 				String chr="."; String strand = "";
 	            int start=0, end=0;
 	            chr = words[0];
+	            chr = chr.replaceFirst("^chr", "");
 	            start = Integer.parseInt(words[1]);
 	            end = Integer.parseInt(words[2]);
 	            strand = words[5];
@@ -158,9 +160,10 @@ public class RRbsBEDLoader {
 		this.fivePrimeMethPercList.put(chr, currFpArrayList);
 	}
 	
-	private double getStrandedMethPerc(Region r, char strand){
+	private Pair<Double,Integer> getStrandedMethPerc(Region r, char strand){
 		double totalMeth = 0;
 		float totalHits = 0;
+		int num_sites = 0;
 		String chr = r.getChrom();
 		int chrID = chrom2ID.get(chr);
 		int j = (strand == '+') ? 0:1;
@@ -180,6 +183,7 @@ public class RRbsBEDLoader {
 	            }
 				for(int k = start_ind; k < end_ind; k++) {
 	                totalHits += fivePrimeCount[chrID][j][k];
+	                num_sites++;
 	            }
 				for(int k = start_ind; k < end_ind; k++) {
 					totalMeth += this.fivePrimeCount[chrID][j][k]*this.fivePrimeMethPerc[chrID][j][k]/100.0;
@@ -188,7 +192,7 @@ public class RRbsBEDLoader {
 		}
 		
 		
-		return totalMeth*100/totalHits;
+		return new Pair((totalHits == 0)? 0.0 :totalMeth*100/totalHits , num_sites);
 	}
 	
 	public void initialize(){
@@ -200,11 +204,12 @@ public class RRbsBEDLoader {
 	
 	//gettors
 	
-	public double getMethPerc(Region r){
+	public Pair<Double, Integer> getMethPerc(Region r){
 		double ret=0;
-		ret += this.getStrandedMethPerc(r, '+');
-		ret += this.getStrandedMethPerc(r, '-');
-		return ret;
+		double ret_pos = this.getStrandedMethPerc(r, '+').car();
+		double ret_neg = this.getStrandedMethPerc(r, '-').car();
+		return new Pair((ret_pos*this.getStrandedMethPerc(r, '+').cdr()+ret_neg*this.getStrandedMethPerc(r, '-').cdr())/(this.getStrandedMethPerc(r, '+').cdr()+this.getStrandedMethPerc(r, '-').cdr()),
+				this.getStrandedMethPerc(r, '+').cdr()+this.getStrandedMethPerc(r, '-').cdr());
 	}
 	
 	
