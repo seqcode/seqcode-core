@@ -204,9 +204,9 @@ public class ExperimentManager {
 	 * ELAND, NOVO, BOWTIE, BED	, SAM, TOPSAM
 	 * @param files List of File/String Pairs, where the string is a format descriptor
 	 */
-	public HitLoader getFileHitLoader(String name, String format, boolean useNonUnique){
+	public HitLoader getFileHitLoader(String filename, String format, boolean useNonUnique){
 		HitLoader currReader=null;
-		File file = new File(name);
+		File file = new File(filename);
 		if(!file.isFile()){System.err.println("File not found: "+file.getName());System.exit(1);}
 		if(format.equals("SAM") || format.equals("BAM")){
 			currReader = new SAMFileHitLoader(file,useNonUnique);
