@@ -105,16 +105,16 @@ public class ExptConfig {
 				}
 				
 				String modelFile = Args.parseString(args, "d", null);	// read distribution file
-				if (modelFile == null){
-					defaultModel = new BindingModel(BindingModel.defaultEmpiricalDistribution);
-		        } else {
-					File pFile = new File(modelFile);
-					if(!pFile.isFile()){
-						System.err.println("\nCannot find read distribution file: "+modelFile);
-						System.exit(1);
-					}
-					defaultModel = new BindingModel(pFile);
-				}
+//				if (modelFile == null){
+//					defaultModel = new BindingModel(BindingModel.defaultEmpiricalDistribution);
+//		        } else {
+//					File pFile = new File(modelFile);
+//					if(!pFile.isFile()){
+//						System.err.println("\nCannot find read distribution file: "+modelFile);
+//						System.exit(1);
+//					}
+//					defaultModel = new BindingModel(pFile);
+//				}
 				
 				//Fixed per base read limits
 				perBaseReadLimit = Args.parseInteger(args,"fixedpb",-1);
@@ -157,7 +157,7 @@ public class ExptConfig {
 			        		for(String n : sourceNames)
 			        			sources.add(new Pair<String,String>(n,type));
 			        		
-			        		expts.add(new ExptDescriptor(cond, rep, signal, sources, defaultModel, perBaseReadLimit));
+//			        		expts.add(new ExptDescriptor(cond, rep, signal, sources, defaultModel, perBaseReadLimit));
 			        		
 			        		exptTags.add(s);
 			        	}
@@ -178,7 +178,7 @@ public class ExptConfig {
 				            String[] words = line.split("\\t");
 				            if(words.length >=3){
 				            	String cond="", rep="";
-				            	BindingModel currModel=null;
+//				            	BindingModel currModel=null;
 					            
 				            	boolean validLine = true;
 					            Pair<String, String> src=null;
@@ -214,10 +214,10 @@ public class ExptConfig {
 											System.err.println("\nCannot find read distribution file: "+currModFile);
 											System.exit(1);
 										}
-										currModel = new BindingModel(pFile);
+	//									currModel = new BindingModel(pFile);
 						            }
-						            if(currModel==null && signal)
-						            	currModel = defaultModel;
+	//					            if(currModel==null && signal)
+		//				            	currModel = defaultModel;
 						            
 						            //Per-base read limit in field 7
 						            float currCondPerBaseReads = perBaseReadLimit;
@@ -237,7 +237,7 @@ public class ExptConfig {
 						            	}
 						            }
 						            if(!found){
-						            	expts.add(new ExptDescriptor(cond, rep, signal, src, currModel, currCondPerBaseReads));
+//						            	expts.add(new ExptDescriptor(cond, rep, signal, src, currModel, currCondPerBaseReads));
 						            }
 					            }
 				            }else{
