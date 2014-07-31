@@ -27,12 +27,13 @@ public class DistanceFromTSS {
 		for(Point p : this.locations){
 			int dis = Integer.MAX_VALUE;
 			for(Point sp : this.refTSS){
-				int tempd=0;
-				if(sp.getChrom().equals(p.getChrom()))
-					tempd = sp.distance(p);
+
+				if(sp.getChrom().equals(p.getChrom())){
+					int tempd = sp.distance(p);
 					if(tempd < dis){
 						dis = tempd;
 					}
+				}
 			}
 			System.out.println(p.getLocation()+"\t"+Integer.toString(dis));
 		}
