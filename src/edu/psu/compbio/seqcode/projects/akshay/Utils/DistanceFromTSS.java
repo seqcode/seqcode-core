@@ -48,6 +48,7 @@ public class DistanceFromTSS {
 		String locs = ap.getKeyValue("peaks");
 		
 		DistanceFromTSS analyzer =  new DistanceFromTSS(g,tss,locs);
+		System.out.println("Distance");
 		analyzer.printDistances();
 		
 	}
