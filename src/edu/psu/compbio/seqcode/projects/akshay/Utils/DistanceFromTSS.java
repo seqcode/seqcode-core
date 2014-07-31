@@ -35,7 +35,7 @@ public class DistanceFromTSS {
 					}
 				}
 			}
-			System.out.println(p.getLocation()+"\t"+Integer.toString(dis));
+			System.out.println(p.getLocationString()+"\t"+Integer.toString(dis));
 		}
 	}
 	
