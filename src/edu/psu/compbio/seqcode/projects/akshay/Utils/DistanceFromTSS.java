@@ -14,21 +14,21 @@ import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 public class DistanceFromTSS {
 	
 	Genome gen;
-	List<Point> refTSS = new ArrayList<Point>();
+	List<StrandedPoint> refTSS = new ArrayList<StrandedPoint>();
 	List<Point> locations = new ArrayList<Point>();
 	
 	public DistanceFromTSS(Genome g, String refPts, String locs) {
 		this.gen = g;
-		this.refTSS = Utilities.loadPeaksFromPeakFile(gen, refPts, 0);
+		this.refTSS = Utilities.loadStrandedPointFromRefTssFile(gen, refPts);
 		this.locations = Utilities.loadPeaksFromPeakFile(gen, locs, 0);
 	}
 	
 	public void printDistances(){
 		for(Point p : this.locations){
 			int dis = Integer.MAX_VALUE;
-			for(Point sp : this.refTSS){
-
+			for(StrandedPoint sp : this.refTSS){
 				if(sp.getChrom().equals(p.getChrom())){
+					
 					int tempd = sp.distance(p);
 					if(tempd < dis){
 						dis = tempd;
