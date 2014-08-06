@@ -3,28 +3,20 @@
  */
 package edu.psu.compbio.seqcode.gse.seqview.components;
 
-import java.sql.SQLException;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.border.*;
-import javax.swing.table.*;
 import java.io.File;
 import java.io.PrintWriter;
 
-import edu.psu.compbio.seqcode.gse.conservation.*;
-import edu.psu.compbio.seqcode.gse.datasets.binding.BindingEvent;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.GeneFactoryLoader;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.assignment.*;
-import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.GeneFactoryLoader;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.assignment.*;
 
 public class RegionAnnotationPanel extends JPanel implements RegionList {
     
@@ -220,22 +212,7 @@ public class RegionAnnotationPanel extends JPanel implements RegionList {
             }
         });
         
-        item = new JMenuItem("Get Enriched GO");
-        annotMenu.add(item);
-        item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    System.err.println("Creating GOENRICH object");
-                    Runnable r = new Runnable() { 
-                        public void run() { 
-                            System.err.println("Running GOENRICH object");
-                            GOEnrichment();
-                        }
-                    };
-                    
-                    addTaskedRunnable(r);
-                }
-            });
-
+        
         JMenu sortMenu = new JMenu("Sorting");
         item = new JMenuItem("Sort Genes");
         sortMenu.add(item);
@@ -341,126 +318,6 @@ public class RegionAnnotationPanel extends JPanel implements RegionList {
         }
         SwingUtilities.invokeLater(new ListModelAdder(targets,geneModel));
 
-    }
-
-    public void GOEnrichment () {
-        System.err.println("Creating BP");
-        JFrame progressFrame = new JFrame();
-        JProgressBar bar = new JProgressBar(0,geneModel.size());
-        bar.setValue(0);
-        bar.setStringPainted(true);
-        Container cnt = (Container)progressFrame.getContentPane();
-        cnt.setLayout(new GridLayout(2, 1));        
-        JLabel progresslabel = new JLabel("Initializing (step 1/4)");
-        cnt.add(progresslabel);
-        cnt.add(bar);
-        progressFrame.setVisible(true);
-        progressFrame.pack();
-
-        BindingPartition partition = new BindingPartition("enrichment","enrichment","GO:5_23_2006");
-        HashSet<String> bound = new HashSet<String>();
-        HashSet<String> unbound = new HashSet<String>();
-
-        if (lastgenerator == null) {
-            annotate();
-        }
-
-
-        System.err.println("GOENRICH : going through genes");
-        progresslabel.setText("Analyzing Genes (step 2/4)");
-
-        for (int i = 0; i < geneModel.size(); i++) {
-            bar.setValue(i);
-            Object o = geneModel.get(i);
-            if (o instanceof Gene) {
-                Gene g = (Gene)o;
-                /* PROBABLY WRONG
-                   We want to get the same "name" back out of the gene that would have.  This should be the ID. */
-                bound.add(g.getID());
-            } else {
-                /* ALSO SUSPECT.  probably better to ignore anything that isn't a gene since it won't be in the total set of genes */
-                bound.add(o.toString());
-            }
-        }
-        System.err.println("GOENRICH : done with genes");
-        ChromRegionIterator chroms = new ChromRegionIterator(genome);
-        progresslabel.setText("Analyzying Chromosomes (step 3/4)");
-        bar.setMaximum(50);
-        bar.setValue(0);
-        while (chroms.hasNext()) {
-            System.err.println("GOENRICH CHROM " + bar.getValue());
-            Iterator<Gene> genes = lastgenerator.execute(chroms.next());
-            bar.setValue(bar.getValue() + 1);
-            while (genes.hasNext()) {
-                Gene g = genes.next();
-                if (!bound.contains(g.getID())) {
-                    unbound.add(g.getID());
-                }
-            }
-        }
-        bar.setMaximum(5);
-        bar.setValue(1);
-        progresslabel.setText("Computing Enrichments (4/4)");
-        System.err.println("GOENRICH : Done with Chroms");
-        partition.addBlock("bound",bound);
-        bar.setValue(2);
-        partition.addBlock("unbound",unbound);
-        bar.setValue(3);
-        try {
-            final Enrichment[] enriched = partition.getFDREnrichedGOCategories("bound", 0.1);
-            final JFrame frame = new JFrame();
-            JPanel panel = new JPanel();
-            bar.setValue(4);
-            Enrichment[][] data = new Enrichment[enriched.length][1];
-            for (int i = 0; i < enriched.length; i++) {
-                data[i][0] = enriched[i];
-            }
-            String[] colNames = {"Category"};
-            bar.setValue(5);
-
-            final DefaultTableModel model = new DefaultTableModel(data,colNames);
-            JTable table = new JTable(model);
-            panel.add(new JScrollPane(table));
-            frame.getContentPane().add(panel);
-            JMenuBar jmb = new JMenuBar();
-            JMenu filemenu = new JMenu("File");
-            jmb.add(filemenu);
-            JMenuItem item = new JMenuItem("Save Categories");
-            filemenu.add(item);
-            item.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        JFileChooser chooser;
-                        chooser = new JFileChooser(new File(System.getProperty("user.dir")));
-                        int v = chooser.showSaveDialog(null);
-                        if(v == JFileChooser.APPROVE_OPTION) { 
-                            try {
-                                File f = chooser.getSelectedFile();
-                                PrintWriter writer = new PrintWriter(f);
-                                for (int i = 0; i < enriched.length; i++) {
-                                    writer.println(enriched[i].toString());
-                                }
-                                writer.close();
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    }
-                });
-            item = new JMenuItem("Close");
-            filemenu.add(item);
-            item.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        frame.dispose();
-                    }
-                });
-            frame.setJMenuBar(jmb);
-            frame.pack();
-            frame.setVisible(true);        
-            progressFrame.dispose();
-            System.err.println("GOENRICH created frame");
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
     }
 
     public void sortGenes() {

@@ -3,15 +3,17 @@ package edu.psu.compbio.seqcode.gse.tools.motifs;
 import java.util.*;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 /** Use:
- *   java edu.psu.compbio.seqcode.gse.tools.motifs.CountKmers --species "$SC;SGDv1" --mink 4 --maxk 6 [--outputcounts] [--includerc] [--topn 100]
+ *   java edu.psu.compbio.seqcode.gse.tools.motifs.CountKmers --species "$SC;sacCer3" --mink 4 --maxk 6 [--outputcounts] [--includerc] [--topn 100]
  *
  *   outputcounts: output counts instead of frequencies
  *   includerc: include counts from reverse complement strand too

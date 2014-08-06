@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;

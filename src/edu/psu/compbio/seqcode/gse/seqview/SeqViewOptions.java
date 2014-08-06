@@ -5,7 +5,8 @@ import java.util.prefs.*;
 import java.io.*;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipchip.ExptNameVersion;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
@@ -13,8 +14,6 @@ import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedExpt;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class SeqViewOptions {
@@ -65,7 +64,6 @@ public class SeqViewOptions {
     // tracks to paint and their options
     public boolean hash=true, relative=false, seqletters=true, polya=false, gccontent=false, pyrpurcontent=false, cpg=false, regexmatcher=false;
     public ArrayList<String> genes, ncrnas, otherannots;
-    public ArrayList<ExptNameVersion> agilentdata;
     public ArrayList<WeightMatrix> motifs;
     public ArrayList<Experiment> exprExperiments;
     public ArrayList<SeqLocatorMatchedExpt> seqExpts;
@@ -150,7 +148,6 @@ public class SeqViewOptions {
         genes = new ArrayList<String>();
         ncrnas = new ArrayList<String>();
         otherannots = new ArrayList<String>();
-        agilentdata= new ArrayList<ExptNameVersion>();
         seqExpts = new ArrayList<SeqLocatorMatchedExpt>();
         motifs = new ArrayList<WeightMatrix>();
         exprExperiments = new ArrayList<Experiment>();
@@ -182,7 +179,6 @@ public class SeqViewOptions {
         mergeInto(genes,union.genes);
         mergeInto(ncrnas,union.ncrnas);
         mergeInto(otherannots,union.otherannots);
-        mergeInto(agilentdata,union.agilentdata);
         mergeInto(seqExpts,union.seqExpts);
         mergeInto(motifs,union.motifs);
         mergeInto(exprExperiments,union.exprExperiments);
@@ -234,7 +230,6 @@ public class SeqViewOptions {
         differenceOf(genes,other.genes);
         differenceOf(ncrnas,other.ncrnas);
         differenceOf(otherannots,other.otherannots);
-        differenceOf(agilentdata,other.agilentdata);
         differenceOf(seqExpts,other.seqExpts);
         differenceOf(motifs,other.motifs);
         differenceOf(exprExperiments, other.exprExperiments);
@@ -271,7 +266,6 @@ public class SeqViewOptions {
         o.genes = (ArrayList<String>) genes.clone();
         o.ncrnas = (ArrayList<String>) ncrnas.clone();
         o.otherannots = (ArrayList<String>) otherannots.clone();
-        o.agilentdata = (ArrayList<ExptNameVersion>)agilentdata.clone();
         o.seqExpts = (ArrayList<SeqLocatorMatchedExpt>)seqExpts.clone();
         o.motifs = (ArrayList<WeightMatrix>)motifs.clone();
         o.exprExperiments = (ArrayList<Experiment>)exprExperiments.clone();

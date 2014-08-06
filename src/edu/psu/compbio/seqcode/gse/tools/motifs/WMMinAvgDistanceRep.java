@@ -3,9 +3,10 @@ package edu.psu.compbio.seqcode.gse.tools.motifs;
 import java.util.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.clustering.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.machinelearning.clustering.Cluster;
+import edu.psu.compbio.seqcode.machinelearning.clustering.ClusterRepresentative;
 
 public class WMMinAvgDistanceRep implements ClusterRepresentative<WeightMatrix> {
     

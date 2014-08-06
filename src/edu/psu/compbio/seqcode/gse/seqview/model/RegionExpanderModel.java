@@ -1,7 +1,7 @@
 package edu.psu.compbio.seqcode.gse.seqview.model;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.Expander;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
 
 public class RegionExpanderModel<OUT> extends ExpanderModel<Region,OUT> implements RegionModel {
     private Region region;

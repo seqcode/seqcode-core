@@ -9,12 +9,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;

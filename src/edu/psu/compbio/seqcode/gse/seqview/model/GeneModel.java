@@ -10,9 +10,8 @@ package edu.psu.compbio.seqcode.gse.seqview.model;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
 
 public class GeneModel extends RegionMultipleExpanderModel<Gene> {
     public GeneModel() { 

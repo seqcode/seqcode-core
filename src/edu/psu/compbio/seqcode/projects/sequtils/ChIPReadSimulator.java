@@ -10,14 +10,16 @@ import java.util.Random;
 
 import edu.psu.compbio.seqcode.deepseq.ReadHit;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.sequtils.CountDataSimulator.SimCounts;
 
 /**
@@ -426,8 +428,9 @@ public class ChIPReadSimulator {
 					"\t--out <output file>\n" +
 					"");
 		}else{
-			Config config = new Config(args, false);
-			Genome gen = config.getGenome();
+			GenomeConfig gcon = new GenomeConfig(args);
+			ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+			MultiGPSConfig config = new MultiGPSConfig(gcon, args, false);
 			CountDataSimulator cdsim = new CountDataSimulator();
 			
 			//////////////////////////////////////////////////
@@ -499,13 +502,13 @@ public class ChIPReadSimulator {
 			// Simulate reads according to counts and binding model
 			BindingModel bm = new BindingModel(mFile);
 	        //Initialize the MultiConditionReadSimulator
-			ChIPReadSimulator sim = new ChIPReadSimulator(bm, gen, counts, c, r, noiseProb, jointRate, jointSpacing, outFile);
+			ChIPReadSimulator sim = new ChIPReadSimulator(bm, gcon.getGenome(), counts, c, r, noiseProb, jointRate, jointSpacing, outFile);
 	        if(noiseProb==1.0)
 	        	sim.setTotalFrags((int) frags);
 	        
 	        if(ap.hasKey("ctrl")){
-				ExperimentManager manager = new ExperimentManager(config);
-				sim.setNoiseSource(manager.getExperimentSet().getSamples());
+				ExperimentManager manager = new ExperimentManager(econ);
+				sim.setNoiseSource(manager.getSamples());
 			}
 			
 	        sim.setTotalReads((int) reads);

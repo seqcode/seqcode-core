@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.core.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;

@@ -5,8 +5,8 @@ import java.util.Collections;
 
 
 //ADDED BY YP
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.projects.shaun.teqseq.core.ExptCollection;
 
 public class AIsoform extends ARegion{

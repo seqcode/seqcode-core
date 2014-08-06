@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.projects.gps.features.Feature;
 import edu.psu.compbio.seqcode.gse.projects.gps.utilities.AnnotationLoader;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;

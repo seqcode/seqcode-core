@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.Expander;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.NamedGeneratorFactory;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.NamedStrandedGeneratorFactory;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.NamedTypedGeneratorFactory;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RefGeneGeneratorFactory;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RepeatMaskedGenerator;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.NamedGeneratorFactory;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.NamedStrandedGeneratorFactory;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.NamedTypedGeneratorFactory;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGeneratorFactory;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RepeatMaskedGenerator;
 
 public class AnnotationLoader {
 

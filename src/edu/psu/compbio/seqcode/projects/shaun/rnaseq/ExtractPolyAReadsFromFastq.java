@@ -1,5 +1,11 @@
 package edu.psu.compbio.seqcode.projects.shaun.rnaseq;
 
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.CloseableIterator;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,10 +15,6 @@ import java.util.HashMap;
 
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMFileReader.ValidationStringency;
-import net.sf.samtools.util.CloseableIterator;
 
 public class ExtractPolyAReadsFromFastq{
 	File fqFile=null;
@@ -45,8 +47,11 @@ public class ExtractPolyAReadsFromFastq{
 		HashMap<String, Integer> mappedReads=null;
 		if(mappedFilter){
 			mappedReads =  new HashMap<String,Integer>(150000000);
-			SAMFileReader sreader = new SAMFileReader(samFile);
-			sreader.setValidationStringency(ValidationStringency.SILENT);
+			SamReaderFactory factory =
+			          SamReaderFactory.makeDefault()
+			              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+			              .validationStringency(ValidationStringency.SILENT);
+			SamReader sreader = factory.open(samFile);
 			CloseableIterator<SAMRecord> iter = sreader.iterator();
 			while (iter.hasNext()) {
 			    SAMRecord record = iter.next();
@@ -63,7 +68,12 @@ public class ExtractPolyAReadsFromFastq{
 			    }
 			}
 			iter.close();
-			sreader.close();
+			try {
+				sreader.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		
 			System.err.println(mappedReads.keySet().size()+" mapped reads in the SAM file.");
 		}

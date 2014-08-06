@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.projects.shaun.teqseq.geneloaders;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.projects.shaun.teqseq.core.ExptCollection;
 
 public class AGene extends ARegion{

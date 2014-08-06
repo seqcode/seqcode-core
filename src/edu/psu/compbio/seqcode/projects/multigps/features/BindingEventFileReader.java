@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.PointParser;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.PointParser;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 
 /**
  * Read a multi-condition GPS file
@@ -20,14 +20,14 @@ import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
  *
  */
 public class BindingEventFileReader {
-	protected ExperimentSet experiments=null;
-	protected Config config=null;
+	protected ExperimentManager experiments=null;
+	protected MultiGPSConfig config=null;
 	ArrayList<BindingEvent> features = new ArrayList<BindingEvent>();
 	
-	public BindingEventFileReader(String fileName,  ExperimentSet ex, Config con){
+	public BindingEventFileReader(String fileName,  ExperimentManager ex, MultiGPSConfig con){
 		experiments = ex;
 		config = con;
-		BindingEvent.setExperimentSet(experiments);
+		BindingEvent.setExperimentManager(experiments);
 		BindingEvent.setConfig(config);
 		execute(fileName);
 	}

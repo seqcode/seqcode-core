@@ -2,9 +2,12 @@ package edu.psu.compbio.seqcode.gse.viz.metaprofile;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.clustering.*;
-import edu.psu.compbio.seqcode.gse.clustering.hierarchical.*;
-import edu.psu.compbio.seqcode.gse.clustering.vectorcluster.*;
+import edu.psu.compbio.seqcode.machinelearning.clustering.Cluster;
+import edu.psu.compbio.seqcode.machinelearning.clustering.ClusterRepresentative;
+import edu.psu.compbio.seqcode.machinelearning.clustering.PairwiseElementMetric;
+import edu.psu.compbio.seqcode.machinelearning.clustering.hierarchical.ClusterNode;
+import edu.psu.compbio.seqcode.machinelearning.clustering.hierarchical.HierarchicalClustering;
+import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.EuclideanDistance;
 
 public class ProfileClusteringHandler {
 

@@ -11,11 +11,11 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;

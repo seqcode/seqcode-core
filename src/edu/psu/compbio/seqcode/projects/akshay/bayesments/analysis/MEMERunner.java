@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.stats.StreamGobbler;

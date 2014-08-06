@@ -6,12 +6,11 @@ package edu.psu.compbio.seqcode.gse.datasets.expression;
 import java.util.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipchip.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
-import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.gse.datasets.core.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptTarget;
+import edu.psu.compbio.seqcode.gse.datasets.core.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.*;
 

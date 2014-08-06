@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.gse.seqview.model;
 import java.io.IOException;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;

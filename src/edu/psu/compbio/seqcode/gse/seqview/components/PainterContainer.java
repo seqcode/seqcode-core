@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.seqview.components;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.seqview.SeqViewOptions;
 
 public interface PainterContainer {

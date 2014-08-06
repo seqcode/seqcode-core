@@ -9,9 +9,9 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrixImport;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.projects.gps.discovery.kmer.KMAC;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 

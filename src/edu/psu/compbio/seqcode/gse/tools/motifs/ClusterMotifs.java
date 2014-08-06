@@ -7,15 +7,14 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
-import edu.psu.compbio.seqcode.gse.clustering.*;
-import edu.psu.compbio.seqcode.gse.clustering.hierarchical.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
+import edu.psu.compbio.seqcode.machinelearning.clustering.Cluster;
+import edu.psu.compbio.seqcode.machinelearning.clustering.ClusterRepresentative;
+import edu.psu.compbio.seqcode.machinelearning.clustering.ClusteringMethod;
+import edu.psu.compbio.seqcode.machinelearning.clustering.hierarchical.HierarchicalClustering;
 
 /**
  * Performs hierarchical clustering on a set of motifs and outputs the clusters

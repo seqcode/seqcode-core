@@ -42,7 +42,7 @@ import org.jfree.ui.RefineryUtilities;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
-import edu.psu.compbio.seqcode.projects.shaun.viz.ScatterData;
+import edu.psu.compbio.seqcode.gse.viz.scatter.ScatterData;
 
 
 /** 

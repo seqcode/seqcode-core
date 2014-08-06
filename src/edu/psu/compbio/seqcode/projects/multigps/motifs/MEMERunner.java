@@ -14,28 +14,30 @@ import java.util.List;
 import java.util.Map;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.stats.StreamGobbler;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 
 public class MEMERunner {
 
 	protected ExperimentManager manager; 
-	protected Config config;
+	protected MultiGPSConfig config;
 	protected Genome gen;
 	protected String MEMEpath;
 	protected String MEMEargs;
 	protected Float pseudo = (float)0.001; 
 	
 	//Constructor
-	public MEMERunner(Config c, ExperimentManager man){
+	public MEMERunner(MultiGPSConfig c, ExperimentManager man){
 		config=c;
 		manager=man;
 		
@@ -238,7 +240,9 @@ public class MEMERunner {
 	 */
 	public static void main(String[] args){
 		ArgParser ap = new ArgParser(args);
-		Config config = new Config(args);
+		GenomeConfig gcon = new GenomeConfig(args);
+		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		MultiGPSConfig config = new MultiGPSConfig(gcon, args);
 		List<Region> analysisRegs;
 		List<String> analysisSeqs=new ArrayList<String>();
 		
@@ -247,7 +251,7 @@ public class MEMERunner {
 			System.err.println(config.getArgsList());
 			System.err.println("\t--peaks <regions to analyze with MEME\n");
 		}else{
-			ExperimentManager manager = new ExperimentManager(config);
+			ExperimentManager manager = new ExperimentManager(econ);
 			
 			if(ap.hasKey("peaks")){
 				analysisRegs = Utils.loadRegionsFromFile(Args.parseString(args, "peaks", null), config.getGenome(), 100);

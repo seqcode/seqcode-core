@@ -9,7 +9,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
-import edu.psu.compbio.seqcode.gse.datasets.function.*;
 import edu.psu.compbio.seqcode.gse.seqview.RectangleLookup;
 import edu.psu.compbio.seqcode.gse.seqview.components.*;
 import edu.psu.compbio.seqcode.gse.seqview.model.ModelProperties;

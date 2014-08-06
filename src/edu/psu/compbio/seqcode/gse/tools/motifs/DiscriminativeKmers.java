@@ -12,10 +12,11 @@ import cern.jet.random.engine.RandomEngine;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;

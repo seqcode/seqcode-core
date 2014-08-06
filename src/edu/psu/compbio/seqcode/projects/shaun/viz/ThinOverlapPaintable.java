@@ -23,12 +23,13 @@ import java.io.IOException;
 
 
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.*;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
@@ -87,7 +88,7 @@ public class ThinOverlapPaintable extends AbstractPaintable {
 	}
 	
 	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, SeqLocator loc, int extend) throws SQLException, IOException { 
-		this(basereg, hls, new ClosingRegionExpanderWrapper<SeqHit>(new SeqExpander(loc), new ChipSeqHitExtender(extend)));
+		this(basereg, hls, new ClosingRegionExpanderWrapper<SeqHit>(new SeqExpander(loc), new SeqHitExtender(extend)));
 	}
 	
 	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, Expander<Region,? extends Region> exp) { 

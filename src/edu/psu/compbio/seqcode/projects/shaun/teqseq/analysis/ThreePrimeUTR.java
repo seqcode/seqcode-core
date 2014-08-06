@@ -7,10 +7,13 @@ import cern.jet.random.Poisson;
 import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RefGeneGenerator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.ExonicGene;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 

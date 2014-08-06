@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.projects.shaun.rnaseq.genemodels;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 /*
  * TUnit is a transcribed unit such as an exon or intron
  */

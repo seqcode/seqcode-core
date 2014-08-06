@@ -6,19 +6,20 @@ import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 
 public class BindingModelMaker {
-	protected ExperimentSet experiments;
-	protected Config config;
+	protected ExperimentManager experiments;
+	protected MultiGPSConfig config;
 	protected List<StrandedPoint> points;
 	protected Integer win;
 	
 	
-	public BindingModelMaker(List<StrandedPoint> p, ExperimentSet e, Config c, int w){
+	public BindingModelMaker(List<StrandedPoint> p, ExperimentManager e, MultiGPSConfig c, int w){
 		experiments = e;
 		config = c;
 		win = w;
@@ -77,20 +78,21 @@ public class BindingModelMaker {
 	
 	//Main
 	public static void main(String[] args){
-		Config config = new Config(args); 
+		GenomeConfig gcon = new GenomeConfig(args);
+		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		MultiGPSConfig config = new MultiGPSConfig(gcon, args);
 		if(config.helpWanted()){
 			System.err.println("BindingModelMaker:");
 			System.err.println("\t--points <stranded point file>");
 			System.err.println("\t--win <window around points>");
 			System.err.println(config.getArgsList());			
 		}else{
-			ExperimentManager manager = new ExperimentManager(config);
-			ExperimentSet eset = manager.getExperimentSet();
+			ExperimentManager manager = new ExperimentManager(econ);
 			
 			int w = Args.parseInteger(args, "win", 400);
 			String pFile = Args.parseString(args, "points", null);
 			List<StrandedPoint> pts = Utils.loadStrandedPointsFromFile(config.getGenome(), pFile);
-			BindingModelMaker maker = new BindingModelMaker(pts, eset, config, w);
+			BindingModelMaker maker = new BindingModelMaker(pts, manager, config, w);
 			maker.execute();
 			
 			manager.close();

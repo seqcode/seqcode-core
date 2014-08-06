@@ -1,7 +1,7 @@
 package edu.psu.compbio.seqcode.projects.shaun.teqseq.core;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 public class TUnitJunction extends TUnit{
 

@@ -4,16 +4,14 @@ import java.util.*;
 import java.sql.*;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.function.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
-import edu.psu.compbio.seqcode.gse.projects.readdb.*;
-import edu.psu.compbio.seqcode.gse.tools.motifs.WeightMatrixScanner;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.ExonicGene;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
-import edu.psu.compbio.seqcode.gse.utils.Enrichment;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 

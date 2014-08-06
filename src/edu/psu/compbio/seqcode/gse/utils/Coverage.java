@@ -6,8 +6,8 @@ package edu.psu.compbio.seqcode.gse.utils;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.utils.iterators.EmptyIterator;
-import edu.psu.compbio.seqcode.gse.utils.iterators.SerialIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.iterators.EmptyIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.iterators.SerialIterator;
 import edu.psu.compbio.seqcode.gse.utils.models.Model;
 
 /**
@@ -17,7 +17,7 @@ import edu.psu.compbio.seqcode.gse.utils.models.Model;
  * in which case each UnitCoverage corresponds to a Chromosome and the Coverage
  * object itself is the genome.  
  * 
- * See also: ewok.verbs.sequence.RegionCoverage, which extends the functionality
+ * See also: ewok.verbs.location.RegionCoverage, which extends the functionality
  * of this class by appending a Genome object and allowing the user to deal 
  * directly with Region objects instead of abstract intervals (as here.)  
  * 

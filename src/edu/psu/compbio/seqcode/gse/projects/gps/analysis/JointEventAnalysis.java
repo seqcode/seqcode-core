@@ -11,25 +11,25 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSPeak;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScorer;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSPeak;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScoreProfile;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScorer;
 import edu.psu.compbio.seqcode.gse.projects.gps.discovery.BindingMixture;
 import edu.psu.compbio.seqcode.gse.projects.gps.utilities.AnnotationLoader;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils.SISSRS_Event;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils.SISSRS_Event;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 public class JointEventAnalysis {

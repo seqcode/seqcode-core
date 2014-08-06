@@ -19,10 +19,10 @@ import org.apache.log4j.Logger;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.jet.math.Functions;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RegionParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.MACSPeakRegion;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.MACSPeakRegion;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RegionParser;
 import edu.psu.compbio.seqcode.gse.projects.gps.BindingModel;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;

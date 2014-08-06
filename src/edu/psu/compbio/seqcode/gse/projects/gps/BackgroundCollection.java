@@ -2,7 +2,7 @@ package edu.psu.compbio.seqcode.gse.projects.gps;
 
 import java.util.ArrayList;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 //A container to hold diverse types of BackgroundModel and handle the various ways we may use them
 public class BackgroundCollection {
 	

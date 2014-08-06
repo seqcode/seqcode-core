@@ -13,10 +13,13 @@ import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.deepseq.stats.BackgroundCollection;
+import edu.psu.compbio.seqcode.deepseq.stats.PoissonBackgroundModel;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 
 /**
@@ -32,7 +35,9 @@ import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 public class PotentialRegionFilter {
 
 	protected ExperimentManager manager; 
-	protected Config config;
+	protected BindingManager bindingManager;
+	protected MultiGPSConfig config;
+	protected ExptConfig econfig;
 	protected Genome gen;
 	protected float maxBinWidth=0, binStep, winExt;
 	protected boolean loadControl=true; 
@@ -45,30 +50,32 @@ public class PotentialRegionFilter {
 	protected HashMap<ControlledExperiment, Double> potRegCountsCtrlChannel = new HashMap<ControlledExperiment, Double>();
 	protected HashMap<ControlledExperiment, Double> nonPotRegCountsCtrlChannel = new HashMap<ControlledExperiment, Double>();
 	
-	public PotentialRegionFilter(Config c, ExperimentManager man){
-		manager = man;
+	public PotentialRegionFilter(MultiGPSConfig c, ExptConfig econ, ExperimentManager eman, BindingManager bman){
+		manager = eman;
+		bindingManager = bman;
 		config = c; 
+		econfig = econ;
 		gen = config.getGenome();
 		//Initialize background models
-		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+		for(ExperimentCondition cond : manager.getConditions()){
     		for(ControlledExperiment rep : cond.getReplicates()){
-    			float binWidth = rep.getBindingModel().getInfluenceRange();
+    			float binWidth = bindingManager.getBindingModel(rep).getInfluenceRange();
     			if(binWidth>maxBinWidth){maxBinWidth=binWidth;}
     			replicateBackgrounds.put(rep, new BackgroundCollection());
     			//global threshold
-    			replicateBackgrounds.get(rep).addBackgroundModel(new PoissonBackgroundModel(-1, config.getPRLogConf(), (1-rep.getSigProp())*rep.getSignal().getHitCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), rep.getBindingModel().getInfluenceRange(), '.', 1, true));
-    			for(Integer i : config.getLocalBackgroundWindows()){
+    			replicateBackgrounds.get(rep).addBackgroundModel(new PoissonBackgroundModel(-1, config.getPRLogConf(), (1-rep.getSigProp())*rep.getSignal().getHitCount(), config.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), bindingManager.getBindingModel(rep).getInfluenceRange(), '.', 1, true));
+    			for(Integer i : econfig.getLocalBackgroundWindows()){
                 	if(rep.hasControl()){//local control thresholds 
                     	//signal threshold based on what would be expected from the CONTROL locality
-                		replicateBackgrounds.get(rep).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), config.getPRLogConf(), rep.getControl().getHitCount(),  config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), rep.getBindingModel().getInfluenceRange(), '.', rep.getControlScaling(), false));
+                		replicateBackgrounds.get(rep).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), config.getPRLogConf(), rep.getControl().getHitCount(),  config.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), bindingManager.getBindingModel(rep).getInfluenceRange(), '.', rep.getControlScaling(), false));
                 	}else{
                 		//local signal threshold -- this may bias against locally enriched signal regions, and so should only be used if there is no control or if the control is not yet scaled
                     	if(i.intValue()>=10000) // we don't want the window too small in this case
-                    		replicateBackgrounds.get(rep).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), config.getPRLogConf(), (1-rep.getSigProp())*rep.getSignal().getHitCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), rep.getBindingModel().getInfluenceRange(), '.', 1, true));
+                    		replicateBackgrounds.get(rep).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), config.getPRLogConf(), (1-rep.getSigProp())*rep.getSignal().getHitCount(), config.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), bindingManager.getBindingModel(rep).getInfluenceRange(), '.', 1, true));
                 	}	
                 }
     			
-    			System.err.println("PotentialRegionFilter: genomic threshold for "+rep.getName()+" with bin width "+rep.getBindingModel().getInfluenceRange()+" = "+replicateBackgrounds.get(rep).getGenomicModelThreshold());
+    			System.err.println("PotentialRegionFilter: genomic threshold for "+rep.getName()+" with bin width "+bindingManager.getBindingModel(rep).getInfluenceRange()+" = "+replicateBackgrounds.get(rep).getGenomicModelThreshold());
     			
     			//Initialize counts
     			potRegCountsSigChannel.put(rep, 0.0);
@@ -100,15 +107,18 @@ public class PotentialRegionFilter {
 		//TODO: check config for defined subset of regions
 		Iterator<Region> testRegions = new ChromosomeGenerator().execute(config.getGenome());
 		
-		Thread[] threads = new Thread[config.getMaxThreads()];
-        ArrayList<Region> threadRegions[] = new ArrayList[config.getMaxThreads()];
+		//Threading divides analysis over entire chromosomes. This approach is not compatible with file caching. 
+		int numThreads = econfig.getCacheAllData() ? config.getMaxThreads() : 1;
+				
+		Thread[] threads = new Thread[numThreads];
+        ArrayList<Region> threadRegions[] = new ArrayList[numThreads];
         int i = 0;
         for (i = 0 ; i < threads.length; i++) {
             threadRegions[i] = new ArrayList<Region>();
         }
         while(testRegions.hasNext()){
         	Region r = testRegions.next(); 
-            threadRegions[(i++) % config.getMaxThreads()].add(r);
+            threadRegions[(i++) % numThreads].add(r);
         }
 
         for (i = 0 ; i < threads.length; i++) {
@@ -131,7 +141,7 @@ public class PotentialRegionFilter {
         }
         
 		//Initialize signal & noise counts based on potential region calls
-        for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+        for(ExperimentCondition cond : manager.getConditions()){
     		for(ControlledExperiment rep : cond.getReplicates()){
     			if(rep.getSigProp()==0) //Only update if not already initialized
     				rep.setSigNoiseCounts(potRegCountsSigChannel.get(rep), nonPotRegCountsSigChannel.get(rep));
@@ -187,18 +197,18 @@ public class PotentialRegionFilter {
                     
                     synchronized(manager){
 	                    //Initialize the read lists
-                    	for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+                    	for(ExperimentCondition cond : manager.getConditions()){
                     		for(ControlledExperiment rep : cond.getReplicates()){
                     			ipHits.add(new ArrayList<StrandedBaseCount>());
                     			backHits.add(new ArrayList<StrandedBaseCount>());
                     		}
                     	}
                     	//Load reads by replicate
-                    	for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+                    	for(ExperimentCondition cond : manager.getConditions()){
                     		for(ControlledExperiment rep : cond.getReplicates()){
-                    			ipHits.get(rep.getIndex()).addAll(rep.getSignal().getUnstrandedBases(currSubRegion));
+                    			ipHits.get(rep.getIndex()).addAll(rep.getSignal().getBases(currSubRegion));
                     			if(loadControl && rep.hasControl())
-                    				backHits.get(rep.getIndex()).addAll(rep.getControl().getUnstrandedBases(currSubRegion));
+                    				backHits.get(rep.getIndex()).addAll(rep.getControl().getBases(currSubRegion));
                     		}
                     	}
                     }
@@ -222,7 +232,7 @@ public class PotentialRegionFilter {
                         int currBin=0;
                         for(int i=currSubRegion.getStart(); i<currSubRegion.getEnd()-(int)maxBinWidth; i+=(int)binStep){
                         	boolean regionPasses=false;
-                        	for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+                        	for(ExperimentCondition cond : manager.getConditions()){
                             	for(ControlledExperiment rep : cond.getReplicates()){
 		                            double ipWinHits=ipHitCounts[rep.getIndex()][currBin];
 		                            //First Test: is the read count above the genome-wide thresholds? 
@@ -296,7 +306,7 @@ public class PotentialRegionFilter {
             	if(lastPotential.getEnd()-currPartStart < (preferredWinLen*1.5))
             		break;
             	int currBinTotal=0;
-            	for(ExperimentCondition cond : manager.getExperimentSet().getConditions())
+            	for(ExperimentCondition cond : manager.getConditions())
                 	for(ControlledExperiment rep : cond.getReplicates())
                 		currBinTotal+=ipHitCounts[rep.getIndex()][currBin];
             	
@@ -347,7 +357,7 @@ public class PotentialRegionFilter {
     		starts = new double[hits.size()][numBins+1];
     		float halfWidth = binWidth/2;
 
-    		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+    		for(ExperimentCondition cond : manager.getConditions()){
             	for(ControlledExperiment rep : cond.getReplicates()){
             		List<StrandedBaseCount> currHits = hits.get(rep.getIndex());
 	    			for(int i=0; i<=numBins; i++){landscape[rep.getIndex()][i]=0; starts[rep.getIndex()][i]=0; }
@@ -385,7 +395,7 @@ public class PotentialRegionFilter {
     	 */
     	protected void countReadsInRegions(List<Region> regs, List<List<StrandedBaseCount>> ipHits, List<List<StrandedBaseCount>> ctrlHits, int endCoord){
     		//Iterate through experiments
-    		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+    		for(ExperimentCondition cond : manager.getConditions()){
         		for(ControlledExperiment rep : cond.getReplicates()){
         			double currPotWeightSig=0, currNonPotWeightSig=0, currPotWeightCtrl=0, currNonPotWeightCtrl=0;
         			//Iterate through signal hits
@@ -467,21 +477,22 @@ public class PotentialRegionFilter {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		
-		Config config = new Config(args);
+		GenomeConfig gconfig = new GenomeConfig(args);
+		ExptConfig econfig = new ExptConfig(gconfig.getGenome(), args);
+		MultiGPSConfig config = new MultiGPSConfig(gconfig, args);
 		if(config.helpWanted()){
 			System.err.println("PotentialRegionFilter:");
 			System.err.println(config.getArgsList());
 		}else{
-			ExperimentManager manager = new ExperimentManager(config);
+			ExperimentManager manager = new ExperimentManager(econfig);
+			BindingManager bman = new BindingManager(manager);
 			RealValuedHistogram histo = new RealValuedHistogram(0, 10000, 20);
 			
-			ExperimentSet eset = manager.getExperimentSet();
-			System.err.println("Conditions:\t"+eset.getConditions().size());
-			for(ExperimentCondition c : eset.getConditions()){
+			System.err.println("Conditions:\t"+manager.getConditions().size());
+			for(ExperimentCondition c : manager.getConditions()){
 				System.err.println("Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
 			}
-			for(ExperimentCondition c : eset.getConditions()){
+			for(ExperimentCondition c : manager.getConditions()){
 				for(ControlledExperiment r : c.getReplicates()){
 					System.err.println("Condition "+c.getName()+":\tRep "+r.getName());
 					if(r.getControl()==null)
@@ -491,7 +502,7 @@ public class PotentialRegionFilter {
 				}
 			}
 			
-			PotentialRegionFilter filter = new PotentialRegionFilter(config, manager);
+			PotentialRegionFilter filter = new PotentialRegionFilter(config, econfig, manager, bman);
 			List<Region> potentials = filter.execute();
 			
 			int min = Integer.MAX_VALUE;
@@ -507,11 +518,6 @@ public class PotentialRegionFilter {
 			System.out.println("Potential Regions: "+potentials.size());
 			System.out.println("Min width: "+min+"\tMax width: "+max);
 			histo.printContents();
-			//for(ExperimentCondition c : eset.getConditions()){
-			//	for(ControlledExperiment r : c.getReplicates()){
-			//		System.err.println(c.getName()+"\t"+r.getName()+"\t"+r.getSigCount()+"\t"+r.getNoiseCount());
-			//	}
-			//}
 			
 			manager.close();
 		}

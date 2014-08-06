@@ -1,26 +1,29 @@
 package edu.psu.compbio.seqcode.projects.shaun.teqseq.core;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMRecordIterator;
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.SAMFileReader.ValidationStringency;
-import net.sf.samtools.util.CloseableIterator;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.projects.shaun.teqseq.exptprops.SeqBiasModel;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SAMRecordIterator;
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.CloseableIterator;
+
 
 public class SAMReadLoader extends ReadLoader{
 
 	protected File samFile;
-	protected SAMFileReader reader=null;
+	protected SamReader reader=null;
 	protected CloseableIterator<SAMRecord> readIterator=null;
 	protected SAMRecord currRecord;
 	
@@ -30,10 +33,11 @@ public class SAMReadLoader extends ReadLoader{
 		sourcePath = samFile.getAbsolutePath();
 		sourceName = samFile.getName();
 		conditionName = cond;
-		reader = new SAMFileReader(samFile);
-		reader.setValidationStringency(ValidationStringency.SILENT);
-		reader.enableIndexMemoryMapping(false);
-		reader.enableIndexCaching(false);
+		SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		reader = factory.open(samFile);
 	}
 
 	
@@ -106,8 +110,11 @@ public class SAMReadLoader extends ReadLoader{
 	public void initializeReadIterator() {
 		closeReader();
 		//Reopen SAM file. Seems to have been closed when closing the read iterator
-		reader = new SAMFileReader(samFile);
-		reader.setValidationStringency(ValidationStringency.SILENT);
+		SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		reader = factory.open(samFile);
 		readIterator = reader.iterator(); 
 		nextRead();
 	}
@@ -118,7 +125,12 @@ public class SAMReadLoader extends ReadLoader{
 			readIterator=null;
 		}
 		if(reader != null){
-			reader.close();
+			try {
+				reader.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	

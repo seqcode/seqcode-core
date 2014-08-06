@@ -3,8 +3,8 @@ package edu.psu.compbio.seqcode.projects.shaun.teqseq.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 
 public class TUnit implements Comparable<TUnit>{

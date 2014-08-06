@@ -7,9 +7,9 @@ import java.text.DecimalFormat;
 
 import libsvm.*;
 
+import edu.psu.compbio.seqcode.genome.Genome;
 //import edu.psu.compbio.seqcode.gse.utils.probability.Binomial;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.tools.motifs.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;

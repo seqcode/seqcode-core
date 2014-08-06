@@ -6,14 +6,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSPeak;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSPeak;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 

@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.seqview.components;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
+import edu.psu.compbio.seqcode.genome.location.Gene;
 
 import java.util.Comparator;
 

@@ -14,7 +14,7 @@ import java.util.*;
 
 import javax.swing.JMenuItem;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.seqview.RectangleLookup;
 
 /**

@@ -2,11 +2,11 @@ package edu.psu.compbio.seqcode.gse.projects.gps.features;
 
 import java.util.ArrayList;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.projects.gps.discovery.kmer.KMAC.KmerGroup;
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 

@@ -25,9 +25,9 @@ import org.apache.log4j.Logger;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrixImport;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.io.LineByLineFileReader;
 import edu.psu.compbio.seqcode.gse.utils.io.Points2RegionsConverter;

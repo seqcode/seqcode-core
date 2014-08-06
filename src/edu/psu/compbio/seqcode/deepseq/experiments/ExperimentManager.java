@@ -1,11 +1,7 @@
 package edu.psu.compbio.seqcode.deepseq.experiments;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,12 +13,10 @@ import edu.psu.compbio.seqcode.deepseq.hitloaders.NovoFileHitLoader;
 import edu.psu.compbio.seqcode.deepseq.hitloaders.ReadDBHitLoader;
 import edu.psu.compbio.seqcode.deepseq.hitloaders.SAMFileHitLoader;
 import edu.psu.compbio.seqcode.deepseq.hitloaders.TophatFileHitLoader;
-import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 
 /** 
  * ExperimentManager acts as an interface to all experiment conditions and replicates.
@@ -33,30 +27,40 @@ import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
  */
 public class ExperimentManager {
 
-	protected Config config;
+	protected ExptConfig econfig;
 	protected Genome gen;
-	protected HashMap<String, HitLoader> loaders = new HashMap<String,HitLoader>();
-	protected HashMap<String, Sample> allSamples = new HashMap<String, Sample>();
-	protected HashMap<String, ControlledExperiment> allReplicates = new HashMap<String, ControlledExperiment>();
-	protected List<ControlledExperiment> replicateList = new ArrayList<ControlledExperiment>();
-	protected List<ExperimentCondition> conditionList = new ArrayList<ExperimentCondition>();
-	protected ExperimentSet experiments = null;
-	protected List<BindingEvent> events = new ArrayList<BindingEvent>();
 	
+	//Experiment tree elements
+	protected HashMap<String, HitLoader> loaders = new HashMap<String,HitLoader>();
+	protected List<Sample> samples = new ArrayList<Sample>();
+	protected List<ControlledExperiment> replicates = new ArrayList<ControlledExperiment>();
+	protected List<ExperimentCondition> conditions = new ArrayList<ExperimentCondition>();
+	protected List<ExperimentTarget> targets = new ArrayList<ExperimentTarget>();
+	protected List<ExperimentType> expttypes = new ArrayList<ExperimentType>();
+	
+	//Lookups
+	protected HashMap<ExperimentCondition, Integer> conditionIndex = new HashMap<ExperimentCondition, Integer>();
+	protected HashMap<Integer, ExperimentCondition> indexedCondition = new HashMap<Integer, ExperimentCondition>();
+	protected HashMap<String, ExperimentCondition> namedCondition = new HashMap<String, ExperimentCondition>();
+
 	
 	/**
 	 * Constructor:
-	 *    Using arguments loaded by the ArgsHandler, initialize (in this order):
-	 *    HitLoaders, Samples, Replicates, Conditions, The ExperimentSet.
-	 * @param c : Config
+	 *    Using arguments loaded by the ExptConfig, initialize (in this order):
+	 *    HitLoaders, Samples, Replicates, Conditions, Targets, ExptTypes.
+	 * @param c : ExptConfig
 	 * @param loadReads : boolean. for some applications, reads do not have to be loaded. Use with caution. 
 	 */
-	public ExperimentManager(Config c){this(c, true);}
-	public ExperimentManager(Config c, boolean loadReads){
-		config = c;
-		gen = config.getGenome();
-		List<ExptDescriptor> descriptors = config.getExperiments();
-		int repCount=0, condCount=0, sampCount=0;
+	public ExperimentManager(ExptConfig c){this(c, true);}
+	public ExperimentManager(ExptConfig c, boolean loadReads){
+		econfig = c;
+		gen = econfig.getGenome();
+		
+		HashMap<String, Sample> allSamples = new HashMap<String, Sample>();
+		HashMap<String, ControlledExperiment> allReplicates = new HashMap<String, ControlledExperiment>();
+		
+		List<ExptDescriptor> descriptors = econfig.getExperimentDescriptors();
+		int repCount=0, condCount=0, sampCount=0, targCount=0, etypeCount=0;
 		
 		//Firstly, initialize all hit loaders. 
 		//This is done in a separate first pass, because it is possible (albeit unlikely)
@@ -68,18 +72,18 @@ public class ExperimentManager {
 				String type = source.cdr();
 				System.err.println("Loading from "+type+" hit loader:\t"+name);
 				if(type.equals("READDB")){ //ReadDB HitLoader
-					HitLoader hl = getReadDBHitLoader(name);
+					HitLoader hl = makeReadDBHitLoader(name);
 					//hit loader does not have to be sourced here -- that happens in the samples part below
 					loaders.put(name, hl);
 				}else{  //Assume File HitLoader
-					HitLoader hl = getFileHitLoader(name, type, config.getNonUnique());
+					HitLoader hl = makeFileHitLoader(name, type, econfig.getNonUnique());
 					//hit loader does not have to be sourced here -- that happens in the samples part below
 					loaders.put(name, hl);
 				}
 			}
 		}
 		
-		//Secondly, load the samples
+		//Secondly, load the samples (load each sample name once)
 		for(ExptDescriptor e : descriptors){
 			String sampleName;
 			if(e.signal)
@@ -87,8 +91,9 @@ public class ExperimentManager {
 			else
 				sampleName = e.condition+":"+e.replicate+":control";
 			if(!allSamples.containsKey(sampleName)){
-				Sample samp = new Sample(sampCount, config, sampleName, e.perBaseMaxReads);
+				Sample samp = new Sample(sampCount, econfig, sampleName, e.perBaseMaxReads);
 				allSamples.put(sampleName, samp);
+				samples.add(samp);
 				sampCount++;
 			}
 			for(Pair<String,String> source : e.sources){
@@ -96,14 +101,14 @@ public class ExperimentManager {
 				allSamples.get(sampleName).addHitLoader(loaders.get(name));
 			}
 			if(loadReads)
-				allSamples.get(sampleName).loadHits();
+				allSamples.get(sampleName).initializeCache(econfig.getCacheAllData(), econfig.getInitialCachedRegions());
 		}
 		//Merge estimated genomes if necessary
 		if(gen == null){
 			List<Genome> estGenomes = new ArrayList<Genome>();
 			for(String s : allSamples.keySet())
 				estGenomes.add(allSamples.get(s).getGenome());
-			gen = config.mergeGenomes(estGenomes);
+			gen = econfig.mergeEstGenomes(estGenomes);
 			for(String s : allSamples.keySet())
 				allSamples.get(s).setGenome(gen);
 		}
@@ -125,9 +130,9 @@ public class ExperimentManager {
 							ctrl = allSamples.get("DEFAULT:DEFAULT:control");
 						//If no control specified, ctrl is still null
 						
-						ControlledExperiment rep = new ControlledExperiment(config, repCount, e.condition, e.replicate, sig, ctrl, e.bindingModel, config.getEstimateScaling());
+						ControlledExperiment rep = new ControlledExperiment(econfig, repCount, e.condition, e.replicate, sig, ctrl, econfig.getEstimateScaling());
 						allReplicates.put(repName, rep);
-						replicateList.add(rep);
+						replicates.add(rep);
 						repCount++;
 					}
 				}
@@ -135,7 +140,6 @@ public class ExperimentManager {
 		}
 		
 		//Fourthly, initialize the conditions (not using Hash any more so that ordering is maintained from design file)
-		//HashMap<String, List<ControlledExperiment>> replicatesByCondition=new HashMap<String, List<ControlledExperiment>>();
 		List<String> replicatesByConditionNames = new ArrayList<String>();
 		List<List<ControlledExperiment>> replicatesByConditionReps = new ArrayList<List<ControlledExperiment>>();
 		for(ExptDescriptor e : descriptors){
@@ -154,38 +158,80 @@ public class ExperimentManager {
 		}
 		for(String s: replicatesByConditionNames){
 			int index = replicatesByConditionNames.indexOf(s);
-			conditionList.add(new ExperimentCondition(config, condCount, s, replicatesByConditionReps.get(index)));
+			conditions.add(new ExperimentCondition(econfig, condCount, s, replicatesByConditionReps.get(index)));
 			condCount++;
 		}
 		
+		//Fifthly, initialize the targets
+		List<String> replicatesByTargetNames = new ArrayList<String>();
+		List<List<ControlledExperiment>> replicatesByTargetReps = new ArrayList<List<ControlledExperiment>>();
+		for(ExptDescriptor e : descriptors){
+			String repName = e.condition+":"+e.replicate;
+			if(allReplicates.containsKey(repName)){
+				if(!replicatesByTargetNames.contains(e.target)){
+					replicatesByTargetReps.add(new ArrayList<ControlledExperiment>());
+					replicatesByTargetNames.add(e.target);
+				}
+				int index = replicatesByTargetNames.indexOf(e.target);
+				List<ControlledExperiment> currReps = replicatesByTargetReps.get(index);
+				if(!currReps.contains(allReplicates.get(repName))){
+					currReps.add(allReplicates.get(repName));
+				}
+			}
+		}
+		for(String s: replicatesByTargetNames){
+			int index = replicatesByTargetNames.indexOf(s);
+			targets.add(new ExperimentTarget(econfig, targCount, s, replicatesByConditionReps.get(index)));
+			targCount++;
+		}
 		
-		//Finally, the overall ExperimentSet
-		experiments = new ExperimentSet(conditionList, replicateList);
+		//Sixthly, initialize the types
+		List<String> replicatesByExptTypeNames = new ArrayList<String>();
+		List<List<ControlledExperiment>> replicatesByExptTypeReps = new ArrayList<List<ControlledExperiment>>();
+		for(ExptDescriptor e : descriptors){
+			String repName = e.condition+":"+e.replicate;
+			if(allReplicates.containsKey(repName)){
+				if(!replicatesByExptTypeNames.contains(e.expttype)){
+					replicatesByExptTypeReps.add(new ArrayList<ControlledExperiment>());
+					replicatesByExptTypeNames.add(e.expttype);
+				}
+				int index = replicatesByExptTypeNames.indexOf(e.expttype);
+				List<ControlledExperiment> currReps = replicatesByExptTypeReps.get(index);
+				if(!currReps.contains(allReplicates.get(repName))){
+					currReps.add(allReplicates.get(repName));
+				}
+			}
+		}
+		for(String s: replicatesByExptTypeNames){
+			int index = replicatesByExptTypeNames.indexOf(s);
+			expttypes.add(new ExperimentType(econfig, etypeCount, s, replicatesByConditionReps.get(index)));
+			etypeCount++;
+		}
+		
+		//Finally, index everything
+		for(int i=0; i<getNumConditions(); i++){
+			conditionIndex.put(conditions.get(i), i);
+			indexedCondition.put(i, conditions.get(i));
+			namedCondition.put(conditions.get(i).getName(), conditions.get(i));
+		}
 	}
 	
 	//Accessors
-	public ExperimentSet getExperimentSet(){return experiments;}
-	public int getNumConditions(){return experiments.getConditions().size();}
-	public List<BindingEvent> getEvents(){return events;}
-	public void setEvents(List<BindingEvent> e){events =e;}
-	
-	/**
-	 * Get the maximum model width
-	 * @return
-	 */
-	public int getMaxModelRange(){
-		int max=0;
-		for(String s : allReplicates.keySet())
-			if(allReplicates.get(s).getBindingModel().getInfluenceRange()>max)
-				max = allReplicates.get(s).getBindingModel().getInfluenceRange();
-		return max;
-	}
+	public List<Sample> getSamples(){return samples;}
+	public List<ExperimentCondition> getConditions(){return conditions;}
+	public List<ControlledExperiment> getReplicates(){return replicates;}
+	public List<ExperimentTarget> getTargets(){return targets;}
+	public List<ExperimentType> getExptTypes(){return expttypes;}
+	public int getConditionIndex(ExperimentCondition c){return conditionIndex.get(c);}
+	public ExperimentCondition getIndexedCondition(int index){return indexedCondition.get(index);}
+	public ExperimentCondition getNamedCondition(String name){return namedCondition.get(name);}
+	public int getNumConditions(){return conditions.size();}
 	
 	/**
 	 * Add a ReadDB HitLoader.
 	 * @param locs List of ChipSeqLocators
 	 */
-	public HitLoader getReadDBHitLoader(String name){
+	private HitLoader makeReadDBHitLoader(String name){
 		List<SeqLocator> locs = new ArrayList<SeqLocator>();
 		String[] pieces = name.trim().split(";");
         if (pieces.length == 2) {
@@ -193,7 +239,7 @@ public class ExperimentManager {
         } else if (pieces.length == 3) {
             locs.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
         } else {
-            throw new RuntimeException("Couldn't parse a ChipSeqLocator from " + name);
+            throw new RuntimeException("Couldn't parse a SeqLocator from " + name);
         }
 		return (new ReadDBHitLoader(gen, locs));
 	}
@@ -201,10 +247,10 @@ public class ExperimentManager {
 
 	/**
 	 * Add a File HitLoader. File formats accepted include:
-	 * ELAND, NOVO, BOWTIE, BED	, SAM, TOPSAM
+	 * IDX, NOVO, BOWTIE, BED	, SAM, TOPSAM
 	 * @param files List of File/String Pairs, where the string is a format descriptor
 	 */
-	public HitLoader getFileHitLoader(String filename, String format, boolean useNonUnique){
+	private HitLoader makeFileHitLoader(String filename, String format, boolean useNonUnique){
 		HitLoader currReader=null;
 		File file = new File(filename);
 		if(!file.isFile()){System.err.println("File not found: "+file.getName());System.exit(1);}
@@ -227,192 +273,7 @@ public class ExperimentManager {
 		return currReader;
 	}
 	
-	/**
-	 * For each controlled experiment, simply calculate the proportion of reads in the provided 
-	 * list of binding events to everything else. 
-	 * @param regs
-	 */
-	public void estimateSignalProportion(List<BindingEvent> signalEvents){
-		for(ExperimentCondition c : conditionList){
-			for(ControlledExperiment r : c.getReplicates()){
-				double repSigCount =0, repNoiseCount=0;
-				for(BindingEvent event : signalEvents){
-					if(event.isFoundInCondition(c))
-						repSigCount += event.getRepSigHits(r);
-				}
-				repNoiseCount = r.getSignal().getHitCount() - repSigCount;
-				r.setSigNoiseCounts(repSigCount,  repNoiseCount);
-				System.err.println(r.getName()+"\t"+r.getIndex()+"\tsignal-noise ratio:\t"+String.format("%.4f",r.getSigProp()));
-			}
-		}
-	}
-	/**
-	 * Count the binding events present in a given condition
-	 * @param cond
-	 * @return
-	 */
-	public int countEventsInCondition(ExperimentCondition cond){
-		int count=0;
-		for(BindingEvent e : events){
-			if(e.isFoundInCondition(cond) && e.getCondSigVCtrlP(cond) <=config.getQMinThres())
-				count++;
-		}
-		return count;
-	}
-	/**
-	 * Count the differential binding events present in a given pair of conditions
-	 * @param cond
-	 * @return
-	 */
-	public int countDiffEventsBetweenConditions(ExperimentCondition cond, ExperimentCondition othercond){
-		int count=0;
-		for(BindingEvent e : events){
-			if(e.isFoundInCondition(cond) && e.getCondSigVCtrlP(cond) <=config.getQMinThres())
-    			if(e.getInterCondP(cond, othercond)<=config.getDiffPMinThres() && e.getInterCondFold(cond, othercond)>0)
-    				count++;
-		}
-		return count;
-	}
-    /**
-     * Print all binding events to files
-     */
-    public void writeBindingEventFiles(String filePrefix){
-    	if(events.size()>0){
-    		
-	    	try {
-	    		//Full output table (all non-zero components)
-	    		String filename = filePrefix+".all.events.table";
-	    		FileWriter fout = new FileWriter(filename);
-	    		fout.write(BindingEvent.fullHeadString()+"\n");
-	    		for(BindingEvent e : events)
-	    			fout.write(e.toString()+"\n");
-				fout.close();
-	    		
-	    		//Per-condition event files
-	    		for(ExperimentCondition cond : experiments.getConditions()){
-	    			//Sort on the current condition
-	    			BindingEvent.setSortingCond(cond);
-	    			Collections.sort(events, new Comparator<BindingEvent>(){
-	    	            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
-	    	        });
-	    			//Print events
-	    			String condName = cond.getName(); 
-	    			condName = condName.replaceAll("/", "-");
-	    			filename = filePrefix+"_"+condName+".events";
-					fout = new FileWriter(filename);
-					fout.write(BindingEvent.conditionHeadString(cond)+"\n");
-			    	for(BindingEvent e : events){
-			    		double Q = e.getCondSigVCtrlP(cond);
-			    		//Because of the ML step and component sharing, I think that an event could be assigned a significant number of reads without being "present" in the condition's EM model.
-			    		if(e.isFoundInCondition(cond) && Q <=config.getQMinThres())
-			    			fout.write(e.getConditionString(cond)+"\n");
-			    	}
-					fout.close();
-	    		}
-	    		
-	    		//Differential event files
-	    		if(getNumConditions()>1 && config.getRunDiffTests()){
-	    			for(ExperimentCondition cond : experiments.getConditions()){
-		    			//Sort on the current condition
-		    			BindingEvent.setSortingCond(cond);
-		    			Collections.sort(events, new Comparator<BindingEvent>(){
-		    	            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
-		    	        });
-		    			
-		    			for(ExperimentCondition othercond : experiments.getConditions()){
-		    				if(!cond.equals(othercond)){
-				    			//Print diff events
-				    			String condName = cond.getName(); 
-				    			String othercondName = othercond.getName(); 
-				    			condName = condName.replaceAll("/", "-");
-				    			filename = filePrefix+"_"+condName+"_gt_"+othercondName+".diff.events";
-								fout = new FileWriter(filename);
-								fout.write(BindingEvent.conditionShortHeadString(cond)+"\n");
-						    	for(BindingEvent e : events){
-						    		double Q = e.getCondSigVCtrlP(cond);
-						    		//Because of the ML step and component sharing, I think that an event could be assigned a significant number of reads without being "present" in the condition's EM model.
-						    		if(e.isFoundInCondition(cond) && Q <=config.getQMinThres()){
-						    			if(e.getInterCondP(cond, othercond)<=config.getDiffPMinThres() && e.getInterCondFold(cond, othercond)>0){
-						    				fout.write(e.getConditionString(cond)+"\n");
-						    			}
-						    		}
-						    	}
-								fout.close();
-		    				}
-		    			}
-		    		}
-	    		}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-    }
- 
-    /**
-     * Print all binding events to files
-     */
-    public void writeFullEventFile(String filename){
-    	if(events.size()>0){
-    		try {
-	    		//Full dataset table
-		    	FileWriter fout = new FileWriter(filename);
-		    	fout.write(BindingEvent.fullHeadString()+"\n");
-		    	for(BindingEvent e : events)
-		    		fout.write(e.toString()+"\n");
-				fout.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-    }
-    
-    /**
-     * Print all motifs to file
-     */
-    public void writeMotifFile(String filename){
-    	if(config.getFindingMotifs()){
-    		try {
-	    		//Full dataset table
-		    	FileWriter fout = new FileWriter(filename);
-		    	for(ExperimentCondition cond : experiments.getConditions()){
-		    		if(cond.getFreqMatrix()!=null)
-		    			fout.write(WeightMatrix.printTransfacMatrix(cond.getFreqMatrix(), cond.getName()));
-		    	}
-				fout.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-    }
- 
-    
-    /**
-     * Print replicate data counts to a file
-     */
-    public void writeReplicateCounts(String filename){
-    	if(events.size()>0){
-    		try {
-	    		//Full dataset table
-	    		FileWriter fout = new FileWriter(filename);
-	    		fout.write(BindingEvent.repCountHeadString()+"\n");
-	    		for(BindingEvent e : events)
-	    			fout.write(e.getRepCountString()+"\n");
-				fout.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-    }
-    /**
-     * Print all binding events to screen
-     * TESTING ONLY
-     */
-    public void printBindingEvents(){
-    	System.err.println(events.size()+" events found");
-    	for(BindingEvent e : events){
-    		System.err.println(e.toString());
-    	}
-    }
+	
 
 	/**
 	 * Call any cleanup methods
@@ -420,6 +281,8 @@ public class ExperimentManager {
 	public void close(){
 		for(String l : loaders.keySet())
 			loaders.get(l).cleanup();
+		for(Sample s : samples)
+			s.close();
 	}
 	
 	/**
@@ -427,20 +290,27 @@ public class ExperimentManager {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		
-		Config config = new Config(args);
-		if(config.helpWanted()){
+		GenomeConfig gconfig = new GenomeConfig(args);
+		ExptConfig econfig = new ExptConfig(gconfig.getGenome(), args);
+		if(econfig.helpWanted()){
 			System.err.println("ExperimentManager debugging:");
-			System.err.println(config.getArgsList());
+			System.err.println(econfig.getArgsList());
 		}else{
-			ExperimentManager manager = new ExperimentManager(config);
+			ExperimentManager manager = new ExperimentManager(econfig);
 			
-			ExperimentSet eset = manager.getExperimentSet();
-			System.err.println("Conditions:\t"+eset.getConditions().size());
-			for(ExperimentCondition c : eset.getConditions()){
+			System.err.println("ExptTypes:\t"+manager.getExptTypes().size());
+			for(ExperimentType t : manager.getExptTypes()){
+				System.err.println("ExptType "+t.getName()+":\t#Experiments:\t"+t.getExptTypeExperiments().size());
+			}
+			System.err.println("ExptTargets:\t"+manager.getTargets().size());
+			for(ExperimentTarget t : manager.getTargets()){
+				System.err.println("Target "+t.getName()+":\t#Experiments:\t"+t.getTargetExperiments().size());
+			}
+			System.err.println("Conditions:\t"+manager.getConditions().size());
+			for(ExperimentCondition c : manager.getConditions()){
 				System.err.println("Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
 			}
-			for(ExperimentCondition c : eset.getConditions()){
+			for(ExperimentCondition c : manager.getConditions()){
 				for(ControlledExperiment r : c.getReplicates()){
 					System.err.println("Condition "+c.getName()+":\tRep "+r.getName());
 					if(r.getControl()==null)

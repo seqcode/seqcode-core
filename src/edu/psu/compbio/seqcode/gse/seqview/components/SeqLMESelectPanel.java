@@ -20,7 +20,7 @@ import javax.swing.border.Border;
 
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptType;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptType;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;

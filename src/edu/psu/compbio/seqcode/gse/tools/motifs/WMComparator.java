@@ -1,7 +1,7 @@
 package edu.psu.compbio.seqcode.gse.tools.motifs;
 
-import edu.psu.compbio.seqcode.gse.clustering.PairwiseElementMetric;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.machinelearning.clustering.PairwiseElementMetric;
 
 /** compares two weight matrices and returns a score to describe how
  * close they are.  Zero is the minumum score and represents a perfect match.

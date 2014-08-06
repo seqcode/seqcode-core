@@ -27,7 +27,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptType;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptType;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;

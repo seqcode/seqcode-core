@@ -3,9 +3,9 @@ package edu.psu.compbio.seqcode.gse.seqview.paintable;
 import java.awt.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqAnalysisModel;
+import edu.psu.compbio.seqcode.gse.seqview.model.SeqAnalysisModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 import edu.psu.compbio.seqcode.gse.viz.colors.ColorSet;
@@ -14,13 +14,13 @@ public class SeqAnalysisPainter extends RegionPaintable {
 
 
     private SeqAnalysis analysis;
-    private ChipSeqAnalysisModel model;
+    private SeqAnalysisModel model;
     private SeqAnalysisProperties props;
     private DynamicAttribute attrib;
     private NonOverlappingLayout<SeqAnalysisResult> layout;
     private ColorSet cs;
 
-    public SeqAnalysisPainter(SeqAnalysis a, ChipSeqAnalysisModel m) {
+    public SeqAnalysisPainter(SeqAnalysis a, SeqAnalysisModel m) {
         super();
         analysis = a;
         model = m;

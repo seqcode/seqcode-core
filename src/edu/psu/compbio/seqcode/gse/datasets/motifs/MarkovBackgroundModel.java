@@ -7,7 +7,7 @@ import cern.colt.matrix.*;
 import cern.colt.matrix.impl.*;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.stats.Fmath;

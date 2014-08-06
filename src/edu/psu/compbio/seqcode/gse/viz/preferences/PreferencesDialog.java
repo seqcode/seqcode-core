@@ -12,8 +12,8 @@ import java.io.File;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.viz.utils.GenomeSelectPanel;
 

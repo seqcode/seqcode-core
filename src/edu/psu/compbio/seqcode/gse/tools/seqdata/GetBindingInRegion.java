@@ -4,10 +4,12 @@ import java.util.*;
 import java.sql.*;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
 import edu.psu.compbio.seqcode.gse.seqview.components.Snapshot;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -19,13 +21,13 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
  * and produces a line on STDOUT for each that lists either the analyses and binding
  * events for each.
  * 
- * java edu.psu.compbio.seqcode.gse.tools.chipseq.GetBindingInRegion --species "$MM;mm9" --genes refGene
- * java edu.psu.compbio.seqcode.gse.tools.chipseq.GetBindingInRegion --species "$MM;mm9" --region 10:0-1000000
- * java edu.psu.compbio.seqcode.gse.tools.chipseq.GetBindingInRegion --species "$MM;mm9" --regionfile foo.txt
- * java edu.psu.compbio.seqcode.gse.tools.chipseq.GetBindingInRegion --species "$MM;mm9"
+ * java edu.psu.compbio.seqcode.gse.tools.seqdata.GetBindingInRegion --species "$MM;mm9" --genes refGene
+ * java edu.psu.compbio.seqcode.gse.tools.seqdata.GetBindingInRegion --species "$MM;mm9" --region 10:0-1000000
+ * java edu.psu.compbio.seqcode.gse.tools.seqdata.GetBindingInRegion --species "$MM;mm9" --regionfile foo.txt
+ * java edu.psu.compbio.seqcode.gse.tools.seqdata.GetBindingInRegion --species "$MM;mm9"
  *     this form above reads regions from STDIN
  * 
- * --plots causes plots with the chipseq data to be produced. 
+ * --plots causes plots with the seqdata data to be produced. 
  *
  */
 

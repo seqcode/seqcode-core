@@ -1,19 +1,13 @@
 package edu.psu.compbio.seqcode.gse.seqview.components;
 
-import java.util.*;
-import java.util.regex.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
 import java.sql.*;
 
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
-import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.gse.viz.components.GenericSelectPanel;
 
 /**
  * This is a GUI app for managing ChipSeqAnalysis objects that lets you set their

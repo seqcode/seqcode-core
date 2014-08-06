@@ -8,10 +8,11 @@ import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundCollection;
+import edu.psu.compbio.seqcode.deepseq.stats.BackgroundCollection;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.EMStepPlotter;
 
 
@@ -24,7 +25,8 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.EMStepPlotter;
 public class BindingEM {
 
 	protected ExperimentManager manager;
-	protected Config config;
+	protected BindingManager bindingManager;
+	protected MultiGPSConfig config;
 	protected List<List<BindingComponent>> components;
 	protected List<NoiseComponent> noise;
 	protected int numComponents;  //Assumes the same number of active+inactive components in each condition
@@ -67,9 +69,10 @@ public class BindingEM {
 	 * @param c
 	 * @param eMan
 	 */
-	public BindingEM(Config c, ExperimentManager eMan, HashMap<ExperimentCondition, BackgroundCollection> condBacks, int numPotReg){
+	public BindingEM(MultiGPSConfig c, ExperimentManager eMan, BindingManager bMan, HashMap<ExperimentCondition, BackgroundCollection> condBacks, int numPotReg){
 		config=c;
 		manager = eMan;
+		bindingManager = bMan;
 		conditionBackgrounds = condBacks;
 		numConditions = manager.getNumConditions();
 		numPotentialRegions = (double)numPotReg;
@@ -125,7 +128,7 @@ public class BindingEM {
     	piNoise = new double[numConditions];		// pi : emission probabilities for noise components (fixed)
     	alphaMax = new double[numConditions];		//Maximum alpha
         mu = new int[numConditions][numComponents];// mu : positions of the binding components
-        bindingModels = new BindingModel[manager.getExperimentSet().getReplicates().size()]; //Array of bindingModels for convenience
+        bindingModels = new BindingModel[manager.getReplicates().size()]; //Array of bindingModels for convenience
         plotEM = (plotSubRegion!=null && plotSubRegion.overlaps(w));
         //Monitor state convergence using the following last variables
         lastRBind = new double[numConditions][][];
@@ -133,12 +136,12 @@ public class BindingEM {
         lastMu = new int[numConditions][numComponents];
         
         //Initializing data structures
-        for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+        for(ExperimentCondition cond : manager.getConditions()){
         	int c = cond.getIndex();
         	
         	//Add bindingModels to array
         	for(ControlledExperiment rep : cond.getReplicates())
-        		bindingModels[rep.getIndex()] = rep.getBindingModel();
+        		bindingModels[rep.getIndex()] = bindingManager.getBindingModel(rep);
         	
         	//Set maximum alphas
         	alphaMax[c] =  config.getAlphaScalingFactor() * (double)conditionBackgrounds.get(cond).getMaxThreshold('.');
@@ -224,7 +227,7 @@ public class BindingEM {
         // re-assign EM result back to component objects
         //////////
         List<List<BindingComponent>> activeComponents = new ArrayList<List<BindingComponent>>();
-        for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+        for(ExperimentCondition cond : manager.getConditions()){
         	//Binding Components
         	List<BindingComponent> currActiveComps = new ArrayList<BindingComponent>();
         	int c = cond.getIndex();
@@ -691,7 +694,7 @@ public class BindingEM {
      */
     private void setComponentResponsibilityProfiles(List<List<BindingComponent>> bindComponents, List<List<StrandedBaseCount>> signals, 
             									double[][][] responsibilities) {
-		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+		for(ExperimentCondition cond : manager.getConditions()){
 			int c = cond.getIndex();
 			
 			for(int j=0;j<bindComponents.get(c).size();j++){

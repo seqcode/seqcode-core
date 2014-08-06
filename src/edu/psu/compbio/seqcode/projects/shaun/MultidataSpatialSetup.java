@@ -11,17 +11,17 @@ import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.ExonicGene;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.species.ExonicGene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.PointParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RegionParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.StrandedRegionParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.PointParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RegionParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.StrandedRegionParser;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;

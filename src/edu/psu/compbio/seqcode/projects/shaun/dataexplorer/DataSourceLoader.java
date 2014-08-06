@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.gse.utils.io.motifs.BackgroundModelIO;
+import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 import edu.psu.compbio.seqcode.projects.shaun.FreqMatrixImport;
 
 /** DataSourceLoader

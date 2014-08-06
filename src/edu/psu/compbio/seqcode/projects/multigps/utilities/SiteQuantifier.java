@@ -9,13 +9,13 @@ import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 /**
@@ -29,10 +29,12 @@ import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 public class SiteQuantifier {
 	
 	protected ExperimentManager manager;
-	protected Config config;
+	protected GenomeConfig gconfig;
+	protected ExptConfig econfig;
 		
-	public SiteQuantifier(Config con, ExperimentManager man){
-		config = con;
+	public SiteQuantifier(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){
+		gconfig = gcon;
+		econfig = econ;
 		manager = man;
 	}
 	
@@ -47,7 +49,7 @@ public class SiteQuantifier {
 		List<Point> points = new ArrayList<Point>();
 		//Load the points
 		for(String f : files){
-			points.addAll(Utils.loadPointsFromFile(f, config.getGenome()));
+			points.addAll(Utils.loadPointsFromFile(f, gconfig.getGenome()));
 		}
 		//Sort the points
 		Collections.sort(points);
@@ -80,7 +82,7 @@ public class SiteQuantifier {
 		List<Point> points = new ArrayList<Point>();
 		//Load the points
 		for(String f : files){
-			points.addAll(Utils.loadPointsFromFile(f, config.getGenome()));
+			points.addAll(Utils.loadPointsFromFile(f, gconfig.getGenome()));
 		}
 		for(Point p : points){
 			Region r = p.expand(win/2);
@@ -105,7 +107,7 @@ public class SiteQuantifier {
 		List<Region> regs = new ArrayList<Region>();
 		
 		for(String f : files){
-			regs.addAll(Utils.loadRegionsFromFile(f, config.getGenome(), win));
+			regs.addAll(Utils.loadRegionsFromFile(f, gconfig.getGenome(), win));
 		}
 		
 		//Simple stats
@@ -123,11 +125,10 @@ public class SiteQuantifier {
 	 * @param peakRegions
 	 */
 	public void calcSigNoiseRatios(List<Region> peakRegions){
-		ExperimentSet eset = manager.getExperimentSet();
-		if(eset.getConditions().size()==0){
+		if(manager.getConditions().size()==0){
 			System.out.println("No experiments specified."); System.exit(1);
 		}
-		for(ExperimentCondition c : eset.getConditions()){
+		for(ExperimentCondition c : manager.getConditions()){
 			for(ControlledExperiment r : c.getReplicates()){
 				double total = r.getSignal().getHitCount();
 				double sig = 0;
@@ -146,11 +147,10 @@ public class SiteQuantifier {
 	 * @param peakRegions
 	 */
 	public void countSignal(List<Region> peakRegions){
-		ExperimentSet eset = manager.getExperimentSet();
-		if(eset.getConditions().size()==0){
+		if(manager.getConditions().size()==0){
 			System.out.println("No experiments specified."); System.exit(1);
 		}
-		for(ExperimentCondition c : eset.getConditions()){
+		for(ExperimentCondition c : manager.getConditions()){
 			for(ControlledExperiment r : c.getReplicates()){
 				double total = r.getSignal().getHitCount();
 				System.out.println("Condition "+c.getName()+":\tRep "+r.getName());
@@ -165,14 +165,13 @@ public class SiteQuantifier {
 	}
 	
 	public void countSignalAcrossReplicates(List<Region> peakRegions){
-		ExperimentSet eset = manager.getExperimentSet();
-		if(eset.getConditions().size()==0){
+		if(manager.getConditions().size()==0){
 			System.out.println("No experiments specified."); System.exit(1);
 		}
 		
 		// print header line
 		String header ="Point"+"\t";
-		for(ExperimentCondition c :eset.getConditions()){
+		for(ExperimentCondition c :manager.getConditions()){
 			for(ControlledExperiment r : c.getReplicates()){
 				header = header + r.getName()+"\t";
 			}
@@ -182,7 +181,7 @@ public class SiteQuantifier {
 		for(Region pr : peakRegions){
 			String out="";
 			out = pr.getMidpoint().getChrom()+":"+pr.getMidpoint().getLocation();
-			for(ExperimentCondition c : eset.getConditions()){
+			for(ExperimentCondition c : manager.getConditions()){
 				for(ControlledExperiment r : c.getReplicates()){
 					double currSig = r.getSignal().countHits(pr);
 					out=out+"\t"+Double.toString(currSig);
@@ -198,8 +197,7 @@ public class SiteQuantifier {
 	 * @param quadrants
 	 */
 	public void printQuadValues(List<StrandedPoint> motifhits, Integer[] quadrants){
-		ExperimentSet eset = manager.getExperimentSet();
-		if(eset.getConditions().size()==0){
+		if(manager.getConditions().size()==0){
 			System.out.println("No experiments specified."); System.exit(1);
 		}
 		
@@ -208,7 +206,7 @@ public class SiteQuantifier {
 			if(Math.abs(q)>max)
 				max = Math.abs(q);
 		}
-		
+		Collections.sort(motifhits);
 		//All loaded experiments are flattened
 		for(StrandedPoint sp : motifhits){
 			Region currReg = sp.expand(max);
@@ -218,9 +216,9 @@ public class SiteQuantifier {
 				pos_hits[h]=0; neg_hits[h]=0;
 			}
 			
-			for(ExperimentCondition c : eset.getConditions()){
+			for(ExperimentCondition c : manager.getConditions()){
 				for(ControlledExperiment r : c.getReplicates()){
-					List<StrandedBaseCount> bc = r.getSignal().getUnstrandedBases(currReg);
+					List<StrandedBaseCount> bc = r.getSignal().getBases(currReg);
 					for(StrandedBaseCount b : bc){
 						if(b.getStrand()=='+' && sp.getStrand()=='+')
 							pos_hits[b.getCoordinate()-currReg.getStart()]+=b.getCount();
@@ -256,8 +254,9 @@ public class SiteQuantifier {
 	public static void main(String[] args){
 		ArgParser ap = new ArgParser(args);
 		
-		Config config = new Config(args);
-		if(config.helpWanted()){
+		GenomeConfig gconfig = new GenomeConfig(args);
+		ExptConfig econfig = new ExptConfig(gconfig.getGenome(), args);
+		if(gconfig.helpWanted()){
 			System.err.println("SiteQuantifier:");
 			System.err.println("\tArgs:\n" +
 					"\t--peaks <peaks file(s)>\n" +
@@ -270,9 +269,9 @@ public class SiteQuantifier {
 					"\t--quadrants <intervals for upstream of site, comma-separated>\n" +
 					"");
 		}else{
-			ExperimentManager manager = new ExperimentManager(config);
+			ExperimentManager manager = new ExperimentManager(econfig);
 				
-			SiteQuantifier quant = new SiteQuantifier(config, manager);
+			SiteQuantifier quant = new SiteQuantifier(gconfig, econfig, manager);
 			
 			//Load peak files if present and do signal/noise stats
 			int win = Args.parseInteger(args,"win",200);
@@ -301,7 +300,7 @@ public class SiteQuantifier {
 			//Load motif hit file
 			if(ap.hasKey("motifhits")){
 				String motiffile = Args.parseString(args, "motifhits", null);
-				List<StrandedPoint> spoints = Utilities.loadStrandedPointsFromMotifFile(config.getGenome(), motiffile, win);
+				List<StrandedPoint> spoints = Utilities.loadStrandedPointsFromMotifFile(gconfig.getGenome(), motiffile, win);
 			
 				if(ap.hasKey("quadrants")){
 					String quads = Args.parseString(args, "quadrants", null);

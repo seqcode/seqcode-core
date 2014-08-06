@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.seqview.model;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 /* A RegionModel is a model that also carries an ewok Region with it.  */
    

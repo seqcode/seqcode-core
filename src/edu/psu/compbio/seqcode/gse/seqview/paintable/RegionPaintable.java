@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.seqview.*;
 
 /* A RegionPaintable displays some dataset across a genomic region */

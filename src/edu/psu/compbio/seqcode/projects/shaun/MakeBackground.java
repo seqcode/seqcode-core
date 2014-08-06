@@ -6,22 +6,22 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.NamedRegion;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.BackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.CountsBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.FrequencyBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ExpanderIterator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RefGeneGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.ExpanderIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
+import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.utils.io.DatasetsGeneralIO;
-import edu.psu.compbio.seqcode.gse.utils.io.motifs.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.FASTAStream;
 
 public class MakeBackground {

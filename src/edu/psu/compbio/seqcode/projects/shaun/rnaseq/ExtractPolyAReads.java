@@ -1,13 +1,16 @@
 package edu.psu.compbio.seqcode.projects.shaun.rnaseq;
 
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.CloseableIterator;
+
 import java.io.File;
+import java.io.IOException;
 
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMFileReader.ValidationStringency;
-import net.sf.samtools.util.CloseableIterator;
 
 public class ExtractPolyAReads{
 	File inFile=null;
@@ -30,9 +33,11 @@ public class ExtractPolyAReads{
 	 *   - That end in a run of As or begin with a run of Ts
 	 */
 	public void execute() {
-		SAMFileReader reader = new SAMFileReader(inFile);
-		
-		reader.setValidationStringency(ValidationStringency.SILENT);
+		SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		SamReader reader = factory.open(inFile);
 		CloseableIterator<SAMRecord> iter = reader.iterator();
 		while (iter.hasNext()) {
 		    SAMRecord record = iter.next();
@@ -73,7 +78,12 @@ public class ExtractPolyAReads{
 			}	
 		}
 		iter.close();
-		reader.close();
+		try {
+			reader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 	
 	public static void main(String[] args){

@@ -7,14 +7,14 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.GenomeExpander;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.Mapper;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.MapperIterator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RefGeneGenerator;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Mapper;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.MapperIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.GenomeExpander;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
 
 /**
  * MetaUtils: loaders from various sources

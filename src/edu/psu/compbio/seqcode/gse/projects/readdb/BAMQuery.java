@@ -1,15 +1,21 @@
 package edu.psu.compbio.seqcode.gse.projects.readdb;
 
 import org.apache.commons.cli.*;
+
 import java.util.*;
 import java.io.*;
 import java.net.*;
-import net.sf.samtools.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SAMRecordIterator;
+import htsjdk.samtools.SamInputResource;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
 
 
 /**
@@ -29,7 +35,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 public class BAMQuery {
 
     private String data, index;
-    private SAMFileReader reader;
+    private SamReader reader;
     private boolean quiet, weights, noheader;
     private int histogram;
     public static void main(String args[]) throws Exception {
@@ -68,7 +74,7 @@ public class BAMQuery {
         }
     }
     public BAMQuery() {}
-    public SAMFileReader createReader() throws IOException, URISyntaxException {
+    public SamReader createReader() throws IOException, URISyntaxException {
         URI indexURI = new URI(index);
         String indexFilename = null;
         if (indexURI.getScheme() != null && indexURI.getScheme().equals("file")) {
@@ -88,16 +94,20 @@ public class BAMQuery {
             httpclient.getConnectionManager().shutdown();        
         } else {
             indexFilename = index; // hope for the best here
-        }        
+        }
+        SamReaderFactory factory =
+                SamReaderFactory.makeDefault()
+                    .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+                    .validationStringency(ValidationStringency.SILENT);
         File datafile = new File(data);
         if (datafile.exists()) {
-            return new SAMFileReader(datafile, new File(indexFilename), false);       
+        	return factory.open(SamInputResource.of(datafile).index(new File(indexFilename)));
         } else {
-            return new SAMFileReader(new URL(data), new File(indexFilename), false);       
+        	return factory.open(SamInputResource.of(new URL(data)).index(new File(indexFilename)));
         }
     }
     public void run(InputStream instream) throws IOException, URISyntaxException {
-        SAMFileReader bam = createReader();
+        SamReader bam = createReader();
         //        bam.enableIndexCaching(true);
         BufferedReader reader = new BufferedReader(new InputStreamReader(instream));
         String line = null;

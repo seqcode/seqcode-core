@@ -8,11 +8,11 @@ import java.awt.*;
 import java.lang.reflect.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.ScoredPoint;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.models.Model;
 import edu.psu.compbio.seqcode.gse.utils.models.ModelFieldAnalysis;
 import edu.psu.compbio.seqcode.gse.viz.paintable.*;
+import edu.psu.compbio.seqcode.genome.location.ScoredPoint;
 
 public class ModelLocatedDifferenceValues extends AbstractModelPaintable {
 

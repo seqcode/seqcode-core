@@ -3,11 +3,11 @@ package edu.psu.compbio.seqcode.gse.tools.seqdata;
 import java.sql.*;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
-import edu.psu.compbio.seqcode.gse.datasets.general.Lab;
-import edu.psu.compbio.seqcode.gse.datasets.general.MetadataModifier;
+import edu.psu.compbio.seqcode.gse.datasets.core.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptTarget;
+import edu.psu.compbio.seqcode.gse.datasets.core.Lab;
+import edu.psu.compbio.seqcode.gse.datasets.core.MetadataModifier;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;

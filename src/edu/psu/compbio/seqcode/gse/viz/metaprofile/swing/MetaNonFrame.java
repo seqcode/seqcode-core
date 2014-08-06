@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.BinningParameters;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.MetaProfile;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.MetaProfileHandler;

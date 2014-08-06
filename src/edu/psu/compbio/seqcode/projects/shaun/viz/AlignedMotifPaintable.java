@@ -1,20 +1,10 @@
 package edu.psu.compbio.seqcode.projects.shaun.viz;
 
-import java.sql.SQLException;
 import java.util.*;
 import java.awt.*;
 
-
-
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.*;
-import edu.psu.compbio.seqcode.gse.utils.ArrayUtils;
-import edu.psu.compbio.seqcode.gse.utils.Closeable;
-import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.colors.Coloring;
 import edu.psu.compbio.seqcode.gse.viz.paintable.*;

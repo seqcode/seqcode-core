@@ -1,22 +1,23 @@
 package edu.psu.compbio.seqcode.gse.projects.gps.utilities;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import net.sf.samtools.AlignmentBlock;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.SAMFileReader.ValidationStringency;
-import net.sf.samtools.util.CloseableIterator;
-
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.projects.gps.Read;
 import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
+import htsjdk.samtools.AlignmentBlock;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.CloseableIterator;
 
 public class TophatSAMReader extends AlignmentFileReader{
 
@@ -26,8 +27,11 @@ public class TophatSAMReader extends AlignmentFileReader{
     
 	protected void estimateGenome() {
 		HashMap<String, Integer> chrLenMap = new HashMap<String, Integer>();
-		SAMFileReader reader = new SAMFileReader(inFile);
-		reader.setValidationStringency(ValidationStringency.SILENT);
+		SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		SamReader reader = factory.open(inFile);		
 		SAMSequenceDictionary dictionary = reader.getFileHeader().getSequenceDictionary();
 		if(dictionary !=null){
 			for(SAMSequenceRecord record : dictionary.getSequences()){
@@ -54,8 +58,11 @@ public class TophatSAMReader extends AlignmentFileReader{
 		totalHits=0;
 		totalWeight=0;
 		
-		SAMFileReader reader = new SAMFileReader(inFile);
-		reader.setValidationStringency(ValidationStringency.SILENT);
+		SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		SamReader reader = factory.open(inFile);		
 		CloseableIterator<SAMRecord> iter = reader.iterator();
 		while (iter.hasNext()) {
 		    currID++;
@@ -99,7 +106,12 @@ public class TophatSAMReader extends AlignmentFileReader{
 		    totalWeight++;
 		}
 		iter.close();
-		reader.close();
+		try {
+			reader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		populateArrays();
     }//end of countReads method
     

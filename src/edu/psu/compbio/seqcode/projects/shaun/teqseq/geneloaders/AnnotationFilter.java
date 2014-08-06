@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 /**
  * AnnotationFilter: a set of tools to filter specific subsets from a collection of known genes

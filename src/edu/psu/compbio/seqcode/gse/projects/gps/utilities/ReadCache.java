@@ -14,13 +14,12 @@ import java.util.List;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSPeak;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSPeak;
 import edu.psu.compbio.seqcode.gse.projects.gps.StrandedBase;
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 /**
@@ -464,7 +463,7 @@ public class ReadCache {
 	 * Exclude the data from specified regions
 	 * It will truncate the data arrays.
 	 */
-	public void excludeRegions(ArrayList<Region> regions){
+	public void excludeRegions(List<Region> regions){
 		for (Region r:regions){
 			int chrID = chrom2ID.get(r.getChrom());
 			for(int j = 0; j < fivePrimes[chrID].length; j++){

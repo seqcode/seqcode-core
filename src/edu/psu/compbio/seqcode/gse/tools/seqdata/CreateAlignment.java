@@ -3,9 +3,9 @@ package edu.psu.compbio.seqcode.gse.tools.seqdata;
 import java.io.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.*;

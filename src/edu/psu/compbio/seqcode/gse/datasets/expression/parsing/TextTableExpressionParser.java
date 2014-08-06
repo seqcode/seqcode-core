@@ -7,11 +7,11 @@ import java.sql.SQLException;
 import java.util.*;
 import java.io.*;
 
+import edu.psu.compbio.seqcode.gse.datasets.core.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.core.MetadataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.core.TimePoint;
 import edu.psu.compbio.seqcode.gse.datasets.expression.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
-import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
-import edu.psu.compbio.seqcode.gse.datasets.general.TimePoint;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 
 public class TextTableExpressionParser {

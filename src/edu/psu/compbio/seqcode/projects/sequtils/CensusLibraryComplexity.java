@@ -1,6 +1,5 @@
 package edu.psu.compbio.seqcode.projects.sequtils;
 
-import jsc.distributions.LogarithmicSeries;
 import jsc.distributions.Lognormal;
 
 import org.apache.commons.math3.analysis.MultivariateFunction;

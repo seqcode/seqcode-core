@@ -4,8 +4,8 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.projects.gps.*;
 import edu.psu.compbio.seqcode.gse.projects.gps.features.Feature;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;

@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import Jama.Matrix;
 
-import edu.psu.compbio.seqcode.projects.shaun.viz.ScatterPlotConfigured;
+import edu.psu.compbio.seqcode.gse.viz.scatter.ScatterPlotConfigured;
 
 /**
  * DifferentialEnrichment: parent class for testers of pairwise differential enrichment in count data

@@ -15,10 +15,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.ExonicGene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RefGeneGenerator;
+import edu.psu.compbio.seqcode.genome.location.ExonicGene;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 public class RNASeqFigurePaintable extends FigurePaintable{

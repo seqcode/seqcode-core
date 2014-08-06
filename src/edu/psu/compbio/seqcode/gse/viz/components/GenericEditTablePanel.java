@@ -9,9 +9,9 @@ import java.awt.event.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptType;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptType;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
 /**

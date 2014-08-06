@@ -3,8 +3,8 @@ package edu.psu.compbio.seqcode.projects.shaun;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 public class ChromBlock{
 	public ChromBlock(Region r){region=r;}

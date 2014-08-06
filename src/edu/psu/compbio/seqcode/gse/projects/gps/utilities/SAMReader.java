@@ -1,21 +1,22 @@
 package edu.psu.compbio.seqcode.gse.projects.gps.utilities;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMSequenceDictionary;
-import net.sf.samtools.SAMSequenceRecord;
-import net.sf.samtools.SAMFileReader.ValidationStringency;
-import net.sf.samtools.util.CloseableIterator;
-
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.projects.gps.Read;
 import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.CloseableIterator;
 
 public class SAMReader extends AlignmentFileReader{
 
@@ -25,8 +26,11 @@ public class SAMReader extends AlignmentFileReader{
     
 	protected void estimateGenome() {
 		HashMap<String, Integer> chrLenMap = new HashMap<String, Integer>();
-		SAMFileReader reader = new SAMFileReader(inFile);
-		reader.setValidationStringency(ValidationStringency.SILENT);
+		SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		SamReader reader = factory.open(inFile);
 		SAMSequenceDictionary dictionary = reader.getFileHeader().getSequenceDictionary();
 		if(dictionary !=null){
 			for(SAMSequenceRecord record : dictionary.getSequences()){
@@ -53,7 +57,11 @@ public class SAMReader extends AlignmentFileReader{
 		totalHits=0;
 		totalWeight=0;
 		
-		SAMFileReader reader = new SAMFileReader(inFile);
+		SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		SamReader reader = factory.open(inFile);
 		CloseableIterator<SAMRecord> iter = reader.iterator();
 		Collection<SAMRecord> byRead = new ArrayList<SAMRecord>();
 		String lastread = null;
@@ -64,6 +72,7 @@ public class SAMReader extends AlignmentFileReader{
 		    	readLength = record.getReadLength();
 		    
 		    if (record.getReadUnmappedFlag()) {continue; }
+		    if(record.isSecondaryOrSupplementary()){continue;}
 		    if (lastread == null || !lastread.equals(record.getReadName())) {
 		    	processRead(byRead);
 		    	byRead.clear();
@@ -74,7 +83,11 @@ public class SAMReader extends AlignmentFileReader{
 		}
 		processRead(byRead);
 		iter.close();
-		reader.close();
+		try {
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		populateArrays();
     }//end of countReads method
     

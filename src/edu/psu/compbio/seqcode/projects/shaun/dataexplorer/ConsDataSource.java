@@ -2,11 +2,11 @@ package edu.psu.compbio.seqcode.projects.shaun.dataexplorer;
 
 import java.util.Iterator;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.ScoredRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ScoredRegionGenerator;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.ScoredRegion;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ScoredRegionGenerator;
 import edu.psu.compbio.seqcode.gse.tools.sequence.StrandedRegionsToFasta;
 
 public class ConsDataSource extends DataSource{

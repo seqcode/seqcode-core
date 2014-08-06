@@ -3,9 +3,11 @@ package edu.psu.compbio.seqcode.deepseq.hitloaders;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.Read;
 import edu.psu.compbio.seqcode.deepseq.ReadHit;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 /**
  * HitLoaders load alignment hits from various sources, including ReadDB and various files.
@@ -54,10 +56,10 @@ public abstract class HitLoader {
 	
 //Abstract methods
 	/**
-	 * Get the reads from the appropriate source (implementation-specific).
+	 * Get all hits from the appropriate source (implementation-specific).
 	 * Loads data to the fivePrimesList and hitsCountList
 	 */
-	public abstract void sourceReads();
+	public abstract void sourceAllHits();
 
 	
 //Shared methods
@@ -75,8 +77,21 @@ public abstract class HitLoader {
 	 * Reset the loaders -- destroy the lists and call the garbage collector
 	 */
 	public void resetLoader(){
-		fivePrimePosList=null;
-		fivePrimeCountsList=null; 
+		//Free memory
+		if(fivePrimePosList!=null){
+			for(String chr: fivePrimePosList.keySet()){
+				fivePrimePosList.get(chr)[0].clear();
+				fivePrimePosList.get(chr)[1].clear();
+			}
+			fivePrimePosList.clear();
+		}
+		if(fivePrimeCountsList!=null){
+			for(String chr: fivePrimeCountsList.keySet()){
+				fivePrimeCountsList.get(chr)[0].clear();
+				fivePrimeCountsList.get(chr)[1].clear();
+			}
+			fivePrimeCountsList.clear();
+		}
 		System.gc();
 	}
 	

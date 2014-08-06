@@ -3,9 +3,7 @@ package edu.psu.compbio.seqcode.gse.seqview.paintable;
 import java.awt.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.ScoredRegion;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
+import edu.psu.compbio.seqcode.genome.location.ScoredRegion;
 import edu.psu.compbio.seqcode.gse.seqview.model.RegionExpanderModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 

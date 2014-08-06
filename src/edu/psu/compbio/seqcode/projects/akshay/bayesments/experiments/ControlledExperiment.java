@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.ExperimentScaler;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.Sample;
@@ -9,7 +9,7 @@ import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
 /**
  * 
  * This is EXACTLY same as the Sample class in multigps (edu.psu.compbio.seqcode.projects.multigps.experiments), EXCEPT for
- * different Config class (Config class here is from the bayesments project and not from the multigps one)
+ * different MultiGPSConfig class (MultiGPSConfig class here is from the bayesments project and not from the multigps one)
  */
 public class ControlledExperiment {
 

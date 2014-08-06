@@ -2,7 +2,7 @@ package edu.psu.compbio.seqcode.projects.shaun.teqseq.exptprops;
 
 import java.util.Collection;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.projects.shaun.teqseq.core.GenomeLoader;
 import edu.psu.compbio.seqcode.projects.shaun.teqseq.core.ReadLoader;
 import edu.psu.compbio.seqcode.projects.shaun.teqseq.geneloaders.AGene;

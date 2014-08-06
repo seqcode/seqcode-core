@@ -10,11 +10,15 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.Vector;
 
-import edu.psu.compbio.seqcode.gse.clustering.*;
-import edu.psu.compbio.seqcode.gse.clustering.kmeans.*;
-import edu.psu.compbio.seqcode.gse.clustering.vectorcluster.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
+import edu.psu.compbio.seqcode.machinelearning.clustering.ClusterRepresentative;
+import edu.psu.compbio.seqcode.machinelearning.clustering.PairwiseElementMetric;
+import edu.psu.compbio.seqcode.machinelearning.clustering.kmeans.KMeansClustering;
+import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.DefaultVectorClusterElement;
+import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.EuclideanDistance;
+import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.Mean;
+import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.VectorClusterElement;
 
 public class ChromatinDataKMeans {
 

@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.viz.metaprofile;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.genome.location.Point;
 
 /**
  * PointProfile associates a (String) "name" and a Point object with each array of values.

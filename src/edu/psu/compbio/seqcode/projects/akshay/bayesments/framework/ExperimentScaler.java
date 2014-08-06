@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.projects.gps.PairedCountData;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataFrame;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataRegression;

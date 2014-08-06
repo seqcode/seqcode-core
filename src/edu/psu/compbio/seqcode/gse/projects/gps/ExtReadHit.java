@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.projects.gps;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 
 /**
  * Extended read: initializes a read, shifts it towards the 3', and extends from both the 5' and 3' independently.

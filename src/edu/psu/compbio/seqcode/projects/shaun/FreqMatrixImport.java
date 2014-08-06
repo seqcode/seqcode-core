@@ -4,17 +4,17 @@ import java.util.*;
 import java.sql.*;
 import java.text.ParseException;
 
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.datasets.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.CountsBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrixImport;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
-import edu.psu.compbio.seqcode.gse.utils.io.motifs.BackgroundModelIO;
+import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 
 /* Loads frequency and count matrix motifs to the db. 
  * The motifs are first converted to log-odds weightmatrices using a background model.

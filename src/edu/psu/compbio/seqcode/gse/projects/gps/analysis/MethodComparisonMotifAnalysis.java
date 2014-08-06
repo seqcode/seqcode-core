@@ -11,24 +11,24 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSPeak;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.MACSParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.MACSPeakRegion;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScorer;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSPeak;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.MACSParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.MACSPeakRegion;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScoreProfile;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScorer;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils.SISSRS_Event;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.SetTools;
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils.SISSRS_Event;
 
 public class MethodComparisonMotifAnalysis {
 	private final int NOHIT_OFFSET = 999;

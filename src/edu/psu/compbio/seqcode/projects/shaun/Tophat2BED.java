@@ -1,14 +1,16 @@
 package edu.psu.compbio.seqcode.projects.shaun;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
-import net.sf.samtools.AlignmentBlock;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMFileReader.ValidationStringency;
-import net.sf.samtools.util.CloseableIterator;
-
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
+import htsjdk.samtools.AlignmentBlock;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.CloseableIterator;
 
 
 public class Tophat2BED {
@@ -25,8 +27,11 @@ public class Tophat2BED {
 	 * Convert SAM/BAM alignment blocks to BED
 	 */
 	public void convert() {
-		SAMFileReader reader = new SAMFileReader(samFile);
-		reader.setValidationStringency(ValidationStringency.SILENT);
+		SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		SamReader reader = factory.open(samFile);
 		CloseableIterator<SAMRecord> iter = reader.iterator();
 		while (iter.hasNext()) {
 		    SAMRecord record = iter.next();
@@ -59,7 +64,12 @@ public class Tophat2BED {
 		    }
 		}
 		iter.close();
-		reader.close();
+		try {
+			reader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 	
 	/**

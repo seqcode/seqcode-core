@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.projects.readdb.*;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
@@ -126,7 +126,7 @@ public class ReadDBHitLoader extends HitLoader{
 	/**
 	 * Load the five primes from ReadDB
 	 */
-	public void sourceReads(){
+	public void sourceAllHits(){
 		this.initialize();
 		try {
 			//Start a new ReadDB client
@@ -188,6 +188,7 @@ public class ReadDBHitLoader extends HitLoader{
 			e.printStackTrace();
 		}
 	}
+	
 	
     /**
      *  load paired read hit 5' coordinates (sorted) and counts

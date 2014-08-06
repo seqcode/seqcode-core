@@ -4,8 +4,8 @@ import java.util.List;
 
 import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.projects.gps.ExtReadHit;
 import edu.psu.compbio.seqcode.gse.utils.Pair;

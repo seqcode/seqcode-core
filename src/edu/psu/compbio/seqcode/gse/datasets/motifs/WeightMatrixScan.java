@@ -4,7 +4,7 @@ import java.sql.*;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;

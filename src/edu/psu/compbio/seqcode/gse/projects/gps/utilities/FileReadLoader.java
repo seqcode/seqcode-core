@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.projects.gps.ExtReadHit;
 import edu.psu.compbio.seqcode.gse.projects.gps.Read;
 import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;

@@ -3,9 +3,9 @@ package edu.psu.compbio.seqcode.gse.projects.gps.features;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 /**
  * Any genomic feature that we wish to discover in a deep-sequencing experiment. 

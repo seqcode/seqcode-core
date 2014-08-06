@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;

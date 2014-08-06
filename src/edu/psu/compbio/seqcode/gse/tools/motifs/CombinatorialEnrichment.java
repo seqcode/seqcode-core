@@ -1,22 +1,10 @@
 package edu.psu.compbio.seqcode.gse.tools.motifs;
 
 import java.util.*;
-import java.io.*;
-import java.sql.*;
-import java.text.DecimalFormat;
 import cern.jet.random.Binomial;
 import cern.jet.random.engine.RandomEngine;
 
-//import edu.psu.compbio.seqcode.gse.utils.probability.Binomial;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.tools.motifs.*;
-import edu.psu.compbio.seqcode.gse.tools.utils.Args;
-import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
-import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
-import edu.psu.compbio.seqcode.gse.utils.io.parsing.FASTAStream;
 
 /** 
  * Scans for significant pairs of motifs.

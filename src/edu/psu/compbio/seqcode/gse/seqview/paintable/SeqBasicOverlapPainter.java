@@ -1,33 +1,18 @@
 package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
 import java.awt.*;
-import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
-import java.awt.font.LineMetrics;
-import java.awt.geom.Rectangle2D;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipchip.ChipChipData;
-import edu.psu.compbio.seqcode.gse.datasets.chipchip.GenericExperiment;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.WeightedRunningOverlapSum;
-import edu.psu.compbio.seqcode.gse.datasets.species.ExonicGene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
-import edu.psu.compbio.seqcode.gse.seqview.model.ChipChipDataModel;
-import edu.psu.compbio.seqcode.gse.seqview.model.ChipChipScaleModel;
-import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqDataModel;
-import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqScaleModel;
-import edu.psu.compbio.seqcode.gse.seqview.model.Model;
-import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.gse.seqview.model.SeqDataModel;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
 public class SeqBasicOverlapPainter extends SeqPainter {
 
     private Color color;
 
-    public SeqBasicOverlapPainter(ChipSeqDataModel model) {
+    public SeqBasicOverlapPainter(SeqDataModel model) {
         super(model);
         attrib = DynamicAttribute.getGlobalAttributes();
     }

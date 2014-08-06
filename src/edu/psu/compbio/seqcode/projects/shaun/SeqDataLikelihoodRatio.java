@@ -1,20 +1,15 @@
 package edu.psu.compbio.seqcode.projects.shaun;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import edu.psu.compbio.seqcode.gse.datasets.binding.BindingEvent;
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RefGeneGenerator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.ChipSeqBindingGenerator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.SeqExpander;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.NamedRegion;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
 
 public class SeqDataLikelihoodRatio {
 	private Organism currentOrg;
@@ -73,29 +68,6 @@ public class SeqDataLikelihoodRatio {
 		peaks = new ArrayList<Peak>();
 		System.out.println("Calculating peaks");
 		
-		////////// This section only needed if taking the short-cut for peaks /////////////////////////////
-		////////// Replace this section with the commented section below for the long way /////////////////
-		////////// Even if we stick with this short-cut for peaks, we should still do the long-way to put the landscape into the db //////////
-		/*ChipSeqLocator loc =ipChannel.getLocator();
-		ChipSeqExpander csex;
-		try {
-			csex = new ChipSeqExpander(loc);
-			ChipSeqBindingGenerator csbg = new ChipSeqBindingGenerator(csex, 174, 5, ipChannel.getExptName());
-			Iterator<NamedRegion> chroms = new ChromRegionIterator(currentGen);
-			while (chroms.hasNext()) {
-				NamedRegion currentChrom = chroms.next();
-				int regionStart = currentChrom.getStart();
-				System.out.println(currentChrom.getChrom()+"\t"+currentChrom.getWidth());
-				
-				Iterator <BindingEvent> iter = csbg.execute(currentChrom);
-				while(iter.hasNext()){
-					BindingEvent r = iter.next();
-					regionStart = r.getStart();
-
-
-		//END OF SHORT-CUT CODE
-		///////////////////////////////////////////////////////////////////////////////////////////////////
-			*/		
 			Iterator<NamedRegion> chroms = new ChromRegionIterator(currentGen);
 			while (chroms.hasNext()) {
 				NamedRegion currentChrom = chroms.next();

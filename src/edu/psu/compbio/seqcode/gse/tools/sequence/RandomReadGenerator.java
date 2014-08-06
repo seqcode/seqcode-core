@@ -1,9 +1,7 @@
 package edu.psu.compbio.seqcode.gse.tools.sequence;
 
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
-import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.FASTAStream;
-import cern.jet.random.*;
 import java.io.*;
 
 public class RandomReadGenerator {

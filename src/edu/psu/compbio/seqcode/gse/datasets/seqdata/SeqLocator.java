@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Iterator;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 /**

@@ -5,8 +5,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAnalysisResult;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSPeak;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSPeak;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 

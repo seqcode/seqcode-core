@@ -9,8 +9,8 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 import java.sql.*;
 
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.components.GenericSelectPanel;
 

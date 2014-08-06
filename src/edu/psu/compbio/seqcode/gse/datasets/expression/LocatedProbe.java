@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.datasets.expression;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 public class LocatedProbe extends Probe {
 	

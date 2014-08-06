@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.projects.shaun.teqseq.geneloaders;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 /*
  * ARegion = AnnotatedRegion. 
  * 

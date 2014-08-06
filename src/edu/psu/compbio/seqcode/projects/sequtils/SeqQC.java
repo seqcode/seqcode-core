@@ -13,16 +13,20 @@ import cern.jet.random.engine.DRand;
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 
 public class SeqQC {
 
-	Config config;
+	GenomeConfig gconfig;
+	MultiGPSConfig config;
+	ExptConfig econfig;
 	Genome gen;
 	ExperimentManager manager;
 	float[] startcounts =null;
@@ -39,15 +43,17 @@ public class SeqQC {
 	 * @param c
 	 * @param man
 	 */
-	public SeqQC(Config c){
+	public SeqQC(GenomeConfig gcon, ExptConfig econ, MultiGPSConfig c){
+		gconfig = gcon;
+		econfig = econ; 
 		config = c;
 		gen = config.getGenome();
-		config.setPerBaseReadFiltering(false);
-		config.setSESScaling(true);
-		config.setScalingSlidingWindow(sesScalingWin);
-		manager = new ExperimentManager(config);
+		econfig.setPerBaseReadFiltering(false);
+		econfig.setSESScaling(true);
+		econfig.setScalingSlidingWindow(sesScalingWin);
+		manager = new ExperimentManager(econfig);
 		
-		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
+		for(ControlledExperiment expt : manager.getReplicates()){
 			String name = expt.getSignal().getName().startsWith("EXPERIMENT") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
 			infoStrings.put(expt, new String(name));
 		}
@@ -75,7 +81,7 @@ public class SeqQC {
 		Map<ControlledExperiment, Double> sigProps = estimateSignalProportions(meanFragmentCoverage);
 		
 		if(!verbose)
-			for(ControlledExperiment expt : manager.getExperimentSet().getReplicates())
+			for(ControlledExperiment expt : manager.getReplicates())
 				System.out.println(infoStrings.get(expt));
 	}
 	
@@ -87,7 +93,7 @@ public class SeqQC {
 		Map<ControlledExperiment, Double> meanFragmentCoverage = new HashMap<ControlledExperiment, Double>();
 		
 		//If we have multiple experiments, process one at a time
-		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
+		for(ControlledExperiment expt : manager.getReplicates()){
 			// 1: Find the density of covered bases surrounding each read
 			List<DensityCountPair> densities = new ArrayList<DensityCountPair>();
 			Iterator<Region> chroms = new ChromosomeGenerator().execute(gen);
@@ -99,7 +105,7 @@ public class SeqQC {
 	                if(y>currentRegion.getEnd()){y=currentRegion.getEnd();}
 	                Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 				
-					List<StrandedBaseCount> ipHits = expt.getSignal().getUnstrandedBases(currSubRegion);
+					List<StrandedBaseCount> ipHits = expt.getSignal().getBases(currSubRegion);
 					makeHitStartArray(ipHits, currSubRegion, '+');
 					float posCounts[] = startcounts.clone();
 					makeHitStartArray(ipHits, currSubRegion, '-');
@@ -265,7 +271,7 @@ public class SeqQC {
 			System.out.println("\nEstimating signal proportion");
 		
 		//Estimate proportion via scaling
-		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
+		for(ControlledExperiment expt : manager.getReplicates()){
 			
 			float scaling = meanFragmentCoverage.get(expt).floatValue();
 			if(scaling>1)
@@ -338,9 +344,10 @@ public class SeqQC {
 					"\t--verbose\n" +
 					"\t--noheader\n");
 		}else{
-			Config con = new Config(args, false);
-			
-			SeqQC qc = new SeqQC(con);
+			GenomeConfig gcon = new GenomeConfig(args);
+			ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+			MultiGPSConfig config = new MultiGPSConfig(gcon, args, false);
+			SeqQC qc = new SeqQC(gcon, econ, config);
 			if(ap.hasKey("testquantile"))
 				qc.setTestQuantile(new Double(ap.getKeyValue("testquantile")));
 			if(ap.hasKey("verbose"))

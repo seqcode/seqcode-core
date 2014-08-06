@@ -2,7 +2,8 @@ package edu.psu.compbio.seqcode.gse.viz.metaprofile;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
 
 public class MetaProfileHandler<T extends Point, ProfileClass extends Profile> {
 

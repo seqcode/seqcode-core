@@ -9,24 +9,28 @@ import java.util.List;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 
 public class ReplicateDataExporter {
-	protected Config config;
+	protected MultiGPSConfig config;
 	protected ExperimentManager manager;
+	protected BindingManager bindingManager;
 	protected List<Point> potentialSites;
 	protected int siteJoinWin = 200;
 	protected int searchRegionWin = 500;
 	
 	//Constructor
-	public ReplicateDataExporter(Config config, ExperimentManager manager, List<Point> potentialSites) {
+	public ReplicateDataExporter(MultiGPSConfig config, ExperimentManager manager, BindingManager bindMan, List<Point> potentialSites) {
 		this.config = config;
 		this.manager = manager;
+		this.bindingManager= bindMan;
 		this.potentialSites = cleanPotentialSites(potentialSites, siteJoinWin);
 	}
 
@@ -37,15 +41,15 @@ public class ReplicateDataExporter {
 	 */
 	public void execute(){
 		//Convert our points to events
-		PointsToEvents p2e = new PointsToEvents(config, manager, potentialSites, searchRegionWin, true);
+		PointsToEvents p2e = new PointsToEvents(config, manager, bindingManager, potentialSites, searchRegionWin, true);
 		List<BindingEvent> events = p2e.execute();
 		
 		//Estimate signal-noise ratios
-		manager.estimateSignalProportion(events);
+		bindingManager.estimateSignalProportion(events);
 		
-		manager.setEvents(events);
+		bindingManager.setBindingEvents(events);
 		
-		manager.writeReplicateCounts(config.getOutputParentDir()+File.separator+config.getOutBase()+".replicates.counts");
+		bindingManager.writeReplicateCounts(config.getOutputParentDir()+File.separator+config.getOutBase()+".replicates.counts");
 	}
 	
 	
@@ -82,22 +86,23 @@ public class ReplicateDataExporter {
 	//Main
 	public static void main(String[] args){
 		List<Point> potentialSites = new ArrayList<Point>();
-		Config config = new Config(args);
+		GenomeConfig gcon = new GenomeConfig(args);
+		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		MultiGPSConfig config = new MultiGPSConfig(gcon, args, false);
 		if(config.helpWanted()){
 			System.err.println("ReplicateDataExporter:");
 			System.err.println("\t--sites <potential site coords>\n" +
 					"\t--scalingset <optional set in which to est. scaling ratio>");
 			System.err.println(config.getArgsList());			
 		}else{
-			ExperimentManager manager = new ExperimentManager(config);
-			
+			ExperimentManager manager = new ExperimentManager(econ);
+			BindingManager bMan = new BindingManager(manager);
 			//Just a test to see if we've loaded all conditions
-			ExperimentSet eset = manager.getExperimentSet();
-			System.err.println("Conditions:\t"+eset.getConditions().size());
-			for(ExperimentCondition c : eset.getConditions()){
+			System.err.println("Conditions:\t"+manager.getConditions().size());
+			for(ExperimentCondition c : manager.getConditions()){
 				System.err.println("Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
 			}
-			for(ExperimentCondition c : eset.getConditions()){
+			for(ExperimentCondition c : manager.getConditions()){
 				for(ControlledExperiment r : c.getReplicates()){
 					System.err.println("Condition "+c.getName()+":\tRep "+r.getName());
 					if(r.getControl()==null)
@@ -112,7 +117,7 @@ public class ReplicateDataExporter {
 			for(String sf : siteFiles)
 				potentialSites.addAll(Utils.loadPointsFromFile(sf, config.getGenome()));
 			
-			ReplicateDataExporter tester = new ReplicateDataExporter(config, manager, potentialSites);
+			ReplicateDataExporter tester = new ReplicateDataExporter(config, manager, bMan, potentialSites);
 			tester.execute();
 			
 			manager.close();

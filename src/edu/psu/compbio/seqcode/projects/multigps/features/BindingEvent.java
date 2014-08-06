@@ -2,12 +2,12 @@ package edu.psu.compbio.seqcode.projects.multigps.features;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.AnnotationLoader;
 
 /**
@@ -25,8 +25,8 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.AnnotationLoader;
  */
 public class BindingEvent implements Comparable<BindingEvent>{
 	
-	protected static ExperimentSet experiments=null;
-	protected static Config config=null;
+	protected static ExperimentManager experiments=null;
+	protected static MultiGPSConfig config=null;
 	protected static ExperimentCondition sortingCondition = null;
 	protected static ExperimentCondition sortingConditionB = null;
 	protected static final int numSingleCondCols = 4; //Number of columns in the output file for each single-condition 
@@ -479,8 +479,8 @@ public class BindingEvent implements Comparable<BindingEvent>{
 		}
 	}
 	
-	public static void setExperimentSet(ExperimentSet e){experiments = e; sortingCondition = experiments.getConditions().get(0);}
-	public static void setConfig(Config c){config = c;}
+	public static void setExperimentManager(ExperimentManager e){experiments = e; sortingCondition = experiments.getConditions().get(0);}
+	public static void setConfig(MultiGPSConfig c){config = c;}
 	public static void setSortingCond(ExperimentCondition c){sortingCondition = c;}
 	public static void setSortingCondB(ExperimentCondition c){sortingConditionB = c;}
 }

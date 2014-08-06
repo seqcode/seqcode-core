@@ -1,11 +1,16 @@
 package edu.psu.compbio.seqcode.gse.projects.readdb;
 
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamInputResource;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.CloseableIterator;
+
 import java.io.*;
 import java.util.*;
 
 import org.apache.commons.cli.*;
-import net.sf.samtools.*;
-import net.sf.samtools.util.CloseableIterator;
 
 
 /**
@@ -221,11 +226,12 @@ public class PairedSAMToReadDB {
         debug = cl.hasOption("debug");
         String leftfile = cl.getOptionValue("left");
         String rightfile = cl.getOptionValue("right");
-        SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-        SAMFileReader leftreader = new SAMFileReader(new FileInputStream(leftfile));
-        SAMFileReader rightreader = new SAMFileReader(new FileInputStream(rightfile));
-        leftreader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-        rightreader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+        SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		SamReader leftreader = factory.open(SamInputResource.of(new FileInputStream(leftfile)));
+		SamReader rightreader = factory.open(SamInputResource.of(new FileInputStream(rightfile)));
         leftiter = leftreader.iterator();
         rightiter = rightreader.iterator();
 
@@ -233,5 +239,8 @@ public class PairedSAMToReadDB {
         rightbuffer = new ArrayList<SAMRecord>();
 
         makePairs();
+        
+        leftreader.close();
+        rightreader.close();
     }
 }

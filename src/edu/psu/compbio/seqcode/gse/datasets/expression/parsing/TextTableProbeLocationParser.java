@@ -5,12 +5,14 @@ import java.util.*;
 import java.util.regex.*;
 import java.io.*;
 
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ExpressionInserter;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ExpressionLoader;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ProbePlatform;
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class TextTableProbeLocationParser {
