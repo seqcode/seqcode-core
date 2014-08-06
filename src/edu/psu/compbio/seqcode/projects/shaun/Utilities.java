@@ -76,6 +76,37 @@ public class Utilities {
 		return(regs);
 	}
 	
+	// From Akshay
+	//Load Stranded points from stranded peak file, Usually used to load TSS
+	
+	public static List<StrandedPoint> loadStrandedPointFromRefTssFile(Genome gen, String filename){
+		List<StrandedPoint> pts = new ArrayList<StrandedPoint>();
+		try{
+			File pFile = new File(filename);
+			if(!pFile.isFile()){System.err.println("Invalid file name: "+filename);System.exit(1);}
+			BufferedReader reader = new BufferedReader(new FileReader(pFile));
+			String line;
+			while((line = reader.readLine()) != null){
+				line=line.trim();
+				String[] words = line.split("\\s+");
+				if(words.length >=1 && !words[0].contains("#") &&  !words[0].equals("Region") && !words[0].equals("Position")){
+					String[] subwords = words[0].split(":");
+					PointParser pparser = new PointParser(gen);
+					Point p = pparser.execute(subwords[0]+":"+subwords[1]);
+					StrandedPoint sp = new StrandedPoint(p,subwords[2].charAt(0));
+					pts.add(sp);
+				}
+			}
+			reader.close();
+		} catch(FileNotFoundException e){
+			e.printStackTrace();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		return pts;
+	}
+	
 	//Load a set of stranded regions from a file
 	public static List<StrandedRegion> loadStrandedRegionsFromMotifFile(Genome gen, String filename, int win){
 		List<StrandedRegion> regs = new ArrayList<StrandedRegion>();

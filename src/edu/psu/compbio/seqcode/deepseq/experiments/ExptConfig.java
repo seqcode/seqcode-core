@@ -162,8 +162,7 @@ public class ExptConfig {
 			        		for(String n : sourceNames)
 			        			sources.add(new Pair<String,String>(n,datatype));
 			        		
-			        		expts.add(new ExptDescriptor("", "", cond, rep, signal, sources, perBaseReadLimit));
-			        		
+			        		expts.add(new ExptDescriptor("", "", cond, rep, signal, sources, perBaseReadLimit));			        		
 			        		exptTags.add(s);
 			        	}
 		        	}

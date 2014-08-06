@@ -24,6 +24,16 @@ import java.util.Random;
 /**
  * Given two sets of locations, the following code identifies kmer-kmer distances that are significantly found in the positive set over the negative set.
  * Usually used to analyse the k-mer features from an SVM analysis
+ * 
+ * Some hard coded constants in this code :-
+ * 		Prints only those k-mer constraints whose prop of occurrence in the positive set is greater than 0.2
+ * 											(AND)
+ * 		Prints only those k-mer constraints whose prop of occurrence is greater in the pos set compared to neg set
+ * 											(AND)
+ * 		Prints only those k-mer constraints whose prop occurence zscore is greater than 5
+ * 											(AND)
+ * 		Prints only thise k-mer constraints whose p-value as calulate by smirnov test is less than or euwalt to 0.005
+ * 
  * @author akshaykakumanu
  *
  */
@@ -389,21 +399,36 @@ public class KmerPosConstraintsFinder {
 				}
 				
 				if(posCon.size() > 0){
-					String outPOS = "";
-					String outPropPos = "";
-					String outPropNeg = "";
-					String outZscore = "";
-					for(int d :  posCon){
-						outPOS = outPOS+Integer.toString(d)+":";
-						double zscore = (this.mean_pos[kmerXind][kmerYind][d] - this.mean_neg[kmerXind][kmerYind][d])/this.std_neg[kmerXind][kmerYind][d];
-						outPropPos = outPropPos + Double.toString(this.mean_pos[kmerXind][kmerYind][d])+":";
-						outPropNeg = outPropNeg + Double.toString(this.mean_neg[kmerXind][kmerYind][d])+":";
-						outZscore = outZscore + Double.toString(zscore)+":";
+					for(int d : posCon){
+						String zscore = Double.toString((this.mean_pos[kmerXind][kmerYind][d] - this.mean_neg[kmerXind][kmerYind][d])/this.std_neg[kmerXind][kmerYind][d]);
+						String outPropPos = Double.toString(this.mean_pos[kmerXind][kmerYind][d]);
+						String outPropNeg = Double.toString(this.mean_neg[kmerXind][kmerYind][d]);
+						System.out.println(Utilities.int2seq(kmerXind, k)+"-"+Utilities.int2seq(kmerYind, k)+"\t"+Integer.toString(d+1)+"\t"+outPropPos+"\t"+outPropNeg+"\t"+zscore);
+						
 					}
 					
-					System.out.println(Utilities.int2seq(kmerXind, k)+"-"+Utilities.int2seq(kmerYind, k)+"\t"+outPOS.substring(0,outPOS.length()-1 )+"\t"+outPropPos.substring(0, outPropPos.length()-1)
-							+"\t"+outPropNeg.substring(0, outPropNeg.length()-1)+"\t"+outZscore.substring(0, outZscore.length()-1));
 				}
+				
+				
+				
+				
+				
+				//if(posCon.size() > 0){
+				//	String outPOS = "";
+				//	String outPropPos = "";
+				//	String outPropNeg = "";
+				//	String outZscore = "";
+				//	for(int d :  posCon){
+				//		outPOS = outPOS+Integer.toString(d)+":";
+				//		double zscore = (this.mean_pos[kmerXind][kmerYind][d] - this.mean_neg[kmerXind][kmerYind][d])/this.std_neg[kmerXind][kmerYind][d];
+				//		outPropPos = outPropPos + Double.toString(this.mean_pos[kmerXind][kmerYind][d])+":";
+				//		outPropNeg = outPropNeg + Double.toString(this.mean_neg[kmerXind][kmerYind][d])+":";
+				//		outZscore = outZscore + Double.toString(zscore)+":";
+				//	}
+					
+				//	System.out.println(Utilities.int2seq(kmerXind, k)+"-"+Utilities.int2seq(kmerYind, k)+"\t"+outPOS.substring(0,outPOS.length()-1 )+"\t"+outPropPos.substring(0, outPropPos.length()-1)
+				//			+"\t"+outPropNeg.substring(0, outPropNeg.length()-1)+"\t"+outZscore.substring(0, outZscore.length()-1));
+				//}
 				
 				
 			}
