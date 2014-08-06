@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.Utils;
+package edu.psu.compbio.seqcode.projects.akshay.utils;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -6,12 +6,10 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class PairedBEDExporter {
