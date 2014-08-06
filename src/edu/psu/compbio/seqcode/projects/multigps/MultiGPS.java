@@ -9,10 +9,12 @@ import java.util.Map;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.framework.EnrichmentSignificance;
 import edu.psu.compbio.seqcode.projects.multigps.framework.OutputFormatter;
 import edu.psu.compbio.seqcode.projects.multigps.framework.PotentialRegionFilter;
@@ -27,7 +29,10 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.EventsPostAnalysis;
 public class MultiGPS {
 
 	protected ExperimentManager manager;
-	protected Config config;
+	protected GenomeConfig gconfig;
+	protected ExptConfig econfig;
+	protected MultiGPSConfig mgpsconfig;
+	protected BindingManager bindingManager;
 	protected BindingMixture mixtureModel;
 	protected PotentialRegionFilter potentialFilter;
 	protected OutputFormatter outFormatter;
@@ -35,22 +40,33 @@ public class MultiGPS {
 	protected Normalization normalizer;
 	protected Map<ControlledExperiment, List<BindingModel>> repBindingModels;
 	
-	public MultiGPS(Config c, ExperimentManager eMan){
+	public MultiGPS(GenomeConfig gcon, ExptConfig econ, MultiGPSConfig c, ExperimentManager eMan){
+		gconfig = gcon;
+		econfig = econ;
 		manager = eMan;
-		config = c;
-		config.makeGPSOutputDirs(true);
-		outFormatter = new OutputFormatter(config);
+		mgpsconfig = c;
+		mgpsconfig.makeGPSOutputDirs(true);
+		outFormatter = new OutputFormatter(mgpsconfig);
+		bindingManager = new BindingManager(manager);
 		
-		//Initialize the binding model record
+		//Initialize binding models & binding model record
 		repBindingModels = new HashMap<ControlledExperiment, List<BindingModel>>();
-		for(ControlledExperiment rep : manager.getExperimentSet().getReplicates()){
+		for(ControlledExperiment rep : manager.getReplicates()){
+			if(mgpsconfig.getDefaultBindingModel()!=null)
+				bindingManager.setBindingModel(rep, mgpsconfig.getDefaultBindingModel());
+			else if(rep.getExptType().getName().toLowerCase().equals("chipexo"))
+				bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipExoEmpiricalDistribution));
+			else
+				bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipSeqEmpiricalDistribution));
 			repBindingModels.put(rep, new ArrayList<BindingModel>());
-			repBindingModels.get(rep).add(rep.getBindingModel());
+			repBindingModels.get(rep).add(bindingManager.getBindingModel(rep));
 		}
+		for(ExperimentCondition cond : manager.getConditions())
+			bindingManager.updateMaxInfluenceRange(cond);
 		
 		//Find potential binding regions
 		System.err.println("Finding potential binding regions.");
-		potentialFilter = new PotentialRegionFilter(config, manager);
+		potentialFilter = new PotentialRegionFilter(mgpsconfig, econfig, manager, bindingManager);
 		List<Region> potentials = potentialFilter.execute();
 		System.err.println(potentials.size()+" potential regions found.");
 		potentialFilter.printPotentialRegionsToFile();
@@ -62,7 +78,7 @@ public class MultiGPS {
 	public void runMixtureModel() {
 		Double[] kl;
 		System.err.println("Initialzing mixture model");
-		mixtureModel = new BindingMixture(config, manager, potentialFilter);
+		mixtureModel = new BindingMixture(gconfig, econfig, mgpsconfig, manager, bindingManager, potentialFilter);
 		
 		int round = 0;
 		boolean converged = false;
@@ -77,11 +93,11 @@ public class MultiGPS {
             	mixtureModel.execute(true, false); //EM
             
             //Update binding models
-            String distribFilename = config.getOutputIntermediateDir()+File.separator+config.getOutBase()+"_t"+round+"_ReadDistrib";
+            String distribFilename = mgpsconfig.getOutputIntermediateDir()+File.separator+mgpsconfig.getOutBase()+"_t"+round+"_ReadDistrib";
             kl = mixtureModel.updateBindingModel(distribFilename);
             //Add new binding models to the record
-            for(ControlledExperiment rep : manager.getExperimentSet().getReplicates())
-    			repBindingModels.get(rep).add(rep.getBindingModel());
+            for(ControlledExperiment rep : manager.getReplicates())
+    			repBindingModels.get(rep).add(bindingManager.getBindingModel(rep));
             mixtureModel.updateAlphas();
             
             //Update motifs
@@ -96,7 +112,7 @@ public class MultiGPS {
             round++;
             
             //Check for convergence
-            if(round>config.getMaxModelUpdateRounds()){
+            if(round>mgpsconfig.getMaxModelUpdateRounds()){
             	converged=true;
             }else{
             	converged = true;
@@ -109,50 +125,51 @@ public class MultiGPS {
         //ML quantification of events
         System.err.println("\n============================ ML read assignment ============================");
         mixtureModel.execute(false, false); //ML
-        manager.setEvents(mixtureModel.getBindingEvents());
+        bindingManager.setBindingEvents(mixtureModel.getBindingEvents());
         //Update sig & noise counts in each replicate
-        manager.estimateSignalProportion(manager.getEvents());
+        bindingManager.estimateSignalProportion(bindingManager.getBindingEvents());
         System.err.println("ML read assignment finished.");
         
         System.err.println("\n============================= Post-processing ==============================");
         
         //Statistical analysis: Enrichment over controls 
-        EnrichmentSignificance tester = new EnrichmentSignificance(config, manager.getExperimentSet(), manager.getEvents(), config.getMinEventFoldChange(), config.getMappableGenomeLength());
+        EnrichmentSignificance tester = new EnrichmentSignificance(mgpsconfig, manager, bindingManager, mgpsconfig.getMinEventFoldChange(), econfig.getMappableGenomeLength());
 		tester.execute();
         
 		//Write the replicate counts to a file (needed before EdgeR differential enrichment)
-		manager.writeReplicateCounts(config.getOutputParentDir()+File.separator+config.getOutBase()+".replicates.counts");
+		bindingManager.writeReplicateCounts(mgpsconfig.getOutputParentDir()+File.separator+mgpsconfig.getOutBase()+".replicates.counts");
 		
 		//Statistical analysis: inter-condition differences
-		if(manager.getNumConditions()>1 && config.getRunDiffTests()){
-			normalizer = new TMMNormalization(manager.getExperimentSet().getReplicates().size(), 0.3, 0.05);
-			DifferentialEnrichment edgeR = new EdgeRDifferentialEnrichment(config);
+		if(manager.getNumConditions()>1 && mgpsconfig.getRunDiffTests()){
+			normalizer = new TMMNormalization(manager.getReplicates().size(), 0.3, 0.05);
+			DifferentialEnrichment edgeR = new EdgeRDifferentialEnrichment(mgpsconfig);
 			
 			for(int ref=0; ref<manager.getNumConditions(); ref++){
-				data = new CountsDataset(manager, manager.getEvents(), ref);
+				data = new CountsDataset(manager, bindingManager.getBindingEvents(), ref);
 				//normalizer.normalize(data);
 				//data.calcScMeanAndFold();
-				edgeR.setFileIDname("_"+manager.getExperimentSet().getIndexedCondition(ref).getName());
+				edgeR.setFileIDname("_"+manager.getIndexedCondition(ref).getName());
 				data = edgeR.execute(data);
-				data.updateEvents(manager.getEvents(), manager);
+				data.updateEvents(bindingManager.getBindingEvents(), manager);
 				
 				//Print MA scatters (inter-sample & inter-condition)
 				//data.savePairwiseFocalSampleMAPlots(config.getOutputImagesDir()+File.separator, true);
-				data.savePairwiseConditionMAPlots(config.getDiffPMinThres(), config.getOutputImagesDir()+File.separator, true);
+				data.savePairwiseConditionMAPlots(mgpsconfig.getDiffPMinThres(), mgpsconfig.getOutputImagesDir()+File.separator, true);
 				
 				//Print XY scatters (inter-sample & inter-condition)
-				data.savePairwiseFocalSampleXYPlots(config.getOutputImagesDir()+File.separator, true);
-				data.savePairwiseConditionXYPlots(manager, config.getDiffPMinThres(), config.getOutputImagesDir()+File.separator, true);
+				data.savePairwiseFocalSampleXYPlots(mgpsconfig.getOutputImagesDir()+File.separator, true);
+				data.savePairwiseConditionXYPlots(manager, bindingManager, mgpsconfig.getDiffPMinThres(), mgpsconfig.getOutputImagesDir()+File.separator, true);
 			}
 		}
         
         // Print final events to files
-		manager.writeBindingEventFiles(config.getOutputParentDir()+File.separator+config.getOutBase());
-		manager.writeMotifFile(config.getOutputParentDir()+File.separator+config.getOutBase()+".motifs");
-        System.err.println("Binding event detection finished!\nBinding events are printed to files in "+config.getOutputParentDir()+" beginning with: "+config.getOutName());
+		bindingManager.writeBindingEventFiles(mgpsconfig.getOutputParentDir()+File.separator+mgpsconfig.getOutBase(), mgpsconfig.getQMinThres(), mgpsconfig.getRunDiffTests(), mgpsconfig.getDiffPMinThres());
+		if(mgpsconfig.getFindingMotifs())
+			bindingManager.writeMotifFile(mgpsconfig.getOutputParentDir()+File.separator+mgpsconfig.getOutBase()+".motifs");
+        System.err.println("Binding event detection finished!\nBinding events are printed to files in "+mgpsconfig.getOutputParentDir()+" beginning with: "+mgpsconfig.getOutName());
         
         //Post-analysis of peaks
-        EventsPostAnalysis postAnalyzer = new EventsPostAnalysis(config, manager, manager.getEvents(), mixtureModel.getMotifFinder());
+        EventsPostAnalysis postAnalyzer = new EventsPostAnalysis(mgpsconfig, manager, bindingManager, bindingManager.getBindingEvents(), mixtureModel.getMotifFinder());
         postAnalyzer.execute(400);
     }
 	
@@ -162,23 +179,23 @@ public class MultiGPS {
 	 */
 	public static void main(String[] args){
 		System.setProperty("java.awt.headless", "true");
-		System.out.println("MultiGPS version "+Config.version+"\n\n");
-		
-		Config config = new Config(args);
+		System.err.println("MultiGPS version "+MultiGPSConfig.version+"\n\n");
+		GenomeConfig gcon = new GenomeConfig(args);
+		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		MultiGPSConfig config = new MultiGPSConfig(gcon, args);
 		if(config.helpWanted()){
-			System.out.println(MultiGPS.getMultiGPSArgsList());
+			System.err.println(MultiGPS.getMultiGPSArgsList());
 		}else{
 			
-			ExperimentManager manager = new ExperimentManager(config);
+			ExperimentManager manager = new ExperimentManager(econ);
 			
 			//Just a test to see if we've loaded all conditions
-			ExperimentSet eset = manager.getExperimentSet();
-			if(eset.getConditions().size()==0){
+			if(manager.getConditions().size()==0){
 				System.err.println("No experiments specified. Use --expt or --design options."); System.exit(1);
 			}
 			
 			System.err.println("Loaded experiments:");
-			for(ExperimentCondition c : eset.getConditions()){
+			for(ExperimentCondition c : manager.getConditions()){
 				System.err.println(" Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
 				for(ControlledExperiment r : c.getReplicates()){
 					System.err.println(" Condition "+c.getName()+":\tRep "+r.getName());
@@ -189,7 +206,7 @@ public class MultiGPS {
 				}
 			}
 			
-			MultiGPS gps = new MultiGPS(config, manager);
+			MultiGPS gps = new MultiGPS(gcon, econ, config, manager);
 			gps.runMixtureModel();
 			
 			manager.close();

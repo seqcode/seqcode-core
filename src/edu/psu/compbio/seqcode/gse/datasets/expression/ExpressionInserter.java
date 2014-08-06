@@ -10,11 +10,11 @@ import java.sql.Statement;
 import java.util.Map;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.TimePoint;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.datasets.core.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.core.TimePoint;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.Sequence;

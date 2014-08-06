@@ -10,19 +10,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.GPSPeak;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSPeak;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
 import edu.psu.compbio.seqcode.gse.projects.gps.features.Feature;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
@@ -272,7 +272,7 @@ public class GPSFastaWriter{
 	    
 	    // GEM negative regions, excluding positive regions
 
-		negativeRegions = Region.filterOverlapRegions(negativeRegions, expandedRegions);
+		negativeRegions = (ArrayList<Region>) Region.filterOverlapRegions(negativeRegions, expandedRegions);
 		int neg_count=0;
 		for (Region r: negativeRegions){			
 	    	String neg_seq = seqgen.execute(r);

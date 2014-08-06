@@ -2,11 +2,11 @@ package edu.psu.compbio.seqcode.gse.tools.sequence;
 
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.StrandedRegionParser;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.StrandedRegionParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;

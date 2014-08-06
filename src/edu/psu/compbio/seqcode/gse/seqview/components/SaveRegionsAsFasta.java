@@ -6,9 +6,9 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.FastaWriter;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.FastaWriter;
 
 public class SaveRegionsAsFasta implements Runnable {
     

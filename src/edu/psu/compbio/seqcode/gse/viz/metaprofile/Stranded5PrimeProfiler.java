@@ -2,9 +2,12 @@ package edu.psu.compbio.seqcode.gse.viz.metaprofile;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.*;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 

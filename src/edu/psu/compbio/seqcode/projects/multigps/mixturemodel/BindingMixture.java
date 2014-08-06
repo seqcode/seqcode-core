@@ -7,23 +7,28 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.deepseq.stats.BackgroundCollection;
+import edu.psu.compbio.seqcode.deepseq.stats.PoissonBackgroundModel;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
-import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundCollection;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
-import edu.psu.compbio.seqcode.projects.multigps.framework.PoissonBackgroundModel;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.framework.PotentialRegionFilter;
 import edu.psu.compbio.seqcode.projects.multigps.motifs.MotifPlatform;
 
@@ -35,8 +40,11 @@ import edu.psu.compbio.seqcode.projects.multigps.motifs.MotifPlatform;
  */
 public class BindingMixture {
 
+	protected GenomeConfig gconfig;
+	protected ExptConfig econfig;
+	protected MultiGPSConfig config;
 	protected ExperimentManager manager;
-	protected Config config;
+	protected BindingManager bindingManager;
 	protected PotentialRegionFilter potRegFilter;
 	protected List<Region> testRegions;
 	protected HashMap<Region, List<List<BindingComponent>>> activeComponents; //Components active after a round of execute()
@@ -49,25 +57,28 @@ public class BindingMixture {
 	protected HashMap<Region, Double[]> noiseResp = new HashMap<Region, Double[]>(); //noise responsibilities after a round of execute(). Hashed by Region, indexed by condition
 	protected MotifPlatform motifFinder;
 	
-	public BindingMixture(Config c, ExperimentManager eMan, PotentialRegionFilter filter){
+	public BindingMixture(GenomeConfig gcon, ExptConfig econ, MultiGPSConfig c, ExperimentManager eMan, BindingManager bMan, PotentialRegionFilter filter){
+		gconfig = gcon;
+		econfig = econ;
 		config = c;
 		manager = eMan;
+		bindingManager = bMan;
 		potRegFilter=filter;
 		testRegions = filter.getPotentialRegions();
 		if(config.getFindingMotifs())
-			motifFinder = new MotifPlatform(config, manager, testRegions);
+			motifFinder = new MotifPlatform(gconfig, config, manager, bindingManager, testRegions);
 		else 
 			motifFinder=null;
 		regionsToPlot = config.getRegionsToPlot();
 		bindingEvents = new ArrayList<BindingEvent>();
-		BindingEvent.setExperimentSet(manager.getExperimentSet());
+		BindingEvent.setExperimentManager(manager);
 		BindingEvent.setConfig(config);
 		
 		activeComponents = new HashMap<Region, List<List<BindingComponent>>>();
-		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+		for(ExperimentCondition cond : manager.getConditions()){
 			conditionBackgrounds.put(cond, new BackgroundCollection());
-			conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getSigLogConf(), cond.getTotalSignalEstBackCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), cond.getMaxModelRange(), '.', 1, true));
-			System.err.println("Alpha "+cond.getName()+"\tRange="+cond.getMaxModelRange()+"\t"+(double)conditionBackgrounds.get(cond).getMaxThreshold('.'));
+			conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getSigLogConf(), cond.getTotalSignalEstBackCount(), config.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), bindingManager.getMaxInfluenceRange(cond), '.', 1, true));
+			System.err.println("Alpha "+cond.getName()+"\tRange="+bindingManager.getMaxInfluenceRange(cond)+"\t"+(double)conditionBackgrounds.get(cond).getMaxThreshold('.'));
 		}
 		
 		noisePerBase = new double[manager.getNumConditions()];
@@ -96,34 +107,49 @@ public class BindingMixture {
 	 */
 	public void execute(boolean EM, boolean uniformBindingComponents){
 		trainingRound++;
-		Thread[] threads = new Thread[config.getMaxThreads()];
-        ArrayList<Region> threadRegions[] = new ArrayList[config.getMaxThreads()];
-        int i = 0;
-        for (i = 0 ; i < threads.length; i++) {
-            threadRegions[i] = new ArrayList<Region>();
-        }
-        for(Region r : testRegions){
-            threadRegions[(i++) % config.getMaxThreads()].add(r);
-        }
-
-        for (i = 0 ; i < threads.length; i++) {
-            Thread t = new Thread(new BindingMixtureThread(threadRegions[i], EM, uniformBindingComponents));
-            t.start();
-            threads[i] = t;
-        }
-        boolean anyrunning = true;
-        while (anyrunning) {
-            anyrunning = false;
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) { }
-            for (i = 0; i < threads.length; i++) {
-                if (threads[i].isAlive()) {
-                    anyrunning = true;
-                    break;
-                }
-            }
-        }		
+		
+		//Have to split the test regions up by chromosome in order to maintain compatibility with experiment file cache loading
+		//There will be some performance hit here, as all threads have to finish in a given chromosome before moving on to the next one. 
+		Iterator<Region> chroms = new ChromosomeGenerator().execute(gconfig.getGenome());
+		while (chroms.hasNext()) {
+			Region currChr = chroms.next();
+			List<Region> currChrTestReg = new ArrayList<Region>();
+			for(Region r : testRegions)
+				if(currChr.overlaps(r))
+					currChrTestReg.add(r);
+			
+			if(currChrTestReg.size()>0){
+				int numThreads = config.getMaxThreads()>=currChrTestReg.size() ? config.getMaxThreads() : currChrTestReg.size(); 
+				Thread[] threads = new Thread[numThreads];
+		        ArrayList<Region> threadRegions[] = new ArrayList[numThreads];
+		        int i = 0;
+		        for (i = 0 ; i < threads.length; i++) {
+		            threadRegions[i] = new ArrayList<Region>();
+		        }
+		        for(Region r : currChrTestReg){
+		            threadRegions[(i++) % numThreads].add(r);
+		        }
+		
+		        for (i = 0 ; i < threads.length; i++) {
+		            Thread t = new Thread(new BindingMixtureThread(threadRegions[i], EM, uniformBindingComponents));
+		            t.start();
+		            threads[i] = t;
+		        }
+		        boolean anyrunning = true;
+		        while (anyrunning) {
+		            anyrunning = false;
+		            try {
+		                Thread.sleep(5000);
+		            } catch (InterruptedException e) { }
+		            for (i = 0; i < threads.length; i++) {
+		                if (threads[i].isAlive()) {
+		                    anyrunning = true;
+		                    break;
+		                }
+		            }
+		        }
+			}
+		}
 	}
 	
 	/**
@@ -163,8 +189,8 @@ public class BindingMixture {
      */
     public Double[] updateBindingModel(String distribFilename){
     	int left=0,right=0;
-    	for(ControlledExperiment rep : manager.getExperimentSet().getReplicates()){
-    		BindingModel mod = rep.getBindingModel();
+    	for(ControlledExperiment rep : manager.getReplicates()){
+    		BindingModel mod = bindingManager.getBindingModel(rep);
     		int l=-1*mod.getMin(),r=mod.getMax();
     		if(!config.getFixedModelRange()){
     			Pair<Integer, Integer> newEnds = mod.getNewEnds(300,200);
@@ -174,7 +200,7 @@ public class BindingMixture {
     		right = Math.min(config.MAX_BINDINGMODEL_WIDTH/2, Math.max(right, r));
     	}
     	
-    	int numReps = manager.getExperimentSet().getReplicates().size();
+    	int numReps = manager.getReplicates().size();
     	int width = left+right;
     	int readProfileCenter = config.MAX_BINDINGMODEL_WIDTH/2;
     	int offsetLeft = readProfileCenter-left;
@@ -194,7 +220,7 @@ public class BindingMixture {
 		
 		if(config.doBMUpdate()){
 			//Sum read profiles if there are enough binding components
-	    	for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+	    	for(ExperimentCondition cond : manager.getConditions()){
 	    		List<BindingComponent> currComps = new ArrayList<BindingComponent>();
 	    		double currAlpha = (double)conditionBackgrounds.get(cond).getMaxThreshold('.');
 	    		//Choose which components to include
@@ -203,7 +229,7 @@ public class BindingMixture {
 	    			if(activeComponents.get(r).get(cond.getIndex()).size()==1 ||(activeComponents.get(r).get(cond.getIndex()).size()>1 && config.getIncludeJointEventsInBMUpdate())){
 	    				for(BindingComponent bc : activeComponents.get(r).get(cond.getIndex())){
 	    					//2) Component must not be at the edge of the region 
-	    					if((bc.getPosition()-r.getStart()>cond.getMaxInfluenceRange()/2) && (r.getEnd()-bc.getPosition()>cond.getMaxInfluenceRange()/2)){
+	    					if((bc.getPosition()-r.getStart()>bindingManager.getMaxInfluenceRange(cond)/2) && (r.getEnd()-bc.getPosition()>bindingManager.getMaxInfluenceRange(cond)/2)){
 	    						//3) Arbitrary minimum read support for BM components
 	    						if(bc.getSumResponsibility()>(config.getMinComponentReadFactorForBM()*currAlpha))
 	    							currComps.add(bc);
@@ -233,7 +259,7 @@ public class BindingMixture {
 			    		
 			    		//Smooth the profile and set a new binding distribution in the BindingModel
 			    		if(!logKL[rep.getIndex()].isNaN()){
-				    		BindingModel model = rep.getBindingModel();
+				    		BindingModel model = bindingManager.getBindingModel(rep);
 				    		
 				    		for (int i=0;i<width;i++)
 				    			newModel[x][i] = newModel_plus[x][i]+newModel_minus[x][i];
@@ -272,7 +298,7 @@ public class BindingMixture {
 							String outFile = distribFilename+"_"+rep.getName()+".txt";
 							model.setFileName(outFile);
 							model.printToFile(outFile);
-							rep.setBindingModel(model);
+							bindingManager.setBindingModel(rep, model);
 							
 							logKL[rep.getIndex()] = 0.0;
 							if (oldModel.length==width){
@@ -285,8 +311,8 @@ public class BindingMixture {
 	    			}
 	    		}
 	    	}
-	    	for(ExperimentCondition cond : manager.getExperimentSet().getConditions())
-	    		cond.updateMaxInfluenceRange();
+	    	for(ExperimentCondition cond : manager.getConditions())
+	    		bindingManager.updateMaxInfluenceRange(cond);
 		}else{
 			System.err.println("Read distribution updates turned off.");
 		}
@@ -297,10 +323,10 @@ public class BindingMixture {
      * Update condition backgrounds for alphas 
      */
     public void updateAlphas(){
-    	for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+    	for(ExperimentCondition cond : manager.getConditions()){
 			conditionBackgrounds.put(cond, new BackgroundCollection());
-			conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getSigLogConf(), cond.getTotalSignalEstBackCount(), config.getGenome().getGenomeLength(), config.getMappableGenomeProp(), cond.getMaxModelRange(), '.', 1, true));
-			System.err.println("Alpha "+cond.getName()+"\tRange="+cond.getMaxModelRange()+"\t"+(double)conditionBackgrounds.get(cond).getMaxThreshold('.'));
+			conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getSigLogConf(), cond.getTotalSignalEstBackCount(), config.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), bindingManager.getMaxInfluenceRange(cond), '.', 1, true));
+			System.err.println("Alpha "+cond.getName()+"\tRange="+bindingManager.getMaxInfluenceRange(cond)+"\t"+(double)conditionBackgrounds.get(cond).getMaxThreshold('.'));
 		}
     }
     
@@ -309,14 +335,14 @@ public class BindingMixture {
      */
     public void updateMotifs(){
     	if(config.getFindingMotifs()){
-    		for(ExperimentCondition cond : manager.getExperimentSet().getConditions())
+    		for(ExperimentCondition cond : manager.getConditions())
     			motifFinder.findMotifs(cond, activeComponents, trainingRound);
     		motifFinder.alignMotifs();
     		
     		//Print progress
-    		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
-    			if(cond.getFreqMatrix()!=null)
-    				System.err.println(cond.getName()+"\t"+WeightMatrix.getConsensus(cond.getFreqMatrix())+"\toffset:"+cond.getMotifOffset());
+    		for(ExperimentCondition cond : manager.getConditions()){
+    			if(bindingManager.getFreqMatrix(cond)!=null)
+    				System.err.println(cond.getName()+"\t"+WeightMatrix.getConsensus(bindingManager.getFreqMatrix(cond))+"\toffset:"+bindingManager.getMotifOffset(cond));
     			else
     				System.err.println(cond.getName()+"\tNOMOTIF");
     		}
@@ -330,7 +356,7 @@ public class BindingMixture {
      */
     protected void initializeGlobalNoise(){
     	for(int e=0; e<manager.getNumConditions(); e++){
-    		ExperimentCondition cond = manager.getExperimentSet().getIndexedCondition(e);
+    		ExperimentCondition cond = manager.getIndexedCondition(e);
     		
     		// Part that deals with read counts from non-potential regions... calculate values anyway whether using them or not
     		double potRegLengthTotal = potRegFilter.getPotRegionLengthTotal();
@@ -355,8 +381,8 @@ public class BindingMixture {
     				1 : (potRegCountsCtrlChannel/potRegLengthTotal)/(nonPotRegCountsCtrlChannel/nonPotRegLengthTotal);
 
     		
-    		if(config.getScalingBySES())
-    			noisePerBase[e] = (cond.getTotalSignalEstBackCount())/ config.getMappableGenomeLength();
+    		if(econfig.getScalingBySES())
+    			noisePerBase[e] = (cond.getTotalSignalEstBackCount())/ econfig.getMappableGenomeLength();
     		else
     			noisePerBase[e] = nonPotRegCountsSigChannel/nonPotRegLengthTotal;  //Signal channel noise per base
     		System.err.println("Global noise per base initialization for "+cond.getName()+" = "+String.format("%.4f", noisePerBase[e]));
@@ -368,7 +394,7 @@ public class BindingMixture {
      */
     public void updateGlobalNoise(){
     	for(int e=0; e<manager.getNumConditions(); e++){
-    		ExperimentCondition cond = manager.getExperimentSet().getIndexedCondition(e);
+    		ExperimentCondition cond = manager.getIndexedCondition(e);
     		
     		//Don't need to examine noise reads in the update
     		double noiseReads=0; 
@@ -391,7 +417,7 @@ public class BindingMixture {
 			FileWriter fout = new FileWriter(filename);
 			for(Region rr : activeComponents.keySet()){
 	    		List<List<BindingComponent>> comps = activeComponents.get(rr);
-	    		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+	    		for(ExperimentCondition cond : manager.getConditions()){
 	    			for(BindingComponent comp : comps.get(cond.getIndex())){
 	    				fout.write(rr.getLocationString()+"\t"+cond.getName()+"\t"+comp.toString()+"\n");			
 	    			}
@@ -410,7 +436,7 @@ public class BindingMixture {
     public void printActiveComponents(){
     	for(Region rr : activeComponents.keySet()){
     		List<List<BindingComponent>> comps = activeComponents.get(rr);
-    		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+    		for(ExperimentCondition cond : manager.getConditions()){
     			for(BindingComponent comp : comps.get(cond.getIndex())){
     				System.err.println(rr.getLocationString()+"\t"+cond.getName()+"\t"+comp.toString());			
     			}
@@ -509,7 +535,7 @@ public class BindingMixture {
 		 * @return Pair of component lists (noise components and binding components) indexed by condition
 		 */
 		private Pair<List<NoiseComponent>, List<List<BindingComponent>>> analyzeWindowEM(Region w){
-			BindingEM EM = new BindingEM(config, manager, conditionBackgrounds, potRegFilter.getPotentialRegions().size());
+			BindingEM EM = new BindingEM(config, manager, bindingManager, conditionBackgrounds, potRegFilter.getPotentialRegions().size());
 			List<List<BindingComponent>> bindingComponents=null;
 			List<NoiseComponent> noiseComponents=null;
 			List<List<BindingComponent>> nonZeroComponents = new ArrayList<List<BindingComponent>>();
@@ -555,7 +581,7 @@ public class BindingMixture {
 		 * @return Pair of component lists (noise components and binding components) indexed by condition
 		 */
 		private List<BindingEvent> analyzeWindowML(Region w){
-			BindingMLAssignment ML = new BindingMLAssignment(config, manager, conditionBackgrounds, potRegFilter.getPotentialRegions().size());
+			BindingMLAssignment ML = new BindingMLAssignment(econfig, config, manager,bindingManager, conditionBackgrounds, potRegFilter.getPotentialRegions().size());
 			List<BindingComponent> bindingComponents=null;
 			List<NoiseComponent> noiseComponents=null;
 			List<BindingEvent> currEvents = new ArrayList<BindingEvent>(); 
@@ -574,7 +600,7 @@ public class BindingMixture {
             //Configurations seen in another condition
             ArrayList<ComponentConfiguration> seenConfigs = new ArrayList<ComponentConfiguration>();
     		//Assign reads to components
-            for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+            for(ExperimentCondition cond : manager.getConditions()){
             	//Initialize binding components: shared configuration or condition-specific
             	if(config.getMLSharedComponentConfiguration()){
             		bindingComponents = initializeBindingComponentsFromAllConditionActive(w, noiseComponents, false).get(cond.getIndex());
@@ -628,7 +654,7 @@ public class BindingMixture {
 	            String seq = config.getFindingMotifs() ? motifFinder.getSeq(w):null;
 	            Pair<Double[][], String[][]> motifScores = config.getFindingMotifs() ? motifFinder.scanRegionWithMotifsGetSeqs(w, seq) : null;
 	            if(seq!=null && motifScores!=null){
-		            for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+		            for(ExperimentCondition cond : manager.getConditions()){
 		            	for(BindingEvent b: currEvents){
 		            		b.setMotifScore(cond, motifScores.car()[cond.getIndex()][b.getPoint().getLocation()-w.getStart()]);
 		            		b.setSequence(cond, motifScores.cdr()[cond.getIndex()][b.getPoint().getLocation()-w.getStart()]);
@@ -662,13 +688,13 @@ public class BindingMixture {
 		 */
 		private List<List<StrandedBaseCount>> loadSignalData(Region w){
 			List<List<StrandedBaseCount>> data = new ArrayList<List<StrandedBaseCount>>();
-			for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+			for(ExperimentCondition cond : manager.getConditions()){
 				for(ControlledExperiment rep : cond.getReplicates())
 					data.add(new ArrayList<StrandedBaseCount>());
 			}
-			for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+			for(ExperimentCondition cond : manager.getConditions()){
 				for(ControlledExperiment rep : cond.getReplicates()){
-					data.get(rep.getIndex()).addAll(rep.getSignal().getUnstrandedBases(w));
+					data.get(rep.getIndex()).addAll(rep.getSignal().getBases(w));
 				}
 			}
 			return data;
@@ -682,14 +708,14 @@ public class BindingMixture {
 		 */
 		private List<List<StrandedBaseCount>> loadControlData(Region w){
 			List<List<StrandedBaseCount>> data = new ArrayList<List<StrandedBaseCount>>();
-			for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+			for(ExperimentCondition cond : manager.getConditions()){
 				for(ControlledExperiment rep : cond.getReplicates())
 					data.add(new ArrayList<StrandedBaseCount>());
 			}
-			for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+			for(ExperimentCondition cond : manager.getConditions()){
 				for(ControlledExperiment rep : cond.getReplicates()){
 					if(rep.hasControl())
-						data.get(rep.getIndex()).addAll(rep.getControl().getUnstrandedBases(w));
+						data.get(rep.getIndex()).addAll(rep.getControl().getBases(w));
 				}
 			}
 			return data;
@@ -717,7 +743,7 @@ public class BindingMixture {
 	            double numC=0;
 	            for(int i=0; i<numBindingComponents; i++){
 	                Point pos = new Point(config.getGenome(), currReg.getChrom(), currReg.getStart()+(i*componentSpacing));
-	                BindingComponent currComp = new BindingComponent(pos, manager.getExperimentSet().getReplicates().size());
+	                BindingComponent currComp = new BindingComponent(pos, manager.getReplicates().size());
 	                currComp.setIndex(i);
 	                numC++;
 	                components.get(e).add(currComp);
@@ -776,7 +802,7 @@ public class BindingMixture {
         		double emission = (1-noise.get(e).getPi())/numC;
 	    		for(Integer i : componentPositions){
 	    			Point pos = new Point(config.getGenome(), currReg.getChrom(), i);
-	    			BindingComponent currComp = new BindingComponent(pos, manager.getExperimentSet().getReplicates().size());
+	    			BindingComponent currComp = new BindingComponent(pos, manager.getReplicates().size());
 	    			currComp.setIndex(index);
 	    			index++;
 	    			
@@ -814,7 +840,7 @@ public class BindingMixture {
     		double emission = (1-noise.getPi())/numC;
     		for(Integer i : componentPositions){
     			Point pos = new Point(config.getGenome(), currReg.getChrom(), i);
-    			BindingComponent currComp = new BindingComponent(pos, manager.getExperimentSet().getReplicates().size());
+    			BindingComponent currComp = new BindingComponent(pos, manager.getReplicates().size());
     			currComp.setIndex(index);
     			index++;
     			//Initialize normalized mixing probabilities (subtracting the noise emission probability)
@@ -833,13 +859,13 @@ public class BindingMixture {
          */
         private List<NoiseComponent> initializeNoiseComponents(Region currReg, List<List<StrandedBaseCount>> sigHits, List<List<StrandedBaseCount>> ctrlHits){
         	List<NoiseComponent> noise = new ArrayList<NoiseComponent>();
-        	int numReps = manager.getExperimentSet().getReplicates().size();
+        	int numReps = manager.getReplicates().size();
         	double [] localSigRepCounts=new double [numReps];
         	double [] localCtrlRepCounts=new double [numReps];
         	
         	//Calculate expected noise distributions
         	double [][] distribs=new double[numReps][];
-        	for(ExperimentCondition cond : manager.getExperimentSet().getConditions())
+        	for(ExperimentCondition cond : manager.getConditions())
         		for(ControlledExperiment rep : cond.getReplicates()){
 	    			if(rep.hasControl() && ctrlHits.get(rep.getIndex()).size()>0){
 	            		distribs[rep.getIndex()] = smoothNoiseDistribs(currReg, ctrlHits.get(rep.getIndex()));
@@ -852,7 +878,7 @@ public class BindingMixture {
         	
         	//Initialize the noise component
         	for(int e=0; e<manager.getNumConditions(); e++){
-        		ExperimentCondition cond = manager.getExperimentSet().getIndexedCondition(e);
+        		ExperimentCondition cond = manager.getIndexedCondition(e);
         		double emission = 0;
         		
         		//Sum signal reads & set local region experiment counts
@@ -957,7 +983,7 @@ public class BindingMixture {
 				
 				newEvents.add(be);
 				//First time an event is added, clear out inactive events
-				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+				for(ExperimentCondition cond : manager.getConditions()){
 					if(!be.isFoundInCondition(cond)){
 						be.setCondSigHits(cond, 0.0);
 		        		for(ControlledExperiment rep : cond.getReplicates()){
@@ -968,7 +994,7 @@ public class BindingMixture {
 			}else{
 				int index = eventMap.get(be.getPoint());
 				//For events that are already in the list, just update the active condition read counts
-				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+				for(ExperimentCondition cond : manager.getConditions()){
 					if(be.isFoundInCondition(cond)){
 						newEvents.get(index).setCondSigHits(cond, be.getCondSigHits(cond));
 						newEvents.get(index).setCondCtrlHits(cond, be.getCondCtrlHits(cond));

@@ -6,7 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 
 /**
  * EdgeRDifferentialEnrichment: Construct a script and run EdgeR from the command-line.
@@ -18,11 +18,11 @@ import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
  */
 public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
 
-	protected Config config;
+	protected MultiGPSConfig config;
 	protected CountsDataset data;
 	
 	//Constructor
-	public EdgeRDifferentialEnrichment(Config c){
+	public EdgeRDifferentialEnrichment(MultiGPSConfig c){
 		super();
 		config = c;
 	}

@@ -7,22 +7,23 @@ import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEventFileReader;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 
 public class BindingEventFilter {
 
-	protected ExperimentSet experiments;
-	protected Config config;
+	protected ExperimentManager experiments;
+	protected MultiGPSConfig config;
 	protected List<BindingEvent> events;
 	protected double sigThres=0.01;
 	protected double maxLogFold=8.0, minLogFold=-8.0;
 	
 	//Constructor
-	public BindingEventFilter(ExperimentSet e, Config c, List<BindingEvent> ev, double st){
+	public BindingEventFilter(ExperimentManager e, MultiGPSConfig c, List<BindingEvent> ev, double st){
 		experiments = e;
 		config = c;
 		events = ev;
@@ -126,23 +127,24 @@ public class BindingEventFilter {
 	
 	//Main
 	public static void main(String[] args){
-		Config config = new Config(args);
+		GenomeConfig gcon = new GenomeConfig(args);
+		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		MultiGPSConfig config = new MultiGPSConfig(gcon, args, false);
 		if(config.helpWanted()){
 			System.err.println("BindingEventFilter:");
 			System.err.println("\t--events <event file>");
 			System.err.println("\t--sigthres <significance threshold (log)>");
 			System.err.println(config.getArgsList());			
 		}else{
-			ExperimentManager manager = new ExperimentManager(config, false);
-			ExperimentSet eset = manager.getExperimentSet();
+			ExperimentManager manager = new ExperimentManager(econ, false);
 			
 			String eFile = Args.parseString(args, "events", null);
-			BindingEventFileReader reader = new BindingEventFileReader(eFile, eset, config);
+			BindingEventFileReader reader = new BindingEventFileReader(eFile, manager, config);
 			List<BindingEvent> events = reader.execute(eFile);
 			
 			double sigThres = Args.parseDouble(args, "sigthres", 0.01);
 			
-			BindingEventFilter filter = new BindingEventFilter(eset, config, events, sigThres);
+			BindingEventFilter filter = new BindingEventFilter(manager, config, events, sigThres);
 			filter.execute();
 			
 			manager.close();

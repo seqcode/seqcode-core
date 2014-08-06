@@ -8,11 +8,11 @@ import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.CellLine;
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptCondition;
-import edu.psu.compbio.seqcode.gse.datasets.general.ExptTarget;
-import edu.psu.compbio.seqcode.gse.datasets.general.Lab;
-import edu.psu.compbio.seqcode.gse.datasets.general.MetadataModifier;
+import edu.psu.compbio.seqcode.gse.datasets.core.CellLine;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptCondition;
+import edu.psu.compbio.seqcode.gse.datasets.core.ExptTarget;
+import edu.psu.compbio.seqcode.gse.datasets.core.Lab;
+import edu.psu.compbio.seqcode.gse.datasets.core.MetadataModifier;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ACLChangeEntry;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;

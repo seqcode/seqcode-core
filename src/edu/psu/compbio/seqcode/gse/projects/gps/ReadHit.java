@@ -1,7 +1,7 @@
 package edu.psu.compbio.seqcode.gse.projects.gps;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 
 /**
  * <tt>ReadHit</tt> is a type of <tt>StrandedRegion</tt> with a <tt>weight</tt> <br>

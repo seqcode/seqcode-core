@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.BinningParameters;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.MetaProfileHandler;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.MetaUtils;

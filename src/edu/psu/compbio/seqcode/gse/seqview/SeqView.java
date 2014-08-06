@@ -31,7 +31,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionListPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.SaveRegionsAsFasta;

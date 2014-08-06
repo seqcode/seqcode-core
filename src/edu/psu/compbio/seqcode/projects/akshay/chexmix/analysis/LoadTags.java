@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.deepseq.hitloaders.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.projects.akshay.chexmix.datasets.Config;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
@@ -96,7 +96,7 @@ public class LoadTags {
 		this.fillTagsfilepathname(conf.getTagsPath());
 		HitLoader hloader = this.getFileHitloader(conf.getTagsFormat(), useNonUnique);
 		
-		hloader.sourceReads();
+		hloader.sourceAllHits();
 		//Estimate the genome
 		this.gen = this.estimateGenome(hloader.getFivePrimePositions());
 		

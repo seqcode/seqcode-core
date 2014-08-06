@@ -10,7 +10,7 @@ import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.stats.Normalization;
 
@@ -21,19 +21,19 @@ import edu.psu.compbio.seqcode.projects.multigps.stats.Normalization;
  */
 public class EnrichmentSignificance {
 
-	protected Config config;
-	protected ExperimentSet exptSet;
-	protected List<BindingEvent> features;
+	protected MultiGPSConfig config;
+	protected ExperimentManager manager;
+	protected BindingManager bindingManager;
 	protected double minFoldChange;
 	protected double genomeLength;
 	protected Binomial binomial;
 	protected Poisson poisson;
 	protected ChiSquare chisquare;
 	
-	public EnrichmentSignificance(Config con, ExperimentSet exptSet, List<BindingEvent> features, double minFoldChange, double genomeLength){
+	public EnrichmentSignificance(MultiGPSConfig con, ExperimentManager exptman, BindingManager bman, double minFoldChange, double genomeLength){
 		this.config = con;
-		this.exptSet = exptSet;
-		this.features = features;
+		this.manager = exptman;
+		this.bindingManager = bman;
 		this.minFoldChange = minFoldChange;
 		this.genomeLength = genomeLength;
 		binomial = new Binomial(100, .5, new DRand());
@@ -44,17 +44,13 @@ public class EnrichmentSignificance {
 	/**
 	 * Evaluate the significance of a set of EnrichedFeatures using Binomial and Poisson tests
 	 * Assumes that the counts in the features are not already scaled
-	 * @param features List of EnrichedFeatures
-	 * @param minFoldChange
-	 * @param modelWidth
-	 * @param totalSignalCount
-	 * @param genomeLength
+	 * @param modelRange
 	 */
 	public void execute() {
 
 		//Calculate relative replicate weights
-		double[] repWeights = new double[exptSet.getReplicates().size()];
-		for(ExperimentCondition c : exptSet.getConditions()){
+		double[] repWeights = new double[manager.getReplicates().size()];
+		for(ExperimentCondition c : manager.getConditions()){
 			double totalSig =0;
 			for(ControlledExperiment r : c.getReplicates())
 				totalSig += r.getSigCount();
@@ -68,8 +64,8 @@ public class EnrichmentSignificance {
 		// sigCtrlP: Outcome of binomial test between sum of per-replicate signal read counts at event and sum of scaled per-replicate control counts at event. If multiple replicates use the same control, the counts are used redundantly since this is equivalent to summing the scaling factors across replicates. 
 		// LL: log-likelihood loss if component was eliminated from model.
 		// LLp: Chi-square distributed p-value corresponding to LL.  
-		for (BindingEvent cf: features){
-			for(ExperimentCondition c1 : exptSet.getConditions()){
+		for (BindingEvent cf: bindingManager.getBindingEvents()){
+			for(ExperimentCondition c1 : manager.getConditions()){
 				double c1Sig = cf.getCondSigHitsFromReps(c1);
 				double ctrlCountScaled = cf.getCondCtrlHitsScaledFromReps(c1);
 				
@@ -81,7 +77,7 @@ public class EnrichmentSignificance {
 				}
 				
 				//P-value, signal vs control
-				double sigCtrlP = evaluateSignificance(c1Sig, ctrlCountScaled, cf.getCondTotalSigHitsFromReps(c1), c1.getMaxModelRange());
+				double sigCtrlP = evaluateSignificance(c1Sig, ctrlCountScaled, cf.getCondTotalSigHitsFromReps(c1), bindingManager.getMaxInfluenceRange(c1));
 				cf.setCondSigVCtrlFold(c1, sigCtrlFold);
 				cf.setCondSigVCtrlP(c1, sigCtrlP);
 				
@@ -93,7 +89,7 @@ public class EnrichmentSignificance {
 			}
 		}
 		// calculate q-values, correction for multiple testing
-		benjaminiHochbergCorrection(features);
+		benjaminiHochbergCorrection(bindingManager.getBindingEvents());
 	}//end of evaluateConfidence method
 
 	
@@ -129,7 +125,7 @@ public class EnrichmentSignificance {
 		double total = features.size();
 		
 		//Signal-vs-Control corrections by condition
-		for(ExperimentCondition c : exptSet.getConditions()){
+		for(ExperimentCondition c : manager.getConditions()){
 			BindingEvent.setSortingCond(c);
 			Collections.sort(features, new Comparator<BindingEvent>(){
 	            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
@@ -145,7 +141,7 @@ public class EnrichmentSignificance {
 		
 		//LL p-value corrections by condition
 		if(config.CALC_COMP_LL){
-			for(ExperimentCondition c : exptSet.getConditions()){
+			for(ExperimentCondition c : manager.getConditions()){
 				BindingEvent.setSortingCond(c);
 				Collections.sort(features, new Comparator<BindingEvent>(){
 		            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareByLLPvalue(o2);}
@@ -161,7 +157,7 @@ public class EnrichmentSignificance {
 		}
 		
 		//Finally, sort on the first condition
-		BindingEvent.setSortingCond(exptSet.getConditions().get(0));
+		BindingEvent.setSortingCond(manager.getConditions().get(0));
 		Collections.sort(features, new Comparator<BindingEvent>(){
             public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
         });

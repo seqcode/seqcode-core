@@ -1,20 +1,17 @@
 package edu.psu.compbio.seqcode.deepseq.experiments;
 
-import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
-import edu.psu.compbio.seqcode.projects.multigps.framework.ExperimentScaler;
 
 /**
  * ControlledExperiment combines two Samples representing signal and control experiments. 
- * An object of this type may be considered as a single replicate of a given Condition.
- * This class contains a replicate-specific BindingModel.
+ * An object of this type may be considered as a single replicate of a given ExperimentCondition.
+ * Maintains traceback links to parent conditions, targets, and experiment types.
  * 
  * @author Shaun Mahony
  * @version	%I%, %G%
  */
 public class ControlledExperiment {
 
-	protected Config config;
+	protected ExptConfig econfig;
 	protected int index;
 	protected Sample signal=null;
 	protected Sample control=null;
@@ -23,38 +20,35 @@ public class ControlledExperiment {
 	protected double noiseCount=0; //Noise reads in the signal channel
 	protected double signalProportion= 0.0; //Fraction of reads assigned to signal. Init to zero to parameterize Poisson background model in the absence of a sig/noise estimate
 	protected boolean estimateScaling=true;
-	protected BindingModel model;
 	protected String condName;
 	protected String repName;
 	protected String name;
+	protected ExperimentCondition myCondition=null;
+	protected ExperimentTarget myTarget = null;
+	protected ExperimentType myExptType= null;
 	
-	public ControlledExperiment(Config c, int idx, String cn, String rn, Sample sig, Sample ctrl, BindingModel initModel, boolean estimateScaling){
-		config = c;
+	public ControlledExperiment(ExptConfig c, int idx, String cn, String rn, Sample sig, Sample ctrl, boolean estimateScaling){
+		econfig = c;
 		index=idx;
 		condName = cn;
 		repName = rn;
 		name = condName+":"+repName;
 		signal=sig;
 		control = ctrl;
-		model = initModel;
 		this.estimateScaling = estimateScaling;
 		
 		if(estimateScaling){
-			if(config.isGPS)
-				System.err.println("Estimating scaling ratio for "+name);
 			ExperimentScaler scaler = new ExperimentScaler(signal, control);
-			if(config.getScalingBySES())
-				ctrlScalingRatio = scaler.scalingRatioBySES(config.getScalingSlidingWindow());
-			else if(config.getScalingByMedian())
-				ctrlScalingRatio = scaler.scalingRatioByMedian(config.getScalingSlidingWindow());
+			if(econfig.getScalingBySES())
+				ctrlScalingRatio = scaler.scalingRatioBySES(econfig.getScalingSlidingWindow());
+			else if(econfig.getScalingByMedian())
+				ctrlScalingRatio = scaler.scalingRatioByMedian(econfig.getScalingSlidingWindow());
 			else
-				ctrlScalingRatio = scaler.scalingRatioByRegression(config.getScalingSlidingWindow());
+				ctrlScalingRatio = scaler.scalingRatioByRegression(econfig.getScalingSlidingWindow());
 			
 			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
 			sigCount = signalProportion*signal.getHitCount();
 			noiseCount = (1-signalProportion)*signal.getHitCount();
-			if(control!=null && config.isGPS)
-				System.err.println("Signal proportion estimate from background scaling for "+name+" = "+String.format("%.4f", signalProportion));
 		}
 	}
 	
@@ -68,14 +62,18 @@ public class ControlledExperiment {
 	public boolean hasControl(){return control!=null;}
 	public double getControlScaling(){return ctrlScalingRatio;}
 	public double getSigProp(){return signalProportion;}
-	public BindingModel getBindingModel(){return model;}
 	public void setSigNoiseCounts(double s, double n){sigCount=s; noiseCount=n; signalProportion=sigCount/(sigCount+noiseCount);}
 	public double getSigCount(){return sigCount;}
 	public double getNoiseCount(){return noiseCount;}
+	public ExperimentCondition getCondition(){return myCondition;}
+	public ExperimentTarget getTarget(){return myTarget;}
+	public ExperimentType getExptType(){return myExptType;}
 	
 	public void setScaling(double s){ctrlScalingRatio = s;}
 	public void setSigProp(double s){signalProportion = s;}
-	public void setBindingModel(BindingModel bm){model = bm;}
+	public void setCondition(ExperimentCondition c){myCondition = c;}
+	public void setTarget(ExperimentTarget t){myTarget = t;}
+	public void setExptType(ExperimentType t){myExptType = t;}
 	
 	/**
 	 * Call linear count correction method in signal and recalculate necessary variables here 
@@ -84,21 +82,17 @@ public class ControlledExperiment {
 	public void correctSignalCounts(float perBaseScaling){
 		signal.linearCountCorrection(perBaseScaling);
 		if(estimateScaling){
-			if(config.isGPS)
-				System.err.println("Estimating scaling ratio for "+name);
 			ExperimentScaler scaler = new ExperimentScaler(signal, control);
-			if(config.getScalingBySES())
-				ctrlScalingRatio = scaler.scalingRatioBySES(config.getScalingSlidingWindow());
-			else if(config.getScalingByMedian())
-				ctrlScalingRatio = scaler.scalingRatioByMedian(config.getScalingSlidingWindow());
+			if(econfig.getScalingBySES())
+				ctrlScalingRatio = scaler.scalingRatioBySES(econfig.getScalingSlidingWindow());
+			else if(econfig.getScalingByMedian())
+				ctrlScalingRatio = scaler.scalingRatioByMedian(econfig.getScalingSlidingWindow());
 			else
-				ctrlScalingRatio = scaler.scalingRatioByRegression(config.getScalingSlidingWindow());
+				ctrlScalingRatio = scaler.scalingRatioByRegression(econfig.getScalingSlidingWindow());
 			
 			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
 			sigCount = signalProportion*signal.getHitCount();
 			noiseCount = (1-signalProportion)*signal.getHitCount();
-			if(control!=null && config.isGPS)
-				System.err.println("Signal proportion estimate from background scaling for "+name+" = "+String.format("%.4f", signalProportion));
 		}
 	}
 		

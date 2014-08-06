@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
-import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqDataModel;
+import edu.psu.compbio.seqcode.gse.seqview.model.SeqDataModel;
 
 import java.awt.Graphics2D;
 
@@ -9,7 +9,7 @@ public class SeqCombinedPainter extends SeqPainter {
     private SeqBasicOverlapPainter basic;
     private SeqAboveBelowStrandPainter stranded;
 
-    public SeqCombinedPainter (ChipSeqDataModel model) {
+    public SeqCombinedPainter (SeqDataModel model) {
         super(model);
         basic = new SeqBasicOverlapPainter(model);
         basic.setProperties(getProperties());

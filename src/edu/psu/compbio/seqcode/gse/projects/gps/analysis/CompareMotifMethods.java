@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
 
 public class CompareMotifMethods {
 	

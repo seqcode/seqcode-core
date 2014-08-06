@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.projects.gps;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 public abstract class BackgroundModel {
 	protected int modelType; //-1 for genome-wide, 0 for current region, positive integer for local window size  

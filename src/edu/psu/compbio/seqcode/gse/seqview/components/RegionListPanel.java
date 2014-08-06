@@ -6,9 +6,8 @@ import javax.swing.*;
 import java.io.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.binding.BindingEvent;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 public class RegionListPanel extends JPanel implements ActionListener, KeyListener, MouseListener, RegionList, Runnable {
 
@@ -253,10 +252,6 @@ public class RegionListPanel extends JPanel implements ActionListener, KeyListen
                 for (int i = 0; i < listmodel.getSize(); i++) {
                     Region r = (Region)listmodel.get(i);
                     writer.print(r.getChrom() + "\t" + r.getStart() + "\t" + r.getEnd());
-                    if(r instanceof BindingEvent) { 
-                        BindingEvent b = (BindingEvent)r;
-                        writer.print("\t" + b.getSize() + "\t" + b.getConf());
-                    }
                     writer.println();
                 }
                 writer.close();

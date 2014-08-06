@@ -6,11 +6,11 @@ package edu.psu.compbio.seqcode.gse.viz.utils;
 import java.util.*;
 
 import javax.swing.*;
-import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
 /**

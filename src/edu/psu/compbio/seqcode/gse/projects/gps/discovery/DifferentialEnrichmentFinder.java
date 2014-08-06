@@ -11,11 +11,11 @@ import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
 import cern.jet.stat.Probability;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
+import edu.psu.compbio.seqcode.genome.location.NamedRegion;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.projects.gps.BackgroundCollection;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.projects.gps.PairedCountData;

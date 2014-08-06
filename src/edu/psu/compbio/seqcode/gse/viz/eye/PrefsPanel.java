@@ -3,22 +3,20 @@ package edu.psu.compbio.seqcode.gse.viz.eye;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.*;
 import java.lang.reflect.*;
 
 import edu.psu.compbio.seqcode.gse.utils.models.*;
 
 
-public class PrefsPanel<M extends Model> extends JPanel implements ActionListener{
+public class PrefsPanel<M extends Model> extends JPanel {
 		
     private M value;
     private ModelFieldAnalysis analysis;
     private Map<Field,JTextField> stringFields, integerFields, doubleFields;
     private Map<Field,JRadioButton[]> booleanFields;
-    private Map<Field,Color> colorFields;
-    private Map<JButton, Field> buttonToField;
-    	
+    private Map<Field,JColorChooser> colorFields;
+		
     public PrefsPanel(M mdl) { 
         value = mdl;
         analysis = new ModelFieldAnalysis(mdl.getClass());
@@ -26,8 +24,7 @@ public class PrefsPanel<M extends Model> extends JPanel implements ActionListene
         integerFields = new HashMap<Field,JTextField>();
         doubleFields = new HashMap<Field,JTextField>();
         booleanFields = new HashMap<Field,JRadioButton[]>();
-        colorFields = new HashMap<Field,Color>();
-        buttonToField = new HashMap<JButton, Field>();
+        colorFields = new HashMap<Field,JColorChooser>();
         init();
     }
 		
@@ -81,9 +78,9 @@ public class PrefsPanel<M extends Model> extends JPanel implements ActionListene
             }
         }
         for (Field f : colorFields.keySet()) {
-            Color cmp = colorFields.get(f);
+            JColorChooser cmp = colorFields.get(f);
             try {
-                f.set(value, cmp);
+                f.set(value, cmp.getColor());
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -182,31 +179,20 @@ public class PrefsPanel<M extends Model> extends JPanel implements ActionListene
         for (Field f : cfs) {
             String name = f.getName();
             Color fvalue = (Color)analysis.get(f.getName(),value);
-            colorFields.put(f, fvalue);
+            JColorChooser chooser = new JColorChooser();
+            if (fvalue != null) {
+                chooser.setColor(fvalue);
+            }
+            colorFields.put(f, chooser);
             JLabel label = new JLabel(String.format("%s:",name));
             constraints.gridwidth = GridBagConstraints.RELATIVE;
             gridbag.setConstraints(label,constraints);        
             add(label);        
             constraints.gridwidth = GridBagConstraints.REMAINDER;
-            JButton colorButton = new JButton("Choose Color");
-            colorButton.addActionListener(this);
-            buttonToField.put(colorButton, f);
-            gridbag.setConstraints(colorButton, constraints);
-            add(colorButton);
-            //gridbag.setConstraints(chooser, constraints);
-            //add(chooser);
+            gridbag.setConstraints(chooser, constraints);
+            add(chooser);
         }
 
     }		
     public M getModelValue() { return value; }
-
-	//Color button
-	public void actionPerformed(ActionEvent e) {
-		if(buttonToField.containsKey(e.getSource())){
-			Field sourceField = buttonToField.get(e.getSource());
-			Color currColor = JColorChooser.showDialog(this, "Choose Color", getBackground());
-		    if (currColor != null)
-		    	colorFields.put(sourceField, currColor);
-		}	
-	}
 }

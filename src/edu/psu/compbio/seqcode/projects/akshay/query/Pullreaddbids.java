@@ -1,10 +1,9 @@
 package edu.psu.compbio.seqcode.projects.akshay.query;
 
 import java.sql.*;
-import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 

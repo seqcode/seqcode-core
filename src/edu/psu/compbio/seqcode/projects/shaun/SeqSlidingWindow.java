@@ -14,26 +14,21 @@ import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RegionParser;
-import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
-import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RegionParser;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
-import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
 
 public class SeqSlidingWindow {
 
+	private final int MAXSECTION = 50000000;
+	
 	protected ExperimentManager exptMan;
-	protected ExperimentSet eset;
-	protected Config config;
+	protected GenomeConfig gconfig;
+	protected ExptConfig econfig;
 	protected int regionExtension = 1000;
 	protected Genome gen=null;
 	protected int binWidth=500;
@@ -57,18 +52,18 @@ public class SeqSlidingWindow {
 					"--rdbexpt <ReadDB identifier>\n" +
 					"--rdbctrl <ReadDB identifier>\n");
 		}else{
-			config = new Config(args);
-			gen = config.getGenome();
-			exptMan = new ExperimentManager(config);
-			eset = exptMan.getExperimentSet();
+			gconfig = new GenomeConfig(args);
+			econfig = new ExptConfig(gconfig.getGenome(), args);
+			gen = gconfig.getGenome();
+			exptMan = new ExperimentManager(econfig);
 			
-			if(eset.getConditions().size()==1 && eset.getConditions().get(0).getReplicates().size()==1){
+			if(exptMan.getConditions().size()==1 && exptMan.getConditions().get(0).getReplicates().size()==1){
 				
-				System.err.println("Conditions:\t"+eset.getConditions().size());
-				for(ExperimentCondition c : eset.getConditions()){
+				System.err.println("Conditions:\t"+exptMan.getConditions().size());
+				for(ExperimentCondition c : exptMan.getConditions()){
 					System.err.println("Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
 				}
-				for(ExperimentCondition c : eset.getConditions()){
+				for(ExperimentCondition c : exptMan.getConditions()){
 					for(ControlledExperiment r : c.getReplicates()){
 						System.err.println("Condition "+c.getName()+":\tRep "+r.getName());
 						if(r.getControl()==null)
@@ -91,7 +86,7 @@ public class SeqSlidingWindow {
 	}
 	
 	public void execute(){
-		ControlledExperiment expt = eset.getConditions().get(0).getReplicates().get(0);
+		ControlledExperiment expt = exptMan.getConditions().get(0).getReplicates().get(0);
 		Iterator<Region> testRegions;
 		
 		if(!regFile.equals("NONE")){
@@ -99,22 +94,22 @@ public class SeqSlidingWindow {
 		}else{
 			testRegions = new ChromosomeGenerator().execute(gen);
 		}
-
+		
 		while (testRegions.hasNext()) {
 			Region currentRegion = testRegions.next();
 			System.out.println("#"+currentRegion.getLocationString());
 			//Split the job up into large chunks
-            for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=config.MAXSECTION){
-                int y = x+config.MAXSECTION; 
+            for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=MAXSECTION){
+                int y = x+MAXSECTION; 
                 if(y>currentRegion.getEnd()){y=currentRegion.getEnd();}
                 Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 			
-				List<StrandedBaseCount> ipHits = expt.getSignal().getUnstrandedBases(currSubRegion);
+				List<StrandedBaseCount> ipHits = expt.getSignal().getBases(currSubRegion);
 				makeHitStartLandscape(ipHits, currSubRegion, pbMax, '.');
 				double ipStackedHitCounts[] = landscape.clone();
 				double backStackedHitCounts[] = null;
 				if (expt.hasControl()) {
-					List<StrandedBaseCount> backHits = expt.getControl().getUnstrandedBases(currSubRegion);
+					List<StrandedBaseCount> backHits = expt.getControl().getBases(currSubRegion);
 	            	makeHitStartLandscape(backHits, currSubRegion, pbMax, '.');
 	            	backStackedHitCounts = landscape.clone();
 	            }
@@ -165,6 +160,7 @@ public class SeqSlidingWindow {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		Collections.sort(regs);//Sort for efficient experiment file cache loading
 		return(regs);
 	}
 	

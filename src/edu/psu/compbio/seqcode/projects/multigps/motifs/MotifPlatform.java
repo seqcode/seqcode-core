@@ -10,21 +10,25 @@ import java.util.Random;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.NamedRegion;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScorer;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScoreProfile;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScorer;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.mixturemodel.BindingComponent;
 
 public class MotifPlatform {
-	protected Config config;
+	protected GenomeConfig gconfig;
+	protected MultiGPSConfig config;
 	protected ExperimentManager manager;
+	protected BindingManager bindingManager;
 	protected SequenceGenerator<Region> seqgen;
 	protected List<Region> randomRegions = new ArrayList<Region>(); //Randomly chosen regions for motif significance tests
 	protected String[] randomSequences; //Randomly chosen sequences for motif significance tests
@@ -36,13 +40,13 @@ public class MotifPlatform {
 	 * @param man
 	 * @param regionsOfInterest: this list contains all possible regions that motif-finding/scanning may be run on. 
 	 */
-	public MotifPlatform(Config c, ExperimentManager man, List<Region> regionsOfInterest){
+	public MotifPlatform(GenomeConfig g, MultiGPSConfig c, ExperimentManager man, BindingManager bman, List<Region> regionsOfInterest){
+		gconfig = g;
 		config = c;
 		manager=man;
-		seqgen = new SequenceGenerator<Region>();
+		bindingManager = bman;
+		seqgen = gconfig.getSequenceGenerator();
 		seqgen.useCache(true);
-		seqgen.useLocalFiles(true);
-		seqgen.setGenomePath(config.getGenomeSequencePath());
 		if (!seqgen.isRegionCached()){
 			System.err.println("Caching sequences");
 			randomRegions = randomRegionPick(null, config.MOTIF_FINDING_NEGSEQ, config.MOTIF_FINDING_SEQWINDOW);
@@ -113,16 +117,16 @@ public class MotifPlatform {
 			//Set the condition's motif if the ROC is above threshold
 			if(maxRoc >= config.MOTIF_MIN_ROC){
 				System.err.println("\t"+fm.get(bestMotif).getName() + " chosen as best motif.");
-				cond.setMotif(wm.get(bestMotif));
-				cond.setFreqMatrix(fm.get(bestMotif));
+				bindingManager.setMotif(cond, wm.get(bestMotif));
+				bindingManager.setFreqMatrix(cond, fm.get(bestMotif));
 			}else{
 				System.err.println("\tNo motif passes minimum ROC score threshold.");
-				cond.setMotif(null);
-				cond.setFreqMatrix(null);
+				bindingManager.setMotif(cond, null);
+				bindingManager.setFreqMatrix(cond, null);
 			}
 		}else{
-			cond.setMotif(null);
-			cond.setFreqMatrix(null);
+			bindingManager.setMotif(cond, null);
+			bindingManager.setFreqMatrix(cond, null);
 		}
 	}
 	
@@ -136,8 +140,8 @@ public class MotifPlatform {
 		WeightMatrix refMotif=null;
 		int refCondIndex=0;
 		for(int e=0; e<manager.getNumConditions(); e++){
-			if(manager.getExperimentSet().getIndexedCondition(e).getMotif()!=null){
-				refMotif = manager.getExperimentSet().getIndexedCondition(e).getFreqMatrix();
+			if(bindingManager.getMotif(manager.getIndexedCondition(e))!=null){
+				refMotif = bindingManager.getFreqMatrix(manager.getIndexedCondition(e));
 				refCondIndex = e;
 				break;
 			}
@@ -145,21 +149,21 @@ public class MotifPlatform {
 		if(refMotif!=null){
 			//Reference offset is the center of the motif
 			int refOffset = (int)(refMotif.length()/2);
-			manager.getExperimentSet().getIndexedCondition(refCondIndex).setMotifOffset(refOffset);
+			bindingManager.setMotifOffset(manager.getIndexedCondition(refCondIndex), refOffset);
 			for(int e=0; e<manager.getNumConditions(); e++){
-				if(e!=refCondIndex && manager.getExperimentSet().getIndexedCondition(e).getFreqMatrix()!=null){
-					Pair<Integer,Double> forAlignment = aligner.align(refMotif, manager.getExperimentSet().getIndexedCondition(e).getFreqMatrix());
-					Pair<Integer,Double> revAlignment = aligner.align(refMotif, WeightMatrix.reverseComplement(manager.getExperimentSet().getIndexedCondition(e).getFreqMatrix()));
+				if(e!=refCondIndex && bindingManager.getFreqMatrix(manager.getIndexedCondition(e))!=null){
+					Pair<Integer,Double> forAlignment = aligner.align(refMotif, bindingManager.getFreqMatrix(manager.getIndexedCondition(e)));
+					Pair<Integer,Double> revAlignment = aligner.align(refMotif, WeightMatrix.reverseComplement(bindingManager.getFreqMatrix(manager.getIndexedCondition(e))));
 					
 					if(revAlignment.cdr()>forAlignment.cdr()){
-						manager.getExperimentSet().getIndexedCondition(e).setFreqMatrix(WeightMatrix.reverseComplement(manager.getExperimentSet().getIndexedCondition(e).getFreqMatrix()));
-						manager.getExperimentSet().getIndexedCondition(e).setMotif(WeightMatrix.reverseComplement(manager.getExperimentSet().getIndexedCondition(e).getMotif()));
-						manager.getExperimentSet().getIndexedCondition(e).setMotifOffset(refOffset+revAlignment.car());
+						bindingManager.setFreqMatrix(manager.getIndexedCondition(e), WeightMatrix.reverseComplement(bindingManager.getFreqMatrix(manager.getIndexedCondition(e))));
+						bindingManager.setMotif(manager.getIndexedCondition(e), WeightMatrix.reverseComplement(bindingManager.getMotif(manager.getIndexedCondition(e))));
+						bindingManager.setMotifOffset(manager.getIndexedCondition(e), refOffset+revAlignment.car());
 					}else{
-						manager.getExperimentSet().getIndexedCondition(e).setMotifOffset(refOffset+forAlignment.car());
+						bindingManager.setMotifOffset(manager.getIndexedCondition(e), refOffset+forAlignment.car());
 					}
-				}else if (manager.getExperimentSet().getIndexedCondition(e).getFreqMatrix()==null){
-					manager.getExperimentSet().getIndexedCondition(e).setMotifOffset(0);
+				}else if (bindingManager.getFreqMatrix(manager.getIndexedCondition(e))!=null){
+					bindingManager.setMotifOffset(manager.getIndexedCondition(e), 0);
 				}
 			}
 		}
@@ -173,14 +177,14 @@ public class MotifPlatform {
 	public double[][] scanRegionWithMotifs(Region reg, String regSeq){
 		double[][] scanScores = new double[manager.getNumConditions()][reg.getWidth()];
 		
-		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+		for(ExperimentCondition cond : manager.getConditions()){
 			int e = cond.getIndex();
 			for(int z=0; z<reg.getWidth(); z++)
 				scanScores[e][z]=0;
 			
-			WeightMatrix motif = cond.getMotif();
+			WeightMatrix motif = bindingManager.getMotif(cond);
 			if(motif!=null){
-				int motifOffset = cond.getMotifOffset();
+				int motifOffset = bindingManager.getMotifOffset(cond);
 				WeightMatrixScorer scorer = new WeightMatrixScorer(motif);
 				WeightMatrixScoreProfile profiler = scorer.execute(regSeq);
 				for(int z=0; z<reg.getWidth()-motif.length()+1; z++){
@@ -205,16 +209,16 @@ public class MotifPlatform {
 		Double[][] scanScores = new Double[manager.getNumConditions()][reg.getWidth()];
 		String[][] scanSeqs = new String[manager.getNumConditions()][reg.getWidth()];
 		
-		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+		for(ExperimentCondition cond : manager.getConditions()){
 			int e = cond.getIndex();
 			for(int z=0; z<reg.getWidth(); z++){
 				scanScores[e][z]=0.0;
 				scanSeqs[e][z]= "";
 			}
 			
-			WeightMatrix motif = cond.getMotif();
+			WeightMatrix motif = bindingManager.getMotif(cond);
 			if(motif!=null){
-				int motifOffset = cond.getMotifOffset();
+				int motifOffset = bindingManager.getMotifOffset(cond);
 				WeightMatrixScorer scorer = new WeightMatrixScorer(motif);
 				WeightMatrixScoreProfile profiler = scorer.execute(regSeq);
 				for(int z=0; z<reg.getWidth()-motif.length()+1; z++){
@@ -255,9 +259,9 @@ public class MotifPlatform {
 		for(int z=0; z<reg.getWidth(); z++)
 			scanScores[z]=0;
 		
-		WeightMatrix motif = cond.getMotif();
+		WeightMatrix motif = bindingManager.getMotif(cond);
 		if(motif!=null){
-			int motifOffset = cond.getMotifOffset();
+			int motifOffset = bindingManager.getMotifOffset(cond);
 			WeightMatrixScorer scorer = new WeightMatrixScorer(motif);
 			WeightMatrixScoreProfile profiler = scorer.execute(regSeq);
 			for(int z=0; z<reg.getWidth()-motif.length()+1; z++){

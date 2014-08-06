@@ -3,9 +3,9 @@ package edu.psu.compbio.seqcode.gse.seqview.paintable;
 import java.awt.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.ScoredStrandedRegion;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.Expander;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.ScoredStrandedRegion;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
 import edu.psu.compbio.seqcode.gse.seqview.model.RegionExpanderModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;

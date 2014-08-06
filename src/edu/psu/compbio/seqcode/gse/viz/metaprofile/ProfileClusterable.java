@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.viz.metaprofile;
 
-import edu.psu.compbio.seqcode.gse.clustering.vectorcluster.VectorClusterElement;
+import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.VectorClusterElement;
 
 public class ProfileClusterable implements VectorClusterElement {
 	

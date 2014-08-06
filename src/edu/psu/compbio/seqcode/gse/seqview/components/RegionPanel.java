@@ -10,25 +10,25 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.NamedRegion;
+import edu.psu.compbio.seqcode.genome.location.NamedStrandedRegion;
+import edu.psu.compbio.seqcode.genome.location.NamedTypedRegion;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.ScoredRegion;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ExpressionLoader;
 import edu.psu.compbio.seqcode.gse.datasets.expression.ProbePlatform;
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedStrandedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedTypedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.ScoredRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.*;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.HarbisonRegCodeRegion;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.expression.LocatedExprMeasurementExpander;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.PerBaseMotifMatch;
-import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
+import edu.psu.compbio.seqcode.gse.gsebricks.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.expression.LocatedExprMeasurementExpander;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.PerBaseMotifMatch;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.seqview.*;
 import edu.psu.compbio.seqcode.gse.seqview.model.*;
 import edu.psu.compbio.seqcode.gse.seqview.paintable.*;
@@ -421,9 +421,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
 						}
 					} else {
 						System.err.println("Using old ChipSeq painters");
-						histomod = new ChipSeqDataModel(new edu.psu.compbio.seqcode.gse.projects.readdb.Client(),
+						histomod = new SeqDataModel(new edu.psu.compbio.seqcode.gse.projects.readdb.Client(),
 								alignments);
-						p = new SeqAboveBelowStrandPainter((ChipSeqDataModel)histomod);
+						p = new SeqAboveBelowStrandPainter((SeqDataModel)histomod);
 					}
 					addModel(histomod);
 					Thread t1 = new Thread((Runnable)histomod); t1.start();
@@ -590,9 +590,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			} else if (factory.getProduct().equals("NamedRegion")) {
 				m = new RegionExpanderModel<NamedRegion>((Expander<Region,NamedRegion>)expander);
 				p = new NamedStrandedPainter((RegionExpanderModel<NamedRegion>)m); // yes, this works.  NamedStrandedPainter can handle non-stranded Regions
-			} else if (factory.getProduct().equals("HarbisonRegCodeRegion")) {
-				m = new RegionExpanderModel<HarbisonRegCodeRegion>((Expander<Region,HarbisonRegCodeRegion>)expander);
-				p = new HarbisonRegCodePainter((RegionExpanderModel<HarbisonRegCodeRegion>)m);
 			} else {
 				throw new RuntimeException("Don't understand product type " + factory.getProduct());
 			}
@@ -678,8 +675,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				currentOptions.ncrnas.remove(p.getOptionInfo());
 			case SeqViewOptions.OTHERANNOTS:
 				currentOptions.otherannots.remove(p.getOptionInfo());
-			case SeqViewOptions.AGILENTDATA:
-				currentOptions.agilentdata.remove(p.getOptionInfo());
 			case SeqViewOptions.SEQLETTERS:
 				currentOptions.seqletters = false;
 			case SeqViewOptions.GCCONTENT:

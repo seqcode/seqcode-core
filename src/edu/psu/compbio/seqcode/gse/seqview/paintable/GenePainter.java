@@ -2,22 +2,12 @@ package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.sql.SQLException;
 import java.util.*;
-import javax.swing.JToolTip;
-import javax.swing.JPopupMenu;
-import javax.swing.JMenuItem;
 
-import edu.psu.compbio.seqcode.gse.datasets.function.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
-import edu.psu.compbio.seqcode.gse.seqview.components.GOAnnotationPanel;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.seqview.model.RegionExpanderModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
 public class GenePainter extends RegionPaintable {
@@ -27,9 +17,6 @@ public class GenePainter extends RegionPaintable {
     private DynamicAttribute attrib;
     private double htRat, wdRat;
     private Vector<Gene> genes;    
-    private DatabaseFunctionLoader funcLoader;
-    private FunctionVersion version;
-    private GOAnnotationPanel.Frame goFrame;    
     private GeneProperties props;
 
     public GenePainter(RegionExpanderModel<Gene> model) {
@@ -40,23 +27,8 @@ public class GenePainter extends RegionPaintable {
         htRat = .03;
         wdRat = .03;
         model.addEventListener(this);
-        goFrame = null;
         props = new GeneProperties();
         initLabels();
-
-        try {
-            funcLoader = new DatabaseFunctionLoader();
-            version = funcLoader.getVersion("GO:5_23_2006");
-			
-        } catch (SQLException e) {
-            e.printStackTrace();
-            if(funcLoader != null) { funcLoader.close(); }
-            funcLoader = null;
-        } catch (UnknownRoleException e) {
-            e.printStackTrace();
-            if(funcLoader != null) { funcLoader.close(); }
-            funcLoader = null;
-        }
     }
 
     public GeneProperties getProperties () {return props;}
@@ -65,33 +37,11 @@ public class GenePainter extends RegionPaintable {
     public void clickedOnItem(ActionEvent e) {
         System.err.println(e);
         String geneName = e.getActionCommand();
-        
-        if(funcLoader != null) { 
-            if(goFrame == null) { 
-                try {
-                    GOAnnotationPanel panel = new GOAnnotationPanel(funcLoader, getRegion().getGenome());
-                    panel.setID(geneName);
-                    panel.setVersion(version.getName());
-                    panel.annotate();
-                    
-                    goFrame = new GOAnnotationPanel.Frame(panel);
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
-                }
-                
-            } else { 
-                GOAnnotationPanel panel = goFrame.getPanel();
-                panel.setID(geneName);
-                panel.annotate();
-                goFrame.setVisible(true);
-            }
-        }
     }
     
     public void cleanup() { 
         super.cleanup();
         model.removeEventListener(this);
-        funcLoader.close();
     }
 
     public void removeEventListener(Listener<EventObject> l) {

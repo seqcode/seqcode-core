@@ -2,8 +2,7 @@ package edu.psu.compbio.seqcode.gse.seqview.model;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.ewok.verbs.Mapper;
-import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Mapper;
 
 /* see ExpanderModel for an overview */
 

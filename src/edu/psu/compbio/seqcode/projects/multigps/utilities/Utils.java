@@ -15,17 +15,17 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrixPainter;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.PointParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RegionParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.StrandedPointParser;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.StrandedRegionParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.PointParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RegionParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.StrandedPointParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.StrandedRegionParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.GFFEntry;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.ParseGFF;

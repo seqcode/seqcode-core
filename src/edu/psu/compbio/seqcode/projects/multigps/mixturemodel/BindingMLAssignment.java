@@ -8,12 +8,14 @@ import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.deepseq.stats.BackgroundCollection;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
-import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundCollection;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.EMStepPlotter;
 
 /**
@@ -25,7 +27,9 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.EMStepPlotter;
 public class BindingMLAssignment {
 
 	protected ExperimentManager manager;
-	protected Config config;
+	protected BindingManager bindingManager;
+	protected ExptConfig econfig;
+	protected MultiGPSConfig config;
 	protected List<BindingComponent> components;
 	protected List<NoiseComponent> noise;
 	protected int numComponents;  //Assumes the same number of active+inactive components in each condition
@@ -73,9 +77,11 @@ public class BindingMLAssignment {
 	 * @param c
 	 * @param eMan
 	 */
-	public BindingMLAssignment(Config c, ExperimentManager eMan, HashMap<ExperimentCondition, BackgroundCollection> condBacks, int numPotReg){
+	public BindingMLAssignment(ExptConfig econ, MultiGPSConfig c, ExperimentManager eMan, BindingManager bindMan, HashMap<ExperimentCondition, BackgroundCollection> condBacks, int numPotReg){
 		config=c;
+		econfig = econ;
 		manager = eMan;
+		bindingManager = bindMan;
 		conditionBackgrounds = condBacks;
 		numConditions = manager.getNumConditions();
 		numPotentialRegions = (double)numPotReg;
@@ -120,9 +126,9 @@ public class BindingMLAssignment {
     	piNoise = new double[numConditions];		// pi : emission probabilities for noise components (fixed)
     	mu = new int[numConditions][numComponents];// mu : positions of the binding components
     	compLL = new double [numConditions][numComponents];		//Log-likelihood for each component in each condition
-        bindingModels = new BindingModel[manager.getExperimentSet().getReplicates().size()]; //Array of bindingModels for convenience
-        sigRepHitCountTotals = new double[manager.getExperimentSet().getReplicates().size()]; //Hit count totals counted by replicate (for convenience)
-        uniformRepHitCountTotals = new double[manager.getExperimentSet().getReplicates().size()]; //Hit count totals by replicate if reads were distributed uniformly 
+        bindingModels = new BindingModel[manager.getReplicates().size()]; //Array of bindingModels for convenience
+        sigRepHitCountTotals = new double[manager.getReplicates().size()]; //Hit count totals counted by replicate (for convenience)
+        uniformRepHitCountTotals = new double[manager.getReplicates().size()]; //Hit count totals by replicate if reads were distributed uniformly 
         //Monitor state convergence using the following last variables
         lastRBind = new double[numConditions][][];
         lastPi = new double[numConditions][numComponents];
@@ -136,12 +142,12 @@ public class BindingMLAssignment {
         
         
         //Initializing data structures
-        for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+        for(ExperimentCondition cond : manager.getConditions()){
         	int c = cond.getIndex();
         	
         	//Add bindingModels to array
         	for(ControlledExperiment rep : cond.getReplicates())
-        		bindingModels[rep.getIndex()] = rep.getBindingModel();
+        		bindingModels[rep.getIndex()] = bindingManager.getBindingModel(rep);
         	
         	//Load Reads (merge from all replicates)
         	List<StrandedBaseCount> sigBases = new ArrayList<StrandedBaseCount>();
@@ -159,7 +165,7 @@ public class BindingMLAssignment {
         		sigRepHitCountTotals[rep.getIndex()]=0;
         		for(StrandedBaseCount s : signals.get(rep.getIndex()))
         			sigRepHitCountTotals[rep.getIndex()]+=s.getCount();
-        		uniformRepHitCountTotals[rep.getIndex()] = ((rep.getNoiseCount()/config.getMappableGenomeLength())*(double)w.getWidth())/rep.getControlScaling(); //Normalizing by control scaling is a hack - usually control scaling will be 1 when the replicate has no control... however, it is not 1 for SES. 
+        		uniformRepHitCountTotals[rep.getIndex()] = ((rep.getNoiseCount()/econfig.getMappableGenomeLength())*(double)w.getWidth())/rep.getControlScaling(); //Normalizing by control scaling is a hack - usually control scaling will be 1 when the replicate has no control... however, it is not 1 for SES. 
         	}
         	
         	//Load replicate index for each read
@@ -250,7 +256,7 @@ public class BindingMLAssignment {
 	   	for(int j=0;j<numComp;j++){ 
 	   		BindingEvent event = new BindingEvent(components.get(j).getCoord(), w);
 	   		
-    		for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+    		for(ExperimentCondition cond : manager.getConditions()){
     			ArrayList<Sample> controlsSeen = new ArrayList<Sample>();
     			boolean uniformBackAdded=false;
     			double condSigResp = 0.0, condCtrlResp = 0.0;
@@ -298,7 +304,7 @@ public class BindingMLAssignment {
 
     private boolean nonZeroInAny(BindingEvent ev){
     	boolean nonZero=false;
-    	for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+    	for(ExperimentCondition cond : manager.getConditions()){
     		for(ControlledExperiment rep : cond.getReplicates()){
     			nonZero = nonZero || ev.getRepSigHits(rep)>=1;
     		}

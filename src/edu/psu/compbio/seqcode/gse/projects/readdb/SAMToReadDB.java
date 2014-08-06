@@ -5,13 +5,19 @@ import java.util.List;
 
 import org.apache.commons.cli.*;
 
-import net.sf.samtools.*;
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.AlignmentBlock;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamInputResource;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.CloseableIterator;
 
 /**
  * Reads SAM or BAM data on stdin.
  * Produces a file on stdout in the format expected by ImportHits.
  * The weight for a hit is 1/(# of hits for that read)
+ * Ignores secondary & supplementary (i.e. chimeric) alignments.
  * 
  * Options:	--uniquehits (flag to only print 1:1 read to hit mappings)
  * 			--pairedend (flag to print pairs)
@@ -37,13 +43,16 @@ public class SAMToReadDB {
     	uniqueOnly = cl.hasOption("uniquehits");
     	inclPairedEnd = cl.hasOption("pairedend");
     	inclJunction = cl.hasOption("junctions");
-    	SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-        SAMFileReader reader = new SAMFileReader(System.in);
-        reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+    	SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		SamReader reader = factory.open(SamInputResource.of(System.in));
         CloseableIterator<SAMRecord> iter = reader.iterator();
         while (iter.hasNext()) {
             SAMRecord record = iter.next();
             if (record.getReadUnmappedFlag()) {continue; }
+            if(record.getSupplementaryAlignmentFlag()){continue;}
             processRecord(record);
         }
         iter.close();

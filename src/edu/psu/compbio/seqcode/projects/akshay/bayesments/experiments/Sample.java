@@ -11,18 +11,18 @@ import cern.jet.random.engine.DRand;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.hitloaders.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.deepseq.stats.BackgroundCollection;
+import edu.psu.compbio.seqcode.deepseq.stats.PoissonBackgroundModel;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
-import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundCollection;
-import edu.psu.compbio.seqcode.projects.multigps.framework.PoissonBackgroundModel;
 
 /**
  *
  * This is EXACTLY same as the Sample class in multigps (edu.psu.compbio.seqcode.projects.multigps.experiments), EXCEPT for
- * different Config class (Config class here is from the bayesments project and not from the multigps one)
+ * different MultiGPSConfig class (MultiGPSConfig class here is from the bayesments project and not from the multigps one)
  */
 public class Sample {
 
@@ -116,7 +116,7 @@ public class Sample {
 		
 		for(HitLoader currLoader : loaders){
 			//Get the reads
-			currLoader.sourceReads();
+			currLoader.sourceAllHits();
 		
 			//Add the reads to the temporary stores
 			for(String chr: currLoader.getFivePrimePositions().keySet()){

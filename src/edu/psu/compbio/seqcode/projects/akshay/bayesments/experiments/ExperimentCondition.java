@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
@@ -14,7 +14,7 @@ import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 /**
  *
  *This is EXACTLY same as the Sample class in multigps (edu.psu.compbio.seqcode.projects.multigps.experiments), EXCEPT for
- * different Config class (Config class here is from the bayesments project and not from the multigps one)
+ * different MultiGPSConfig class (MultiGPSConfig class here is from the bayesments project and not from the multigps one)
  */
 public class ExperimentCondition {
 

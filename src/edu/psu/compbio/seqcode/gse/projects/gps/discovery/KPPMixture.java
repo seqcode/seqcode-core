@@ -14,12 +14,12 @@ import cern.jet.random.Poisson;
 import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScoreProfile;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.motifs.WeightMatrixScorer;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScoreProfile;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScorer;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.projects.gps.*;
 import edu.psu.compbio.seqcode.gse.projects.gps.analysis.MultiIndependentMixtureCounts;
 import edu.psu.compbio.seqcode.gse.projects.gps.discovery.kmer.KMAC;
@@ -28,9 +28,9 @@ import edu.psu.compbio.seqcode.gse.projects.gps.discovery.kmer.KmerSet;
 import edu.psu.compbio.seqcode.gse.projects.gps.discovery.kmer.KMAC.KmerGroup;
 import edu.psu.compbio.seqcode.gse.projects.gps.discovery.kmer.KMAC.MotifThreshold;
 import edu.psu.compbio.seqcode.gse.projects.gps.features.*;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
 import edu.psu.compbio.seqcode.gse.projects.gps.utilities.ReadCache;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.Utils;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataFrame;
@@ -87,7 +87,7 @@ public class KPPMixture extends MultiConditionFeatureFinder {
 	//Regions to be evaluated by EM, estimated whole genome, or specified by a file
 	private ArrayList<Region> restrictRegions = new ArrayList<Region>();
 	//Regions to be excluded, supplied by user, appended with un-enriched regions
-	private ArrayList<Region> excludedRegions = new ArrayList<Region>();
+	private List<Region> excludedRegions = new ArrayList<Region>();
 
 	//Number of reads for a specified region of the IP experiment for each condition
 	private double[] sigHitCounts;
@@ -1625,7 +1625,7 @@ public class KPPMixture extends MultiConditionFeatureFinder {
 				regions.set(i, regions.get(i).expand(modelRange, modelRange));
 			}
 		}
-		return Region.mergeRegions(regions);
+		return (ArrayList<Region>) Region.mergeRegions(regions);
 	}//end of mergeRegions method
 
 	/**

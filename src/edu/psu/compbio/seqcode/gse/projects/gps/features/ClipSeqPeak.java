@@ -2,8 +2,8 @@ package edu.psu.compbio.seqcode.gse.projects.gps.features;
 
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 

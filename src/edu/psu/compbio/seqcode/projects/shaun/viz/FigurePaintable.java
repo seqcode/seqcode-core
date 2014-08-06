@@ -18,10 +18,10 @@ import java.util.List;
 
 import javax.swing.Scrollable;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.ExonicGene;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.species.ExonicGene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.projects.gps.ExtReadHit;
 import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;

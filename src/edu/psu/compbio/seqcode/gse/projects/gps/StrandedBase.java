@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.gse.projects.gps;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.projects.gps.features.ComponentFeature;
 
 /**

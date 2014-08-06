@@ -5,8 +5,14 @@ import java.util.*;
 
 import org.apache.commons.cli.*;
 
-import net.sf.samtools.*;
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.AlignmentBlock;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamInputResource;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.CloseableIterator;
+
 
 /**
  * Reads SAM or BAM data on stdin.
@@ -40,9 +46,11 @@ public class TophatSAMToReadDB {
     	filterSubOpt = cl.hasOption("nosuboptimal");
     	inclPairedEnd = cl.hasOption("pairedend");
     	inclJunction = cl.hasOption("junctions");
-    	SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-        SAMFileReader reader = new SAMFileReader(System.in);
-        reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
+    	SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		SamReader reader = factory.open(SamInputResource.of(System.in));
         CloseableIterator<SAMRecord> iter = reader.iterator();
         while (iter.hasNext()) {
             SAMRecord record = iter.next();

@@ -3,8 +3,8 @@ package edu.psu.compbio.seqcode.gse.tools.motifs;
 import java.util.*;
 import java.sql.*;
 
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;

@@ -13,33 +13,39 @@ import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BackgroundDetector;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.framework.EnrichmentSignificance;
 import edu.psu.compbio.seqcode.projects.sequtils.PointsToEvents;
 
 public class BackgroundDetectingEnrichmentTester {
 
-	private Config config;
+	protected GenomeConfig gconfig;
+	protected ExptConfig econfig;
+	protected MultiGPSConfig mgpsconfig;
 	private List<BindingEvent> events;
 	private double backgroundProportion;
 	private int binWidth;
 	private ExperimentManager manager;
-	private ExperimentSet experiments;
+	private BindingManager bindingManager;
 	
-	public BackgroundDetectingEnrichmentTester(Config con, ExperimentManager exptMan, double backProp, int binW){
+	public BackgroundDetectingEnrichmentTester(GenomeConfig gcon, ExptConfig econ, MultiGPSConfig mgpscon, double backProp, int binW){
 		backgroundProportion=backProp;
 		binWidth = binW;
-		manager = exptMan;
-		experiments=exptMan.getExperimentSet();
-		config=con;
-		BindingEvent.setExperimentSet(experiments);
-		BindingEvent.setConfig(config);
+		this.gconfig = gcon;
+		this.econfig = econ;
+		this.mgpsconfig = mgpscon;
+		manager = new ExperimentManager(econfig);
+		bindingManager = new BindingManager(manager);
+		BindingEvent.setExperimentManager(manager);
+		BindingEvent.setConfig(mgpsconfig);
 	}
 	
 	public void execute(String eventsFile){
@@ -47,25 +53,25 @@ public class BackgroundDetectingEnrichmentTester {
 		List<Point> pts = getPoints(eventsFile);
 		
 		//Calculate the expected number of background reads in a binWidth window
-		double expectedBack = manager.getExperimentSet().getIndexedCondition(0).getTotalSignalCount() * 
-								backgroundProportion / config.getGenome().getGenomeLength() * binWidth;
+		double expectedBack = manager.getIndexedCondition(0).getTotalSignalCount() * 
+								backgroundProportion / gconfig.getGenome().getGenomeLength() * binWidth;
 		System.err.println("Expected number of background reads in "+binWidth+"bp window = "+expectedBack);
 		
 		//Quantify each of the potential events
-		PointsToEvents eventConvertor = new PointsToEvents(config, manager, pts, binWidth, true);
+		PointsToEvents eventConvertor = new PointsToEvents(mgpsconfig, manager, bindingManager, pts, binWidth, true);
 		events = eventConvertor.execute();
 		
 		//Set background rates
 		for(BindingEvent ev : events){
-			ev.setIsFoundInCondition(experiments.getIndexedCondition(0), true);
-			ev.setRepCtrlHits(experiments.getIndexedCondition(0).getIndexedReplicate(0), expectedBack);
-			ev.setRepSigVCtrlFold(experiments.getIndexedCondition(0).getIndexedReplicate(0), ev.getRepSigHits(experiments.getIndexedCondition(0).getIndexedReplicate(0))/expectedBack);
-			ev.setCondCtrlHits(experiments.getIndexedCondition(0), expectedBack);
-			ev.setCondSigVCtrlFold(experiments.getIndexedCondition(0), ev.getCondSigHits(experiments.getIndexedCondition(0))/expectedBack);
+			ev.setIsFoundInCondition(manager.getIndexedCondition(0), true);
+			ev.setRepCtrlHits(manager.getIndexedCondition(0).getIndexedReplicate(0), expectedBack);
+			ev.setRepSigVCtrlFold(manager.getIndexedCondition(0).getIndexedReplicate(0), ev.getRepSigHits(manager.getIndexedCondition(0).getIndexedReplicate(0))/expectedBack);
+			ev.setCondCtrlHits(manager.getIndexedCondition(0), expectedBack);
+			ev.setCondSigVCtrlFold(manager.getIndexedCondition(0), ev.getCondSigHits(manager.getIndexedCondition(0))/expectedBack);
 		}
 		
 		//EnrichmentSignificance
-		EnrichmentSignificanceTesting signifTester = new EnrichmentSignificanceTesting(config, experiments, events, 1, config.getGenome().getGenomeLength());
+		EnrichmentSignificanceTesting signifTester = new EnrichmentSignificanceTesting(gconfig, econfig, events, 1, gconfig.getGenome().getGenomeLength());
 		signifTester.execute();
 		
 		//Write files
@@ -80,7 +86,7 @@ public class BackgroundDetectingEnrichmentTester {
     		
 	    	try {
 	    		//Full output table (all non-zero components)
-	    		String filename = config.getOutBase()+".all.events.table";
+	    		String filename = mgpsconfig.getOutBase()+".all.events.table";
 	    		FileWriter fout = new FileWriter(filename);
 	    		fout.write(BindingEvent.fullHeadString()+"\n");
 	    		for(BindingEvent e : events)
@@ -88,7 +94,7 @@ public class BackgroundDetectingEnrichmentTester {
 				fout.close();
 	    		
 	    		//Per-condition event files
-	    		for(ExperimentCondition cond : experiments.getConditions()){
+	    		for(ExperimentCondition cond : manager.getConditions()){
 	    			//Sort on the current condition
 	    			BindingEvent.setSortingCond(cond);
 	    			Collections.sort(events, new Comparator<BindingEvent>(){
@@ -97,13 +103,13 @@ public class BackgroundDetectingEnrichmentTester {
 	    			//Print
 	    			String condName = cond.getName(); 
 	    			condName = condName.replaceAll("/", "-");
-	    			filename = config.getOutBase()+"_"+condName+".events";
+	    			filename = mgpsconfig.getOutBase()+"_"+condName+".events";
 					fout = new FileWriter(filename);
 					fout.write(BindingEvent.conditionHeadString(cond)+"\n");
 			    	for(BindingEvent e : events){
 			    		double Q = e.getCondSigVCtrlP(cond);
 			    		//Because of the ML step and component sharing, I think that an event could be assigned a significant number of reads without being "present" in the condition's EM model.
-			    		if( Q <=config.getQMinThres())
+			    		if( Q <=mgpsconfig.getQMinThres())
 			    			fout.write(e.getConditionString(cond)+"\n");
 			    	}
 					fout.close();
@@ -129,7 +135,7 @@ public class BackgroundDetectingEnrichmentTester {
 	            	String chrom = words[0];
 	            	chrom = chrom.replaceFirst("chr", "");
 	            	int pos = new Integer(words[10]);
-	            	points.add(new Point(config.getGenome(), chrom, pos));
+	            	points.add(new Point(gconfig.getGenome(), chrom, pos));
 	            }	            
 	            
 			}reader.close();
@@ -144,8 +150,10 @@ public class BackgroundDetectingEnrichmentTester {
 	 */
 	public static void main(String[] args){
 		
-		Config config = new Config(args, false);
-		if(config.helpWanted()){
+		GenomeConfig gconfig = new GenomeConfig(args);
+		ExptConfig econfig = new ExptConfig(gconfig.getGenome(), args);
+		MultiGPSConfig mgpsconfig = new MultiGPSConfig(gconfig, args, false);
+		if(econfig.helpWanted()){
 			System.err.println("BackgroundDetectingEnrichmentTester:");
 			System.err.println("Genome:" +
 					"\t--species <Organism;Genome>\n" +
@@ -167,16 +175,14 @@ public class BackgroundDetectingEnrichmentTester {
 		}else{
 			int binW = Args.parseInteger(args,"binwidth", 50);
 			int binS = Args.parseInteger(args,"binstep", 25);
-			ExperimentManager manager = new ExperimentManager(config);
-			ExperimentSet eset = manager.getExperimentSet();
-			System.err.println("Samples:\t"+eset.getSamples().size());
+			ExperimentManager manager = new ExperimentManager(econfig);
 			
-			BackgroundDetector detector = new BackgroundDetector(config, manager, binW, binS);
+			BackgroundDetector detector = new BackgroundDetector(econfig, mgpsconfig, manager, binW, binS);
 			HashMap<Sample, Double> backProps = detector.execute();
 			double backProp = backProps.get(backProps.keySet().toArray()[0]);
 			String pFile = Args.parseString(args, "sites", null);
 			
-			BackgroundDetectingEnrichmentTester bdet = new BackgroundDetectingEnrichmentTester(config, manager, backProp, binW);
+			BackgroundDetectingEnrichmentTester bdet = new BackgroundDetectingEnrichmentTester(gconfig, econfig, mgpsconfig, backProp, binW);
 			bdet.execute(pFile);
 			manager.close();
 		}

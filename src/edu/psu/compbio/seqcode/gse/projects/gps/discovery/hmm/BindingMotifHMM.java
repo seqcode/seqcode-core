@@ -11,7 +11,7 @@ import cern.colt.matrix.*;
 import cern.colt.matrix.impl.*;
 import cern.jet.math.Functions;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.projects.gps.BindingModel;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;

@@ -1,19 +1,23 @@
 package edu.psu.compbio.seqcode.deepseq.hitloaders;
 
-import java.io.File;
-import java.util.List;
 
-import net.sf.samtools.AlignmentBlock;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
-import net.sf.samtools.SAMFileReader.ValidationStringency;
-import net.sf.samtools.util.CloseableIterator;
+import htsjdk.samtools.AlignmentBlock;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.samtools.ValidationStringency;
+import htsjdk.samtools.util.CloseableIterator;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.Read;
 import edu.psu.compbio.seqcode.deepseq.ReadHit;
 
 /**
- * TophatFileHitLoader: A FileHitLoader for Tophat SAM/BAM output
+ * TophatFileHitLoader: A FileHitLoader for Tophat SAM/BAM output.
+ * Each alignment block is loaded as a separate hit. Ignores uniqueness. 
  * @author mahony
  *
  */
@@ -27,10 +31,13 @@ public class TophatFileHitLoader extends FileHitLoader{
 	 * Get the reads from the appropriate source (implementation-specific).
 	 * Loads data to the fivePrimesList and hitsCountList
 	 */
-	public void sourceReads() {
+	public void sourceAllHits() {
 		this.initialize();
-		SAMFileReader reader = new SAMFileReader(file);
-		reader.setValidationStringency(ValidationStringency.SILENT);
+		SamReaderFactory factory =
+		          SamReaderFactory.makeDefault()
+		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
+		              .validationStringency(ValidationStringency.SILENT);
+		SamReader reader = factory.open(file);
 		CloseableIterator<SAMRecord> iter = reader.iterator();
 		while (iter.hasNext()) {
 		    SAMRecord record = iter.next();
@@ -68,6 +75,10 @@ public class TophatFileHitLoader extends FileHitLoader{
 		    addHits(currRead);
 		}
 		iter.close();
-		reader.close();
-    }//end of countReads method
+		try {
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }//end of sourceAllHits method
 }

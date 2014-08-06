@@ -10,12 +10,12 @@ import java.util.ResourceBundle;
 import java.util.HashMap;
 import java.io.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedTypedRegion;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.NamedTypedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedExpt;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
-import edu.psu.compbio.seqcode.gse.ewok.RegionExpanderFactoryLoader;
+import edu.psu.compbio.seqcode.gse.gsebricks.RegionExpanderFactoryLoader;
 import edu.psu.compbio.seqcode.gse.seqview.SeqViewOptions;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;

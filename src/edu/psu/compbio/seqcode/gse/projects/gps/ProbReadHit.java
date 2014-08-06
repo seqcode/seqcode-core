@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.projects.gps;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 
 /**
  * A probabilistic Read. This class could be used in cases where a discrete extension of the read is inappropriate.

@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.genome.location.Point;
 
 public class SeqHitPair {
 

@@ -1,23 +1,14 @@
 package edu.psu.compbio.seqcode.gse.seqview.components;
 
 import java.awt.*;
-import java.sql.SQLException;
 import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;
-import java.util.Collection;
-import java.util.Iterator;
 
-import edu.psu.compbio.seqcode.gse.datasets.binding.BindingEvent;
-import edu.psu.compbio.seqcode.gse.datasets.binding.BindingScan;
-import edu.psu.compbio.seqcode.gse.datasets.binding.BindingScanLoader;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.binding.BindingExpander;
 import edu.psu.compbio.seqcode.gse.utils.EventSource;
 import edu.psu.compbio.seqcode.gse.utils.Listener;
-import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.viz.components.SelectionEvent;
 
 

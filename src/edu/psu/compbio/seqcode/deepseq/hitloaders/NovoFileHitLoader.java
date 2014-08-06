@@ -25,7 +25,7 @@ public class NovoFileHitLoader extends FileHitLoader {
 	 * Get the reads from the appropriate source (implementation-specific).
 	 * Loads data to the fivePrimesList and hitsCountList
 	 */
-	public void sourceReads() {
+	public void sourceAllHits() {
 		this.initialize();
 		try {
 			int readLength=-1;

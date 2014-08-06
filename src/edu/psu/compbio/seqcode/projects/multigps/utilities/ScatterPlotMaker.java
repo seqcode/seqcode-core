@@ -10,7 +10,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.axis.NumberTickUnit;
 
-import edu.psu.compbio.seqcode.projects.shaun.viz.ScatterPlot;
+import edu.psu.compbio.seqcode.gse.viz.scatter.ScatterPlot;
 
 import Jama.Matrix;
 

@@ -3,8 +3,9 @@ package edu.psu.compbio.seqcode.gse.tools.regions;
 import java.io.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 
 /**

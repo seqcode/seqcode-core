@@ -5,7 +5,7 @@ package edu.psu.compbio.seqcode.gse.seqview;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
 
 /**
  * @author tdanford

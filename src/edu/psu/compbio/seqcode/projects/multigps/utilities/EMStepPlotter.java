@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 /**
  * EMStepPlotter: Used to plot a step in EM over a given region

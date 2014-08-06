@@ -11,6 +11,7 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.ScatterPlotMaker;
 
 /**
@@ -93,7 +94,7 @@ public class CountsDataset {
 		this.focalCondition = focalCond;
 		this.numConds = manager.getNumConditions();
 		//Count points & samples
-		int sampleCount = manager.getExperimentSet().getReplicates().size();
+		int sampleCount = manager.getReplicates().size();
 		int numPoints=events.size();
 		
 		//Set up counts array
@@ -101,7 +102,7 @@ public class CountsDataset {
         this.unitNames = new String[numPoints];
         int d=0;
         for(BindingEvent be : events){
-			for(ExperimentCondition c : manager.getExperimentSet().getConditions()){
+			for(ExperimentCondition c : manager.getConditions()){
 				for(ControlledExperiment rep : c.getReplicates()){
 					counts.set(d, rep.getIndex(), be.getRepSigHits(rep));
 				}
@@ -114,7 +115,7 @@ public class CountsDataset {
         this.condToName = new HashMap<Integer, String>();
         this.sampleToExptName = new HashMap<Integer, Pair<String,String>>();
         this.design = new int[sampleCount];
-        for(ExperimentCondition c : manager.getExperimentSet().getConditions()){
+        for(ExperimentCondition c : manager.getConditions()){
         	for(ControlledExperiment rep : c.getReplicates()){
         		design[rep.getIndex()] = c.getIndex();
         		sampleToExptName.put(rep.getIndex(), new Pair<String,String>(c.getName(), rep.getRepName()));
@@ -194,8 +195,8 @@ public class CountsDataset {
 		for(int e=0; e<events.size(); e++){
 			BindingEvent ev = events.get(e);
 			
-			ExperimentCondition ref = manager.getExperimentSet().getIndexedCondition(focalCondition); 
-			for(ExperimentCondition c : manager.getExperimentSet().getConditions()){
+			ExperimentCondition ref = manager.getIndexedCondition(focalCondition); 
+			for(ExperimentCondition c : manager.getConditions()){
 				if(c!=ref){
 					//Only update the p-value since this should only be called after EdgeR as EdgeR's fold and mean are weird.
 					ev.setInterCondP(c, ref, DEpval.get(e, c.getIndex()));
@@ -672,10 +673,10 @@ public class CountsDataset {
 	 * XY scatters of each condition against the focal condition 
 	 * @param rasterImage
 	 */
-	public void savePairwiseConditionXYPlots(ExperimentManager man, double pValThreshold, String directory, boolean rasterImage){
-		List<BindingEvent> events = man.getEvents();
-		ExperimentCondition ref = man.getExperimentSet().getIndexedCondition(focalCondition); 
-		for(ExperimentCondition c : man.getExperimentSet().getConditions()){
+	public void savePairwiseConditionXYPlots(ExperimentManager man, BindingManager bindingMan, double pValThreshold, String directory, boolean rasterImage){
+		List<BindingEvent> events = bindingMan.getBindingEvents();
+		ExperimentCondition ref = man.getIndexedCondition(focalCondition); 
+		for(ExperimentCondition c : man.getConditions()){
 			if(c.getIndex()!=focalCondition){
 				List<Pair<Double,Double>> highlightMA = new ArrayList<Pair<Double,Double>>();
 				List<Pair<Double,Double>> otherMA = new ArrayList<Pair<Double,Double>>();

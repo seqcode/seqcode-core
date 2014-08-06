@@ -1,7 +1,7 @@
 package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 
 public class SeqHit extends StrandedRegion {
 

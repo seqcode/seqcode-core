@@ -2,7 +2,7 @@ package edu.psu.compbio.seqcode.gse.viz.preferences;
 
 import java.io.File;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class PreferencesTest implements PreferencesListener {

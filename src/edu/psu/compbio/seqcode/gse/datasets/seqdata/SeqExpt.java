@@ -5,8 +5,8 @@ package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 /**

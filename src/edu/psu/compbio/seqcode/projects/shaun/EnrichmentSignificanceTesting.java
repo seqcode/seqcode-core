@@ -5,15 +5,13 @@ import java.util.Comparator;
 import java.util.List;
 
 import cern.jet.random.Binomial;
-import cern.jet.random.ChiSquare;
-import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
-import edu.psu.compbio.seqcode.projects.multigps.stats.Normalization;
 
 /**
  * Test the significance of count enrichment vs control
@@ -22,16 +20,18 @@ import edu.psu.compbio.seqcode.projects.multigps.stats.Normalization;
  */
 public class EnrichmentSignificanceTesting {
 
-	protected Config config;
-	protected ExperimentSet exptSet;
+	protected GenomeConfig gconfig;
+	protected ExptConfig econfig;
+	protected ExperimentManager exptMan;
 	protected List<BindingEvent> features;
 	protected double minFoldChange;
 	protected double genomeLength;
 	protected Binomial binomial;
 	
-	public EnrichmentSignificanceTesting(Config con, ExperimentSet exptSet, List<BindingEvent> features, double minFoldChange, double genomeLength){
-		this.config = con;
-		this.exptSet = exptSet;
+	public EnrichmentSignificanceTesting(GenomeConfig gcon, ExptConfig econ, List<BindingEvent> features, double minFoldChange, double genomeLength){
+		this.gconfig = gcon;
+		this.econfig = econ;
+		this.exptMan = new ExperimentManager(econfig);
 		this.features = features;
 		this.minFoldChange = minFoldChange;
 		this.genomeLength = genomeLength;
@@ -50,8 +50,8 @@ public class EnrichmentSignificanceTesting {
 	public void execute() {
 
 		//Calculate relative replicate weights
-		double[] repWeights = new double[exptSet.getReplicates().size()];
-		for(ExperimentCondition c : exptSet.getConditions()){
+		double[] repWeights = new double[exptMan.getReplicates().size()];
+		for(ExperimentCondition c : exptMan.getConditions()){
 			double totalSig =0;
 			for(ControlledExperiment r : c.getReplicates())
 				totalSig += r.getSigCount();
@@ -66,7 +66,7 @@ public class EnrichmentSignificanceTesting {
 		// LL: log-likelihood loss if component was eliminated from model.
 		// LLp: Chi-square distributed p-value corresponding to LL.  
 		for (BindingEvent cf: features){
-			for(ExperimentCondition c1 : exptSet.getConditions()){
+			for(ExperimentCondition c1 : exptMan.getConditions()){
 				double c1Sig = cf.getCondSigHitsFromReps(c1);
 				double ctrlCountScaled = cf.getCondCtrlHitsScaledFromReps(c1);
 				
@@ -114,7 +114,7 @@ public class EnrichmentSignificanceTesting {
 		double total = features.size();
 		
 		//Signal-vs-Control corrections by condition
-		for(ExperimentCondition c : exptSet.getConditions()){
+		for(ExperimentCondition c : exptMan.getConditions()){
 			BindingEvent.setSortingCond(c);
 			Collections.sort(features, new Comparator<BindingEvent>(){
 	            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
@@ -129,7 +129,7 @@ public class EnrichmentSignificanceTesting {
 		}
 		
 		//Finally, sort on the first condition
-		BindingEvent.setSortingCond(exptSet.getConditions().get(0));
+		BindingEvent.setSortingCond(exptMan.getConditions().get(0));
 		Collections.sort(features, new Comparator<BindingEvent>(){
             public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
         });

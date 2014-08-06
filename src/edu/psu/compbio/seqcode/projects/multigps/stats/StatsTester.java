@@ -1,7 +1,8 @@
 package edu.psu.compbio.seqcode.projects.multigps.stats;
 
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 
 /**
  * StatsTester: Tests the statistics classes
@@ -13,7 +14,7 @@ public class StatsTester {
 	private CountsDataset data;
 	private Normalization normalizer;
 	private int focalCondition=0;
-	private Config config;
+	private MultiGPSConfig config;
 	
 	/**
 	 * Main: testing class for statistical methods
@@ -39,8 +40,8 @@ public class StatsTester {
 				norm = ap.getKeyValue("norm");
 			if(ap.hasKey("focal"))
 				focal = new Integer(ap.getKeyValue("focal"));
-				
-			Config conf = new Config(args, false);
+			GenomeConfig gcon = new GenomeConfig(args);
+			MultiGPSConfig conf = new MultiGPSConfig(gcon, args, false);
 			StatsTester tester = new StatsTester(conf, dataFile, norm, diff, focal);
 		}
 	}
@@ -51,7 +52,7 @@ public class StatsTester {
 	 * @param normMethod
 	 * @param focalCond
 	 */
-	public StatsTester(Config conf, String dataFile, String normMethod, String diffMethod, int focalCond){
+	public StatsTester(MultiGPSConfig conf, String dataFile, String normMethod, String diffMethod, int focalCond){
 		config = conf;
 		focalCondition = focalCond;
 		data = CountsDatasetLoader.loadCountsDataFile(dataFile);

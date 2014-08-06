@@ -17,10 +17,12 @@ import cern.jet.random.engine.DRand;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromosomeGenerator;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 
@@ -33,7 +35,8 @@ import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 public class BackgroundDetector {
 
 	protected ExperimentManager manager; 
-	protected Config config;
+	protected ExptConfig econfig;
+	protected MultiGPSConfig config;
 	protected Genome gen;
 	protected float binWidth=0, binStep, winExt;
 	protected boolean stranded=false;
@@ -45,8 +48,9 @@ public class BackgroundDetector {
 	protected double cdfPercOfUniform = 0.9; //Percentage of uniform-assumption CDF - used to set upper bound on truncated Poisson
 	protected List<Region> regionsToIgnore;
 	
-	public BackgroundDetector(Config c, ExperimentManager man, float binW, float binS){
+	public BackgroundDetector(ExptConfig ec, MultiGPSConfig c, ExperimentManager man, float binW, float binS){
 		manager = man;
+		econfig = ec;
 		config = c; 
 		gen = config.getGenome();
 		binWidth = binW;
@@ -55,15 +59,15 @@ public class BackgroundDetector {
 		
 		regionsToIgnore = config.getRegionsToIgnore();
 		
-		sampleTotals =new double[manager.getExperimentSet().getSamples().size()];
+		sampleTotals =new double[manager.getSamples().size()];
 		for(int s=0; s<sampleTotals.length; s++)
     		sampleTotals[s]=0;
 		
 		//Initialize histograms
-		for(Sample samp : manager.getExperimentSet().getSamples())
+		for(Sample samp : manager.getSamples())
     		sampleHistos.put(samp, new RealValuedHistogram(0,histoMax,histoMax));
     	
-		for(Sample s : manager.getExperimentSet().getSamples())
+		for(Sample s : manager.getSamples())
 			if(s!=null){
 				System.err.println("Sample "+s.getName()+"\t"+s.getHitCount());
 				System.err.println("Mean if uniform: "+s.getHitCount()/(gen.getGenomeLength()/binWidth));
@@ -79,15 +83,18 @@ public class BackgroundDetector {
 	public HashMap<Sample, Double> execute(){
 		Iterator<Region> testRegions = new ChromosomeGenerator().execute(config.getGenome());
 		
-		Thread[] threads = new Thread[config.getMaxThreads()];
-        ArrayList<Region> threadRegions[] = new ArrayList[config.getMaxThreads()];
+		//Threading divides analysis over entire chromosomes. This approach is not compatible with file caching. 
+		int numThreads = econfig.getCacheAllData() ? config.getMaxThreads() : 1;
+		
+		Thread[] threads = new Thread[numThreads];
+        ArrayList<Region> threadRegions[] = new ArrayList[numThreads];
         int i = 0;
         for (i = 0 ; i < threads.length; i++) {
             threadRegions[i] = new ArrayList<Region>();
         }
         while(testRegions.hasNext()){
         	Region r = testRegions.next(); 
-            threadRegions[(i++) % config.getMaxThreads()].add(r);
+            threadRegions[(i++) % numThreads].add(r);
         }
 
         for (i = 0 ; i < threads.length; i++) {
@@ -111,7 +118,7 @@ public class BackgroundDetector {
         
         //Fit the Poissons
         HashMap<Sample, Double> backProps = new HashMap<Sample, Double>();
-        for(Sample samp : manager.getExperimentSet().getSamples()){
+        for(Sample samp : manager.getSamples()){
         	if(samp!=null){
         		backProps.put(samp, fitPoisson(sampleHistos.get(samp), samp));
         	}
@@ -123,7 +130,7 @@ public class BackgroundDetector {
 	 * Print the contents of the histograms
 	 */
 	public void print(){
-		for(Sample samp : manager.getExperimentSet().getSamples()){
+		for(Sample samp : manager.getSamples()){
 			if(samp!=null){
 				System.out.println(samp.getName());
 				System.out.println(sampleHistos.get(samp).contentsToString());
@@ -211,8 +218,8 @@ public class BackgroundDetector {
         
         public void run() {
         	HashMap<Sample, RealValuedHistogram> tmpSampleHistos =new HashMap<Sample, RealValuedHistogram>();
-        	double[] tmpSampleTotals =new double[manager.getExperimentSet().getSamples().size()];
-        	for(Sample samp : manager.getExperimentSet().getSamples())
+        	double[] tmpSampleTotals =new double[manager.getSamples().size()];
+        	for(Sample samp : manager.getSamples())
         		if(samp!=null){
         			tmpSampleHistos.put(samp, new RealValuedHistogram(0,histoMax,histoMax));
         			tmpSampleTotals[samp.getIndex()]=0;
@@ -231,13 +238,13 @@ public class BackgroundDetector {
                     
                     synchronized(manager){
 	                    //Initialize the read lists
-                    	for(Sample samp : manager.getExperimentSet().getSamples()){
+                    	for(Sample samp : manager.getSamples()){
                     		hits.add(new ArrayList<StrandedBaseCount>());
                     	}
                     	//Load reads by replicate
-                    	for(Sample samp : manager.getExperimentSet().getSamples()){
+                    	for(Sample samp : manager.getSamples()){
                     		if(samp!=null)
-                    			hits.get(samp.getIndex()).addAll(samp.getUnstrandedBases(currSubRegion));
+                    			hits.get(samp.getIndex()).addAll(samp.getBases(currSubRegion));
                     	}
                     }
             		int numStrandIter = stranded ? 2 : 1;
@@ -252,7 +259,7 @@ public class BackgroundDetector {
                         int currBin=0;
                         for(int i=currSubRegion.getStart(); i<currSubRegion.getEnd()-(int)binWidth; i+=(int)binStep){
                         	boolean regionPasses=false;
-                        	for(Sample samp : manager.getExperimentSet().getSamples()){
+                        	for(Sample samp : manager.getSamples()){
                         		if(samp!=null){
                         			double winHits=binnedStarts[samp.getIndex()][currBin];
                         			tmpSampleHistos.get(samp).addValue(winHits);
@@ -265,13 +272,13 @@ public class BackgroundDetector {
                 }
             }
         	synchronized(sampleHistos){
-        		for(Sample samp : manager.getExperimentSet().getSamples()){
+        		for(Sample samp : manager.getSamples()){
         			if(samp!=null)
         				sampleHistos.get(samp).addHistogram(tmpSampleHistos.get(samp));
         		}
         	}	
         	synchronized(sampleTotals){
-        		for(Sample samp : manager.getExperimentSet().getSamples()){
+        		for(Sample samp : manager.getSamples()){
         			if(samp!=null)
         				sampleTotals[samp.getIndex()]+=tmpSampleTotals[samp.getIndex()];
         		}
@@ -284,7 +291,7 @@ public class BackgroundDetector {
     	protected void makeStartLandscape(List<List<StrandedBaseCount>> hits, Region currReg, float binWidth, float binStep, char strand){
     		int numBins = (int)(currReg.getWidth()/binStep);
     		starts = new double[hits.size()][numBins+1];
-    		for(Sample samp : manager.getExperimentSet().getSamples()){
+    		for(Sample samp : manager.getSamples()){
     			if(samp!=null){
 	            	List<StrandedBaseCount> currHits = hits.get(samp.getIndex());
 		    		for(int i=0; i<=numBins; i++){ starts[samp.getIndex()][i]=0; }
@@ -314,8 +321,9 @@ public class BackgroundDetector {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		
-		Config config = new Config(args, false);
+		GenomeConfig gcon = new GenomeConfig(args);
+		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		MultiGPSConfig config = new MultiGPSConfig(gcon, args, false);
 		
 		if(config.helpWanted()){
 			System.err.println("BackgroundDetector:");
@@ -337,9 +345,9 @@ public class BackgroundDetector {
 		}else{
 			int binW = Args.parseInteger(args,"binwidth", 50);
 			int binS = Args.parseInteger(args,"binstep", 25);
-			ExperimentManager manager = new ExperimentManager(config);
+			ExperimentManager manager = new ExperimentManager(econ);
 			
-			BackgroundDetector detector = new BackgroundDetector(config, manager, binW, binS);
+			BackgroundDetector detector = new BackgroundDetector(econ, config, manager, binW, binS);
 			detector.execute();
 			detector.print();
 			

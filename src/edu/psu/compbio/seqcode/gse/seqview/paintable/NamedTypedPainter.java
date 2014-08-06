@@ -1,18 +1,11 @@
 package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
 import java.awt.*;
-import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Named;
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedTypedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.Typed;
-import edu.psu.compbio.seqcode.gse.ewok.*;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
-import edu.psu.compbio.seqcode.gse.seqview.model.Model;
+import edu.psu.compbio.seqcode.genome.location.Named;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.Typed;
 import edu.psu.compbio.seqcode.gse.seqview.model.RegionExpanderModel;
-import edu.psu.compbio.seqcode.gse.utils.*;
 
 public class NamedTypedPainter extends NamedStrandedPainter {
     private RegionExpanderModel model;    

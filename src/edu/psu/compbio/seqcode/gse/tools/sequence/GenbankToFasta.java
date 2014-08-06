@@ -21,6 +21,8 @@ import org.biojava.bio.seq.Sequence;
 import org.biojava.bio.seq.SequenceIterator;
 import org.biojava.bio.seq.io.SeqIOTools;
 
+import edu.psu.compbio.seqcode.gse.tools.utils.Args;
+
 /**
  * This class takes input in <tt>Genbank</tt> format and converts them into output in <tt>Fasta</tt> format<br>
  * The sequences are put in windows of 60 residues by default.
@@ -35,25 +37,23 @@ public class GenbankToFasta {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		
-		try {
-			String ipfs = "/afs/csail.mit.edu/group/psrg/projects/sigma/LitData/Miura/Data/DDBJ/ESTs_s288c_sk1_31847.genbank";
-			String opfs = "/Users/gio_fou/Desktop/io_tests/other_ESTs_s288c_sk1_31847.fasta";
-			File ipf = new File(ipfs);
-			File opf = new File(opfs);
-			
-			FileInputStream is = new FileInputStream(ipf);
-			FileOutputStream os = new FileOutputStream(opf); 
-			
-			// GenbankToFasta.convertGenbankToFasta(is, os);
-			
-			GenbankToFasta.convertGenbankToFasta(is, os, "GENBANK", "DNA");
-			
-			System.out.println("THIS IS THE END!");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(args.length==0){
+			System.out.println("Usage:\n\tGenbankToFasta --in in.genbank --out out.fasta");
+		}else{
+			try {
+				String ipfs = Args.parseString(args,"in",null);
+		        String opfs = Args.parseString(args,"out",null);
+		        File ipf = new File(ipfs);
+				File opf = new File(opfs);
+				
+				FileInputStream is = new FileInputStream(ipf);
+				FileOutputStream os = new FileOutputStream(opf); 
+				
+				GenbankToFasta.convertGenbankToFasta(is, os, "GENBANK", "DNA");
+				
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -157,7 +157,7 @@ public class GenbankToFasta {
 	 * @param is The input file in <tt>Genbank</tt> format. E.g. <tt>System.in</tt>, <tt>new FileInputStream(File f)</tt>
 	 * @param os The output file in <tt>Fasta</tt> format. E.g. <tt>System.out</tt>, <tt>new FileOutputStream(File f)</tt>
 	 * @param format The format of the file. Allowed formats are (case insensitive): FASTA, EMBL, GENBANK, SWISSPROT (or swiss), GENPEPT
-	 * @param alpha The sustance of the file. Allowed formats are (case insensitive): DNA, AA, Protein, RNA
+	 * @param alpha The substance of the file. Allowed formats are (case insensitive): DNA, AA, Protein, RNA
 	 */
 	public static void convertGenbankToFasta(InputStream is, OutputStream os, String format, String alpha)
 	{

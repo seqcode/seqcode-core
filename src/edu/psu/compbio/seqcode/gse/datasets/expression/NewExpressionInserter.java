@@ -8,8 +8,6 @@ import java.util.*;
 import java.sql.*;
 
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
 import edu.psu.compbio.seqcode.gse.utils.database.*;
 
 public class NewExpressionInserter {

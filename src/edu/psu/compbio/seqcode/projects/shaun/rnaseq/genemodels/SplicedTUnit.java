@@ -3,8 +3,8 @@ package edu.psu.compbio.seqcode.projects.shaun.rnaseq.genemodels;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
 /*
  * SplicedTUnit defines a transcript. It is a TUnit and serves to hold other TUnits such as exons and introns
  */

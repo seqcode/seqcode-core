@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.shaun.teqseq.exptprops.ObsExpSeqBiasModel;
 import edu.psu.compbio.seqcode.projects.shaun.teqseq.exptprops.SeqBiasModel;

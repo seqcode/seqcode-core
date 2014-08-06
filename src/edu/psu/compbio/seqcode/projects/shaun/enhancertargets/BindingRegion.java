@@ -2,9 +2,9 @@ package edu.psu.compbio.seqcode.projects.shaun.enhancertargets;
 
 import java.util.ArrayList;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedPoint;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.NamedPoint;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 public class BindingRegion implements Comparable<BindingRegion>{
 

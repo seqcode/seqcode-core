@@ -11,7 +11,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import edu.psu.compbio.seqcode.gse.utils.iterators.BacktrackingIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.iterators.BacktrackingIterator;
 import edu.psu.compbio.seqcode.gse.utils.models.Model;
 
 /*

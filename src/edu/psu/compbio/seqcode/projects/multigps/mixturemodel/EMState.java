@@ -1,11 +1,11 @@
 package edu.psu.compbio.seqcode.projects.multigps.mixturemodel;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 
 public class EMState{
 	protected ExperimentManager manager;
-	protected Config config;
+	protected MultiGPSConfig config;
 	public double[][][] rBind; //Binding component responsibilities
 	public double[][] rNoise;  //Noise component responsibilities
     public double[][] piBind;  // pi : emission probabilities for binding components
@@ -15,7 +15,7 @@ public class EMState{
     public double LL;
     public int numNZComponent, numComponent;
     
-    public EMState(ExperimentManager man, Config con, int totalComp, int[] hitNums){
+    public EMState(ExperimentManager man, MultiGPSConfig con, int totalComp, int[] hitNums){
     	manager=man;
     	config=con;
     	int numC = man.getNumConditions();

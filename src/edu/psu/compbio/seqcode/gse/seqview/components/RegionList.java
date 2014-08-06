@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.seqview.components;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 public interface RegionList {
     public void addRegion(Region r);

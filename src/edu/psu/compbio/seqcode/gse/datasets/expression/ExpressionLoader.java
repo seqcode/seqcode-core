@@ -14,11 +14,11 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.TimeSeriesLoader;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.NamedRegion;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.datasets.core.MetadataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.core.TimeSeriesLoader;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;

@@ -19,9 +19,9 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 public class OutputFormatter {
 
-	protected Config config;
+	protected MultiGPSConfig config;
 	
-	public OutputFormatter(Config c){ 
+	public OutputFormatter(MultiGPSConfig c){ 
 		config = c;	
 	}
 	

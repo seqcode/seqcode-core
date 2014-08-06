@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.gse.seqview.paintable;
 import java.awt.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.seqview.model.RegionMapperModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 

@@ -6,11 +6,13 @@ import java.util.List;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.framework.EnrichmentSignificance;
 import edu.psu.compbio.seqcode.projects.multigps.stats.CountsDataset;
 import edu.psu.compbio.seqcode.projects.multigps.stats.DifferentialEnrichment;
@@ -36,8 +38,10 @@ import edu.psu.compbio.seqcode.projects.shaun.Utilities;
  */
 public class DifferentialTester {
 
-	protected Config config;
+	protected ExptConfig econfig;
+	protected MultiGPSConfig config;
 	protected ExperimentManager manager;
+	protected BindingManager bindingManager;
 	protected Normalization normalizer;
 	protected List<Point> potentialSites;
 	protected int searchRegionWin = 50;
@@ -48,9 +52,11 @@ public class DifferentialTester {
 	protected File outDir;
 	
 	//Constructor
-	public DifferentialTester(Config config, ExperimentManager manager, String peaksFileName, int win, double q, double minfold, String outRoot) {
+	public DifferentialTester(ExptConfig econ, MultiGPSConfig config, ExperimentManager manager, BindingManager bindMan, String peaksFileName, int win, double q, double minfold, String outRoot) {
+		this.econfig = econ;
 		this.config = config;
 		this.manager = manager;
+		this.bindingManager = bindMan;
 		searchRegionWin = win;
 		qThres = q;
 		this.minFold = minfold;
@@ -69,17 +75,17 @@ public class DifferentialTester {
 	public void execute(){
 		
 		//Convert our points to events
-		PointsToEvents p2e = new PointsToEvents(config, manager, potentialSites, searchRegionWin,simpleReadAssignment);
+		PointsToEvents p2e = new PointsToEvents(config, manager, bindingManager, potentialSites, searchRegionWin,simpleReadAssignment);
 		List<BindingEvent> events = p2e.execute();
 		
 		//Estimate signal fraction (necessary for calculating statistics)
-		manager.estimateSignalProportion(events);
+		bindingManager.estimateSignalProportion(events);
 				
-		EnrichmentSignificance tester = new EnrichmentSignificance(config, manager.getExperimentSet(), events, config.getMinEventFoldChange(), config.getMappableGenomeLength());
+		EnrichmentSignificance tester = new EnrichmentSignificance(config, manager, bindingManager, config.getMinEventFoldChange(), econfig.getMappableGenomeLength());
 		tester.execute();
 		
-		manager.setEvents(events);
-		manager.writeReplicateCounts(outDirName+File.separator+outFileBase+".replicates.counts");
+		bindingManager.setBindingEvents(events);
+		bindingManager.writeReplicateCounts(outDirName+File.separator+outFileBase+".replicates.counts");
 		
 		//Statistical analysis: inter-condition differences
 		if(manager.getNumConditions()>1 && config.getRunDiffTests()){
@@ -89,19 +95,19 @@ public class DifferentialTester {
 			outImagesDir.mkdir();
 			
 			for(int ref=0; ref<manager.getNumConditions(); ref++){
-				data = new CountsDataset(manager, manager.getEvents(), ref);
+				data = new CountsDataset(manager, bindingManager.getBindingEvents(), ref);
 				data = edgeR.execute(data);
-				data.updateEvents(manager.getEvents(), manager);
+				data.updateEvents(bindingManager.getBindingEvents(), manager);
 				
 				//Print MA scatters (inter-sample & inter-condition)
 				data.savePairwiseConditionMAPlots(config.getDiffPMinThres(), outImagesDir.getAbsolutePath()+File.separator, true);
 				
 				//Print XY scatters (inter-sample & inter-condition)
 				data.savePairwiseFocalSampleXYPlots(outImagesDir.getAbsolutePath()+File.separator, true);
-				data.savePairwiseConditionXYPlots(manager, config.getDiffPMinThres(), outImagesDir.getAbsolutePath()+File.separator, true);
+				data.savePairwiseConditionXYPlots(manager, bindingManager, config.getDiffPMinThres(), outImagesDir.getAbsolutePath()+File.separator, true);
 			}
 		}
-		manager.writeBindingEventFiles(outDirName+File.separator+outFileBase);
+		bindingManager.writeBindingEventFiles(outDirName+File.separator+outFileBase, config.getQMinThres(), config.getRunDiffTests(), config.getDiffPMinThres());
 		
 		System.out.println("Output files written to: "+outDirName);
 	}
@@ -116,23 +122,24 @@ public class DifferentialTester {
 		newargs[newargs.length-2] = "--fixedpb";
 		newargs[newargs.length-1] = "1000";
 		
-		//Initialize Config
-		Config config = new Config(newargs, false);
-		config.setMedianScaling(true);
-		config.setScalingSlidingWindow(50000);
+		//Initialize MultiGPSConfig
+		GenomeConfig gcon = new GenomeConfig(args);
+		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		MultiGPSConfig config = new MultiGPSConfig(gcon, args,false);
+		econ.setMedianScaling(true);
+		econ.setScalingSlidingWindow(50000);
 		
 		if(config.helpWanted()){
 			printHelp();	
 		}else{
-			ExperimentManager manager = new ExperimentManager(config);
-			
+			ExperimentManager manager = new ExperimentManager(econ);
+			BindingManager bindMan = new BindingManager(manager);
 			//Just a test to see if we've loaded all conditions
-			ExperimentSet eset = manager.getExperimentSet();
-			System.err.println("Conditions:\t"+eset.getConditions().size());
-			for(ExperimentCondition c : eset.getConditions()){
+			System.err.println("Conditions:\t"+manager.getConditions().size());
+			for(ExperimentCondition c : manager.getConditions()){
 				System.err.println("Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
 			}
-			for(ExperimentCondition c : eset.getConditions()){
+			for(ExperimentCondition c : manager.getConditions()){
 				for(ControlledExperiment r : c.getReplicates()){
 					System.err.println("Condition "+c.getName()+":\tRep "+r.getName());
 					if(r.getControl()==null)
@@ -150,7 +157,7 @@ public class DifferentialTester {
 			int win = Args.parseInteger(args, "win", 50);
 			double qThres = Args.parseDouble(args, "q", 0.01);
 			double minFold = Args.parseDouble(args, "minfold", 2);
-			DifferentialTester tester = new DifferentialTester(config, manager, siteFile, win, qThres, minFold, config.getOutName()); 
+			DifferentialTester tester = new DifferentialTester(econ, config, manager, bindMan, siteFile, win, qThres, minFold, config.getOutName()); 
 			
 			tester.execute();
 			

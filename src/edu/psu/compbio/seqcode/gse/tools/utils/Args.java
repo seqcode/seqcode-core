@@ -5,15 +5,13 @@ import java.util.regex.*;
 import java.io.*;
 import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.chipchip.*;
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.locators.ChipChipLocator;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.MotifScanResultsGenerator;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.RefGeneGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
@@ -275,8 +273,8 @@ public class Args {
 
     /** Parses <tt>--species "Mus musculus;mm8"</tt> into a Species and Genome
      *  Also parses <tt>--genome mm8</tt> or <tt>--gen mm8</tt> into a Genome and inferred Species
-     *  @see edu.psu.compbio.seqcode.gse.datasets.species.Organism
-     *  @see edu.psu.compbio.seqcode.gse.datasets.species.Genome
+     *  @see edu.psu.compbio.seqcode.genome.Organism
+     *  @see edu.psu.compbio.seqcode.genome.Genome
      */
     public static Pair<Organism,Genome> parseGenome(String args[]) throws NotFoundException {
         if (orgs.containsKey(args) && genomes.containsKey(args)) {
@@ -314,37 +312,7 @@ public class Args {
         return new Pair<Organism,Genome>(org,genome);
     }
     
-    /** returns a list of <tt>ExptNameVersions</tt> from the <tt>--expt</tt> parameters. <br>
-     *  <tt>--expt</tt> takes 2 or 3 semicolon separated values: name, version, and an optional replicate 
-     */
-
-    public static List<ExptNameVersion> parseENV(String args[]) {
-        return parseENV(args,"expt");
-    }
     
-    /**
-     * returns a list of <tt>ExptNameVersions</tt> from the parameters named by
-     * <tt>argname</tt> <br>
-     * <tt>argname</tt> takes 2 or 3 semicolon separated values: name, version, and an optional replicate
-     * @see edu.psu.compbio.seqcode.gse.datasets.chipchip.ExptNameVersion
-     */
-    public static List<ExptNameVersion> parseENV(String args[], String argname) {
-        argname = "--" + argname;
-        List<ExptNameVersion> output = new ArrayList<ExptNameVersion>();
-        String exptname = null, exptversion = null, exptrep = null;        
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals(argname)) {
-                String[] pieces = args[++i].split(";");
-                exptname = pieces[0];
-                exptversion = pieces[1];
-                if (pieces.length >= 3) {
-                    exptrep = pieces[2];
-                }
-                output.add(new ExptNameVersion(exptname,exptversion,exptrep));
-            }
-        }
-        return output;
-    }
     /**
      * parses SeqLocators from the <tt>--seqexpt</tt> parameters.  Takes
      * either "name;alignment" or "name;replicate;alignment"
@@ -447,35 +415,7 @@ public class Args {
         return a;
     }
 
-    /**
-     * parses ChipChipLocators from the <tt>chipchip</tt> parameters.
-     * @see edu.psu.compbio.seqcode.gse.datasets.locators.ChipChipLocator
-     */
-    public static List<ChipChipLocator> parseChipChip(Genome gen, String args[]) {
-        return parseChipChip(gen, args,"chipchip");
-    }
-    
-    /**
-     * parses ChipChipLocators from the <tt>argname</tt> parameters.
-     * @see edu.psu.compbio.seqcode.gse.datasets.locators.ChipChipLocator
-     */
-    public static List<ChipChipLocator> parseChipChip(Genome gen, String args[], String argname) {
-        argname = "--" + argname;
-        ArrayList<ChipChipLocator> output = new ArrayList<ChipChipLocator>();
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals(argname)) {
-                String[] pieces = args[++i].split(";");
-                if (pieces.length == 2) {
-                    output.add(new ChipChipLocator(gen, pieces[0], pieces[1]));
-                } else if (pieces.length == 3) {
-                    output.add(new ChipChipLocator(gen, pieces[0], pieces[1], pieces[2]));
-                } else {
-                    System.err.println("Couldn't parse a ChipChipLocator from " + args[i]);
-                }
-            }
-        }
-        return output;
-    }
+
     /** parses <tt>--scan</tt> or <tt>wmscan</tt> options into a list of WeightMatrixScans.  --scan takes 3 or 4 semicolon separated values:
      *   - matrix name
      *   - matrix version
@@ -504,15 +444,7 @@ public class Args {
         }
         return output;
     }
-    /** Similar to parseWMScans, but returns a MotifScanResultGenerator for each scan
-     */
-    public static List<MotifScanResultsGenerator> parseWMGenerators(String args[]) throws NotFoundException {
-        ArrayList<MotifScanResultsGenerator> out = new ArrayList<MotifScanResultsGenerator>();
-        for (WeightMatrixScan scan : parseWMScans(args)) {
-            out.add(new MotifScanResultsGenerator(scan));
-        }
-        return out;
-    }
+
     private static List<Pattern> makePatterns(Collection<String> strings) {
         List<Pattern> out = new ArrayList<Pattern>();
         for (String s : strings) {
@@ -644,8 +576,8 @@ public class Args {
      * The value after each <tt>--quux</tt> is parsed as specifying a filename 
      * that should be opened and read.  
      * Each line is parsed as a region and those regions are returned, sorted.
-     * @see edu.psu.compbio.seqcode.gse.datasets.species.Genome
-     * @see edu.psu.compbio.seqcode.gse.datasets.general.Region
+     * @see edu.psu.compbio.seqcode.genome.Genome
+     * @see edu.psu.compbio.seqcode.genome.location.Region
      */
     public static List<Region> readLocations(String args[], String key) throws IOException, NotFoundException {
         Genome genome = parseGenome(args).getLast();

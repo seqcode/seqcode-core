@@ -8,7 +8,7 @@ import java.util.List;
 import Jama.Matrix;
 
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.shaun.viz.ScatterPlotConfigured;
+import edu.psu.compbio.seqcode.gse.viz.scatter.ScatterPlotConfigured;
 
 /**
  * TMMNormalization: a Normalization class that implements the "trimmed mean of M values" (TMM) normalization

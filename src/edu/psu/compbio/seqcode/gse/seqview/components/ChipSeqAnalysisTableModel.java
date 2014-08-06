@@ -5,7 +5,6 @@ import javax.swing.table.*;
 import javax.swing.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.locators.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAnalysis;
 import edu.psu.compbio.seqcode.gse.viz.components.ObjectTableModel;
 

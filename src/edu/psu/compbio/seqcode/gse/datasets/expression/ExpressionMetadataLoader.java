@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.gse.datasets.expression;
 import java.sql.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;

@@ -7,10 +7,10 @@ import java.awt.font.TextLayout;
 import java.awt.font.LineMetrics;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
-import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqDataModel;
-import edu.psu.compbio.seqcode.gse.seqview.model.ChipSeqScaleModel;
+import edu.psu.compbio.seqcode.gse.seqview.model.SeqDataModel;
+import edu.psu.compbio.seqcode.gse.seqview.model.SeqScaleModel;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
 
@@ -20,8 +20,8 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
  */
 public abstract class SeqPainter extends RegionPaintable  {
 
-    protected ChipSeqDataModel model;
-    protected ChipSeqScaleModel scale;
+    protected SeqDataModel model;
+    protected SeqScaleModel scale;
     protected DynamicAttribute attrib;
     protected Vector<Region> totalLayoutHits = new Vector<Region>();
     protected NonOverlappingLayout<Region> totalLayout = new NonOverlappingLayout<Region>();
@@ -29,11 +29,11 @@ public abstract class SeqPainter extends RegionPaintable  {
     protected static java.util.List configurationFields = null;
     private SeqProperties props;
 
-    public SeqPainter(ChipSeqDataModel model) {
+    public SeqPainter(SeqDataModel model) {
         super();
         this.model = model;
         props = new SeqProperties();
-        scale = new ChipSeqScaleModel(model);
+        scale = new SeqScaleModel(model);
         model.addEventListener(this);
         attrib = DynamicAttribute.getGlobalAttributes();
     }
@@ -52,10 +52,10 @@ public abstract class SeqPainter extends RegionPaintable  {
         model.removeEventListener(this);
     }
 
-    public void setScaleModel(ChipSeqScaleModel s) {
+    public void setScaleModel(SeqScaleModel s) {
         scale = s;
     }
-    public ChipSeqScaleModel getScaleModel() {return scale;}
+    public SeqScaleModel getScaleModel() {return scale;}
 
     public java.util.List<String> configurationKeyOrder() {return configurationFields;}
 

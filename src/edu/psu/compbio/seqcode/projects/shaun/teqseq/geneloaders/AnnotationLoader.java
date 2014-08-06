@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 import edu.psu.compbio.seqcode.projects.shaun.teqseq.core.GenomeLoader;
 

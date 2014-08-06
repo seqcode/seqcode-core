@@ -8,7 +8,8 @@ package edu.psu.compbio.seqcode.gse.datasets.expression.parsing;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.Vector;
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
+
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
 
 public class TextTableTimeSeriesParser { 
 

@@ -3,11 +3,11 @@ package edu.psu.compbio.seqcode.projects.akshay.query;
 import java.sql.*;
 import java.util.*;
 
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
+import edu.psu.compbio.seqcode.gse.datasets.core.*;
 
 public class Pullexpttable {
 	

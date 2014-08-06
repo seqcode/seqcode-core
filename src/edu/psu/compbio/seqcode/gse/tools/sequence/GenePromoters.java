@@ -4,19 +4,28 @@ import java.util.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.sql.SQLException;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.*;
-import edu.psu.compbio.seqcode.gse.ewok.*;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.*;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.NamedStrandedRegion;
+import edu.psu.compbio.seqcode.genome.location.NamedTypedRegion;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.ScoredRegion;
+import edu.psu.compbio.seqcode.gse.gsebricks.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.GeneToPromoter;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.PhastConsGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ScoredRegionGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 /**
- * cat gene_names.txt | java GenePromoters --species "$SC;Sigmav7" --genes s288cMapped --upstream 500 --downstream 100
- * cat gene_names.txt | java GenePromoters --species "$SC;Sigmav7" --genes s288cMapped --upstream 500 --downstream 100 --fasta
- * java GenePromoters --species "$SC;Sigmav7" --genes s288cMapped --upstream 500 --downstream 100 --fasta --allgenes
+ * cat gene_names.txt | java GenePromoters --species "$SC;sacCer3" --genes sgdGene --upstream 500 --downstream 100
+ * cat gene_names.txt | java GenePromoters --species "$SC;sacCer3" --genes sgdGene --upstream 500 --downstream 100 --fasta
+ * java GenePromoters --species "$SC;sacCer3" --genes sgdGene --upstream 500 --downstream 100 --fasta --allgenes
  *
  * [--fasta] fasta formatted output
  * [--dontoverlaporfs] don't overlap annotated genes or some other features like refBase and sgdOther

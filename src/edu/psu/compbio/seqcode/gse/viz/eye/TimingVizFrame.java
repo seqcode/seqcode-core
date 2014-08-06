@@ -12,8 +12,6 @@ import javax.swing.*;
 
 import edu.psu.compbio.seqcode.gse.utils.models.*;
 import edu.psu.compbio.seqcode.gse.utils.models.Timer;
-import edu.psu.compbio.seqcode.gse.utils.models.ModelInput.LineReader;
-import edu.psu.compbio.seqcode.gse.viz.eye.*;
 import edu.psu.compbio.seqcode.gse.viz.paintable.*;
 
 public class TimingVizFrame extends JFrame implements Timer {

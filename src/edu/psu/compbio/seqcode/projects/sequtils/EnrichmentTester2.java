@@ -9,11 +9,13 @@ import java.util.List;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.framework.EnrichmentSignificance;
 import edu.psu.compbio.seqcode.projects.multigps.stats.CountsDataset;
 import edu.psu.compbio.seqcode.projects.multigps.stats.MedianRatiosNormalization;
@@ -22,8 +24,10 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 
 public class EnrichmentTester2 {
 
-	protected Config config;
+	protected ExptConfig econfig;
+	protected MultiGPSConfig config;
 	protected ExperimentManager manager;
+	protected BindingManager bindingManager;
 	protected Normalization normalizer;
 	protected List<Point> potentialSites;
 	protected List<Point> scalingSites;
@@ -32,9 +36,11 @@ public class EnrichmentTester2 {
 	protected boolean simpleReadAssignment=false;
 	
 	//Constructor
-	public EnrichmentTester2(Config config, ExperimentManager manager, List<Point> potentialSites, List<Point> scalingSites) {
+	public EnrichmentTester2(ExptConfig econ, MultiGPSConfig config, ExperimentManager manager, BindingManager bindMan, List<Point> potentialSites, List<Point> scalingSites) {
+		this.econfig = econ;
 		this.config = config;
 		this.manager = manager;
+		this.bindingManager = bindMan;
 		this.potentialSites = potentialSites;
 		this.scalingSites = scalingSites;
 		config.makeGPSOutputDirs(false);
@@ -51,11 +57,11 @@ public class EnrichmentTester2 {
 		
 		
 		//Convert our points to events
-		PointsToEvents p2e = new PointsToEvents(config, manager, potentialSites, searchRegionWin,simpleReadAssignment);
+		PointsToEvents p2e = new PointsToEvents(config, manager, bindingManager, potentialSites, searchRegionWin,simpleReadAssignment);
 		List<BindingEvent> events = p2e.execute();
 		
 		//Estimate signal fraction
-		manager.estimateSignalProportion(events);
+		bindingManager.estimateSignalProportion(events);
 		
 		/*//Get the scaling ratio from the scaling events if appropriate
 		if(scalingSites.size()>0){
@@ -70,14 +76,14 @@ public class EnrichmentTester2 {
 			normalizer.normalize(data);
 		}*/
 		
-		EnrichmentSignificance tester = new EnrichmentSignificance(config, manager.getExperimentSet(), events, config.getMinEventFoldChange(), config.getMappableGenomeLength());
+		EnrichmentSignificance tester = new EnrichmentSignificance(config, manager, bindingManager, config.getMinEventFoldChange(), econfig.getMappableGenomeLength());
 		tester.execute();
 		
-		manager.setEvents(events);
+		bindingManager.setBindingEvents(events);
 		
-		manager.writeFullEventFile(config.getOutputParentDir()+File.separator+config.getOutBase()+".all.events.table");
-		manager.writeReplicateCounts(config.getOutputParentDir()+File.separator+config.getOutBase()+".replicates.counts");
-		manager.writeBindingEventFiles(config.getOutputParentDir()+File.separator+config.getOutBase());
+		bindingManager.writeFullEventFile(config.getOutputParentDir()+File.separator+config.getOutBase()+".all.events.table");
+		bindingManager.writeReplicateCounts(config.getOutputParentDir()+File.separator+config.getOutBase()+".replicates.counts");
+		bindingManager.writeBindingEventFiles(config.getOutputParentDir()+File.separator+config.getOutBase(), config.getQMinThres(), config.getRunDiffTests(), config.getDiffPMinThres());
 	}
 	
 	
@@ -120,7 +126,9 @@ public class EnrichmentTester2 {
 	public static void main(String[] args){
 		List<Point> potentialSites = new ArrayList<Point>();
 		List<Point> scalingSites = new ArrayList<Point>();
-		Config config = new Config(args, false);
+		GenomeConfig gcon = new GenomeConfig(args);
+		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		MultiGPSConfig config = new MultiGPSConfig(gcon, args, false);
 		if(config.helpWanted()){
 			System.err.println("EnrichmentTester:");
 			System.err.println("\t--sites <potential site coords>\n" +
@@ -130,15 +138,14 @@ public class EnrichmentTester2 {
 					"\t--simple [assign all reads in window to event]\n");
 			System.err.println(config.getArgsList());			
 		}else{
-			ExperimentManager manager = new ExperimentManager(config);
-			
+			ExperimentManager manager = new ExperimentManager(econ);
+			BindingManager bindMan = new BindingManager(manager);
 			//Just a test to see if we've loaded all conditions
-			ExperimentSet eset = manager.getExperimentSet();
-			System.err.println("Conditions:\t"+eset.getConditions().size());
-			for(ExperimentCondition c : eset.getConditions()){
+			System.err.println("Conditions:\t"+manager.getConditions().size());
+			for(ExperimentCondition c : manager.getConditions()){
 				System.err.println("Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
 			}
-			for(ExperimentCondition c : eset.getConditions()){
+			for(ExperimentCondition c : manager.getConditions()){
 				for(ControlledExperiment r : c.getReplicates()){
 					System.err.println("Condition "+c.getName()+":\tRep "+r.getName());
 					if(r.getControl()==null)
@@ -162,7 +169,7 @@ public class EnrichmentTester2 {
 			int joinWin = Args.parseInteger(args, "joinwin", 500);
 			boolean useSimpleAssignment = Args.parseFlags(args).contains("simple");
 			
-			EnrichmentTester2 tester = new EnrichmentTester2(config, manager, potentialSites, scalingSites);
+			EnrichmentTester2 tester = new EnrichmentTester2(econ, config, manager, bindMan, potentialSites, scalingSites);
 			tester.setSiteJoinWin(joinWin);
 			tester.setSearchRegionWin(win);
 			tester.setSimpleReadAssignment(useSimpleAssignment);

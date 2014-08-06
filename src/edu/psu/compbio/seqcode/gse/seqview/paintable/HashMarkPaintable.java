@@ -6,7 +6,7 @@ package edu.psu.compbio.seqcode.gse.seqview.paintable;
 import java.awt.*;
 import java.text.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 /**
  * @author tdanford

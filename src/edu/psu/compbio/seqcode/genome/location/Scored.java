@@ -1,0 +1,5 @@
+package edu.psu.compbio.seqcode.genome.location;
+
+public interface Scored {
+    public double getScore();
+}

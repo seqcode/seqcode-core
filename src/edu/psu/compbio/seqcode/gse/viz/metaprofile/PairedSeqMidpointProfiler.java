@@ -5,12 +5,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.datasets.general.StrandedPoint;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHitPair;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.chipseq.SeqExpander;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.SeqExpander;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
 

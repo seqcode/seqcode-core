@@ -7,12 +7,13 @@ import java.util.Random;
 
 import javax.swing.JFrame;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 import edu.psu.compbio.seqcode.gse.viz.paintable.PaintableFrame;
+import edu.psu.compbio.seqcode.projects.shaun.viz.HistogramPaintable;
 
 public class MakeHistogramPlot {
 	private HistogramPaintable painter;

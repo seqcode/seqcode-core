@@ -10,9 +10,9 @@ import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
 import cern.jet.stat.Probability;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.NamedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.species.Gene;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.ChromRegionIterator;
+import edu.psu.compbio.seqcode.genome.location.Gene;
+import edu.psu.compbio.seqcode.genome.location.NamedRegion;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.projects.gps.features.EnrichedNamedRegion;
 import edu.psu.compbio.seqcode.gse.projects.gps.features.Feature;

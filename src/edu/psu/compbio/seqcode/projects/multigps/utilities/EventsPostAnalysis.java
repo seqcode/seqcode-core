@@ -16,20 +16,23 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.motifs.MotifPlatform;
 
 public class EventsPostAnalysis {
 
-	protected Config config;
+	protected MultiGPSConfig config;
 	protected ExperimentManager manager;
+	protected BindingManager bindingManager;
 	protected MotifPlatform motifFinder = null;
 	protected List<BindingEvent> events;
 	protected double motifThres = 0.6;  // fraction of max score threshold
 	
-	public EventsPostAnalysis(Config c, ExperimentManager man, List<BindingEvent> ev, MotifPlatform mp){
+	public EventsPostAnalysis(MultiGPSConfig c, ExperimentManager man, BindingManager bMan, List<BindingEvent> ev, MotifPlatform mp){
 		config = c;
 		manager = man;
+		bindingManager = bMan;
 		events = ev;
 		motifFinder = mp;
 	}
@@ -50,7 +53,7 @@ public class EventsPostAnalysis {
 		//0) Set up hash map structure for events by chromosome
 		List<HashMap<String,List<Integer>>> eventStruct = new ArrayList<HashMap<String,List<Integer>>>();
 		for(int c=0; c<manager.getNumConditions(); c++){
-			ExperimentCondition cond = manager.getExperimentSet().getIndexedCondition(c);
+			ExperimentCondition cond = manager.getIndexedCondition(c);
 			eventStruct.add(new HashMap<String, List<Integer>>());
 			for(String chr : config.getGenome().getChromList())
 				eventStruct.get(c).put(chr, new ArrayList<Integer>());
@@ -70,11 +73,11 @@ public class EventsPostAnalysis {
 				System.err.println("\tPeak-motif distance histograms");	    		
 	    		FileWriter fout = new FileWriter(pcmfilename);
 	    		fout.write("#Peaks to closest motifs distance histograms\n\n");
-				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
-					if(cond.getMotif()!=null){
+				for(ExperimentCondition cond : manager.getConditions()){
+					if(bindingManager.getMotif(cond)!=null){
 						fout.write("#Condition:"+cond.getName()+"\n");
 						RealValuedHistogram peakMotifHisto = new RealValuedHistogram(0, histoWin, histoWin/5);
-						double currThreshold = cond.getMotif().getMaxScore() * motifThres;
+						double currThreshold = bindingManager.getMotif(cond).getMaxScore() * motifThres;
 						for(BindingEvent ev : events){
 							double Q = ev.getCondSigVCtrlP(cond);
 				    		if(ev.isFoundInCondition(cond) && Q <=config.getQMinThres()){
@@ -108,7 +111,7 @@ public class EventsPostAnalysis {
 			System.err.println("\tPeak-peak distance histograms (same condition)");    		
     		FileWriter fout = new FileWriter(ppdscfilename);
     		fout.write("#Peaks to other peaks in same condition distance histograms\n\n");
-			for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+			for(ExperimentCondition cond : manager.getConditions()){
 				RealValuedHistogram peakPeakHisto = new RealValuedHistogram(0, histoWin, histoWin/5);
 				fout.write("#Condition: "+cond.getName()+"\n");
 				for(String chr : config.getGenome().getChromList()){
@@ -138,8 +141,8 @@ public class EventsPostAnalysis {
 				System.err.println("\tPeak-peak distance histograms (different conditions)");	    		
 	    		FileWriter fout = new FileWriter(ppdicfilename);
 	    		fout.write("#Peaks to peaks in other conditions distance histograms\n\n");
-				for(ExperimentCondition condA : manager.getExperimentSet().getConditions()){
-					for(ExperimentCondition condB : manager.getExperimentSet().getConditions()){if(condA != condB){
+				for(ExperimentCondition condA : manager.getConditions()){
+					for(ExperimentCondition condB : manager.getConditions()){if(condA != condB){
 						RealValuedHistogram peakPeakHisto = new RealValuedHistogram(0, histoWin, histoWin/5);
 						fout.write("#Condition: "+condA.getName()+" vs "+condB.getName()+"\n");
 						for(String chr : config.getGenome().getChromList()){
@@ -174,14 +177,14 @@ public class EventsPostAnalysis {
 			HashMap<ExperimentCondition, String> motifImageNames = new HashMap<ExperimentCondition, String>();
 			HashMap<ExperimentCondition, String> motifRCImageNames = new HashMap<ExperimentCondition, String>();
 			if(config.getFindingMotifs()){
-				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
-					if(cond.getMotif()!=null){
+				for(ExperimentCondition cond : manager.getConditions()){
+					if(bindingManager.getMotif(cond)!=null){
 						String imName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_"+cond.getName()+"_motif.png";
 						String imName2 = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif.png";
 						String motifLabel = cond.getName()+" motif, MEME";
-						Utils.printMotifLogo(cond.getMotif(), new File(imName), 75, motifLabel);
+						Utils.printMotifLogo(bindingManager.getMotif(cond), new File(imName), 75, motifLabel);
 						motifImageNames.put(cond,  imName2);
-						WeightMatrix wm_rc = WeightMatrix.reverseComplement(cond.getMotif());
+						WeightMatrix wm_rc = WeightMatrix.reverseComplement(bindingManager.getMotif(cond));
 						imName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_"+cond.getName()+"_motif_rc.png";
 						imName2 = "images/"+config.getOutBase()+"_"+cond.getName()+"_motif_rc.png";
 						motifLabel = cond.getName()+" revcomp motif, MEME";
@@ -223,16 +226,16 @@ public class EventsPostAnalysis {
 	    		fout.write("\t\t<th>Positional Prior Motif</th>\n" +
 	    				"\t\t<th>Motif Relative Offset</th>\n");
 	    	fout.write("\t\t</tr>\n");
-	    	for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+	    	for(ExperimentCondition cond : manager.getConditions()){
 	    		String eventFileName=config.getOutBase()+"_"+cond.getName()+".events";
 	    		fout.write("\t\t<tr>" +
 		    			"\t\t<td>"+cond.getName()+"</td>\n" +
-	    				"\t\t<td>"+manager.countEventsInCondition(cond)+"</td>\n" +
+	    				"\t\t<td>"+bindingManager.countEventsInCondition(cond, config.getQMinThres())+"</td>\n" +
 		    			"\t\t<td><a href='"+eventFileName+"'>"+eventFileName+"</a></td>\n");
 		    	if(config.getFindingMotifs()){
 		    		if(motifImageNames.get(cond)!=null)
 		    			fout.write("\t\t<td><img src='"+motifImageNames.get(cond)+"'><a href='#' onclick='return motifpopitup(\""+motifRCImageNames.get(cond)+"\")'>rc</a></td>\n" +
-		    					"\t\t<td>"+cond.getMotifOffset()+"</td>\n");
+		    					"\t\t<td>"+bindingManager.getMotifOffset(cond)+"</td>\n");
 		    		else
 		    			fout.write("\t\t<td>No motif found</td>\n" +
 		    					"\t\t<td>NA</td>\n");
@@ -251,7 +254,7 @@ public class EventsPostAnalysis {
 	    			"\t\t<th>SignalFraction</th>\n" +
 	    			"\t\t<th>ReadDistributionModel</th>\n");
 	    	fout.write("\t\t</tr>\n");
-	    	for(ControlledExperiment rep : manager.getExperimentSet().getReplicates()){
+	    	for(ControlledExperiment rep : manager.getReplicates()){
 	    		String replicateName = rep.getCondName()+"-"+rep.getRepName();
 				String distribFilename = "images/"+config.getOutBase()+"_"+replicateName+"_Read_Distributions.png";
 				String tmpscale = rep.hasControl()?String.format("%.3f",rep.getControlScaling()):"NA";
@@ -273,18 +276,18 @@ public class EventsPostAnalysis {
 						"\t<table>\n" +
 						"\t\t<tr>\n" +
 						"\t\t<th>Diff</th>\n");
-				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+				for(ExperimentCondition cond : manager.getConditions()){
 					fout.write("\t\t<th>"+cond.getName()+"</th>\n");
 				}fout.write("\t\t</tr>\n");
-				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+				for(ExperimentCondition cond : manager.getConditions()){
 					fout.write("\t\t<tr>\n" +
 							"\t\t<td>"+cond.getName()+"</td>\n");
-					for(ExperimentCondition othercond : manager.getExperimentSet().getConditions()){
+					for(ExperimentCondition othercond : manager.getConditions()){
 						if(cond.equals(othercond)){
 							fout.write("\t\t<td>-</td>\n");
 						}else{
 							String filename = config.getOutBase()+"_"+cond.getName()+"_gt_"+othercond.getName()+".diff.events";
-							fout.write("\t\t<td><a href='"+filename+"'>"+manager.countDiffEventsBetweenConditions(cond, othercond)+"</a></td>\n");
+							fout.write("\t\t<td><a href='"+filename+"'>"+bindingManager.countDiffEventsBetweenConditions(cond, othercond, config.getQMinThres(), config.getDiffPMinThres())+"</a></td>\n");
 						}
 					}fout.write("\t\t</tr>\n");
 				}fout.write("\t</table>\n");
@@ -294,13 +297,13 @@ public class EventsPostAnalysis {
 						"\t<table>\n" +
 						"\t\t<tr>\n" +
 						"\t\t<th>Diff</th>\n");
-				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+				for(ExperimentCondition cond : manager.getConditions()){
 					fout.write("\t\t<th>"+cond.getName()+"</th>\n");
 				}fout.write("\t\t</tr>\n");
-				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+				for(ExperimentCondition cond : manager.getConditions()){
 					fout.write("\t\t<tr>\n" +
 							"\t\t<td>"+cond.getName()+"</td>\n");
-					for(ExperimentCondition othercond : manager.getExperimentSet().getConditions()){
+					for(ExperimentCondition othercond : manager.getConditions()){
 						if(cond.equals(othercond)){
 							fout.write("\t\t<td> </td>\n");
 						}else{
@@ -315,13 +318,13 @@ public class EventsPostAnalysis {
 						"\t<table>\n" +
 						"\t\t<tr>\n" +
 						"\t\t<th>Diff</th>\n");
-				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+				for(ExperimentCondition cond : manager.getConditions()){
 					fout.write("\t\t<th>"+cond.getName()+"</th>\n");
 				}fout.write("\t\t</tr>\n");
-				for(ExperimentCondition cond : manager.getExperimentSet().getConditions()){
+				for(ExperimentCondition cond : manager.getConditions()){
 					fout.write("\t\t<tr>\n" +
 							"\t\t<td>"+cond.getName()+"</td>\n");
-					for(ExperimentCondition othercond : manager.getExperimentSet().getConditions()){
+					for(ExperimentCondition othercond : manager.getConditions()){
 						if(cond.equals(othercond)){
 							fout.write("\t\t<td> </td>\n");
 						}else{

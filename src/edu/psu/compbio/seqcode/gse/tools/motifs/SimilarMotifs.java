@@ -2,20 +2,10 @@ package edu.psu.compbio.seqcode.gse.tools.motifs;
 
 import java.util.*;
 import java.sql.*;
-import java.io.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
 
-import edu.psu.compbio.seqcode.gse.clustering.*;
-import edu.psu.compbio.seqcode.gse.clustering.hierarchical.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
-import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 
 /**
  * For each input motif, searches entire database for similar motifs.  

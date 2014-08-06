@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.gse.projects.gps.features;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.projects.gps.BindingModel;
 import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
 import edu.psu.compbio.seqcode.gse.projects.gps.StrandedBase;

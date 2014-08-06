@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.ewok.verbs.SequenceGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.EventMetaMaker;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.BIC;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.EMtrain;
@@ -27,7 +27,7 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbo
 public class Bayesments {
 	
 	public static void main(String[] args) throws IOException{
-		// Build the Config class the comman line arguments
+		// Build the MultiGPSConfig class the comman line arguments
 		Config c = new Config(args);
 		if(c.helpWanter()){
 			System.err.println("Bayesments:");

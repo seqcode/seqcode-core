@@ -4,13 +4,9 @@
 package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
 import java.awt.*;
-import java.util.*;
 import java.text.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
-import edu.psu.compbio.seqcode.gse.ewok.nouns.*;
-import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
+import edu.psu.compbio.seqcode.genome.location.Region;
 
 /**
  * @author tdanford

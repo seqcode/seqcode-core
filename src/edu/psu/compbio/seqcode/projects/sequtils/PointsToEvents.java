@@ -1,17 +1,19 @@
 package edu.psu.compbio.seqcode.projects.sequtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.gse.datasets.general.Point;
-import edu.psu.compbio.seqcode.gse.datasets.general.Region;
+import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
-import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 
 /**
  * PointsToEvents: this class converts a list of points into pseudo-events. 
@@ -21,8 +23,9 @@ import edu.psu.compbio.seqcode.projects.multigps.framework.Config;
  *
  */
 public class PointsToEvents {
-	private Config config;
+	private MultiGPSConfig config;
 	private ExperimentManager manager;
+	private BindingManager bindingManager;
 	private List<Point> points;
 	private int regionWin;
 	private boolean assignReadsWithModel=true;
@@ -34,9 +37,10 @@ public class PointsToEvents {
 	 * @param p
 	 * @param win
 	 */
-	public PointsToEvents(Config c, ExperimentManager man, List<Point> p, int win, boolean assignWithModel){
+	public PointsToEvents(MultiGPSConfig c, ExperimentManager man, BindingManager bindMan, List<Point> p, int win, boolean assignWithModel){
 		config = c;
 		manager = man;
+		bindingManager = bindMan;
 		points = p;
 		regionWin = win;
 		assignReadsWithModel=assignWithModel;
@@ -48,10 +52,10 @@ public class PointsToEvents {
 	 */
 	public List<BindingEvent> execute(){
 		List<BindingEvent> events = new ArrayList<BindingEvent>();
-		BindingEvent.setExperimentSet(manager.getExperimentSet());
+		BindingEvent.setExperimentManager(manager);
 		BindingEvent.setConfig(config);
-		BindingEvent.setSortingCond(manager.getExperimentSet().getConditions().get(0));
-		
+		BindingEvent.setSortingCond(manager.getConditions().get(0));
+		Collections.sort(points); //Sort for efficient experiment file cache loading
 		//For each point
 		for(Point p : points){
 			//Expand point into region
@@ -61,29 +65,29 @@ public class PointsToEvents {
 			BindingEvent e = new BindingEvent(p,potentialReg);
 			
 			//for each condition
-			for(ExperimentCondition c : manager.getExperimentSet().getConditions()){
-				boolean[] addedToCond = new boolean[manager.getExperimentSet().getSamples().size()];
-				for(int a=0; a<manager.getExperimentSet().getSamples().size(); a++)
+			for(ExperimentCondition c : manager.getConditions()){
+				boolean[] addedToCond = new boolean[manager.getSamples().size()];
+				for(int a=0; a<manager.getSamples().size(); a++)
 					addedToCond[a]=false;
 
 				//Signal hits for each replicate
 				for(ControlledExperiment r : c.getReplicates()){
 					//Get the hits for this replicate in this region
-					List<StrandedBaseCount> sigHits = r.getSignal().getUnstrandedBases(potentialReg);
+					List<StrandedBaseCount> sigHits = r.getSignal().getBases(potentialReg);
 					List<StrandedBaseCount> ctrlHits=null;
 					if(r.getControl()!=null)
-						ctrlHits = r.getControl().getUnstrandedBases(potentialReg);
+						ctrlHits = r.getControl().getBases(potentialReg);
 					
 					double sigResp=0.0, ctrlResp=0.0;
 					
 					if(assignReadsWithModel){
 						//Scan region with binding distribution to find ML position
-						Point maxSigPoint = findMaxWithBindingModel(sigHits, potentialReg, r.getBindingModel());
-						Point maxCtrlPoint = ctrlHits==null ? null : findMaxWithBindingModel(ctrlHits, potentialReg, r.getBindingModel());
+						Point maxSigPoint = findMaxWithBindingModel(sigHits, potentialReg, bindingManager.getBindingModel(r));
+						Point maxCtrlPoint = ctrlHits==null ? null : findMaxWithBindingModel(ctrlHits, potentialReg, bindingManager.getBindingModel(r));
 						
 						//ML assign reads (single binding event)
-						sigResp = assignReadsSingleEvent(sigHits, maxSigPoint, r.getBindingModel());
-						ctrlResp = ctrlHits==null ? 0 : assignReadsSingleEvent(ctrlHits, maxCtrlPoint, r.getBindingModel()); 
+						sigResp = assignReadsSingleEvent(sigHits, maxSigPoint, bindingManager.getBindingModel(r));
+						ctrlResp = ctrlHits==null ? 0 : assignReadsSingleEvent(ctrlHits, maxCtrlPoint, bindingManager.getBindingModel(r)); 
 					}else{
 						sigResp = simpleAssignReadsToEvent(sigHits, e.getPoint(), potentialReg);
 						ctrlResp = ctrlHits==null ? 0 : simpleAssignReadsToEvent(ctrlHits, e.getPoint(), potentialReg);

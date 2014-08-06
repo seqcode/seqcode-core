@@ -1,9 +1,9 @@
 package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
-import edu.psu.compbio.seqcode.gse.datasets.general.AlignType;
-import edu.psu.compbio.seqcode.gse.datasets.general.MetadataLoader;
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.gse.datasets.core.AlignType;
+import edu.psu.compbio.seqcode.gse.datasets.core.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 import java.sql.*;

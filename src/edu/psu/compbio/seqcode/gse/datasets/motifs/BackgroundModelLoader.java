@@ -14,13 +14,13 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import edu.psu.compbio.seqcode.gse.datasets.species.Genome;
-import edu.psu.compbio.seqcode.gse.datasets.species.Organism;
+import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
-import edu.psu.compbio.seqcode.gse.utils.io.motifs.BackgroundModelIO;
+import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 
 /**
  * @author rca
@@ -2065,7 +2065,7 @@ public class BackgroundModelLoader {
    * @return the DBID of the model
    * @throws SQLException
    */
-  public static Pair<Integer, Integer> insertMarkovModel(MarkovBackgroundModel model) throws SQLException, CGSException {
+  public static Pair<Integer, Integer> insertMarkovModel(MarkovBackgroundModel model) throws SQLException, Exception {
     //make sure the model has a name and genome
     if ((model.getName() == null) || (model.getName().isEmpty()) || (model.getGenome() == null)) {
       throw new IllegalArgumentException("Model must have a name and genome specified to be imported to database.");
@@ -2097,17 +2097,11 @@ public class BackgroundModelLoader {
       cxn.rollback();
       throw sqlex;      
     }
-    catch (CGSException cgsex) {
+    catch (Exception cgsex) {
       //If any runtime exceptions come up rollback the transaction and then
       //rethrow the exception
       cxn.rollback();
       throw cgsex;
-    }
-    catch (RuntimeException ex) {
-      //If any runtime exceptions come up rollback the transaction and then
-      //rethrow the exception
-      cxn.rollback();
-      throw ex;
     }
     finally {
       if (cxn != null) {
@@ -2123,7 +2117,7 @@ public class BackgroundModelLoader {
    * @return the DBID of the model
    * @throws SQLException
    */
-  public static Pair<Integer, Integer> insertFrequencyModel(FrequencyBackgroundModel model) throws SQLException, CGSException {
+  public static Pair<Integer, Integer> insertFrequencyModel(FrequencyBackgroundModel model) throws SQLException, Exception {
     //make sure the model has a name and genome
     if ((model.getName() == null) || (model.getName().isEmpty()) || (model.getGenome() == null)) {
       throw new IllegalArgumentException("Model must have a name and genome specified to be imported to database.");
@@ -2170,7 +2164,7 @@ public class BackgroundModelLoader {
    * @return the DBID of the model
    * @throws SQLException
    */
-  public static Pair<Integer, Integer>  insertCountsModel(CountsBackgroundModel model, boolean insertAsMarkov) throws SQLException, CGSException {
+  public static Pair<Integer, Integer>  insertCountsModel(CountsBackgroundModel model, boolean insertAsMarkov) throws SQLException, Exception {
     //make sure the model has a name and genome
     if ((model.getName() == null) || (model.getName().isEmpty()) || (model.getGenome() == null)) {
       throw new IllegalArgumentException("Model must have a name and genome specified to be imported to database.");
@@ -2223,7 +2217,7 @@ public class BackgroundModelLoader {
    * @param model the model to insert
    * @throws SQLException
    */
-  public static void updateMarkovModel(MarkovBackgroundModel model) throws SQLException, CGSException {
+  public static void updateMarkovModel(MarkovBackgroundModel model) throws SQLException, Exception {
     //make sure the model has a name and genome
     if (!model.hasMapID()) {
       throw new IllegalArgumentException("Model must already have a database ID to be updated in the database.");
@@ -2263,7 +2257,7 @@ public class BackgroundModelLoader {
    * @param model the model to insert
    * @throws SQLException
    */
-  public static void updateFrequencyModel(FrequencyBackgroundModel model) throws SQLException, CGSException {
+  public static void updateFrequencyModel(FrequencyBackgroundModel model) throws SQLException, Exception {
     //make sure the model has a name and genome
     if (!model.hasMapID()) {
       throw new IllegalArgumentException("Model must already have a database ID to be updated in the database.");
@@ -2303,7 +2297,7 @@ public class BackgroundModelLoader {
    * @param model the model to insert
    * @throws SQLException
    */
-  public static void updateCountsModel(CountsBackgroundModel model) throws SQLException, CGSException {
+  public static void updateCountsModel(CountsBackgroundModel model) throws SQLException, Exception {
     //make sure the model has a name and genome
     if (!model.hasMapID()) {
       throw new IllegalArgumentException("Model must already have a database ID to be updated in the database.");
@@ -2372,7 +2366,7 @@ public class BackgroundModelLoader {
    * @return the background genome map ID of the model
    * @throws SQLException
    */
-  private static Pair<Integer, Integer> insertBackgroundModelAndMap(String name, int kmerLen, String modelType, int genomeID, boolean hasCounts, Connection cxn) throws SQLException, CGSException {
+  private static Pair<Integer, Integer> insertBackgroundModelAndMap(String name, int kmerLen, String modelType, int genomeID, boolean hasCounts, Connection cxn) throws SQLException, Exception {
     /**
      * Check whether there is already an entry for a model with this name, maxKmerLen, and type. If so, reuse the model ID, 
      * otherwise create one.
@@ -2390,7 +2384,7 @@ public class BackgroundModelLoader {
      */
     Integer mapID = BackgroundModelLoader.getBackgroundGenomeMapID(modelID, genomeID, cxn);
     if (mapID != null) {
-      throw new CGSException("Model already exists. Select a different name or use updateMarkovModel() to update the existing model.");
+      throw new Exception("Model already exists. Select a different name or use updateMarkovModel() to update the existing model.");
     }
     else {
       mapID = BackgroundModelLoader.insertBackgroundGenomeMap(modelID, genomeID, hasCounts, cxn);
@@ -2678,7 +2672,7 @@ public class BackgroundModelLoader {
       sqlex.printStackTrace();
       System.exit(1);
     }
-    catch (CGSException cgsex) {
+    catch (Exception cgsex) {
       logger.fatal(cgsex);
       System.exit(1);
     }

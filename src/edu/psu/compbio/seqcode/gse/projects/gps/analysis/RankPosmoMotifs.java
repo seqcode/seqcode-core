@@ -2,7 +2,7 @@ package edu.psu.compbio.seqcode.gse.projects.gps.analysis;
 
 import java.util.ArrayList;
 
-import edu.psu.compbio.seqcode.gse.utils.CommonUtils;
+import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 public class RankPosmoMotifs {
