@@ -151,7 +151,7 @@ public class MultinomialCondtionTester {
 		MultinomialCondtionTester tester = new MultinomialCondtionTester(config, manager, features, minFold, econ.getMappableGenomeLength());
 		tester.execute();
 		
-		
+		manager.close();
 	}
 	
 	

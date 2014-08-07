@@ -50,7 +50,7 @@ public class SignificanceTester {
 
 	protected ExptConfig econfig;
 	protected MultiGPSConfig config;
-	protected ExperimentManager manager;
+	protected ExperimentManager manager=null;
 	protected BindingManager bindingManager;
 	protected Normalization normalizer;
 	protected HashMap<Point,GFFEntry> siteToGFFEntry;

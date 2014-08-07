@@ -33,17 +33,17 @@ public class BackgroundDetectingEnrichmentTester {
 	private List<BindingEvent> events;
 	private double backgroundProportion;
 	private int binWidth;
-	private ExperimentManager manager;
+	private ExperimentManager manager=null;
 	private BindingManager bindingManager;
 	
-	public BackgroundDetectingEnrichmentTester(GenomeConfig gcon, ExptConfig econ, MultiGPSConfig mgpscon, double backProp, int binW){
+	public BackgroundDetectingEnrichmentTester(GenomeConfig gcon, ExptConfig econ, MultiGPSConfig mgpscon, ExperimentManager man, double backProp, int binW){
 		backgroundProportion=backProp;
 		binWidth = binW;
 		this.gconfig = gcon;
 		this.econfig = econ;
 		this.mgpsconfig = mgpscon;
-		manager = new ExperimentManager(econfig);
 		bindingManager = new BindingManager(manager);
+		manager=man;
 		BindingEvent.setExperimentManager(manager);
 		BindingEvent.setConfig(mgpsconfig);
 	}
@@ -71,7 +71,7 @@ public class BackgroundDetectingEnrichmentTester {
 		}
 		
 		//EnrichmentSignificance
-		EnrichmentSignificanceTesting signifTester = new EnrichmentSignificanceTesting(gconfig, econfig, events, 1, gconfig.getGenome().getGenomeLength());
+		EnrichmentSignificanceTesting signifTester = new EnrichmentSignificanceTesting(gconfig, econfig, manager, events, 1, gconfig.getGenome().getGenomeLength());
 		signifTester.execute();
 		
 		//Write files
@@ -182,7 +182,7 @@ public class BackgroundDetectingEnrichmentTester {
 			double backProp = backProps.get(backProps.keySet().toArray()[0]);
 			String pFile = Args.parseString(args, "sites", null);
 			
-			BackgroundDetectingEnrichmentTester bdet = new BackgroundDetectingEnrichmentTester(gconfig, econfig, mgpsconfig, backProp, binW);
+			BackgroundDetectingEnrichmentTester bdet = new BackgroundDetectingEnrichmentTester(gconfig, econfig, mgpsconfig,manager, backProp, binW);
 			bdet.execute(pFile);
 			manager.close();
 		}

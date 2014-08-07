@@ -275,6 +275,7 @@ public class MEMERunner {
 					//System.out.println("0 vs "+i+"\t"+alignment.car()+"\t"+alignment.cdr());
 				//}
 			}
+			manager.close();
 		}
 	}
 }
