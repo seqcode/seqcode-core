@@ -170,7 +170,7 @@ public class ExptConfig {
 		     
 				//Parse experiment design file
 				// Format: (tab separated)
-				// Signal/Control   SrcName   DataType   Condition   Replicate	[ExptType]	[per-base max]	[Target]
+				// SrcName	Signal/Control   DataType   Condition   Replicate	[ExptType]	[per-base max]	[Target]
 				if(ap.hasKey("design")){
 					String dfile = ap.getKeyValue("design");
 					File df = new File(dfile);
@@ -312,7 +312,7 @@ public class ExptConfig {
 				"Experiments:\n" +
 				"\t--design <design file name>\n" +
 				"\tOR\n" +
-				"\t--expt <read file name> AND --format <SAM/BED/IDX/BOWTIE/NOVO/ELAND>\n" +
+				"\t--expt <read file name> AND --format <SAM/BED/IDX/BOWTIE/NOVO>\n" +
 				"\tAND/OR" +
 				"\t--rdbexpt <ReadDB experiment identifier>\n" +
 				"Miscellaneous Experiment Loading Args:\n" +

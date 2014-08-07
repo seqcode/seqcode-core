@@ -26,7 +26,7 @@ public class SeqSlidingWindow {
 
 	private final int MAXSECTION = 50000000;
 	
-	protected ExperimentManager exptMan;
+	protected ExperimentManager exptMan=null;
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
 	protected int regionExtension = 1000;
@@ -197,7 +197,8 @@ public class SeqSlidingWindow {
 	}
 	
 	public void close(){
-		exptMan.close();
+		if(exptMan!=null)
+			exptMan.close();
 	}
 	
 	public static void main(String[] args){

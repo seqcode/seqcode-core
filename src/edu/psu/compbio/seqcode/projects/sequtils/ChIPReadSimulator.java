@@ -505,9 +505,10 @@ public class ChIPReadSimulator {
 			ChIPReadSimulator sim = new ChIPReadSimulator(bm, gcon.getGenome(), counts, c, r, noiseProb, jointRate, jointSpacing, outFile);
 	        if(noiseProb==1.0)
 	        	sim.setTotalFrags((int) frags);
-	        
+
+	        ExperimentManager manager=null;
 	        if(ap.hasKey("ctrl")){
-				ExperimentManager manager = new ExperimentManager(econ);
+				manager = new ExperimentManager(econ);
 				sim.setNoiseSource(manager.getSamples());
 			}
 			
@@ -517,6 +518,9 @@ public class ChIPReadSimulator {
 	        	sim.printEvents();	      
 			sim.simulateReads();
 			sim.close();
+			
+			if(manager!=null)
+				manager.close();
 		}
 	}
 }

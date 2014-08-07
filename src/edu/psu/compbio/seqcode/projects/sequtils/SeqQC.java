@@ -28,7 +28,7 @@ public class SeqQC {
 	MultiGPSConfig config;
 	ExptConfig econfig;
 	Genome gen;
-	ExperimentManager manager;
+	ExperimentManager manager=null;
 	float[] startcounts =null;
 	float densityWindow = 500;
 	double testQuantile = 0.05; //Base per-read count distribution on this proportion of the lowest-ranked densities
@@ -329,6 +329,11 @@ public class SeqQC {
 		return x;
 	}
 	
+	public void close(){
+		if(manager==null)
+			manager.close();
+	}
+	
 	/**
 	 * Main driver method
 	 */
@@ -355,6 +360,7 @@ public class SeqQC {
 			if(ap.hasKey("noheader"))
 				qc.setPrintHeader(false);
 			qc.execute();
+			qc.close();
 		}
 	}
 	

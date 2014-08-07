@@ -28,10 +28,10 @@ public class EnrichmentSignificanceTesting {
 	protected double genomeLength;
 	protected Binomial binomial;
 	
-	public EnrichmentSignificanceTesting(GenomeConfig gcon, ExptConfig econ, List<BindingEvent> features, double minFoldChange, double genomeLength){
+	public EnrichmentSignificanceTesting(GenomeConfig gcon, ExptConfig econ, ExperimentManager eMan, List<BindingEvent> features, double minFoldChange, double genomeLength){
 		this.gconfig = gcon;
 		this.econfig = econ;
-		this.exptMan = new ExperimentManager(econfig);
+		this.exptMan = eMan;
 		this.features = features;
 		this.minFoldChange = minFoldChange;
 		this.genomeLength = genomeLength;
