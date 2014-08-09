@@ -2,9 +2,6 @@ package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
 import java.io.File;
 import java.awt.*;
-import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
-import java.awt.font.LineMetrics;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.genome.location.Region;

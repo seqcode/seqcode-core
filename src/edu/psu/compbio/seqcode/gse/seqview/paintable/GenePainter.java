@@ -55,7 +55,7 @@ public class GenePainter extends RegionPaintable {
         
         if (e.getSource() == model &&
             model.isReady()) {            
-
+        	System.out.println(this.getLabel());
             setCanPaint(true);
             setWantsPaint(true);
             genes = null;

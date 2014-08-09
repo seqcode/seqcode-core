@@ -288,7 +288,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		lry = new Hashtable<String,Integer>();
 		painterCount = 0;
 		readyCount = 0;
-		currentRegion = new Region(genome,"1",1,1000);
+		currentRegion = new Region(genome,"1",1,2000);
 		
 		currentOptions = opts;
 		addPaintersFromOpts(opts);
@@ -342,7 +342,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		}
 		RegionMapperModel seqmodel = null;
 		if (opts.gccontent || opts.cpg || opts.seqletters || opts.regexmatcher || opts.pyrpurcontent) {
-			seqmodel = new RegionMapperModel(new SequenceGenerator(genome));
+			seqmodel = new RegionMapperModel(new SequenceGenerator(genome, opts.maxSequenceQuery));
 			addModel(seqmodel);
 			Thread t = new Thread(seqmodel);
 			t.start();
@@ -404,9 +404,11 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				for(int i = 0; i < opts.seqExpts.size(); i++) { 
 					Collection<SeqAlignment> alignments = loader.loadAlignments(opts.seqExpts.get(i).locator, genome);
 
+					boolean isChIP=true;
 					boolean allPaired = true;
 			    	for(SeqAlignment a : alignments){
 			    		allPaired = allPaired && (a.getAlignType().getName().equals("PAIRED") || a.getAlignType().getName().equals("MIXED"));
+			    		isChIP = isChIP && (a.getExpt().getExptType().equals("CHIPSEQ") || a.getExpt().getExptType().equals("CHIPEXO")); 
 			    	}
 			    	
 					RegionModel histomod, arcmod=null;
@@ -415,9 +417,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
 						histomod = new SeqHistogramModel(alignments);
 						if(allPaired){
 							arcmod = new InteractionArcModel(alignments);
-							p = new SeqHistogramPainter((SeqHistogramModel)histomod, (InteractionArcModel)arcmod);
+							p = new SeqHistogramPainter((SeqHistogramModel)histomod, (InteractionArcModel)arcmod, !isChIP);
 						}else{
-							p = new SeqHistogramPainter((SeqHistogramModel)histomod, null);
+							p = new SeqHistogramPainter((SeqHistogramModel)histomod, null, false);
 						}
 					} else {
 						System.err.println("Using old ChipSeq painters");

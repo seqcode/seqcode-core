@@ -42,7 +42,7 @@ public class SeqViewOptionsPane
     private JLabel specieslabel, genomelabel, positionlabel, genelabel;
 
     // options tab
-    private JCheckBox relative, hash, common, seqletters, oldchipseq;
+    private JCheckBox hash, oldchipseq;
     
     // seqdata tab
     private SeqLMESelectPanel seqSelect;
@@ -50,8 +50,8 @@ public class SeqViewOptionsPane
     // annotations tab
     private JList genes, ncrnas, otherfeats;
     private DefaultListModel genesmodel, ncrnasmodel, otherfeatsmodel;
-    private JCheckBox polyA, gccontent, pyrpurcontent, cpg, regexmatcher;
-    private JLabel geneslabel, ncrnaslabel, otherfeatslabel;
+    private JCheckBox seqletters, polyA, gccontent, pyrpurcontent, cpg, regexmatcher;
+    private JLabel geneslabel, ncrnaslabel, otherfeatslabel, seqlimitlabel;
         
     // file-based tracks
     private FileBasedTracksPanel filetracks;
@@ -191,24 +191,17 @@ public class SeqViewOptionsPane
 
         // Options tab
         optionsPanel.setLayout(new GridLayout(4,1));
-        relative = new JCheckBox("Relative vertical scale");
         hash = new JCheckBox("Show chromosome coordinates");
-        common = new JCheckBox("Common vertical scale");
-        seqletters = new JCheckBox("Show sequence");
         oldchipseq = new JCheckBox("Use old ChipSeq painter");
         hash.setSelected(true);
-        seqletters.setSelected(true);
         optionsPanel.add(hash);
-        optionsPanel.add(seqletters);
-        optionsPanel.add(relative);
-        optionsPanel.add(common);
         optionsPanel.add(oldchipseq);
         
         // Annotations tab
         JPanel lists = new JPanel();
         lists.setLayout(new GridLayout(3,2));
         JPanel boxes = new JPanel();
-        boxes.setLayout(new GridLayout(3,2));
+        boxes.setLayout(new GridLayout(4,2));
         genesmodel = new DefaultListModel();
         ncrnasmodel = new DefaultListModel();
         otherfeatsmodel = new DefaultListModel();
@@ -219,6 +212,9 @@ public class SeqViewOptionsPane
         otherfeats.setVisibleRowCount(7); otherfeats.setLayoutOrientation(JList.VERTICAL);
         ncrnas.setVisibleRowCount(7); ncrnas.setLayoutOrientation(JList.VERTICAL);
         
+        seqlimitlabel=new JLabel("Sequence features (visible only below "+SeqViewOptions.DEFAULT_MAX_SEQUENCE_VIEW+"bp):");
+        seqletters = new JCheckBox("DNA sequence");
+        seqletters.setSelected(true);
         polyA = new JCheckBox("PolyA sequences");
         gccontent = new JCheckBox("GC content");
         pyrpurcontent = new JCheckBox("Pyr/Pur content");
@@ -234,6 +230,9 @@ public class SeqViewOptionsPane
         lists.add(new JScrollPane(ncrnas));
         lists.add(otherfeatslabel);
         lists.add(new JScrollPane(otherfeats));
+        boxes.add(seqlimitlabel);
+        boxes.add(new JLabel(""));
+        boxes.add(seqletters);
         boxes.add(polyA);
         boxes.add(gccontent);
         boxes.add(pyrpurcontent);
@@ -291,7 +290,6 @@ public class SeqViewOptionsPane
             !opts.gene.equals("")) {
             gene.setText(opts.gene);
         }
-        relative.setSelected(opts.relative);
         hash.setSelected(opts.hash);
         gccontent.setSelected(opts.gccontent);        
         pyrpurcontent.setSelected(opts.pyrpurcontent);
@@ -300,7 +298,7 @@ public class SeqViewOptionsPane
         regexmatcher.setSelected(opts.regexmatcher);
         seqletters.setSelected(opts.seqletters);
         oldchipseq.setSelected(!opts.seqHistogramPainter);
-
+        seqlimitlabel.setText("Sequence features (visible only below "+opts.maxSequenceQuery+"bp):");
         int[] selected = new int[opts.genes.size()];
         for (int i = 0; i < opts.genes.size(); i++) {
             selected[i] = genesmodel.indexOf(opts.genes.get(i));            
@@ -398,7 +396,6 @@ public class SeqViewOptionsPane
 
         // parse the options tab
         these.hash = hash.isSelected();
-        these.relative = relative.isSelected();
         these.seqletters = seqletters.isSelected();
         these.seqHistogramPainter = !oldchipseq.isSelected();
 

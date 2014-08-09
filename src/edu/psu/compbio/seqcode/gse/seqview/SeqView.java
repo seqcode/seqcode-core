@@ -35,7 +35,7 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionListPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.RegionPanel;
 import edu.psu.compbio.seqcode.gse.seqview.components.SaveRegionsAsFasta;
-import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsFrame2;
+import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsFrame;
 import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewOptionsPane;
 import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewStatus;
 import edu.psu.compbio.seqcode.gse.seqview.components.SeqViewStatusBar;
@@ -55,7 +55,7 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
  */
 public class SeqView extends JFrame {
 	protected SeqViewOptions options=new SeqViewOptions();
-	protected SeqViewOptionsFrame2 optionsFrame;
+	protected SeqViewOptionsFrame optionsFrame;
 	protected SeqViewOptionsPane optionsPane;
 	protected RegionPanel regPanel=null;
 	protected SeqViewStatus status;
@@ -89,7 +89,7 @@ public class SeqView extends JFrame {
         
         //Initiate options pane & frame
         optionsPane = new SeqViewOptionsPane(options);
-        optionsFrame = new SeqViewOptionsFrame2(optionsPane, this);
+        optionsFrame = new SeqViewOptionsFrame(optionsPane, this);
         status.setStatus("Genome loaded", Color.black);
         
         //Close operations
@@ -108,7 +108,7 @@ public class SeqView extends JFrame {
     }
     
     public String getVersion(){
-    	return "Version 0.1, Aug-2013";
+    	return "Version 0.2, Aug-2014";
     }
     
     public RegionPanel getRegionPanel() { return regPanel; }
@@ -151,7 +151,7 @@ public class SeqView extends JFrame {
         	public void actionPerformed(ActionEvent e) {                    
         		try {
         			optionsPane = new SeqViewOptionsPane(regPanel.getCurrentOptions());
-        			optionsFrame = new SeqViewOptionsFrame2(optionsPane, thisviewer);
+        			optionsFrame = new SeqViewOptionsFrame(optionsPane, thisviewer);
         		} catch (NotFoundException e1) {
         			e1.printStackTrace();
         		}

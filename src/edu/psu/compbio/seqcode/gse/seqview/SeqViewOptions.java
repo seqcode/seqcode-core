@@ -44,6 +44,8 @@ public class SeqViewOptions {
 	public static final int MIN_TOP_LEFT_Y = 0;
 	public static final int MAX_TOP_LEFT_Y = 700;
 	public static final int STATUS_BAR_HEIGHT=16;
+	public static final String DEFAULT_GENOME_VERSION = "mm9";
+	public static final int DEFAULT_MAX_SEQUENCE_VIEW=1000; //Don't call sequence generator for paintables if Region is greater than this length
 	
 	// General display settings
 	private int preferredWindowWidth;
@@ -61,8 +63,10 @@ public class SeqViewOptions {
     public String chrom, gene, position, regionListFile;
     public int start, stop;
 
+    public int maxSequenceQuery = DEFAULT_MAX_SEQUENCE_VIEW;//Don't call sequence generator for paintables if Region is greater than this length
+    
     // tracks to paint and their options
-    public boolean hash=true, relative=false, seqletters=true, polya=false, gccontent=false, pyrpurcontent=false, cpg=false, regexmatcher=false;
+    public boolean hash=true, seqletters=true, polya=false, gccontent=false, pyrpurcontent=false, cpg=false, regexmatcher=false;
     public ArrayList<String> genes, ncrnas, otherannots;
     public ArrayList<WeightMatrix> motifs;
     public ArrayList<Experiment> exprExperiments;
@@ -115,10 +119,10 @@ public class SeqViewOptions {
     }
 
     public SeqViewOptions() {
-    	String genomeStr="mm9";
+    	String genomeStr=DEFAULT_GENOME_VERSION;
         try {        
             ResourceBundle res = ResourceBundle.getBundle("defaultgenome");
-            genomeStr = res.getString("genome"); 
+            genomeStr = res.getString("genome");
         } catch (MissingResourceException e) {
             // who cares, we're just getting defaults
         } catch (Exception e) {
@@ -168,7 +172,6 @@ public class SeqViewOptions {
             union.gene = gene;
         }
         union.hash = hash;
-        union.relative = relative;
         union.gccontent = gccontent;
         union.pyrpurcontent = pyrpurcontent;
         union.cpg = cpg;
@@ -219,13 +222,12 @@ public class SeqViewOptions {
         if (other.gene != null && !other.gene.equals("")) {
             gene = other.gene;
         }
-        hash = hash && (!other.hash);        
-        relative = relative || other.relative;
+        hash = hash && (!other.hash);
+        seqletters = seqletters && (!other.seqletters);
         gccontent = gccontent && (!other.gccontent);
         pyrpurcontent = pyrpurcontent && (!other.pyrpurcontent);
         cpg = cpg && (!other.cpg);
         regexmatcher = regexmatcher && (!other.regexmatcher);        
-        seqletters = seqletters || other.seqletters;
         seqHistogramPainter = (seqHistogramPainter && other.seqHistogramPainter);
         differenceOf(genes,other.genes);
         differenceOf(ncrnas,other.ncrnas);
@@ -259,7 +261,6 @@ public class SeqViewOptions {
         o.gccontent = gccontent;
         o.pyrpurcontent = pyrpurcontent;
         o.cpg = cpg;
-        o.relative = relative;
         o.seqletters = seqletters;
         o.regexmatcher = regexmatcher;
         o.seqHistogramPainter = seqHistogramPainter;
@@ -360,9 +361,6 @@ public class SeqViewOptions {
                 }
                 if (args[i].equals("--cpgislands")) {
                     opts.otherannots.add("CpGIslands");
-                }
-                if (args[i].equals("--relative")) {
-                    opts.relative = true;
                 }
                 if (args[i].equals("--genes")) {
                     opts.genes.add(args[++i]);;

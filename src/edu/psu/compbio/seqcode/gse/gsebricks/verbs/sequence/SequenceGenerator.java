@@ -26,6 +26,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
     private boolean useCache = false;
     private boolean useLocalFiles = false;
     private String genomePath = null;
+    private int maxQuery = -1;
 
     private static Map<String, String[]> regionCache;
     private static Map<String, int[]> regionStarts;
@@ -33,9 +34,16 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
     public boolean isRegionCached(){return regionIsCached;}
     public boolean usingLocalFiles(){return useLocalFiles;}
     
-    // no longer used, but kept for compatibility 
-    public SequenceGenerator (Genome g) {
+    /**
+     * SequenceGenerator
+     * maxQuery is here to avoid calling the sequence generator if the Region width is greater 
+     * than a given size. This is really only useful for SeqView painters.   
+     * @param g
+     */
+    public SequenceGenerator (Genome g) {this(g, -1);}
+    public SequenceGenerator (Genome g, int maxQuery) {
     	genome = g;
+    	this.maxQuery=maxQuery;
     }
     public SequenceGenerator() {}
     public void useCache(boolean b) {
@@ -110,66 +118,67 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
      * get sequence of specified region (including start and end)
      */
     public String execute(X region) {
-    	if (regionIsCached)
-    		return getRegionCacheSequence(region);  
-    	
     	String result = null;
-        String chromname = region.getChrom();
-        
-        try {
-            Genome genome = region.getGenome();
-            int chromid = genome.getChromID(chromname);
-            if (useCache) {
-                cache(region);
-                String chromString = null;
-                synchronized(cache) {
-                    if (!cache.containsKey(chromid)) {
-                        return null; 
-                    }
-                    chromString = cache.get(chromid);
-                }
-                //1-based version (string.substr is 0-based) 
-                result = chromString.substring(region.getStart()-1, region.getEnd());
-            }
-            if (result == null) {
-                java.sql.Connection cxn =
-                DatabaseFactory.getConnection("core");
-                cxn.setAutoCommit(false);
-                PreparedStatement ps;
-                //1-based version (mysql substr is 1-based)
-                int start = Math.max(region.getStart(), 0);
-                ps = cxn.prepareStatement("select substr(sequence,?,?) from chromsequence where id = ?");
-                ps.setInt(1,start);
-                ps.setInt(2,region.getEnd() - region.getStart() + 1);
-                ps.setInt(3,chromid);                   
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-                    result = rs.getString(1);
-                } 
-                rs.close();
-                ps.close();
-                cxn.commit();
-                DatabaseFactory.freeConnection(cxn);
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();           
-        } catch (UnknownRoleException ex) {
-            ex.printStackTrace();
-            throw new DatabaseException("Couldn't connect to core",ex);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            throw new RuntimeException("Couldn't load file to cache " + ex.toString(), ex);
-        }
-
-        if (result == null) {
-            throw new DatabaseException("Couldn't get any sequence for " + region);
-        }
-
-        if (result.length() != region.getWidth()) {
-            System.err.println("Wanted " + region + "(" + 
-            		region.getWidth() + ") but only got " + result.length());
-        }
-
+    	if(maxQuery==-1 || region.getWidth()<=maxQuery){
+	    	if (regionIsCached)
+	    		return getRegionCacheSequence(region);  
+	    	
+	    	String chromname = region.getChrom();
+	        
+	        try {
+	            Genome genome = region.getGenome();
+	            int chromid = genome.getChromID(chromname);
+	            if (useCache) {
+	                cache(region);
+	                String chromString = null;
+	                synchronized(cache) {
+	                    if (!cache.containsKey(chromid)) {
+	                        return null; 
+	                    }
+	                    chromString = cache.get(chromid);
+	                }
+	                //1-based version (string.substr is 0-based) 
+	                result = chromString.substring(region.getStart()-1, region.getEnd());
+	            }
+	            if (result == null) {
+	                java.sql.Connection cxn =
+	                DatabaseFactory.getConnection("core");
+	                cxn.setAutoCommit(false);
+	                PreparedStatement ps;
+	                //1-based version (mysql substr is 1-based)
+	                int start = Math.max(region.getStart(), 0);
+	                ps = cxn.prepareStatement("select substr(sequence,?,?) from chromsequence where id = ?");
+	                ps.setInt(1,start);
+	                ps.setInt(2,region.getEnd() - region.getStart() + 1);
+	                ps.setInt(3,chromid);                   
+	                ResultSet rs = ps.executeQuery();
+	                if (rs.next()) {
+	                    result = rs.getString(1);
+	                } 
+	                rs.close();
+	                ps.close();
+	                cxn.commit();
+	                DatabaseFactory.freeConnection(cxn);
+	            }
+	        } catch (SQLException ex) {
+	            ex.printStackTrace();           
+	        } catch (UnknownRoleException ex) {
+	            ex.printStackTrace();
+	            throw new DatabaseException("Couldn't connect to core",ex);
+	        } catch (IOException ex) {
+	            ex.printStackTrace();
+	            throw new RuntimeException("Couldn't load file to cache " + ex.toString(), ex);
+	        }
+	
+	        if (result == null) {
+	            throw new DatabaseException("Couldn't get any sequence for " + region);
+	        }
+	
+	        if (result.length() != region.getWidth()) {
+	            System.err.println("Wanted " + region + "(" + 
+	            		region.getWidth() + ") but only got " + result.length());
+	        }
+    	}
         return result;
     }
     

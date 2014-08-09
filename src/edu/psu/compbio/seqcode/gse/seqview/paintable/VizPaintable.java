@@ -3,10 +3,7 @@
  */
 package edu.psu.compbio.seqcode.gse.seqview.paintable;
 
-import java.util.Collection;
 import java.awt.Graphics2D;
-import java.util.Hashtable;
-
 
 /**
  * @author tdanford

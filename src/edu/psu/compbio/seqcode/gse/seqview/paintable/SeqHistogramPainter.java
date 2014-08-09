@@ -26,7 +26,7 @@ public class SeqHistogramPainter extends RegionPaintable {
 	private int kernelVar = 0;
 	private boolean alignPaired = false;
 
-	public SeqHistogramPainter(SeqHistogramModel hmodel, InteractionArcModel pmodel) {
+	public SeqHistogramPainter(SeqHistogramModel hmodel, InteractionArcModel pmodel, boolean drawSingleStrandAndArcs) {
 		super();
 		histomodel = hmodel;
 		arcmodel = pmodel;
@@ -36,7 +36,7 @@ public class SeqHistogramPainter extends RegionPaintable {
 			arcmodel.addEventListener(this);
 		attrib = DynamicAttribute.getGlobalAttributes();
 		alignPaired = arcmodel!=null;
-		if(alignPaired){
+		if(alignPaired && !drawSingleStrandAndArcs){
 			props.Stranded=false;
 			props.DrawPairedCurves=true;
 			props.MaxReadCount = 100;

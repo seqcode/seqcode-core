@@ -16,7 +16,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
  *
  */
 
-public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
+public class SeqViewOptionsFrame extends JFrame implements ActionListener {
 
 	private SeqView parent;
     private SeqViewOptionsPane pane;
@@ -33,7 +33,7 @@ public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
     private boolean closed=false;
     
     
-    public SeqViewOptionsFrame2(SeqViewOptionsPane optpane, SeqView parent) throws NotFoundException {
+    public SeqViewOptionsFrame(SeqViewOptionsPane optpane, SeqView parent) throws NotFoundException {
         super();
         this.parent = parent;
         setTitle("SeqView");
@@ -85,7 +85,7 @@ public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
     	menuBar.add(fileMenu);
     	
     	openSessionItem = new JMenuItem("Open Session", KeyEvent.VK_O);
-    	openSessionItem.setToolTipText("Open a saved Warp Drive session");
+    	openSessionItem.setToolTipText("Open a saved SeqView session");
     	openSessionItem.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
     			openSession_actionPerformed(e);
@@ -93,7 +93,7 @@ public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
     	});
     	
     	saveSessionItem = new JMenuItem("Save Session", KeyEvent.VK_S);
-    	saveSessionItem.setToolTipText("Save this Warp Drive session");
+    	saveSessionItem.setToolTipText("Save this SeqView session");
     	saveSessionItem.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
     			saveSession_actionPerformed(e);
@@ -175,7 +175,7 @@ public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
      */
     void exit_actionPerformed(ActionEvent e) {
     	//TODO Check if any data is being viewed, if so prompt for confirmation
-    	//but if only the WarpOptionFrame is open then just exit
+    	//but if only the SeqViewOptionFrame is open then just exit
     	boolean dataWindowsOpen = true;
     	
     	if (dataWindowsOpen) {
@@ -204,7 +204,7 @@ public class SeqViewOptionsFrame2 extends JFrame implements ActionListener {
      * Configure log4j
      */
     public static void configureLogging() {
-    	ClassLoader loader = SeqViewOptionsFrame2.class.getClassLoader();
+    	ClassLoader loader = SeqViewOptionsFrame.class.getClassLoader();
     	//PropertyConfigurator.configure(loader.getResource("edu/psu/compbio/seqcode/gse/utils/config/log4j.properties"));    	
     }
     
