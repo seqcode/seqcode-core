@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
@@ -17,6 +19,7 @@ import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
+import edu.psu.compbio.seqcode.gse.projects.gps.discovery.SingleConditionFeatureFinder;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -34,10 +37,13 @@ public class PairedBEDExporter {
 	private String outName="out";
 	private DeepSeqExpt fetcher;
 	
+	private static final Logger logger = Logger.getLogger(SingleConditionFeatureFinder.class);
+	
 	public PairedBEDExporter(List<SeqLocator> expt, Genome g, String o) throws SQLException, IOException, NotFoundException {
 		this.gen = g;
 		this.locators = expt;
 		this.fetcher = new DeepSeqExpt(gen,this.locators,"readdb",-1,true);
+		this.logger.info("Expt hit count: " + (int) this.fetcher.getHitCount()+ ", weight: " + (int) this.fetcher.getWeightTotal());
 		this.outName =o;
 	}
 
