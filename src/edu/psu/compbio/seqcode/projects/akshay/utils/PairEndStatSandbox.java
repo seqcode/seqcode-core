@@ -100,8 +100,8 @@ public class PairEndStatSandbox {
 			Iterator<SeqHitPair> pairItr = this.expander.getPairs(r);
 			while(pairItr.hasNext()){
 				SeqHitPair pair = pairItr.next();
-				if(pair.getCode() == 1 && pair.getMidpoint() == null){
-					int fragLen = pair.getRight().getFivePrime() - pair.getLeft().getFivePrime()+1;
+				if(pair.getCode() == 1 && pair.getMidpoint() != null){
+					int fragLen = Math.abs(pair.getRight().getFivePrime() - pair.getLeft().getFivePrime())+1;
 					if(fragLen >= minFragLen && fragLen < maxFragLen){
 						count++;
 					}
