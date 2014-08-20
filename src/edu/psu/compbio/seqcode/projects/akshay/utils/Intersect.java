@@ -1,5 +1,7 @@
 package edu.psu.compbio.seqcode.projects.akshay.utils;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,7 +19,11 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHitPair;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.SeqExpander;
+import edu.psu.compbio.seqcode.gse.tools.utils.Args;
+import edu.psu.compbio.seqcode.gse.utils.ArgParser;
+import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
+import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 
 
@@ -35,8 +41,8 @@ public class Intersect {
 	private List<Map<Integer,Point>> aLocs;
 	private List<Map<Integer,Point>> bLocs;
 	
-	private Integer[][] asort;
-	private Integer[][] bsort;
+	private int[][] asort;
+	private int[][] bsort;
 	
 	private Map<String, Integer> chrom2Id;
 	private Map<Integer, String> Id2Chrom;
@@ -44,8 +50,8 @@ public class Intersect {
 	//private SeqLocator expta;
 	//private SeqLocator exptb;
 	
-	private Integer[][][] aCounts;
-	private Integer[][][] bCounts;
+	private int[][][] aCounts;
+	private int[][][] bCounts;
 	
 	/**
 	 * replicate names are hard-coded at the moment, until I change this to the standard expt loading procedure
@@ -58,8 +64,27 @@ public class Intersect {
 	
 	int min_match_distance;
 	
+	public Intersect(List<Point> apeaks, List<Point> bpeaks, int min_match, Genome g) {
+		a = apeaks;
+		b= bpeaks;
+		gen = g;
+		
+		int numChrom = 0;
+		
+		for(String chr : gen.getChromList()){
+			chrom2Id.put(chr, numChrom);
+			Id2Chrom.put(numChrom, chr);
+			numChrom++;
+		}
+		
+		this.min_match_distance = min_match;
+		
+		
+	}
 	
-	public Intersect(List<Point> apeaks, List<Point> bpeaks, Genome g) {
+	
+	
+	public Intersect(List<Point> apeaks, List<Point> bpeaks, Genome g, int minFragLen, int maxFragLen, int win, String expta, String exptb) throws SQLException, IOException {
 		a = apeaks;
 		b = bpeaks;
 		gen = g;
@@ -88,8 +113,8 @@ public class Intersect {
 			bLocs.get(chrom2Id.get(p.getChrom())).put(p.getLocation(), p);
 		}
 		
-		asort = new Integer[chrom2Id.keySet().size()][a.size()];
-		bsort = new Integer[chrom2Id.keySet().size()][b.size()];
+		asort = new int[chrom2Id.keySet().size()][a.size()];
+		bsort = new int[chrom2Id.keySet().size()][b.size()];
 		
 		int count = 0;
 		for( Point p : a ){
@@ -100,6 +125,7 @@ public class Intersect {
 		count = 0;
 		for( Point p : b ){
 			bsort[chrom2Id.get(p.getChrom())][count] = p.getLocation();
+			count++;
 		}
 		
 		for(int i=0; i<chrom2Id.keySet().size(); i++){
@@ -113,54 +139,67 @@ public class Intersect {
 		repsa.add("1a"); repsa.add("1b"); repsa.add("1c"); repsa.add("2a"); repsa.add("2b"); repsa.add("2c");
 		repsb.add("1a"); repsb.add("1b"); repsb.add("1c"); repsb.add("2a"); repsb.add("2b"); repsb.add("2c");
 		
+		this.fillRepCounts(expta, exptb, minFragLen, maxFragLen, win);
+		
+	}
+	
+	private void fillRepCounts(String expta, String exptb, int minFragLen, int maxFragLen, int win) throws SQLException, IOException{
+		String[] anames = expta.split(";");
+		String[] bnames = exptb.split(";");
+		
+		this.aCounts = this.getRepWindowCounts(anames[0], anames[1], repsa, a, asort, aLocs, minFragLen, maxFragLen, win);
+		this.bCounts = this.getRepWindowCounts(bnames[0], bnames[1], repsb, b, bsort, bLocs, minFragLen, maxFragLen, win);
 	}
 	
 	
-	public void fillCounts(String Aename, String Aaname, String Bename, String Baname,  int minFragLen, int maxFragLen, int win) throws SQLException, IOException{
+	
+	private int[][][] getRepWindowCounts(String ename, String aname, Collection<String> reps, List<Point> points, int[][] pointsSort, List<Map<Integer,Point>> pointsMap, int minFragLen, int maxFragLen, int win) throws SQLException, IOException{
 		
-		this.aCounts = new Integer[chrom2Id.keySet().size()][a.size()][repsa.size()];
-		this.bCounts = new Integer[chrom2Id.keySet().size()][b.size()][repsb.size()];
+		int[][][] ret = new int[chrom2Id.keySet().size()][points.size()][reps.size()];
 		
-		for(int c=0; c< aLocs.size(); c++){
+		for(int c=0; c< chrom2Id.size(); c++){
 			
-			for(int r=0; r< repsa.size(); r++){
-				SeqLocator atmpLoc = new SeqLocator(Aename, repsa, Baname);
-				SeqExpander atmpExp = new SeqExpander(atmpLoc);
+			for(int r=0; r< reps.size(); r++){
+				SeqLocator tmpLoc = new SeqLocator(ename, reps, aname);
+				SeqExpander tmpExp = new SeqExpander(tmpLoc);
 				Genome.ChromosomeInfo s = gen.getChrom(Id2Chrom.get(c));
 				NamedRegion chrom = new NamedRegion(gen,Id2Chrom.get(c),1,s.getLength(),Id2Chrom.get(c));
-				Iterator<SeqHitPair> aitr = atmpExp.getPairs(chrom);
-				List<Integer> amidpts = new ArrayList<Integer>();
-				while(aitr.hasNext()){
-					SeqHitPair tmp = aitr.next();
+				Iterator<SeqHitPair> itr = tmpExp.getPairs(chrom);
+				List<Integer> midpts = new ArrayList<Integer>();
+				while(itr.hasNext()){
+					SeqHitPair tmp = itr.next();
 					if(tmp.getCode() == 1 && tmp.getMidpoint() != null){
 						int  fragLen = Math.abs(tmp.getRight().getFivePrime() - tmp.getLeft().getFivePrime())+1;
 						if(fragLen >= minFragLen && fragLen < maxFragLen){
-							amidpts.add(tmp.getMidpoint().getLocation());
+							midpts.add(tmp.getMidpoint().getLocation());
 						}
 					}
 					
 				}
 				
-				int[] amidsort = new int[amidpts.size()];
+				int[] midsort = new int[midpts.size()];
 				
 				
-				for(int i=0; i<amidpts.size(); i++){
-					amidsort[i] = amidpts.get(i);
-				}
-				for(int p=0; p< aLocs.get(c).keySet().size(); p++){
-					aCounts[c][p][r] = this.countHits(aLocs.get(c).get(p), amidsort, win);
+				for(int i=0; i<midpts.size(); i++){
+					midsort[i] = midpts.get(i);
 				}
 				
-				atmpExp.close();
+				int[] ind = StatUtil.findSort(midsort);
+				midsort = StatUtil.permute(midsort, ind);
 				
 				
+				for(int p=0; p< points.size(); p++){
+					ret[c][p][r] = this.countRegionInChrom(pointsMap.get(c).get(pointsSort[c][p]), midsort, win);
+				}
 				
-				
+				tmpExp.close();
 			}
 		}
+		
+		return ret;
 	}
 	
-	public int countHits(Point pt, int[] midsort, int win){
+	private int countRegionInChrom(Point pt, int[] midsort, int win){
 		Region r = pt.expand(win);
 		int ret_count;
 		int start_match = Arrays.binarySearch(midsort, r.getStart());
@@ -183,7 +222,42 @@ public class Intersect {
 	
 	/**
 	 * Prints the matching overlapping win
+	 * @throws IOException 
 	 */
+	
+	
+	public void printWindCounts(String outbase) throws IOException{
+		String dir = System.getProperty("user.dir");
+		StringBuilder sb = new StringBuilder();
+		FileWriter afw = new FileWriter(sb.append(dir).append("/").append(outbase).append("_a_Rep_counts.tab").toString());
+		for(int c=0; c< aCounts.length; c++){
+			StringBuilder o = new StringBuilder();
+			for(int p=0; p<a.size(); p++){
+				o.append(a.get(p).getLocationString()).append("\t");
+				for(int r=0; r<repsa.size(); r++){
+					o.append(aCounts[c][p][r]).append("\t");
+				}
+			}
+			afw.write(o.append("\n").toString());
+		}
+		
+		afw.close();
+		StringBuilder sbb = new StringBuilder();
+		FileWriter bfw = new FileWriter(sbb.append(dir).append("/").append(outbase).append("_b_Rep_counts.tab").toString());
+		for(int c=0; c<bCounts.length; c++){
+			StringBuilder ob = new StringBuilder();
+			for(int p=0; p < b.size(); p++){
+				ob.append(b.get(p).getLocationString()).append("\t");
+				for(int r=0; r<repsb.size(); r++){
+					ob.append(bCounts[c][p][r]).append("\t");
+				}
+			}
+			
+			bfw.write(ob.toString());
+		}
+	}
+	
+	
 	public void intersect(){
 		for(int c = 0; c<chrom2Id.keySet().size(); c++){
 			for(int p = 0; p<a.size(); p++){
@@ -209,6 +283,44 @@ public class Intersect {
 				}
 			}
 		}
+	}
+	
+	
+	public static void main(String[] args) throws NotFoundException, SQLException, IOException{
+		ArgParser ap = new ArgParser(args);
+		Genome g = Args.parseGenome(args).cdr();
+		
+		String aexpt = ap.getKeyValue("aExpt");
+		String bexpt = ap.getKeyValue("bExpt");
+		String apeaks;
+		String bpeaks;
+		int win;
+		
+		apeaks = ap.getKeyValue("aPeaks");
+		win = Args.parseInteger(args, "win", -1);
+		bpeaks = ap.getKeyValue("bPeaks");
+			
+		
+		
+		int minFragLen = Args.parseInteger(args, "minFrag", 140);
+		int maxFragLen = Args.parseInteger(args, "maxFrag", 200);
+		
+		List<Point> apoints = Utilities.loadPeaksFromPeakFile(g, apeaks, win);
+		List<Point> bpoints = Utilities.loadPeaksFromPeakFile(g, bpeaks, win);
+		
+		//Intersect analyzer = new Intersect(apoints, bpoints, g, minFragLen, maxFragLen, win, aexpt , bexpt);
+		if(ap.hasKey("interesect")){
+			
+			int min_distance = Args.parseInteger(args, "minD", 40);
+			Intersect analyzer = new Intersect(apoints, bpoints, min_distance, g);
+			analyzer.intersect();
+		}
+		if(ap.hasKey("count")){
+			Intersect analyzer = new Intersect(apoints, bpoints, g, minFragLen, maxFragLen, win, aexpt , bexpt);
+			String outbase = ap.getKeyValue("out");
+			analyzer.printWindCounts(outbase);
+		}
+		
 	}
 	
 }
