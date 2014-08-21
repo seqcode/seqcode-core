@@ -193,7 +193,7 @@ public class Intersect {
 				SeqExpander tmpExp = new SeqExpander(tmpLoc);
 				Genome.ChromosomeInfo s = gen.getChrom(Id2Chrom.get(c));
 				NamedRegion chrom = new NamedRegion(gen,Id2Chrom.get(c),1,s.getLength(),Id2Chrom.get(c));
-				System.out.println(this.gen.getChromID(Id2Chrom.get(c))+"\t"+Id2Chrom.get(c));
+				//System.out.println(this.gen.getChromID(Id2Chrom.get(c))+"\t"+Id2Chrom.get(c));
 				Iterator<SeqHitPair> itr = tmpExp.getPairs(chrom);
 				List<Integer> midpts = new ArrayList<Integer>();
 				while(itr.hasNext()){
@@ -261,8 +261,9 @@ public class Intersect {
 		StringBuilder sb = new StringBuilder();
 		FileWriter afw = new FileWriter(sb.append(dir).append("/").append(outbase).append("_a_Rep_counts.tab").toString());
 		for(int c=0; c< aCounts.size(); c++){
-			StringBuilder o = new StringBuilder();
+			
 			for(int p=0; p<aCounts.get(c).length; p++){
+				StringBuilder o = new StringBuilder();
 				o.append(aLocs.get(c).get(asort.get(c)[p]).getLocationString()).append("\t");
 				for(int r=0; r<repsa.size(); r++){
 					o.append(aCounts.get(c)[p][r]).append("\t");
@@ -276,8 +277,9 @@ public class Intersect {
 		StringBuilder sbb = new StringBuilder();
 		FileWriter bfw = new FileWriter(sbb.append(dir).append("/").append(outbase).append("_b_Rep_counts.tab").toString());
 		for(int c=0; c<bCounts.size(); c++){
-			StringBuilder ob = new StringBuilder();
+			
 			for(int p=0; p < bCounts.get(c).length; p++){
+				StringBuilder ob = new StringBuilder();
 				ob.append(bLocs.get(c).get(bsort.get(c)[p]).getLocationString()).append("\t");
 				for(int r=0; r<repsb.size(); r++){
 					ob.append(bCounts.get(c)[p][r]).append("\t");
