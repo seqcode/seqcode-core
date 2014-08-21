@@ -41,24 +41,21 @@ public class Intersect {
 	private List<Map<Integer,Point>> aLocs;
 	private List<Map<Integer,Point>> bLocs;
 	
-	private int[][] asort;
-	private int[][] bsort;
+	private List<int[]> asort;
+	private List<int[]> bsort;
 	
-	private Map<String, Integer> chrom2Id;
-	private Map<Integer, String> Id2Chrom;
-	
-	//private SeqLocator expta;
-	//private SeqLocator exptb;
-	
-	private int[][][] aCounts;
-	private int[][][] bCounts;
+	private Map<String, Integer> chrom2Id = new HashMap<String, Integer>();
+	private Map<Integer, String> Id2Chrom = new HashMap<Integer,String>();
+
+	private List<int[][]> aCounts;
+	private List<int[][]> bCounts;
 	
 	/**
 	 * replicate names are hard-coded at the moment, until I change this to the standard expt loading procedure
 	 * replicates are for Zaret Mnase project
 	 */
-	private Collection<String> repsa = new ArrayList<String>();
-	private Collection<String> repsb = new ArrayList<String>();
+	private List<String> repsa = new ArrayList<String>();
+	private List<String> repsb = new ArrayList<String>();
 	
 	Genome gen;
 	
@@ -72,9 +69,11 @@ public class Intersect {
 		int numChrom = 0;
 		
 		for(String chr : gen.getChromList()){
-			chrom2Id.put(chr, numChrom);
-			Id2Chrom.put(numChrom, chr);
-			numChrom++;
+			if(!chr.contains("random")){
+				chrom2Id.put(chr, numChrom);
+				Id2Chrom.put(numChrom, chr);
+				numChrom++;
+			}
 		}
 		
 		this.min_match_distance = min_match;
@@ -92,9 +91,11 @@ public class Intersect {
 		Integer numChrom = 0;
 		
 		for(String chr : gen.getChromList()){
-			chrom2Id.put(chr, numChrom);
-			Id2Chrom.put(numChrom, chr);
-			numChrom++;
+			if(!chr.contains("random")){
+				chrom2Id.put(chr, numChrom);
+				Id2Chrom.put(numChrom, chr);
+				numChrom++;
+			}
 		}
 		
 		aLocs = new ArrayList<Map<Integer,Point>>();
@@ -113,28 +114,51 @@ public class Intersect {
 			bLocs.get(chrom2Id.get(p.getChrom())).put(p.getLocation(), p);
 		}
 		
-		asort = new int[chrom2Id.keySet().size()][a.size()];
-		bsort = new int[chrom2Id.keySet().size()][b.size()];
+		asort = new ArrayList<int[]>();
+		bsort = new ArrayList<int[]>();
 		
-		int count = 0;
+		
+		List<List<Integer>> tmp = new ArrayList<List<Integer>>();
+		for(int c=0; c<chrom2Id.keySet().size(); c++){
+			tmp.add(new ArrayList<Integer>());
+		}
+		
 		for( Point p : a ){
-			asort[chrom2Id.get(p.getChrom())][count] = p.getLocation();
-			count++;
+			tmp.get(chrom2Id.get(p.getChrom())).add(p.getLocation());
 		}
 		
-		count = 0;
+		for(int c=0; c<chrom2Id.keySet().size(); c++){
+			int[] tmplocs = new int[tmp.get(c).size()];
+			for(int l=0; l<tmp.get(c).size(); l++){
+				tmplocs[l] = tmp.get(c).get(l);
+			}
+			int[] inds = StatUtil.findSort(tmplocs);
+			tmplocs = StatUtil.permute(tmplocs,inds);
+			asort.add(tmplocs);
+		}
+		
+		tmp = null;
+		
+		tmp = new ArrayList<List<Integer>>();
+		
+		for(int c=0; c<chrom2Id.keySet().size(); c++){
+			tmp.add(new ArrayList<Integer>());
+		}
+		
 		for( Point p : b ){
-			bsort[chrom2Id.get(p.getChrom())][count] = p.getLocation();
-			count++;
+			tmp.get(chrom2Id.get(p.getChrom())).add(p.getLocation());
 		}
 		
-		for(int i=0; i<chrom2Id.keySet().size(); i++){
-			int[] indsa = StatUtil.findSort(asort[i]);
-			asort[i] = StatUtil.permute(asort[i],indsa);
-			
-			int[] indsb =  StatUtil.findSort(bsort[i]);
-			bsort[i] = StatUtil.permute(bsort[i],indsb);
+		for(int c=0; c<chrom2Id.keySet().size(); c++){
+			int[] tmplocs = new int[tmp.get(c).size()];
+			for(int l=0; l<tmp.get(c).size(); l++){
+				tmplocs[l] = tmp.get(c).get(l);
+			}
+			int[] inds = StatUtil.findSort(tmplocs);
+			tmplocs = StatUtil.permute(tmplocs,inds);
+			bsort.add(tmplocs);
 		}
+		
 		
 		repsa.add("1a"); repsa.add("1b"); repsa.add("1c"); repsa.add("2a"); repsa.add("2b"); repsa.add("2c");
 		repsb.add("1a"); repsb.add("1b"); repsb.add("1c"); repsb.add("2a"); repsb.add("2b"); repsb.add("2c");
@@ -147,23 +171,26 @@ public class Intersect {
 		String[] anames = expta.split(";");
 		String[] bnames = exptb.split(";");
 		
-		this.aCounts = this.getRepWindowCounts(anames[0], anames[1], repsa, a, asort, aLocs, minFragLen, maxFragLen, win);
-		this.bCounts = this.getRepWindowCounts(bnames[0], bnames[1], repsb, b, bsort, bLocs, minFragLen, maxFragLen, win);
+		this.aCounts = this.getRepWindowCounts(anames[0], anames[1], repsa, asort, aLocs, minFragLen, maxFragLen, win);
+		this.bCounts = this.getRepWindowCounts(bnames[0], bnames[1], repsb, bsort, bLocs, minFragLen, maxFragLen, win);
 	}
 	
 	
 	
-	private int[][][] getRepWindowCounts(String ename, String aname, Collection<String> reps, List<Point> points, int[][] pointsSort, List<Map<Integer,Point>> pointsMap, int minFragLen, int maxFragLen, int win) throws SQLException, IOException{
+	private List<int[][]> getRepWindowCounts(String ename, String aname, List<String> reps, List<int[]> pointsSort, List<Map<Integer,Point>> pointsMap, int minFragLen, int maxFragLen, int win) throws SQLException, IOException{
 		
-		int[][][] ret = new int[chrom2Id.keySet().size()][points.size()][reps.size()];
+		List<int[][]> ret = new ArrayList<int[][]>();
 		
 		for(int c=0; c< chrom2Id.size(); c++){
 			
+			int[][] temp = new int[reps.size()][pointsSort.get(c).length];
+			
 			for(int r=0; r< reps.size(); r++){
-				SeqLocator tmpLoc = new SeqLocator(ename, reps, aname);
+				SeqLocator tmpLoc = new SeqLocator(ename, reps.get(r), aname);
 				SeqExpander tmpExp = new SeqExpander(tmpLoc);
 				Genome.ChromosomeInfo s = gen.getChrom(Id2Chrom.get(c));
 				NamedRegion chrom = new NamedRegion(gen,Id2Chrom.get(c),1,s.getLength(),Id2Chrom.get(c));
+				System.out.println(this.gen.getChromID(Id2Chrom.get(c))+"\t"+Id2Chrom.get(c));
 				Iterator<SeqHitPair> itr = tmpExp.getPairs(chrom);
 				List<Integer> midpts = new ArrayList<Integer>();
 				while(itr.hasNext()){
@@ -188,8 +215,8 @@ public class Intersect {
 				midsort = StatUtil.permute(midsort, ind);
 				
 				
-				for(int p=0; p< points.size(); p++){
-					ret[c][p][r] = this.countRegionInChrom(pointsMap.get(c).get(pointsSort[c][p]), midsort, win);
+				for(int p=0; p< pointsSort.get(c).length; p++){
+					ret.get(c)[p][r] = this.countRegionInChrom(pointsMap.get(c).get(pointsSort.get(c)[p]), midsort, win);
 				}
 				
 				tmpExp.close();
@@ -230,12 +257,12 @@ public class Intersect {
 		String dir = System.getProperty("user.dir");
 		StringBuilder sb = new StringBuilder();
 		FileWriter afw = new FileWriter(sb.append(dir).append("/").append(outbase).append("_a_Rep_counts.tab").toString());
-		for(int c=0; c< aCounts.length; c++){
+		for(int c=0; c< aCounts.size(); c++){
 			StringBuilder o = new StringBuilder();
-			for(int p=0; p<a.size(); p++){
+			for(int p=0; p<aCounts.get(c).length; p++){
 				o.append(a.get(p).getLocationString()).append("\t");
 				for(int r=0; r<repsa.size(); r++){
-					o.append(aCounts[c][p][r]).append("\t");
+					o.append(aCounts.get(c)[p][r]).append("\t");
 				}
 			}
 			afw.write(o.append("\n").toString());
@@ -244,12 +271,12 @@ public class Intersect {
 		afw.close();
 		StringBuilder sbb = new StringBuilder();
 		FileWriter bfw = new FileWriter(sbb.append(dir).append("/").append(outbase).append("_b_Rep_counts.tab").toString());
-		for(int c=0; c<bCounts.length; c++){
+		for(int c=0; c<bCounts.size(); c++){
 			StringBuilder ob = new StringBuilder();
-			for(int p=0; p < b.size(); p++){
+			for(int p=0; p < bCounts.get(c).length; p++){
 				ob.append(b.get(p).getLocationString()).append("\t");
 				for(int r=0; r<repsb.size(); r++){
-					ob.append(bCounts[c][p][r]).append("\t");
+					ob.append(bCounts.get(c)[p][r]).append("\t");
 				}
 			}
 			
@@ -260,18 +287,18 @@ public class Intersect {
 	
 	public void intersect(){
 		for(int c = 0; c<chrom2Id.keySet().size(); c++){
-			for(int p = 0; p<a.size(); p++){
-				int tmpKey = asort[c][p];
-				int match = Arrays.binarySearch(bsort[c], tmpKey);
+			for(int p = 0; p<asort.get(c).length; p++){
+				int tmpKey = asort.get(c)[p];
+				int match = Arrays.binarySearch(bsort.get(c), tmpKey);
 				if( match < 0 ) { match = -match - 1; }
 				int dist = 0;
 				int bkey=0;
 				if(match !=0){
-					dist = ((bsort[c][match]-tmpKey) < (tmpKey -bsort[c][match-1]) )? bsort[c][match]-tmpKey :tmpKey -bsort[c][match-1];
-					bkey = ((bsort[c][match]-tmpKey) < (tmpKey -bsort[c][match-1]) ) ? bsort[c][match] : bsort[c][match-1];
+					dist = ((bsort.get(c)[match]-tmpKey) < (tmpKey -bsort.get(c)[match-1]) )? bsort.get(c)[match]-tmpKey :tmpKey -bsort.get(c)[match-1];
+					bkey = ((bsort.get(c)[match]-tmpKey) < (tmpKey -bsort.get(c)[match-1]) ) ? bsort.get(c)[match] : bsort.get(c)[match-1];
 				}else{
 					dist = 0;
-					bkey = bsort[c][match];
+					bkey = bsort.get(c)[match];
 				}
 				
 				if(dist<min_match_distance){
