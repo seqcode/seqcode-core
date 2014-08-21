@@ -170,8 +170,9 @@ public class Intersect {
 	private void fillRepCounts(String expta, String exptb, int minFragLen, int maxFragLen, int win) throws SQLException, IOException{
 		String[] anames = expta.split(";");
 		String[] bnames = exptb.split(";");
-		
+		System.out.println("Filling a counts");
 		this.aCounts = this.getRepWindowCounts(anames[0], anames[1], repsa, asort, aLocs, minFragLen, maxFragLen, win);
+		System.out.println("Filling b counts");
 		this.bCounts = this.getRepWindowCounts(bnames[0], bnames[1], repsb, bsort, bLocs, minFragLen, maxFragLen, win);
 	}
 	
@@ -183,7 +184,7 @@ public class Intersect {
 		
 		for(int c=0; c< chrom2Id.size(); c++){
 			
-			int[][] temp = new int[reps.size()][pointsSort.get(c).length];
+			ret.add(new int[pointsSort.get(c).length][reps.size()]);
 			
 			for(int r=0; r< reps.size(); r++){
 				SeqLocator tmpLoc = new SeqLocator(ename, reps.get(r), aname);
@@ -264,8 +265,9 @@ public class Intersect {
 				for(int r=0; r<repsa.size(); r++){
 					o.append(aCounts.get(c)[p][r]).append("\t");
 				}
+				afw.write(o.append("\n").toString());
 			}
-			afw.write(o.append("\n").toString());
+			
 		}
 		
 		afw.close();
@@ -278,10 +280,10 @@ public class Intersect {
 				for(int r=0; r<repsb.size(); r++){
 					ob.append(bCounts.get(c)[p][r]).append("\t");
 				}
+				bfw.write(ob.append("\n").toString());
 			}
-			
-			bfw.write(ob.toString());
 		}
+		bfw.close();
 	}
 	
 	
