@@ -172,6 +172,8 @@ public class Intersect {
 		String[] bnames = exptb.split(";");
 		System.out.println("Filling a counts");
 		this.aCounts = this.getRepWindowCounts(anames[0], anames[1], repsa, asort, aLocs, minFragLen, maxFragLen, win);
+		System.out.println(this.aCounts.get(chrom2Id.get("1")).length);
+		System.out.println(this.aCounts.get(chrom2Id.get("3")).length);
 		System.out.println("Filling b counts");
 		this.bCounts = this.getRepWindowCounts(bnames[0], bnames[1], repsb, bsort, bLocs, minFragLen, maxFragLen, win);
 	}
@@ -261,7 +263,7 @@ public class Intersect {
 		for(int c=0; c< aCounts.size(); c++){
 			StringBuilder o = new StringBuilder();
 			for(int p=0; p<aCounts.get(c).length; p++){
-				o.append(a.get(p).getLocationString()).append("\t");
+				o.append(aLocs.get(c).get(asort.get(c)[p]).getLocationString()).append("\t");
 				for(int r=0; r<repsa.size(); r++){
 					o.append(aCounts.get(c)[p][r]).append("\t");
 				}
@@ -276,7 +278,7 @@ public class Intersect {
 		for(int c=0; c<bCounts.size(); c++){
 			StringBuilder ob = new StringBuilder();
 			for(int p=0; p < bCounts.get(c).length; p++){
-				ob.append(b.get(p).getLocationString()).append("\t");
+				ob.append(bLocs.get(c).get(bsort.get(c)[p]).getLocationString()).append("\t");
 				for(int r=0; r<repsb.size(); r++){
 					ob.append(bCounts.get(c)[p][r]).append("\t");
 				}
