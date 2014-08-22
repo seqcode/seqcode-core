@@ -360,9 +360,6 @@ public class Intersect {
 				if( match < 0 ) { match = -match - 1; }
 				int dist = 0;
 				int bkey=0;
-				System.out.println(match);
-				System.out.println(bsort.get(c).length);
-				System.out.println(asort.get(c).length);
 				if(match !=0 && match < bsort.get(c).length){
 					dist = ((bsort.get(c)[match]-tmpKey) < (tmpKey -bsort.get(c)[match-1]) )? bsort.get(c)[match]-tmpKey :tmpKey -bsort.get(c)[match-1];
 					bkey = ((bsort.get(c)[match]-tmpKey) < (tmpKey -bsort.get(c)[match-1]) ) ? bsort.get(c)[match] : bsort.get(c)[match-1];
