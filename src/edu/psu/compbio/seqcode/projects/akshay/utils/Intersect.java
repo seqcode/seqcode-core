@@ -76,6 +76,67 @@ public class Intersect {
 			}
 		}
 		
+		aLocs = new ArrayList<Map<Integer,Point>>();
+		bLocs = new ArrayList<Map<Integer, Point>>();
+		
+		for(String s : chrom2Id.keySet()){
+			aLocs.add(new HashMap<Integer, Point>());
+			bLocs.add(new HashMap<Integer, Point>());
+		}
+		
+		for( Point p :  a ){
+			aLocs.get(chrom2Id.get(p.getChrom())).put(p.getLocation(), p);
+		}
+		
+		for( Point p : b ){
+			bLocs.get(chrom2Id.get(p.getChrom())).put(p.getLocation(), p);
+		}
+		
+		asort = new ArrayList<int[]>();
+		bsort = new ArrayList<int[]>();
+		
+		
+		List<List<Integer>> tmp = new ArrayList<List<Integer>>();
+		for(int c=0; c<chrom2Id.keySet().size(); c++){
+			tmp.add(new ArrayList<Integer>());
+		}
+		
+		for( Point p : a ){
+			tmp.get(chrom2Id.get(p.getChrom())).add(p.getLocation());
+		}
+		
+		for(int c=0; c<chrom2Id.keySet().size(); c++){
+			int[] tmplocs = new int[tmp.get(c).size()];
+			for(int l=0; l<tmp.get(c).size(); l++){
+				tmplocs[l] = tmp.get(c).get(l);
+			}
+			int[] inds = StatUtil.findSort(tmplocs);
+			tmplocs = StatUtil.permute(tmplocs,inds);
+			asort.add(tmplocs);
+		}
+		
+		tmp = null;
+		
+		tmp = new ArrayList<List<Integer>>();
+		
+		for(int c=0; c<chrom2Id.keySet().size(); c++){
+			tmp.add(new ArrayList<Integer>());
+		}
+		
+		for( Point p : b ){
+			tmp.get(chrom2Id.get(p.getChrom())).add(p.getLocation());
+		}
+		
+		for(int c=0; c<chrom2Id.keySet().size(); c++){
+			int[] tmplocs = new int[tmp.get(c).size()];
+			for(int l=0; l<tmp.get(c).size(); l++){
+				tmplocs[l] = tmp.get(c).get(l);
+			}
+			int[] inds = StatUtil.findSort(tmplocs);
+			tmplocs = StatUtil.permute(tmplocs,inds);
+			bsort.add(tmplocs);
+		}
+		
 		this.min_match_distance = min_match;
 		
 		
