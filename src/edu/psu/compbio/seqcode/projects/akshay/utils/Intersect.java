@@ -352,6 +352,62 @@ public class Intersect {
 	}
 	
 	
+	public void printOnlyA(){
+		for(int c=0; c<chrom2Id.keySet().size(); c++){
+			for(int p=0; p<asort.get(c).length; p++){
+				int tmpKey = asort.get(c)[p];
+				int match = Arrays.binarySearch(bsort.get(c), tmpKey);
+				if( match < 0 ) { match = -match - 1; }
+				int dist = 0;
+				int bkey=0;
+				if(match !=0 && match < bsort.get(c).length){
+					dist = ((bsort.get(c)[match]-tmpKey) < (tmpKey -bsort.get(c)[match-1]) )? bsort.get(c)[match]-tmpKey :tmpKey -bsort.get(c)[match-1];
+					bkey = ((bsort.get(c)[match]-tmpKey) < (tmpKey -bsort.get(c)[match-1]) ) ? bsort.get(c)[match] : bsort.get(c)[match-1];
+				}else if(match == bsort.get(c).length){
+					dist = tmpKey -bsort.get(c)[match-1];
+					bkey = bsort.get(c)[match-1];
+				}else{
+					dist=0;
+					bkey=bsort.get(c)[match];
+				}
+				
+				if(dist >= min_match_distance){
+					System.out.println(aLocs.get(c).get(tmpKey).getLocationString());
+				}
+			}
+		}
+	}
+	
+	
+	public void printOnlyB(){
+		for(int c=0; c<chrom2Id.keySet().size(); c++){
+			for(int p=0; p<bsort.get(c).length; p++){
+				int tmpKey = bsort.get(c)[p];
+				int match = Arrays.binarySearch(asort.get(c), tmpKey);
+				if( match < 0 ) { match = -match - 1; }
+				int dist = 0;
+				int akey=0;
+				if(match !=0 && match < asort.get(c).length){
+					dist = ((asort.get(c)[match]-tmpKey) < (tmpKey -asort.get(c)[match-1]) )? asort.get(c)[match]-tmpKey :tmpKey -asort.get(c)[match-1];
+					akey = ((asort.get(c)[match]-tmpKey) < (tmpKey -asort.get(c)[match-1]) ) ? asort.get(c)[match] : asort.get(c)[match-1];
+				}else if(match == asort.get(c).length){
+					dist = tmpKey - asort.get(c)[match-1];
+					akey = asort.get(c)[match];
+				}else{
+					dist = 0;
+					akey=asort.get(c)[match];
+				}
+				
+				if(dist >= min_match_distance){
+					System.out.println(bLocs.get(c).get(tmpKey).getLocationString());
+				}
+				
+			}
+		}
+	}
+	
+	
+	
 	public void intersect(){
 		for(int c = 0; c<chrom2Id.keySet().size(); c++){
 			for(int p = 0; p<asort.get(c).length; p++){
@@ -372,11 +428,11 @@ public class Intersect {
 				}
 				
 				if(dist<min_match_distance){
-					System.out.println(aLocs.get(c).get(tmpKey).getLocation()+"\t"+
-							bLocs.get(c).get(bkey).getLocation()+"\t"+Integer.toString(dist));
+					System.out.println(aLocs.get(c).get(tmpKey).getLocationString()+"\t"+
+							bLocs.get(c).get(bkey).getLocationString()+"\t"+Integer.toString(dist));
 				}
 				else{
-					System.out.println(aLocs.get(c).get(tmpKey).getLocation()+"\t"+"Inf"+"\t"+"Inf");
+					System.out.println(aLocs.get(c).get(tmpKey).getLocationString()+"\t"+"Inf"+"\t"+"Inf");
 				}
 			}
 		}
@@ -406,7 +462,7 @@ public class Intersect {
 		List<Point> bpoints = Utilities.loadPeaksFromPeakFile(g, bpeaks, win);
 		
 		//Intersect analyzer = new Intersect(apoints, bpoints, g, minFragLen, maxFragLen, win, aexpt , bexpt);
-		if(ap.hasKey("interesect")){
+		if(ap.hasKey("intersect")){
 			
 			int min_distance = Args.parseInteger(args, "minD", 40);
 			Intersect analyzer = new Intersect(apoints, bpoints, min_distance, g);
