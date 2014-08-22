@@ -468,6 +468,19 @@ public class Intersect {
 			Intersect analyzer = new Intersect(apoints, bpoints, min_distance, g);
 			analyzer.intersect();
 		}
+		
+		if(ap.hasKey("onlyA")){
+			int min_distance = Args.parseInteger(args, "minD", 40);
+			Intersect analyzer = new Intersect(apoints, bpoints, min_distance, g);
+			analyzer.printOnlyA();
+		}
+		
+		if(ap.hasKey("onlyB")){
+			int min_distance = Args.parseInteger(args, "minD", 40);
+			Intersect analyzer = new Intersect(apoints, bpoints, min_distance, g);
+			analyzer.printOnlyB();
+		}
+		
 		if(ap.hasKey("count")){
 			Intersect analyzer = new Intersect(apoints, bpoints, g, minFragLen, maxFragLen, win, aexpt , bexpt);
 			String outbase = ap.getKeyValue("out");
