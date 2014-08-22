@@ -392,7 +392,7 @@ public class Intersect {
 					akey = ((asort.get(c)[match]-tmpKey) < (tmpKey -asort.get(c)[match-1]) ) ? asort.get(c)[match] : asort.get(c)[match-1];
 				}else if(match == asort.get(c).length){
 					dist = tmpKey - asort.get(c)[match-1];
-					akey = asort.get(c)[match];
+					akey = asort.get(c)[match-1];
 				}else{
 					dist = 0;
 					akey=asort.get(c)[match];
