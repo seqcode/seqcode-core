@@ -50,6 +50,9 @@ public class Intersect {
 	private List<int[][]> aCounts;
 	private List<int[][]> bCounts;
 	
+	private List<int[][]> aCounts_at_b;
+	private List<int[][]> bCounts_at_a;
+	
 	/**
 	 * replicate names are hard-coded at the moment, until I change this to the standard expt loading procedure
 	 * replicates are for Zaret Mnase project
@@ -233,10 +236,12 @@ public class Intersect {
 		String[] bnames = exptb.split(";");
 		System.out.println("Filling a counts");
 		this.aCounts = this.getRepWindowCounts(anames[0], anames[1], repsa, asort, aLocs, minFragLen, maxFragLen, win);
+		this.aCounts_at_b = this.getRepWindowCounts(anames[0], anames[1], repsa, bsort, bLocs, minFragLen, maxFragLen, win);
 		System.out.println(this.aCounts.get(chrom2Id.get("1")).length);
 		System.out.println(this.aCounts.get(chrom2Id.get("3")).length);
 		System.out.println("Filling b counts");
 		this.bCounts = this.getRepWindowCounts(bnames[0], bnames[1], repsb, bsort, bLocs, minFragLen, maxFragLen, win);
+		this.bCounts_at_a = this.getRepWindowCounts(bnames[0], bnames[1], repsb, asort, aLocs, minFragLen, maxFragLen, win);
 	}
 	
 	
@@ -321,20 +326,28 @@ public class Intersect {
 		String dir = System.getProperty("user.dir");
 		StringBuilder sb = new StringBuilder();
 		FileWriter afw = new FileWriter(sb.append(dir).append("/").append(outbase).append("_a_Rep_counts.tab").toString());
+		FileWriter bfw_at_a = new FileWriter(sb.append(dir).append("/").append(outbase).append("_b_at_a_Rep_counts.tab").toString());
 		for(int c=0; c< aCounts.size(); c++){
 			
 			for(int p=0; p<aCounts.get(c).length; p++){
 				StringBuilder o = new StringBuilder();
+				StringBuilder o_b_at_a = new StringBuilder();
 				o.append(aLocs.get(c).get(asort.get(c)[p]).getLocationString()).append("\t");
+				o_b_at_a.append(aLocs.get(c).get(asort.get(c)[p]).getLocationString()).append("\t");
 				for(int r=0; r<repsa.size(); r++){
 					o.append(aCounts.get(c)[p][r]).append("\t");
 				}
+				for(int r=0; r<repsb.size(); r++){
+					o_b_at_a.append(bCounts_at_a.get(c)[p][r]).append("\t");
+				}
 				afw.write(o.append("\n").toString());
+				bfw_at_a.write(o_b_at_a.toString());
 			}
 			
 		}
 		
 		afw.close();
+		bfw_at_a.close();
 		StringBuilder sbb = new StringBuilder();
 		FileWriter bfw = new FileWriter(sbb.append(dir).append("/").append(outbase).append("_b_Rep_counts.tab").toString());
 		for(int c=0; c<bCounts.size(); c++){
