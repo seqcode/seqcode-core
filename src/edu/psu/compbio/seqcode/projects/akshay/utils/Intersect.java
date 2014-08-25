@@ -442,7 +442,7 @@ public class Intersect {
 					dist = tmpKey -bsort.get(c)[match-1];
 					bkey = bsort.get(c)[match-1];
 				}else{
-					dist=tmpKey - bsort.get(c)[0];
+					dist=Math.abs(tmpKey - bsort.get(c)[0]);
 					bkey=bsort.get(c)[0];
 				}
 				
