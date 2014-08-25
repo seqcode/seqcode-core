@@ -342,7 +342,7 @@ public class Intersect {
 					o_b_at_a.append(bCounts_at_a.get(c)[p][r]).append("\t");
 				}
 				afw.write(o.append("\n").toString());
-				bfw_at_a.write(o_b_at_a.toString());
+				bfw_at_a.write(o_b_at_a.append("\n").toString());
 			}
 			
 		}
@@ -359,6 +359,7 @@ public class Intersect {
 				StringBuilder ob = new StringBuilder();
 				StringBuilder o_a_at_b = new StringBuilder();
 				ob.append(bLocs.get(c).get(bsort.get(c)[p]).getLocationString()).append("\t");
+				o_a_at_b.append(bLocs.get(c).get(bsort.get(c)[p]).getLocationString()).append("\t");
 				for(int r=0; r<repsb.size(); r++){
 					ob.append(bCounts.get(c)[p][r]).append("\t");
 					o_a_at_b.append(aCounts_at_b.get(c)[p][r]).append("\t");
@@ -368,6 +369,7 @@ public class Intersect {
 			}
 		}
 		bfw.close();
+		afw_at_b.close();
 	}
 	
 	
