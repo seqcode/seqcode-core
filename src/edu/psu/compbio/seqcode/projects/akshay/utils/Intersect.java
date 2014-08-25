@@ -325,8 +325,9 @@ public class Intersect {
 	public void printWindCounts(String outbase) throws IOException{
 		String dir = System.getProperty("user.dir");
 		StringBuilder sb = new StringBuilder();
+		StringBuilder s_b_at_a = new StringBuilder();
 		FileWriter afw = new FileWriter(sb.append(dir).append("/").append(outbase).append("_a_Rep_counts.tab").toString());
-		FileWriter bfw_at_a = new FileWriter(sb.append(dir).append("/").append(outbase).append("_b_at_a_Rep_counts.tab").toString());
+		FileWriter bfw_at_a = new FileWriter(s_b_at_a.append(dir).append("/").append(outbase).append("_b_at_a_Rep_counts.tab").toString());
 		for(int c=0; c< aCounts.size(); c++){
 			
 			for(int p=0; p<aCounts.get(c).length; p++){
@@ -349,16 +350,21 @@ public class Intersect {
 		afw.close();
 		bfw_at_a.close();
 		StringBuilder sbb = new StringBuilder();
+		StringBuilder s_a_at_b = new StringBuilder();
 		FileWriter bfw = new FileWriter(sbb.append(dir).append("/").append(outbase).append("_b_Rep_counts.tab").toString());
+		FileWriter afw_at_b = new FileWriter(s_a_at_b.append(dir).append("/").append(outbase).append("_a_at_b_Rep_counts.tab").toString());
 		for(int c=0; c<bCounts.size(); c++){
 			
 			for(int p=0; p < bCounts.get(c).length; p++){
 				StringBuilder ob = new StringBuilder();
+				StringBuilder o_a_at_b = new StringBuilder();
 				ob.append(bLocs.get(c).get(bsort.get(c)[p]).getLocationString()).append("\t");
 				for(int r=0; r<repsb.size(); r++){
 					ob.append(bCounts.get(c)[p][r]).append("\t");
+					o_a_at_b.append(aCounts_at_b.get(c)[p][r]).append("\t");
 				}
 				bfw.write(ob.append("\n").toString());
+				afw_at_b.write(o_a_at_b.append("\n").toString());
 			}
 		}
 		bfw.close();
