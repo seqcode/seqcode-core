@@ -386,8 +386,8 @@ public class Intersect {
 					dist = tmpKey -bsort.get(c)[match-1];
 					bkey = bsort.get(c)[match-1];
 				}else{
-					dist=0;
-					bkey=bsort.get(c)[match];
+					dist=Math.abs(tmpKey - bsort.get(c)[0]);
+					bkey=bsort.get(c)[0];
 				}
 				
 				if(dist >= min_match_distance){
@@ -413,8 +413,8 @@ public class Intersect {
 					dist = tmpKey - asort.get(c)[match-1];
 					akey = asort.get(c)[match-1];
 				}else{
-					dist = 0;
-					akey=asort.get(c)[match];
+					dist = Math.abs(tmpKey - asort.get(c)[0]);
+					akey=asort.get(c)[0];
 				}
 				
 				if(dist >= min_match_distance){
