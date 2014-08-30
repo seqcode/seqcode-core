@@ -114,7 +114,6 @@ public class Intersect {
 				tmplocs[l] = tmp.get(c).get(l);
 			}
 			int[] inds = StatUtil.findSort(tmplocs);
-			tmplocs = StatUtil.permute(tmplocs,inds);
 			asort.add(tmplocs);
 		}
 		
@@ -136,7 +135,6 @@ public class Intersect {
 				tmplocs[l] = tmp.get(c).get(l);
 			}
 			int[] inds = StatUtil.findSort(tmplocs);
-			tmplocs = StatUtil.permute(tmplocs,inds);
 			bsort.add(tmplocs);
 		}
 		
@@ -197,7 +195,6 @@ public class Intersect {
 				tmplocs[l] = tmp.get(c).get(l);
 			}
 			int[] inds = StatUtil.findSort(tmplocs);
-			tmplocs = StatUtil.permute(tmplocs,inds);
 			asort.add(tmplocs);
 		}
 		
@@ -219,7 +216,6 @@ public class Intersect {
 				tmplocs[l] = tmp.get(c).get(l);
 			}
 			int[] inds = StatUtil.findSort(tmplocs);
-			tmplocs = StatUtil.permute(tmplocs,inds);
 			bsort.add(tmplocs);
 		}
 		
@@ -458,7 +454,6 @@ public class Intersect {
 			}
 		}
 	}
-	
 	
 	public static void main(String[] args) throws NotFoundException, SQLException, IOException{
 		ArgParser ap = new ArgParser(args);
