@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -134,9 +136,20 @@ public class PairedBEDExporter {
 			e.printStackTrace();
 		}
 		
-		
-		
-		List<SeqLocator> rdbexpts = Args.parseSeqExpt(args, "rdbexpt");
+		List<SeqLocator>  rdbexpts = new ArrayList<SeqLocator>();
+		if(ap.hasKey("reps")){
+			String repstring = Args.parseString(args, "reps", "");
+			Collection<String> reps = new ArrayList<String>();
+			String[] pieces = repstring.split(";");
+			for(int s=0; s<pieces.length; s++){
+				reps.add(pieces[s]);
+			}
+			String exptname = Args.parseString(args, "rdbexpt", "");
+			String[] exptPieces = exptname.split(";");
+			rdbexpts.add(new SeqLocator(exptPieces[0],reps,exptPieces[1])); 
+		}else{
+			rdbexpts = Args.parseSeqExpt(args, "rdbexpt");
+		}
 		String out = ap.getKeyValue("out");
 		try {
 			PairedBEDExporter exporter = new PairedBEDExporter(rdbexpts,g,out,minFrag,maxFrag);
