@@ -37,17 +37,22 @@ public class PairedBEDExporter {
 	private String outName="out";
 	private DeepSeqExpt fetcher;
 	
+	private int minFragLen;
+	private int maxFragLen;
+	
 	private boolean clientConnected = false;
 	
 	private static final Logger logger = Logger.getLogger(SingleConditionFeatureFinder.class);
 	
-	public PairedBEDExporter(List<SeqLocator> expt, Genome g, String o) throws SQLException, IOException, NotFoundException {
+	public PairedBEDExporter(List<SeqLocator> expt, Genome g, String o,int minFrag, int maxFrag) throws SQLException, IOException, NotFoundException {
 		this.gen = g;
 		this.locators = expt;
 		this.fetcher = new DeepSeqExpt(gen,this.locators,"readdb",-1,true);
 		this.clientConnected = true;
 		this.logger.info("Expt hit count: " + (int) this.fetcher.getHitCount()+ ", weight: " + (int) this.fetcher.getWeightTotal());
 		this.outName =o;
+		this.maxFragLen =  maxFrag;
+		this.minFragLen = minFrag;
 	}
 	
 	public void close(){
@@ -91,7 +96,8 @@ public class PairedBEDExporter {
 		StringBuilder sb = new StringBuilder();
 		for(PairedHit ph : this.getPairs(r)){
 			int midp=0;
-			if(ph.leftChrom == ph.rightChrom){
+			int fraglen = ph.greaterPos() - ph.lesserPos(); 
+			if(ph.leftChrom == ph.rightChrom && fraglen>=this.minFragLen && fraglen <= this.maxFragLen ){
 				midp = ph.lesserPos() + (ph.greaterPos()-ph.lesserPos())/2;
 				
 				sb.append(head).append(midp-1).append("\t").append(midp).append(tail).append("\n");
@@ -103,6 +109,8 @@ public class PairedBEDExporter {
 	public static void main(String[] args){
 		ArgParser ap = new ArgParser(args);
 		Genome g=null;
+		int minFrag = 0;
+		int maxFrag = 0;
 		try {
 			if(ap.hasKey("species")){
 				Pair<Organism, Genome> pair = Args.parseGenome(args);
@@ -119,6 +127,9 @@ public class PairedBEDExporter {
 				    g = null;
 				}
 			}
+			minFrag = Args.parseInteger(args, "minFragLen", 140);
+			maxFrag = Args.parseInteger(args, "maxFragLen", 200);
+			
 		}catch (NotFoundException e) {
 			e.printStackTrace();
 		}
@@ -128,7 +139,7 @@ public class PairedBEDExporter {
 		List<SeqLocator> rdbexpts = Args.parseSeqExpt(args, "rdbexpt");
 		String out = ap.getKeyValue("out");
 		try {
-			PairedBEDExporter exporter = new PairedBEDExporter(rdbexpts,g,out);
+			PairedBEDExporter exporter = new PairedBEDExporter(rdbexpts,g,out,minFrag,maxFrag);
 			exporter.execute();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
