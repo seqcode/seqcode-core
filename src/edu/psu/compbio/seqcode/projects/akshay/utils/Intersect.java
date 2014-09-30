@@ -425,7 +425,7 @@ public class Intersect {
 	
 	
 	
-	public void intersect(){
+	public void intersect(boolean direction){
 		for(int c = 0; c<chrom2Id.keySet().size(); c++){
 			for(int p = 0; p<asort.get(c).length; p++){
 				int tmpKey = asort.get(c)[p];
@@ -445,8 +445,14 @@ public class Intersect {
 				}
 				
 				if(dist<min_match_distance){
-					System.out.println(aLocs.get(c).get(tmpKey).getLocationString()+"\t"+
-							bLocs.get(c).get(bkey).getLocationString()+"\t"+Integer.toString(dist));
+					if(direction){
+						dist = tmpKey - bkey;
+						System.out.println(aLocs.get(c).get(tmpKey).getLocationString()+"\t"+
+								bLocs.get(c).get(bkey).getLocationString()+"\t"+Integer.toString(dist));
+					}else{
+						System.out.println(aLocs.get(c).get(tmpKey).getLocationString()+"\t"+
+								bLocs.get(c).get(bkey).getLocationString()+"\t"+Integer.toString(dist));
+					}
 				}
 				else{
 					System.out.println(aLocs.get(c).get(tmpKey).getLocationString()+"\t"+"Inf"+"\t"+"Inf");
@@ -481,8 +487,9 @@ public class Intersect {
 		if(ap.hasKey("intersect")){
 			
 			int min_distance = Args.parseInteger(args, "minD", 40);
+			boolean direction = Args.parseFlags(args).contains("direction");
 			Intersect analyzer = new Intersect(apoints, bpoints, min_distance, g);
-			analyzer.intersect();
+			analyzer.intersect(direction);
 		}
 		
 		if(ap.hasKey("onlyA")){
