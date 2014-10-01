@@ -3,9 +3,11 @@ package edu.psu.compbio.seqcode.projects.akshay.utils;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.Genome.ChromosomeInfo;
@@ -62,6 +64,7 @@ public class PairEndStatSandbox {
 		
 		while(chrItr.hasNext()){
 			NamedRegion chrom = chrItr.next();
+			
 			if(!chrom.getName().contains("random")){
 				Iterator<SeqHitPair> pairItr = this.loadHitsbyChrom(chrom);
 				while(pairItr.hasNext()){
@@ -109,12 +112,7 @@ public class PairEndStatSandbox {
 			}
 			System.out.println(r.getLocationString()+"\t"+Integer.toString(count));
 		}
-	}
-	
-	
-	
-	
-	
+	}	
 	
 	public void clean(){
 		if(isNotClean()){
