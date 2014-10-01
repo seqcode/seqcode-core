@@ -277,7 +277,6 @@ public class Intersect {
 				}
 				
 				int[] ind = StatUtil.findSort(midsort);
-				midsort = StatUtil.permute(midsort, ind);
 				
 				
 				for(int p=0; p< pointsSort.get(c).length; p++){
@@ -292,8 +291,9 @@ public class Intersect {
 	}
 	
 	private int countRegionInChrom(Point pt, int[] midsort, int win){
-		Region r = pt.expand(win);
+		Region r = pt.expand(win/2);
 		int ret_count;
+		
 		int start_match = Arrays.binarySearch(midsort, r.getStart());
 		int end_match = Arrays.binarySearch(midsort, r.getEnd());
 		if(start_match <0 ) {start_match = -start_match -1;}
