@@ -22,7 +22,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class SequenceAlignmentFigure {
 
@@ -132,8 +132,8 @@ public class SequenceAlignmentFigure {
         		}
 		        String peaksFile = ap.getKeyValue("peaks");
 		    	int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():-1;
-		    	List<StrandedRegion> regions = Utilities.loadStrandedRegionsFromMotifFile(currgen, peaksFile, win);
-		    	seqs = Utilities.getSequencesForStrandedRegions(regions, seqgen);
+		    	List<StrandedRegion> regions = RegionFileUtilities.loadStrandedRegionsFromMotifFile(currgen, peaksFile, win);
+		    	seqs = RegionFileUtilities.getSequencesForStrandedRegions(regions, seqgen);
         	}else if(ap.hasKey("seq")){
         		String seqsFile = ap.getKeyValue("seq");
         		FASTALoader loader = new FASTALoader();

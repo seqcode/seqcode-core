@@ -22,8 +22,8 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.SeqExpander;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 
 
@@ -480,8 +480,8 @@ public class Intersect {
 		int minFragLen = Args.parseInteger(args, "minFrag", 140);
 		int maxFragLen = Args.parseInteger(args, "maxFrag", 200);
 		
-		List<Point> apoints = Utilities.loadPeaksFromPeakFile(g, apeaks, win);
-		List<Point> bpoints = Utilities.loadPeaksFromPeakFile(g, bpeaks, win);
+		List<Point> apoints = RegionFileUtilities.loadPeaksFromPeakFile(g, apeaks, win);
+		List<Point> bpoints = RegionFileUtilities.loadPeaksFromPeakFile(g, bpeaks, win);
 		
 		//Intersect analyzer = new Intersect(apoints, bpoints, g, minFragLen, maxFragLen, win, aexpt , bexpt);
 		if(ap.hasKey("intersect")){
