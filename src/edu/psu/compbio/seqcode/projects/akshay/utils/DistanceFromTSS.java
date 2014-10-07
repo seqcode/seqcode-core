@@ -9,7 +9,7 @@ import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class DistanceFromTSS {
 	
@@ -19,8 +19,8 @@ public class DistanceFromTSS {
 	
 	public DistanceFromTSS(Genome g, String refPts, String locs) {
 		this.gen = g;
-		this.refTSS = Utilities.loadStrandedPointFromRefTssFile(gen, refPts);
-		this.locations = Utilities.loadPeaksFromPeakFile(gen, locs, 0);
+		this.refTSS = RegionFileUtilities.loadStrandedPointFromRefTssFile(gen, refPts);
+		this.locations = RegionFileUtilities.loadPeaksFromPeakFile(gen, locs, 0);
 	}
 	
 	public void printDistances(){

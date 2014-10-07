@@ -1,8 +1,6 @@
 package edu.psu.compbio.seqcode.gse.utils.io.parsing;
 
 import java.util.*;
-import java.util.regex.*;
-import java.awt.Color;
 import java.io.*;
 
 /**
@@ -51,7 +49,7 @@ The 9 additional optional BED fields are:
 public class BEDParser implements Iterator<BEDLine> {
 	
 	private BEDLine nextLine;
-	private BufferedReader br;
+	private BufferedReader br=null;
 	
 	public BEDParser(File f) throws IOException { 
 		br = new BufferedReader(new FileReader(f));
@@ -87,7 +85,15 @@ public class BEDParser implements Iterator<BEDLine> {
 		}
 		return ret;
 	}
-	
+	public void close(){
+		if(br !=null)
+			try {
+				br.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
 	public void remove() { 
 		throw new UnsupportedOperationException();
 	}

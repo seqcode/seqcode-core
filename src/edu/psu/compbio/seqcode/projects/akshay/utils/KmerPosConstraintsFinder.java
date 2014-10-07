@@ -17,8 +17,8 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 import java.util.Random;
 
 /**
@@ -96,10 +96,10 @@ public class KmerPosConstraintsFinder {
 	 * @param negPeaksFileName
 	 */
 	public void setPointsAndRegions(String posPeaksFileName, String negPeaksFileName){
-		this.pos_points = Utilities.loadPeaksFromPeakFile(gen, posPeaksFileName, winSize);
-		this.neg_points = Utilities.loadPeaksFromPeakFile(gen, negPeaksFileName, winSize);
-		this.pos_regions = Utilities.loadRegionsFromPeakFile(gen, posPeaksFileName, winSize);
-		this.neg_regions = Utilities.loadRegionsFromPeakFile(gen, negPeaksFileName, winSize);
+		this.pos_points = RegionFileUtilities.loadPeaksFromPeakFile(gen, posPeaksFileName, winSize);
+		this.neg_points = RegionFileUtilities.loadPeaksFromPeakFile(gen, negPeaksFileName, winSize);
+		this.pos_regions = RegionFileUtilities.loadRegionsFromPeakFile(gen, posPeaksFileName, winSize);
+		this.neg_regions = RegionFileUtilities.loadRegionsFromPeakFile(gen, negPeaksFileName, winSize);
 	}
 	
 	/**
@@ -121,8 +121,8 @@ public class KmerPosConstraintsFinder {
 			for(int j=0; j<(seq.length()-k+1); j++){
 				String currK = seq.substring(j, j+k);
 				String revCurrK = SequenceUtils.reverseComplement(currK);
-				int currKInt = Utilities.seq2int(currK);
-				int revCurrKInt = Utilities.seq2int(revCurrK);
+				int currKInt = RegionFileUtilities.seq2int(currK);
+				int revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
 				int kmer = currKInt < revCurrKInt ? currKInt : revCurrKInt;
 				posMapMatrix[kmer][i][j] = kmer;
 			}
@@ -136,8 +136,8 @@ public class KmerPosConstraintsFinder {
 			for(int j=0; j<(seq.length()-k+1); j++){
 				String currK = seq.substring(j, j+k);
 				String revCurrK = SequenceUtils.reverseComplement(currK);
-				int currKInt = Utilities.seq2int(currK);
-				int revCurrKInt = Utilities.seq2int(revCurrK);
+				int currKInt = RegionFileUtilities.seq2int(currK);
+				int revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
 				int kmer = currKInt < revCurrKInt ? currKInt : revCurrKInt;
 				negMapMatrix[kmer][i][j] = kmer;
 			}
@@ -216,11 +216,11 @@ public class KmerPosConstraintsFinder {
 		int[][][] ret;
 		ret =  new int[mapmat[0].length][numk][numk];
 		for(int i=0; i<numk; i++){ // over all kmers (x)
-			int irev = Utilities.seq2int(SequenceUtils.reverseComplement(Utilities.int2seq(i, k))); // Id of the reverse complement k-mer
+			int irev = RegionFileUtilities.seq2int(SequenceUtils.reverseComplement(RegionFileUtilities.int2seq(i, k))); // Id of the reverse complement k-mer
 			if(i>irev) // of the 2 complements, only consider the smaller one
 				continue;
 			for(int j=i; j<numk; j++){   // over all kmers (y), such that x<=y 
-				int jrev = Utilities.seq2int(SequenceUtils.reverseComplement(Utilities.int2seq(j, k)));
+				int jrev = RegionFileUtilities.seq2int(SequenceUtils.reverseComplement(RegionFileUtilities.int2seq(j, k)));
 				if(j>jrev) // of the 2 complements, only consider the smaller one
 					continue;
 				
@@ -335,11 +335,11 @@ public class KmerPosConstraintsFinder {
 		
 		for(int i=0; i<kmerSet.size(); i++){ // over all the given list of kmers (x)
 			for(int j=i; j<kmerSet.size(); j++){ // over all the given list, such that (y) >= (x)
-				int iInd = Utilities.seq2int(kmerSet.get(i)); // geting the index of (x)
-				int iRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i))); // getting rev index of (x)
+				int iInd = RegionFileUtilities.seq2int(kmerSet.get(i)); // geting the index of (x)
+				int iRevInd = RegionFileUtilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i))); // getting rev index of (x)
 				int Xind = iInd < iRevInd ? iInd: iRevInd; // set the smaller one to (x)
-				int jInd = Utilities.seq2int(kmerSet.get(j));
-				int jRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
+				int jInd = RegionFileUtilities.seq2int(kmerSet.get(j));
+				int jRevInd = RegionFileUtilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
 				int Yind = jInd < jRevInd ? jInd : jRevInd;
 				
 				int kmerXind = Xind < Yind ? Xind: Yind; // redefine (x) again
@@ -381,12 +381,12 @@ public class KmerPosConstraintsFinder {
 	public void printSigFIConstrains(List<String> kmerSet){
 		for(int i=0; i<kmerSet.size(); i++){
 			for(int j=i; j<kmerSet.size(); j++){
-				int iInd = Utilities.seq2int(kmerSet.get(i));
-				int iRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i)));
+				int iInd = RegionFileUtilities.seq2int(kmerSet.get(i));
+				int iRevInd = RegionFileUtilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(i)));
 				int Xind = iInd < iRevInd ? iInd: iRevInd;
 				
-				int jInd = Utilities.seq2int(kmerSet.get(j));
-				int jRevInd = Utilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
+				int jInd = RegionFileUtilities.seq2int(kmerSet.get(j));
+				int jRevInd = RegionFileUtilities.seq2int(SequenceUtils.reverseComplement(kmerSet.get(j)));
 				int Yind = jInd < jRevInd ? jInd : jRevInd;
 				
 				int kmerXind = Xind < Yind ? Xind: Yind;
@@ -403,7 +403,7 @@ public class KmerPosConstraintsFinder {
 						String zscore = Double.toString((this.mean_pos[kmerXind][kmerYind][d] - this.mean_neg[kmerXind][kmerYind][d])/this.std_neg[kmerXind][kmerYind][d]);
 						String outPropPos = Double.toString(this.mean_pos[kmerXind][kmerYind][d]);
 						String outPropNeg = Double.toString(this.mean_neg[kmerXind][kmerYind][d]);
-						System.out.println(Utilities.int2seq(kmerXind, k)+"-"+Utilities.int2seq(kmerYind, k)+"\t"+Integer.toString(d+1)+"\t"+outPropPos+"\t"+outPropNeg+"\t"+zscore);
+						System.out.println(RegionFileUtilities.int2seq(kmerXind, k)+"-"+RegionFileUtilities.int2seq(kmerYind, k)+"\t"+Integer.toString(d+1)+"\t"+outPropPos+"\t"+outPropNeg+"\t"+zscore);
 						
 					}
 					
@@ -426,7 +426,7 @@ public class KmerPosConstraintsFinder {
 				//		outZscore = outZscore + Double.toString(zscore)+":";
 				//	}
 					
-				//	System.out.println(Utilities.int2seq(kmerXind, k)+"-"+Utilities.int2seq(kmerYind, k)+"\t"+outPOS.substring(0,outPOS.length()-1 )+"\t"+outPropPos.substring(0, outPropPos.length()-1)
+				//	System.out.println(RegionFileUtilities.int2seq(kmerXind, k)+"-"+RegionFileUtilities.int2seq(kmerYind, k)+"\t"+outPOS.substring(0,outPOS.length()-1 )+"\t"+outPropPos.substring(0, outPropPos.length()-1)
 				//			+"\t"+outPropNeg.substring(0, outPropNeg.length()-1)+"\t"+outZscore.substring(0, outZscore.length()-1));
 				//}
 				

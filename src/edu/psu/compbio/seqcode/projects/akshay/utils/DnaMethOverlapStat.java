@@ -11,7 +11,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class DnaMethOverlapStat {
 	
@@ -26,8 +26,8 @@ public class DnaMethOverlapStat {
 	public DnaMethOverlapStat(Genome g, String peaks_file, int win, String MethBED_File) {
 		this.gen = g;
 		this.winSize = win;
-		this.pts = Utilities.loadPeaksFromPeakFile(g, peaks_file, this.winSize);
-		this.regs = Utilities.loadRegionsFromPeakFile(gen, peaks_file, winSize);
+		this.pts = RegionFileUtilities.loadPeaksFromPeakFile(g, peaks_file, this.winSize);
+		this.regs = RegionFileUtilities.loadRegionsFromPeakFile(gen, peaks_file, winSize);
 		
 		File Bed_file = new File(MethBED_File);
 		this.loader = new RRbsBEDLoader(this.gen,Bed_file);

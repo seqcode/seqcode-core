@@ -21,7 +21,7 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class PairEndStatSandbox {
 	private SeqLocator locator;
@@ -94,7 +94,7 @@ public class PairEndStatSandbox {
 	
 	// make sure win is -1 if you pass a regions file instead of peaks file
 	public void printWindowCounts(String peaks_file, int win, int minFragLen, int maxFragLen){
-		List<Region> regs  = Utilities.loadRegionsFromPeakFile(gen, peaks_file, win);
+		List<Region> regs  = RegionFileUtilities.loadRegionsFromPeakFile(gen, peaks_file, win);
 		for(Region r : regs){
 			int count = 0;
 			Iterator<SeqHitPair> pairItr = this.expander.getPairs(r);

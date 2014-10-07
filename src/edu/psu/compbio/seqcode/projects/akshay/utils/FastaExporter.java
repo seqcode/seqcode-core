@@ -14,8 +14,8 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.EventMetaMaker;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 public class FastaExporter {
 	
@@ -79,7 +79,7 @@ public class FastaExporter {
 					gen = null;
 				}
 			}
-			List<Point> search_locs = Utilities.loadPeaksFromPeakFile(gen, points, window);
+			List<Point> search_locs = RegionFileUtilities.loadPeaksFromPeakFile(gen, points, window);
 			FastaExporter exporter = new FastaExporter(window, search_locs, gen, cache, seqPathName);
 			exporter.printFasta();
 		}catch(NotFoundException e){

@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.shaun;
+package edu.psu.compbio.seqcode.gse.utils.io;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,13 +21,21 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.PointParser;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RegionParser;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.StrandedRegionParser;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
+import edu.psu.compbio.seqcode.gse.utils.io.parsing.BEDLine;
+import edu.psu.compbio.seqcode.gse.utils.io.parsing.BEDParser;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
-public class Utilities {
+public class RegionFileUtilities {
 
-	public Utilities(){}
+	public RegionFileUtilities(){}
 	
-	//Load a set of regions from a peak file
+	/**
+	 * Load a set of regions from a peak file
+	 * @param gen
+	 * @param filename
+	 * @param win
+	 * @return
+	 */
 	public static List<Region> loadRegionsFromPeakFile(Genome gen, String filename, int win){
 		List<Region> regs = new ArrayList<Region>();
 		try{
@@ -76,9 +84,12 @@ public class Utilities {
 		return(regs);
 	}
 	
-	// From Akshay
-	//Load Stranded points from stranded peak file, Usually used to load TSS
-	
+	/**
+	 * Load Stranded points from stranded peak file, Usually used to load TSS
+	 * @param gen
+	 * @param filename
+	 * @return
+	 */
 	public static List<StrandedPoint> loadStrandedPointFromRefTssFile(Genome gen, String filename){
 		List<StrandedPoint> pts = new ArrayList<StrandedPoint>();
 		try{
@@ -107,7 +118,13 @@ public class Utilities {
 		return pts;
 	}
 	
-	//Load a set of stranded regions from a file
+	/**
+	 * Load a set of stranded regions from a file
+	 * @param gen
+	 * @param filename
+	 * @param win
+	 * @return
+	 */
 	public static List<StrandedRegion> loadStrandedRegionsFromMotifFile(Genome gen, String filename, int win){
 		List<StrandedRegion> regs = new ArrayList<StrandedRegion>();
 		try{
@@ -149,16 +166,54 @@ public class Utilities {
                 }
 	        }reader.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return(regs);
 	}
 	
-	//Load a set of stranded points from a file
+	/**
+	 * Load a set of stranded regions from a BED file
+	 * @param gen
+	 * @param filename
+	 * @param win
+	 * @return
+	 */
+	public static List<StrandedRegion> loadStrandedRegionsFromBEDFile(Genome gen, String filename, int win){
+		List<StrandedRegion> regs = new ArrayList<StrandedRegion>();
+		try{
+			BEDParser parser = new BEDParser(new File(filename));
+			BEDLine line;
+	        while (parser.hasNext()) {
+	            line = parser.next();
+	            StrandedRegion sq = new StrandedRegion(
+	            		gen,
+	            		line.getChrom(),
+	            		line.getChromStart(),
+	            		line.getChromEnd(),
+	            		line.getStrand());
+	            if(win==-1)
+	            	regs.add(sq);
+	            else
+	            	regs.add(new StrandedRegion(sq.getMidpoint().expand(win), sq.getStrand()));
+	        }
+	        parser.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return(regs);
+	}
+	
+	/**
+	 * Load a set of stranded points from a file
+	 * @param gen
+	 * @param filename
+	 * @param win
+	 * @return
+	 */
 	public static List<StrandedPoint> loadStrandedPointsFromMotifFile(Genome gen, String filename, int win){
 		List<StrandedRegion> regs = new ArrayList<StrandedRegion>();
 		List<StrandedPoint> peaks = new ArrayList<StrandedPoint>();
@@ -212,7 +267,13 @@ public class Utilities {
 		return(peaks);
 	}
 	
-	//Load a set of regions from a peak file
+	/**
+	 * Load a set of regions from a peak file
+	 * @param gen
+	 * @param filename
+	 * @param win
+	 * @return
+	 */
 	public static List<Point> loadPeaksFromPeakFile(Genome gen, String filename, int win){
 		List<Point> peaks = new ArrayList<Point>();
 		try{
@@ -277,7 +338,12 @@ public class Utilities {
 	}
 	
 	
-	//Get sequences for a set of regions
+	/**
+	 * Get sequences for a set of regions
+	 * @param regions
+	 * @param seqgen
+	 * @return
+	 */
 	public static List<String> getSequencesForRegions(List<Region> regions, SequenceGenerator seqgen){
 		ArrayList<String> seqs = new ArrayList<String>(); 
 		if(seqgen==null)
@@ -350,7 +416,11 @@ public class Utilities {
 		}
 		return(regs);
 	}
-	//Regions to midpoints
+	/**
+	 * Regions to midpoints
+	 * @param regs
+	 * @return
+	 */
 	public static List<Point> regions2midpoints(List<Region> regs){
 		List<Point> p = new ArrayList<Point>();
 		for(Region r : regs)

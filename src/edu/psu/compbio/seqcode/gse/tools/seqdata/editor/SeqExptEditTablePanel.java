@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.security.AccessControlException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,6 +23,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -30,6 +32,7 @@ import javax.swing.border.Border;
 import edu.psu.compbio.seqcode.gse.datasets.core.ExptType;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataModifier;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
 import edu.psu.compbio.seqcode.gse.seqview.components.SeqLMETableModel;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -39,6 +42,7 @@ import edu.psu.compbio.seqcode.gse.viz.components.GenericEditTablePanel;
 public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
 
 	private SeqDataLoader seqLoader;
+	private SeqDataModifier seqModifier;
     private TreeSet<SeqExpt> expts;
     private JComboBox jcbType;
     private JTextField regexLab, regexCond, regexTarget, regexCell, regexRep;
@@ -47,6 +51,11 @@ public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
     public SeqExptEditTablePanel() { 
     	try {
             seqLoader = new SeqDataLoader(true);
+            seqModifier = new SeqDataModifier(seqLoader);
+    	} catch (AccessControlException e1) {
+    		e1.printStackTrace();
+    	} catch (SQLException e1) {
+    		e1.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
             seqLoader = null;
@@ -171,7 +180,7 @@ public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
     }
 
     public void edit(Collection<SeqExpt> toEdit){
-    	SeqDataEditEntryForm editForm = new SeqDataEditEntryForm(seqLoader, toEdit);
+    	SeqDataEditEntryForm editForm = new SeqDataEditEntryForm(seqLoader, seqModifier, toEdit);
     	editForm.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pcEvt) {
                if (pcEvt.getPropertyName().equals(SeqDataEditEntryForm.FINISHED)) {
@@ -183,6 +192,16 @@ public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
     }
     
     public void close() {
+		if(seqModifier!=null){
+			//This will delete any now-redundant Lab, ExptTargets, etc from the db
+			try {
+				JOptionPane.showMessageDialog(null, "Please wait... cleaning up core database", "Working...", JOptionPane.INFORMATION_MESSAGE);
+				seqModifier.coreCleanup();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			seqModifier.close();
+		}
         if (seqLoader != null) {
             seqLoader.close();
         }

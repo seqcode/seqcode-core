@@ -16,7 +16,7 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 /**
  * SiteQuantifier: 
@@ -300,7 +300,7 @@ public class SiteQuantifier {
 			//Load motif hit file
 			if(ap.hasKey("motifhits")){
 				String motiffile = Args.parseString(args, "motifhits", null);
-				List<StrandedPoint> spoints = Utilities.loadStrandedPointsFromMotifFile(gconfig.getGenome(), motiffile, win);
+				List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromMotifFile(gconfig.getGenome(), motiffile, win);
 			
 				if(ap.hasKey("quadrants")){
 					String quads = Args.parseString(args, "quadrants", null);

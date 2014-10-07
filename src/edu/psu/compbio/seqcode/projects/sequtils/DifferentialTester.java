@@ -10,6 +10,7 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
@@ -19,7 +20,6 @@ import edu.psu.compbio.seqcode.projects.multigps.stats.DifferentialEnrichment;
 import edu.psu.compbio.seqcode.projects.multigps.stats.EdgeRDifferentialEnrichment;
 import edu.psu.compbio.seqcode.projects.multigps.stats.Normalization;
 import edu.psu.compbio.seqcode.projects.sequtils.PointsToEvents;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 /**
  * Utility to quantify differential enrichment of a defined set of peaks across conditions. 
@@ -61,7 +61,7 @@ public class DifferentialTester {
 		qThres = q;
 		this.minFold = minfold;
 
-		potentialSites = Utilities.loadPeaksFromPeakFile(config.getGenome(), peaksFileName, win);
+		potentialSites = RegionFileUtilities.loadPeaksFromPeakFile(config.getGenome(), peaksFileName, win);
 		outFileBase=outRoot;		
 		outDirName = outRoot;
 		outDir = new File(outDirName);

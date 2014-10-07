@@ -128,7 +128,7 @@ public class SeqDataModifier  implements edu.psu.compbio.seqcode.gse.utils.Close
 		String updateName = updateLab+" "+updateCond+" "+updateTarget+" "+updateCell;
 		
 		SeqExpt testExpt  = seqLoader.findExperiment(updateName, updateRep);
-		if(testExpt!=null)
+		if(testExpt!=null && testExpt.getDBID()!=expt.getDBID()) //It's okay if these are the same experiments (you might sometimes want to just update the publication source, etc).
 			throw new DuplicateDatabaseEntryException("SeqDataModifier.updateSeqExpt wants to create a duplicate SeqExpt");
 		else{
 			PreparedStatement update = SeqExpt.createShortUpdateWithID(seqLoader.getConnection());

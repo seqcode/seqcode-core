@@ -17,7 +17,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class GenomicRegionStats {
 	public List<List<Point>> points_lists = new ArrayList<List<Point>>();
@@ -37,7 +37,7 @@ public class GenomicRegionStats {
 	    String line;
 	    while ((line = reader.readLine()) != null) {
 	    	String[] pieces = line.split("\t");
-	    	points_lists.add(Utilities.loadPeaksFromPeakFile(gen, pieces[1], winSize));
+	    	points_lists.add(RegionFileUtilities.loadPeaksFromPeakFile(gen, pieces[1], winSize));
 	    	factor_string.add(pieces[0]);
 	    }
 	    reader.close();

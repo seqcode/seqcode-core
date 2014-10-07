@@ -26,10 +26,10 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.probability.Hypergeometric;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.shaun.MotifAnalysisSandbox;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 public class KmerMapper {
 	
@@ -69,8 +69,8 @@ public class KmerMapper {
 	//Settors
 	
 	public void setMotifRegions(String peaksFileName,String SeqPathFile){
-		List<Point> tempPoints = Utilities.loadPeaksFromPeakFile(gen, peaksFileName, winSize);
-		List<Region> tempRegions = Utilities.loadRegionsFromPeakFile(gen, peaksFileName, winSize);
+		List<Point> tempPoints = RegionFileUtilities.loadPeaksFromPeakFile(gen, peaksFileName, winSize);
+		List<Region> tempRegions = RegionFileUtilities.loadRegionsFromPeakFile(gen, peaksFileName, winSize);
 	
 		seqgen.useCache(true);
 		seqgen.setGenomePath(SeqPathFile);
@@ -114,8 +114,8 @@ public class KmerMapper {
 	}
 	
 	public void setRegions(String peaksFileName,String SeqPathFile){
-		List<Point> tempPoints = Utilities.loadPeaksFromPeakFile(gen, peaksFileName, winSize);
-		List<Region> tempRegions = Utilities.loadRegionsFromPeakFile(gen, peaksFileName, winSize);
+		List<Point> tempPoints = RegionFileUtilities.loadPeaksFromPeakFile(gen, peaksFileName, winSize);
+		List<Region> tempRegions = RegionFileUtilities.loadRegionsFromPeakFile(gen, peaksFileName, winSize);
 		for(Point p : tempPoints){
 			points.add(new StrandedPoint(p,'+'));
 		}
@@ -138,8 +138,8 @@ public class KmerMapper {
 			for(int j=0; j<(seq.length()-k+1); j++){
 				String currK = seqOriented.substring(j, j+k);
 				String revCurrK = SequenceUtils.reverseComplement(currK);
-				int currKInt = Utilities.seq2int(currK);
-				int revCurrKInt = Utilities.seq2int(revCurrK);
+				int currKInt = RegionFileUtilities.seq2int(currK);
+				int revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
 				int kmer = currKInt < revCurrKInt ? currKInt : revCurrKInt;
 				MapMatrix[kmer][i][j] = 1;
 			}
@@ -160,8 +160,8 @@ public class KmerMapper {
 			for(int j=0; j<(seq.length()-k+1); j++){
 				String currK = seqOriented.substring(j, j+k);
 				String revCurrK = SequenceUtils.reverseComplement(currK);
-				int currKInt = Utilities.seq2int(currK);
-				int revCurrKInt = Utilities.seq2int(revCurrK);
+				int currKInt = RegionFileUtilities.seq2int(currK);
+				int revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
 				int kmer = currKInt < revCurrKInt ? currKInt : revCurrKInt;
 				PairWiseMatrix[kmer][i][j] = kmer;
 			}
@@ -171,10 +171,10 @@ public class KmerMapper {
 	
 	public void setMotifKmers(int percCutoff){
 		for(int i=0; i< MapMatrix.length; i++){
-			String kmer = Utilities.int2seq(i, k);
+			String kmer = RegionFileUtilities.int2seq(i, k);
 			String revkmer = SequenceUtils.reverseComplement(kmer);
 			int[][] kmerMap = MapMatrix[i];
-			int revi = Utilities.seq2int(revkmer);
+			int revi = RegionFileUtilities.seq2int(revkmer);
 			if(i>revi)
 				continue;
 			boolean isMotifKmer = false;
@@ -197,8 +197,8 @@ public class KmerMapper {
 		this.PairWiseDistMatrix =  new int[this.winSize][numk][numk];
 		for(int i=0; i<kmerSet.size(); i++){
 			for(int j=i; j<kmerSet.size(); j++){
-				int kmerXind = (Utilities.seq2int(kmerSet.get(i)) > Utilities.seq2int(kmerSet.get(j))) ? Utilities.seq2int(kmerSet.get(i)) :  Utilities.seq2int(kmerSet.get(j));
-				int kmerYind =  (Utilities.seq2int(kmerSet.get(i)) > Utilities.seq2int(kmerSet.get(j))) ? Utilities.seq2int(kmerSet.get(j)) : Utilities.seq2int(kmerSet.get(i));
+				int kmerXind = (RegionFileUtilities.seq2int(kmerSet.get(i)) > RegionFileUtilities.seq2int(kmerSet.get(j))) ? RegionFileUtilities.seq2int(kmerSet.get(i)) :  RegionFileUtilities.seq2int(kmerSet.get(j));
+				int kmerYind =  (RegionFileUtilities.seq2int(kmerSet.get(i)) > RegionFileUtilities.seq2int(kmerSet.get(j))) ? RegionFileUtilities.seq2int(kmerSet.get(j)) : RegionFileUtilities.seq2int(kmerSet.get(i));
 				for(int l=0; l<regions.size(); i++){ // over all locations 
 					int[] Xmap = this.PairWiseMatrix[kmerXind][l];
 					int[] Ymap = this.PairWiseMatrix[kmerYind][l];
@@ -269,7 +269,7 @@ public class KmerMapper {
 		
 	public void printInformativeKmersFromSet(List<String> kmerSet, int percCutoff){
 		for(int i=0; i<kmerSet.size(); i++){
-			int kmerID = Utilities.seq2int(kmerSet.get(i));
+			int kmerID = RegionFileUtilities.seq2int(kmerSet.get(i));
 			int[][] kmerMap = MapMatrix[kmerID];
 			boolean pass = false;
 			for(int j=0; j<kmerMap[0].length; j++){ // over all positions
@@ -301,7 +301,7 @@ public class KmerMapper {
 				}
 			}
 			if(pass){
-				System.out.println(Utilities.int2seq(i, k));
+				System.out.println(RegionFileUtilities.int2seq(i, k));
 			}
 			
 		}
@@ -322,7 +322,7 @@ public class KmerMapper {
 				}
 			}
 			if(pass){
-				System.out.println(Utilities.int2seq(i, k));
+				System.out.println(RegionFileUtilities.int2seq(i, k));
 			}
 		}
 		
@@ -330,7 +330,7 @@ public class KmerMapper {
 	
 	public void printInformativeKmerWithinDistanceFromSet(List<String> kmerSet, int percCutoff, int distance){
 		for(int i=0; i<kmerSet.size(); i++){
-			int kmerID = Utilities.seq2int(kmerSet.get(i));
+			int kmerID = RegionFileUtilities.seq2int(kmerSet.get(i));
 			int[][] kmerMap = MapMatrix[kmerID];
 			boolean pass = false;
 			int midP = (int)(kmerMap[0].length/2);
@@ -369,14 +369,14 @@ public class KmerMapper {
 				}
 			}
 			if(pass){
-				System.out.println(Utilities.int2seq(i, k));
+				System.out.println(RegionFileUtilities.int2seq(i, k));
 			}
 		}
 	}
 	
 	public void printInformativeKmerFlanksFromSet(List<String> kmerSet, int percCutoff, int distance){
 		for(int i=0; i<kmerSet.size(); i++){
-			int kmerID = Utilities.seq2int(kmerSet.get(i));
+			int kmerID = RegionFileUtilities.seq2int(kmerSet.get(i));
 			int[][] kmerMap = MapMatrix[kmerID];
 			boolean pass = false;
 			int midP = (int)(kmerMap[0].length/2);

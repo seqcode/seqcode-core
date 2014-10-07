@@ -12,6 +12,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class StrandedSequenceGenerator {
 
@@ -22,11 +23,11 @@ public class StrandedSequenceGenerator {
 	}
 	
 	public List<String> generateSequences(List<StrandedRegion> regs){
-		return Utilities.getSequencesForStrandedRegions(regs,null);
+		return RegionFileUtilities.getSequencesForStrandedRegions(regs,null);
 	}
 	
 	public List<String> generateFASTA(List<StrandedRegion> regs){
-		List<String> seqs = Utilities.getSequencesForStrandedRegions(regs,null);
+		List<String> seqs = RegionFileUtilities.getSequencesForStrandedRegions(regs,null);
 		List<String> fasta = new ArrayList<String>();
 		for(int i=0; i<regs.size(); i++){
 			fasta.add(new String(">seq_"+regs.get(i).toString()+"\n"+seqs.get(i)));
@@ -57,7 +58,7 @@ public class StrandedSequenceGenerator {
 	        String outName = ap.hasKey("out") ? ap.getKeyValue("out") : "out.seq";
 	    	int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():-1;
 	    	
-	    	List<StrandedRegion> regions = Utilities.loadStrandedRegionsFromMotifFile(currgen, peaksFile, win);
+	    	List<StrandedRegion> regions = RegionFileUtilities.loadStrandedRegionsFromMotifFile(currgen, peaksFile, win);
 	    	
 	    	List<String> fasta = seqGen.generateFASTA(regions);
 	    	

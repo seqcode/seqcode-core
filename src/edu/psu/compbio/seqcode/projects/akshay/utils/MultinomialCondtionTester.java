@@ -17,6 +17,7 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.GFFEntry;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.ParseGFF;
 
@@ -24,7 +25,6 @@ import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.sequtils.PointsToEvents;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 public class MultinomialCondtionTester {
 	
@@ -140,7 +140,7 @@ public class MultinomialCondtionTester {
 		double minFold = Args.parseDouble(args, "minfold", 2);
 		
 		List<BindingEvent> features = new ArrayList<BindingEvent>();
-		List<Point> Sites = Utilities.loadPeaksFromPeakFile(config.getGenome(), siteFile, win);
+		List<Point> Sites = RegionFileUtilities.loadPeaksFromPeakFile(config.getGenome(), siteFile, win);
 		 
 	
 		//Convert our points to events

@@ -26,6 +26,7 @@ import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 public class KmerAnalysisSandbox {
@@ -122,10 +123,10 @@ public class KmerAnalysisSandbox {
 		gen = g;
 		this.k=k;
 		this.win=win;
-		posRegions = Utilities.loadRegionsFromPeakFile(gen, pFile, win);
-		posPeaks = Utilities.loadPeaksFromPeakFile(gen, pFile, win);
-		posLines = Utilities.loadLinesFromFile(pFile);
-		posSeq = Utilities.getSequencesForRegions(posRegions, null);
+		posRegions = RegionFileUtilities.loadRegionsFromPeakFile(gen, pFile, win);
+		posPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, pFile, win);
+		posLines = RegionFileUtilities.loadLinesFromFile(pFile);
+		posSeq = RegionFileUtilities.getSequencesForRegions(posRegions, null);
 	}
 	
 	//Accessors
@@ -153,18 +154,18 @@ public class KmerAnalysisSandbox {
 		
 		//Go through all k-mers, and calculate pos/neg enrichment
 		System.err.println("Positive vs negative enrichment");
-		List<String> kmers = Utilities.getAllKmers(k);
+		List<String> kmers = RegionFileUtilities.getAllKmers(k);
 		double posTotal=0, negTotal=0;
 		for(String kmer : kmers){
 			String revkmer = SequenceUtils.reverseComplement(kmer);
-			if(Utilities.seq2int(kmer) <= Utilities.seq2int(revkmer)){//Count each k-mer once only
+			if(RegionFileUtilities.seq2int(kmer) <= RegionFileUtilities.seq2int(revkmer)){//Count each k-mer once only
 				posTotal += posCounts.getKmerCount(kmer);
 				negTotal += negCounts.getKmerCount(kmer)+negPseudoCount;
 			}
 		}
 		for(String kmer : kmers){
 			String revkmer = SequenceUtils.reverseComplement(kmer);
-			if(Utilities.seq2int(kmer) <= Utilities.seq2int(revkmer)){//Count each k-mer once only
+			if(RegionFileUtilities.seq2int(kmer) <= RegionFileUtilities.seq2int(revkmer)){//Count each k-mer once only
 			    double posFreq = (double)(posCounts.getKmerCount(kmer)/posTotal); 
 			    double negFreq = (double)((negCounts.getKmerCount(kmer)+negPseudoCount)/negTotal); 
 			    double eScore = posFreq/negFreq;
@@ -490,13 +491,13 @@ public class KmerAnalysisSandbox {
 		if(!negLoaded){
 			//Get the negative sequences first
 			if(negative==null || negative.equals("random")){
-				negRegions = Utilities.randomRegionPick(gen, posRegions, numRand, win);
-				negPeaks = Utilities.regions2midpoints(negRegions);
-				negSeq = Utilities.getSequencesForRegions(negRegions, null);
+				negRegions = RegionFileUtilities.randomRegionPick(gen, posRegions, numRand, win);
+				negPeaks = RegionFileUtilities.regions2midpoints(negRegions);
+				negSeq = RegionFileUtilities.getSequencesForRegions(negRegions, null);
 			}else{
-				negRegions = Utilities.loadRegionsFromPeakFile(gen, negative, win);
-				negPeaks = Utilities.loadPeaksFromPeakFile(gen, negative, win);
-				negSeq = Utilities.getSequencesForRegions(negRegions, null);
+				negRegions = RegionFileUtilities.loadRegionsFromPeakFile(gen, negative, win);
+				negPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, negative, win);
+				negSeq = RegionFileUtilities.getSequencesForRegions(negRegions, null);
 			}
 			negLoaded=true;
 		}

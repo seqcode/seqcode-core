@@ -27,6 +27,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class PeaksVsPeaks {
 
@@ -437,15 +438,15 @@ public class PeaksVsPeaks {
 		if(strandedRegions){
 			posSet= new ArrayList<Region>();
 			posPeaks= new ArrayList<Point>();
-			for(StrandedRegion sr : Utilities.loadStrandedRegionsFromMotifFile(gen, fname, window))
+			for(StrandedRegion sr : RegionFileUtilities.loadStrandedRegionsFromMotifFile(gen, fname, window))
 				posSet.add(new Region(sr.getGenome(), sr.getChrom(), sr.getStart(), sr.getEnd()));
-			for(StrandedPoint sp : Utilities.loadStrandedPointsFromMotifFile(gen, fname, window))
+			for(StrandedPoint sp : RegionFileUtilities.loadStrandedPointsFromMotifFile(gen, fname, window))
 				posPeaks.add(new Point(sp.getGenome(), sp.getChrom(), sp.getLocation()));
 		}else{
-			posSet = Utilities.loadRegionsFromPeakFile(gen, fname, window);
-			posPeaks = Utilities.loadPeaksFromPeakFile(gen, fname, window);
+			posSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, fname, window);
+			posPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, fname, window);
 		}
-		posLines = Utilities.loadLinesFromFile(fname);
+		posLines = RegionFileUtilities.loadLinesFromFile(fname);
 	}
 	//load negative
 	public void loadNegative(String name){
@@ -458,10 +459,10 @@ public class PeaksVsPeaks {
 		}else{
 			if(strandedRegions){
 				negSet = new ArrayList<Region>();
-				for(StrandedRegion sr : Utilities.loadStrandedRegionsFromMotifFile(gen, name, window))
+				for(StrandedRegion sr : RegionFileUtilities.loadStrandedRegionsFromMotifFile(gen, name, window))
 					negSet.add(new Region(sr.getGenome(), sr.getChrom(), sr.getStart(), sr.getEnd()));
 			}else{
-				negSet = Utilities.loadRegionsFromPeakFile(gen, name, window);
+				negSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, name, window);
 			}
 			if(isMonteCarloTesting()){
 				numMCSets = negSet.size()/posSet.size();
@@ -478,15 +479,15 @@ public class PeaksVsPeaks {
 				if(strandedRegions){
 					List<Region> tmpSet = new ArrayList<Region>();
 					List<Point> tmpPeaks = new ArrayList<Point>();
-					for(StrandedRegion sr : Utilities.loadStrandedRegionsFromMotifFile(gen, f, window))
+					for(StrandedRegion sr : RegionFileUtilities.loadStrandedRegionsFromMotifFile(gen, f, window))
 						tmpSet.add(new Region(sr.getGenome(), sr.getChrom(), sr.getStart(), sr.getEnd()));
-					for(StrandedPoint sp : Utilities.loadStrandedPointsFromMotifFile(gen, f, window))
+					for(StrandedPoint sp : RegionFileUtilities.loadStrandedPointsFromMotifFile(gen, f, window))
 						tmpPeaks.add(new Point(sp.getGenome(), sp.getChrom(), sp.getLocation()));
 					testSet.put(x[x.length-1], tmpSet);
 					testPeaks.put(x[x.length-1], tmpPeaks);
 				}else{
-					testSet.put(x[x.length-1], Utilities.loadRegionsFromPeakFile(gen, f, window));
-					testPeaks.put(x[x.length-1], Utilities.loadPeaksFromPeakFile(gen, f, window));
+					testSet.put(x[x.length-1], RegionFileUtilities.loadRegionsFromPeakFile(gen, f, window));
+					testPeaks.put(x[x.length-1], RegionFileUtilities.loadPeaksFromPeakFile(gen, f, window));
 				}
 			}
 		}
@@ -494,8 +495,8 @@ public class PeaksVsPeaks {
 			for(String f : domainF){
 				String n = f.replaceAll(".domains", "");
 				String[] x = n.split("/");
-				testSet.put(x[x.length-1], Utilities.loadRegionsFromPeakFile(gen, f, -1));
-				testPeaks.put(x[x.length-1], Utilities.loadPeaksFromPeakFile(gen, f, window));
+				testSet.put(x[x.length-1], RegionFileUtilities.loadRegionsFromPeakFile(gen, f, -1));
+				testPeaks.put(x[x.length-1], RegionFileUtilities.loadPeaksFromPeakFile(gen, f, window));
 			}
 		}
 	}

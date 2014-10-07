@@ -28,10 +28,10 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.EventMetaMaker;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
 import edu.psu.compbio.seqcode.projects.multigps.stats.StreamGobbler;
-import edu.psu.compbio.seqcode.projects.shaun.Utilities;
 
 public class MemeER {
 	
@@ -273,7 +273,7 @@ public class MemeER {
 			
 			MemeER meme = new MemeER(Args.parseString(args, "memepath", ""), memeargs);
 			for(int p=0; p<points.length; p++){
-				List<Region> search_regs = Utilities.loadRegionsFromPeakFile(gen, points[p], WinSize);
+				List<Region> search_regs = RegionFileUtilities.loadRegionsFromPeakFile(gen, points[p], WinSize);
 			
 			
 				SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();

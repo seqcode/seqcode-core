@@ -74,16 +74,10 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 	private JButton okButton, cancelButton;
 	private JPanel buttonPanel;
 	
-	public SeqDataEditEntryForm(SeqDataLoader loader, Collection<SeqExpt> expts){
+	public SeqDataEditEntryForm(SeqDataLoader loader, SeqDataModifier modifier, Collection<SeqExpt> expts){
 		super("Edit SeqExperiment Metadata");
 		seqLoader = loader;
-		try {
-			seqModifier = new SeqDataModifier(seqLoader);
-		} catch (AccessControlException e1) {
-			e1.printStackTrace();
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
+		seqModifier = modifier;
 		editExpts = new ArrayList(expts);
 		
 		if(editExpts!=null && editExpts.size()>0){
@@ -366,8 +360,6 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 				seqModifier.changeAlignmentACLmulti(align, princs, ops, acls);
 			}
 		}
-		//This will delete any now-redundant Lab, ExptTargets, etc from the db
-		seqModifier.coreCleanup();
 	}
 	
 	public void actionPerformed(ActionEvent e) {

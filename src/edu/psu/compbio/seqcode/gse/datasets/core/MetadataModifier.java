@@ -52,7 +52,6 @@ public class MetadataModifier implements edu.psu.compbio.seqcode.gse.utils.Close
     	synchronized(deleteLabs) {
     		deleteLabs.setInt(1, dbid);
             deleteLabs.execute();
-            deleteLabs.close();
             cxn.commit();
         }        
     }
@@ -61,7 +60,6 @@ public class MetadataModifier implements edu.psu.compbio.seqcode.gse.utils.Close
     	synchronized(deleteCells) {
     		deleteCells.setInt(1, dbid);
             deleteCells.execute();
-            deleteCells.close();
             cxn.commit();
         }        
     }
@@ -70,7 +68,6 @@ public class MetadataModifier implements edu.psu.compbio.seqcode.gse.utils.Close
     	synchronized(deleteCond) {
     		deleteCond.setInt(1, dbid);
             deleteCond.execute();
-            deleteCond.close();
             cxn.commit();
         }        
     }
@@ -79,7 +76,6 @@ public class MetadataModifier implements edu.psu.compbio.seqcode.gse.utils.Close
     	synchronized(deleteTargets) {
     		deleteTargets.setInt(1, dbid);
             deleteTargets.execute();
-            deleteTargets.close();
             cxn.commit();
         }        
     }

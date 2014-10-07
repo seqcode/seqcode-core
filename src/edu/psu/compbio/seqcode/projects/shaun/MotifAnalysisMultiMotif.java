@@ -34,6 +34,7 @@ import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 public class MotifAnalysisMultiMotif {
@@ -519,16 +520,16 @@ public class MotifAnalysisMultiMotif {
 
 	//load positive
 	public void loadPositive(String fname){
-		posSet = Utilities.loadRegionsFromPeakFile(gen, fname, window);
-		posPeaks = Utilities.loadPeaksFromPeakFile(gen, fname, window);
-		posLines = Utilities.loadLinesFromFile(fname);
-		posSeq = Utilities.getSequencesForRegions(posSet, null);
+		posSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, fname, window);
+		posPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, fname, window);
+		posLines = RegionFileUtilities.loadLinesFromFile(fname);
+		posSeq = RegionFileUtilities.getSequencesForRegions(posSet, null);
 	}
 	//load negative
 	public void loadNegative(String name){
 		if(name==null || name.equals("random")){
-			negSet = Utilities.randomRegionPick(gen, posSet, numRand, window);
-			negSeq = Utilities.getSequencesForRegions(negSet, null);
+			negSet = RegionFileUtilities.randomRegionPick(gen, posSet, numRand, window);
+			negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
 		}else if(name.equals("markov")){
 			negSet = null;
 			negSeq = new ArrayList<String>();
@@ -537,8 +538,8 @@ public class MotifAnalysisMultiMotif {
 				negSeq.add(rgen.execute(window));
 			}
 		}else{
-			negSet = Utilities.loadRegionsFromPeakFile(gen, name, window);
-			negSeq = Utilities.getSequencesForRegions(negSet, null);
+			negSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, name, window);
+			negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
 		}
 	}
 	

@@ -38,6 +38,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 public class PeaksAnalysis {
@@ -251,7 +252,7 @@ public class PeaksAnalysis {
 		int [] kmerCounts = new int[numK];
 		System.out.print("Region");
 		for(int i=0; i<numK; i++)
-			System.out.print("\t"+Utilities.int2seq(i, k));
+			System.out.print("\t"+RegionFileUtilities.int2seq(i, k));
 		System.out.println("");
 		for(Region r : posSet){
 			for(int i=0; i<numK; i++)
@@ -264,8 +265,8 @@ public class PeaksAnalysis {
 			for(int i=0; i<(seq.length()-k+1); i++){
 				String currK = seq.substring(i, i+k);
 				String revCurrK =SequenceUtils.reverseComplement(currK);
-				int  currKInt = Utilities.seq2int(currK);
-				int  revCurrKInt = Utilities.seq2int(revCurrK);
+				int  currKInt = RegionFileUtilities.seq2int(currK);
+				int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
 				int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
 				kmerCounts[kmer]++;
 			}
@@ -289,13 +290,13 @@ public class PeaksAnalysis {
 		if(fname == null && motifHitsFile != null){
 			posSet=new ArrayList<Region>();
 			posPeaks=new ArrayList<Point>();
-			List<StrandedRegion> regs = Utilities.loadStrandedRegionsFromMotifFile(gen, motifHitsFile, window);
-			List<StrandedPoint> points = Utilities.loadStrandedPointsFromMotifFile(gen, motifHitsFile, window);
+			List<StrandedRegion> regs = RegionFileUtilities.loadStrandedRegionsFromMotifFile(gen, motifHitsFile, window);
+			List<StrandedPoint> points = RegionFileUtilities.loadStrandedPointsFromMotifFile(gen, motifHitsFile, window);
 			for(StrandedRegion r : regs)
 				posSet.add(r);
 			for(StrandedPoint p : points)
 				posPeaks.add(p);
-			posLines = Utilities.loadLinesFromFile(motifHitsFile);
+			posLines = RegionFileUtilities.loadLinesFromFile(motifHitsFile);
 		}else{
 			if(macs){
 				posSet=new ArrayList<Region>();
@@ -304,10 +305,10 @@ public class PeaksAnalysis {
 					posSet.add(m.getPeak().expand(window/2));
 				}
 			}else{
-				posSet = Utilities.loadRegionsFromPeakFile(gen, fname, window);			
-				posPeaks = Utilities.loadPeaksFromPeakFile(gen, fname, window);
+				posSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, fname, window);			
+				posPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, fname, window);
 			}
-			posLines = Utilities.loadLinesFromFile(fname);
+			posLines = RegionFileUtilities.loadLinesFromFile(fname);
 		}	
 	}//load negative
 	public void loadNegs(String fname, boolean macs){
@@ -318,12 +319,12 @@ public class PeaksAnalysis {
 				negSet.add(m.getPeak().expand(window/2));
 			}
 		}else{
-			negSet = Utilities.loadRegionsFromPeakFile(gen, fname, window);			
-			negPeaks = Utilities.loadPeaksFromPeakFile(gen, fname, window);
-		}negLines = Utilities.loadLinesFromFile(fname);	
+			negSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, fname, window);			
+			negPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, fname, window);
+		}negLines = RegionFileUtilities.loadLinesFromFile(fname);	
 	}//load towers
 	public void loadTowers(String fname){
-		towers = Utilities.loadRegionsFromPeakFile(gen, fname, -1);
+		towers = RegionFileUtilities.loadRegionsFromPeakFile(gen, fname, -1);
 	}
 	
 	//load metapeak
