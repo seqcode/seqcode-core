@@ -16,6 +16,7 @@ import java.util.Random;
 import cern.jet.stat.Probability;
 
 import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
@@ -39,7 +40,7 @@ import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 public class MotifAnalysisMultiMotif {
 
-	private Organism org=null;
+	private GenomeConfig gcon=null;
 	private Genome gen =null;
 	private List<WeightMatrix> motifs = new ArrayList<WeightMatrix>();
 	private HashMap<String,Double> motifThresholds = new HashMap<String,Double>();
@@ -63,7 +64,8 @@ public class MotifAnalysisMultiMotif {
 	
 	public static void main(String[] args) throws IOException, ParseException {
 		ArgParser ap = new ArgParser(args);
-        if(!ap.hasKey("species") || !ap.hasKey("motiffile")||!ap.hasKey("back")) { 
+		GenomeConfig gConfig = new GenomeConfig(args);
+        if(!ap.hasKey("motiffile")||!ap.hasKey("back")) { 
             System.err.println("Usage:\n " +
                                "MotifAnalysisMultiMotif \n" +
                                " Required: \n" +
@@ -71,6 +73,7 @@ public class MotifAnalysisMultiMotif {
                                "  --motiffile <file containing motifs> \n"+
                                "  --back <background Markov model> \n" +
                                " More Information: \n" +
+                               "  --seq <path to genome FASTA files>\n" +
                                "  --peaks <file containing coordinates of peaks> \n" +
                                "  --neg <random/markov/filename> \n"+
                                "  --motifthres <file with thresholds> \n" +
@@ -92,97 +95,89 @@ public class MotifAnalysisMultiMotif {
                                "");
             return;
         }
-        try {
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
-			Organism currorg = pair.car();
-			Genome currgen = pair.cdr();
-			String motifFile = ap.getKeyValue("motiffile");
-	    	double globalThreshold =ap.hasKey("globalthres") ? new Double(ap.getKeyValue("globalthres")).doubleValue():Double.MIN_VALUE;  
-	    	double fractionThreshold =ap.hasKey("fracthres") ? new Double(ap.getKeyValue("fracthres")).doubleValue():Double.MIN_VALUE;
-	    	String thresFile = ap.hasKey("motifthres") ? ap.getKeyValue("motifthres"):null;
-	    	double thresLevel = ap.hasKey("threslevel") ? new Double(ap.getKeyValue("threslevel")).doubleValue():0.05;
-	        String backFile =ap.hasKey("back") ? ap.getKeyValue("back"):null;
-	        String simBackFile =ap.hasKey("simback") ? ap.getKeyValue("simback"):backFile;
-	        String posFile = ap.hasKey("peaks") ? ap.getKeyValue("peaks"):null;
-	        String neg = ap.hasKey("neg") ? ap.getKeyValue("neg"):null;
-	        int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():-1;
-	        int numSamp = 1000000;
-	        if(ap.hasKey("numrand")){
-	        	numSamp = new Integer(ap.getKeyValue("numrand")).intValue();
-	        }
-	        //options
-	        boolean peaksWithMotifs = ap.hasKey("peakswithmotifs");
-	        boolean peaksAndMotifs = ap.hasKey("peaksandmotifs");
-	        boolean peaksAndMotifsBest = ap.hasKey("peaksandmotifsbest");
-	        boolean peakWinMaxScores = ap.hasKey("peakwinmaxscores");
-	        boolean hitStats = ap.hasKey("hitstats");
-	        boolean multiThres = ap.hasKey("multithres");
-	        boolean bitPattern = ap.hasKey("bitpattern");
-	        boolean countPattern = ap.hasKey("countpattern");
-	        boolean print_roc = ap.hasKey("printroc");
+    	String motifFile = ap.getKeyValue("motiffile");
+    	double globalThreshold =ap.hasKey("globalthres") ? new Double(ap.getKeyValue("globalthres")).doubleValue():Double.MIN_VALUE;  
+    	double fractionThreshold =ap.hasKey("fracthres") ? new Double(ap.getKeyValue("fracthres")).doubleValue():Double.MIN_VALUE;
+    	String thresFile = ap.hasKey("motifthres") ? ap.getKeyValue("motifthres"):null;
+    	double thresLevel = ap.hasKey("threslevel") ? new Double(ap.getKeyValue("threslevel")).doubleValue():0.05;
+        String backFile =ap.hasKey("back") ? ap.getKeyValue("back"):null;
+        String simBackFile =ap.hasKey("simback") ? ap.getKeyValue("simback"):backFile;
+        String posFile = ap.hasKey("peaks") ? ap.getKeyValue("peaks"):null;
+        String neg = ap.hasKey("neg") ? ap.getKeyValue("neg"):null;
+        int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():-1;
+        int numSamp = 1000000;
+        if(ap.hasKey("numrand")){
+        	numSamp = new Integer(ap.getKeyValue("numrand")).intValue();
+        }
+        //options
+        boolean peaksWithMotifs = ap.hasKey("peakswithmotifs");
+        boolean peaksAndMotifs = ap.hasKey("peaksandmotifs");
+        boolean peaksAndMotifsBest = ap.hasKey("peaksandmotifsbest");
+        boolean peakWinMaxScores = ap.hasKey("peakwinmaxscores");
+        boolean hitStats = ap.hasKey("hitstats");
+        boolean multiThres = ap.hasKey("multithres");
+        boolean bitPattern = ap.hasKey("bitpattern");
+        boolean countPattern = ap.hasKey("countpattern");
+        boolean print_roc = ap.hasKey("printroc");
 
 
-			//initialize
-			MotifAnalysisMultiMotif analyzer = new MotifAnalysisMultiMotif(currorg, currgen);
-			
-			//load options
-			analyzer.setNumTest(numSamp);
-			analyzer.setWin(win);
-			analyzer.setPrintROC(print_roc);
-			analyzer.loadBackgroundFromFile(backFile, simBackFile);
-			analyzer.loadMotifsFromFile(motifFile);
-			if(thresFile!=null)
-				analyzer.loadThresholdsFromFile(thresFile, thresLevel);
-			else if(fractionThreshold != Double.MIN_VALUE)
-				analyzer.setAllThresholdsFraction(fractionThreshold);
-			else if(globalThreshold != Double.MIN_VALUE)
-				analyzer.setAllThresholds(globalThreshold);
-						
-			//load positive & negative sets
-			analyzer.loadPositive(posFile);
-			analyzer.loadNegative(neg);
-			
+		//initialize
+		MotifAnalysisMultiMotif analyzer = new MotifAnalysisMultiMotif(gConfig);
+		
+		//load options
+		analyzer.setNumTest(numSamp);
+		analyzer.setWin(win);
+		analyzer.setPrintROC(print_roc);
+		analyzer.loadBackgroundFromFile(backFile, simBackFile);
+		analyzer.loadMotifsFromFile(motifFile);
+		if(thresFile!=null)
+			analyzer.loadThresholdsFromFile(thresFile, thresLevel);
+		else if(fractionThreshold != Double.MIN_VALUE)
+			analyzer.setAllThresholdsFraction(fractionThreshold);
+		else if(globalThreshold != Double.MIN_VALUE)
+			analyzer.setAllThresholds(globalThreshold);
+					
+		//load positive & negative sets
+		analyzer.loadPositive(posFile);
+		analyzer.loadNegative(neg);
+		
 
-			//Options
-			if(peaksWithMotifs)
-				analyzer.printPeaksWithMotifs();
-			if(peaksAndMotifs)
-				analyzer.printBestMotifHits(false);
-			if(peaksAndMotifsBest)
-				analyzer.printBestMotifHits(true);
-			if(peakWinMaxScores)
-				analyzer.printPeakWinMaxScores();
-			if(hitStats){
-				if(multiThres){
-					analyzer.loadThresholdsFromFile(thresFile, 0.1);
-					analyzer.printHitStats();
-					analyzer.loadThresholdsFromFile(thresFile, 0.05);
-					analyzer.printHitStats();
-					analyzer.loadThresholdsFromFile(thresFile, 0.01);
-					analyzer.printHitStats();
-					analyzer.loadThresholdsFromFile(thresFile, 0.005);
-					analyzer.printHitStats();
-					analyzer.loadThresholdsFromFile(thresFile, 0.001);
-					analyzer.printHitStats();
-				}else{
-					analyzer.printHitStats();
-				}
+		//Options
+		if(peaksWithMotifs)
+			analyzer.printPeaksWithMotifs();
+		if(peaksAndMotifs)
+			analyzer.printBestMotifHits(false);
+		if(peaksAndMotifsBest)
+			analyzer.printBestMotifHits(true);
+		if(peakWinMaxScores)
+			analyzer.printPeakWinMaxScores();
+		if(hitStats){
+			if(multiThres){
+				analyzer.loadThresholdsFromFile(thresFile, 0.1);
+				analyzer.printHitStats();
+				analyzer.loadThresholdsFromFile(thresFile, 0.05);
+				analyzer.printHitStats();
+				analyzer.loadThresholdsFromFile(thresFile, 0.01);
+				analyzer.printHitStats();
+				analyzer.loadThresholdsFromFile(thresFile, 0.005);
+				analyzer.printHitStats();
+				analyzer.loadThresholdsFromFile(thresFile, 0.001);
+				analyzer.printHitStats();
+			}else{
+				analyzer.printHitStats();
 			}
-			if(bitPattern)
-				analyzer.printBitPattern();
-			if(countPattern)
-				analyzer.printCountPattern();
-			
-			//analyzer.printMotifInfo();			
-        } catch (NotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
+		if(bitPattern)
+			analyzer.printBitPattern();
+		if(countPattern)
+			analyzer.printCountPattern();
+		
+		//analyzer.printMotifInfo();
 	}
 	
-	public MotifAnalysisMultiMotif(Organism o, Genome g){
-		org = o;
-		gen=g;
+	public MotifAnalysisMultiMotif(GenomeConfig gc){
+		gcon = gc;
+		gen = gcon.getGenome();
 	}
 	///////////////////////////////////////////////////////////////////////
 	//Options first
