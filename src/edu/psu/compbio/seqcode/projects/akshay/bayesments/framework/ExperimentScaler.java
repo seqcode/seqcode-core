@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentScaler.PairedCounts;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Region;
-import edu.psu.compbio.seqcode.gse.projects.gps.PairedCountData;
+import edu.psu.compbio.seqcode.gse.utils.models.Model;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataFrame;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataRegression;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.Sample;
@@ -46,7 +47,7 @@ public class ExperimentScaler {
             }
         }
 		//Scaling ratio via Tim's regression                                                                                                                               
-        DataFrame df = new DataFrame(edu.psu.compbio.seqcode.gse.projects.gps.PairedCountData.class, scalingData.iterator());                                                                      
+        DataFrame df = new DataFrame(PairedCountData.class, scalingData.iterator());                                                                      
         DataRegression r = new DataRegression(df, "x~y - 1");                                                                                                               
         r.calculate();                                                                                                                                                      
         Map<String, Double> map = r.collectCoefficients();                                                                                                                  
@@ -87,5 +88,32 @@ public class ExperimentScaler {
         		scalingRatio, ratios.size(), windowSize));
 		
 		return(scalingRatio);
+	}
+	
+	/**
+	 * Simple class for storing paired counts that are sortable in first dimension
+	 * @author mahony
+	 *
+	 */
+	public class PairedCounts  implements Comparable<PairedCounts>{
+		public Double x,y;
+		public PairedCounts(double a, double b){
+			x=a;
+			y=b;
+		}
+		//Sort on the X variables
+		public int compareTo(PairedCounts pc) {
+			if(x<pc.x){return -1;}
+			if(x>pc.x){return 1;}
+			return 0;
+		}		
+	}
+	
+	private class PairedCountData extends Model{
+		public Double x,y;
+		public PairedCountData(double a, double b){
+			x=a;
+			y=b;
+		}
 	}
 }
