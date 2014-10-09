@@ -168,6 +168,9 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
 	        } catch (IOException ex) {
 	            ex.printStackTrace();
 	            throw new RuntimeException("Couldn't load file to cache " + ex.toString(), ex);
+	        } catch (StringIndexOutOfBoundsException ex){
+	        	System.err.println("Error in "+region.getLocationString());
+	        	ex.printStackTrace();
 	        }
 	
 	        if (result == null) {
