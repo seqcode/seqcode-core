@@ -325,8 +325,10 @@ public class MotifPlatform {
 			for(int c=0; c<numChroms && !found; c++){
 				if(randPos<total+chromoSize[c]){
 					found=true;
-					if(randPos+sampleSize<total+chromoSize[c]){
-						potential = new Region(config.getGenome(), chromoNames[c], (int)(randPos-total), (int)(randPos+sampleSize-total));
+					if(randPos+sampleSize<total+chromoSize[c]-1){
+						int pstart = (int)(randPos-total);
+						int pend = (int)(randPos+sampleSize-total);
+						potential = new Region(config.getGenome(), chromoNames[c], pstart, pend);
 						
 						//is this region in the blacklist? 
 						boolean valid=true;
