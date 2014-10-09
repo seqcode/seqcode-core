@@ -48,7 +48,7 @@ public class ExperimentScaler {
             }
         }
 		//Scaling ratio via Tim's regression                                                                                                                               
-        DataFrame df = new DataFrame(edu.psu.compbio.seqcode.gse.projects.gps.PairedCountData.class, scalingData.iterator());                                                                      
+        DataFrame df = new DataFrame(PairedCountData.class, scalingData.iterator());                                                                      
         DataRegression r = new DataRegression(df, "x~y - 1");                                                                                                               
         r.calculate();                                                                                                                                                      
         Map<String, Double> map = r.collectCoefficients();                                                                                                                  
