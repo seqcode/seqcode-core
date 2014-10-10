@@ -52,15 +52,14 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 		int start = pointStrand == '+' ?  Math.max(1, a.getLocation()-upstream) : Math.max(1, a.getLocation()-downstream);
 		int end = pointStrand == '+' ?  Math.min(a.getLocation()+downstream, a.getGenome().getChromLength(a.getChrom())) : Math.min(a.getLocation()+upstream, a.getGenome().getChromLength(a.getChrom()));
 		Region query = new Region(a.getGenome(), a.getChrom(), start, end);
-		
+		int ext = 200;
+		Region extQuery = new Region(a.getGenome(), a.getChrom(), start-ext>0 ? start-ext : 1, end+ext < a.getGenome().getChromLength(a.getChrom()) ? end+ext : a.getGenome().getChromLength(a.getChrom()) );
 		
 		double[] array = new double[params.getNumBins()];
 		for(int i = 0; i < array.length; i++) { array[i] = 0; }
-		double[] exparray = new double[params.getNumBins()];
-		for(int i = 0; i < exparray.length; i++) { exparray[i] = 0; }
 		
 		for(ControlledExperiment expt : manager.getReplicates()){
-			List<StrandedBaseCount> sbcs = expt.getSignal().getBases(query);
+			List<StrandedBaseCount> sbcs = expt.getSignal().getBases(extQuery);
 			for(StrandedBaseCount sbc : sbcs){
 				SeqHit hit = new SeqHit(genome, a.getChrom(), sbc);
 				if (this.strand=='.' || hit.getStrand()==wantedStrand){  //only count one strand
@@ -68,7 +67,7 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 						int hit5Prime = hit.getFivePrime()-start;
 						if(pointStrand=='-')
 							hit5Prime = end-hit.getFivePrime();
-							exparray[params.findBin(hit5Prime)]+=hit.getWeight();
+						array[params.findBin(hit5Prime)]+=hit.getWeight();
 					}				
 				}
 			}

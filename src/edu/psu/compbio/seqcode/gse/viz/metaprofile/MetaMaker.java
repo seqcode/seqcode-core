@@ -28,6 +28,7 @@ public class MetaMaker {
 		gconfig = g;
 		mconfig = m;
 		econfig = e;
+		manager = new ExperimentManager(econfig, true);
 	}
 	
 	public void run(){
@@ -39,7 +40,6 @@ public class MetaMaker {
 						econfig.getArgsList()+"\n");
 			}else{
 				Genome gen = gconfig.getGenome();
-				manager = new ExperimentManager(econfig);
 				
 				File file_mat = new File(mconfig.outName+"_matrix.peaks");
 				if(!file_mat.exists()){
