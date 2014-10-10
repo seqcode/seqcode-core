@@ -6,62 +6,40 @@ package edu.psu.compbio.seqcode.gse.viz.metaprofile;
 
 import java.util.*;
 
+import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
-import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.*;
-import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
-import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
 
 public class ChipSeqProfiler implements PointProfiler<Point,PointProfile> {
 	
+	private Genome genome;
+	private ExperimentManager manager=null;
 	private BinningParameters params;
-	private List<SeqExpander> expanders=null;
-	private DeepSeqExpt expt=null;
 	private int extension; 
-	private double perBaseMax=100;
-	private boolean useFivePrime = false;
+	private boolean useFivePrime=false;
 	private char readStrand ='/';
 	
-	public ChipSeqProfiler(BinningParameters ps, SeqExpander exp) { 
-		this(ps, exp, 175, 100, '/');
-	}
-	public ChipSeqProfiler(BinningParameters ps, SeqExpander exp, int ext, double pbMax, char strand) {
+	public ChipSeqProfiler(Genome gen, BinningParameters ps, ExperimentManager man, int ext, char strand) {
+		genome = gen;
+		manager = man;
 		params = ps;
-		expanders = new ArrayList<SeqExpander>(); 
-		expanders.add(exp);
 		extension=ext;
-		if(extension==-1)
-			useFivePrime=true;
-		perBaseMax = pbMax;
+		if(extension==-1){
+			useFivePrime = true;
+			extension=0;
+		}
 		readStrand = strand;
 	}
-	public ChipSeqProfiler(BinningParameters ps, List<SeqExpander> exps, int ext, double pbMax, char strand) {
-		params = ps;
-		expanders = exps;
-		extension=ext;
-		if(extension==-1)
-			useFivePrime=true;
-		perBaseMax=pbMax;
-		readStrand = strand;
-	}
-	public ChipSeqProfiler(BinningParameters ps, DeepSeqExpt exp, int ext, double pbMax, char strand) {
-		params = ps;
-		expt = exp;
-		extension=ext;
-		if(extension==-1)
-			useFivePrime=true;
-		perBaseMax=pbMax;
-		readStrand = strand;
-	}
-
+	
 	public BinningParameters getBinningParameters() {
 		return params;
 	}
-	public void setUseFivePrime(boolean ufp){useFivePrime = ufp;}
-
+	
 	public PointProfile execute(Point a) {
 		int window = params.getWindowSize();
 		int left = window/2;
@@ -81,70 +59,29 @@ public class ChipSeqProfiler implements PointProfiler<Point,PointProfile> {
 		double[] array = new double[params.getNumBins()];
 		for(int i = 0; i < array.length; i++) { array[i] = 0; }
 		
-		if(expanders!=null){
-			for(SeqExpander expander : expanders){
-				Iterator<SeqHit> hits = expander.execute(extQuery);
-				HashMap<Region, Double> readFilter = new HashMap<Region, Double>();
+		for(ControlledExperiment expt : manager.getReplicates()){
+			List<StrandedBaseCount> sbcs = expt.getSignal().getBases(extQuery);
+			for(StrandedBaseCount sbc : sbcs){
+				SeqHit hit = new SeqHit(genome, a.getChrom(), sbc);
+				if(extension>0)
+					hit = hit.extendHit(extension);
 				
-				while(hits.hasNext()) {
-					SeqHit hit=null;
-					if(useFivePrime)
-						hit = hits.next().fivePrime();
-					else
-						hit = hits.next().extendHit(extension);
-					if(hit.overlaps(query) && (readStrand=='/' || hit.getStrand()==readStrand)){
-						if(!readFilter.containsKey(hit))
-							readFilter.put(hit, hit.getWeight());
-						else
-							readFilter.put(hit, readFilter.get(hit)+hit.getWeight());
-						
-						if(readFilter.get(hit)<=perBaseMax){
-							int startOffset = Math.max(0, hit.getStart()-start);
-							int endOffset = Math.max(0, Math.min(end, hit.getEnd()-start));
-						
-							if(!strand) { 
-								int tmpEnd = window-startOffset;
-								int tmpStart = window-endOffset;
-								startOffset = tmpStart;
-								endOffset = tmpEnd;
-							}
-							
-							int startbin = params.findBin(startOffset);
-							int endbin = params.findBin(endOffset);
-							
-							addToArray(startbin, endbin, array, 1.0);
-						}
+				if(hit.overlaps(query) && (readStrand=='.' || hit.getStrand()==readStrand)){
+					int startOffset = Math.max(0, hit.getStart()-start);
+					int endOffset = Math.max(0, Math.min(end, hit.getEnd()-start));
+				
+					if(!strand) { 
+						int tmpEnd = window-startOffset;
+						int tmpStart = window-endOffset;
+						startOffset = tmpStart;
+						endOffset = tmpEnd;
 					}
-				}
-			}
-		}else{
-			List<ReadHit> hits = expt.loadHits(extQuery);
-			HashMap<Region, Double> readFilter = new HashMap<Region, Double>();
-			
-			for(ReadHit hit : hits){
-				if(hit.overlaps(query) && (readStrand=='/' || hit.getStrand()==readStrand)){
-					if(!readFilter.containsKey(hit))
-						readFilter.put(hit, hit.getWeight());
-					else
-						readFilter.put(hit, readFilter.get(hit)+hit.getWeight());
 					
-					if(readFilter.get(hit)<=perBaseMax){
-						int startOffset = Math.max(0, hit.getStart()-start);
-						int endOffset = Math.max(0, Math.min(end, hit.getEnd()-start));
+					int startbin = params.findBin(startOffset);
+					int endbin = params.findBin(endOffset);
 					
-						if(!strand) { 
-							int tmpEnd = window-startOffset;
-							int tmpStart = window-endOffset;
-							startOffset = tmpStart;
-							endOffset = tmpEnd;
-						}
-						
-						int startbin = params.findBin(startOffset);
-						int endbin = params.findBin(endOffset);
-						
-						addToArray(startbin, endbin, array, 1.0);
-					}
-				}
+					addToArray(startbin, endbin, array, 1.0);
+				}	
 			}
 		}
 		return new PointProfile(a, params, array, (a instanceof StrandedPoint));
@@ -155,13 +92,8 @@ public class ChipSeqProfiler implements PointProfiler<Point,PointProfile> {
 			array[k] += value;
 		}
 	}
-	
-	public void cleanup(){
-		if(expanders!=null){
-			for(SeqExpander e : expanders)
-				e.close();
-		}
-		if(expt != null)
-			expt.closeLoaders();
+
+	public void cleanup() {
 	}
+	
 }

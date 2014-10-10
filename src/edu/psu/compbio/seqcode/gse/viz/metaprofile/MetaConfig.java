@@ -39,7 +39,7 @@ public class MetaConfig {
 			lineMax = Args.parseDouble(args,"linemax", 100);
 			lineThick = Args.parseInteger(args,"linethick", 1);
 			pbMax = Args.parseDouble(args,"pbmax", 100);
-			strand = Args.parseString(args, "strand", "/").charAt(0);
+			strand = Args.parseString(args, "strand", ".").charAt(0);
 			drawColorBar = !Args.parseFlags(args).contains("nocolorbar");
 			saveSVG = Args.parseFlags(args).contains("svg");
 			transparent = Args.parseFlags(args).contains("transparent");
@@ -84,7 +84,7 @@ public class MetaConfig {
 				"\t--peaks <peaks file name>\n" +
 				"\t--out <output root name> \n" +
 				"\t--color <red/green/blue> or --color4 <R G B A>\n" +
-				"\t--strand <+-/>\n" +
+				"\t--strand <+-.>\n" +
 				"\t--printMatrix [flag to print the matrix of tags] \n"+
 				"\t--cluster [flag to cluster in batch mode] \n" +
 				"\t--batch [a flag to run without displaying the window]\n" +
