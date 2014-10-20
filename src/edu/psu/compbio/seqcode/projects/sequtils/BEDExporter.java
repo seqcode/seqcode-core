@@ -132,10 +132,10 @@ public class BEDExporter {
 						
 						if(posHits>0 || negHits>0){
 							for(int c=0; c<(int)posHits; c++){
-								fw.write("chr"+currSubRegion.getChrom()+"\t"+i+"\t"+(i+1)+"+"+"\n");
+								fw.write("chr"+currSubRegion.getChrom()+"\t"+i+"\t"+(i+1)+"\t"+"+"+"\n");
 							}
 							for(int c=0; c<(int)negHits; c++){
-								fw.write("chr"+currSubRegion.getChrom()+"\t"+i+"\t"+(i+1)+"-"+"\n");
+								fw.write("chr"+currSubRegion.getChrom()+"\t"+i+"\t"+(i+1)+"\t"+"-"+"\n");
 							}
 						}
 						//Print out progress
