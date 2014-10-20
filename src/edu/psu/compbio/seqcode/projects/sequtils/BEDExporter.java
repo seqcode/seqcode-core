@@ -39,7 +39,7 @@ public class BEDExporter {
 	
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		
-		IDXExporter wig = new IDXExporter(args);
+		BEDExporter wig = new BEDExporter(args);
 		wig.execute();
 		wig.close();
 			
