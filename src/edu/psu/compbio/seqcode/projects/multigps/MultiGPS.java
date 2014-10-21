@@ -54,7 +54,7 @@ public class MultiGPS {
 		for(ControlledExperiment rep : manager.getReplicates()){
 			if(mgpsconfig.getDefaultBindingModel()!=null)
 				bindingManager.setBindingModel(rep, mgpsconfig.getDefaultBindingModel());
-			else if(rep.getExptType().getName().toLowerCase().equals("chipexo"))
+			else if(rep.getExptType()!=null && rep.getExptType().getName().toLowerCase().equals("chipexo"))
 				bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipExoEmpiricalDistribution));
 			else
 				bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipSeqEmpiricalDistribution));
