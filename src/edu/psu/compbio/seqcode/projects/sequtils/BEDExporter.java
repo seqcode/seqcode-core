@@ -119,9 +119,12 @@ public class BEDExporter {
 					Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 					
 					ArrayList<ReadHit> hits = new ArrayList<ReadHit>();
-                    hits.addAll(expt.loadHits(currSubRegion));
-                    int read_length = (int)hits.get(0).getReadLength();
-                    double stackedHitCountsPos[] = make5PrimeLandscape(hits, currSubRegion, perBaseMax, '+');
+                    int read_length = 0;
+					hits.addAll(expt.loadHits(currSubRegion));
+                    if(hits.size() > 0){
+						read_length = (int)hits.get(0).getReadLength();
+                    }
+					double stackedHitCountsPos[] = make5PrimeLandscape(hits, currSubRegion, perBaseMax, '+');
                     double stackedHitCountsNeg[] = make5PrimeLandscape(hits, currSubRegion, perBaseMax, '-');
                     
                     //Scan regions
