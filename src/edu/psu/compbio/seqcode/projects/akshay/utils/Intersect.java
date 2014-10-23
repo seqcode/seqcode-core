@@ -220,8 +220,8 @@ public class Intersect {
 		}
 		
 		
-		repsa.add("1a"); repsa.add("1b"); repsa.add("1c"); repsa.add("2a"); repsa.add("2b"); repsa.add("2c");
-		repsb.add("1a"); repsb.add("1b"); repsb.add("1c"); repsb.add("2a"); repsb.add("2b"); repsb.add("2c");
+		repsa.add("1"); repsa.add("2"); 
+		repsb.add("1"); repsb.add("2");
 		
 		this.fillRepCounts(expta, exptb, minFragLen, maxFragLen, win);
 		
