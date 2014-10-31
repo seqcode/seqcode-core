@@ -75,7 +75,7 @@ public class MotifAnalysisSandbox {
 		List<MotifAnalysisSandbox> toolsList = new ArrayList<MotifAnalysisSandbox>();
 		
 		ArgParser ap = new ArgParser(args);
-        if((!ap.hasKey("species") && !ap.hasKey("geninfo")) || (!ap.hasKey("motiffile") && !ap.hasKey("motifname"))) { 
+        if((!ap.hasKey("species") && !ap.hasKey("geninfo")) || (!ap.hasKey("motiffile") && !ap.hasKey("weightMatfile") && !ap.hasKey("motifname"))) { 
             System.err.println("Usage:\n " +
                                "MotifAnalysisSandbox " +
                                "--species <organism;genome> OR\n" +
