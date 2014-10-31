@@ -205,6 +205,7 @@ public class MotifAnalysisSandbox {
 					matrix = matrixList.get(0);
 				}else if(ap.hasKey("weightMatfile")){
 					matrix = loadWeightMatrix(weightmatfile);
+					matrixList.add(matrix);
 				}
 			}else{
 				if(currorg!=null){
@@ -372,6 +373,7 @@ public class MotifAnalysisSandbox {
 	//Load weight matrix
 	public static WeightMatrix loadWeightMatrix(String filename) throws IOException{
 		WeightMatrix ret = null;
+		int[] indices = {'A','C','G','T'};
 		BufferedReader br = new BufferedReader(new FileReader(new File(filename)));
 		boolean nameLoaded=false;
 		int matLen=0;
@@ -396,14 +398,12 @@ public class MotifAnalysisSandbox {
 		}
 		br.close();
 		
-		float[][] matrix = new float[matLen][4];
+		ret = new WeightMatrix(matLen);
 		for(int i=0; i<matLen;i++){
 			for(int j=0; j<4; j++){
-				matrix[i][j] = mat[i][j];
+				ret.matrix[i][indices[j]] = mat[i][j];
 			}
 		}
-		
-		ret = new WeightMatrix(matrix);
 		
 		return ret;
 		
