@@ -81,6 +81,7 @@ public class MotifAnalysisSandbox {
                                "--species <organism;genome> OR\n" +
                                "--geninfo <genome info> AND --seq <path to seqs>\n" +
                                "--motiffile <file with motifs> AND --back <background>\nOR\n"+
+                               "--weightMatfile <file with weight matrix, only one weight matrix>\n"+
                                "--motifname <weightmatrix name> AND"+
                                "--motifversion <weightmatrix version> \n"+
                                "--peaks <file containing coordinates of peaks> \n" +
@@ -112,7 +113,7 @@ public class MotifAnalysisSandbox {
                                "--printprofiles [motif-profiler style vectors] --bins <num bin for profile> --binsize <binsize for histo>\n");
             return;
         }
-        String motifversion=null, motifname=null, motiffile=null, backfile=null;
+        String motifversion=null, motifname=null, motiffile=null, backfile=null, weightmatfile=null;
         boolean loadFromFile=false;
         //Motifs
         if(ap.hasKey("motifname")){
@@ -127,7 +128,11 @@ public class MotifAnalysisSandbox {
         	loadFromFile=true;
         	motiffile = ap.getKeyValue("motiffile");
         	backfile = ap.getKeyValue("back");
+        }else if(ap.hasKey("weightMatfile")){
+        	loadFromFile=true;
+        	weightmatfile=ap.getKeyValue("weightMatfile");
         }
+        
         havePeaks = ap.hasKey("peaks");
         String posFile = ap.getKeyValue("peaks");
         int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():-1;
@@ -195,8 +200,12 @@ public class MotifAnalysisSandbox {
 			List<WeightMatrix> matrixList = new ArrayList<WeightMatrix>();
 			
 			if(loadFromFile){
-				matrixList = loadMotifFromFile(motiffile, backfile, currgen);
-			    matrix = matrixList.get(0);
+				if(ap.hasKey("motiffile")){
+					matrixList = loadMotifFromFile(motiffile, backfile, currgen);
+					matrix = matrixList.get(0);
+				}else if(ap.hasKey("weightMatfile")){
+					matrix = loadWeightMatrix(weightmatfile);
+				}
 			}else{
 				if(currorg!=null){
 					int wmid = WeightMatrix.getWeightMatrixID(currorg.getDBID(), motifname, motifversion);
@@ -360,6 +369,48 @@ public class MotifAnalysisSandbox {
 			scorerList.add(new WeightMatrixScorer(w, seqgen));
 		}
 	}
+	//Load weight matrix
+	public static WeightMatrix loadWeightMatrix(String filename) throws IOException{
+		WeightMatrix ret = null;
+		BufferedReader br = new BufferedReader(new FileReader(new File(filename)));
+		boolean nameLoaded=false;
+		int matLen=0;
+		String line;
+		float[][] mat = new float[200][4];
+		while((line = br.readLine()) != null) { 
+			line.trim();
+			if(line.length() > 0) {
+				String[] pieces = line.split("\t");
+				if(pieces[0].equals("DE")){
+					nameLoaded=true;
+					matLen=0;
+				}
+				else if(nameLoaded && (pieces.length==5 || pieces.length==6)){ 
+                	//Load the matrix
+                	for(int i = 1; i <=4 ; i++) { 
+                        mat[matLen][i-1] = Float.parseFloat(pieces[i]);
+                    }
+                    matLen++;
+                }
+			}
+		}
+		br.close();
+		
+		float[][] matrix = new float[matLen][4];
+		for(int i=0; i<matLen;i++){
+			for(int j=0; j<4; j++){
+				matrix[i][j] = mat[i][j];
+			}
+		}
+		
+		ret = new WeightMatrix(matrix);
+		
+		return ret;
+		
+	}
+	
+	
+	
 	//Load freq matrix
 	public static List<WeightMatrix> loadMotifFromFile(String filename, String backname, Genome gen) throws IOException, ParseException {
 		FreqMatrixImport motifImport = new FreqMatrixImport();
