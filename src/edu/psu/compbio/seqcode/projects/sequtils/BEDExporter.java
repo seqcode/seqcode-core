@@ -119,8 +119,12 @@ public class BEDExporter {
 					Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 					
 					ArrayList<ReadHit> hits = new ArrayList<ReadHit>();
-                    hits.addAll(expt.loadHits(currSubRegion));
-                    double stackedHitCountsPos[] = make5PrimeLandscape(hits, currSubRegion, perBaseMax, '+');
+                    int read_length = 0;
+					hits.addAll(expt.loadHits(currSubRegion));
+                    if(hits.size() > 0){
+						read_length = (int)hits.get(0).getReadLength();
+                    }
+					double stackedHitCountsPos[] = make5PrimeLandscape(hits, currSubRegion, perBaseMax, '+');
                     double stackedHitCountsNeg[] = make5PrimeLandscape(hits, currSubRegion, perBaseMax, '-');
                     
                     //Scan regions
@@ -132,10 +136,10 @@ public class BEDExporter {
 						
 						if(posHits>0 || negHits>0){
 							for(int c=0; c<(int)posHits; c++){
-								fw.write("chr"+currSubRegion.getChrom()+"\t"+i+"\t"+(i+1)+"\t"+"+"+"\n");
+								fw.write("chr"+currSubRegion.getChrom()+"\t"+i+"\t"+(i+read_length)+"\t"+"+"+"\n");
 							}
 							for(int c=0; c<(int)negHits; c++){
-								fw.write("chr"+currSubRegion.getChrom()+"\t"+i+"\t"+(i+1)+"\t"+"-"+"\n");
+								fw.write("chr"+currSubRegion.getChrom()+"\t"+(i+1-read_length)+"\t"+(i+1)+"\t"+"-"+"\n");
 							}
 						}
 						//Print out progress
