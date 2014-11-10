@@ -274,7 +274,7 @@ public class ReadSimulator {
 		try {
 			FileWriter fout = new FileWriter(filename);
 			for(ReadHit r : reads){
-				fout.write(r.getChrom()+"\t"+r.getStart()+"\t"+r.getEnd()+"\tU\t0\t"+r.getStrand()+"\n");
+				fout.write("chr"+r.getChrom()+"\t"+r.getStart()+"\t"+r.getEnd()+"\tU\t0\t"+r.getStrand()+"\n");
 			}
 			fout.close();
 		} catch (IOException e) {
