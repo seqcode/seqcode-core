@@ -17,6 +17,7 @@ import cern.jet.random.Binomial;
 import cern.jet.random.Gamma;
 import cern.jet.random.Beta;
 import cern.jet.random.Poisson;
+import cern.jet.random.StudentT;
 import cern.jet.random.Uniform;
 import cern.jet.random.HyperGeometric;
 import cern.jet.random.engine.DRand;
@@ -1462,6 +1463,21 @@ public class StatUtil {
 		pval = b.cdf((int) Math.ceil(k));
 		return(pval);		
 	}
+    
+    /**
+     * Uses COLT Student T test
+     * @param t
+     * @param v
+     * @return
+     */
+    public static double studentTPvalue(double t, double v){
+    	if(v==0)
+    		return Double.NaN;
+    	double pval=1;
+    	StudentT st = new StudentT(v,new DRand());
+    	pval = st.cdf(t);
+    	return pval;
+    }
 	
 	// this method will mutate the input array
 	public static void mutate_normalize(double[] dist){
