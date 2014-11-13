@@ -24,8 +24,8 @@ public class StudentT {
 		this.vec1=vec1;
 		this.vec2=vec2;
 		
-		double mean1 = StatUtil.mean(vec1);
-		double mean2 = StatUtil.mean(vec2);
+		mean1 = StatUtil.mean(vec1);
+		mean2 = StatUtil.mean(vec2);
 		
 		double std1 = StatUtil.std(vec1);
 		double std2 = StatUtil.std(vec2);
