@@ -17,6 +17,8 @@ public class StudentT {
 	public double pval;
 	public double Tstat;
 	public double v;
+	public double mean1;
+	public double mean2;
 	
 	public StudentT(double[] vec1, double[] vec2) {
 		this.vec1=vec1;
@@ -42,6 +44,8 @@ public class StudentT {
 	public double getPval(){return this.pval;}
 	public double getTstat(){return this.Tstat;}
 	public double getV(){return this.v;}
+	public double getmean1(){return this.mean1;}
+	public double getmean2(){return this.mean2;}
 	
 	public static void main(String[] args){
 		try{
@@ -93,6 +97,8 @@ public class StudentT {
 				System.out.println(tester.getPval());
 				System.out.println(tester.getTstat());
 				System.out.println(tester.getV());
+				System.out.println(tester.getmean1());
+				System.out.println(tester.getmean2());
 			}
 			
 			
