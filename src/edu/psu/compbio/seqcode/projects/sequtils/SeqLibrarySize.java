@@ -72,6 +72,8 @@ public class SeqLibrarySize {
 	public void setTestQuantile(double tq){
 		if(tq>0 && tq<=1.0)
 			testQuantile=tq;
+		else
+			System.err.println("Illegal test quantile: "+tq+", using default: "+testQuantile);
 	}
 	public void setVerbose(boolean v){verbose=v;}
 	public void setPrintHeader(boolean v){printNonVerboseHeader=v;}
