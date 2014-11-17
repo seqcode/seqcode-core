@@ -51,7 +51,7 @@ public class SeqQC {
 		manager = new ExperimentManager(econfig);
 		
 		for(ControlledExperiment expt : manager.getReplicates()){
-			String name = expt.getSignal().getName().startsWith("EXPERIMENT") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
+			String name = expt.getSignal().getName().startsWith("experiment") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
 			infoStrings.put(expt, new String(name));
 		}
 	}
