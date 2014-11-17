@@ -7,9 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import cern.jet.random.Poisson;
-import cern.jet.random.engine.DRand;
-
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
@@ -54,7 +51,7 @@ public class SeqQC {
 		manager = new ExperimentManager(econfig);
 		
 		for(ControlledExperiment expt : manager.getReplicates()){
-			String name = expt.getSignal().getName().startsWith("EXPERIMENT") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
+			String name = expt.getSignal().getName().startsWith("experiment") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
 			infoStrings.put(expt, new String(name));
 		}
 	}
@@ -154,11 +151,11 @@ public class SeqQC {
 				currWeight+=dcp.getCount();
 			}
 			
-			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 20);
+			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 30);
 			census.setVerbose(verbose);
 			census.execute();
 			
-			CensusLibraryComplexity fullCensus = new CensusLibraryComplexity(fullHisto, 1, 10);
+			CensusLibraryComplexity fullCensus = new CensusLibraryComplexity(fullHisto, 1, 30);
 			fullCensus.setVerbose(verbose);
 			fullCensus.execute();
 			
@@ -201,7 +198,7 @@ public class SeqQC {
 			
 			
 			if(verbose){
-				String name = expt.getSignal().getName().startsWith("EXPERIMENT") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
+				String name = expt.getSignal().getName().startsWith("experiment") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
 				System.out.println("Experiment: "+name+" = "+String.format("%.1f mapped tags at %.0f unique positions", expt.getSignal().getHitCount(),expt.getSignal().getHitPositionCount()));
 				
 				System.out.println("\nPer-Fragment Estimated Poisson statistics:");

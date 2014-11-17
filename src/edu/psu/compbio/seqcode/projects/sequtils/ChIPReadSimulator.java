@@ -25,8 +25,6 @@ import edu.psu.compbio.seqcode.projects.sequtils.CountDataSimulator.SimCounts;
 /**
  * Simulates single or double condition fragments and reads using BindingModels. <br> 
  * 
- * Extended from edu.psu.compbio.seqcode.projects.multigps.utilities.MultiConditionReadSimulator
- * 
  * In any given simulated replicate experiment, reads are simulated according to a BindingModel.
  * Read counts for each binding event in each condition are determined from a CountDataSimulator,
  * which allows for differential binding between two conditions, and negative-binomial sampled
@@ -36,6 +34,7 @@ import edu.psu.compbio.seqcode.projects.sequtils.CountDataSimulator.SimCounts;
  * 
  * @author Shaun Mahony
  *
+ * Extended from edu.psu.compbio.seqcode.projects.multigps.utilities.MultiConditionReadSimulator
  */
 public class ChIPReadSimulator {
 
