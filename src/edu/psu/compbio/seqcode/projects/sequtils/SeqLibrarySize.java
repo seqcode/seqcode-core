@@ -204,17 +204,7 @@ public class SeqLibrarySize {
 			}else{
 				String currInfo = infoStrings.get(expt);
 				if(reportPoisson){
-					currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.1f\t%.3f\t%.3f\t%.3f\t%.3f", 
-							expt.getSignal().getHitCount(),
-							expt.getSignal().getHitPositionCount(),
-							nbMean,
-							nbVar,
-							nbLibrarySize,
-							nbLibraryCoverage,
-							nbLibraryCoverageDoubledSeq
-							);
-				}else{
-					currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.1f\t%.3f\t%.3f\t%.3f\t%.3f", 
+					currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.3f\t%.3f", 
 							expt.getSignal().getHitCount(),
 							expt.getSignal().getHitPositionCount(),
 							pMean,
@@ -222,6 +212,16 @@ public class SeqLibrarySize {
 							pLibrarySize,
 							pLibraryCoverage,
 							pLibraryCoverageDoubledSeq
+							);
+				}else{
+					currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.3f\t%.3f", 
+							expt.getSignal().getHitCount(),
+							expt.getSignal().getHitPositionCount(),
+							nbMean,
+							nbVar,
+							nbLibrarySize,
+							nbLibraryCoverage,
+							nbLibraryCoverageDoubledSeq
 							);
 				}
 				infoStrings.put(expt, currInfo);
@@ -263,8 +263,8 @@ public class SeqLibrarySize {
 					"\t--expt <experiment to test QC>\n" +
 					"\t--format <format of experiment files (SAM/BED/IDX)>\n" +
 					"\t--testquantile <fraction of sparsest density reads from which to build distribution (default="+SeqLibrarySize.getTestQuantile()+")>\n" +
-					"\t--ztnb [fit a zero-truncated Negative Binomial (default)]" +
-					"\t--ztp [fit a zero-truncated Poisson (not recommended - for testing only)]" +
+					"\t--ztnb [fit a zero-truncated Negative Binomial (default)]\n" +
+					"\t--ztp [fit a zero-truncated Poisson (not recommended - for testing only)]\n" +
 					"\t--verbose [print some more information]\n" +
 					"\t--noheader [drop the header in non-verbose mode]\n");
 		}else{
