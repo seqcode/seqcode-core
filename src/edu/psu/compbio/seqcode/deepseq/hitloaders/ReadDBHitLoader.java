@@ -98,16 +98,16 @@ public class ReadDBHitLoader extends HitLoader{
 		            }else{
 		            	for (String replicate : locator.getReplicates()) {//Given alignment name, given replicate names
 		            		SeqAlignment a = loader.loadAlignment(loader.loadExperiment(locator.getExptName(),replicate),locator.getAlignName(),g);
-							if(a!=null)
+							if(a!=null){
 								aligns.add(a);
+							}
 		        		}
 		            }
 		        }
 			}
 	        for(SeqAlignment alignment : aligns) {
 	            alignIDs.add(Integer.toString(alignment.getDBID()));
-	            this.sourceName=this.sourceName.equals("") ? 
-			alignment.getName() : ";"+alignment.getName();
+	            this.sourceName=this.sourceName.equals("") ? alignment.getName() : ";"+alignment.getName();
 	        }
 	        
             if (exptLocs.size() != 0 && aligns.size() == 0) {
