@@ -151,11 +151,11 @@ public class SeqQC {
 				currWeight+=dcp.getCount();
 			}
 			
-			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 20);
+			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 30);
 			census.setVerbose(verbose);
 			census.execute();
 			
-			CensusLibraryComplexity fullCensus = new CensusLibraryComplexity(fullHisto, 1, 10);
+			CensusLibraryComplexity fullCensus = new CensusLibraryComplexity(fullHisto, 1, 30);
 			fullCensus.setVerbose(verbose);
 			fullCensus.execute();
 			
@@ -198,7 +198,7 @@ public class SeqQC {
 			
 			
 			if(verbose){
-				String name = expt.getSignal().getName().startsWith("EXPERIMENT") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
+				String name = expt.getSignal().getName().startsWith("experiment") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
 				System.out.println("Experiment: "+name+" = "+String.format("%.1f mapped tags at %.0f unique positions", expt.getSignal().getHitCount(),expt.getSignal().getHitPositionCount()));
 				
 				System.out.println("\nPer-Fragment Estimated Poisson statistics:");

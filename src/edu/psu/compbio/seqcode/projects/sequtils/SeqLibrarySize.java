@@ -164,7 +164,7 @@ public class SeqLibrarySize {
 				currWeight+=dcp.getCount();
 			}
 			
-			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 20);
+			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 30);
 			census.setVerbose(verbose);
 			census.execute();
 			
@@ -185,7 +185,7 @@ public class SeqLibrarySize {
 			
 			
 			if(verbose){
-				String name = expt.getSignal().getName().startsWith("EXPERIMENT") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
+				String name = expt.getSignal().getName().startsWith("experiment") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
 				System.out.println("Experiment: "+name+" = "+String.format("%.1f mapped tags at %.0f unique positions", expt.getSignal().getHitCount(),expt.getSignal().getHitPositionCount()));
 				
 				if(reportPoisson){
