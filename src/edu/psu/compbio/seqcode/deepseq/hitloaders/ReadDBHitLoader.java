@@ -106,8 +106,7 @@ public class ReadDBHitLoader extends HitLoader{
 			}
 	        for(SeqAlignment alignment : aligns) {
 	            alignIDs.add(Integer.toString(alignment.getDBID()));
-	            this.sourceName=this.sourceName.equals("") ? 
-			Integer.toString(alignment.getName()) : ";"+Integer.toString(alignment.getName());
+	            this.sourceName=this.sourceName+Integer.toString(alignment.getDBID())+";";
 	        }
 	        
             if (exptLocs.size() != 0 && aligns.size() == 0) {
