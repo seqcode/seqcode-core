@@ -21,13 +21,13 @@ public class CGScorer {
 		int[] cgscore= new int[params.getNumBins()];
 		double[] cgperc = new double[params.getNumBins()];
 		for(int i=0; i<seq.length()-1; i++){
-			if(seq.substring(i, i+1).equals("CG")){
+			if(seq.substring(i, i+2).equals("CG")){
 				cgscore[params.findBin(i)]++;
 			}
 		}
 		int MaxCG = (int)params.getBinSize()/2;
 		for(int i=0; i<cgscore.length;i++){
-			cgperc[i] = cgscore[i]/MaxCG;
+			cgperc[i] = (double)cgscore[i]/MaxCG;
 		}
 		
 		CGScoreProfile profile = new CGScoreProfile(cgscore,cgperc);
