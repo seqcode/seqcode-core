@@ -6,6 +6,7 @@ import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.ReadHit;
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
+import edu.psu.compbio.seqcode.deepseq.StrandedPair;
 import edu.psu.compbio.seqcode.deepseq.hitloaders.*;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -27,6 +28,8 @@ public class Sample {
 	protected String sourceName=""; //String describing the source files or DBIDs 
 	protected double totalHits; //totalHits is the sum of alignment weights
 	protected double uniqueHits; //count of unique mapped positions (just counts the number of bases with non-zero counts - does not treat non-uniquely mapped positions differently)
+	protected int totalPairs=0; //count of the total number of paired hits
+	protected int uniquePairs=0; //count of the total number of unique paired hits
 	protected float maxReadsPerBP=-1;
 	
 	
@@ -52,6 +55,8 @@ public class Sample {
 	public String getSourceName(){return sourceName;}
 	public double getHitCount(){return(totalHits);}
 	public double getHitPositionCount(){return(uniqueHits);}
+	public int getPairCount(){return(totalPairs);}
+	public int getUniquePairCount(){return(uniquePairs);}
 	public void setGenome(Genome g){gen=g; cache.setGenome(g);}
 
 	/**
@@ -69,9 +74,11 @@ public class Sample {
 	 * @param initialCachedRegions : list of regions to keep cached at the start (can be null)
 	 */
 	public void initializeCache(boolean cacheEntireGenome, List<Region> initialCachedRegions){
-		cache = new HitCache(econfig, loaders, maxReadsPerBP, cacheEntireGenome, initialCachedRegions);
+		cache = new HitCache(econfig.getLoadPairs(), econfig, loaders, maxReadsPerBP, cacheEntireGenome, initialCachedRegions);
 		totalHits = cache.getHitCount();
 		uniqueHits = cache.getHitPositionCount();
+		totalPairs = cache.getPairCount();
+		uniquePairs = cache.getUniquePairCount();
 		if(gen==null)
 			gen = cache.getGenome();
 	}
@@ -94,6 +101,16 @@ public class Sample {
 	 */
 	public List<StrandedBaseCount> getStrandedBases(Region r, char strand) {
 		return cache.getStrandedBases(r, strand);
+	}
+	
+	/**
+	 * Load all pairs in a region, regardless of strand.
+	 * If caching in local files, group calls to this method by same chromosome. 
+	 * @param r Region
+	 * @return List of StrandedBaseCounts
+	 */
+	public List<StrandedPair> getPairs(Region r) {
+		return cache.getPairs(r);
 	}
 	
 	/**

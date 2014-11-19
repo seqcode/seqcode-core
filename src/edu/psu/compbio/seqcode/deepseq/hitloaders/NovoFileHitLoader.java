@@ -17,13 +17,18 @@ import edu.psu.compbio.seqcode.deepseq.ReadHit;
  */
 public class NovoFileHitLoader extends FileHitLoader {
 
-	public NovoFileHitLoader(File f, boolean nonUnique) {
-    	super(f, nonUnique);
+	public NovoFileHitLoader(File f, boolean nonUnique, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs){
+		super(f, nonUnique, true, true, loadPairs);
+		if(!loadR1Reads || !loadR2Reads)
+			System.err.println("NovoFileHitLoader: You asked to load only R1 or R2 reads, we do not load this information from NovoAlign format.");
+		if(loadPairs)
+			System.err.println("NovoFileHitLoader: You asked to load pairs, but we do not load paired read data from NovoAlign format.");
 	}	
 		
 	/**
 	 * Get the reads from the appropriate source (implementation-specific).
 	 * Loads data to the fivePrimesList and hitsCountList
+	 * Nothing loaded to hitPairsList since we do not load pairing information from NovoAlign format
 	 */
 	public void sourceAllHits() {
 		this.initialize();

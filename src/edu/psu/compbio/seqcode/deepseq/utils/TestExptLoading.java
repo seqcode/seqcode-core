@@ -1,10 +1,11 @@
-package edu.psu.compbio.seqcode.deepseq;
+package edu.psu.compbio.seqcode.deepseq.utils;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
@@ -17,7 +18,7 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
  * Simple package testing class to cache a set of experiments and print total hit counts.
  * 
  *  Unit testing:
- *  	java -Xmx2G edu.psu.compbio.seqcode.deepseq.TestExptLoading --species "Mus musculus;mm9" --rdbexptC1 "ES2MN Day0(iCdx2.V5+Dox) iCdx2.V5 Ainv15_iCdx2.V5;1;bowtie_unique" --fixedpb 100000 (--nocache)
+ *  	java -Xmx2G edu.psu.compbio.seqcode.deepseq.utils.TestExptLoading --species "Mus musculus;mm9" --rdbexptC1 "ES2MN Day0(iCdx2.V5+Dox) iCdx2.V5 Ainv15_iCdx2.V5;1;bowtie_unique" --fixedpb 100000 (--nocache)
  *  	Result: C1:rep1	4700200.0	4700200.0
  *  
  * @author mahony

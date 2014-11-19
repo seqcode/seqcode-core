@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.HitPair;
 import edu.psu.compbio.seqcode.deepseq.Read;
 import edu.psu.compbio.seqcode.deepseq.ReadHit;
 
@@ -23,13 +24,14 @@ import edu.psu.compbio.seqcode.deepseq.ReadHit;
  */
 public class TophatFileHitLoader extends FileHitLoader{
 
-    public TophatFileHitLoader(File f, boolean nonUnique) {
-    	super(f, nonUnique);
+    public TophatFileHitLoader(File f, boolean nonUnique, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs) {
+    	super(f, nonUnique, loadR1Reads, loadR2Reads, loadPairs);
     }
 
     /**
 	 * Get the reads from the appropriate source (implementation-specific).
 	 * Loads data to the fivePrimesList and hitsCountList
+	 * Loads pairs to hitPairsList
 	 */
 	public void sourceAllHits() {
 		this.initialize();
@@ -73,6 +75,18 @@ public class TophatFileHitLoader extends FileHitLoader{
 		    	currRead.addHit(currHit);
 			}	
 		    addHits(currRead);
+		    
+		    //load pair if this is a first mate, congruent, proper pair
+		    if(record.getFirstOfPairFlag() && record.getProperPairFlag()){
+		    	boolean neg = record.getReadNegativeStrandFlag();
+                boolean mateneg = record.getMateNegativeStrandFlag();
+                HitPair hp = new HitPair((neg ? record.getAlignmentEnd() : record.getAlignmentStart()),
+                		record.getMateReferenceName(),
+                		(mateneg ? record.getMateAlignmentStart()+record.getReadLength()-1 : record.getMateAlignmentStart()), 
+                		mateneg ? 1 : 0,
+                		1);
+                addPair(record.getReferenceName(), neg ? '-':'+', hp);
+		    }
 		}
 		iter.close();
 		try {

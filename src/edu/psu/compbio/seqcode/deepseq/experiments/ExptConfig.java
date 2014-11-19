@@ -44,6 +44,11 @@ public class ExptConfig {
 	protected boolean cacheAllHits=true; //Cache all hits
 	protected String fileCacheDir = "hitcache";
 	protected List<Region> initialCachedRegions=null;
+	//No command-line options are provided for the following, as different loaders will have different behaviors here
+	//For example, some file formats cannot store pairs. ReadDB ignores the difference between R1 & R2 in single-end, etc.
+	protected boolean loadR1Reads = true; //Load R1 reads
+	protected boolean loadR2Reads = true; //Load R2 reads (if exists and distinguishable)
+	protected boolean loadPairs = false; //Load pair information (if exists)
 	
 	    
 	protected String[] args;
@@ -92,6 +97,14 @@ public class ExptConfig {
 			        ap = new ArgParser(args);
 			        reader.close();
 				}
+				//////////////////////
+				//Which reads to load?
+				////////////////////////
+				loadR1Reads = Args.parseFlags(args).contains("loadr1reads");
+				loadR2Reads = Args.parseFlags(args).contains("loadr2reads");
+				loadPairs = Args.parseFlags(args).contains("loadpairs");
+				loadR1Reads = !Args.parseFlags(args).contains("nor1reads");
+				loadR2Reads = !Args.parseFlags(args).contains("nor2reads");
 				
 				////////////////////////
 				//Read limit parameters
@@ -274,6 +287,9 @@ public class ExptConfig {
 	public boolean getCacheAllData(){return cacheAllHits;}
 	public String getFileCacheDirName(){return fileCacheDir;}
 	public List<Region> getInitialCachedRegions(){return initialCachedRegions;}
+	public boolean getLoadR1Reads(){return loadR1Reads;}
+	public boolean getLoadR2Reads(){return loadR2Reads;}
+	public boolean getLoadPairs(){return loadPairs;}
 	
 	//Some accessors to allow modification of options after config .
 	public void setPerBaseReadFiltering(boolean pbrf){perBaseReadFiltering = pbrf;}
@@ -281,6 +297,9 @@ public class ExptConfig {
 	public void setSESScaling(boolean ses){scalingBySES = ses;}
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
 	public void setFileCacheDirName(String d){fileCacheDir = d;}
+	public void setLoadR1Reads(boolean l){loadR1Reads = l;}
+	public void setLoadR2Reads(boolean l){loadR2Reads = l;}
+	public void setLoadPairs(boolean l){loadPairs = l;}
 	
 	
 	/**
@@ -320,6 +339,8 @@ public class ExptConfig {
 				"\t--poissongausspb <filter per base using a Poisson threshold parameterized by a local Gaussian sliding window>\n" +
 				"\t--mappability <fraction of the genome that is mappable for these experiments>\n" +
 				"\t--nocache [flag to turn off caching of the entire set of experiments (i.e. run slower with less memory)]\n" +
+			//	"\t--loadr1reads / --loadr2reads [flags to use R1 or R2 reads]\n" +
+				"\t--nor1reads / --nor2reads [flags to ignore R1 or R2 reads (both loaded by default)]\n" +
 				""));
 	}
 }

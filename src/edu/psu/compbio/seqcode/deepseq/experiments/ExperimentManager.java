@@ -241,7 +241,7 @@ public class ExperimentManager {
         } else {
             throw new RuntimeException("Couldn't parse a SeqLocator from " + name);
         }
-		return (new ReadDBHitLoader(gen, locs));
+		return (new ReadDBHitLoader(gen, locs, econfig.getLoadR1Reads(), econfig.getLoadR2Reads(), econfig.getLoadPairs()));
 	}
 	
 
@@ -255,17 +255,17 @@ public class ExperimentManager {
 		File file = new File(filename);
 		if(!file.isFile()){System.err.println("File not found: "+file.getName());System.exit(1);}
 		if(format.equals("SAM") || format.equals("BAM")){
-			currReader = new SAMFileHitLoader(file,useNonUnique);
+			currReader = new SAMFileHitLoader(file,useNonUnique, econfig.getLoadR1Reads(), econfig.getLoadR2Reads(), econfig.getLoadPairs());
 		}else if(format.equals("TOPSAM")){
-			currReader = new TophatFileHitLoader(file,useNonUnique);
+			currReader = new TophatFileHitLoader(file,useNonUnique, econfig.getLoadR1Reads(), econfig.getLoadR2Reads(), econfig.getLoadPairs());
 		}else if(format.equals("NOVO")){
-			currReader = new NovoFileHitLoader(file,useNonUnique);
+			currReader = new NovoFileHitLoader(file,useNonUnique, econfig.getLoadR1Reads(), econfig.getLoadR2Reads(), econfig.getLoadPairs());
 		}else if(format.equals("BOWTIE")){
-			currReader = new BowtieFileHitLoader(file,useNonUnique);
+			currReader = new BowtieFileHitLoader(file,useNonUnique, econfig.getLoadR1Reads(), econfig.getLoadR2Reads(), econfig.getLoadPairs());
 		}else if(format.equals("BED")){
-			currReader = new BEDFileHitLoader(file,useNonUnique);
+			currReader = new BEDFileHitLoader(file,useNonUnique, econfig.getLoadR1Reads(), econfig.getLoadR2Reads(), econfig.getLoadPairs());
 		}else if(format.equals("IDX")){
-			currReader = new IDXFileHitLoader(file,useNonUnique);
+			currReader = new IDXFileHitLoader(file,useNonUnique, econfig.getLoadR1Reads(), econfig.getLoadR2Reads(), econfig.getLoadPairs());
 		}else{
 		    System.err.println("Unknown file format: "+format);
 		    System.exit(1);
