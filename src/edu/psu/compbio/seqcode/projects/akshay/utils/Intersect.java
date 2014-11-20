@@ -431,15 +431,15 @@ public class Intersect {
 				int tmpKey = asort.get(c)[p];
 				int match = Arrays.binarySearch(bsort.get(c), tmpKey);
 				if( match < 0 ) { match = -match - 1; }
-				int dist = 0;
+				int dist = Integer.MAX_VALUE;
 				int bkey=0;
 				if(match !=0 && match < bsort.get(c).length){
 					dist = ((bsort.get(c)[match]-tmpKey) < (tmpKey -bsort.get(c)[match-1]) )? bsort.get(c)[match]-tmpKey :tmpKey -bsort.get(c)[match-1];
 					bkey = ((bsort.get(c)[match]-tmpKey) < (tmpKey -bsort.get(c)[match-1]) ) ? bsort.get(c)[match] : bsort.get(c)[match-1];
-				}else if(match == bsort.get(c).length){
+				}else if(match == bsort.get(c).length && bsort.get(c).length != 0){
 					dist = tmpKey -bsort.get(c)[match-1];
 					bkey = bsort.get(c)[match-1];
-				}else{
+				}else if(bsort.get(c).length != 0){
 					dist=Math.abs(tmpKey - bsort.get(c)[0]);
 					bkey=bsort.get(c)[0];
 				}
