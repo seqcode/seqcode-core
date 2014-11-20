@@ -21,8 +21,10 @@ import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 import org.apache.commons.lang3.RandomStringUtils;
 
+import edu.psu.compbio.seqcode.deepseq.HitPair;
 import edu.psu.compbio.seqcode.deepseq.ReadHit;
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
+import edu.psu.compbio.seqcode.deepseq.StrandedPair;
 import edu.psu.compbio.seqcode.deepseq.hitloaders.HitLoader;
 import edu.psu.compbio.seqcode.deepseq.stats.BackgroundCollection;
 import edu.psu.compbio.seqcode.deepseq.stats.PoissonBackgroundModel;
@@ -33,7 +35,6 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 /**
  * HitCache acts as a cache for some or all alignment hits associated with a particular Sample. 
- * This combines functionality from DeepSeq and ReadCache in the old GSE setup.
  * 
  * This class can cache either all alignment hits, or hits contained in a (rewritable) list of regions.
  * Which you choose to do in your application should be guided by the speed and memory trade-off. 
@@ -49,19 +50,29 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
  * Hit alignments are loaded into two primative type 3D arrays -- fivePrimePos and fivePrimeCounts.
  * The fivePrimes field for each chrom/strand will be distinct. 
  * Multiple reads mapped to the same bp position will be stored as counts.
- * This class basically stores the hits coming from the corresponding files. <br>
- * We have made use of an unusual convention for reducing running time purposes. <br>
- * The hits are basically being represented by 3 main fields: <tt>fivePrimes, hitCounts</tt>
- * and <tt>hitIDs</tt>. <br>
- * Each of these fields are 3D arrays where:  <br>
+ * In each of the 3D arrays:  <br>
  * - the first dimension corresponds to the chromosome that a hit belongs to (based on
  * the mapping from a chromosome as a <tt>String</tt> to an integer via the 
  * <tt>chrom2ID</tt> map).    <br>
  * - the second dimension corresponds to the strand. 0 for '+' (Watson), 1 for '-' (Crick). <br>
  * - the third dimension contains information for a hit (e.g. its fivePrimes or counts)
  * 
+ * 
+ * This class also stores paired hits, if they exist for a given Sample.
+ * All paired hits are indexed off the R1 reads. When you call getPairs(region) or similar methods, you
+ * will only get back pairs that have a R1 read hit located in the region. Therefore, be careful with how you
+ * interpret the numbers of paired hits in a given region. 
+ *  
+ * It may seem inefficient to store the pair information separately from the hits. However, note that the
+ * single hits are stored as compressed hit location-weight pairs (i.e. multiple hits mapping to the same position  
+ * are treated as counts of the same hit). The single hit locations will also not match up completely with 
+ * the paired locations - only locations of hits in valid pairs are stored as pairs.    
+ * In summary, the single end hit locations are related to, but distinct from, the hit pairs, and care should be 
+ * taken when comparing items from each type.  
+ * 
+ * 
  * @author mahony
- *
+ * This class combines functionality from DeepSeq and ReadCache in the old GSE setup.
  */
 public class HitCache {
 
@@ -76,6 +87,10 @@ public class HitCache {
 	private int numChroms=0;
 	protected double totalHits=0; //totalHits is the sum of alignment weights
 	protected double uniqueHits=0; //count of unique mapped positions (just counts the number of bases with non-zero counts - does not treat non-uniquely mapped positions differently)
+	protected int totalPairs=0; //count of the total number of paired hits
+	protected int uniquePairs=0; //count of the total number of unique paired hits
+	protected boolean loadPairs; //Load them if they exist
+	protected boolean hasPairs; //Some pairs have been loaded
 	protected BackgroundCollection perBaseBack=new BackgroundCollection();
 	protected float maxReadsPerBP=-1;
 	
@@ -91,32 +106,69 @@ public class HitCache {
 	 * First dimension represents the corresponding chromosome ID. <br>
 	 * Second dimension represents the strand. 0 for '+', 1 for '-' <br>
 	 * Third dimension contains the number of hits at corresponding start position 
+	 * Third dimension index is that of the corresponding hit location in fivePrimePos
 	 */
 	private float[][][] fivePrimeCounts=null;
+	/**
+	 * Five prime ends of the R1 read hits in paired hits. <br>
+	 * First dimension represents the R1 read chromosome ID. <br>
+	 * Second dimension represents the R1 read strand. 0 for '+', 1 for '-' <br>
+	 * Third dimension contains the coordinates of the R1 read hit <br>
+	 */
+	private int[][][] pairR1Pos=null;
+	/**
+	 * Five prime ends of the R2 read hits in paired hits. <br>
+	 * First dimension represents the R1 read chromosome ID. <br>
+	 * Second dimension represents the R1 read strand. 0 for '+', 1 for '-' <br>
+	 * Third dimension contains the coordinates of the R2 read hit <br>
+	 * Third dimension index is that of the corresponding R1 read in pairR1Pos
+	 */
+	private int[][][] pairR2Pos=null;
+	/**
+	 * Chromosome IDs of the R2 read hits in paired hits. <br>
+	 * First dimension represents the R1 read chromosome ID. <br>
+	 * Second dimension represents the R1 read strand. 0 for '+', 1 for '-' <br>
+	 * Third dimension contains the coordinates of the R2 read hit <br>
+	 * Third dimension index is that of the corresponding R1 read in pairR1Pos
+	 */
+	private int[][][] pairR2Chrom=null;
+	/**
+	 * Strands of the R2 read hits in paired hits. <br>
+	 * First dimension represents the R1 read chromosome ID. <br>
+	 * Second dimension represents the R1 read strand. 0 for '+', 1 for '-' <br>
+	 * Third dimension contains the coordinates of the R2 read hit <br>
+	 * Third dimension index is that of the corresponding R1 read in pairR1Pos
+	 */
+	private int[][][] pairR2Strand=null;
 	
 	private HashMap<String, Integer> chrom2ID=new HashMap<String,Integer>();
+	private HashMap<String, Integer> chrom2DBID=new HashMap<String,Integer>();
 	private HashMap<Integer,String> id2Chrom=new HashMap<Integer,String>();
+	private HashMap<Integer,Integer> id2DBID=new HashMap<Integer,Integer>();
 	
 	/**
 	 * Constructor
+	 * @param loadPairs : boolean flag to load the read pairs (if they exist)
 	 * @param ec
 	 * @param hloaders
 	 * @param perBaseReadMax
 	 * @param cacheEverything : boolean flag to cache all hits
 	 * @param initialCacheRegions : list of regions to cache first (can be null)
 	 */
-	public HitCache(ExptConfig ec, Collection<HitLoader> hloaders, float perBaseReadMax, boolean cacheEverything, List<Region> initialCacheRegions){
+	public HitCache(boolean loadPairs, ExptConfig ec, Collection<HitLoader> hloaders, float perBaseReadMax, boolean cacheEverything, List<Region> initialCacheRegions){
 		econfig = ec;
 		gen = econfig.getGenome();
 		this.loaders = hloaders;
 		maxReadsPerBP= perBaseReadMax;
-		
+		this.loadPairs = loadPairs;
 		initialize(cacheEverything, initialCacheRegions);
 	}
 	
 	//Accessors
 	public double getHitCount(){return(totalHits);}
 	public double getHitPositionCount(){return(uniqueHits);}
+	public int getPairCount(){return(totalPairs);}
+	public int getUniquePairCount(){return(uniquePairs);}
 	public Genome getGenome(){return gen;}
 	public void setGenome(Genome g){gen=g;}
 
@@ -129,6 +181,9 @@ public class HitCache {
 	 * set up the primitive arrays for now. This is so that the total and unique
 	 * hit counts can be accurately calculated given the per base limits.   
 	 *  
+	 * @param loadR1 : boolean flag to load the left reads
+	 * @param loadR2 : boolean flag to load the right reads (if they exist)
+	 * @param loadPairs : boolean flag to load the read pairs (if they exist)
 	 * @param cacheEverything : boolean flag to cache all hits (if false, local file caching is activated)
 	 * @param initialCacheRegions : list of regions to cache first (can be null)
 	 */
@@ -140,6 +195,7 @@ public class HitCache {
 		//These lists are temporary stores while collecting reads from all sources
 		HashMap<String, ArrayList<Integer>[]> posList = new HashMap<String, ArrayList<Integer>[]>();
 		HashMap<String, ArrayList<Float>[]> countsList = new HashMap<String, ArrayList<Float>[]>();
+		HashMap<String, ArrayList<HitPair>[]> pairsList = new HashMap<String, ArrayList<HitPair>[]>();
 		
 		for(HitLoader currLoader : loaders){
 			//Get all read hits (necessary here to correct per-base counts appropriately)
@@ -167,6 +223,21 @@ public class HitCache {
 				countsList.get(chr)[1].addAll(currLoader.getFivePrimeCounts().get(chr)[1]);
 			}
 			
+			//Add the pairs to the temporary stores (if requested & exist)
+			if(loadPairs && currLoader.hasPairedReads()){
+				hasPairs=true;
+				for(String chr: currLoader.getPairs().keySet()){
+					if(!pairsList.containsKey(chr)){
+						ArrayList<HitPair>[] currLRPArrayList = new ArrayList[2];
+						currLRPArrayList[0]=new ArrayList<HitPair>();
+						currLRPArrayList[1]=new ArrayList<HitPair>();
+						pairsList.put(chr, currLRPArrayList);
+					}
+					pairsList.get(chr)[0].addAll(currLoader.getPairs().get(chr)[0]);
+					pairsList.get(chr)[1].addAll(currLoader.getPairs().get(chr)[1]);
+				}
+			}
+			
 			//Reset loader to free memory
 			currLoader.resetLoader();
 		}
@@ -176,7 +247,7 @@ public class HitCache {
 			gen = estimateGenome(posList);
 		
 		//Make the primitive arrays 
-		populateArrays(posList, countsList);
+		populateArrays(posList, countsList, pairsList);
 		updateTotalHits();
 		
 		//Initialize a per-base background model
@@ -217,9 +288,15 @@ public class HitCache {
 			posList.get(chr)[1].clear();
 			countsList.get(chr)[0].clear();
 			countsList.get(chr)[1].clear();
+			if(loadPairs && pairsList!=null){
+				pairsList.get(chr)[0].clear();
+				pairsList.get(chr)[1].clear();
+			}
 		}
 		posList.clear();
 		countsList.clear();
+		if(loadPairs && pairsList!=null)
+			pairsList.clear();
 		System.gc();
 	}
 	
@@ -284,6 +361,69 @@ public class HitCache {
 	}//end of getStrandedBases method
 	
 	/**
+	 * Load all paired hits that have an R1 read in a region.
+	 * If file caching is being used, it's more efficient to group calls to this method by chromosome.  
+	 * @param r Region
+	 * @return List of StrandedPair
+	 */
+	public List<StrandedPair> getPairs(Region r) {
+		List<StrandedPair> pairs = new ArrayList<StrandedPair>();
+		pairs.addAll(getPairsOnStrand(r,'+'));
+		pairs.addAll(getPairsOnStrand(r,'-'));
+		return pairs;
+	}
+	/**
+	 * Loads paired hits that have an R1 read in the region and on the requested strand.
+	 * If file caching is being used, it's more efficient to group calls to this method by chromosome.
+	 * Unfortunately, I think the easiest way to ensure thread-safety is to allow only one thread to call this at a time. 
+	 * @param r Region
+	 * @return List of StrandedPair
+	 */
+	public synchronized List<StrandedPair> getPairsOnStrand(Region r, char strand) {
+		List<StrandedPair> pairs = new ArrayList<StrandedPair>();
+
+		if(loadPairs && hasPairs && pairR1Pos!=null){
+			if(!regionIsCached(r)){
+				if(cacheInLocalFiles){
+					loadCachedChrom(r.getChrom());
+				}else{
+					System.err.println("HitCache: Queried region "+r.getLocationString()+" is not in cache and local file caching not available!");
+					System.exit(1);
+				}
+			}
+			String chr = r.getChrom();
+			if(chrom2ID.containsKey(chr)){
+				int chrID = chrom2ID.get(chr);
+				int chrDBID = chrom2DBID.get(chr);
+				int j = (strand=='+') ? 0 : 1;
+				if(pairR1Pos[chrID][j] != null){
+					int[] tempStarts = pairR1Pos[chrID][j];		
+					if(tempStarts.length != 0) {
+						int start_ind = Arrays.binarySearch(tempStarts, r.getStart());
+						int end_ind   = Arrays.binarySearch(tempStarts, r.getEnd());
+						
+						if( start_ind < 0 ) { start_ind = -start_ind - 1; }
+						if( end_ind < 0 )   { end_ind   = -end_ind - 1; }
+						
+			            while (start_ind > 0 && tempStarts[start_ind - 1] >= r.getStart() ) {
+			                start_ind--;
+			            }
+			            while (end_ind < tempStarts.length && tempStarts[end_ind] <= r.getEnd()) {
+			                end_ind++;
+			            }
+						for(int k = start_ind; k < end_ind; k++) {
+							pairs.add(new StrandedPair(gen, chrDBID, tempStarts[k], strand, id2DBID.get(pairR2Chrom[chrID][j][k]), pairR2Pos[chrID][j][k], pairR2Strand[chrID][j][k]==0?'+':'-', chrID==pairR2Chrom[chrID][j][k], (float)1.0 ));
+						}	
+					}
+				}
+			}
+		
+		}
+		return pairs;
+	}
+	
+	
+	/**
 	 * Sum of all hit weights in a region
 	 * If file caching is being used, it's more efficient to group calls to this method by chromosome.
 	 * @param r Region
@@ -341,7 +481,7 @@ public class HitCache {
     }
 
     /**
-     * Export all hits to ReadHit objects
+     * Export all single-end hits to ReadHit objects
      * @param readLen
      * @return
      */
@@ -392,6 +532,17 @@ public class HitCache {
 				fivePrimeCounts[i][j]=null;
 			}
 		}
+		//Pair arrays
+		if(hasPairs && pairR1Pos!=null){
+			for(int i = 0; i < pairR1Pos.length; i++) {  // chr
+				for(int j = 0; j < pairR1Pos[i].length; j++) { // strand
+					pairR1Pos[i][j]=null;
+					pairR2Pos[i][j]=null;
+					pairR2Chrom[i][j]=null;
+					pairR2Strand[i][j]=null;
+				}
+			}
+		}
 		System.gc();
 	}
 	
@@ -399,11 +550,13 @@ public class HitCache {
 	 * Converts lists of Integers and matched Floats to arrays.
 	 * Sorts array elements by position.
 	 */
-	private void populateArrays(HashMap<String, ArrayList<Integer>[]> posList, HashMap<String, ArrayList<Float>[]> countsList) {
+	private void populateArrays(HashMap<String, ArrayList<Integer>[]> posList, HashMap<String, ArrayList<Float>[]> countsList, HashMap<String, ArrayList<HitPair>[]> pairsList) {
 		//Initialize chromosome name to id maps
 		numChroms=0;
 		for(String chr : gen.getChromList()){
 			chrom2ID.put(chr, numChroms);
+			chrom2DBID.put(chr, gen.getChromID(chr));
+			id2DBID.put(numChroms, gen.getChromID(chr));
 			id2Chrom.put(numChroms, chr);
 			numChroms++;
 		}
@@ -411,8 +564,14 @@ public class HitCache {
 		//Initialize the data structures
 		fivePrimePos  = new int[numChroms][2][];
 		fivePrimeCounts = new float[numChroms][2][];
+		if(hasPairs){
+			pairR1Pos = new int[numChroms][2][];
+			pairR2Pos = new int[numChroms][2][];
+			pairR2Chrom = new int[numChroms][2][];
+			pairR2Strand = new int[numChroms][2][];
+		}
 		
-		//Copy over the data
+		//Copy over the 5' position data
 		for(String chr : gen.getChromList()){
 			if(posList.containsKey(chr)){
 				for(int j = 0; j < posList.get(chr).length; j++)
@@ -421,7 +580,7 @@ public class HitCache {
 				fivePrimePos[chrom2ID.get(chr)][0]=null;
 				fivePrimePos[chrom2ID.get(chr)][1]=null;
 			}
-		}
+		}//Copy over the count data
 		for(String chr : gen.getChromList()){
 			if(countsList.containsKey(chr)){
 				for(int j = 0; j < countsList.get(chr).length; j++)
@@ -431,7 +590,38 @@ public class HitCache {
 				fivePrimeCounts[chrom2ID.get(chr)][1]=null;
 			}
 		}
-		//Sort the arrays 
+		if(hasPairs){ //Copy over the paired data
+			for(String chr : gen.getChromList()){
+				int c = chrom2ID.get(chr);
+				if(pairsList.containsKey(chr)){
+					for(int j = 0; j < pairsList.get(chr).length; j++){
+						pairR1Pos[c][j] = new int[pairsList.get(chr)[j].size()];
+						pairR2Pos[c][j] = new int[pairsList.get(chr)[j].size()];
+						pairR2Chrom[c][j] = new int[pairsList.get(chr)[j].size()];
+						pairR2Strand[c][j] = new int[pairsList.get(chr)[j].size()];
+						int p=0;
+						for(HitPair lrp : pairsList.get(chr)[j]){
+							pairR1Pos[c][j][p] = lrp.r1Pos;
+							pairR2Pos[c][j][p] = lrp.r2Pos;
+							pairR2Chrom[c][j][p] = chrom2ID.get(lrp.r2Chr);
+							pairR2Strand[c][j][p] = lrp.r2Strand;
+							p++;
+						}
+					}
+				}else{
+					pairR1Pos[chrom2ID.get(chr)][0]=null;
+					pairR1Pos[chrom2ID.get(chr)][1]=null;
+					pairR2Pos[chrom2ID.get(chr)][0]=null;
+					pairR2Pos[chrom2ID.get(chr)][1]=null;
+					pairR2Chrom[chrom2ID.get(chr)][0]=null;
+					pairR2Chrom[chrom2ID.get(chr)][1]=null;
+					pairR2Strand[chrom2ID.get(chr)][0]=null;
+					pairR2Strand[chrom2ID.get(chr)][1]=null;
+				}
+			}
+		}
+		
+		//Sort the single-end arrays 
 		for(int i = 0; i < fivePrimePos.length; i++) {  // chr
 			for(int j = 0; j < fivePrimePos[i].length; j++) { // strand
 				if(fivePrimePos[i][j]!=null && fivePrimeCounts[i][j]!=null){
@@ -440,8 +630,21 @@ public class HitCache {
 				}
 			}
 		}
+		//Sort the paired-end arrays
+		if(hasPairs){ 
+			for(int i = 0; i < pairR1Pos.length; i++) {  // chr
+				for(int j = 0; j < pairR1Pos[i].length; j++) { // strand
+					if(pairR1Pos[i][j]!=null && pairR2Pos[i][j]!=null && pairR2Chrom[i][j]!=null && pairR2Strand[i][j]!=null){
+						int[] inds = StatUtil.findSort(pairR1Pos[i][j]);
+						pairR2Pos[i][j] = StatUtil.permute(pairR2Pos[i][j], inds);
+						pairR2Chrom[i][j] = StatUtil.permute(pairR2Chrom[i][j], inds);
+						pairR2Strand[i][j] = StatUtil.permute(pairR2Strand[i][j], inds);
+					}
+				}
+			}
+		}
 		
-		//Collapse duplicate positions
+		//Collapse duplicate positions (single-end arrays only)
 		//Testing if the finished set of positions contains duplicates
 		for(int i = 0; i < fivePrimePos.length; i++){
 			for(int j = 0; j < fivePrimePos[i].length; j++){
@@ -481,6 +684,7 @@ public class HitCache {
 		//Extract the relevant hits
 		HashMap<String, ArrayList<Integer>[]> posList = new HashMap<String, ArrayList<Integer>[]>();
 		HashMap<String, ArrayList<Float>[]> countsList = new HashMap<String, ArrayList<Float>[]>();
+		HashMap<String, ArrayList<HitPair>[]> pairsList = new HashMap<String, ArrayList<HitPair>[]>();
 		for(Region r : mregs){
 			if(!posList.containsKey(r.getChrom())){
 				ArrayList<Integer>[] currIArrayList = new ArrayList[2];
@@ -502,18 +706,41 @@ public class HitCache {
 				chrIArrayList[1].add(sbc.getCoordinate());
 				chrFArrayList[1].add(sbc.getCount());
 			}
+			
+			//Add pairs in if they exist
+			if(loadPairs && hasPairs){
+				if(!pairsList.containsKey(r.getChrom())){
+					ArrayList<HitPair>[] currLRPArrayList = new ArrayList[2];
+					currLRPArrayList[0]=new ArrayList<HitPair>();
+					currLRPArrayList[1]=new ArrayList<HitPair>();
+					pairsList.put(r.getChrom(), currLRPArrayList);
+				}
+				ArrayList<HitPair>[] currLRPArrayList = pairsList.get(r.getChrom());
+				for(StrandedPair sp : getPairsOnStrand(r, '+')){
+					currLRPArrayList[0].add(new HitPair(sp.getR1Coordinate(), sp.getR2Chrom(), sp.getR2Coordinate(), sp.getR2Strand()=='+'?0:1, (float)1.0));
+				}
+				for(StrandedPair sp : getPairsOnStrand(r, '-')){
+					currLRPArrayList[1].add(new HitPair(sp.getR1Coordinate(), sp.getR2Chrom(), sp.getR2Coordinate(), sp.getR2Strand()=='+'?0:1, (float)1.0));
+				}
+			}
 		}
 		//Repopulate cache
-		populateArrays(posList, countsList);
+		populateArrays(posList, countsList, pairsList);
 		//Free memory
 		for(String chr: posList.keySet()){
 			posList.get(chr)[0].clear();
 			posList.get(chr)[1].clear();
 			countsList.get(chr)[0].clear();
 			countsList.get(chr)[1].clear();
+			if(loadPairs && hasPairs){
+				pairsList.get(chr)[0].clear();
+				pairsList.get(chr)[1].clear();
+			}
 		}
 		posList.clear();
 		countsList.clear();
+		if(loadPairs && hasPairs)
+			pairsList.clear();
 		System.gc();
 	}
 	
@@ -535,7 +762,7 @@ public class HitCache {
 			for(int strand=0; strand<=1; strand++){
 				int chrID = chrom2ID.get(chrom);
 				
-				//Write files
+				//Write single-end files
 				if(fivePrimePos[chrID][strand]!=null && fivePrimeCounts[chrID][strand]!=null){
 			        ByteBuffer posByteBuffer = ByteBuffer.allocate(fivePrimePos[chrID][strand].length * 4);
 			        ByteBuffer countsByteBuffer = ByteBuffer.allocate(fivePrimeCounts[chrID][strand].length * 4);
@@ -553,6 +780,39 @@ public class HitCache {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+				}
+				//Write pair files
+				if(loadPairs && hasPairs){
+					if(pairR1Pos[chrID][strand]!=null && pairR2Pos[chrID][strand]!=null && pairR2Chrom[chrID][strand]!=null && pairR2Strand[chrID][strand]!=null){
+				        ByteBuffer r1PosByteBuffer = ByteBuffer.allocate(pairR1Pos[chrID][strand].length * 4);
+				        ByteBuffer r2PosByteBuffer = ByteBuffer.allocate(pairR2Pos[chrID][strand].length * 4);
+				        ByteBuffer r2ChromByteBuffer = ByteBuffer.allocate(pairR2Chrom[chrID][strand].length * 4);
+				        ByteBuffer r2StrandByteBuffer = ByteBuffer.allocate(pairR2Strand[chrID][strand].length * 4);
+				        IntBuffer r1PosIntBuffer = r1PosByteBuffer.asIntBuffer();
+				        IntBuffer r2PosIntBuffer = r2PosByteBuffer.asIntBuffer();
+				        IntBuffer r2ChromIntBuffer = r2ChromByteBuffer.asIntBuffer();
+				        IntBuffer r2StrandIntBuffer = r2StrandByteBuffer.asIntBuffer();
+				        r1PosIntBuffer.put(pairR1Pos[chrID][strand]);
+				        r2PosIntBuffer.put(pairR2Pos[chrID][strand]);
+				        r2ChromIntBuffer.put(pairR2Chrom[chrID][strand]);
+				        r2StrandIntBuffer.put(pairR2Strand[chrID][strand]);
+				        byte[] r1parray = r1PosByteBuffer.array();
+				        byte[] r2parray = r2PosByteBuffer.array();
+				        byte[] r2carray = r2ChromByteBuffer.array();
+				        byte[] r2sarray = r2StrandByteBuffer.array();
+				        Path r1ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r1pos.cache");
+				        Path r2ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2pos.cache");
+				        Path r2cpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2chr.cache");
+				        Path r2spath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2str.cache");
+				        try {
+							Files.write( r1ppath, r1parray, StandardOpenOption.CREATE);
+							Files.write( r2ppath, r2parray, StandardOpenOption.CREATE);
+							Files.write( r2cpath, r2carray, StandardOpenOption.CREATE);
+							Files.write( r2spath, r2sarray, StandardOpenOption.CREATE);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}					
 				}
 			}
 		}
@@ -573,7 +833,7 @@ public class HitCache {
 		if(chrom2ID.containsKey(chrom)){
 			int chrID = chrom2ID.get(chrom);
 			for(int strand=0; strand<=1; strand++){
-				//Read files
+				//Read single-end files
 				Path ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".pos.cache");
 		        Path cpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".counts.cache");
 		        if(Files.exists(ppath, LinkOption.NOFOLLOW_LINKS) && Files.exists(cpath, LinkOption.NOFOLLOW_LINKS)){
@@ -606,8 +866,65 @@ public class HitCache {
 						e.printStackTrace();
 			        }
 				}
+		        
+		        //Load pairs
+				if(loadPairs && hasPairs){
+					Path r1ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r1pos.cache");
+					Path r2ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2pos.cache");
+					Path r2cpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2chr.cache");
+					Path r2spath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2str.cache");
+					
+			        if(Files.exists(r1ppath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2ppath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2cpath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2spath, LinkOption.NOFOLLOW_LINKS)){
+				        try {
+							FileChannel r1posInChannel = FileChannel.open(r1ppath, StandardOpenOption.READ);
+							FileChannel r2posInChannel = FileChannel.open(r2ppath, StandardOpenOption.READ);
+							FileChannel r2chrInChannel = FileChannel.open(r2cpath, StandardOpenOption.READ);
+							FileChannel r2strInChannel = FileChannel.open(r2spath, StandardOpenOption.READ);
+							int[] r1pResult = new int[((int)r1posInChannel.size())/4];
+							int[] r2pResult = new int[((int)r2posInChannel.size())/4];
+							int[] r2cResult = new int[((int)r2chrInChannel.size())/4];
+							int[] r2sResult = new int[((int)r2strInChannel.size())/4];
+							ByteBuffer r1pbuf = ByteBuffer.allocate((int)r1posInChannel.size());
+							ByteBuffer r2pbuf = ByteBuffer.allocate((int)r2posInChannel.size());
+							ByteBuffer r2cbuf = ByteBuffer.allocate((int)r2chrInChannel.size());
+							ByteBuffer r2sbuf = ByteBuffer.allocate((int)r2strInChannel.size());
+							// Fill in the buffers
+							while(r1pbuf.hasRemaining( ))
+								r1posInChannel.read(r1pbuf);
+							while(r2pbuf.hasRemaining( ))
+								r2posInChannel.read(r2pbuf);
+							while(r2cbuf.hasRemaining( ))
+								r2chrInChannel.read(r2cbuf);
+							while(r2sbuf.hasRemaining( ))
+								r2strInChannel.read(r2sbuf);
+							r1pbuf.flip( );
+							r2pbuf.flip( );
+							r2cbuf.flip( );
+							r2sbuf.flip( );
+							// Create buffer views
+							IntBuffer r1posIntBuffer = r1pbuf.asIntBuffer( );
+							IntBuffer r2posIntBuffer = r2pbuf.asIntBuffer( );
+							IntBuffer r2chrIntBuffer = r2cbuf.asIntBuffer( );
+							IntBuffer r2strIntBuffer = r2sbuf.asIntBuffer( );
+							//Results will now contain all ints/floats read from file
+							r1posIntBuffer.get(r1pResult);
+							r2posIntBuffer.get(r2pResult);
+							r2chrIntBuffer.get(r2cResult);
+							r2strIntBuffer.get(r2sResult);
+							//Assign to arrays
+							pairR1Pos[chrID][strand] = r1pResult;
+							pairR2Pos[chrID][strand] = r2pResult;
+							pairR2Chrom[chrID][strand] = r2cResult;
+							pairR2Strand[chrID][strand] = r2sResult;
+				        } catch (IOException e) {
+							e.printStackTrace();
+				        }
+					}
+				}
 			}
 		}
+		
+		//Initialize cached regions
 		if(gen.containsChromName(chrom)){
 			if(cachedRegions==null)
 				cachedRegions=new ArrayList<Region>();
@@ -642,7 +959,7 @@ public class HitCache {
 			if(chrom2ID.containsKey(chrom)){
 				int chrID = chrom2ID.get(chrom);
 				for(int strand=0; strand<=1; strand++){
-					//Read files
+					//Read single-end files
 					Path ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".pos.cache");
 			        Path cpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".counts.cache");
 			        if(Files.exists(ppath, LinkOption.NOFOLLOW_LINKS) && Files.exists(cpath, LinkOption.NOFOLLOW_LINKS)){
@@ -674,6 +991,61 @@ public class HitCache {
 				        } catch (IOException e) {
 							e.printStackTrace();
 				        }
+					}
+			        
+			        //Load pairs
+					if(loadPairs && hasPairs){
+						Path r1ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r1pos.cache");
+						Path r2ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2pos.cache");
+						Path r2cpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2chr.cache");
+						Path r2spath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2str.cache");
+						
+				        if(Files.exists(r1ppath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2ppath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2cpath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2spath, LinkOption.NOFOLLOW_LINKS)){
+					        try {
+								FileChannel r1posInChannel = FileChannel.open(r1ppath, StandardOpenOption.READ);
+								FileChannel r2posInChannel = FileChannel.open(r2ppath, StandardOpenOption.READ);
+								FileChannel r2chrInChannel = FileChannel.open(r2cpath, StandardOpenOption.READ);
+								FileChannel r2strInChannel = FileChannel.open(r2spath, StandardOpenOption.READ);
+								int[] r1pResult = new int[((int)r1posInChannel.size())/4];
+								int[] r2pResult = new int[((int)r2posInChannel.size())/4];
+								int[] r2cResult = new int[((int)r2chrInChannel.size())/4];
+								int[] r2sResult = new int[((int)r2strInChannel.size())/4];
+								ByteBuffer r1pbuf = ByteBuffer.allocate((int)r1posInChannel.size());
+								ByteBuffer r2pbuf = ByteBuffer.allocate((int)r2posInChannel.size());
+								ByteBuffer r2cbuf = ByteBuffer.allocate((int)r2chrInChannel.size());
+								ByteBuffer r2sbuf = ByteBuffer.allocate((int)r2strInChannel.size());
+								// Fill in the buffers
+								while(r1pbuf.hasRemaining( ))
+									r1posInChannel.read(r1pbuf);
+								while(r2pbuf.hasRemaining( ))
+									r2posInChannel.read(r2pbuf);
+								while(r2cbuf.hasRemaining( ))
+									r2chrInChannel.read(r2cbuf);
+								while(r2sbuf.hasRemaining( ))
+									r2strInChannel.read(r2sbuf);
+								r1pbuf.flip( );
+								r2pbuf.flip( );
+								r2cbuf.flip( );
+								r2sbuf.flip( );
+								// Create buffer views
+								IntBuffer r1posIntBuffer = r1pbuf.asIntBuffer( );
+								IntBuffer r2posIntBuffer = r2pbuf.asIntBuffer( );
+								IntBuffer r2chrIntBuffer = r2cbuf.asIntBuffer( );
+								IntBuffer r2strIntBuffer = r2sbuf.asIntBuffer( );
+								//Results will now contain all ints/floats read from file
+								r1posIntBuffer.get(r1pResult);
+								r2posIntBuffer.get(r2pResult);
+								r2chrIntBuffer.get(r2cResult);
+								r2strIntBuffer.get(r2sResult);
+								//Assign to arrays
+								pairR1Pos[chrID][strand] = r1pResult;
+								pairR2Pos[chrID][strand] = r2pResult;
+								pairR2Chrom[chrID][strand] = r2cResult;
+								pairR2Strand[chrID][strand] = r2sResult;
+					        } catch (IOException e) {
+								e.printStackTrace();
+					        }
+						}
 					}
 				}
 			}

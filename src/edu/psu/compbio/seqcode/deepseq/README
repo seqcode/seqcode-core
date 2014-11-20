@@ -16,6 +16,7 @@ However, care should be taken to avoid depending on other classes (e.g. anything
 
 History:
 --------
+Nov 18th 2014: Adding paired-end support into HitCache and some HitLoaders.
 Aug 3rd 2014: Reorganized to expand the levels of information stored on each experiment (i.e. via ExperimentTarget & ExperimentType), added local file caching support, and made the package independent of the old MultiGPS loading approach. 
 May 6th 2014: Package started, adapting from experiment management system in MultiGPS. 
 

@@ -7,7 +7,6 @@ package edu.psu.compbio.seqcode.deepseq;
  * We do not store chromomosome info here because this class is always used
  * 		in the context of a chromosome or a region, no need to differentiate.
  * It records the number of reads mapped to this base position. 
- * For deeply-seq dataset, the count is typically higher.
  * 
  * @author yguo
  *

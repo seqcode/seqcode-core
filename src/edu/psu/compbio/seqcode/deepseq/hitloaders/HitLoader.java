@@ -3,28 +3,31 @@ package edu.psu.compbio.seqcode.deepseq.hitloaders;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.HitPair;
 import edu.psu.compbio.seqcode.deepseq.Read;
 import edu.psu.compbio.seqcode.deepseq.ReadHit;
-import edu.psu.compbio.seqcode.genome.location.Region;
 
 /**
- * HitLoaders load alignment hits from various sources, including ReadDB and various files.
+ * HitLoaders load alignment hits & pairs from various sources, including ReadDB and various files.
  * Five-prime positions and associated weight sums are loaded into ArrayLists. 
- * Where/how those hits are sourced is implementation-specific. 
- * This class combines functionality from ReadLoaders, AlignmentFileReaders, and ReadCache in the old setup.  
+ * Pairing information is loaded if requested and if it exits. 
+ * Where/how those hits & pairs are sourced is implementation-specific. 
  * 
  * Five prime positions and weights are loaded into two collections of ArrayLists, where the collections are indexed by chromosome name. 
  * Within each chromosome's set, a 2D array of ArrayLists collects data for each strand.
  * However, the ArrayLists are temporary -- once a Sample loads the hits into primitive arrays, the ArrayLists are reset and the 
  * garbage collector is called. 
  * 
- * @author shaun
- *
+ * @author mahony
+ * This class combines functionality from ReadLoaders, AlignmentFileReaders, and ReadCache in the old setup.
  */
 public abstract class HitLoader {
 
+	protected boolean loadR1=true; //Load left reads
+	protected boolean loadR2=false; //Load right reads (if exists)
+	protected boolean loadPairs=false; //Load pair information (if exists)
+	protected boolean hasPairs = false; //Flag to say there are pairs in the sample 
 	protected double totalHits; //totalHits is the sum of alignment weights
 	protected String sourceName=""; //String describing the source
 	/**
@@ -36,28 +39,46 @@ public abstract class HitLoader {
 	/**
 	 * Sum of read hit weights that corresponds to the 5' position
 	 * HashMap is indexed by chromosome name. <br>
-	 * Dimension in the array of ArrayLists represents the strand. 0 for '+', 1 for '-' 
+	 * Dimension in the array of ArrayLists represents the strand. 0 for '+', 1 for '-'
+	 * Ordering of each ArrayList is the same as fivePrimePosList 
 	 */
 	private HashMap<String, ArrayList<Float>[]> fivePrimeCountsList = null;
+	/**
+	 * R2 read hit pairing information for each R1 read hit (if pairs exist)
+	 * HashMap is indexed by R1 read chromosome name. <br>
+	 * Dimension in the array of ArrayLists represents the R1 read strand. 0 for '+', 1 for '-'
+	 * Ordering of each ArrayList is the same as fivePrimePosList.   
+	 * 
+	 */
+	private HashMap<String, ArrayList<HitPair>[]> hitPairsList = null;
+	
 		
 	/**
 	 * Constructor
 	 * @param g Genome
 	 */
-	public HitLoader(){
+	public HitLoader(boolean loadR1, boolean loadR2, boolean loadPairs){
+		this.loadR1=loadR1;
+		this.loadR2=loadR2;
+		this.loadPairs=loadPairs;
 		totalHits=0;		
 	}
 
 //Accessors
+	public boolean hasPairedReads(){return hasPairs;}
 	public double getHitCount(){return(totalHits);}
 	public String getSourceName(){return sourceName;}
 	public HashMap<String, ArrayList<Integer>[]> getFivePrimePositions(){return fivePrimePosList;}
 	public HashMap<String, ArrayList<Float>[]> getFivePrimeCounts(){return fivePrimeCountsList;}
+	public HashMap<String, ArrayList<HitPair>[]> getPairs(){return hitPairsList;}
 	
 //Abstract methods
 	/**
 	 * Get all hits from the appropriate source (implementation-specific).
-	 * Loads data to the fivePrimesList and hitsCountList
+	 * Loads single end data to the fivePrimePosList and fivePrimeCountsList.
+	 * Enforcing which reads to load (R1 and/or R2) is also implementation-specific. 
+	 * Loads pairs to hitPairsList (if requested & if they exist).
+	 * 
 	 */
 	public abstract void sourceAllHits();
 
@@ -71,6 +92,8 @@ public abstract class HitLoader {
 		
 		fivePrimePosList = new HashMap<String, ArrayList<Integer>[]>();
 		fivePrimeCountsList = new HashMap<String, ArrayList<Float>[]>();
+		if(loadPairs)
+			hitPairsList = new HashMap<String, ArrayList<HitPair>[]>();
 	}
 	
 	/**
@@ -91,6 +114,13 @@ public abstract class HitLoader {
 				fivePrimeCountsList.get(chr)[1].clear();
 			}
 			fivePrimeCountsList.clear();
+		}
+		if(loadPairs && hitPairsList!=null){
+			for(String chr: hitPairsList.keySet()){
+				hitPairsList.get(chr)[0].clear();
+				hitPairsList.get(chr)[1].clear();
+			}
+			hitPairsList.clear();
 		}
 		System.gc();
 	}
@@ -124,7 +154,36 @@ public abstract class HitLoader {
 			totalHits++;
 		}
 	}//end of addHits method
-		
+	
+	/**
+	 * Add paired hit information to the list data structure
+	 * @param HitPair collection
+	 */
+	protected void addPairs(String chrom, char strand, Collection<HitPair> pairs){
+		if(!hasPairs){
+			//This is the first pair being added.
+			hasPairs=true;
+		}
+		int strandInd = strand == '+' ? 0 : 1;
+		if(!hitPairsList.containsKey(chrom))
+			addChr(chrom);
+		hitPairsList.get(chrom)[strandInd].addAll(pairs);
+	}
+	/**
+	 * Add paired hit information to the list data structure
+	 * @param HitPair
+	 */
+	protected void addPair(String chrom, char strand, HitPair pair){
+		if(!hasPairs){
+			//This is the first pair being added.
+			hasPairs=true;
+		}
+		int strandInd = strand == '+' ? 0 : 1;
+		if(!hitPairsList.containsKey(chrom))
+			addChr(chrom);
+		hitPairsList.get(chrom)[strandInd].add(pair);
+	}
+	
 	/**
 	 * Add a chromosome to the hit lists
 	 * @param chr String
@@ -138,10 +197,17 @@ public abstract class HitLoader {
 		currFArrayList[0]=new ArrayList<Float>();
 		currFArrayList[1]=new ArrayList<Float>();
 		fivePrimeCountsList.put(chr, currFArrayList);
+		if(loadPairs){
+			ArrayList<HitPair>[] currPArrayList = new ArrayList[2];
+			currPArrayList[0]=new ArrayList<HitPair>();
+			currPArrayList[1]=new ArrayList<HitPair>();
+			hitPairsList.put(chr, currPArrayList);
+		}
 	}
 	
 	/**
 	 * Perform any necessary cleanup. For ReadDB, this means close the clients.
 	 */
 	public abstract void cleanup();
+	
 }

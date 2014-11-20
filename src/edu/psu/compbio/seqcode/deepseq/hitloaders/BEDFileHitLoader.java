@@ -16,13 +16,18 @@ import edu.psu.compbio.seqcode.deepseq.*;
  */
 public class BEDFileHitLoader extends FileHitLoader {
 
-	public BEDFileHitLoader(File f, boolean nonUnique) {
-    	super(f, nonUnique);
+	public BEDFileHitLoader(File f, boolean nonUnique, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs){
+		super(f, nonUnique, true, true, loadPairs);
+		if(!loadR1Reads || !loadR2Reads)
+			System.err.println("BEDFileHitLoader: You asked to load only R1 or R2 reads, but BED cannot represent different reads.");
+		if(loadPairs)
+			System.err.println("BEDFileHitLoader: You asked to load pairs, but BED cannot represent paired read data.");
 	}
 	
 	/**
 	 * Get the reads from the appropriate source (implementation-specific).
 	 * Loads data to the fivePrimesList and hitsCountList
+	 * Nothing loaded to hitPairsList, since BED does not store pairs
 	 */
 	public void sourceAllHits() {
 		this.initialize();
@@ -78,4 +83,4 @@ public class BEDFileHitLoader extends FileHitLoader {
 		}
 	}//end of countReads method
 	
-}//end of BEDFileReader class
+}//end of BEDFileHitLoader class

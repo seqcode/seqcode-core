@@ -74,17 +74,17 @@ public class LoadTags {
 		File file = new File(this.tagsfilepath);
 		if(!file.isFile()){System.err.println("File not found: "+file.getName());System.exit(1);}
 		if(format.equals("SAM") || format.equals("BAM")){
-			currReader = new SAMFileHitLoader(file,useNonUnique);
+			currReader = new SAMFileHitLoader(file,useNonUnique, true, true, false);
 		}else if(format.equals("TOPSAM")){
-			currReader = new TophatFileHitLoader(file,useNonUnique);
+			currReader = new TophatFileHitLoader(file,useNonUnique, true, true, false);
 		}else if(format.equals("NOVO")){
-			currReader = new NovoFileHitLoader(file,useNonUnique);
+			currReader = new NovoFileHitLoader(file,useNonUnique, true, true, false);
 		}else if(format.equals("BOWTIE")){
-			currReader = new BowtieFileHitLoader(file,useNonUnique);
+			currReader = new BowtieFileHitLoader(file,useNonUnique, true, true, false);
 		}else if(format.equals("BED")){
-			currReader = new BEDFileHitLoader(file,useNonUnique);
+			currReader = new BEDFileHitLoader(file,useNonUnique, true, true, false);
 		}else if(format.equals("IDX")){
-			currReader = new IDXFileHitLoader(file,useNonUnique);
+			currReader = new IDXFileHitLoader(file,useNonUnique, true, true, false);
 		}else{
 		    System.err.println("Unknown file format: "+format);
 		    System.exit(1);

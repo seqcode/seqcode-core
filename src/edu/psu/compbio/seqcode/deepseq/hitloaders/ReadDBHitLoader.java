@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
+import edu.psu.compbio.seqcode.deepseq.HitPair;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
@@ -32,27 +33,34 @@ public class ReadDBHitLoader extends HitLoader{
 	private List<String> exptNames =new ArrayList<String>();
 	private List<SeqAlignment> aligns = new ArrayList<SeqAlignment>();
 	private Collection<String> alignIDs= new ArrayList<String>();
+	private boolean hasPairedAligns=false;
 	private final int MAXRDBLOAD = 1000000; //Maximum number of hits to load from ReadDB in one chunk
 	
 	/**
-	 * Constructor: initialize the experiments
+	 * Constructor: initialize the experiments.
+	 * Note: at the moment, ReadDB cannot discriminate between R1 and R2 for single-end loaded hits. 
 	 * @param g Genome
 	 * @param locs ChipSeqLocator
+	 * @param loadR1Reads boolean (Ignored and produces error if false)
+	 * @param loadR2Reads boolean (Ignored and produces error if false)
+	 * @param loadPairs boolean
 	 */
-	public ReadDBHitLoader(Genome g, List<SeqLocator> locs){
-		super();
+	public ReadDBHitLoader(Genome g, List<SeqLocator> locs, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs){
+		super(true, true, loadPairs);
+		if(!loadR1Reads || !loadR2Reads)
+			System.err.println("ReadDBHitLoader: You asked to load only R1 or R2 reads, but ReadDB cannot discriminate between reads for single-end data.");
 		gen=g;
 		exptLocs = locs;
 		if(gen==null){
 			System.err.println("ReadDBHitLoader: null genome provided. ReadDB requires a defined genome. ");
 		}
         if (exptLocs.size() == 0) {
-            System.err.println("Created a ReadDBHitLoader with no ChipSeqLocators");
+            System.err.println("Created a ReadDBHitLoader with no SeqLocators");
         }
 
 		try {
 			
-			//Initialize ChipSeqLoaders
+			//Initialize SeqDataLoaders
             SeqDataLoader loader = new SeqDataLoader(false); 
 			for(SeqLocator locator : exptLocs){
 				String exptName = locator.getExptName(); exptNames.add(exptName);
@@ -107,8 +115,9 @@ public class ReadDBHitLoader extends HitLoader{
 	        for(SeqAlignment alignment : aligns) {
 	            alignIDs.add(Integer.toString(alignment.getDBID()));
 	            this.sourceName=this.sourceName.equals("") ? 
-			alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName() :
-			this.sourceName+":"+alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName();
+	            		alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName() :
+	            		this.sourceName+":"+alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName();
+	            hasPairedAligns = hasPairedAligns || (alignment.getAlignType().getName().equals("PAIRED") || alignment.getAlignType().getName().equals("MIXED"));
 	        }
 	        
             if (exptLocs.size() != 0 && aligns.size() == 0) {
@@ -179,6 +188,13 @@ public class ReadDBHitLoader extends HitLoader{
 					addHits(chrom, '+', hits.car(), hits.cdr());
 					hits = loadStrandedBaseCounts(chunk, '-');
 					addHits(chrom, '-', hits.car(), hits.cdr());
+					
+					if(hasPairedAligns && loadPairs){
+						ArrayList<HitPair> pairs = loadStrandedPairs(chunk, '+');
+						addPairs(chrom, '+', pairs);
+						pairs = loadStrandedPairs(chunk, '-');
+						addPairs(chrom, '-', pairs);
+					}
 				}
 			}
 			
@@ -193,7 +209,7 @@ public class ReadDBHitLoader extends HitLoader{
 	
 	
     /**
-     *  load paired read hit 5' coordinates (sorted) and counts
+     *  load pairs of read hit 5' coordinates (sorted) and counts
      * 
      */
     private Pair<ArrayList<Integer>,ArrayList<Float>> loadStrandedBaseCounts(Region r, char strand){
@@ -213,7 +229,7 @@ public class ReadDBHitLoader extends HitLoader{
                                                 strand == '+');
             if (allHits == null) {
                 if (alignIDs.size() != 0) {
-                    throw new NullPointerException("ReadDBHitLoader: client.getWeightHistogram returned null");
+                    //throw new NullPointerException("ReadDBHitLoader: client.getWeightHistogram returned null");
                 }
             } else {
                 coords.addAll(allHits.keySet());
@@ -225,6 +241,34 @@ public class ReadDBHitLoader extends HitLoader{
             //Do nothing here; ClientException could be thrown because a chromosome doesn't contain any hits
         }
         return new Pair<ArrayList<Integer>,ArrayList<Float>>(coords, counts);
+    }
+    
+    /**
+     *  load paired reads in region
+     * 
+     */
+    private ArrayList<HitPair> loadStrandedPairs(Region r, char strand){
+    	ArrayList<HitPair> pairs = new ArrayList<HitPair>();
+    	try{
+	    	for (String alignid : alignIDs) {
+	            List<PairedHit> ph = client.getPairedHits(alignid,
+	                                                     r.getGenome().getChromID(r.getChrom()),
+	                                                     true,
+	                                                     r.getStart(),
+	                                                     r.getEnd(),
+	                                                     null,
+	                                                     strand=='+');
+	            for (PairedHit h : ph) {
+	            	if(h.pairCode==1)
+	            		pairs.add(new HitPair(h.leftPos, r.getGenome().getChromName(h.rightChrom), h.rightPos, h.rightStrand?0:1, h.weight));
+	            }
+	    	}
+    	} catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClientException e) {
+            //Do nothing here; ClientException could be thrown because a chromosome doesn't contain any hits
+        }
+    	return pairs;
     }
 	
     /**

@@ -16,13 +16,18 @@ import edu.psu.compbio.seqcode.deepseq.ReadHit;
  */
 public class IDXFileHitLoader extends FileHitLoader {
 
-	public IDXFileHitLoader(File f, boolean nonUnique) {
-    	super(f, nonUnique);
+	public IDXFileHitLoader(File f, boolean nonUnique, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs){
+		super(f, nonUnique, true, true, loadPairs);
+		if(!loadR1Reads || !loadR2Reads)
+			System.err.println("IDXFileHitLoader: You asked to load only R1 or R2 reads, but IDX cannot discriminate between reads for single-end hits.");
+		if(loadPairs)
+			System.err.println("IDXFileHitLoader: You asked to load pairs, but IDX cannot represent paired read data.");
 	}
 	
 	/**
 	 * Get the reads from the appropriate source (implementation-specific).
 	 * Loads data to the fivePrimesList and hitsCountList
+	 * Nothing stored to hitPairsList, since IDX cannot store pairs. 
 	 */
 	public void sourceAllHits() {
 		this.initialize();
@@ -72,4 +77,4 @@ public class IDXFileHitLoader extends FileHitLoader {
 		}
 	}//end of countReads method
 	
-}//end of BEDFileReader class
+}//end of IDXFileHitLoader class
