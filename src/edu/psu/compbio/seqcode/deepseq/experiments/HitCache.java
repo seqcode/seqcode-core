@@ -604,7 +604,7 @@ public class HitCache {
 				fivePrimeCounts[chrom2ID.get(chr)][1]=null;
 			}
 		}
-		if(hasPairs){ //Copy over the paired data
+		if(loadPairs && hasPairs){ //Copy over the paired data
 			for(String chr : gen.getChromList()){
 				int c = chrom2ID.get(chr);
 				if(pairsList.containsKey(chr)){
@@ -649,7 +649,7 @@ public class HitCache {
 			}
 		}
 		//Sort the paired-end arrays
-		if(hasPairs){ 
+		if(loadPairs && hasPairs){ 
 			for(int i = 0; i < pairR1Pos.length; i++) {  // chr
 				for(int j = 0; j < pairR1Pos[i].length; j++) { // strand
 					if(pairR1Pos[i][j]!=null && pairR2Pos[i][j]!=null && pairR2Chrom[i][j]!=null && pairR2Strand[i][j]!=null){
@@ -689,51 +689,53 @@ public class HitCache {
 		}
 		
 		//Collapse duplicate positions (paired-end arrays)
-		for(int i = 0; i < pairR1Pos.length; i++){
-			for(int j = 0; j < pairR1Pos[i].length; j++){
-				if(pairR1Pos[i][j]!=null && pairR1Pos[i][j].length>0){
-					int uniquePos=1;
-					for(int k = 0; k < pairR1Pos[i][j].length-1; k++)
-						if(pairR1Pos[i][j][k+1]!=pairR1Pos[i][j][k] || 
-								pairR2Pos[i][j][k+1]!=pairR2Pos[i][j][k] || 
-								pairR2Chrom[i][j][k+1]!=pairR2Chrom[i][j][k] || 
-								pairR2Strand[i][j][k+1]!=pairR2Strand[i][j][k]){
-							uniquePos++;
+		if(loadPairs && hasPairs){
+			for(int i = 0; i < pairR1Pos.length; i++){
+				for(int j = 0; j < pairR1Pos[i].length; j++){
+					if(pairR1Pos[i][j]!=null && pairR1Pos[i][j].length>0){
+						int uniquePos=1;
+						for(int k = 0; k < pairR1Pos[i][j].length-1; k++)
+							if(pairR1Pos[i][j][k+1]!=pairR1Pos[i][j][k] || 
+									pairR2Pos[i][j][k+1]!=pairR2Pos[i][j][k] || 
+									pairR2Chrom[i][j][k+1]!=pairR2Chrom[i][j][k] || 
+									pairR2Strand[i][j][k+1]!=pairR2Strand[i][j][k]){
+								uniquePos++;
+							}
+								
+						int[] tmpR1Pos = new int[uniquePos];
+						int[] tmpR2Pos = new int[uniquePos];
+						int[] tmpR2Chrom = new int[uniquePos];
+						int[] tmpR2Str = new int[uniquePos];
+						float[] tmpW = new float[uniquePos];
+						for(int x=0; x<uniquePos; x++){tmpW[x]=0;}
+						int x=0;
+						tmpR1Pos[x] = pairR1Pos[i][j][0];
+						tmpR2Pos[x] = pairR2Pos[i][j][0];
+						tmpR2Chrom[x] = pairR2Chrom[i][j][0];
+						tmpR2Str[x] = pairR2Strand[i][j][0];
+						tmpW[x] += pairWeight[i][j][0];
+						for(int k = 1; k < pairR1Pos[i][j].length; k++){
+							if(pairR1Pos[i][j][k-1]!=pairR1Pos[i][j][k] || 
+									pairR2Pos[i][j][k-1]!=pairR2Pos[i][j][k] || 
+									pairR2Chrom[i][j][k-1]!=pairR2Chrom[i][j][k] || 
+									pairR2Strand[i][j][k-1]!=pairR2Strand[i][j][k]){
+								x++;
+							}
+							tmpR1Pos[x] = pairR1Pos[i][j][k];
+							tmpR2Pos[x] = pairR2Pos[i][j][k];
+							tmpR2Chrom[x] = pairR2Chrom[i][j][k];
+							tmpR2Str[x] = pairR2Strand[i][j][k];
+							tmpW[x] += pairWeight[i][j][k];
 						}
-							
-					int[] tmpR1Pos = new int[uniquePos];
-					int[] tmpR2Pos = new int[uniquePos];
-					int[] tmpR2Chrom = new int[uniquePos];
-					int[] tmpR2Str = new int[uniquePos];
-					float[] tmpW = new float[uniquePos];
-					for(int x=0; x<uniquePos; x++){tmpW[x]=0;}
-					int x=0;
-					tmpR1Pos[x] = pairR1Pos[i][j][0];
-					tmpR2Pos[x] = pairR2Pos[i][j][0];
-					tmpR2Chrom[x] = pairR2Chrom[i][j][0];
-					tmpR2Str[x] = pairR2Strand[i][j][0];
-					tmpW[x] += pairWeight[i][j][0];
-					for(int k = 1; k < pairR1Pos[i][j].length; k++){
-						if(pairR1Pos[i][j][k-1]!=pairR1Pos[i][j][k] || 
-								pairR2Pos[i][j][k-1]!=pairR2Pos[i][j][k] || 
-								pairR2Chrom[i][j][k-1]!=pairR2Chrom[i][j][k] || 
-								pairR2Strand[i][j][k-1]!=pairR2Strand[i][j][k]){
-							x++;
-						}
-						tmpR1Pos[x] = pairR1Pos[i][j][k];
-						tmpR2Pos[x] = pairR2Pos[i][j][k];
-						tmpR2Chrom[x] = pairR2Chrom[i][j][k];
-						tmpR2Str[x] = pairR2Strand[i][j][k];
-						tmpW[x] += pairWeight[i][j][k];
+						pairR1Pos[i][j] = tmpR1Pos;
+						pairR2Pos[i][j] = tmpR2Pos;
+						pairR2Chrom[i][j] = tmpR2Chrom;
+						pairR2Strand[i][j] = tmpR2Str;
+						pairWeight[i][j] = tmpW;
 					}
-					pairR1Pos[i][j] = tmpR1Pos;
-					pairR2Pos[i][j] = tmpR2Pos;
-					pairR2Chrom[i][j] = tmpR2Chrom;
-					pairR2Strand[i][j] = tmpR2Str;
-					pairWeight[i][j] = tmpW;
 				}
 			}
-		}		
+		}
 	}//end of populateArrays method
 		
 	/**
@@ -1277,6 +1279,7 @@ public class HitCache {
 						if(pairWeight[i][j][k]>0)
 							uniquePairs++;
 					}
+		System.out.println(totalHits+"\t"+uniqueHits+"\t"+totalPairs+"\t"+uniquePairs);
 	}
 	
 	/**
