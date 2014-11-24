@@ -207,13 +207,15 @@ public class CensusLibraryComplexity {
 		
 		//Print observed and estimated histos
 		if(verbose){
-			System.out.println("\nObserved/Expected per-base counts:\nCount\tObs\tPoissonExp\tNegBinomialExp\tLogNormal");
+			//System.out.println("\nObserved/Expected per-base counts:\nCount\tObs\tPoissonExp\tNegBinomialExp\tLogNormal");
+			System.out.println("\nObserved/Expected per-base counts:\nCount\tObs\tPoissonExp\tNegBinomialExp");
 			for(int i=0; i<histo.getHistoStop(); i++){
 				double obs = histo.getBin(histo.getBinContainingVal(i));
 				double poissExp = estimatedPoissonLibSize * poiss.pdf(i);
 				double nbExp = estimatedNegBinomialLibSize * negBinom.pdf(i);
-				double lnExp = estimatedLogNormLibSize * (lognor.cdf(i+1)-lognor.cdf(i));
-				System.out.println(String.format("%d\t%.0f\t%.0f\t%.0f\t%.0f",i, obs, poissExp, nbExp,lnExp));
+				System.out.println(String.format("%d\t%.0f\t%.0f\t%.0f",i, obs, poissExp, nbExp));
+				//double lnExp = estimatedLogNormLibSize * (lognor.cdf(i+1)-lognor.cdf(i));
+				//System.out.println(String.format("%d\t%.0f\t%.0f\t%.0f\t%.0f",i, obs, poissExp, nbExp,lnExp));
 				//System.out.println(String.format("%d\t%.0f\t%.0f\t%.0f",i, obs, poissExp, nbExp));
 			}
 		}
