@@ -31,8 +31,6 @@ public class SAMToReadDB {
     public static boolean inclPairedEnd;
     public static boolean inclJunction;
 
-    public static boolean lastFirstMateUnique=false; 
-
     public static void main(String args[]) throws IOException, ParseException {
         Options options = new Options();
         options.addOption("u","uniquehits",false,"only output hits with a single mapping");
@@ -66,7 +64,7 @@ public class SAMToReadDB {
 			count = record.getIntegerAttribute("NH");
 		if(count==1 && record.getMappingQuality()!=0) //Second clause for BWA
 			currUnique=true;
-		float weight = 1/(float)count; //Fix this if using bowtie2 to produce multiple mappings for each read
+		float weight = 1/(float)count; //Fix this if using to produce multiple mappings for each read
 		
     	if(inclPairedEnd || inclJunction){
     	 	/*
@@ -76,29 +74,27 @@ public class SAMToReadDB {
     		 * Note: if you change this, you may have to change the SAMStats output also
     		 */
     		if(inclPairedEnd){
+    			//May need to revisit this section if laoding multiple mapping pairs
 	    		if(record.getFirstOfPairFlag() && record.getProperPairFlag()){
-	    			lastFirstMateUnique = currUnique;
-	    		}else if(record.getSecondOfPairFlag() && record.getProperPairFlag()){
-	    			
-	    			if(!uniqueOnly || (currUnique || lastFirstMateUnique)){
+	    			if(!uniqueOnly || currUnique){
 		    			//Print
 		                boolean neg = record.getReadNegativeStrandFlag();
 		                boolean mateneg = record.getMateNegativeStrandFlag();
 		                String len = record.getReadLength() + "\t";
 		                System.out.println(
-		                		record.getMateReferenceName() + "\t" +
-		                		(mateneg ? 
-		                			record.getMateAlignmentStart()+record.getReadLength()-1 : 
-		                			record.getMateAlignmentStart()) + "\t" +
-		                		(mateneg ? "-\t" : "+\t") +
-		                		len +
-		                                
-		                        record.getReferenceName() + "\t" +
+		                		record.getReferenceName() + "\t" +
 		                       	(neg ? 
 		                       		record.getAlignmentEnd() : 
 		                       		record.getAlignmentStart()) + "\t" +
 		                        (neg ? "-\t" : "+\t") + 
 		                        len +
+				                        
+				                record.getMateReferenceName() + "\t" +
+		                		(mateneg ? 
+		                			record.getMateAlignmentStart()+record.getReadLength()-1 : 
+		                			record.getMateAlignmentStart()) + "\t" +
+		                		(mateneg ? "-\t" : "+\t") +
+		                		len +
 		                        
 		                        weight +"\t"+
 		                        1);

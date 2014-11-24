@@ -1,32 +1,19 @@
 package edu.psu.compbio.seqcode.deepseq.utils;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedPair;
-import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.Region;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
-import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
-import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
-import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
-import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 
 /**
@@ -84,14 +71,15 @@ public class PairInsertDistribution {
 					List<StrandedPair> sps = samp.getPairs(currReg);
 					for(StrandedPair pair : sps){
 						int fs = pair.getFragmentSize();
-						if(fs !=-1)
+						if(fs !=-1){
 							histograms.get(samp).addValue(fs);
+						}
 					}
 				}
 			}
 		}
 		for(Sample samp : manager.getSamples()){
-			System.out.println(samp.getName()+"\nBin\tCount");
+			System.out.println(samp.getName()+"\nTotalPairs = "+samp.getPairCount()+", UniquePairs = "+samp.getUniquePairCount()+"\nBin\tCount");
 			histograms.get(samp).printContents();
 		}
 	}

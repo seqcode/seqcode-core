@@ -14,6 +14,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -136,10 +137,18 @@ public class HitCache {
 	 * Strands of the R2 read hits in paired hits. <br>
 	 * First dimension represents the R1 read chromosome ID. <br>
 	 * Second dimension represents the R1 read strand. 0 for '+', 1 for '-' <br>
-	 * Third dimension contains the coordinates of the R2 read hit <br>
+	 * Third dimension contains the strands of the R2 read hit <br>
 	 * Third dimension index is that of the corresponding R1 read in pairR1Pos
 	 */
 	private int[][][] pairR2Strand=null;
+	/**
+	 * Weights of the paired hits. <br>
+	 * First dimension represents the R1 read chromosome ID. <br>
+	 * Second dimension represents the R1 read strand. 0 for '+', 1 for '-' <br>
+	 * Third dimension contains the weights <br>
+	 * Third dimension index is that of the corresponding R1 read in pairR1Pos
+	 */
+	private float[][][] pairWeight=null;
 	
 	private HashMap<String, Integer> chrom2ID=new HashMap<String,Integer>();
 	private HashMap<String, Integer> chrom2DBID=new HashMap<String,Integer>();
@@ -224,6 +233,7 @@ public class HitCache {
 			}
 			
 			//Add the pairs to the temporary stores (if requested & exist)
+			//Also sort the pairs (required for telling uniques apart)
 			if(loadPairs && currLoader.hasPairedReads()){
 				hasPairs=true;
 				for(String chr: currLoader.getPairs().keySet()){
@@ -235,6 +245,8 @@ public class HitCache {
 					}
 					pairsList.get(chr)[0].addAll(currLoader.getPairs().get(chr)[0]);
 					pairsList.get(chr)[1].addAll(currLoader.getPairs().get(chr)[1]);
+					Collections.sort(pairsList.get(chr)[0]);
+					Collections.sort(pairsList.get(chr)[1]);
 				}
 			}
 			
@@ -412,7 +424,7 @@ public class HitCache {
 			                end_ind++;
 			            }
 						for(int k = start_ind; k < end_ind; k++) {
-							pairs.add(new StrandedPair(gen, chrDBID, tempStarts[k], strand, id2DBID.get(pairR2Chrom[chrID][j][k]), pairR2Pos[chrID][j][k], pairR2Strand[chrID][j][k]==0?'+':'-', chrID==pairR2Chrom[chrID][j][k], (float)1.0 ));
+							pairs.add(new StrandedPair(gen, chrDBID, tempStarts[k], strand, id2DBID.get(pairR2Chrom[chrID][j][k]), pairR2Pos[chrID][j][k], pairR2Strand[chrID][j][k]==0?'+':'-', chrID==pairR2Chrom[chrID][j][k], pairWeight[chrID][j][k] ));
 						}	
 					}
 				}
@@ -540,6 +552,7 @@ public class HitCache {
 					pairR2Pos[i][j]=null;
 					pairR2Chrom[i][j]=null;
 					pairR2Strand[i][j]=null;
+					pairWeight[i][j]=null;
 				}
 			}
 		}
@@ -569,6 +582,7 @@ public class HitCache {
 			pairR2Pos = new int[numChroms][2][];
 			pairR2Chrom = new int[numChroms][2][];
 			pairR2Strand = new int[numChroms][2][];
+			pairWeight = new float[numChroms][2][];
 		}
 		
 		//Copy over the 5' position data
@@ -599,12 +613,14 @@ public class HitCache {
 						pairR2Pos[c][j] = new int[pairsList.get(chr)[j].size()];
 						pairR2Chrom[c][j] = new int[pairsList.get(chr)[j].size()];
 						pairR2Strand[c][j] = new int[pairsList.get(chr)[j].size()];
+						pairWeight[c][j] = new float[pairsList.get(chr)[j].size()];
 						int p=0;
 						for(HitPair lrp : pairsList.get(chr)[j]){
 							pairR1Pos[c][j][p] = lrp.r1Pos;
 							pairR2Pos[c][j][p] = lrp.r2Pos;
 							pairR2Chrom[c][j][p] = chrom2ID.get(lrp.r2Chr);
 							pairR2Strand[c][j][p] = lrp.r2Strand;
+							pairWeight[c][j][p] = lrp.pairWeight;
 							p++;
 						}
 					}
@@ -617,6 +633,8 @@ public class HitCache {
 					pairR2Chrom[chrom2ID.get(chr)][1]=null;
 					pairR2Strand[chrom2ID.get(chr)][0]=null;
 					pairR2Strand[chrom2ID.get(chr)][1]=null;
+					pairWeight[chrom2ID.get(chr)][0]=null;
+					pairWeight[chrom2ID.get(chr)][1]=null;
 				}
 			}
 		}
@@ -639,13 +657,13 @@ public class HitCache {
 						pairR2Pos[i][j] = StatUtil.permute(pairR2Pos[i][j], inds);
 						pairR2Chrom[i][j] = StatUtil.permute(pairR2Chrom[i][j], inds);
 						pairR2Strand[i][j] = StatUtil.permute(pairR2Strand[i][j], inds);
+						pairWeight[i][j] = StatUtil.permute(pairWeight[i][j], inds);
 					}
 				}
 			}
 		}
 		
-		//Collapse duplicate positions (single-end arrays only)
-		//Testing if the finished set of positions contains duplicates
+		//Collapse duplicate positions (single-end arrays)
 		for(int i = 0; i < fivePrimePos.length; i++){
 			for(int j = 0; j < fivePrimePos[i].length; j++){
 				if(fivePrimePos[i][j]!=null && fivePrimePos[i][j].length>0){
@@ -669,6 +687,53 @@ public class HitCache {
 				}
 			}
 		}
+		
+		//Collapse duplicate positions (paired-end arrays)
+		for(int i = 0; i < pairR1Pos.length; i++){
+			for(int j = 0; j < pairR1Pos[i].length; j++){
+				if(pairR1Pos[i][j]!=null && pairR1Pos[i][j].length>0){
+					int uniquePos=1;
+					for(int k = 0; k < pairR1Pos[i][j].length-1; k++)
+						if(pairR1Pos[i][j][k+1]!=pairR1Pos[i][j][k] || 
+								pairR2Pos[i][j][k+1]!=pairR2Pos[i][j][k] || 
+								pairR2Chrom[i][j][k+1]!=pairR2Chrom[i][j][k] || 
+								pairR2Strand[i][j][k+1]!=pairR2Strand[i][j][k]){
+							uniquePos++;
+						}
+							
+					int[] tmpR1Pos = new int[uniquePos];
+					int[] tmpR2Pos = new int[uniquePos];
+					int[] tmpR2Chrom = new int[uniquePos];
+					int[] tmpR2Str = new int[uniquePos];
+					float[] tmpW = new float[uniquePos];
+					for(int x=0; x<uniquePos; x++){tmpW[x]=0;}
+					int x=0;
+					tmpR1Pos[x] = pairR1Pos[i][j][0];
+					tmpR2Pos[x] = pairR2Pos[i][j][0];
+					tmpR2Chrom[x] = pairR2Chrom[i][j][0];
+					tmpR2Str[x] = pairR2Strand[i][j][0];
+					tmpW[x] += pairWeight[i][j][0];
+					for(int k = 1; k < pairR1Pos[i][j].length; k++){
+						if(pairR1Pos[i][j][k-1]!=pairR1Pos[i][j][k] || 
+								pairR2Pos[i][j][k-1]!=pairR2Pos[i][j][k] || 
+								pairR2Chrom[i][j][k-1]!=pairR2Chrom[i][j][k] || 
+								pairR2Strand[i][j][k-1]!=pairR2Strand[i][j][k]){
+							x++;
+						}
+						tmpR1Pos[x] = pairR1Pos[i][j][k];
+						tmpR2Pos[x] = pairR2Pos[i][j][k];
+						tmpR2Chrom[x] = pairR2Chrom[i][j][k];
+						tmpR2Str[x] = pairR2Strand[i][j][k];
+						tmpW[x] += pairWeight[i][j][k];
+					}
+					pairR1Pos[i][j] = tmpR1Pos;
+					pairR2Pos[i][j] = tmpR2Pos;
+					pairR2Chrom[i][j] = tmpR2Chrom;
+					pairR2Strand[i][j] = tmpR2Str;
+					pairWeight[i][j] = tmpW;
+				}
+			}
+		}		
 	}//end of populateArrays method
 		
 	/**
@@ -788,27 +853,33 @@ public class HitCache {
 				        ByteBuffer r2PosByteBuffer = ByteBuffer.allocate(pairR2Pos[chrID][strand].length * 4);
 				        ByteBuffer r2ChromByteBuffer = ByteBuffer.allocate(pairR2Chrom[chrID][strand].length * 4);
 				        ByteBuffer r2StrandByteBuffer = ByteBuffer.allocate(pairR2Strand[chrID][strand].length * 4);
+				        ByteBuffer weightByteBuffer = ByteBuffer.allocate(pairWeight[chrID][strand].length * 4);
 				        IntBuffer r1PosIntBuffer = r1PosByteBuffer.asIntBuffer();
 				        IntBuffer r2PosIntBuffer = r2PosByteBuffer.asIntBuffer();
 				        IntBuffer r2ChromIntBuffer = r2ChromByteBuffer.asIntBuffer();
 				        IntBuffer r2StrandIntBuffer = r2StrandByteBuffer.asIntBuffer();
+				        FloatBuffer weightFloatBuffer = weightByteBuffer.asFloatBuffer();
 				        r1PosIntBuffer.put(pairR1Pos[chrID][strand]);
 				        r2PosIntBuffer.put(pairR2Pos[chrID][strand]);
 				        r2ChromIntBuffer.put(pairR2Chrom[chrID][strand]);
 				        r2StrandIntBuffer.put(pairR2Strand[chrID][strand]);
+				        weightFloatBuffer.put(pairWeight[chrID][strand]);
 				        byte[] r1parray = r1PosByteBuffer.array();
 				        byte[] r2parray = r2PosByteBuffer.array();
 				        byte[] r2carray = r2ChromByteBuffer.array();
 				        byte[] r2sarray = r2StrandByteBuffer.array();
+				        byte[] warray = weightByteBuffer.array();
 				        Path r1ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r1pos.cache");
 				        Path r2ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2pos.cache");
 				        Path r2cpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2chr.cache");
 				        Path r2spath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2str.cache");
+				        Path wpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".weight.cache");
 				        try {
 							Files.write( r1ppath, r1parray, StandardOpenOption.CREATE);
 							Files.write( r2ppath, r2parray, StandardOpenOption.CREATE);
 							Files.write( r2cpath, r2carray, StandardOpenOption.CREATE);
 							Files.write( r2spath, r2sarray, StandardOpenOption.CREATE);
+							Files.write( wpath, warray, StandardOpenOption.CREATE);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -873,6 +944,7 @@ public class HitCache {
 					Path r2ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2pos.cache");
 					Path r2cpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2chr.cache");
 					Path r2spath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2str.cache");
+					Path wpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".weight.cache");
 					
 			        if(Files.exists(r1ppath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2ppath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2cpath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2spath, LinkOption.NOFOLLOW_LINKS)){
 				        try {
@@ -880,14 +952,17 @@ public class HitCache {
 							FileChannel r2posInChannel = FileChannel.open(r2ppath, StandardOpenOption.READ);
 							FileChannel r2chrInChannel = FileChannel.open(r2cpath, StandardOpenOption.READ);
 							FileChannel r2strInChannel = FileChannel.open(r2spath, StandardOpenOption.READ);
+							FileChannel wInChannel = FileChannel.open(wpath, StandardOpenOption.READ);
 							int[] r1pResult = new int[((int)r1posInChannel.size())/4];
 							int[] r2pResult = new int[((int)r2posInChannel.size())/4];
 							int[] r2cResult = new int[((int)r2chrInChannel.size())/4];
 							int[] r2sResult = new int[((int)r2strInChannel.size())/4];
+							float[] wResult = new float[((int)wInChannel.size())/4];
 							ByteBuffer r1pbuf = ByteBuffer.allocate((int)r1posInChannel.size());
 							ByteBuffer r2pbuf = ByteBuffer.allocate((int)r2posInChannel.size());
 							ByteBuffer r2cbuf = ByteBuffer.allocate((int)r2chrInChannel.size());
 							ByteBuffer r2sbuf = ByteBuffer.allocate((int)r2strInChannel.size());
+							ByteBuffer wbuf = ByteBuffer.allocate((int)wInChannel.size());
 							// Fill in the buffers
 							while(r1pbuf.hasRemaining( ))
 								r1posInChannel.read(r1pbuf);
@@ -897,25 +972,31 @@ public class HitCache {
 								r2chrInChannel.read(r2cbuf);
 							while(r2sbuf.hasRemaining( ))
 								r2strInChannel.read(r2sbuf);
+							while(wbuf.hasRemaining( ))
+								wInChannel.read(wbuf);
 							r1pbuf.flip( );
 							r2pbuf.flip( );
 							r2cbuf.flip( );
 							r2sbuf.flip( );
+							wbuf.flip( );
 							// Create buffer views
 							IntBuffer r1posIntBuffer = r1pbuf.asIntBuffer( );
 							IntBuffer r2posIntBuffer = r2pbuf.asIntBuffer( );
 							IntBuffer r2chrIntBuffer = r2cbuf.asIntBuffer( );
 							IntBuffer r2strIntBuffer = r2sbuf.asIntBuffer( );
+							FloatBuffer wFloatBuffer = wbuf.asFloatBuffer( );
 							//Results will now contain all ints/floats read from file
 							r1posIntBuffer.get(r1pResult);
 							r2posIntBuffer.get(r2pResult);
 							r2chrIntBuffer.get(r2cResult);
 							r2strIntBuffer.get(r2sResult);
+							wFloatBuffer.get(wResult);
 							//Assign to arrays
 							pairR1Pos[chrID][strand] = r1pResult;
 							pairR2Pos[chrID][strand] = r2pResult;
 							pairR2Chrom[chrID][strand] = r2cResult;
 							pairR2Strand[chrID][strand] = r2sResult;
+							pairWeight[chrID][strand] = wResult;
 				        } catch (IOException e) {
 							e.printStackTrace();
 				        }
@@ -999,21 +1080,24 @@ public class HitCache {
 						Path r2ppath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2pos.cache");
 						Path r2cpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2chr.cache");
 						Path r2spath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".r2str.cache");
-						
+						Path wpath = FileSystems.getDefault().getPath(econfig.getFileCacheDirName(), localCacheFileBase, localCacheFileBase+"_"+chrom+"-"+strand+".weight.cache");
 				        if(Files.exists(r1ppath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2ppath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2cpath, LinkOption.NOFOLLOW_LINKS) && Files.exists(r2spath, LinkOption.NOFOLLOW_LINKS)){
 					        try {
 								FileChannel r1posInChannel = FileChannel.open(r1ppath, StandardOpenOption.READ);
 								FileChannel r2posInChannel = FileChannel.open(r2ppath, StandardOpenOption.READ);
 								FileChannel r2chrInChannel = FileChannel.open(r2cpath, StandardOpenOption.READ);
 								FileChannel r2strInChannel = FileChannel.open(r2spath, StandardOpenOption.READ);
+								FileChannel wInChannel = FileChannel.open(wpath, StandardOpenOption.READ);
 								int[] r1pResult = new int[((int)r1posInChannel.size())/4];
 								int[] r2pResult = new int[((int)r2posInChannel.size())/4];
 								int[] r2cResult = new int[((int)r2chrInChannel.size())/4];
 								int[] r2sResult = new int[((int)r2strInChannel.size())/4];
+								float[] wResult = new float[((int)wInChannel.size())/4];
 								ByteBuffer r1pbuf = ByteBuffer.allocate((int)r1posInChannel.size());
 								ByteBuffer r2pbuf = ByteBuffer.allocate((int)r2posInChannel.size());
 								ByteBuffer r2cbuf = ByteBuffer.allocate((int)r2chrInChannel.size());
 								ByteBuffer r2sbuf = ByteBuffer.allocate((int)r2strInChannel.size());
+								ByteBuffer wbuf = ByteBuffer.allocate((int)wInChannel.size());
 								// Fill in the buffers
 								while(r1pbuf.hasRemaining( ))
 									r1posInChannel.read(r1pbuf);
@@ -1023,25 +1107,31 @@ public class HitCache {
 									r2chrInChannel.read(r2cbuf);
 								while(r2sbuf.hasRemaining( ))
 									r2strInChannel.read(r2sbuf);
+								while(wbuf.hasRemaining( ))
+									wInChannel.read(wbuf);
 								r1pbuf.flip( );
 								r2pbuf.flip( );
 								r2cbuf.flip( );
 								r2sbuf.flip( );
+								wbuf.flip( );
 								// Create buffer views
 								IntBuffer r1posIntBuffer = r1pbuf.asIntBuffer( );
 								IntBuffer r2posIntBuffer = r2pbuf.asIntBuffer( );
 								IntBuffer r2chrIntBuffer = r2cbuf.asIntBuffer( );
 								IntBuffer r2strIntBuffer = r2sbuf.asIntBuffer( );
+								FloatBuffer wFloatBuffer = wbuf.asFloatBuffer( );
 								//Results will now contain all ints/floats read from file
 								r1posIntBuffer.get(r1pResult);
 								r2posIntBuffer.get(r2pResult);
 								r2chrIntBuffer.get(r2cResult);
 								r2strIntBuffer.get(r2sResult);
+								wFloatBuffer.get(wResult);
 								//Assign to arrays
 								pairR1Pos[chrID][strand] = r1pResult;
 								pairR2Pos[chrID][strand] = r2pResult;
 								pairR2Chrom[chrID][strand] = r2cResult;
 								pairR2Strand[chrID][strand] = r2sResult;
+								pairWeight[chrID][strand] = wResult;
 					        } catch (IOException e) {
 								e.printStackTrace();
 					        }
@@ -1176,6 +1266,16 @@ public class HitCache {
 						totalHits += fivePrimeCounts[i][j][k];
 						if(fivePrimeCounts[i][j][k]>0)
 							uniqueHits++;
+					}
+		totalPairs =0;
+		uniquePairs = 0;
+		for(int i = 0; i < pairWeight.length; i++)
+			for(int j = 0; j < pairWeight[i].length; j++)
+				if(pairWeight[i][j]!=null)
+					for(int k = 0; k < pairWeight[i][j].length; k++){
+						totalPairs += pairWeight[i][j][k];
+						if(pairWeight[i][j][k]>0)
+							uniquePairs++;
 					}
 	}
 	

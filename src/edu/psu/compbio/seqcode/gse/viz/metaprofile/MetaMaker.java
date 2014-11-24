@@ -28,6 +28,8 @@ public class MetaMaker {
 		gconfig = g;
 		mconfig = m;
 		econfig = e;
+		if(mconfig.profilerType.equals("nucleosome"))
+			econfig.setLoadPairs(true);
 		manager = new ExperimentManager(econfig, true);
 	}
 	
@@ -58,7 +60,7 @@ public class MetaMaker {
 				}else if(mconfig.profilerType.equals("fiveprime")){
 					profiler = new Stranded5PrimeProfiler(gen, params, manager, mconfig.strand);
 				}else if(mconfig.profilerType.equals("nucleosome")){
-					//profiler = new PairedSeqMidpointProfiler(gen, params, manager, mconfig.strand);
+					profiler = new PairedSeqMidpointProfiler(gen, params, manager);
 				}
 				
 				if(mconfig.batchRun){
