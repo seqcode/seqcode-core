@@ -1279,7 +1279,6 @@ public class HitCache {
 						if(pairWeight[i][j][k]>0)
 							uniquePairs++;
 					}
-		System.out.println(totalHits+"\t"+uniqueHits+"\t"+totalPairs+"\t"+uniquePairs);
 	}
 	
 	/**
