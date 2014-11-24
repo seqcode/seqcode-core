@@ -59,7 +59,7 @@ public class SAMFileHitLoader extends FileHitLoader{
 		    byRead.add(record);
 
 		    //load pair if this is a first mate, congruent, proper pair
-		    if(record.getFirstOfPairFlag() && record.getProperPairFlag()){
+		    if(loadPairs && record.getFirstOfPairFlag() && record.getProperPairFlag()){
 		    	boolean neg = record.getReadNegativeStrandFlag();
                 boolean mateneg = record.getMateNegativeStrandFlag();
                 HitPair hp = new HitPair((neg ? record.getAlignmentEnd() : record.getAlignmentStart()),
