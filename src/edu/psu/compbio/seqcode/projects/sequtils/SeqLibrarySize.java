@@ -216,7 +216,7 @@ public class SeqLibrarySize {
 			
 			if(verbose){
 				String name = expt.getSignal().getName().startsWith("experiment") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
-				if(usingPairs)
+				if(usingPairs && expt.getSignal().getPairCount()>0)
 					System.out.println("Experiment: "+name+" = "+String.format("%d mapped fragments at %d unique pair-positions", expt.getSignal().getPairCount(),expt.getSignal().getUniquePairCount()));
 				else
 					System.out.println("Experiment: "+name+" = "+String.format("%.1f mapped tags at %.0f unique positions", expt.getSignal().getHitCount(),expt.getSignal().getHitPositionCount()));
@@ -238,8 +238,8 @@ public class SeqLibrarySize {
 				String currInfo = infoStrings.get(expt);
 				if(reportPoisson){
 					currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.3f\t%.3f", 
-							usingPairs ? (float)expt.getSignal().getPairCount() : expt.getSignal().getHitCount(),
-							usingPairs ? (float)expt.getSignal().getUniquePairCount() : expt.getSignal().getHitPositionCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? (float)expt.getSignal().getPairCount() : expt.getSignal().getHitCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? (float)expt.getSignal().getUniquePairCount() : expt.getSignal().getHitPositionCount(),
 							pMean,
 							pMean,
 							pLibrarySize,
@@ -248,8 +248,8 @@ public class SeqLibrarySize {
 							);
 				}else{
 					currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.3f\t%.3f", 
-							usingPairs ? (float)expt.getSignal().getPairCount() : expt.getSignal().getHitCount(),
-							usingPairs ? (float)expt.getSignal().getUniquePairCount() : expt.getSignal().getHitPositionCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? (float)expt.getSignal().getPairCount() : expt.getSignal().getHitCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? (float)expt.getSignal().getUniquePairCount() : expt.getSignal().getHitPositionCount(),
 							nbMean,
 							nbVar,
 							nbLibrarySize,
