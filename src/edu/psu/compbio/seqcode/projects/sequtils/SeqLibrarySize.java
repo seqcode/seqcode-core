@@ -188,7 +188,7 @@ public class SeqLibrarySize {
 				currWeight+=dcp.getCount();
 			}
 			
-			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 30);
+			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 15);
 			census.setVerbose(verbose);
 			census.execute();
 			
