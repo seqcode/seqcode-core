@@ -28,8 +28,8 @@ public class Sample {
 	protected String sourceName=""; //String describing the source files or DBIDs 
 	protected double totalHits; //totalHits is the sum of alignment weights
 	protected double uniqueHits; //count of unique mapped positions (just counts the number of bases with non-zero counts - does not treat non-uniquely mapped positions differently)
-	protected int totalPairs=0; //count of the total number of paired hits
-	protected int uniquePairs=0; //count of the total number of unique paired hits
+	protected double totalPairs=0; //count of the total number of paired hits
+	protected double uniquePairs=0; //count of the total number of unique paired hits
 	protected float maxReadsPerBP=-1;
 	
 	
@@ -55,8 +55,8 @@ public class Sample {
 	public String getSourceName(){return sourceName;}
 	public double getHitCount(){return(totalHits);}
 	public double getHitPositionCount(){return(uniqueHits);}
-	public int getPairCount(){return(totalPairs);}
-	public int getUniquePairCount(){return(uniquePairs);}
+	public double getPairCount(){return(totalPairs);}
+	public double getUniquePairCount(){return(uniquePairs);}
 	public void setGenome(Genome g){gen=g; cache.setGenome(g);}
 
 	/**

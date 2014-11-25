@@ -238,8 +238,8 @@ public class SeqLibrarySize {
 				String currInfo = infoStrings.get(expt);
 				if(reportPoisson){
 					currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.3f\t%.3f", 
-							usingPairs && expt.getSignal().getPairCount()>0 ? (float)expt.getSignal().getPairCount() : expt.getSignal().getHitCount(),
-							usingPairs && expt.getSignal().getPairCount()>0 ? (float)expt.getSignal().getUniquePairCount() : expt.getSignal().getHitPositionCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? expt.getSignal().getPairCount() : expt.getSignal().getHitCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? expt.getSignal().getUniquePairCount() : expt.getSignal().getHitPositionCount(),
 							pMean,
 							pMean,
 							pLibrarySize,
@@ -248,8 +248,8 @@ public class SeqLibrarySize {
 							);
 				}else{
 					currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.3f\t%.3f", 
-							usingPairs && expt.getSignal().getPairCount()>0 ? (float)expt.getSignal().getPairCount() : expt.getSignal().getHitCount(),
-							usingPairs && expt.getSignal().getPairCount()>0 ? (float)expt.getSignal().getUniquePairCount() : expt.getSignal().getHitPositionCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? expt.getSignal().getPairCount() : expt.getSignal().getHitCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? expt.getSignal().getUniquePairCount() : expt.getSignal().getHitPositionCount(),
 							nbMean,
 							nbVar,
 							nbLibrarySize,

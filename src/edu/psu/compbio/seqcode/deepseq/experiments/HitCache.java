@@ -88,8 +88,8 @@ public class HitCache {
 	private int numChroms=0;
 	protected double totalHits=0; //totalHits is the sum of alignment weights
 	protected double uniqueHits=0; //count of unique mapped positions (just counts the number of bases with non-zero counts - does not treat non-uniquely mapped positions differently)
-	protected int totalPairs=0; //count of the total number of paired hits
-	protected int uniquePairs=0; //count of the total number of unique paired hits
+	protected double totalPairs=0; //count of the total number of paired hits
+	protected double uniquePairs=0; //count of the total number of unique paired hits
 	protected boolean loadPairs; //Load them if they exist
 	protected boolean hasPairs; //Some pairs have been loaded
 	protected BackgroundCollection perBaseBack=new BackgroundCollection();
@@ -176,8 +176,8 @@ public class HitCache {
 	//Accessors
 	public double getHitCount(){return(totalHits);}
 	public double getHitPositionCount(){return(uniqueHits);}
-	public int getPairCount(){return(totalPairs);}
-	public int getUniquePairCount(){return(uniquePairs);}
+	public double getPairCount(){return(totalPairs);}
+	public double getUniquePairCount(){return(uniquePairs);}
 	public Genome getGenome(){return gen;}
 	public void setGenome(Genome g){gen=g;}
 
