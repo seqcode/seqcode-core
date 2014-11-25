@@ -129,7 +129,7 @@ public class SeqLibrarySize {
 						for(StrandedPair p : ipPairs){
 							int i = p.getR1Coordinate()-currSubRegion.getStart();
 							int beginIndex = Math.max(p.getR1Coordinate()-halfDWin-currSubRegion.getStart(), 0); 
-							int endIndex = Math.min(p.getR1Coordinate()+halfDWin-currSubRegion.getStart(), 0);
+							int endIndex = Math.min(p.getR1Coordinate()+halfDWin-currSubRegion.getStart(), currSubRegion.getWidth());
 							float dens =0; 
 							for(int j=beginIndex; j<endIndex; j++){
 								if(r1Counts[j]>0 && j!=i)
