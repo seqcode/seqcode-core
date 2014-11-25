@@ -300,14 +300,14 @@ public class HitCache {
 			posList.get(chr)[1].clear();
 			countsList.get(chr)[0].clear();
 			countsList.get(chr)[1].clear();
-			if(loadPairs && pairsList!=null){
+			if(loadPairs && hasPairs && pairsList!=null){
 				pairsList.get(chr)[0].clear();
 				pairsList.get(chr)[1].clear();
 			}
 		}
 		posList.clear();
 		countsList.clear();
-		if(loadPairs && pairsList!=null)
+		if(loadPairs && hasPairs && pairsList!=null)
 			pairsList.clear();
 		System.gc();
 	}

@@ -78,6 +78,12 @@ public class SeqLibrarySize {
 		else
 			System.err.println("Illegal test quantile: "+tq+", using default: "+testQuantile);
 	}
+	public void setHistoMax(int hm){
+		if(hm>0)
+			histoMax = hm;
+		else
+			System.err.println("Illegal histogram max: "+hm+", using default: "+histoMax);
+	}
 	public void setVerbose(boolean v){verbose=v;}
 	public void setPrintHeader(boolean v){printNonVerboseHeader=v;}
 	public void setReportPoisson(boolean rp){reportPoisson = rp;}
@@ -304,6 +310,7 @@ public class SeqLibrarySize {
 					"\t--ztnb [fit a zero-truncated Negative Binomial (default)]\n" +
 					"\t--ztp [fit a zero-truncated Poisson (not recommended - for testing only)]\n" +
 					"\t--verbose [print some more information]\n" +
+					"\t--histomax <max value for histogram in verbose mode>\n" +
 					"\t--noheader [drop the header in non-verbose mode]\n");
 		}else{
 			GenomeConfig gcon = new GenomeConfig(args);
@@ -312,6 +319,8 @@ public class SeqLibrarySize {
 			SeqLibrarySize sls = new SeqLibrarySize(gcon, econ, config);
 			if(ap.hasKey("testquantile"))
 				sls.setTestQuantile(new Double(ap.getKeyValue("testquantile")));
+			if(ap.hasKey("histomax"))
+				sls.setHistoMax(new Integer(ap.getKeyValue("histomax")));
 			if(ap.hasKey("verbose"))
 				sls.setVerbose(true);
 			if(ap.hasKey("noheader"))
