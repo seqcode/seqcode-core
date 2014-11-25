@@ -1271,14 +1271,16 @@ public class HitCache {
 					}
 		totalPairs =0;
 		uniquePairs = 0;
-		for(int i = 0; i < pairWeight.length; i++)
-			for(int j = 0; j < pairWeight[i].length; j++)
-				if(pairWeight[i][j]!=null)
-					for(int k = 0; k < pairWeight[i][j].length; k++){
-						totalPairs += pairWeight[i][j][k];
-						if(pairWeight[i][j][k]>0)
-							uniquePairs++;
-					}
+		if(loadPairs && hasPairs){
+			for(int i = 0; i < pairWeight.length; i++)
+				for(int j = 0; j < pairWeight[i].length; j++)
+					if(pairWeight[i][j]!=null)
+						for(int k = 0; k < pairWeight[i][j].length; k++){
+							totalPairs += pairWeight[i][j][k];
+							if(pairWeight[i][j][k]>0)
+								uniquePairs++;
+						}
+		}
 	}
 	
 	/**
