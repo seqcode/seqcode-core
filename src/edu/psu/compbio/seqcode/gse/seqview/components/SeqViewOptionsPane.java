@@ -101,7 +101,7 @@ public class SeqViewOptionsPane
         annotLoader = new RegionExpanderFactoryLoader<NamedTypedRegion>("annots");
         closed = false;
         init(opts);
-        if (opts.genome == null) {
+        if (opts.getGenome() == null) {
             setSpeciesGenomeDefaults();
         }        
         regexes = opts.regexes;
@@ -272,12 +272,12 @@ public class SeqViewOptionsPane
         init();
         createdFrom = opts;      
         
-        if (opts.genome != null) {
+        if (opts.getGenome() != null) {
             this.speciesCBox.removeItemListener(this);
             this.genomeCBox.removeItemListener(this);
-            this.speciesCBox.setSelectedItem(opts.genome.getSpecies());
+            this.speciesCBox.setSelectedItem(opts.getGenome().getSpecies());
             updateGenomeSelection();
-            this.genomeCBox.setSelectedItem(opts.genome.getVersion());            
+            this.genomeCBox.setSelectedItem(opts.getGenome().getVersion());            
             updateExptSelection();
             this.genomeCBox.addItemListener(this);
             this.speciesCBox.addItemListener(this);
@@ -386,7 +386,7 @@ public class SeqViewOptionsPane
         String genomeStr = genomeCBox.getSelectedItem().toString();
         try {
         	Organism org = new Organism(speciesStr);
-        	these.genome = org.findGenome(genomeStr);
+        	these.setGenome(org.findGenome(genomeStr));
         } catch (NotFoundException e) {
             e.printStackTrace();
             throw new IllegalArgumentException(genomeStr);
@@ -444,7 +444,7 @@ public class SeqViewOptionsPane
         // if they are, return the difference.  Otherwise, return the complete
         // options.
         if (createdFrom != null &&
-            these.genome.equals(createdFrom.genome)) {
+            these.getGenome().equals(createdFrom.getGenome())) {
             these.differenceOf(createdFrom);
         }
         return these;
@@ -454,10 +454,8 @@ public class SeqViewOptionsPane
     /* updates the choice of experiments based on the
        currently selected genome and species */
     private void updateExptSelection() {
-        Genome lg = loadGenome();
-        Genome g = lg;
-        
-        seqSelect.setGenome(lg);
+        Genome g = loadGenome();       
+        seqSelect.setGenome(g);
 
         // update the set of Gene annotations
         genesmodel.clear();
@@ -496,22 +494,22 @@ public class SeqViewOptionsPane
     }
 
     public void itemStateChanged(ItemEvent e) {
-        if (handlingChange) {return;}
-        Object source = e.getItemSelectable();
-        if (source == speciesCBox) {
-            updateGenomeSelection();
-        }
-        if (source == genomeCBox ||
-            source == speciesCBox) {
-            synchronized(this) {
-                if (!handlingChange) {
-                    handlingChange = true;
-                    updateExptSelection();
-                    handlingChange = false;
-                }
-            }
-        }
-        
+    	if (e.getStateChange() == ItemEvent.SELECTED) {    	
+	        if (handlingChange) {return;}
+	        Object source = e.getItemSelectable();
+	        if (source == speciesCBox) {
+	            updateGenomeSelection();
+	        }
+	        if (source == genomeCBox) {
+	            synchronized(this) {
+	                if (!handlingChange) {
+	                    handlingChange = true;
+	                    updateExptSelection();
+	                    handlingChange = false;
+	                }
+	            }
+	        }
+    	}
     }
     
     public void actionPerformed (ActionEvent e) {

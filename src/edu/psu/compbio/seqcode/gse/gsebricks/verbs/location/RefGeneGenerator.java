@@ -31,8 +31,12 @@ import edu.psu.compbio.seqcode.gse.utils.database.*;
  *   Most of the SQL generation code here could probably be generalized out and then reused to query a larger number of table
  *   types
  *   
- *   Note from Shaun: One quirk of the UCSC tables is that the starting coordinates of genes, exons, etc
- *   is 0-based, while the end coordinate is 1-based. Correcting for that here. 
+ *   Notes from Shaun: 
+ *   1) One quirk of the UCSC tables is that the starting coordinates of genes, exons, etc
+ *   	is 0-based, while the end coordinate is 1-based. Correcting for that here. 
+ *	 2) The execute method prepends "chr" to the chromosome names by default. 
+ *		There are genomes where this is not what we want, so I'm adding constructors in here to handle this case.  
+ *	
  *
  * @author Alex Rolfe
  */
@@ -46,16 +50,25 @@ public class RefGeneGenerator<X extends Region>
     private String tablename, symboltable, namecolumn, symbolcolumn;
     private int aliastype;
     private boolean wantalias, wantsymbol, flipstrand, wantCoding, wantsExons;
-    private static final int YEAST = 1, MAMMAL = 2, FLY = 3, WORM = 4;    
     private static final int TOSTART = 1, TOEND = 2, TOWHOLE = 3;
     private int upstream, downstream, closestN, toBoundary;
+    private boolean prependChr=true;
 
     /**
      * Creates a <code>RefGeneGenerator</code> for the default gene type/table
      * for the specified genome.
      */
     public RefGeneGenerator(Genome g) {
-        ps = null;
+        this(g, true);
+    }
+    /**
+     * Creates a <code>RefGeneGenerator</code> for the default gene type/table
+     * for the specified genome.
+     * 
+     * @param prependChr: should we prepend "chr" to the chromosome names?
+     */
+    public RefGeneGenerator(Genome g, boolean prependChr) {
+    	ps = null;
         nameps = null;
         getalias = null;
         getgenesym = null;
@@ -69,12 +82,20 @@ public class RefGeneGenerator<X extends Region>
         toBoundary = TOSTART;
         flipstrand = false;
         wantsymbol = true;
+        this.prependChr=prependChr;
     }
     
     /**
      * @param t the tablename from which gene information is retrieved 
      */
     public RefGeneGenerator(Genome g, String t) {
+        this(g, t, true);
+    }
+    /**
+     * @param t the tablename from which gene information is retrieved
+     * @param prependChr: should we prepend "chr" to the chromosome names? 
+     */
+    public RefGeneGenerator(Genome g, String t, boolean prependChr) {
         ps = null;
         nameps = null;
         getalias = null;
@@ -89,9 +110,16 @@ public class RefGeneGenerator<X extends Region>
         toBoundary = TOSTART;  
         flipstrand = false;
         wantsymbol = true;
+        this.prependChr=prependChr;
     }
     
-    public RefGeneGenerator() { 
+    public RefGeneGenerator() {
+    	this(true);
+    }
+    /**
+     * @param prependChr: should we prepend "chr" to the chromosome names? 
+     */
+    public RefGeneGenerator(boolean prependChr) {
         ps = null;
         nameps = null;
         getalias = null;
@@ -108,6 +136,7 @@ public class RefGeneGenerator<X extends Region>
         toBoundary = TOSTART;        
         flipstrand = false;
         wantsymbol = true;
+        this.prependChr=prependChr;
     }
     
     public void setGenome(Genome g, String t) { 
@@ -346,7 +375,7 @@ public class RefGeneGenerator<X extends Region>
         int offset = 1;
         try {
             String chr = region.getChrom();
-            if (!chr.matches("^(chr|scaffold).*")) {
+            if (prependChr && !chr.matches("^(chr|scaffold).*")) {
                 chr = "chr" + chr;
             }
             ps.setString(offset++, chr);

@@ -82,7 +82,7 @@ public class SeqView extends JFrame {
         
         //Load command-line options
         options = SeqViewOptions.parseCL(args);
-        setTitle(options.genome.getSpecies() + " " + options.genome.getVersion());
+        setTitle(options.getGenome().getSpecies() + " " + options.getGenome().getVersion());
         regPanel = new RegionPanel(options, status, currDirectory); 
     	add(regPanel, BorderLayout.CENTER);
     	status.setStatus("Genome loaded... loading experiment list", Color.red);
@@ -125,12 +125,12 @@ public class SeqView extends JFrame {
     		//Nevertheless:
     		regPanel = new RegionPanel(opts, status, currDirectory); 
         	add(regPanel, BorderLayout.PAGE_START);
-    	}else if ( options==null  || !options.genome.equals(opts.genome)) {
+    	}else if ( options==null  || !options.getGenome().equals(opts.getGenome())) {
             //Overwrite panel for different genome
-        	setTitle(opts.genome.getSpecies() + " " + opts.genome.getVersion());
+        	setTitle(opts.getGenome().getSpecies() + " " + opts.getGenome().getVersion());
             regPanel.reinit(opts);
         } else {
-        	if (options != null && opts.genome.equals(options.genome)) {
+        	if (options != null && opts.getGenome().equals(options.getGenome())) {
         		SeqViewOptions diffopts = opts.clone();
         		diffopts.differenceOf(options);
         		regPanel.addPaintersFromOpts(diffopts);
