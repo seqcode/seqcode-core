@@ -149,7 +149,6 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 
 	public Collection<SeqExpt> loadAllExperiments() throws SQLException {
-		System.err.println("Loading core experiment metadata...");
 		labs=getMetadataLoader().loadAllLabs();
 		exptTypes=getMetadataLoader().loadAllExptTypes();
 		exptTargets = getMetadataLoader().loadAllExptTargets();
@@ -158,7 +157,6 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         readTypes = getMetadataLoader().loadAllReadTypes();
         alignTypes = getMetadataLoader().loadAllAlignTypes();
         seqDataUsers = getMetadataLoader().loadAllSeqDataUsers();
-        System.err.println("Loading seqdata experiment info...");
         PreparedStatement ps = SeqExpt.createLoadAll(getConnection());
         ps.setFetchSize(1000);
 		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();

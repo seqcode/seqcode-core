@@ -56,18 +56,19 @@ public class SAMFileHitLoader extends FileHitLoader{
 		    	byRead.clear();
 		    }
 		    lastread = record.getReadName();
-		    byRead.add(record);
+		    if((record.getFirstOfPairFlag() && loadR1) || (record.getSecondOfPairFlag() && loadR2)) 
+		    	byRead.add(record);
 
 		    //load pair if this is a first mate, congruent, proper pair
-		    if(record.getFirstOfPairFlag() && record.getProperPairFlag()){
+		    if(loadPairs && record.getFirstOfPairFlag() && record.getProperPairFlag()){
 		    	boolean neg = record.getReadNegativeStrandFlag();
                 boolean mateneg = record.getMateNegativeStrandFlag();
                 HitPair hp = new HitPair((neg ? record.getAlignmentEnd() : record.getAlignmentStart()),
-                		record.getMateReferenceName(),
+                		record.getMateReferenceName().replaceFirst("^chr", ""),
                 		(mateneg ? record.getMateAlignmentStart()+record.getReadLength()-1 : record.getMateAlignmentStart()), 
                 		mateneg ? 1 : 0,
                 		1);
-                addPair(record.getReferenceName(), neg ? '-':'+', hp);
+                addPair(record.getReferenceName().replaceFirst("^chr", ""), neg ? '-':'+', hp);
 		    }
 		}
 		processRead(byRead);

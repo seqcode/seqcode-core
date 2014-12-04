@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
+import edu.psu.compbio.seqcode.deepseq.StrandedPair;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
@@ -41,11 +42,12 @@ public class SeqLibrarySize {
 	Genome gen;
 	ExperimentManager manager=null;
 	float[] startcounts =null;
-	float densityWindow = 500;  //Use this genomic window size to assess the density of reads
+	float densityWindow = 1000;  //Use this genomic window size to assess the density of reads
 	static double testQuantile = 0.10; //Base per-read count distribution on this proportion of the lowest-ranked densities
 	int histoMax = 100;         //Maximum value in our count histogram
 	boolean reportPoisson = false; //Fit a ZT Poisson (testing only)
 	boolean verbose=false;
+	boolean usingPairs=false;
 	boolean printNonVerboseHeader=true;
 	HashMap<ControlledExperiment, String> infoStrings=new HashMap<ControlledExperiment, String>();
 	
@@ -60,6 +62,7 @@ public class SeqLibrarySize {
 		config = c;
 		gen = config.getGenome();
 		econfig.setPerBaseReadFiltering(false);
+		usingPairs = econfig.getLoadPairs();
 		manager = new ExperimentManager(econfig);
 		
 		for(ControlledExperiment expt : manager.getReplicates()){
@@ -74,6 +77,12 @@ public class SeqLibrarySize {
 			testQuantile=tq;
 		else
 			System.err.println("Illegal test quantile: "+tq+", using default: "+testQuantile);
+	}
+	public void setHistoMax(int hm){
+		if(hm>0)
+			histoMax = hm;
+		else
+			System.err.println("Illegal histogram max: "+hm+", using default: "+histoMax);
 	}
 	public void setVerbose(boolean v){verbose=v;}
 	public void setPrintHeader(boolean v){printNonVerboseHeader=v;}
@@ -115,38 +124,59 @@ public class SeqLibrarySize {
 	                if(y>currentRegion.getEnd()){y=currentRegion.getEnd();}
 	                Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 				
-					List<StrandedBaseCount> ipHits = expt.getSignal().getBases(currSubRegion);
-					makeHitStartArray(ipHits, currSubRegion, '+');
-					float posCounts[] = startcounts.clone();
-					makeHitStartArray(ipHits, currSubRegion, '-');
-					float negCounts[] = startcounts.clone();
-		            
-					int halfDWin = (int)densityWindow/2;
-					for(int index=currSubRegion.getStart()+halfDWin; index<currSubRegion.getEnd()-halfDWin; index++){  //Note that this means a tiny fraction of reads that are located on the large block boundaries will be ignored
-						int i = index-currSubRegion.getStart();
-						if(posCounts[i]>0){ //Treat fragments on opposite strands separately
+	                if(usingPairs && expt.getSignal().getPairCount()>0){
+	                	List<StrandedPair> ipPairs = expt.getSignal().getPairs(currSubRegion);
+	                	Collections.sort(ipPairs);
+	                	makePairR1StartArray(ipPairs, currSubRegion);
+						float r1Counts[] = startcounts.clone();
+						int halfDWin = (int)densityWindow/2;
+						
+						//Assuming here that duplicates are already collapsed (should be true in HitCache)
+						for(StrandedPair p : ipPairs){
+							int i = p.getR1Coordinate()-currSubRegion.getStart();
+							int beginIndex = Math.max(p.getR1Coordinate()-halfDWin-currSubRegion.getStart(), 0); 
+							int endIndex = Math.min(p.getR1Coordinate()+halfDWin-currSubRegion.getStart(), currSubRegion.getWidth());
 							float dens =0; 
-							for(int j=i-halfDWin; j<i+halfDWin; j++){
-								if(posCounts[j]>0 && j!=i)
+							for(int j=beginIndex; j<endIndex; j++){
+								if(r1Counts[j]>0 && j!=i)
 									dens++;
-								if(negCounts[j]>0)
-									dens++;
-							}
-							dens /= (densityWindow*2);
-							densities.add(new DensityCountPair(dens, posCounts[i]));
+							}dens /= (endIndex-beginIndex);
+							densities.add(new DensityCountPair(dens, p.getWeight()));
 						}
-						if(negCounts[i]>0){ //Treat fragments on opposite strands separately
-							float dens =0; 
-							for(int j=i-halfDWin; j<i+halfDWin; j++){
-								if(posCounts[j]>0)	
-									dens++;
-								if(negCounts[j]>0 && j!=i)
-									dens++;
+	                }else{
+						List<StrandedBaseCount> ipHits = expt.getSignal().getBases(currSubRegion);
+						makeHitStartArray(ipHits, currSubRegion, '+');
+						float posCounts[] = startcounts.clone();
+						makeHitStartArray(ipHits, currSubRegion, '-');
+						float negCounts[] = startcounts.clone();
+			            
+						int halfDWin = (int)densityWindow/2;
+						for(int index=currSubRegion.getStart()+halfDWin; index<currSubRegion.getEnd()-halfDWin; index++){  //Note that this means a tiny fraction of reads that are located on the large block boundaries will be ignored
+							int i = index-currSubRegion.getStart();
+							if(posCounts[i]>0){ //Treat fragments on opposite strands separately
+								float dens =0; 
+								for(int j=i-halfDWin; j<i+halfDWin; j++){
+									if(posCounts[j]>0 && j!=i)
+										dens++;
+									if(negCounts[j]>0)
+										dens++;
+								}
+								dens /= (densityWindow*2);
+								densities.add(new DensityCountPair(dens, posCounts[i]));
 							}
-							dens /= (densityWindow*2);
-							densities.add(new DensityCountPair(dens, negCounts[i]));
+							if(negCounts[i]>0){ //Treat fragments on opposite strands separately
+								float dens =0; 
+								for(int j=i-halfDWin; j<i+halfDWin; j++){
+									if(posCounts[j]>0)	
+										dens++;
+									if(negCounts[j]>0 && j!=i)
+										dens++;
+								}
+								dens /= (densityWindow*2);
+								densities.add(new DensityCountPair(dens, negCounts[i]));
+							}
 						}
-					}
+	                }
 	            }
 			}
 			Collections.sort(densities); //Sort the density pairs in increasing order
@@ -164,7 +194,7 @@ public class SeqLibrarySize {
 				currWeight+=dcp.getCount();
 			}
 			
-			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 30);
+			CensusLibraryComplexity census = new CensusLibraryComplexity(histo, 1, 15);
 			census.setVerbose(verbose);
 			census.execute();
 			
@@ -186,7 +216,10 @@ public class SeqLibrarySize {
 			
 			if(verbose){
 				String name = expt.getSignal().getName().startsWith("experiment") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
-				System.out.println("Experiment: "+name+" = "+String.format("%.1f mapped tags at %.0f unique positions", expt.getSignal().getHitCount(),expt.getSignal().getHitPositionCount()));
+				if(usingPairs && expt.getSignal().getPairCount()>0)
+					System.out.println("Experiment: "+name+" = "+String.format("%d mapped fragments at %d unique pair-positions", expt.getSignal().getPairCount(),expt.getSignal().getUniquePairCount()));
+				else
+					System.out.println("Experiment: "+name+" = "+String.format("%.1f mapped tags at %.0f unique positions", expt.getSignal().getHitCount(),expt.getSignal().getHitPositionCount()));
 				
 				if(reportPoisson){
 					System.out.println("\nPer-Fragment Estimated Poisson statistics:");
@@ -205,8 +238,8 @@ public class SeqLibrarySize {
 				String currInfo = infoStrings.get(expt);
 				if(reportPoisson){
 					currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.3f\t%.3f", 
-							expt.getSignal().getHitCount(),
-							expt.getSignal().getHitPositionCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? expt.getSignal().getPairCount() : expt.getSignal().getHitCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? expt.getSignal().getUniquePairCount() : expt.getSignal().getHitPositionCount(),
 							pMean,
 							pMean,
 							pLibrarySize,
@@ -215,8 +248,8 @@ public class SeqLibrarySize {
 							);
 				}else{
 					currInfo = currInfo + String.format("\t%.1f\t%.0f\t%.5f\t%.5f\t%.1f\t%.3f\t%.3f", 
-							expt.getSignal().getHitCount(),
-							expt.getSignal().getHitPositionCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? expt.getSignal().getPairCount() : expt.getSignal().getHitCount(),
+							usingPairs && expt.getSignal().getPairCount()>0 ? expt.getSignal().getUniquePairCount() : expt.getSignal().getHitPositionCount(),
 							nbMean,
 							nbVar,
 							nbLibrarySize,
@@ -241,6 +274,17 @@ public class SeqLibrarySize {
 			}
 		}
 	}
+	
+	//Makes integer arrays corresponding to the pair R1 starts over the current region (just for denisty purposes)
+	protected void makePairR1StartArray(List<StrandedPair> pairs, Region currReg){
+		startcounts = new float[currReg.getWidth()+1];
+		for(int i=0; i<=currReg.getWidth(); i++){startcounts[i]=0;}
+		for(StrandedPair p : pairs){
+			int offset=inBounds(p.getR1Coordinate()-currReg.getStart(),0,currReg.getWidth());
+			startcounts[offset]+=p.getWeight();
+		}
+	}
+	
 	protected final int inBounds(int x, int min, int max){
 		if(x<min){return min;}
 		if(x>max){return max;}
@@ -266,6 +310,7 @@ public class SeqLibrarySize {
 					"\t--ztnb [fit a zero-truncated Negative Binomial (default)]\n" +
 					"\t--ztp [fit a zero-truncated Poisson (not recommended - for testing only)]\n" +
 					"\t--verbose [print some more information]\n" +
+					"\t--histomax <max value for histogram in verbose mode>\n" +
 					"\t--noheader [drop the header in non-verbose mode]\n");
 		}else{
 			GenomeConfig gcon = new GenomeConfig(args);
@@ -274,6 +319,8 @@ public class SeqLibrarySize {
 			SeqLibrarySize sls = new SeqLibrarySize(gcon, econ, config);
 			if(ap.hasKey("testquantile"))
 				sls.setTestQuantile(new Double(ap.getKeyValue("testquantile")));
+			if(ap.hasKey("histomax"))
+				sls.setHistoMax(new Integer(ap.getKeyValue("histomax")));
 			if(ap.hasKey("verbose"))
 				sls.setVerbose(true);
 			if(ap.hasKey("noheader"))

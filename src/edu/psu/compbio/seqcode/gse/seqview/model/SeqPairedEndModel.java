@@ -131,7 +131,7 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
                         Collections.sort(results, comparator);
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    //ex.printStackTrace();
                     // assign empty output.  This is useful because Client
                     // throws an exception for non-existant chromosomes, such
                     // as those for which there were no alignment results

@@ -20,7 +20,7 @@ import java.io.*;
  * <p>For Mahony lab use:
  * <ul>
  * <li> The chromosome must be numeric and should be the chromosome id from core.  
- * <li> The alignment should be numeric and should the alignment identifier from the chipseq schema
+ * <li> The alignment should be numeric and should the alignment identifier from the seqdata schema
  * </ul>
  *
  */

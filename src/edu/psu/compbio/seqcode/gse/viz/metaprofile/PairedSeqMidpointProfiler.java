@@ -1,34 +1,26 @@
 package edu.psu.compbio.seqcode.gse.viz.metaprofile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.StrandedPair;
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHitPair;
-import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.SeqExpander;
-import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
-import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
 
 public class PairedSeqMidpointProfiler  implements PointProfiler<Point,PointProfile> {
+	private Genome genome;
 	private BinningParameters params;
-	private List<SeqExpander> expanders=null;
+	private ExperimentManager manager=null;
 	private double perBaseMax=1000;
 	
-	public PairedSeqMidpointProfiler(BinningParameters ps, SeqExpander exp, double pbMax, char strand) {
+	public PairedSeqMidpointProfiler(Genome gen, BinningParameters ps, ExperimentManager man) {
+		genome = gen;
+		manager = man;
 		params = ps;
-		expanders = new ArrayList<SeqExpander>(); 
-		expanders.add(exp);
-		perBaseMax = pbMax;
-	}
-	public PairedSeqMidpointProfiler(BinningParameters ps, List<SeqExpander> exps, double pbMax, char strand) {
-		params = ps;
-		expanders = exps;
-		perBaseMax=pbMax;
+		/*******NOTE: ExperimentManager needs to be able to handle paired reads before any of this will work****/
 	}
 	
 	public BinningParameters getBinningParameters() {
@@ -54,32 +46,17 @@ public class PairedSeqMidpointProfiler  implements PointProfiler<Point,PointProf
 		double[] array = new double[params.getNumBins()];
 		for(int i = 0; i < array.length; i++) { array[i] = 0; }
 		
-		if(expanders!=null){
-			for(SeqExpander expander : expanders){
-				Iterator<SeqHitPair> pairs = expander.getPairs(extQuery);
-				HashMap<Point, Double> readFilter = new HashMap<Point, Double>();
-				
-				while(pairs.hasNext()) {
-					SeqHitPair pair = pairs.next();
-					Point midpoint = pair.getMidpoint();
-					
+		for(ControlledExperiment expt : manager.getReplicates()){
+			List<StrandedPair> sps = expt.getSignal().getPairs(extQuery);
+			for(StrandedPair pair : sps){
+				Point midpoint = pair.getMidpoint();
+				if(pair!=null){
 					if(query.contains(midpoint)){
-						if(!readFilter.containsKey(midpoint))
-							readFilter.put(midpoint, pair.getPairWeight());
-						else
-							readFilter.put(midpoint, readFilter.get(midpoint)+pair.getPairWeight());
-						
-						if(readFilter.get(midpoint)<=perBaseMax){
-							int offset = Math.max(0, midpoint.getLocation()-start);
-							
-							if(!strand) { 
-								int tmp = window-offset;
-								offset = tmp;
-							}
-							
-							int startbin = params.findBin(offset);
-							
-							array[startbin] += 1.0;
+						if (start<=midpoint.getLocation() && end>=midpoint.getLocation()){
+								int hitLoc = midpoint.getLocation()-start;
+								if(!strand)
+									hitLoc = end-midpoint.getLocation();
+								array[params.findBin(hitLoc)]+=pair.getWeight();
 						}
 					}
 				}
@@ -89,10 +66,6 @@ public class PairedSeqMidpointProfiler  implements PointProfiler<Point,PointProf
 	}
 	
 	public void cleanup(){
-		if(expanders!=null){
-			for(SeqExpander e : expanders)
-				e.close();
-		}
 	}
 
 }

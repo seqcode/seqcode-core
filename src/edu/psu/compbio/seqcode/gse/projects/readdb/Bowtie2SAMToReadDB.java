@@ -27,19 +27,20 @@ import org.apache.commons.cli.*;
 public class Bowtie2SAMToReadDB {
 
     public static boolean uniqueOnly;
+    public static boolean concordantOnly;
     public static boolean inclPairedEnd;
     public static boolean inclJunction;
     
-    public static boolean lastFirstMateUnique=false; 
-
     public static void main(String args[]) throws IOException, ParseException {
         Options options = new Options();
         options.addOption("u","uniquehits",false,"only output hits with a single mapping");
+        options.addOption("cc","concordantonly",false,"only output concordant pairs");
         options.addOption("p","pairedend",false,"output paired-end hits");
         options.addOption("j","junctions",false,"output junction mapping reads (reads with a single gap)");
         CommandLineParser parser = new GnuParser();
         CommandLine cl = parser.parse( options, args, false );            
     	uniqueOnly = cl.hasOption("uniquehits");
+    	concordantOnly = cl.hasOption("concordantonly");
     	inclPairedEnd = cl.hasOption("pairedend");
     	inclJunction = cl.hasOption("junctions");
     	SamReaderFactory factory =
@@ -69,35 +70,33 @@ public class Bowtie2SAMToReadDB {
         	float weight = 1;  //Fix this if using bowtie2 to produce multiple mappings for each read
     	    
     		/*
-    		 * Only accept proper, congruent pairs.
+    		 * Only accept proper pairs, optionally only concordant.
     		 * It also assumes that the left and right mates have the same length, 
     		 * and that there are no gaps in the second mate alignment (SAM doesn't store the paired read's end)
     		 * Note: if you change this, you may have to change the SAMStats output also
     		 */
         	if(inclPairedEnd){
-        		if(record.getFirstOfPairFlag() && record.getProperPairFlag() && record.getStringAttribute("YT").equals("CP")){
-        			lastFirstMateUnique = currUnique;
-        		}else if(record.getSecondOfPairFlag() && record.getProperPairFlag() && record.getStringAttribute("YT").equals("CP")){
-    			
-        			if(!uniqueOnly || (currUnique || lastFirstMateUnique)){
+        		//Check this if using bowtie2 to produce multiple mappings for each read pair. could be problematic
+        		if(record.getFirstOfPairFlag() && record.getProperPairFlag() && (!concordantOnly || record.getStringAttribute("YT").equals("CP"))){
+        			if(!uniqueOnly || currUnique){
 		    			//Print
 		                boolean neg = record.getReadNegativeStrandFlag();
 		                boolean mateneg = record.getMateNegativeStrandFlag();
 		                String len = record.getReadLength() + "\t";
 		                System.out.println(
-		                		record.getMateReferenceName() + "\t" +
-		                		(mateneg ? 
-		                			record.getMateAlignmentStart()+record.getReadLength()-1 : 
-		                			record.getMateAlignmentStart()) + "\t" +
-		                		(mateneg ? "-\t" : "+\t") +
-		                		len +
-		                                
-		                        record.getReferenceName() + "\t" +
+		                		record.getReferenceName() + "\t" +
 		                       	(neg ? 
 		                       		record.getAlignmentEnd() : 
 		                       		record.getAlignmentStart()) + "\t" +
 		                        (neg ? "-\t" : "+\t") + 
 		                        len +
+		                        
+		                		record.getMateReferenceName() + "\t" +
+                				(mateneg ? 
+		                			record.getMateAlignmentStart()+record.getReadLength()-1 : 
+		                			record.getMateAlignmentStart()) + "\t" +
+		                		(mateneg ? "-\t" : "+\t") +
+		                		len +
 		                        
 		                        weight +"\t"+
 		                        1);
