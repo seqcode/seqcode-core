@@ -68,7 +68,7 @@ public class CGstatAnalysisSandbox {
 		for(Region r : regions){
 			CGScoreProfile profile = scorer.execute(r);
 			int total = profile.getCGcount();
-			double perc = total/MaxCG;
+			double perc = total/(double)MaxCG;
 			System.out.println(r.getMidpoint().getLocationString()+"\t"+Double.toString(perc));
 		}
 		
