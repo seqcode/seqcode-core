@@ -199,6 +199,7 @@ public class Bayesments {
 				// Plotting factor states
 			}else{
 				HeatMapper map = new HeatMapper(c, trainer.getMUc(), "Experimental_Track", "State", trainer.getConditionNames(), "Mu_chromatin");
+				map.plot(new Color(221,20,20),true);
 			}
 			
 			HeatMapper map = new HeatMapper(c, trainer.getMUf(), "Factor-Expt", "State", null, "Mu_factor");
