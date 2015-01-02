@@ -120,7 +120,7 @@ public class ReadDB {
         		System.out.println("TRUE");
         	else
         		System.out.println("FALSE");
-        }else if (cmd.equals("isalive")) {
+        } else if (cmd.equals("serverinfo")) {
         	System.out.println(client.getServerInfo());
         }  else if (cmd.equals("addtogroup")) {
             // username, groupname
