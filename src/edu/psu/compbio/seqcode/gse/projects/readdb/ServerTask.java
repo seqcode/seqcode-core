@@ -746,7 +746,7 @@ public class ServerTask {
         }       
         if (allgone) {
             toDelete.add(server.getACLFileName(request.alignid));
-            toDelete.add(directory.getName());
+            toDelete.add(prefix+directory.getName());
             server.removeACL(request.alignid);
         }
         File f;
