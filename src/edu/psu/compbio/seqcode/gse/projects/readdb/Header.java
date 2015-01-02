@@ -3,7 +3,6 @@ package edu.psu.compbio.seqcode.gse.projects.readdb;
 import java.io.*;
 import java.util.*;
 import java.nio.IntBuffer;
-import java.nio.ByteOrder;
 
 /**
  * index information for a set of hits

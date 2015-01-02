@@ -373,10 +373,9 @@ public abstract class Hits implements Closeable {
      *  in units of stepsize.  firstindex and lastindex come from
      *  Header.getFirstIndex(start) and Header.getLastIndex(stop)
      *
-     *  If extension is non-zero, then each hit is extended to
-     * cover a region of extension bp (positive values extend to greater
-     * coordinates, negative numbers to smaller coordinates) and the
-     * hit is counted in each bin that it touches.
+     *  If extension is zero, histograms are based on 5' positions.
+     *  If extension is negative, histograms are based on read lengths
+     *  If extension is positive, histograms are based on 5' position + extension
      */                                           
     public int[] histogram(int firstindex,
                            int lastindex,
@@ -386,7 +385,7 @@ public abstract class Hits implements Closeable {
                            int dedup,
                            Float minweight,
                            Boolean isPlus,
-                           boolean extension) throws IOException {
+                           int extension) throws IOException {
         int output[] = new int[(stop - start) / stepsize + 1];
         for (int j = 0; j < output.length; j++) {
             output[j] = 0;
@@ -394,7 +393,7 @@ public abstract class Hits implements Closeable {
 
         int[] p = getIndices(firstindex, lastindex, start,stop);        
         int lastpos = -1, lastposcount = 0;
-        if (!extension) {
+        if (extension==0) {
             for (int i = p[0]; i < p[1]; i++) {
                 int pos = positions.get(i);
                 if (pos < start || pos > stop) {
@@ -443,7 +442,7 @@ public abstract class Hits implements Closeable {
                     lastpos = pos;
                     int bin = (pos - start) / stepsize;
                     int l = las.get(i);
-                    short len = getLengthOne(l);
+                    int len = extension<0 ? getLengthOne(l) : extension;
                     boolean strand = getStrandOne(l);
                     if (strand) {
                         while (len > 0 && ++bin < output.length) {
@@ -469,7 +468,7 @@ public abstract class Hits implements Closeable {
                                    int dedup,
                                    Float minweight,
                                    Boolean isPlus,
-                                   boolean extension) throws IOException {
+                                   int extension) throws IOException {
         float output[] = new float[(stop - start) / stepsize + 1];
         for (int j = 0; j < output.length; j++) {
             output[j] = 0;
@@ -477,7 +476,7 @@ public abstract class Hits implements Closeable {
 
         int[] p = getIndices(firstindex, lastindex, start,stop);        
         int lastpos = -1, lastposcount = 0;
-        if (!extension) {
+        if (extension==0) {
             for (int i = p[0]; i < p[1]; i++) {
                 int pos = positions.get(i);
                 assert(pos >= start);
@@ -519,7 +518,7 @@ public abstract class Hits implements Closeable {
                     lastpos = pos;
                     int bin = (pos - start) / stepsize;
                     int l = las.get(i);
-                    short len = getLengthOne(l);
+                    int len = extension<0 ? getLengthOne(l) : extension;
                     boolean strand = getStrandOne(l);
                     if (strand) {
                         while (len > 0 && ++bin < output.length) {

@@ -17,6 +17,7 @@ import java.io.*;
  * without worrying about the time it takes to print the output.
  * <li>--wiggle means output in wiggle format
  * <li>--bed means output in BED format
+ * <li>--type2 means to query the type2 single reads.
  * <li>--paired means to query the paired reads.
  * <li>--noheader means to skip printing the input region in the outpu
  * <li>--right means to query the right side reads rather than left.
@@ -28,7 +29,7 @@ public class Query {
     private String hostname;
     private String username, password;
     private int portnum, histogram = -1;
-    private boolean quiet, weights, paired, isleft, noheader, bed, wiggle;
+    private boolean quiet, weights, isType2, paired, isleft, noheader, bed, wiggle;
     
 
     public static void main(String args[]) throws Exception {
@@ -47,6 +48,7 @@ public class Query {
         options.addOption("q","quiet",false,"quiet: don't print output");
         options.addOption("w","weights",false,"get and print weights in addition to positions");
         options.addOption("g","histogram",true,"produce a histogram with this binsize instead of printing all read positions");
+        options.addOption("t2","type2",false,"work on type2 single-end alignment?");
         options.addOption("d","paired",false,"work on paired alignment?");
         options.addOption("r","right",false,"query right side reads when querying paired alignments");
         options.addOption("N","noheader",false,"skip printing the query header");
@@ -89,6 +91,7 @@ public class Query {
         }
         quiet = line.hasOption("quiet");
         weights = line.hasOption("weights");
+        isType2 = line.hasOption("type2");
         paired = line.hasOption("paired");
         isleft = !line.hasOption("right");
         noheader = line.hasOption("noheader");
@@ -110,6 +113,7 @@ public class Query {
         System.out.println("usage: java edu.psu.compbio.seqcode.gse.projects.readdb.Query --align alignmentname < regions.txt");
         System.out.println(" [--quiet]  don't print any output.  Useful for performance testing without worrying about output IO time");
         System.out.println(" [--weights] include weights in output or use weights for histogram");
+        System.out.println(" [--type2] query type2 single-end reads");
         System.out.println(" [--paired] query paired reads");
         System.out.println(" [--right] when querying paired reads for histograms, use right read rather than left");
         System.out.println(" [--histogram 10] output a histogram of read counts or weights using a 10bp bin size");
@@ -149,8 +153,9 @@ public class Query {
                 if (histogram > 0) {
                     TreeMap<Integer,Integer> hits = client.getHistogram(alignname,
                                                                         chr,
+                                                                        isType2,
                                                                         paired,
-                                                                        false,
+                                                                        0,
                                                                         histogram,
                                                                         start,
                                                                         stop,
@@ -160,8 +165,9 @@ public class Query {
                     if (weights) {
                         weightsmap = client.getWeightHistogram(alignname,
                                                                chr,
+                                                               isType2,
                                                                paired,
-                                                               false,
+                                                               0,
                                                                histogram,
                                                                start,
                                                                stop,
@@ -201,6 +207,7 @@ public class Query {
                     } else {
                         List<SingleHit> hits = client.getSingleHits(alignname,
                                                                     chr,
+                                                                    isType2,
                                                                     start,
                                                                     stop,
                                                                     null,

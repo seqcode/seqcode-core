@@ -37,7 +37,7 @@ public class PairEndStatSandbox {
 	
 	public PairEndStatSandbox(SeqLocator sloc, Genome g) throws SQLException, IOException {
 		this.locator = sloc;
-		this.expander = new SeqExpander(sloc);
+		this.expander = new SeqExpander(sloc,false);
 		this.cleanExpander = true;
 		this.gen = g;
 		

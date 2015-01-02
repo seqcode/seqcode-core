@@ -7,7 +7,9 @@ public class SeqHistogramModelProperties extends ModelProperties {
     public Integer DeDuplicate = 0;
     public Boolean UseWeights = Boolean.TRUE;
     public Integer GaussianKernelVariance = 0;
-    public Boolean ReadExtension = Boolean.FALSE;
+    public Integer ReadExtension = 0;
     public Boolean ShowPairedReads = Boolean.FALSE;
     public Boolean ShowSingleReads = Boolean.TRUE;
+    public Boolean ShowType1Reads = Boolean.TRUE;
+    public Boolean ShowType2Reads = Boolean.FALSE;
 }

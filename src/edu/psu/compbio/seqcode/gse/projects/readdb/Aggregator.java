@@ -2,7 +2,6 @@ package edu.psu.compbio.seqcode.gse.projects.readdb;
 
 import java.io.IOException;
 import java.util.TreeMap;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -67,26 +66,26 @@ public class Aggregator implements ReadOnlyClient {
     }
     
 
-    public TreeMap<Integer,Integer> getHistogram(String alignid, int chromid, boolean paired, boolean doReadExtension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+    public TreeMap<Integer,Integer> getHistogram(String alignid, int chromid, boolean isType2, boolean paired, int extension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
         if (clients.size() == 0) {
             return new TreeMap<Integer,Integer>();
         }
-        TreeMap<Integer,Integer> output = clients.get(0).getHistogram(alignid,chromid,paired,doReadExtension,binsize,start,stop,minWeight,plusStrand);
+        TreeMap<Integer,Integer> output = clients.get(0).getHistogram(alignid,chromid,isType2,paired,extension,binsize,start,stop,minWeight,plusStrand);
         for (int i = 1; i < clients.size(); i++) {
-            TreeMap<Integer,Integer> o = clients.get(i).getHistogram(alignid,chromid,paired,doReadExtension,binsize,start,stop,minWeight,plusStrand);
+            TreeMap<Integer,Integer> o = clients.get(i).getHistogram(alignid,chromid,isType2,paired,extension,binsize,start,stop,minWeight,plusStrand);
             output = mergeHistogramsII(o,output);
         }
         return output;
     }
 
 
-    public TreeMap<Integer,Float> getWeightHistogram(String alignid, int chromid, boolean paired, boolean doReadExtension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+    public TreeMap<Integer,Float> getWeightHistogram(String alignid, int chromid, boolean isType2, boolean paired, int extension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
         if (clients.size() == 0) {
             return new TreeMap<Integer,Float>();
         }
-        TreeMap<Integer,Float> output = clients.get(0).getWeightHistogram(alignid,chromid,paired,doReadExtension,binsize,start,stop,minWeight,plusStrand);
+        TreeMap<Integer,Float> output = clients.get(0).getWeightHistogram(alignid,chromid,isType2,paired,extension,binsize,start,stop,minWeight,plusStrand);
         for (int i = 1; i < clients.size(); i++) {
-            TreeMap<Integer,Float> o = clients.get(i).getWeightHistogram(alignid,chromid,paired,doReadExtension,binsize,start,stop,minWeight,plusStrand);
+            TreeMap<Integer,Float> o = clients.get(i).getWeightHistogram(alignid,chromid,isType2,paired,extension,binsize,start,stop,minWeight,plusStrand);
             output = mergeHistogramsFF(o,output);
         }
         return output;

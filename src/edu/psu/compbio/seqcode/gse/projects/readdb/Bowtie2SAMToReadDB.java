@@ -21,7 +21,9 @@ import org.apache.commons.cli.*;
  * Options:	--uniquehits (flag to only print 1:1 read to hit mappings)
  * 			--pairedend (flag to print pairs)
  * 			--junctions (flag to print junction mapping reads as pairs)
- * 
+ * 			--concordantonly (flag to print only concordant pairs)
+ * 			--read1 (flag to print only read 1 hits)
+ * 			--read2 (flag to print only read 2 hits)
  */
 
 public class Bowtie2SAMToReadDB {
@@ -30,6 +32,7 @@ public class Bowtie2SAMToReadDB {
     public static boolean concordantOnly;
     public static boolean inclPairedEnd;
     public static boolean inclJunction;
+    public static boolean read1, read2;
     
     public static void main(String args[]) throws IOException, ParseException {
         Options options = new Options();
@@ -37,12 +40,16 @@ public class Bowtie2SAMToReadDB {
         options.addOption("cc","concordantonly",false,"only output concordant pairs");
         options.addOption("p","pairedend",false,"output paired-end hits");
         options.addOption("j","junctions",false,"output junction mapping reads (reads with a single gap)");
+        options.addOption("1","read1",false,"output only read 1 hits");
+        options.addOption("2","read2",false,"output only read 2 hits");
         CommandLineParser parser = new GnuParser();
         CommandLine cl = parser.parse( options, args, false );            
     	uniqueOnly = cl.hasOption("uniquehits");
     	concordantOnly = cl.hasOption("concordantonly");
     	inclPairedEnd = cl.hasOption("pairedend");
     	inclJunction = cl.hasOption("junctions");
+    	read1 = cl.hasOption("read1");
+    	read2 = cl.hasOption("read2");
     	SamReaderFactory factory =
 		          SamReaderFactory.makeDefault()
 		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
@@ -143,8 +150,8 @@ public class Bowtie2SAMToReadDB {
                 return;
             }
         	float weight = 1;  //Fix this if using bowtie2 to produce multiple mappings for each read
-    	    
-    		System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
+    	    if((!read1 && !read2) || (read1 && record.getFirstOfPairFlag()) || (read2 && record.getSecondOfPairFlag())){
+    	    	System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
                     record.getReferenceName(),
                     record.getReadNegativeStrandFlag() ? 
                     record.getAlignmentEnd() : 
@@ -152,6 +159,7 @@ public class Bowtie2SAMToReadDB {
                     record.getReadNegativeStrandFlag() ? "-" : "+",
                     record.getReadLength(),
                     weight));
+    	    }
     	}                                 
     }
 }

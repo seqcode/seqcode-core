@@ -81,7 +81,7 @@ public class MultidataSpatialPaintable2 extends AbstractPaintable{
 		try {
 			for(String t : times){
 				SeqLocator loc = locs.get(t);
-				ThinOverlapPaintable tp = new ThinOverlapPaintable(gRegion, sites.get(t),loc, 200);
+				ThinOverlapPaintable tp = new ThinOverlapPaintable(gRegion, sites.get(t),loc, false,200);
 				tp.setReverse(reverseIt);
 				tp.setMaxOverlap(maxOverlap);
 				exptPainters.put(t, tp);

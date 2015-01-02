@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
@@ -35,24 +36,28 @@ public class ReadDBHitLoader extends HitLoader{
 	private Collection<String> alignIDs= new ArrayList<String>();
 	private boolean hasPairedAligns=false;
 	private final int MAXRDBLOAD = 1000000; //Maximum number of hits to load from ReadDB in one chunk
+	private boolean loadR1, loadR2;
 	
 	/**
 	 * Constructor: initialize the experiments.
-	 * Note: at the moment, ReadDB cannot discriminate between R1 and R2 for single-end loaded hits. 
 	 * @param g Genome
 	 * @param locs ChipSeqLocator
-	 * @param loadR1Reads boolean (Ignored and produces error if false)
-	 * @param loadR2Reads boolean (Ignored and produces error if false)
+	 * @param loadR1Reads boolean (load standard single-end/paired-end reads)
+	 * @param loadR2Reads boolean (load type 2 reads if they exist)
 	 * @param loadPairs boolean
 	 */
 	public ReadDBHitLoader(Genome g, List<SeqLocator> locs, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs){
 		super(true, true, loadPairs);
-		if(!loadR1Reads || !loadR2Reads)
-			System.err.println("ReadDBHitLoader: You asked to load only R1 or R2 reads, but ReadDB cannot discriminate between reads for single-end data.");
 		gen=g;
 		exptLocs = locs;
+		loadR1=loadR1Reads;
+		loadR2=loadR2Reads;
+		
 		if(gen==null){
 			System.err.println("ReadDBHitLoader: null genome provided. ReadDB requires a defined genome. ");
+		}
+		if(!loadR1 && !loadR2 && !loadPairs){
+			System.err.println("ReadDBHitLoader: Error: you didn't request to load any read types. ");
 		}
         if (exptLocs.size() == 0) {
             System.err.println("Created a ReadDBHitLoader with no SeqLocators");
@@ -147,7 +152,14 @@ public class ReadDBHitLoader extends HitLoader{
 			//Find the available chromosomes for each alignment
 			HashMap<SeqAlignment, Set<Integer>> availChroms = new HashMap<SeqAlignment, Set<Integer>>();
 			for(SeqAlignment alignment : aligns) {
-				availChroms.put(alignment, client.getChroms(Integer.toString(alignment.getDBID()), false, null));
+				Set<Integer> currChroms = new HashSet<Integer>();
+				if(loadR1)
+					currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,false, null));
+				if(loadR2)
+					currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), true, false, null));
+				if(loadPairs)
+					currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,true, null));
+				availChroms.put(alignment,currChroms);
 			}
 			
 			//Iterate over each chromosome
@@ -158,9 +170,21 @@ public class ReadDBHitLoader extends HitLoader{
 				int count = 0;
 				for(SeqAlignment alignment : aligns) { 
 					if(availChroms.get(alignment).contains(gen.getChromID(wholeChrom.getChrom()))){
-		                count += client.getCount(Integer.toString(alignment.getDBID()),
+		                if(loadR1)
+		                	count += client.getCount(Integer.toString(alignment.getDBID()),
 		                				gen.getChromID(wholeChrom.getChrom()),
 		                                false,
+		                				false,
+		                                wholeChrom.getStart(),
+		                                wholeChrom.getEnd(),
+		                                null,
+		                                null,
+		                                null);
+		                if(loadR2)
+		                	count += client.getCount(Integer.toString(alignment.getDBID()),
+		                				gen.getChromID(wholeChrom.getChrom()),
+		                                true,
+		                				false,
 		                                wholeChrom.getStart(),
 		                                wholeChrom.getEnd(),
 		                                null,
@@ -184,10 +208,19 @@ public class ReadDBHitLoader extends HitLoader{
 					chunks.add(wholeChrom);
 
 				for (Region chunk: chunks){
-					Pair<ArrayList<Integer>,ArrayList<Float>> hits = loadStrandedBaseCounts(chunk, '+');
-					addHits(chrom, '+', hits.car(), hits.cdr());
-					hits = loadStrandedBaseCounts(chunk, '-');
-					addHits(chrom, '-', hits.car(), hits.cdr());
+					Pair<ArrayList<Integer>,ArrayList<Float>> hits;
+					if(loadR1){
+						hits = loadStrandedBaseCounts(chunk, '+', false);
+						addHits(chrom, '+', hits.car(), hits.cdr());
+						hits = loadStrandedBaseCounts(chunk, '-', false);
+						addHits(chrom, '-', hits.car(), hits.cdr());
+					}
+					if(loadR2){
+						hits = loadStrandedBaseCounts(chunk, '+', true);
+						addHits(chrom, '+', hits.car(), hits.cdr());
+						hits = loadStrandedBaseCounts(chunk, '-', true);
+						addHits(chrom, '-', hits.car(), hits.cdr());
+					}
 					
 					if(hasPairedAligns && loadPairs){
 						ArrayList<HitPair> pairs = loadStrandedPairs(chunk, '+');
@@ -212,7 +245,7 @@ public class ReadDBHitLoader extends HitLoader{
      *  load pairs of read hit 5' coordinates (sorted) and counts
      * 
      */
-    private Pair<ArrayList<Integer>,ArrayList<Float>> loadStrandedBaseCounts(Region r, char strand){
+    private Pair<ArrayList<Integer>,ArrayList<Float>> loadStrandedBaseCounts(Region r, char strand, boolean loadRead2){
         
         TreeMap<Integer,Float> allHits = null;
         ArrayList<Integer> coords = new ArrayList<Integer>();
@@ -220,13 +253,15 @@ public class ReadDBHitLoader extends HitLoader{
         try {
             allHits = client.getWeightHistogram(alignIDs,
                                                 r.getGenome().getChromID(r.getChrom()),
+                                                loadRead2,
                                                 false,
-                                                false,
+                                                0,
                                                 1,
                                                 r.getStart(),
                                                 r.getEnd(),
                                                 null,
                                                 strand == '+');
+            
             if (allHits == null) {
                 if (alignIDs.size() != 0) {
                     //throw new NullPointerException("ReadDBHitLoader: client.getWeightHistogram returned null");

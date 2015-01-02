@@ -40,6 +40,8 @@ public class CreateAlignment {
     				"\t--numreads <int>\n" +
     				"\t--numhits <int>\n" +
     				"\t--totalweight <float>\n" +
+    				"\t--numtype2hits <int>\n" +
+    				"\t--totaltype2weight <float>\n" +
     				"\t--numpairs <int>\n" +
     				"\t--totalpairweight <float>\n" +
     				"\t--collabid <expt ID>\n" +
@@ -69,6 +71,8 @@ public class CreateAlignment {
 	        String permissions = Args.parseString(args,"permissions",null);
 	        int numhits = Args.parseInteger(args,"numhits",0);
 	        float totalweight = Args.parseFloat(args,"totalweight",0);
+	        int numtype2hits = Args.parseInteger(args,"numtype2hits",0);
+	        float totaltype2weight = Args.parseFloat(args,"totaltype2weight",0);
 	        int numpairs = Args.parseInteger(args,"numpairs",0);
 	        float totalpairweight = Args.parseFloat(args,"totalpairweight",0);
 	        String aligndir = Args.parseString(args,"aligndir",null);
@@ -105,12 +109,14 @@ public class CreateAlignment {
 	                insert.setInt(5, core.getAlignType(atypestring).getDBID());
 	                insert.setInt(6, numhits);
 	                insert.setFloat(7, totalweight);
-	                insert.setInt(8, numpairs);
-	                insert.setFloat(9, totalpairweight);
-	                insert.setString(10, aligndir);
-	                insert.setString(11, alignfile);
-	                insert.setString(12, idxfile);
-	                insert.setString(13, collabalignid);
+	                insert.setInt(8, numtype2hits);
+	                insert.setFloat(9, totaltype2weight);
+	                insert.setInt(10, numpairs);
+	                insert.setFloat(11, totalpairweight);
+	                insert.setString(12, aligndir);
+	                insert.setString(13, alignfile);
+	                insert.setString(14, idxfile);
+	                insert.setString(15, collabalignid);
 	                insert.execute();
 	                insert.close();
 	                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
@@ -148,13 +154,15 @@ public class CreateAlignment {
 		                update.setInt(5, aligntypeID);
 		                update.setInt(6, numhits);
 		                update.setFloat(7, totalweight);
-		                update.setInt(8, numpairs);
-		                update.setFloat(9, totalpairweight);
-		                update.setString(10, aligndir);
-		                update.setString(11, alignfile);
-		                update.setString(12, idxfile);
-		                update.setString(13, collabalignid);
-		                update.setInt(14, aID);
+		                update.setInt(8, numtype2hits);
+		                update.setFloat(9, totaltype2weight);
+		                update.setInt(10, numpairs);
+		                update.setFloat(11, totalpairweight);
+		                update.setString(12, aligndir);
+		                update.setString(13, alignfile);
+		                update.setString(14, idxfile);
+		                update.setString(15, collabalignid);
+		                update.setInt(16, aID);
 		                update.execute();
 		                update.close();
 		                alignment = loader.loadAlignment(expt, alignpieces[2], genome);

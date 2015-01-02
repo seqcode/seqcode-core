@@ -32,6 +32,7 @@ public class ImportHits {
     int portnum;
     private Client client=null;
     private int chunk = 10000000;
+    private boolean isType2=false;
 
     public static void main(String args[])  {
         ImportHits importer = null;
@@ -73,6 +74,7 @@ public class ImportHits {
         options.addOption("p","passwd",true,"password");
         options.addOption("h","help",false,"print help message");
         options.addOption("c","chunk",true,"send this many hits to the server at once");
+        options.addOption("t2","type2",false,"type2 single-end hits (e.g. read 2 hits)");
         CommandLineParser parser = new GnuParser();
         CommandLine line = parser.parse( options, args, false );            
         if (line.hasOption("help")) {
@@ -101,12 +103,16 @@ public class ImportHits {
         if (line.hasOption("chunk")) {
             chunk = Integer.parseInt(line.getOptionValue("chunk"));
         }
+        if (line.hasOption("type2")) {
+            isType2 = true;
+        }
 
     }
     public void printHelp() {
         System.out.println("ImportHits to ReadDB");
         System.out.println("usage: cat foo.sam | java edu.psu.compbio.seqcode.gse.projects.readdb.SAMToReadDB | java edu.psu.compbio.seqcode.gse.projects.readdb.ImportHits \\");
         System.out.println(" --align alignmentname");
+        System.out.println(" --type2 the imported hits are type 2 single end hits (e.g. read 2 hits in certain circumstances)");
         System.out.println(" [--help] print usage");
         System.out.println("");
         System.out.println("Input format is tab delimited with either five or ten fields per line.");
@@ -160,7 +166,7 @@ public class ImportHits {
             if (lineno % chunk == 0) {
                 if (hits.size() > 0) {
                     try {
-                        client.storeSingle(alignname, hits);
+                        client.storeSingle(alignname, hits, isType2);
                         hits.clear();
                     } catch (Exception e) {
                         System.err.println("Failed: " + e.toString());
@@ -185,7 +191,7 @@ public class ImportHits {
         System.err.println("Read lines");
         if (hits.size() > 0) {
             try {
-                client.storeSingle(alignname, hits);
+                client.storeSingle(alignname, hits, isType2);
             } catch (Exception e) {
                 System.err.println("Failed: " + e.toString());
                 e.printStackTrace();

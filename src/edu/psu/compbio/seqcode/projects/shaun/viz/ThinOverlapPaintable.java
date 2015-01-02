@@ -51,7 +51,7 @@ public class ThinOverlapPaintable extends AbstractPaintable {
 			LinkedList<Region> highlights = new LinkedList<Region>();
 			highlights.add(new Region(g, chrom, 52030000, 52040000));
 
-			ThinOverlapPaintable p = new ThinOverlapPaintable(r, highlights, loc, 200);
+			ThinOverlapPaintable p = new ThinOverlapPaintable(r, highlights, loc, false, 200);
 
 			PaintableFrame pf = new PaintableFrame("Test", p);
 			
@@ -83,12 +83,12 @@ public class ThinOverlapPaintable extends AbstractPaintable {
 	private boolean[][] bgPoints;
 	private boolean[][] hlPoints;
 	
-	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, SeqLocator loc) throws SQLException, IOException { 
-		this(basereg, hls, new ClosingRegionExpanderWrapper<SeqHit>(new SeqExpander(loc)));
+	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, SeqLocator loc, boolean loadR2) throws SQLException, IOException { 
+		this(basereg, hls, new ClosingRegionExpanderWrapper<SeqHit>(new SeqExpander(loc, loadR2)));
 	}
 	
-	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, SeqLocator loc, int extend) throws SQLException, IOException { 
-		this(basereg, hls, new ClosingRegionExpanderWrapper<SeqHit>(new SeqExpander(loc), new SeqHitExtender(extend)));
+	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, SeqLocator loc, boolean loadR2, int extend) throws SQLException, IOException { 
+		this(basereg, hls, new ClosingRegionExpanderWrapper<SeqHit>(new SeqExpander(loc, loadR2), new SeqHitExtender(extend)));
 	}
 	
 	public ThinOverlapPaintable(Region basereg, Collection<Region> hls, Expander<Region,? extends Region> exp) { 

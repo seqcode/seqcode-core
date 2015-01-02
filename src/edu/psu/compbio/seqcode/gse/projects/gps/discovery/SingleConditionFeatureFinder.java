@@ -57,22 +57,20 @@ public abstract class SingleConditionFeatureFinder extends FeatureFinder {
     List<File> expts = Args.parseFileHandles(args, "expt");
     List<File> ctrls = Args.parseFileHandles(args, "ctrl");
     boolean nonUnique = ap.hasKey("nonunique") ? true : false;
+    boolean sigLoadR2 = ap.hasKey("sigtype2");
+    boolean ctrlLoadR2 = ap.hasKey("ctrltype2");
     boolean sigPairedEnd = ap.hasKey("sigpaired");
     boolean ctrlPairedEnd = ap.hasKey("ctrlpaired");
     String fileFormat = Args.parseString(args, "format", "ELAND");
         if(expts.size()>0 && dbexpts.size() == 0 && rdbexpts.size()==0){
       signal = new DeepSeqExpt(gen, expts, nonUnique, fileFormat, (int)readLength);
     }
-    else if (dbexpts.size() > 0 && expts.size() == 0) {
-      signal = new DeepSeqExpt(gen, dbexpts, "db", (int)readLength, sigPairedEnd);
-      dbconnected = true;
-    }
     else if (rdbexpts.size()>0 && expts.size() == 0){
-        	signal = new DeepSeqExpt(gen, rdbexpts, "readdb", (int)readLength, sigPairedEnd);
+        	signal = new DeepSeqExpt(gen, rdbexpts, "readdb", (int)readLength, sigLoadR2, sigPairedEnd);
         	dbconnected=true;
     }
     else {
-      System.err.println("Must provide either an aligner output file or Gifford lab DB experiment name for the signal experiment (but not both)");
+      System.err.println("Must provide either an aligner output file or READDB experiment name for the signal experiment (but not both)");
       printError();
       System.exit(1);
     }
@@ -81,20 +79,14 @@ public abstract class SingleConditionFeatureFinder extends FeatureFinder {
       noControl = false;
       control.setPairedEnd(ctrlPairedEnd);
     }
-    else if (dbctrls.size() > 0 && ctrls.size() == 0) {
-      control = new DeepSeqExpt(gen, dbctrls, "db", (int)readLength);
-      noControl = false;
-      dbconnected = true;
-      control.setPairedEnd(ctrlPairedEnd);
-    } 
     else if (rdbctrls.size()>0 && ctrls.size() == 0) {
-      control = new DeepSeqExpt(gen, rdbctrls, "readdb", (int)readLength); 
+      control = new DeepSeqExpt(gen, rdbctrls, "readdb", (int)readLength, ctrlLoadR2, ctrlPairedEnd); 
       noControl=false;
       dbconnected=true;
   	  control.setPairedEnd(ctrlPairedEnd);
     } 
     else {
-      if (dbctrls.size() > 0 && ctrls.size() > 0) {
+      if (rdbctrls.size() > 0 && ctrls.size() > 0) {
     	  System.err.println("Cannot mix files and db loading yet...");
         printError();
         System.exit(1);

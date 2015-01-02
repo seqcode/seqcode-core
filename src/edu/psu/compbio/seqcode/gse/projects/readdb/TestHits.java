@@ -37,8 +37,8 @@ public class TestHits {
             las.put(i, Hits.makeLAS((short)(hits.get(i) % 500), hits.get(i) % 2 == 1,
                                     (short)(hits.get(i) % 1000), hits.get(i) % 5 == 1));
         }
-        SingleHits.writeSingleHits(hits, weights, las, prefix, chrom);
-        hitsfile = new SingleHits(prefix, chrom);
+        SingleHits.writeSingleHits(hits, weights, las, prefix, chrom, false);
+        hitsfile = new SingleHits(prefix, chrom, false);
         header = new Header(hitsfile.getPositionsBuffer().ib);
         header.writeIndexFile(prefix + chrom + ".index");
 
@@ -233,7 +233,7 @@ public class TestHits {
             int binsize = 10 + (int)Math.round(Math.random() * 40);
             int[] histogram = hitsfile.histogram(header.getFirstIndex(start),
                                                  header.getLastIndex(end),
-                                                 start,end,binsize,0,null,null,false);
+                                                 start,end,binsize,0,null,null,0);
             int[] myhist = new int[(end - start) / binsize + 1];
             for (int i = 0; i < hits.size(); i++) {
                 if (hits.get(i) >= start && hits.get(i) <= end) {
@@ -264,7 +264,7 @@ public class TestHits {
 
             int[] histogram = hitsfile.histogram(header.getFirstIndex(start),
                                                  header.getLastIndex(end),
-                                                 start,end,binsize,1,null,null,false);
+                                                 start,end,binsize,1,null,null,0);
 
             int[] myhist = new int[(end - start) / binsize + 1];
             for (int i = 0; i < hits.size(); i++) {
@@ -285,7 +285,7 @@ public class TestHits {
 
             histogram = hitsfile.histogram(header.getFirstIndex(start),
                                                  header.getLastIndex(end),
-                                                 start,end,binsize,2,null,null,false);
+                                                 start,end,binsize,2,null,null,0);
 
             myhist = new int[(end - start) / binsize + 1];
             for (int i = 0; i < hits.size(); i++) {
@@ -318,7 +318,7 @@ public class TestHits {
             float weight = (float)Math.random() * MAXWEIGHT;
             int[] histogram = hitsfile.histogram(header.getFirstIndex(start),
                                                  header.getLastIndex(end),
-                                                 start,end,binsize,0,weight,null,false);
+                                                 start,end,binsize,0,weight,null,0);
             int[] myhist = new int[(end - start) / binsize + 1];
             for (int i = 0; i < hits.size(); i++) {
                 if (hits.get(i) >= start && hits.get(i) <= end && weights.get(i) >= weight) {
@@ -342,7 +342,7 @@ public class TestHits {
             int binsize = 10 + (int)Math.round(Math.random() * 40);
             float[] histogram = hitsfile.weightHistogram(header.getFirstIndex(start),
                                                          header.getLastIndex(end),
-                                                         start,end,binsize,0,null,null,false);
+                                                         start,end,binsize,0,null,null,0);
             float[] myhist = new float[(end - start) / binsize + 1];
             for (int i = 0; i < hits.size(); i++) {
                 if (hits.get(i) >= start && hits.get(i) <= end) {

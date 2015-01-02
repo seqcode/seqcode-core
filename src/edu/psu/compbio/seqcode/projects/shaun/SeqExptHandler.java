@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.datasets.seqdata;
+package edu.psu.compbio.seqcode.projects.shaun;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -22,6 +22,11 @@ import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
+/**
+ * SeqExptHandler: old methods for loading reads. Keeping for legacy methods, but should not be used now. 
+ * @author mahony
+ *
+ */
 public class SeqExptHandler {
 	
     public static final double defaultReadLength = 26.0, defaultReadExtension = 174.0;
@@ -278,7 +283,7 @@ public class SeqExptHandler {
         hitCount = 0;
         try {
             for (SeqAlignment alignment : alignments) {
-                double currHits = (double) loader.countAllHits(alignment);
+                double currHits = (double) loader.countAllHits(alignment, false);
                 hitCount += currHits;
             }
         }
@@ -294,7 +299,7 @@ public class SeqExptHandler {
     public double countHits(Region a) {
         double hits = 0;
         try {
-            hits = (double) loader.countByRegion(alignments, a);
+            hits = (double) loader.countByRegion(alignments, a, false);
             return hits;
         }
         catch (IOException e) {
@@ -307,7 +312,7 @@ public class SeqExptHandler {
 		hitWeight = 0;
 		try {
 			for (SeqAlignment align : alignments) {
-				double currWeight = loader.weighAllHits(align);
+				double currWeight = loader.weighAllHits(align, false);
 				hitWeight += currWeight;
 			}
         }
@@ -322,7 +327,7 @@ public class SeqExptHandler {
     public double weighHits(Region a) {
         double hits = 0;
         try {
-            hits = (double) loader.weightByRegion(alignments, a);
+            hits = (double) loader.weightByRegion(alignments, a, false);
             return hits;
         }
         catch (IOException e) {
@@ -336,7 +341,7 @@ public class SeqExptHandler {
     public LinkedList<StrandedRegion> loadHits(Region a) {
         try {
             LinkedList<StrandedRegion> total = new LinkedList<StrandedRegion>();
-            Collection<SeqHit> hits = loader.loadByRegion(alignments, a);
+            Collection<SeqHit> hits = loader.loadByRegion(alignments, a, false);
             for (SeqHit curr : hits) {
                 total.add(hit2region(0, curr));
             }
@@ -352,7 +357,7 @@ public class SeqExptHandler {
    public LinkedList<SeqHit> loadExtendedHits(Region a) {
      try {
        LinkedList<SeqHit> total = new LinkedList<SeqHit>();
-       Collection<SeqHit> hits = loader.loadByRegion(alignments, a);
+       Collection<SeqHit> hits = loader.loadByRegion(alignments, a, false);
        for (SeqHit curr : hits) {
            total.add(curr.extendHit((int) readExtension));
        }
@@ -368,7 +373,7 @@ public class SeqExptHandler {
    public LinkedList<SeqHit> loadShiftedExtendedHits(Region a) {
      try {
        LinkedList<SeqHit> total = new LinkedList<SeqHit>();
-       Collection<SeqHit> hits = loader.loadByRegion(alignments, a);
+       Collection<SeqHit> hits = loader.loadByRegion(alignments, a, false);
        for (SeqHit curr : hits) {
            total.add(curr.shiftExtendHit((int) readExtension, (int) readShift));
        }
@@ -388,7 +393,7 @@ public class SeqExptHandler {
         }
 
         try {
-            Iterator<SeqHit> h = loader.loadByRegion(alignments, a).iterator();
+            Iterator<SeqHit> h = loader.loadByRegion(alignments, a, false).iterator();
             while (h.hasNext()) {
                 SeqHit csh = h.next();
                 int pos = csh.getStart() - a.getStart();
@@ -415,7 +420,7 @@ public class SeqExptHandler {
         for (int i = 0; i <= a.getWidth(); i++)
             hits[i] = 0;
         try {
-            Iterator<SeqHit> h = loader.loadByRegion(alignments, a).iterator();
+            Iterator<SeqHit> h = loader.loadByRegion(alignments, a, false).iterator();
             while (h.hasNext()) {
                 SeqHit csh = h.next();
                 int start, end;
@@ -447,7 +452,7 @@ public class SeqExptHandler {
 		for(int i=0; i<numBins; i++)
 			bins[i]=0;
 		try {
-			Iterator<SeqHit> h = loader.loadByRegion(alignments, a).iterator();
+			Iterator<SeqHit> h = loader.loadByRegion(alignments, a, false).iterator();
 			while(h.hasNext()){
 				SeqHit csh = h.next();
 				int start, end;

@@ -49,7 +49,7 @@ public class PairedBEDExporter {
 	public PairedBEDExporter(List<SeqLocator> expt, Genome g, String o,int minFrag, int maxFrag) throws SQLException, IOException, NotFoundException {
 		this.gen = g;
 		this.locators = expt;
-		this.fetcher = new DeepSeqExpt(gen,this.locators,"readdb",-1,true);
+		this.fetcher = new DeepSeqExpt(gen,this.locators,"readdb",-1,false,true);
 		this.clientConnected = true;
 		this.logger.info("Expt hit count: " + (int) this.fetcher.getHitCount()+ ", weight: " + (int) this.fetcher.getWeightTotal());
 		this.outName =o;

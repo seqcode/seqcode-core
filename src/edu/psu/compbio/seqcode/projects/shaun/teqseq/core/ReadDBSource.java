@@ -121,7 +121,7 @@ public class ReadDBSource{
 		for(SeqAlignment a : singleAligns){
 				try {
 					hits.addAll(client.getSingleHits(Integer.toString(a.getDBID()),
-					       r.getGenome().getChromID(r.getChrom()), r.getStart(), r.getEnd(), null, null));
+					       r.getGenome().getChromID(r.getChrom()),false, r.getStart(), r.getEnd(), null, null));
 				} catch (IOException e) {
 					e.printStackTrace();
 				} catch (ClientException e) {
@@ -182,7 +182,7 @@ public class ReadDBSource{
 		double w =0;
 		try {
 			for(SeqAlignment alignment : singleAligns) { 
-				double currWeight =(double)client.getWeight(Integer.toString(alignment.getDBID()), false, null, null);
+				double currWeight =(double)client.getWeight(Integer.toString(alignment.getDBID()),false, false, null, null);
 				w +=currWeight;
 			}
 		} catch (IOException e) {

@@ -44,8 +44,8 @@ public class DeepSeqExpt {
 	protected boolean pairedEndData = false;
 	
 	
-	public DeepSeqExpt(Genome g, List<SeqLocator> locs, String db, int readLen){this(g,locs,db,readLen,false);}
-	public DeepSeqExpt(Genome g, List<SeqLocator> locs, String db, int readLen, boolean pairedEnd){
+	public DeepSeqExpt(Genome g, List<SeqLocator> locs, String db, int readLen){this(g,locs,db,readLen,false,false);}
+	public DeepSeqExpt(Genome g, List<SeqLocator> locs, String db, int readLen, boolean loadR2, boolean pairedEnd){
 		if(g==null){
 			System.err.println("Error: the genome must be defined in order to use the SeqData DB"); System.exit(1);
 		}
@@ -54,7 +54,7 @@ public class DeepSeqExpt {
 		gen = g;
 			
 		if(db.equals("readdb"))
-			loader = new ReadDBReadLoader(gen, locs, rLen, pairedEndData);
+			loader = new ReadDBReadLoader(gen, locs, rLen, loadR2,pairedEndData);
 		else{
 			System.err.println("Database type must be \"readdb\"");System.exit(1);
 		}

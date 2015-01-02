@@ -22,7 +22,8 @@ import htsjdk.samtools.util.CloseableIterator;
  * Options:	--uniquehits (flag to only print 1:1 read to hit mappings)
  * 			--pairedend (flag to print pairs)
  * 			--junctions (flag to print junction mapping reads as pairs)
- * 
+ *			--read1 (flag to print only read 1 hits)
+ * 			--read2 (flag to print only read 2 hits)
  */
 
 public class SAMToReadDB {
@@ -30,17 +31,22 @@ public class SAMToReadDB {
     public static boolean uniqueOnly;
     public static boolean inclPairedEnd;
     public static boolean inclJunction;
+    public static boolean read1, read2;
 
     public static void main(String args[]) throws IOException, ParseException {
         Options options = new Options();
         options.addOption("u","uniquehits",false,"only output hits with a single mapping");
         options.addOption("p","pairedend",false,"output paired-end hits");
         options.addOption("j","junctions",false,"output junction mapping reads (reads with a single gap)");
+        options.addOption("1","read1",false,"output only read 1 hits");
+        options.addOption("2","read2",false,"output only read 2 hits");
         CommandLineParser parser = new GnuParser();
         CommandLine cl = parser.parse( options, args, false );            
     	uniqueOnly = cl.hasOption("uniquehits");
     	inclPairedEnd = cl.hasOption("pairedend");
     	inclJunction = cl.hasOption("junctions");
+    	read1 = cl.hasOption("read1");
+    	read2 = cl.hasOption("read2");
     	SamReaderFactory factory =
 		          SamReaderFactory.makeDefault()
 		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
@@ -140,8 +146,9 @@ public class SAMToReadDB {
     		
         	if (uniqueOnly && !currUnique) {
                 return;
-            }    	    
-    		System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
+            }
+        	if((!read1 && !read2) || (read1 && record.getFirstOfPairFlag()) || (read2 && record.getSecondOfPairFlag())){
+        		System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
                     record.getReferenceName(),
                     record.getReadNegativeStrandFlag() ? 
                     record.getAlignmentEnd() : 
@@ -149,6 +156,7 @@ public class SAMToReadDB {
                     record.getReadNegativeStrandFlag() ? "-" : "+",
                     record.getReadLength(),
                     weight));
+        	}
     	}                                 
     }
 }

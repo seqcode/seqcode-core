@@ -1,7 +1,6 @@
 package edu.psu.compbio.seqcode.gse.projects.readdb;
 
 import java.io.*;
-import java.nio.*;
 import java.nio.channels.*;
 import java.net.*;
 import java.util.*;
@@ -12,11 +11,17 @@ import javax.security.auth.callback.*;
 /** 
  * ServerTask represents a client connection.  Server creates ServerTasks when it receives
  * a connection and passes them to Dispatch.  Dispatch manages a pool of WorkerThreads and
- * assigns them to ServerTasks as the tasks appear to be available.  
+ * assigns them to ServerTasks as the tasks appear to be available. 
+ * 
+ * The current ServerTasks shut themselves down if they haven't been run in a given time period. 
+ *   
  */
 
 public class ServerTask {
-    private static final int SINGLE = 1, PAIRED = 2;
+    
+    /* limit in milliseconds before a task connection is closed by server */
+    private int taskInactivityLimit; 
+    private boolean limitInactivity; 
     /* instance variables */
     /* Server that we're working for.  Need a reference to it so we can ask it
        for paths and configuration information and such
@@ -31,7 +36,6 @@ public class ServerTask {
     /* Socket, streams from the socket */
     private Socket socket;
     private int haventTriedRead;
-    //    private BufferedInputStream instream;
     private BufferedInputStream instream;
     private OutputStream outstream;
     private WritableByteChannel outchannel;
@@ -47,8 +51,9 @@ public class ServerTask {
     private SaslServer sasl;
     private Map<String,String> saslprops;
     private String uname; // temporary, used by authenticate
+    private long lastActivity=0;
 
-    public ServerTask(Server serv, Socket s) throws IOException {
+    public ServerTask(Server serv, Socket s, int inactivityLimit) throws IOException {
         buffer = new byte[8192];
         request = new Request();
         args = new ArrayList<String>();
@@ -70,15 +75,22 @@ public class ServerTask {
         bufferpos = 0;
         sasl = null;
         socket.setTcpNoDelay(true);
-        //         if (server.debug()) {
-        //             System.err.println("New ServerTask " + this + " on socket " + socket);
-        //         }
+        taskInactivityLimit = inactivityLimit;
+        if(taskInactivityLimit>0)
+        	limitInactivity=true;
+        lastActivity = System.currentTimeMillis();
     }
+    
+    /* The shouldClose method checks the last activity time (set in run method) and returns true 
+    *  if past the time limit. Other methods set shouldClose after exceptions or once the task is finished. 
+    */
     public boolean shouldClose() {
-        //         if (shouldClose && server.debug()) {
-        //             System.err.println("Should close " + socket + " for " + this);
-        //         }
-
+    	//Check if we should shut this connection down
+        if(limitInactivity && System.currentTimeMillis()-lastActivity > taskInactivityLimit){
+        	shouldClose=true;
+        	server.getLogger().log(Level.INFO,"serverTask","connection idle more than "+taskInactivityLimit+"ms: closing connection");
+        }
+        
         return shouldClose;
     }
     public void close () {
@@ -133,6 +145,7 @@ public class ServerTask {
             avail = false;
             shouldClose = true;
         }
+        		
         return avail;
     }
     /** prints the response header signifying a valid request.  Only happens after
@@ -225,6 +238,7 @@ public class ServerTask {
      */
     public void run() {
         try {
+        	lastActivity = System.currentTimeMillis();
             if (username == null) {
                 if (!authenticate()) {
                     server.getLogger().logp(Level.INFO,"serverTask","run " + toString(),"not authenticated in ");
@@ -465,8 +479,8 @@ public class ServerTask {
                 hits = server.getPairedHits(request.alignid, request.chromid, request.isLeft);
                 header = server.getPairedHeader(request.alignid, request.chromid, request.isLeft);
             } else {
-                hits = server.getSingleHits(request.alignid, request.chromid);
-                header = server.getSingleHeader(request.alignid, request.chromid);
+                hits = server.getSingleHits(request.alignid, request.chromid, request.isType2);
+                header = server.getSingleHeader(request.alignid, request.chromid, request.isType2);
             }
         } catch (IOException e) {
             // happens if the file doesn't exist or if we can't read it at the OS level
@@ -648,6 +662,7 @@ public class ServerTask {
             return;
         }        
         Set<Integer> chroms = server.getChroms(request.alignid,
+                							   request.isType2,
                                                request.isPaired,
                                                request.isLeft);
         if (chroms == null) {
@@ -675,12 +690,11 @@ public class ServerTask {
         }
         Lock.writeLock(request.alignid);
         /* step one is to de-cache all the files */
-        Set<Integer> chroms = server.getChroms(request.alignid,
-                                               request.isPaired,
-                                               true);
+        Set<Integer> chroms = server.getChroms(request.alignid,false,request.isPaired,true);
         if (request.isPaired) {
-            chroms.addAll(server.getChroms(request.alignid, true,false));
-        }
+            chroms.addAll(server.getChroms(request.alignid,false, true,false));
+        }else
+        	chroms.addAll(server.getChroms(request.alignid,true, false,true));
         for (int c : chroms) {
             if (request.isPaired) {
                 server.removePairedHits(request.alignid, c, true);
@@ -688,8 +702,10 @@ public class ServerTask {
                 server.removePairedHeader(request.alignid, c, true);
                 server.removePairedHeader(request.alignid, c, false);
             } else {
-                server.removeSingleHits(request.alignid, c);
-                server.removeSingleHeader(request.alignid, c);
+                server.removeSingleHits(request.alignid, c, true);
+                server.removeSingleHeader(request.alignid, c, true);
+                server.removeSingleHits(request.alignid, c, false);
+                server.removeSingleHeader(request.alignid, c, false);
             }
         }
 
@@ -714,10 +730,10 @@ public class ServerTask {
                     name.indexOf(".pairedleftindex") > 0 ||
                     name.indexOf(".pairedrightindex") > 0 ||
                     name.indexOf(".paircode") > 0;  
-                boolean singlefile = name.indexOf("singleindex") > 0||
-                    name.indexOf("spositions") > 0 ||
-                    name.indexOf("sweights") > 0 ||
-                    name.indexOf("slas") > 0;
+                boolean singlefile = name.indexOf("singleindex") > 0|| name.indexOf("singlet2index") > 0||
+                    name.indexOf("spositions") > 0 || name.indexOf("st2positions") > 0 ||
+                    name.indexOf("sweights") > 0 || name.indexOf("st2weights") > 0 ||
+                    name.indexOf("slas") > 0 ||name.indexOf("st2las") > 0;
                 if (request.isPaired && pairedfile) {
                     toDelete.add(prefix + name);
                 } else if (!request.isPaired && singlefile) {
@@ -807,7 +823,7 @@ public class ServerTask {
         SingleHit[] hits = null;
 
         /* if the alignment already exists, read in the old hits */
-        Set<Integer> chroms = server.getChroms(request.alignid, false,false);
+        Set<Integer> chroms = server.getChroms(request.alignid, request.isType2, false,false);
         try {
             if (chroms != null && chroms.contains(request.chromid)) {
                 try {        
@@ -824,9 +840,10 @@ public class ServerTask {
                 }
                 try {
                     server.getSingleHits(request.alignid,
-                                         request.chromid).appendSingleHits(newhits,
+                                         request.chromid, 
+                                         request.isType2).appendSingleHits(newhits,
                                                                            server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
-                                                                           request.chromid);
+                                                                           request.chromid, request.isType2);
                 } catch (Exception e) {
                     server.getLogger().logp(Level.INFO,"ServerTask","processSingleStore "+toString(),"error writing hits",e);
                     printInvalid(e.toString());
@@ -853,20 +870,23 @@ public class ServerTask {
                 server.removeACL(request.alignid); // make sure the server doesn't have this ACL cached
                 SingleHits.writeSingleHits(newhits,
                                            server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
-                                           request.chromid);
+                                           request.chromid,
+                                           request.isType2);
             }
             SingleHits singlehits = new SingleHits(server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
-                                                   request.chromid);
+                                                   request.chromid,
+                                                   request.isType2);
             Header header = new Header(singlehits.getPositionsBuffer().ib);
             header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
-                                                                 request.chromid));
+                                                                 request.chromid,
+                                                                 request.isType2));
         } catch (IOException e) {
             server.getLogger().logp(Level.INFO,"ServerTask","processSingleStore "+ toString(),"IOException trying to save files : " + e.toString(),e);
             return;
         }
         printOK();
-        server.removeSingleHits(request.alignid, request.chromid);
-        server.removeSingleHeader(request.alignid, request.chromid);
+        server.removeSingleHits(request.alignid, request.chromid, request.isType2);
+        server.removeSingleHeader(request.alignid, request.chromid, request.isType2);
     }
 
     public void processPairedStore() throws IOException {
@@ -1033,11 +1053,12 @@ public class ServerTask {
             server.removePairedHeader(request.alignid, request.chromid,false);
 
         } else {
-            SingleHits hits = server.getSingleHits(request.alignid, request.chromid);
+            SingleHits hits = server.getSingleHits(request.alignid, request.chromid, request.isType2);
             Header header = new Header(hits.getPositionsBuffer().ib);
             header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
-                                                                 request.chromid));
-            server.removeSingleHeader(request.alignid, request.chromid);       
+                                                                 request.chromid,
+                                                                 request.isType2));
+            server.removeSingleHeader(request.alignid, request.chromid, request.isType2);       
         }
         printOK();
     }
@@ -1138,11 +1159,13 @@ public class ServerTask {
             printString("missing or invalid bin size : " + request.map.get("binsize") + "\n");
             return;
         }
-        int dedup = 0;
+        int dedup = 0, extension=0;
         if (request.map.containsKey("dedup")) {
             dedup = Integer.parseInt(request.map.get("dedup"));
         }
-        boolean extension = request.map.containsKey("extension");
+        if(request.map.containsKey("extension")) {
+        	extension = Integer.parseInt(request.map.get("extension"));
+        }
         int first = header.getFirstIndex(request.start);
         int last = header.getLastIndex(request.end);
         int[] raw = hits.histogram(first,
@@ -1197,11 +1220,13 @@ public class ServerTask {
             printString("missing or invalid bin size : " + request.map.get("binsize") + "\n");
             return;
         }
-        int dedup = 0;
+        int dedup = 0, extension=0;
         if (request.map.containsKey("dedup")) {
             dedup = Integer.parseInt(request.map.get("dedup"));
         }
-        boolean extension = request.map.containsKey("extension");
+        if(request.map.containsKey("extension")) {
+        	extension = Integer.parseInt(request.map.get("extension"));
+        }
         int first = header.getFirstIndex(request.start);
         int last = header.getLastIndex(request.end);
         float[] raw = hits.weightHistogram(first,
@@ -1248,15 +1273,17 @@ public class ServerTask {
             if (hits instanceof SingleHits) {
                 server.getLogger().logp(Level.INFO,"ServerTask","processCheckSort",String.format("Resorting %s %d",request.alignid, request.chromid));
                 ((SingleHits)hits).resort(server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
-                                          request.chromid);
+                                          request.chromid, 
+                                          request.isType2);
                 
-                server.removeSingleHits(request.alignid, request.chromid);
-                server.removeSingleHeader(request.alignid, request.chromid);       
-                hits = server.getSingleHits(request.alignid, request.chromid);
+                server.removeSingleHits(request.alignid, request.chromid, request.isType2);
+                server.removeSingleHeader(request.alignid, request.chromid, request.isType2);       
+                hits = server.getSingleHits(request.alignid, request.chromid, request.isType2);
                 
                 header = new Header(hits.getPositionsBuffer().ib);
                 header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
-                                                                     request.chromid));
+                                                                     request.chromid,
+                                                                     request.isType2));
 
             } else {
                 printString("Can't resort paired hits");
