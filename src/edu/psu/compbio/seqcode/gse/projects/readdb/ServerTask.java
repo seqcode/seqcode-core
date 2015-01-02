@@ -511,7 +511,7 @@ public class ServerTask {
     }
 
     /* returns true iff the user named in the username field is allowed to
-       access this file
+       access this file, or if the user is in the admin group
     */
     public boolean authorizeRead(AlignmentACL acl) {
         return authorize(acl.getReadACL());
@@ -531,6 +531,8 @@ public class ServerTask {
                 return true;
             }
         }
+        if(server.isAdmin(username))
+        	return true;
         return false;
     }
     public void processAddToGroup() throws IOException {
