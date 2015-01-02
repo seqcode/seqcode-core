@@ -195,6 +195,13 @@ public class Client implements ReadOnlyClient {
         }
     }
     /**
+     * Return some basic information about the server
+     * @return string
+     */
+    public String getServerInfo(){
+    	return("ReadDB\t"+hostname+"\t"+portnum+"\t"+username);
+    }
+    /**
      * Determines whether the client will print error messages to STDERR.  Useful for debugging 
      * but may produce unwanted screen output.
      */

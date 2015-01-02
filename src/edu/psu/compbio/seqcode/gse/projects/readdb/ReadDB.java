@@ -98,6 +98,7 @@ public class ReadDB {
         System.out.println("usage: java edu.psu.compbio.seqcode.gse.projects.readdb.ReadDB command args...");
         System.out.println("  isalive");
         System.out.println("  shutdown");
+        System.out.println("  serverinfo");
         System.out.println("  exists alignname");
         System.out.println("  getchroms alignname");
         System.out.println("  getacl alignname");
@@ -119,6 +120,8 @@ public class ReadDB {
         		System.out.println("TRUE");
         	else
         		System.out.println("FALSE");
+        }else if (cmd.equals("isalive")) {
+        	System.out.println(client.getServerInfo());
         }  else if (cmd.equals("addtogroup")) {
             // username, groupname
             client.addToGroup(otherargs[1], otherargs[2]);
