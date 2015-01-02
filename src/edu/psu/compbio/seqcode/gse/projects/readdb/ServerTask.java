@@ -746,7 +746,6 @@ public class ServerTask {
         }       
         if (allgone) {
             toDelete.add(server.getACLFileName(request.alignid));
-            toDelete.add(directory.getName());
             server.removeACL(request.alignid);
         }
         File f;
@@ -761,6 +760,17 @@ public class ServerTask {
                                        "ServerTask.processDeleteAlignment didn't delete " + fname);
             }
         }
+        if(allgone){
+        	// file system delete directory
+            f = new File(directory.getCanonicalPath());
+        	boolean deleted = f.delete();
+            allDeleted = allDeleted && deleted;
+            if (!deleted) {
+                server.getLogger().logp(Level.INFO,"ServerTask","processDeleteAlignment "+ toString(),
+                                       "ServerTask.processDeleteAlignment didn't delete directory " + directory.getCanonicalPath());
+            }
+        }
+        
         if (allDeleted) {
             printOK();
         } else {
