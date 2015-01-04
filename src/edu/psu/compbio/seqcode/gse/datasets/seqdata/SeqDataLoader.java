@@ -21,7 +21,6 @@ import edu.psu.compbio.seqcode.gse.datasets.core.Lab;
 import edu.psu.compbio.seqcode.gse.datasets.core.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.core.ReadType;
 import edu.psu.compbio.seqcode.gse.datasets.core.SeqDataUser;
-import edu.psu.compbio.seqcode.gse.projects.readdb.ACLChangeEntry;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;

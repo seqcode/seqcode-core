@@ -59,7 +59,7 @@ public class Bowtie2SAMToReadDB {
 		CloseableIterator<SAMRecord> iter = reader.iterator();
         List<SAMRecord> records = new ArrayList<SAMRecord>();
         String lastName = "";
-        while (iter.hasNext()) { //Group neighboring reads by name
+        while (iter.hasNext()) { //Group neighboring reads by name (note this will group read pair hits too)
             SAMRecord record = iter.next();
             if (record.getReadUnmappedFlag()) {continue; }
             if(record.getSupplementaryAlignmentFlag()){continue;}
@@ -79,7 +79,14 @@ public class Bowtie2SAMToReadDB {
     }       
     public static void processRecord(List<SAMRecord> records) {
 
-    	int count = records.size(); 
+    	float lcount = 0, rcount=0;
+    	for(SAMRecord record : records) //get weights for L & R reads separately
+    		if(record.getFirstOfPairFlag())
+    			lcount++;
+    		else
+    			rcount++;
+    	float lweight = 1/lcount;  
+    	float rweight = 1/rcount;
     	
     	for(SAMRecord record : records){
 	    	int primAScore = record.getIntegerAttribute("AS");
@@ -89,7 +96,7 @@ public class Bowtie2SAMToReadDB {
 	    	
 	    	if(inclPairedEnd || inclJunction){
 	    		boolean currUnique = primAScore > secAScore ? true : false;
-	        	float weight = 1/(float)count;  
+	        	
 	    	    
 	    		/*
 	    		 * Only accept proper pairs, optionally only concordant.
@@ -120,7 +127,7 @@ public class Bowtie2SAMToReadDB {
 			                		(mateneg ? "-\t" : "+\t") +
 			                		len +
 			                        
-			                        weight +"\t"+
+			                        lweight +"\t"+
 			                        1);
 	        			}
 	    			}
@@ -153,7 +160,7 @@ public class Bowtie2SAMToReadDB {
 				                                   (neg ? rEnd : rStart) + "\t" +
 				                                   (neg ? "-\t" : "+\t") +
 				                                   rLen + "\t" +
-				                                   weight +"\t"+
+				                                   (record.getFirstOfPairFlag() ? lweight:rweight) +"\t"+
 				                                   0);
 			    			}
 			    		}
@@ -164,8 +171,7 @@ public class Bowtie2SAMToReadDB {
 	        	if (uniqueOnly && primAScore == secAScore) {
 	                return;
 	            }
-	        	float weight = 1;  //Fix this if using bowtie2 to produce multiple mappings for each read
-	    	    if((!read1 && !read2) || (read1 && record.getFirstOfPairFlag()) || (read2 && record.getSecondOfPairFlag())){
+	        	if((!read1 && !read2) || (read1 && record.getFirstOfPairFlag()) || (read2 && record.getSecondOfPairFlag())){
 	    	    	System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
 	                    record.getReferenceName(),
 	                    record.getReadNegativeStrandFlag() ? 
@@ -173,7 +179,7 @@ public class Bowtie2SAMToReadDB {
 	                    record.getAlignmentStart(),
 	                    record.getReadNegativeStrandFlag() ? "-" : "+",
 	                    record.getReadLength(),
-	                    weight));
+	                    (record.getFirstOfPairFlag() ? lweight:rweight)));
 	    	    }
 	    	}
     	}

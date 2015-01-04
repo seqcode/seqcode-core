@@ -79,10 +79,18 @@ public class SAMToReadDB {
     public static void processRecord(List<SAMRecord> records) {
 
     	boolean currUnique=false;
-    	int count = records.size();  //Have to figure out something for BWA when reporting multiple alignments
+    	int lcount = 0, rcount=0; //Have to figure out something for BWA when reporting multiple alignments
+    	for(SAMRecord record : records) //get weights for L & R reads separately
+    		if(record.getFirstOfPairFlag())
+    			lcount++;
+    		else
+    			rcount++;
     	
     	for(SAMRecord record : records){
-    	
+    		int count = lcount;
+    		if(record.getSecondOfPairFlag())
+    			count=rcount;
+    			
 			if(record.getIntegerAttribute("NH")!=null) //This tag overrides the record count
 				count = record.getIntegerAttribute("NH");
 			if(count==1 && record.getMappingQuality()!=0) //Second clause for BWA
@@ -110,15 +118,13 @@ public class SAMToReadDB {
 			                       		record.getAlignmentEnd() : 
 			                       		record.getAlignmentStart()) + "\t" +
 			                        (neg ? "-\t" : "+\t") + 
-			                        len +
-					                        
+			                        len +   
 					                record.getMateReferenceName() + "\t" +
 			                		(mateneg ? 
 			                			record.getMateAlignmentStart()+record.getReadLength()-1 : 
 			                			record.getMateAlignmentStart()) + "\t" +
 			                		(mateneg ? "-\t" : "+\t") +
 			                		len +
-			                        
 			                        weight +"\t"+
 			                        1);
 		    			}

@@ -62,6 +62,8 @@ public class TophatSAMToReadDB {
     }       
     public static void processRecord(SAMRecord record) {
 
+    	//NH seems to be an accurate count of hits for Tophat.
+    	//Grouping hits will not work, as Tophat BAM output is sorted by genomic location
     	if (uniqueOnly && record.getIntegerAttribute("NH") > 1) {
             return;
         }
