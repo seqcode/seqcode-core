@@ -325,7 +325,7 @@ public class Server {
     }
     /**
      * Returns true iff this princ is a server admin.
-     * Server admins can shut the server down.
+     * Server admins can shut the server down and have read/write/admin access to any data.
      *
      * Currently implemented as members of the admin
      * group.

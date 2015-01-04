@@ -55,111 +55,127 @@ public class Bowtie2SAMToReadDB {
 		              .enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
 		              .validationStringency(ValidationStringency.SILENT);
 		SamReader reader = factory.open(SamInputResource.of(System.in));
-        CloseableIterator<SAMRecord> iter = reader.iterator();
-        while (iter.hasNext()) {
+        
+		CloseableIterator<SAMRecord> iter = reader.iterator();
+        List<SAMRecord> records = new ArrayList<SAMRecord>();
+        String lastName = "";
+        while (iter.hasNext()) { //Group neighboring reads by name
             SAMRecord record = iter.next();
             if (record.getReadUnmappedFlag()) {continue; }
             if(record.getSupplementaryAlignmentFlag()){continue;}
-            processRecord(record);
+            if(!record.getReadName().equals(lastName)){
+            	if(records.size()>0){
+            		processRecord(records);
+            		records.clear();
+            	}
+            }
+            records.add(record);
+            lastName =record.getReadName(); 
         }
+        if(records.size()>0)
+    		processRecord(records);
         iter.close();
         reader.close();
     }       
-    public static void processRecord(SAMRecord record) {
+    public static void processRecord(List<SAMRecord> records) {
 
-    	int primAScore = record.getIntegerAttribute("AS");
-    	int secAScore=-1000000;
-    	if(record.getIntegerAttribute("XS")!=null)
-    		secAScore = record.getIntegerAttribute("XS");
+    	int count = records.size(); 
     	
-    	if(inclPairedEnd || inclJunction){
-    		boolean currUnique = primAScore > secAScore ? true : false;
-        	float weight = 1;  //Fix this if using bowtie2 to produce multiple mappings for each read
-    	    
-    		/*
-    		 * Only accept proper pairs, optionally only concordant.
-    		 * It also assumes that the left and right mates have the same length, 
-    		 * and that there are no gaps in the second mate alignment (SAM doesn't store the paired read's end)
-    		 * Note: if you change this, you may have to change the SAMStats output also
-    		 */
-        	if(inclPairedEnd){
-        		//Check this if using bowtie2 to produce multiple mappings for each read pair. could be problematic
-        		if(record.getFirstOfPairFlag() && record.getProperPairFlag() && (!concordantOnly || record.getStringAttribute("YT").equals("CP"))){
-        			if(!uniqueOnly || currUnique){
-		    			//Print
-		                boolean neg = record.getReadNegativeStrandFlag();
-		                boolean mateneg = record.getMateNegativeStrandFlag();
-		                String len = record.getReadLength() + "\t";
-		                System.out.println(
-		                		record.getReferenceName() + "\t" +
-		                       	(neg ? 
-		                       		record.getAlignmentEnd() : 
-		                       		record.getAlignmentStart()) + "\t" +
-		                        (neg ? "-\t" : "+\t") + 
-		                        len +
-		                        
-		                		record.getMateReferenceName() + "\t" +
-                				(mateneg ? 
-		                			record.getMateAlignmentStart()+record.getReadLength()-1 : 
-		                			record.getMateAlignmentStart()) + "\t" +
-		                		(mateneg ? "-\t" : "+\t") +
-		                		len +
-		                        
-		                        weight +"\t"+
-		                        1);
-        			}
-    			}
-        	}
-			/*
-    		 * Outputs as paired alignments those reads that are aligned in >2 blocks
-    		 * Note: if you change this, you may have to change the SAMStats output also
-    		 */
-    		if(inclJunction){
-    			if(!uniqueOnly || currUnique){
-		    		List<AlignmentBlock> blocks = record.getAlignmentBlocks();
-		    		if(blocks.size()>=2){
-		    			for(int ab=0; ab<blocks.size()-1; ab++){
-			    			AlignmentBlock lBlock = blocks.get(ab);
-			    		   	int lStart = lBlock.getReferenceStart();
-			    		   	int lEnd = lStart + lBlock.getLength()-1;
-			    		   	int lLen = lBlock.getLength();
-			    		   	AlignmentBlock rBlock = blocks.get(ab+1);
-			    		   	int rStart = rBlock.getReferenceStart();
-			    		   	int rEnd = rStart + rBlock.getLength()-1;
-			    		   	int rLen = rBlock.getLength();
+    	for(SAMRecord record : records){
+	    	int primAScore = record.getIntegerAttribute("AS");
+	    	int secAScore=-1000000;
+	    	if(record.getIntegerAttribute("XS")!=null)
+	    		secAScore = record.getIntegerAttribute("XS");
+	    	
+	    	if(inclPairedEnd || inclJunction){
+	    		boolean currUnique = primAScore > secAScore ? true : false;
+	        	float weight = 1/(float)count;  
+	    	    
+	    		/*
+	    		 * Only accept proper pairs, optionally only concordant.
+	    		 * It also assumes that the left and right mates have the same length, 
+	    		 * and that there are no gaps in the second mate alignment (SAM doesn't store the paired read's end)
+	    		 * Note: if you change this, you may have to change the SAMStats output also
+	    		 */
+	        	if(inclPairedEnd){
+	        		//Check this if using bowtie2 to produce multiple mappings for each read pair. could be problematic
+	        		if(record.getFirstOfPairFlag() && record.getProperPairFlag() && (!concordantOnly || record.getStringAttribute("YT").equals("CP"))){
+	        			if(!uniqueOnly || currUnique){
+			    			//Print
 			                boolean neg = record.getReadNegativeStrandFlag();
-			                String refname = record.getReferenceName() + "\t";
-			    		   	System.out.println(
-			                                   refname +
-			                                   (neg ? lEnd : lStart) + "\t" +
-			                                   (neg ? "-\t" : "+\t") +
-			                                   lLen + "\t" +
-			                                   refname + 
-			                                   (neg ? rEnd : rStart) + "\t" +
-			                                   (neg ? "-\t" : "+\t") +
-			                                   rLen + "\t" +
-			                                   weight +"\t"+
-			                                   0);
-		    			}
-		    		}
-    			}
-    		}
-    	}else{ //Just output reads (ignore alignment blocks for now)
-    		
-        	if (uniqueOnly && primAScore == secAScore) {
-                return;
-            }
-        	float weight = 1;  //Fix this if using bowtie2 to produce multiple mappings for each read
-    	    if((!read1 && !read2) || (read1 && record.getFirstOfPairFlag()) || (read2 && record.getSecondOfPairFlag())){
-    	    	System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
-                    record.getReferenceName(),
-                    record.getReadNegativeStrandFlag() ? 
-                    record.getAlignmentEnd() : 
-                    record.getAlignmentStart(),
-                    record.getReadNegativeStrandFlag() ? "-" : "+",
-                    record.getReadLength(),
-                    weight));
-    	    }
-    	}                                 
+			                boolean mateneg = record.getMateNegativeStrandFlag();
+			                String len = record.getReadLength() + "\t";
+			                System.out.println(
+			                		record.getReferenceName() + "\t" +
+			                       	(neg ? 
+			                       		record.getAlignmentEnd() : 
+			                       		record.getAlignmentStart()) + "\t" +
+			                        (neg ? "-\t" : "+\t") + 
+			                        len +
+			                        
+			                		record.getMateReferenceName() + "\t" +
+	                				(mateneg ? 
+			                			record.getMateAlignmentStart()+record.getReadLength()-1 : 
+			                			record.getMateAlignmentStart()) + "\t" +
+			                		(mateneg ? "-\t" : "+\t") +
+			                		len +
+			                        
+			                        weight +"\t"+
+			                        1);
+	        			}
+	    			}
+	        	}
+				/*
+	    		 * Outputs as paired alignments those reads that are aligned in >2 blocks
+	    		 * Note: if you change this, you may have to change the SAMStats output also
+	    		 */
+	    		if(inclJunction){
+	    			if(!uniqueOnly || currUnique){
+			    		List<AlignmentBlock> blocks = record.getAlignmentBlocks();
+			    		if(blocks.size()>=2){
+			    			for(int ab=0; ab<blocks.size()-1; ab++){
+				    			AlignmentBlock lBlock = blocks.get(ab);
+				    		   	int lStart = lBlock.getReferenceStart();
+				    		   	int lEnd = lStart + lBlock.getLength()-1;
+				    		   	int lLen = lBlock.getLength();
+				    		   	AlignmentBlock rBlock = blocks.get(ab+1);
+				    		   	int rStart = rBlock.getReferenceStart();
+				    		   	int rEnd = rStart + rBlock.getLength()-1;
+				    		   	int rLen = rBlock.getLength();
+				                boolean neg = record.getReadNegativeStrandFlag();
+				                String refname = record.getReferenceName() + "\t";
+				    		   	System.out.println(
+				                                   refname +
+				                                   (neg ? lEnd : lStart) + "\t" +
+				                                   (neg ? "-\t" : "+\t") +
+				                                   lLen + "\t" +
+				                                   refname + 
+				                                   (neg ? rEnd : rStart) + "\t" +
+				                                   (neg ? "-\t" : "+\t") +
+				                                   rLen + "\t" +
+				                                   weight +"\t"+
+				                                   0);
+			    			}
+			    		}
+	    			}
+	    		}
+	    	}else{ //Just output reads (ignore alignment blocks for now)
+	    		
+	        	if (uniqueOnly && primAScore == secAScore) {
+	                return;
+	            }
+	        	float weight = 1;  //Fix this if using bowtie2 to produce multiple mappings for each read
+	    	    if((!read1 && !read2) || (read1 && record.getFirstOfPairFlag()) || (read2 && record.getSecondOfPairFlag())){
+	    	    	System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
+	                    record.getReferenceName(),
+	                    record.getReadNegativeStrandFlag() ? 
+	                    record.getAlignmentEnd() : 
+	                    record.getAlignmentStart(),
+	                    record.getReadNegativeStrandFlag() ? "-" : "+",
+	                    record.getReadLength(),
+	                    weight));
+	    	    }
+	    	}
+    	}
     }
 }
