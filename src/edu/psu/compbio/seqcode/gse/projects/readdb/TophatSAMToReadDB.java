@@ -78,7 +78,7 @@ public class TophatSAMToReadDB {
     		 * Note: if you change this, you may have to change the SAMStats output also
     		 */
     		if(inclPairedEnd){
-	    		if(!record.getNotPrimaryAlignmentFlag() && record.getFirstOfPairFlag() && record.getProperPairFlag() && record.getReadPairedFlag()){
+	    		if(record.getReadPairedFlag() && !record.getNotPrimaryAlignmentFlag() && record.getFirstOfPairFlag() && record.getProperPairFlag() && record.getReadPairedFlag()){
 	                boolean neg = record.getReadNegativeStrandFlag();
 	                boolean mateneg = record.getMateNegativeStrandFlag();
 	                String len = record.getReadLength() + "\t";

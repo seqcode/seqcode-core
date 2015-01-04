@@ -81,14 +81,14 @@ public class SAMToReadDB {
     	boolean currUnique=false;
     	int lcount = 0, rcount=0; //Have to figure out something for BWA when reporting multiple alignments
     	for(SAMRecord record : records) //get weights for L & R reads separately
-    		if(record.getFirstOfPairFlag())
+    		if(!record.getReadPairedFlag() || record.getFirstOfPairFlag())
     			lcount++;
     		else
     			rcount++;
     	
     	for(SAMRecord record : records){
     		int count = lcount;
-    		if(record.getSecondOfPairFlag())
+    		if(record.getReadPairedFlag() && record.getSecondOfPairFlag())
     			count=rcount;
     			
 			if(record.getIntegerAttribute("NH")!=null) //This tag overrides the record count
@@ -106,7 +106,7 @@ public class SAMToReadDB {
 	    		 */
 	    		if(inclPairedEnd){
 	    			//May need to revisit this section if laoding multiple mapping pairs
-		    		if(record.getFirstOfPairFlag() && record.getProperPairFlag()){
+		    		if(record.getReadPairedFlag() && record.getFirstOfPairFlag() && record.getProperPairFlag()){
 		    			if(!uniqueOnly || currUnique){
 			    			//Print
 			                boolean neg = record.getReadNegativeStrandFlag();
@@ -170,7 +170,7 @@ public class SAMToReadDB {
 	        	if (uniqueOnly && !currUnique) {
 	                return;
 	            }
-	        	if((!read1 && !read2) || (read1 && record.getFirstOfPairFlag()) || (read2 && record.getSecondOfPairFlag())){
+	        	if((!read1 && !read2) || (!record.getReadPairedFlag()) || (read1 && record.getFirstOfPairFlag()) || (read2 && record.getSecondOfPairFlag())){
 	        		System.out.println(String.format("%s\t%d\t%s\t%d\t%f",
 	                    record.getReferenceName(),
 	                    record.getReadNegativeStrandFlag() ? 
