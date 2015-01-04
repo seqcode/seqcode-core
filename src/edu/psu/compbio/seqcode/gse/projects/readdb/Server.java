@@ -43,7 +43,8 @@ public class Server {
     // in buffers when the buffer is allocated in bytes.
     public static final int BUFFERLEN = 8192 * 16;
 
-    private LRUCache<Header> headers;
+    private LRUCache<Header> singleHeaders;
+    private LRUCache<Header> pairedHeaders;
     private LRUCache<SingleHits> singleHits;
     private LRUCache<PairedHits> pairedHits;
     private LRUCache<AlignmentACL> acls;    
@@ -112,7 +113,8 @@ public class Server {
 
         singleHits = new LRUCache<SingleHits>(cacheSize);
         pairedHits = new LRUCache<PairedHits>(cacheSize);
-        headers = new LRUCache<Header>(cacheSize);
+        singleHeaders = new LRUCache<Header>(cacheSize);
+        pairedHeaders = new LRUCache<Header>(cacheSize);
         acls = new LRUCache<AlignmentACL>(cacheSize);
         debug = line.hasOption("debug");
         logger.log(Level.INFO,String.format("Server parsed args: port %d, threads %d, directory %s",port,numThreads,topdir));
@@ -265,19 +267,19 @@ public class Server {
      */
     public Header getSingleHeader(String alignID, int chromID, boolean isType2) throws IOException {
         String key = alignID + chromID +isType2;
-        Header output = headers.get(key);
+        Header output = singleHeaders.get(key);
         if (output == null) {
             output = Header.readIndexFile(getSingleHeaderFileName(alignID,chromID, isType2));
-            headers.add(key, output);
+            singleHeaders.add(key, output);
         }
         return output;
     }
     public Header getPairedHeader(String alignID, int chromID, boolean isLeft) throws IOException {
         String key = alignID + chromID + isLeft;
-        Header output = headers.get(key);
+        Header output = pairedHeaders.get(key);
         if (output == null) {
             output = Header.readIndexFile(getPairedHeaderFileName(alignID,chromID,isLeft));
-            headers.add(key, output);
+            pairedHeaders.add(key, output);
         }
         return output;
     }
@@ -300,14 +302,15 @@ public class Server {
         pairedHits.remove(alignID + chromID + isLeft);
     }
     public void removeSingleHeader(String alignID, int chromID, boolean isType2) {
-        headers.remove(alignID + chromID + isType2);
+        singleHeaders.remove(alignID + chromID + isType2);
     }
     public void removePairedHeader(String alignID, int chromID, boolean isLeft) {
-        headers.remove(alignID + chromID + isLeft);
+        pairedHeaders.remove(alignID + chromID + isLeft);
     }
     public void removeACL(String alignID) {acls.remove(alignID);}
     protected void printCacheContents() {
-        headers.printKeys();
+        singleHeaders.printKeys();
+        pairedHeaders.printKeys();
         singleHits.printKeys();
         pairedHits.printKeys();
         acls.printKeys();
