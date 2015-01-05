@@ -80,6 +80,8 @@ public class TestExptLoading {
 	            }
 			}
 			System.out.println(expt.getName()+"\t"+expt.getSignal().getHitCount()+"\t"+totalCount);
+			
+			//Test connection hang-up in Client
 		}
 		manager.close();
 	}

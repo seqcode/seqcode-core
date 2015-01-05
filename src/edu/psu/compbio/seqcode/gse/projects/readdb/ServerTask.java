@@ -472,8 +472,8 @@ public class ServerTask {
             printAuthError();
             return;
         }
-        Header header;
-        Hits hits;
+        Header header=null;
+        Hits hits=null;
         try {
             if (request.isPaired) {
                 hits = server.getPairedHits(request.alignid, request.chromid, request.isLeft);
@@ -483,13 +483,19 @@ public class ServerTask {
                 header = server.getSingleHeader(request.alignid, request.chromid, request.isType2);
             }
         } catch (IOException e) {
-            // happens if the file doesn't exist or if we can't read it at the OS level
-            server.getLogger().logp(Level.INFO,"ServerTask","processFileRequest " + toString(),
+            // We already know the alignment exists and we have permissions at this point. 
+        	// This exception may happen if the file doesn't exist or if we can't read it at the OS level
+        	//Let's choose to ignore the exception for now, and to have the methods below behave like there are 0 hits in this case
+        	header=null;
+        	hits=null;
+        	
+            /*server.getLogger().logp(Level.INFO,"ServerTask","processFileRequest " + toString(),
                                    String.format("read error on header or hits for %s, %d, %s : %s",
                                                  request.alignid, request.chromid, request.isLeft,
                                                  e.toString()));
             printInvalid(e.toString());
             return;
+            */
         }
         if (request.type.equals("count")) {
             processCount(header,hits);
@@ -1076,137 +1082,156 @@ public class ServerTask {
     }
 
     public void processCount(Header header, Hits hits) throws IOException {
-        printOK();
-        if (request.start == null && request.end == null && request.minWeight == null && request.isPlusStrand == null) {
-            printString(Integer.toString(header.getNumHits()) + "\n");
-            return;
-        }
-        if (request.start == null) {
-            request.start = 0;
-        }
-        if (request.end == null) {
-            request.end = Integer.MAX_VALUE;
-        }
-        int count = 0;
-        int first = header.getFirstIndex(request.start == null ? 0 : request.start);
-        int last = header.getLastIndex(request.end == null ? Integer.MAX_VALUE : request.end);
-        printString(Integer.toString(hits.getCountBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand)) + "\n");
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0\n");
+    	}else{
+	        printOK();
+	        if (request.start == null && request.end == null && request.minWeight == null && request.isPlusStrand == null) {
+	            printString(Integer.toString(header.getNumHits()) + "\n");
+	            return;
+	        }
+	        if (request.start == null) {
+	            request.start = 0;
+	        }
+	        if (request.end == null) {
+	            request.end = Integer.MAX_VALUE;
+	        }
+	        int first = header.getFirstIndex(request.start == null ? 0 : request.start);
+	        int last = header.getLastIndex(request.end == null ? Integer.MAX_VALUE : request.end);
+	        printString(Integer.toString(hits.getCountBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand)) + "\n");
+    	}
     }
     public void processWeight(Header header, Hits hits) throws IOException {
-        printOK();
-        if (request.start == null) {
-            request.start = 0;
-        }
-        if (request.end == null) {
-            request.end = Integer.MAX_VALUE;
-        }
-        int first = header.getFirstIndex(request.start);
-        int last = header.getLastIndex(request.end);
-        printString(Double.toString(hits.getWeightBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand)) + "\n");
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0.0\n");
+    	}else{
+    		printOK();
+	        if (request.start == null) {
+	            request.start = 0;
+	        }
+	        if (request.end == null) {
+	            request.end = Integer.MAX_VALUE;
+	        }
+	        int first = header.getFirstIndex(request.start);
+	        int last = header.getLastIndex(request.end);
+	        printString(Double.toString(hits.getWeightBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand)) + "\n");
+    	}
     }
     public void processGetHits(Header header, Hits hits) throws IOException {
-        int count;
-        if (!(hits instanceof PairedHits)) {
-            if (request.map.containsKey("wantotherchroms") ||
-                request.map.containsKey("wantotherpositions") ||
-                request.map.containsKey("wantpaircodes")) {
-                printString("invalid columns requested for single-ended data\n");
-                return;
-            }
-        }
-        if (request.start == null) {
-            request.start = 0;
-        }
-        if (request.end == null) {
-            request.end = Integer.MAX_VALUE;
-        }
-        int first = header.getFirstIndex(request.start);
-        int last = header.getLastIndex(request.end);
-        if (request.start == 0 && request.end == Integer.MAX_VALUE && request.minWeight == null && request.isPlusStrand == null) {
-            count = header.getNumHits();
-        } else {
-            count = hits.getCountBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand);
-        }
-        printOK();
-        printString(Integer.toString(count) + "\n");
-        if (request.map.containsKey("wantpositions")) {
-            IntBP p = hits.getHitsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }
-        if (request.map.containsKey("wantweights")) {
-            FloatBP p = hits.getWeightsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }
-        if (request.map.containsKey("wantpaircodes")) {
-        	IntBP p = ((PairedHits)hits).getPairCodesBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }
-        if (request.map.containsKey("wantlengthsandstrands")) {
-            IntBP p = hits.getLASBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }
-        if (request.map.containsKey("wantotherchroms")) {
-            IntBP p = ((PairedHits)hits).getOtherChromsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }
-        if (request.map.containsKey("wantotherpositions")) {
-            IntBP p = ((PairedHits)hits).getOtherPositionsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }        
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0\n");
+    	}else{
+	    	int count;
+	        if (!(hits instanceof PairedHits)) {
+	            if (request.map.containsKey("wantotherchroms") ||
+	                request.map.containsKey("wantotherpositions") ||
+	                request.map.containsKey("wantpaircodes")) {
+	                printString("invalid columns requested for single-ended data\n");
+	                return;
+	            }
+	        }
+	        if (request.start == null) {
+	            request.start = 0;
+	        }
+	        if (request.end == null) {
+	            request.end = Integer.MAX_VALUE;
+	        }
+	        int first = header.getFirstIndex(request.start);
+	        int last = header.getLastIndex(request.end);
+	        if (request.start == 0 && request.end == Integer.MAX_VALUE && request.minWeight == null && request.isPlusStrand == null) {
+	            count = header.getNumHits();
+	        } else {
+	            count = hits.getCountBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand);
+	        }
+	        printOK();
+	        printString(Integer.toString(count) + "\n");
+	        if (request.map.containsKey("wantpositions")) {
+	            IntBP p = hits.getHitsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+	        if (request.map.containsKey("wantweights")) {
+	            FloatBP p = hits.getWeightsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+	        if (request.map.containsKey("wantpaircodes")) {
+	        	IntBP p = ((PairedHits)hits).getPairCodesBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+	        if (request.map.containsKey("wantlengthsandstrands")) {
+	            IntBP p = hits.getLASBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+	        if (request.map.containsKey("wantotherchroms")) {
+	            IntBP p = ((PairedHits)hits).getOtherChromsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+	        if (request.map.containsKey("wantotherpositions")) {
+	            IntBP p = ((PairedHits)hits).getOtherPositionsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+    	}
     }
     public void processHistogram(Header header, Hits hits) throws IOException {
-        int binsize = 10;
-        if (request.start == null) {
-            IntBP ib = hits.getPositionsBuffer();
-            request.start = ib.get(0);
-        }
-        if (request.end == null) {
-            IntBP ib = hits.getPositionsBuffer();
-            request.end = ib.get(ib.limit()-1);
-        }
-        try {
-            binsize = Integer.parseInt(request.map.get("binsize"));
-        } catch (Exception e) {
-            server.getLogger().logp(Level.INFO,"ServerTask","processHistogram "+toString(), "Exception parsing binsize : " + request.map.get("binsize"),e);
-            printString("missing or invalid bin size : " + request.map.get("binsize") + "\n");
-            return;
-        }
-        int dedup = 0, extension=0;
-        if (request.map.containsKey("dedup")) {
-            dedup = Integer.parseInt(request.map.get("dedup"));
-        }
-        if(request.map.containsKey("extension")) {
-        	extension = Integer.parseInt(request.map.get("extension"));
-        }
-        int first = header.getFirstIndex(request.start);
-        int last = header.getLastIndex(request.end);
-        int[] raw = hits.histogram(first,
-                                   last,
-                                   request.start,
-                                   request.end,
-                                   binsize,
-                                   dedup,
-                                   request.minWeight,
-                                   request.isPlusStrand,
-                                   extension);
-        int n = 0;
-        for (int i = 0; i< raw.length; i++) {
-            if (raw[i] > 0) {
-                n++;
-            }
-        }
-        int[] hist = new int[n*2];
-        int pos = 0;
-        for (int i = 0; i< raw.length; i++) {
-            if (raw[i] > 0) {
-                hist[pos*2] = request.start + binsize * i + binsize / 2;
-                hist[pos*2+1] = raw[i];
-                pos++;
-            }
-        }
-        printOK();
-        printString(Integer.toString(hist.length) + "\n");
-        Bits.sendInts(hist, outstream, buffer);        
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0\n");
+    	}else{
+    		int binsize = 10;
+	    	if (request.start == null) {
+	            IntBP ib = hits.getPositionsBuffer();
+	            request.start = ib.get(0);
+	        }
+	        if (request.end == null) {
+	            IntBP ib = hits.getPositionsBuffer();
+	            request.end = ib.get(ib.limit()-1);
+	        }
+	        try {
+	            binsize = Integer.parseInt(request.map.get("binsize"));
+	        } catch (Exception e) {
+	            server.getLogger().logp(Level.INFO,"ServerTask","processHistogram "+toString(), "Exception parsing binsize : " + request.map.get("binsize"),e);
+	            printString("missing or invalid bin size : " + request.map.get("binsize") + "\n");
+	            return;
+	        }
+	        int dedup = 0, extension=0;
+	        if (request.map.containsKey("dedup")) {
+	            dedup = Integer.parseInt(request.map.get("dedup"));
+	        }
+	        if(request.map.containsKey("extension")) {
+	        	extension = Integer.parseInt(request.map.get("extension"));
+	        }
+	        int first = header.getFirstIndex(request.start);
+	        int last = header.getLastIndex(request.end);
+	        int[] raw = hits.histogram(first,
+	                                   last,
+	                                   request.start,
+	                                   request.end,
+	                                   binsize,
+	                                   dedup,
+	                                   request.minWeight,
+	                                   request.isPlusStrand,
+	                                   extension);
+	        int n = 0;
+	        for (int i = 0; i< raw.length; i++) {
+	            if (raw[i] > 0) {
+	                n++;
+	            }
+	        }
+	        int[] hist = new int[n*2];
+	        int pos = 0;
+	        for (int i = 0; i< raw.length; i++) {
+	            if (raw[i] > 0) {
+	                hist[pos*2] = request.start + binsize * i + binsize / 2;
+	                hist[pos*2+1] = raw[i];
+	                pos++;
+	            }
+	        }
+	        printOK();
+	        printString(Integer.toString(hist.length) + "\n");
+	        Bits.sendInts(hist, outstream, buffer);
+    	}
     }
 
     /* returns a histogram of hit weights in a region.  Inputs
@@ -1216,94 +1241,102 @@ public class ServerTask {
      * bins with zero count are not included.
      */
     public void processWeightHistogram(Header header, Hits hits) throws IOException {
-        int binsize = 10;
-        if (request.start == null) {
-            IntBP ib = hits.getPositionsBuffer();
-            request.start = ib.get(0);
-        }
-        if (request.end == null) {
-            IntBP ib = hits.getPositionsBuffer();
-            request.end = ib.get(ib.limit()-1);
-        }
-        try {
-            binsize = Integer.parseInt(request.map.get("binsize"));
-        } catch (Exception e) {
-            server.getLogger().logp(Level.INFO,"ServerTask","processWeightHistogram "+toString(), "Exception parsing binsize : " + request.map.get("binsize"),e);
-            printString("missing or invalid bin size : " + request.map.get("binsize") + "\n");
-            return;
-        }
-        int dedup = 0, extension=0;
-        if (request.map.containsKey("dedup")) {
-            dedup = Integer.parseInt(request.map.get("dedup"));
-        }
-        if(request.map.containsKey("extension")) {
-        	extension = Integer.parseInt(request.map.get("extension"));
-        }
-        int first = header.getFirstIndex(request.start);
-        int last = header.getLastIndex(request.end);
-        float[] raw = hits.weightHistogram(first,
-                                           last,
-                                           request.start,
-                                           request.end,
-                                           binsize,
-                                           dedup,
-                                           request.minWeight,
-                                           request.isPlusStrand,
-                                           extension);
-        int n = 0;
-        for (int i = 0; i< raw.length; i++) {
-            if (raw[i] > 0) {
-                n++;
-            }
-        }
-        int[] parray = new int[n];
-        float[] farray = new float[n];
-        int pos = 0;
-        for (int i = 0; i< raw.length; i++) {
-            if (raw[i] > 0) {
-                parray[pos] = request.start + binsize * i + binsize / 2;
-                farray[pos] = raw[i];
-                pos++;
-            }
-        }
-        printOK();
-        printString(Integer.toString(parray.length) + "\n");
-        Bits.sendInts(parray, outstream, buffer);        
-        Bits.sendFloats(farray, outstream, buffer);
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0\n");
+    	}else{
+	    	int binsize = 10;
+	        if (request.start == null) {
+	            IntBP ib = hits.getPositionsBuffer();
+	            request.start = ib.get(0);
+	        }
+	        if (request.end == null) {
+	            IntBP ib = hits.getPositionsBuffer();
+	            request.end = ib.get(ib.limit()-1);
+	        }
+	        try {
+	            binsize = Integer.parseInt(request.map.get("binsize"));
+	        } catch (Exception e) {
+	            server.getLogger().logp(Level.INFO,"ServerTask","processWeightHistogram "+toString(), "Exception parsing binsize : " + request.map.get("binsize"),e);
+	            printString("missing or invalid bin size : " + request.map.get("binsize") + "\n");
+	            return;
+	        }
+	        int dedup = 0, extension=0;
+	        if (request.map.containsKey("dedup")) {
+	            dedup = Integer.parseInt(request.map.get("dedup"));
+	        }
+	        if(request.map.containsKey("extension")) {
+	        	extension = Integer.parseInt(request.map.get("extension"));
+	        }
+	        int first = header.getFirstIndex(request.start);
+	        int last = header.getLastIndex(request.end);
+	        float[] raw = hits.weightHistogram(first,
+	                                           last,
+	                                           request.start,
+	                                           request.end,
+	                                           binsize,
+	                                           dedup,
+	                                           request.minWeight,
+	                                           request.isPlusStrand,
+	                                           extension);
+	        int n = 0;
+	        for (int i = 0; i< raw.length; i++) {
+	            if (raw[i] > 0) {
+	                n++;
+	            }
+	        }
+	        int[] parray = new int[n];
+	        float[] farray = new float[n];
+	        int pos = 0;
+	        for (int i = 0; i< raw.length; i++) {
+	            if (raw[i] > 0) {
+	                parray[pos] = request.start + binsize * i + binsize / 2;
+	                farray[pos] = raw[i];
+	                pos++;
+	            }
+	        }
+	        printOK();
+	        printString(Integer.toString(parray.length) + "\n");
+	        Bits.sendInts(parray, outstream, buffer);        
+	        Bits.sendFloats(farray, outstream, buffer);
+    	}
     }
     public void processCheckSort(Header header, Hits hits) throws IOException {
-        IntBP ints = hits.getPositionsBuffer();
-        boolean needsort = false;
-        for (int i = 1; i < ints.limit(); i++) {
-            if (ints.get(i-1) > ints.get(i)) {
-                //                printString(String.format("Bad sort at %d : %d > %d.\n",
-                //                                          i,ints.get(i-1),ints.get(i)));
-                needsort = true;
-            }
-        }
-        if (needsort) {
-            if (hits instanceof SingleHits) {
-                server.getLogger().logp(Level.INFO,"ServerTask","processCheckSort",String.format("Resorting %s %d",request.alignid, request.chromid));
-                ((SingleHits)hits).resort(server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
-                                          request.chromid, 
-                                          request.isType2);
-                
-                server.removeSingleHits(request.alignid, request.chromid, request.isType2);
-                server.removeSingleHeader(request.alignid, request.chromid, request.isType2);       
-                hits = server.getSingleHits(request.alignid, request.chromid, request.isType2);
-                
-                header = new Header(hits.getPositionsBuffer().ib);
-                header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
-                                                                     request.chromid,
-                                                                     request.isType2));
-
-            } else {
-                printString("Can't resort paired hits");
-                return;
-            }
-        }
-
-        printOK();
+    	if(header==null || hits==null){
+            printString("File does not exist for this chromosome");
+    	}else{
+	    	IntBP ints = hits.getPositionsBuffer();
+	        boolean needsort = false;
+	        for (int i = 1; i < ints.limit(); i++) {
+	            if (ints.get(i-1) > ints.get(i)) {
+	                //                printString(String.format("Bad sort at %d : %d > %d.\n",
+	                //                                          i,ints.get(i-1),ints.get(i)));
+	                needsort = true;
+	            }
+	        }
+	        if (needsort) {
+	            if (hits instanceof SingleHits) {
+	                server.getLogger().logp(Level.INFO,"ServerTask","processCheckSort",String.format("Resorting %s %d",request.alignid, request.chromid));
+	                ((SingleHits)hits).resort(server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
+	                                          request.chromid, 
+	                                          request.isType2);
+	                
+	                server.removeSingleHits(request.alignid, request.chromid, request.isType2);
+	                server.removeSingleHeader(request.alignid, request.chromid, request.isType2);       
+	                hits = server.getSingleHits(request.alignid, request.chromid, request.isType2);
+	                
+	                header = new Header(hits.getPositionsBuffer().ib);
+	                header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
+	                                                                     request.chromid,
+	                                                                     request.isType2));
+	
+	            } else {
+	                printString("Can't resort paired hits");
+	                return;
+	            }
+	        }
+	        printOK();
+    	}
     }
     public String toString() {
         return String.format("thread %s, user %s, remote %s:%d",

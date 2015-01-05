@@ -34,6 +34,9 @@ public class ReadDBHitLoader extends HitLoader{
 	private List<String> exptNames =new ArrayList<String>();
 	private List<SeqAlignment> aligns = new ArrayList<SeqAlignment>();
 	private Collection<String> alignIDs= new ArrayList<String>();
+	private HashMap<SeqAlignment, Set<Integer>> availSingleChroms = new HashMap<SeqAlignment, Set<Integer>>();
+	private HashMap<SeqAlignment, Set<Integer>> availSingleType2Chroms = new HashMap<SeqAlignment, Set<Integer>>();
+	private HashMap<SeqAlignment, Set<Integer>> availPairedChroms = new HashMap<SeqAlignment, Set<Integer>>();
 	private boolean hasPairedAligns=false;
 	private final int MAXRDBLOAD = 1000000; //Maximum number of hits to load from ReadDB in one chunk
 	private boolean loadR1, loadR2;
@@ -42,8 +45,8 @@ public class ReadDBHitLoader extends HitLoader{
 	 * Constructor: initialize the experiments.
 	 * @param g Genome
 	 * @param locs ChipSeqLocator
-	 * @param loadR1Reads boolean (load standard single-end/paired-end reads)
-	 * @param loadR2Reads boolean (load type 2 reads if they exist)
+	 * @param loadType1Reads boolean (load standard single-end/paired-end reads)
+	 * @param loadType2Reads boolean (load type 2 reads if they exist)
 	 * @param loadPairs boolean
 	 */
 	public ReadDBHitLoader(Genome g, List<SeqLocator> locs, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs){
@@ -64,6 +67,9 @@ public class ReadDBHitLoader extends HitLoader{
         }
 
 		try {
+			//Start a new ReadDB client
+			if(client==null)
+				client = new Client();
 			
 			//Initialize SeqDataLoaders
             SeqDataLoader loader = new SeqDataLoader(false); 
@@ -123,7 +129,36 @@ public class ReadDBHitLoader extends HitLoader{
 	            		alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName() :
 	            		this.sourceName+":"+alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName();
 	            hasPairedAligns = hasPairedAligns || (alignment.getAlignType().getName().equals("PAIRED") || alignment.getAlignType().getName().equals("MIXED"));
-	        }
+	            
+	            //Find the available chromosomes for each alignment
+	            if(alignment.getNumHits()>0){
+	            	Set<Integer> currChroms = new HashSet<Integer>();
+	            	try{
+	            		currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,false, null));
+	            	} catch (ClientException e) {
+	            		//Ignore - probably comes from chromosome with no hits of this type
+	        		}
+            		availSingleChroms.put(alignment, currChroms);
+	            }
+	            if(alignment.getNumType2Hits()>0){
+	            	Set<Integer> currChroms = new HashSet<Integer>();
+	            	try{
+	            		currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), true,false, null));
+	            	} catch (ClientException e) {
+	            		//Ignore - probably comes from chromosome with no hits of this type
+	        		}
+	            	availSingleType2Chroms.put(alignment, currChroms);
+	            }
+	            if(alignment.getNumPairs()>0){
+	            	Set<Integer> currChroms = new HashSet<Integer>();
+	            	try{
+	            		currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,true, null));
+	            	} catch (ClientException e) {
+	            		//Ignore - probably comes from chromosome with no hits of this type
+	        		}
+	            	availPairedChroms.put(alignment, currChroms);
+	            }
+		    }
 	        
             if (exptLocs.size() != 0 && aligns.size() == 0) {
                 System.err.println("Locators were " + exptLocs + " but didn't get any alignments");
@@ -134,6 +169,8 @@ public class ReadDBHitLoader extends HitLoader{
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (NotFoundException e) {
+			e.printStackTrace();
+		} catch (ClientException e) {
 			e.printStackTrace();
 		}
 		
@@ -149,19 +186,6 @@ public class ReadDBHitLoader extends HitLoader{
 			if(client==null)
 				client = new Client();
 			
-			//Find the available chromosomes for each alignment
-			HashMap<SeqAlignment, Set<Integer>> availChroms = new HashMap<SeqAlignment, Set<Integer>>();
-			for(SeqAlignment alignment : aligns) {
-				Set<Integer> currChroms = new HashSet<Integer>();
-				if(loadR1)
-					currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,false, null));
-				if(loadR2)
-					currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), true, false, null));
-				if(loadPairs)
-					currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,true, null));
-				availChroms.put(alignment,currChroms);
-			}
-			
 			//Iterate over each chromosome
 			for (String chrom: gen.getChromList()){
 				// load  data for this chromosome.
@@ -169,9 +193,9 @@ public class ReadDBHitLoader extends HitLoader{
 				Region wholeChrom = new Region(gen, chrom, 1, length);
 				int count = 0;
 				for(SeqAlignment alignment : aligns) { 
-					if(availChroms.get(alignment).contains(gen.getChromID(wholeChrom.getChrom()))){
-		                if(loadR1)
-		                	count += client.getCount(Integer.toString(alignment.getDBID()),
+					if(loadR1)
+						if(availSingleChroms.get(alignment).contains(gen.getChromID(wholeChrom.getChrom()))){
+							count += client.getCount(Integer.toString(alignment.getDBID()),
 		                				gen.getChromID(wholeChrom.getChrom()),
 		                                false,
 		                				false,
@@ -180,8 +204,10 @@ public class ReadDBHitLoader extends HitLoader{
 		                                null,
 		                                null,
 		                                null);
-		                if(loadR2)
-		                	count += client.getCount(Integer.toString(alignment.getDBID()),
+						}
+					if(loadR2){
+						if(availSingleType2Chroms.get(alignment).contains(gen.getChromID(wholeChrom.getChrom()))){
+							count += client.getCount(Integer.toString(alignment.getDBID()),
 		                				gen.getChromID(wholeChrom.getChrom()),
 		                                true,
 		                				false,
@@ -190,6 +216,7 @@ public class ReadDBHitLoader extends HitLoader{
 		                                null,
 		                                null,
 		                                null);
+						}
 					}
 				}
 				ArrayList<Region> chunks = new ArrayList<Region>();
@@ -230,13 +257,10 @@ public class ReadDBHitLoader extends HitLoader{
 					}
 				}
 			}
-			
-			client.close();
-			client=null;
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClientException e) {
-			e.printStackTrace();
+			//Do nothing here: ClientException could be thrown because chromosome doesn't contain any hist. 
 		}
 	}
 	
@@ -246,12 +270,16 @@ public class ReadDBHitLoader extends HitLoader{
      * 
      */
     private Pair<ArrayList<Integer>,ArrayList<Float>> loadStrandedBaseCounts(Region r, char strand, boolean loadRead2){
-        
+    	
         TreeMap<Integer,Float> allHits = null;
         ArrayList<Integer> coords = new ArrayList<Integer>();
         ArrayList<Float> counts = new ArrayList<Float>();
         try {
-            allHits = client.getWeightHistogram(alignIDs,
+        	//Start a new ReadDB client
+    		if(client==null)
+    			client = new Client();
+
+    		allHits = client.getWeightHistogram(alignIDs,
                                                 r.getGenome().getChromID(r.getChrom()),
                                                 loadRead2,
                                                 false,
@@ -285,6 +313,10 @@ public class ReadDBHitLoader extends HitLoader{
     private ArrayList<HitPair> loadStrandedPairs(Region r, char strand){
     	ArrayList<HitPair> pairs = new ArrayList<HitPair>();
     	try{
+    		//Start a new ReadDB client
+    		if(client==null)
+    			client = new Client();
+    		
 	    	for (String alignid : alignIDs) {
 	            List<PairedHit> ph = client.getPairedHits(alignid,
 	                                                     r.getGenome().getChromID(r.getChrom()),
