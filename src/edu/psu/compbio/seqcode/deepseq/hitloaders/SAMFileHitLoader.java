@@ -26,8 +26,10 @@ public class SAMFileHitLoader extends FileHitLoader{
 
 	private boolean useChimericReads=false; //Ignore chimeric mappings for now. 
 	
-	public SAMFileHitLoader(File f, boolean nonUnique, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs) {
-    	super(f, nonUnique, loadR1Reads, loadR2Reads, loadPairs);
+	public SAMFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs) {
+    	super(f, nonUnique, true, false, loadPairs);
+    	if(!loadT1Reads || loadT2Reads)
+			System.err.println("SAMFileHitLoader: You asked to load only Type1 or Type2 reads, we do not yet load this information from SAM format.");
     }
     
     /**
@@ -56,8 +58,8 @@ public class SAMFileHitLoader extends FileHitLoader{
 		    	byRead.clear();
 		    }
 		    lastread = record.getReadName();
-		    if((record.getFirstOfPairFlag() && loadR1) || (record.getSecondOfPairFlag() && loadR2)) 
-		    	byRead.add(record);
+		    
+		    byRead.add(record); //Filter by first or second of pair here if loading by type1/2?
 
 		    //load pair if this is a first mate, congruent, proper pair
 		    if(loadPairs && record.getFirstOfPairFlag() && record.getProperPairFlag()){

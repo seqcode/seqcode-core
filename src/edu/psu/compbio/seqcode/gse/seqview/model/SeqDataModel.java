@@ -8,6 +8,7 @@
  */
 package edu.psu.compbio.seqcode.gse.seqview.model;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
     private ArrayList<SeqHit> results;
     private SeqDataProperties props;
 
-    public SeqDataModel(Client c, Collection<SeqAlignment> alignments) {
+    public SeqDataModel(Client c, Collection<SeqAlignment> alignments) throws IOException {
         client = c;
         extension = 0;
         totalSum = null;
@@ -62,6 +63,10 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
             alignids.add(Integer.toString(a.getDBID()));
             if (align == null) {
                 align = a;
+            }
+            if(!client.exists(Integer.toString(a.getDBID()))){
+            	System.err.println("SeqHistogramModel: Error: "+a.getExpt().getName()+";"+a.getExpt().getReplicate()+";"+a.getName()+"\tRDBID:"+a.getDBID()+" does not exist in ReadDB.");
+            	dataError=true;
             }
         }
 
@@ -109,8 +114,6 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
         	newinput = true;
         }
     }
-    public boolean connectionOpen(){return true;}
-    public void reconnect(){}
     
     public boolean isReady() {return !newinput;}
     public synchronized void run() {

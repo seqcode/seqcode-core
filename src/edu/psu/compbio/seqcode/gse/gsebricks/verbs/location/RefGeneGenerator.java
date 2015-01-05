@@ -260,23 +260,23 @@ public class RefGeneGenerator<X extends Region>
     */
     public void close() {
         try {
-            if (ps != null) {
+            if (ps != null && !ps.isClosed()) {
                 ps.close();
                 ps = null;
             }
-            if (nameps != null) {
+            if (nameps != null && !nameps.isClosed()) {
                 nameps.close();
                 nameps = null;
             }
-            if (getalias != null) {
+            if (getalias != null && !getalias.isClosed()) {
                 getalias.close();
                 getalias = null;
             }
-            if (getgenesym != null) {
+            if (getgenesym != null && !getgenesym.isClosed()) {
                 getgenesym.close();
                 getgenesym = null;
             }
-            if (getallps != null) {
+            if (getallps != null && !getallps.isClosed()) {
                 getallps.close();
                 getallps = null;
             }
@@ -368,12 +368,13 @@ public class RefGeneGenerator<X extends Region>
     }
 
     public synchronized Iterator<Gene> execute(X region) {
-        if (!region.getGenome().equals(genome) || ps == null) {
-            close();
-            setGenome(region.getGenome(), tablename);
-        }
-        int offset = 1;
-        try {
+    	try {    
+    		if (!region.getGenome().equals(genome) || ps == null || ps.isClosed()) {
+	            close();
+	            setGenome(region.getGenome(), tablename);
+	        }
+        	int offset = 1;
+        
             String chr = region.getChrom();
             if (prependChr && !chr.matches("^(chr|scaffold).*")) {
                 chr = "chr" + chr;

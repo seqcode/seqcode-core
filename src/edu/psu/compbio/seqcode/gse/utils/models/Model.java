@@ -355,7 +355,7 @@ public class Model {
 					String fname = fs[i].getName();
 					if(obj.has(fname)) { 
 						Object value = obj.get(fname);
-                        Class type = fs[i].getType();
+                        Class type = fs[i].getType(); 
                         Object unjsoned = unjsonify(fs[i].getType(), value);                        
                         fs[i].set(this, unjsoned);
 						//System.err.println(String.format("\t%s <- %s (%s)", fs[i].getName(), unjsoned, fs[i].get(this)));

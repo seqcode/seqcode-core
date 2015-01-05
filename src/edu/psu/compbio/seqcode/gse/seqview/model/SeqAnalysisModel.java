@@ -41,8 +41,6 @@ public class SeqAnalysisModel extends SeqViewModel implements RegionModel, Runna
     }
     public boolean isReady() {return !newinput;}
     public Collection<SeqAnalysisResult> getResults() { return results;}
-    public boolean connectionOpen(){return true;}
-    public void reconnect(){}
     
     public synchronized void run() {
         while(keepRunning()) {

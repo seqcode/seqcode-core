@@ -31,6 +31,10 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
         client = new Client();
         ids = new HashSet<String>();
         ids.add(Integer.toString(a.getDBID()));
+        if(!client.exists(Integer.toString(a.getDBID()))){
+        	System.err.println("SeqHistogramModel: Error: "+a.getExpt().getName()+";"+a.getExpt().getReplicate()+";"+a.getName()+"\tRDBID:"+a.getDBID()+" does not exist in ReadDB.");
+        	dataError=true;
+        }
     }
     public SeqHistogramModel (Collection<SeqAlignment> a) throws IOException, ClientException {
         alignments = new HashSet<SeqAlignment>();
@@ -42,6 +46,10 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
         ids = new HashSet<String>();
         for (SeqAlignment align : alignments) {
             ids.add(Integer.toString(align.getDBID()));
+            if(!client.exists(Integer.toString(align.getDBID()))){
+            	System.err.println("SeqHistogramModel: Error: "+align.getExpt().getName()+";"+align.getExpt().getReplicate()+";"+align.getName()+"\tRDBID:"+align.getDBID()+" does not exist in ReadDB.");
+            	dataError=true;
+            }
         }
     }    
     public SeqHistogramModelProperties getProperties() {return props;}
@@ -72,8 +80,6 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
         }
     }
     
-    public boolean connectionOpen(){return client.connectionAlive();}
-    public void reconnect(){client.reConnect();}
     
     public boolean isReady() {return !newinput;}
     public Map<Integer,Float> getPlus() {return resultsPlus;}

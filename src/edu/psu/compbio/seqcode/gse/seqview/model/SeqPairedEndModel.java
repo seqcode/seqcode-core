@@ -29,6 +29,10 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
         ids = new HashSet<String>();
         for (SeqAlignment a : alignments) {
             ids.add(Integer.toString(a.getDBID()));
+            if(!client.exists(Integer.toString(a.getDBID()))){
+            	System.err.println("SeqHistogramModel: Error: "+a.getExpt().getName()+";"+a.getExpt().getReplicate()+";"+a.getName()+"\tRDBID:"+a.getDBID()+" does not exist in ReadDB.");
+            	dataError=true;
+            }
         }
         results = null;
         otherchrom = null;
@@ -59,8 +63,6 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
     }
     public List<PairedHit> getResults () {return results;}
     public List<PairedHit> getOtherChromResults() {return otherchrom;}
-    public boolean connectionOpen(){return client.connectionAlive();}
-    public void reconnect(){client.reConnect();}
     
     public boolean isReady() {return !newinput;}
     public List<PairedHit> dedup(List<PairedHit> hits) {

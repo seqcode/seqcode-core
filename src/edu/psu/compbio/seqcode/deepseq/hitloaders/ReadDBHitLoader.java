@@ -39,7 +39,6 @@ public class ReadDBHitLoader extends HitLoader{
 	private HashMap<SeqAlignment, Set<Integer>> availPairedChroms = new HashMap<SeqAlignment, Set<Integer>>();
 	private boolean hasPairedAligns=false;
 	private final int MAXRDBLOAD = 1000000; //Maximum number of hits to load from ReadDB in one chunk
-	private boolean loadR1, loadR2;
 	
 	/**
 	 * Constructor: initialize the experiments.
@@ -49,17 +48,15 @@ public class ReadDBHitLoader extends HitLoader{
 	 * @param loadType2Reads boolean (load type 2 reads if they exist)
 	 * @param loadPairs boolean
 	 */
-	public ReadDBHitLoader(Genome g, List<SeqLocator> locs, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs){
-		super(true, true, loadPairs);
+	public ReadDBHitLoader(Genome g, List<SeqLocator> locs, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs){
+		super(loadT1Reads, loadT2Reads, loadPairs);
 		gen=g;
 		exptLocs = locs;
-		loadR1=loadR1Reads;
-		loadR2=loadR2Reads;
 		
 		if(gen==null){
 			System.err.println("ReadDBHitLoader: null genome provided. ReadDB requires a defined genome. ");
 		}
-		if(!loadR1 && !loadR2 && !loadPairs){
+		if(!loadType1 && !loadType2 && !loadPairs){
 			System.err.println("ReadDBHitLoader: Error: you didn't request to load any read types. ");
 		}
         if (exptLocs.size() == 0) {
@@ -124,40 +121,30 @@ public class ReadDBHitLoader extends HitLoader{
 		        }
 			}
 	        for(SeqAlignment alignment : aligns) {
-	            alignIDs.add(Integer.toString(alignment.getDBID()));
-	            this.sourceName=this.sourceName.equals("") ? 
-	            		alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName() :
-	            		this.sourceName+":"+alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName();
-	            hasPairedAligns = hasPairedAligns || (alignment.getAlignType().getName().equals("PAIRED") || alignment.getAlignType().getName().equals("MIXED"));
-	            
-	            //Find the available chromosomes for each alignment
-	            if(alignment.getNumHits()>0){
-	            	Set<Integer> currChroms = new HashSet<Integer>();
-	            	try{
-	            		currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,false, null));
-	            	} catch (ClientException e) {
-	            		//Ignore - probably comes from chromosome with no hits of this type
-	        		}
-            		availSingleChroms.put(alignment, currChroms);
-	            }
-	            if(alignment.getNumType2Hits()>0){
-	            	Set<Integer> currChroms = new HashSet<Integer>();
-	            	try{
-	            		currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), true,false, null));
-	            	} catch (ClientException e) {
-	            		//Ignore - probably comes from chromosome with no hits of this type
-	        		}
-	            	availSingleType2Chroms.put(alignment, currChroms);
-	            }
-	            if(alignment.getNumPairs()>0){
-	            	Set<Integer> currChroms = new HashSet<Integer>();
-	            	try{
-	            		currChroms.addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,true, null));
-	            	} catch (ClientException e) {
-	            		//Ignore - probably comes from chromosome with no hits of this type
-	        		}
-	            	availPairedChroms.put(alignment, currChroms);
-	            }
+	        	if(client.exists(Integer.toString(alignment.getDBID()))){
+		            alignIDs.add(Integer.toString(alignment.getDBID()));
+		            this.sourceName=this.sourceName.equals("") ? 
+		            		alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName() :
+		            		this.sourceName+":"+alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName();
+		            hasPairedAligns = hasPairedAligns || (alignment.getAlignType().getName().equals("PAIRED") || alignment.getAlignType().getName().equals("MIXED"));
+		            
+		            //Find the available chromosomes for each alignment
+		            availSingleChroms.put(alignment, new HashSet<Integer>());
+		            if(alignment.getNumHits()>0){
+		            	availSingleChroms.get(alignment).addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,false, null));
+		            }
+		        	availSingleType2Chroms.put(alignment, new HashSet<Integer>());
+		            if(alignment.getNumType2Hits()>0){
+		            	availSingleType2Chroms.get(alignment).addAll(client.getChroms(Integer.toString(alignment.getDBID()), true,false, null));
+		            }
+		            availPairedChroms.put(alignment, new HashSet<Integer>());
+		            if(alignment.getNumPairs()>0){
+		            		availPairedChroms.get(alignment).addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,true, null));
+		            }
+	        	}else{
+	        		System.err.println("ReadDBHitLoader: Error: "+alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName()+"\tRDBID:"+alignment.getDBID()+" does not exist in ReadDB.");
+	        		System.exit(1);
+	        	}
 		    }
 	        
             if (exptLocs.size() != 0 && aligns.size() == 0) {
@@ -185,7 +172,7 @@ public class ReadDBHitLoader extends HitLoader{
 			//Start a new ReadDB client
 			if(client==null)
 				client = new Client();
-			
+
 			//Iterate over each chromosome
 			for (String chrom: gen.getChromList()){
 				// load  data for this chromosome.
@@ -193,7 +180,7 @@ public class ReadDBHitLoader extends HitLoader{
 				Region wholeChrom = new Region(gen, chrom, 1, length);
 				int count = 0;
 				for(SeqAlignment alignment : aligns) { 
-					if(loadR1)
+					if(loadType1)
 						if(availSingleChroms.get(alignment).contains(gen.getChromID(wholeChrom.getChrom()))){
 							count += client.getCount(Integer.toString(alignment.getDBID()),
 		                				gen.getChromID(wholeChrom.getChrom()),
@@ -205,7 +192,7 @@ public class ReadDBHitLoader extends HitLoader{
 		                                null,
 		                                null);
 						}
-					if(loadR2){
+					if(loadType2){
 						if(availSingleType2Chroms.get(alignment).contains(gen.getChromID(wholeChrom.getChrom()))){
 							count += client.getCount(Integer.toString(alignment.getDBID()),
 		                				gen.getChromID(wholeChrom.getChrom()),
@@ -236,13 +223,13 @@ public class ReadDBHitLoader extends HitLoader{
 
 				for (Region chunk: chunks){
 					Pair<ArrayList<Integer>,ArrayList<Float>> hits;
-					if(loadR1){
+					if(loadType1){
 						hits = loadStrandedBaseCounts(chunk, '+', false);
 						addHits(chrom, '+', hits.car(), hits.cdr());
 						hits = loadStrandedBaseCounts(chunk, '-', false);
 						addHits(chrom, '-', hits.car(), hits.cdr());
 					}
-					if(loadR2){
+					if(loadType2){
 						hits = loadStrandedBaseCounts(chunk, '+', true);
 						addHits(chrom, '+', hits.car(), hits.cdr());
 						hits = loadStrandedBaseCounts(chunk, '-', true);

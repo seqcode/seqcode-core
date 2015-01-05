@@ -16,10 +16,10 @@ import edu.psu.compbio.seqcode.deepseq.ReadHit;
  */
 public class BowtieFileHitLoader extends FileHitLoader {
 
-	public BowtieFileHitLoader(File f, boolean nonUnique, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs){
-		super(f, nonUnique, true, true, loadPairs);
-		if(!loadR1Reads || !loadR2Reads)
-			System.err.println("BowtieFileHitLoader: You asked to load only R1 or R2 reads, we do not load this information from Bowtie native format.");
+	public BowtieFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs){
+		super(f, nonUnique, true, false, loadPairs);
+		if(!loadT1Reads || loadT2Reads)
+			System.err.println("BowtieFileHitLoader: You asked to load only Type1 or Type2 reads, we do not load this information from Bowtie native format.");
 		if(loadPairs)
 			System.err.println("BowtieFileHitLoader: You asked to load pairs, but we do not load paired read data from Bowtie native format.");
 	}	

@@ -190,8 +190,8 @@ public class HitCache {
 	 * set up the primitive arrays for now. This is so that the total and unique
 	 * hit counts can be accurately calculated given the per base limits.   
 	 *  
-	 * @param loadR1 : boolean flag to load the left reads
-	 * @param loadR2 : boolean flag to load the right reads (if they exist)
+	 * @param loadType1 : boolean flag to load the left reads
+	 * @param loadType2 : boolean flag to load the right reads (if they exist)
 	 * @param loadPairs : boolean flag to load the read pairs (if they exist)
 	 * @param cacheEverything : boolean flag to cache all hits (if false, local file caching is activated)
 	 * @param initialCacheRegions : list of regions to cache first (can be null)

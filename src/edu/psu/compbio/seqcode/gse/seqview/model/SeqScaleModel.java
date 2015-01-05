@@ -46,8 +46,6 @@ public class SeqScaleModel extends SeqViewModel implements RegionModel, Listener
     }
     
     public Region getRegion() {return region;}
-    public boolean connectionOpen(){return true;}
-    public void reconnect(){}
     
     public double getMaxVal() {
         maxOverlap = 1;

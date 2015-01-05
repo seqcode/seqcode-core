@@ -16,10 +16,10 @@ import edu.psu.compbio.seqcode.deepseq.*;
  */
 public class BEDFileHitLoader extends FileHitLoader {
 
-	public BEDFileHitLoader(File f, boolean nonUnique, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs){
-		super(f, nonUnique, true, true, loadPairs);
-		if(!loadR1Reads || !loadR2Reads)
-			System.err.println("BEDFileHitLoader: You asked to load only R1 or R2 reads, but BED cannot represent different reads.");
+	public BEDFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs){
+		super(f, nonUnique, true, false, loadPairs);
+		if(!loadT1Reads || loadT2Reads)
+			System.err.println("BEDFileHitLoader: You asked to load only Type1 or Type2 reads, but BED cannot represent different reads.");
 		if(loadPairs)
 			System.err.println("BEDFileHitLoader: You asked to load pairs, but BED cannot represent paired read data.");
 	}

@@ -100,11 +100,9 @@ public class ExptConfig {
 				//////////////////////
 				//Which reads to load?
 				////////////////////////
-				loadType1Reads = Args.parseFlags(args).contains("loadt1reads");
-				loadType2Reads = Args.parseFlags(args).contains("loadt2reads");
 				loadPairs = Args.parseFlags(args).contains("loadpairs");
 				loadType1Reads = !Args.parseFlags(args).contains("not1reads");
-				loadType2Reads = !Args.parseFlags(args).contains("not2reads");
+				loadType2Reads = Args.parseFlags(args).contains("loadt2reads");
 				
 				////////////////////////
 				//Read limit parameters

@@ -158,7 +158,7 @@ public abstract class SeqViewProperties extends Model {
                     loadFromFile(name);
                 } else {
                     ClassLoader cl = ClassLoader.getSystemClassLoader();
-                    URL url = cl.getResource(defaultName());
+                    URL url = cl.getResource(defaultName()); 
                     if (url != null) {
                         loadFromStream(new InputStreamReader(url.openStream()));
                     }

@@ -136,9 +136,13 @@ public abstract class SeqPainter extends RegionPaintable  {
     		paintNonOverlapping(g, x1, y1, x2, y2);
     	}
         /* draw the track label */
-        if (getProperties().DrawTrackLabel) {
-            int width = x2 - x1;
-            int height = y2 - y1;
+        int width = x2 - x1;
+        int height = y2 - y1;
+    	if(model.isDataError()){
+    		g.setFont(attrib.getLargeLabelFont(width,height));
+			g.setColor(Color.RED);
+			g.drawString("ReadDB Data Error: " +getLabel(),x1 + g.getFont().getSize()*2,y1 + g.getFont().getSize()*2);
+		}else if (getProperties().DrawTrackLabel) {
             g.setFont(attrib.getLargeLabelFont(width,height));
             g.setColor(Color.BLACK);
             g.drawString(getLabel(),x1,y1 + g.getFont().getSize() * 2);
