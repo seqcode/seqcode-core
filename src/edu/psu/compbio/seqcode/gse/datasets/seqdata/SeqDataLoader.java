@@ -27,8 +27,8 @@ import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.projects.readdb.SingleHit;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 
 /**
  * @author tdanford
@@ -61,13 +61,11 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 			e.printStackTrace();
 		}
 	}
-
-	private MetadataLoader metaLoader;
-	private boolean closeMetaLoader;
-	private java.sql.Connection cxn=null;
 	private String myusername = "";
 	private SeqDataUser myUser=null;
     private Client client=null;
+    private MetadataLoader mloader=null;
+    private boolean closed=false;
     
     //Experiment descriptors
     private Collection<ExptType> exptTypes = null;
@@ -78,288 +76,343 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
     private Collection<ReadType> readTypes = null;
     private Collection<AlignType> alignTypes = null;
     private Collection<SeqDataUser> seqDataUsers=null;
-    public Collection<ExptType> getExptTypes() throws SQLException {if(exptTypes==null){exptTypes=getMetadataLoader().loadAllExptTypes();} return exptTypes;}
-    public Collection<Lab> getLabs() throws SQLException {if(labs==null){labs=getMetadataLoader().loadAllLabs();} return labs;}
-    public Collection<ExptTarget> getExptTargets() throws SQLException {if(exptTargets==null){exptTargets = getMetadataLoader().loadAllExptTargets();} return exptTargets;}
-    public Collection<ExptCondition> getExptConditions() throws SQLException {if(exptConditions==null){exptConditions = getMetadataLoader().loadAllExptConditions();} return exptConditions;} 
-    public Collection<CellLine> getCellLines() throws SQLException {if(celllines==null){celllines = getMetadataLoader().loadAllCellLines();} return celllines;}
-	public Collection<ReadType> getReadTypes() throws SQLException {if(readTypes==null){readTypes = getMetadataLoader().loadAllReadTypes();} return readTypes;}
-	public Collection<AlignType> getAlignTypes() throws SQLException {if(alignTypes==null){alignTypes = getMetadataLoader().loadAllAlignTypes();} return alignTypes;}
-	public SeqDataUser findSeqDataUser(String name) throws SQLException {return getMetadataLoader().findSeqDataUser(name);}
-	public Collection<SeqDataUser> getSeqDataUsers() throws SQLException {if(seqDataUsers==null){seqDataUsers = getMetadataLoader().loadAllSeqDataUsers();} return seqDataUsers;}
+    public Collection<ExptType> getExptTypes() throws SQLException {if(exptTypes==null){exptTypes=mloader.loadAllExptTypes();} return exptTypes;}
+    public Collection<Lab> getLabs() throws SQLException {if(labs==null){labs=mloader.loadAllLabs();} return labs;}
+    public Collection<ExptTarget> getExptTargets() throws SQLException {if(exptTargets==null){exptTargets = mloader.loadAllExptTargets();} return exptTargets;}
+    public Collection<ExptCondition> getExptConditions() throws SQLException {if(exptConditions==null){exptConditions = mloader.loadAllExptConditions();} return exptConditions;} 
+    public Collection<CellLine> getCellLines() throws SQLException {if(celllines==null){celllines = mloader.loadAllCellLines();} return celllines;}
+	public Collection<ReadType> getReadTypes() throws SQLException {if(readTypes==null){readTypes = mloader.loadAllReadTypes();} return readTypes;}
+	public Collection<AlignType> getAlignTypes() throws SQLException {if(alignTypes==null){alignTypes = mloader.loadAllAlignTypes();} return alignTypes;}
+	public SeqDataUser findSeqDataUser(String name) throws SQLException {return mloader.findSeqDataUser(name);}
+	public Collection<SeqDataUser> getSeqDataUsers() throws SQLException {if(seqDataUsers==null){seqDataUsers = mloader.loadAllSeqDataUsers();} return seqDataUsers;}
     public SeqDataUser getMyUser(){return myUser;}    
 	
     public SeqDataLoader() throws SQLException, IOException{this(true);}
 	public SeqDataLoader(boolean openClient) throws SQLException, IOException {
+		mloader = new MetadataLoader();
 		if(openClient){
 	        try {
 	            client = new Client();
+	            
 	        } catch (ClientException e) {
 	            throw new IllegalArgumentException(e);
 	        }
 		}
-	}
-    public java.sql.Connection getConnection() {
-        if (cxn == null) {
-            try {
-                cxn = DatabaseFactory.getConnection(role);
-                myusername = DatabaseFactory.getUsername(role);
-                myUser = findSeqDataUser(myusername);
-            } catch (SQLException e) {
-                throw new DatabaseException(e.toString(),e);
-            }
+		Connection cxn = null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+            myusername = DatabaseConnectionManager.getUsername(role);
+            myUser = findSeqDataUser(myusername);
+        } catch (SQLException e) {
+            throw new DatabaseException(e.toString(),e);
+        } finally {
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
         }
-        return cxn;
-    }
+		closed=false;
+	}
     public Client getClient(){return client;}
     
-	public MetadataLoader getMetadataLoader() {
-        if (metaLoader == null) {
-            try {
-                metaLoader = new MetadataLoader();
-                closeMetaLoader = true;                   
-            } catch (SQLException e) {
-                throw new DatabaseException(e.toString(),e);
-            }
-        }
-		return metaLoader;
-	}
-
-
 	public Collection<Genome> loadExperimentGenomes(SeqExpt expt) throws SQLException {
+		Connection cxn = null;
 		LinkedList<Genome> genomes = new LinkedList<Genome>();
-		String query = String.format("select genome from seqalignment where expt=%d", expt.getDBID());
-		Statement s = getConnection().createStatement();
-		ResultSet rs = s.executeQuery(query);
-		while (rs.next()) {
-			int gid = rs.getInt(1);
-			try {
-				Genome g = Organism.findGenome(gid);
-				genomes.add(g);
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+            String query = String.format("select genome from seqalignment where expt=%d", expt.getDBID());
+			Statement s = cxn.createStatement();
+			ResultSet rs = s.executeQuery(query);
+			while (rs.next()) {
+				int gid = rs.getInt(1);
+				try {
+					Genome g = Organism.findGenome(gid);
+					genomes.add(g);
+				}
+				catch (NotFoundException e) {
+					e.printStackTrace();
+				}
 			}
-			catch (NotFoundException e) {
-				e.printStackTrace();
-			}
+			rs.close();
+			s.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		rs.close();
-		s.close();
 		return genomes;
 	}
 
 
 	public Collection<SeqExpt> loadAllExperiments() throws SQLException {
-		labs=getMetadataLoader().loadAllLabs();
-		exptTypes=getMetadataLoader().loadAllExptTypes();
-		exptTargets = getMetadataLoader().loadAllExptTargets();
-		exptConditions = getMetadataLoader().loadAllExptConditions();
-        celllines = getMetadataLoader().loadAllCellLines();
-        readTypes = getMetadataLoader().loadAllReadTypes();
-        alignTypes = getMetadataLoader().loadAllAlignTypes();
-        seqDataUsers = getMetadataLoader().loadAllSeqDataUsers();
-        PreparedStatement ps = SeqExpt.createLoadAll(getConnection());
-        ps.setFetchSize(1000);
 		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
-		ResultSet rs = ps.executeQuery();
-		while (rs.next()) {
-			expts.addLast(new SeqExpt(rs, this));
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+	        labs=mloader.loadAllLabs();
+			exptTypes=mloader.loadAllExptTypes();
+			exptTargets = mloader.loadAllExptTargets();
+			exptConditions = mloader.loadAllExptConditions();
+	        celllines = mloader.loadAllCellLines();
+	        readTypes = mloader.loadAllReadTypes();
+	        alignTypes = mloader.loadAllAlignTypes();
+	        seqDataUsers = mloader.loadAllSeqDataUsers();
+	        PreparedStatement ps = SeqExpt.createLoadAll(cxn);
+	        ps.setFetchSize(1000);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				expts.addLast(new SeqExpt(rs, this));
+			}
+			Collections.sort(expts);
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		Collections.sort(expts);
-		rs.close();
-		ps.close();
-
 		return expts;
 	}
 
 
 	public SeqExpt findExperiment(String name, String rep) throws SQLException {
-		PreparedStatement ps = SeqExpt.createLoadByNameReplicate(getConnection());
-		ps.setString(1, name);
-		ps.setString(2, rep);
-		ResultSet rs = ps.executeQuery();
 		SeqExpt expt = null;
-		if (rs.next()) {
-			expt = new SeqExpt(rs, this);
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+		    PreparedStatement ps = SeqExpt.createLoadByNameReplicate(cxn);
+			ps.setString(1, name);
+			ps.setString(2, rep);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				expt = new SeqExpt(rs, this);
+			}
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		rs.close();
-		ps.close();
-
 		return expt;
 	}
 	
 	public SeqExpt loadExperiment(String name, String rep) throws NotFoundException, SQLException {
-		PreparedStatement ps = SeqExpt.createLoadByNameReplicate(getConnection());
-		ps.setString(1, name);
-		ps.setString(2, rep);
-		ResultSet rs = ps.executeQuery();
 		SeqExpt expt = null;
-		if (rs.next()) {
-			expt = new SeqExpt(rs, this);
-		}
-		rs.close();
-		ps.close();
-
-		if (expt == null) { throw new NotFoundException(name+";"+rep); }
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+			PreparedStatement ps = SeqExpt.createLoadByNameReplicate(cxn);
+			ps.setString(1, name);
+			ps.setString(2, rep);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				expt = new SeqExpt(rs, this);
+			}
+			rs.close();
+			ps.close();
+	
+			if (expt == null) { throw new NotFoundException(name+";"+rep); }
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
+		}	
 		return expt;
 	}
 
 
 	public Collection<SeqExpt> loadExperiments(String name) throws SQLException {
-		PreparedStatement ps = SeqExpt.createLoadByName(getConnection());
-		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
-		ps.setString(1, name);
-		ResultSet rs = ps.executeQuery();
 		SeqExpt expt = null;
-		while (rs.next()) {
-			expt = new SeqExpt(rs, this);
-			expts.add(expt);
+		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+			PreparedStatement ps = SeqExpt.createLoadByName(cxn);
+			ps.setString(1, name);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				expt = new SeqExpt(rs, this);
+				expts.add(expt);
+			}
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		rs.close();
-		ps.close();
-
 		return expts;
 	}
 	
 	public Collection<SeqExpt> loadExperiments(Lab lab) throws SQLException {
-		PreparedStatement ps = SeqExpt.createLoadByLab(getConnection());
 		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
-		ps.setInt(1, lab.getDBID());
-		ResultSet rs = ps.executeQuery();
-		SeqExpt expt = null;
-		while (rs.next()) {
-			expt = new SeqExpt(rs, this);
-			expts.add(expt);
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+            PreparedStatement ps = SeqExpt.createLoadByLab(cxn);
+			ps.setInt(1, lab.getDBID());
+			ResultSet rs = ps.executeQuery();
+			SeqExpt expt = null;
+			while (rs.next()) {
+				expt = new SeqExpt(rs, this);
+				expts.add(expt);
+			}
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		rs.close();
-		ps.close();
 		return expts;
 	}
 	
 	public Collection<SeqExpt> loadExperiments(ExptCondition cond) throws SQLException {
-		PreparedStatement ps = SeqExpt.createLoadByCondition(getConnection());
 		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
-		ps.setInt(1, cond.getDBID());
-		ResultSet rs = ps.executeQuery();
-		SeqExpt expt = null;
-		while (rs.next()) {
-			expt = new SeqExpt(rs, this);
-			expts.add(expt);
-		}
-		rs.close();
-		ps.close();
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+            PreparedStatement ps = SeqExpt.createLoadByCondition(cxn);
+			ps.setInt(1, cond.getDBID());
+			ResultSet rs = ps.executeQuery();
+			SeqExpt expt = null;
+			while (rs.next()) {
+				expt = new SeqExpt(rs, this);
+				expts.add(expt);
+			}
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
+		}	
 		return expts;
 	}
 	
 	public Collection<SeqExpt> loadExperiments(ExptTarget target) throws SQLException {
-		PreparedStatement ps = SeqExpt.createLoadByTarget(getConnection());
 		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
-		ps.setInt(1, target.getDBID());
-		ResultSet rs = ps.executeQuery();
-		SeqExpt expt = null;
-		while (rs.next()) {
-			expt = new SeqExpt(rs, this);
-			expts.add(expt);
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+	        PreparedStatement ps = SeqExpt.createLoadByTarget(cxn);
+			ps.setInt(1, target.getDBID());
+			ResultSet rs = ps.executeQuery();
+			SeqExpt expt = null;
+			while (rs.next()) {
+				expt = new SeqExpt(rs, this);
+				expts.add(expt);
+			}
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		rs.close();
-		ps.close();
 		return expts;
 	}
 
 	public Collection<SeqExpt> loadExperiments(CellLine cell) throws SQLException {
-		PreparedStatement ps = SeqExpt.createLoadByCellline(getConnection());
 		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
-		ps.setInt(1, cell.getDBID());
-		ResultSet rs = ps.executeQuery();
-		SeqExpt expt = null;
-		while (rs.next()) {
-			expt = new SeqExpt(rs, this);
-			expts.add(expt);
-		}
-		rs.close();
-		ps.close();
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+		    PreparedStatement ps = SeqExpt.createLoadByCellline(cxn);
+			ps.setInt(1, cell.getDBID());
+			ResultSet rs = ps.executeQuery();
+			SeqExpt expt = null;
+			while (rs.next()) {
+				expt = new SeqExpt(rs, this);
+				expts.add(expt);
+			}
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
+		}	
 		return expts;
 	}
 
 	public SeqExpt loadExperiment(int dbid) throws NotFoundException, SQLException {
-		PreparedStatement ps = SeqExpt.createLoadByDBID(getConnection());
-		ps.setInt(1, dbid);
-		ResultSet rs = ps.executeQuery();
 		SeqExpt expt = null;
-		if (rs.next()) {
-			expt = new SeqExpt(rs, this);
-		}
-		rs.close();
-		ps.close();
-
-		if (expt == null) {
-			String err = String.format("No such SeqExpt experiment with ID= %d", dbid);
-			throw new NotFoundException(err);
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+			PreparedStatement ps = SeqExpt.createLoadByDBID(cxn);
+			ps.setInt(1, dbid);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				expt = new SeqExpt(rs, this);
+			}
+			rs.close();
+			ps.close();
+	
+			if (expt == null) {
+				String err = String.format("No such SeqExpt experiment with ID= %d", dbid);
+				throw new NotFoundException(err);
+			}
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
 		return expt;
 	}
 
     public Collection<SeqAlignment> loadAlignments (Genome g) throws SQLException {
-        //long start = System.currentTimeMillis();
-
-        Collection<SeqExpt> allexpts = loadAllExperiments();
-        Map<Integer,SeqExpt> exptmap = new HashMap<Integer,SeqExpt>();
-        for (SeqExpt e : allexpts) {
-            exptmap.put(e.getDBID(), e);
-        }
-
-        //long expttime = System.currentTimeMillis();
-        //System.err.println("Got expts in " + (expttime - start) + "ms");
-
-		Collection<SeqAlignment> aligns = new LinkedList<SeqAlignment>();
-		PreparedStatement ps = SeqAlignment.createLoadAllByGenomeStatement(getConnection());
-        ps.setFetchSize(1000);
-		ps.setInt(1, g.getDBID());
-        ResultSet rs = ps.executeQuery();
-		while (rs.next()) {
-            SeqAlignment align = new SeqAlignment(rs, exptmap.get(rs.getInt(2)), getMetadataLoader().loadAlignType(rs.getInt(6)));
-            aligns.add(align);
+    	Collection<SeqAlignment> aligns = new LinkedList<SeqAlignment>();
+    	Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+	    	Collection<SeqExpt> allexpts = loadAllExperiments();
+	        Map<Integer,SeqExpt> exptmap = new HashMap<Integer,SeqExpt>();
+	        for (SeqExpt e : allexpts) {
+	            exptmap.put(e.getDBID(), e);
+	        }
+	
+			PreparedStatement ps = SeqAlignment.createLoadAllByGenomeStatement(cxn);
+	        ps.setFetchSize(1000);
+			ps.setInt(1, g.getDBID());
+	        ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+	            SeqAlignment align = new SeqAlignment(rs, exptmap.get(rs.getInt(2)), mloader.loadAlignType(rs.getInt(6)));
+	            System.out.println(align.getName());
+	            aligns.add(align);
+			}
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		rs.close();
-		ps.close();
-        
-        //long end = System.currentTimeMillis();
-        //System.err.println("Got all alignments in " + (end - start) + " ms");
 		return filterAlignmentsByPermission(aligns);
     }
 
 	public Collection<SeqAlignment> loadAllAlignments(SeqExpt expt) throws SQLException {
 		Collection<SeqAlignment> aligns = new LinkedList<SeqAlignment>();
-		PreparedStatement ps = SeqAlignment.createLoadAllByExptStatement(getConnection());
-		ps.setInt(1, expt.getDBID());
-
-		ResultSet rs = ps.executeQuery();
-		while (rs.next()) {
-			SeqAlignment align = new SeqAlignment(rs, expt, getMetadataLoader().loadAlignType(rs.getInt(6)));
-			aligns.add(align);
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+			PreparedStatement ps = SeqAlignment.createLoadAllByExptStatement(cxn);
+			ps.setInt(1, expt.getDBID());
+	
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				SeqAlignment align = new SeqAlignment(rs, expt, mloader.loadAlignType(rs.getInt(6)));
+				aligns.add(align);
+			}
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		rs.close();
-
-		ps.close();
 		return filterAlignmentsByPermission(aligns);
 	}
 	
 
 	public SeqAlignment loadAlignment(SeqExpt expt, String n, Genome g) throws SQLException {
 		SeqAlignment align = null;
-		PreparedStatement ps = SeqAlignment.createLoadByNameAndExptStatement(getConnection());
-		ps.setString(1, n);
-		ps.setInt(2, expt.getDBID());
-
-		ResultSet rs = ps.executeQuery();        
-		while (align == null && rs.next()) {
-			align = new SeqAlignment(rs, expt, getMetadataLoader().loadAlignType(rs.getInt(6)));
-            if (!align.getGenome().equals(g))
-                align = null;
-            if(align!=null && !align.getPermissions().contains("public") && !align.getPermissions().contains(myusername))
-				align=null;
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+			PreparedStatement ps = SeqAlignment.createLoadByNameAndExptStatement(cxn);
+			ps.setString(1, n);
+			ps.setInt(2, expt.getDBID());
+	
+			ResultSet rs = ps.executeQuery();        
+			while (align == null && rs.next()) {
+				align = new SeqAlignment(rs, expt, mloader.loadAlignType(rs.getInt(6)));
+	            if (!align.getGenome().equals(g))
+	                align = null;
+	            if(align!=null && !align.getPermissions().contains("public") && !align.getPermissions().contains(myusername))
+					align=null;
+			}
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		rs.close();
-		ps.close();
-        if (align == null) {
+		if (align == null) {
         	//Don't throw exception because sometimes we have replicates that don't match all alignment names
             //throw new NotFoundException("Couldn't find alignment " + n + " for " + expt + " in genome " + g);
         }
@@ -368,20 +421,26 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	}
 	public SeqAlignment loadAlignment(int dbid) throws NotFoundException, SQLException {
 		SeqAlignment align = null;
-		PreparedStatement ps = SeqAlignment.createLoadByIDStatement(getConnection());
-		ps.setInt(1, dbid);
-
-		ResultSet rs = ps.executeQuery();
-		if (rs.next()) {
-			align = new SeqAlignment(rs, this);
-			if(!align.getPermissions().contains("public") && !align.getPermissions().contains(myusername))
-				align=null;
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+			PreparedStatement ps = SeqAlignment.createLoadByIDStatement(cxn);
+			ps.setInt(1, dbid);
+	
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				align = new SeqAlignment(rs, this);
+				if(!align.getPermissions().contains("public") && !align.getPermissions().contains(myusername))
+					align=null;
+			}
+			else {
+				throw new NotFoundException("Couldn't find alignment with ID = " + dbid);
+			}
+			rs.close();
+			ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		else {
-			throw new NotFoundException("Couldn't find alignment with ID = " + dbid);
-		}
-		rs.close();
-		ps.close();
 		return align;
 	}
 
@@ -389,7 +448,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	public Collection<SeqAlignment> loadAlignments(SeqLocator locator, Genome genome) throws SQLException, NotFoundException {
 		List<SeqAlignment> output = new ArrayList<SeqAlignment>();
         if (locator.getReplicates().size() == 0) {
-            for (SeqExpt expt : loadExperiments(locator.getExptName())) {
+            for (SeqExpt expt : loadExperiments(locator.getExptName())) { 
                 SeqAlignment align = loadAlignment(expt, locator.getAlignName(), genome);
                 if (align != null) {
                     output.add(align);
@@ -416,46 +475,53 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
                                                        Integer exptType, Integer lab, Integer condition,
                                                        Integer target, Integer cells, Integer readType,
                                                        Genome genome) throws SQLException {
-        String query = "select id, expt, name, genome from seqalignment";
-        if (name != null || replicate != null || align != null || exptType!=null || lab!=null || condition!=null || target != null || cells != null || readType != null || genome != null) {
-            query += " where ";
-        }
-        boolean and = false;
-        if (name != null || replicate != null || exptType!=null || lab!=null || condition!=null || target != null || cells != null || readType != null) {
-            query += " expt in ( select id from seqexpt where ";
-            if (name != null) { query += " name = ? "; and = true;}
-            if (replicate != null) { query += (and ? " and " : " ") + " replicate = ? "; and = true;}
-            if (exptType != null) { query += (and ? " and " : " ") + " expttype = " + exptType; and = true;}
-            if (lab != null) { query += (and ? " and " : " ") + " lab = " + lab; and = true;}
-            if (condition != null) { query += (and ? " and " : " ") + " exptcondition = " + condition; and = true;}
-            if (target != null) { query += (and ? " and " : " ") + " expttarget = " + target; and = true;}
-            if (cells != null) { query += (and ? " and " : " ") + " cellline = " + cells; and = true;}
-            if (readType != null) { query += (and ? " and " : " ") + " readtype = " + readType; and = true;}
-            query += ")";
-            and = true;
-        }
-        if (genome != null) {query += (and ? " and " : " ") + " genome = " + genome.getDBID(); and = true; }
-        if (align != null) {query += (and ? " and " : " ") + " name = ? "; and = true; }
-
-        PreparedStatement ps = getConnection().prepareStatement(query);
-        int index = 1;
-        if (name != null || replicate != null) {
-            if (name != null) { ps.setString(index++,name);}
-            if (replicate != null) { ps.setString(index++,replicate);}
-        }
-        if (align != null) {ps.setString(index++,align);}
         
-        ResultSet rs = ps.executeQuery();
-        Collection<SeqAlignment> output = new ArrayList<SeqAlignment>();
-        while (rs.next()) {
-            try {
-                output.add(new SeqAlignment(rs,this));
-            } catch (NotFoundException e) {
-                throw new DatabaseException(e.toString(),e);
-            }
-        }
-        rs.close();
-        ps.close();
+		Collection<SeqAlignment> output = new ArrayList<SeqAlignment>();
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+			String query = "select id, expt, name, genome from seqalignment";
+	        if (name != null || replicate != null || align != null || exptType!=null || lab!=null || condition!=null || target != null || cells != null || readType != null || genome != null) {
+	            query += " where ";
+	        }
+	        boolean and = false;
+	        if (name != null || replicate != null || exptType!=null || lab!=null || condition!=null || target != null || cells != null || readType != null) {
+	            query += " expt in ( select id from seqexpt where ";
+	            if (name != null) { query += " name = ? "; and = true;}
+	            if (replicate != null) { query += (and ? " and " : " ") + " replicate = ? "; and = true;}
+	            if (exptType != null) { query += (and ? " and " : " ") + " expttype = " + exptType; and = true;}
+	            if (lab != null) { query += (and ? " and " : " ") + " lab = " + lab; and = true;}
+	            if (condition != null) { query += (and ? " and " : " ") + " exptcondition = " + condition; and = true;}
+	            if (target != null) { query += (and ? " and " : " ") + " expttarget = " + target; and = true;}
+	            if (cells != null) { query += (and ? " and " : " ") + " cellline = " + cells; and = true;}
+	            if (readType != null) { query += (and ? " and " : " ") + " readtype = " + readType; and = true;}
+	            query += ")";
+	            and = true;
+	        }
+	        if (genome != null) {query += (and ? " and " : " ") + " genome = " + genome.getDBID(); and = true; }
+	        if (align != null) {query += (and ? " and " : " ") + " name = ? "; and = true; }
+	
+	        PreparedStatement ps = cxn.prepareStatement(query);
+	        int index = 1;
+	        if (name != null || replicate != null) {
+	            if (name != null) { ps.setString(index++,name);}
+	            if (replicate != null) { ps.setString(index++,replicate);}
+	        }
+	        if (align != null) {ps.setString(index++,align);}
+	        
+	        ResultSet rs = ps.executeQuery();
+	        while (rs.next()) {
+	            try {
+	                output.add(new SeqAlignment(rs,this));
+	            } catch (NotFoundException e) {
+	                throw new DatabaseException(e.toString(),e);
+	            }
+	        }
+	        rs.close();
+	        ps.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
+		}
         return filterAlignmentsByPermission(output);
     }
 	
@@ -492,39 +558,50 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 
 	public void addAlignmentParameters(SeqAlignment align, Map<String, ? extends Object> params) throws SQLException {
-		PreparedStatement insert = getConnection().prepareStatement("insert into alignmentparameters(alignment,name,value) values(?,?,?)");
-		insert.setInt(1, align.getDBID());
-		for (String k : params.keySet()) {
-			insert.setString(2, k);
-			Object val = params.get(k);
-			if (val == null) {
-				val = "";
-			} else {
-				val = val.toString();
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+            PreparedStatement insert = cxn.prepareStatement("insert into alignmentparameters(alignment,name,value) values(?,?,?)");
+			insert.setInt(1, align.getDBID());
+			for (String k : params.keySet()) {
+				insert.setString(2, k);
+				Object val = params.get(k);
 				if (val == null) {
 					val = "";
+				} else {
+					val = val.toString();
+					if (val == null) {
+						val = "";
+					}
 				}
+	
+	
+				insert.setString(3, (String)val);
+				insert.execute();
 			}
-
-
-			insert.setString(3, (String)val);
-			insert.execute();
+			insert.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
-		insert.close();
 	}
 
 
 	public Map<String, String> getAlignmentParameters(SeqAlignment align) throws SQLException {
-		Statement get = getConnection().createStatement();
-		ResultSet rs = get.executeQuery("select name, value from alignmentparameters where alignment = " + align.getDBID());
 		Map<String, String> output = new HashMap<String, String>();
-		while (rs.next()) {
-			output.put(rs.getString(1), rs.getString(2));
-		}
-		rs.close();
-		get.close();
+		Connection cxn=null;
+		try {
+            cxn = DatabaseConnectionManager.getConnection(role);
+			Statement get = cxn.createStatement();
+			ResultSet rs = get.executeQuery("select name, value from alignmentparameters where alignment = " + align.getDBID());
+			while (rs.next()) {
+				output.put(rs.getString(1), rs.getString(2));
+			}
+			rs.close();
+			get.close();
+		} finally {
+			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
+		}		
 		return output;
-
 	}
 
 
@@ -916,23 +993,14 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
     }
     
 	public void close() {
-		if (closeMetaLoader && !metaLoader.isClosed()) {
-			metaLoader.close();
-            metaLoader = null;
-		}
         if (client != null) {
             client.close();
             client = null;
         }
-        if (cxn != null) {
-            DatabaseFactory.freeConnection(cxn);
-            cxn = null;
-        }
+        closed=true;
 	}
-
-
 	public boolean isClosed() {
-		return cxn == null;
+		return closed;
 	}
 
 }

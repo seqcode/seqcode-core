@@ -7,7 +7,6 @@ import java.sql.SQLException;
 
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.Organism;
-import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
@@ -69,7 +68,6 @@ public class SeqViewOptions {
     public boolean hash=true, seqletters=true, polya=false, gccontent=false, pyrpurcontent=false, cpg=false, regexmatcher=false;
     public ArrayList<String> genes, ncrnas, otherannots;
     public ArrayList<WeightMatrix> motifs;
-    public ArrayList<Experiment> exprExperiments;
     public ArrayList<SeqLocatorMatchedExpt> seqExpts;
     // filename to label mappings.  These are loaded from a file and the data held statically
     public HashMap<String,String> regionTracks, regexes;
@@ -157,7 +155,6 @@ public class SeqViewOptions {
         otherannots = new ArrayList<String>();
         seqExpts = new ArrayList<SeqLocatorMatchedExpt>();
         motifs = new ArrayList<WeightMatrix>();
-        exprExperiments = new ArrayList<Experiment>();
         regionTracks = new HashMap<String,String>();
         regexes = new HashMap<String,String>();
     }
@@ -187,7 +184,6 @@ public class SeqViewOptions {
         mergeInto(otherannots,union.otherannots);
         mergeInto(seqExpts,union.seqExpts);
         mergeInto(motifs,union.motifs);
-        mergeInto(exprExperiments,union.exprExperiments);
         mergeInto(regionTracks,union.regionTracks);
         mergeInto(regexes, union.regexes);
     }
@@ -237,7 +233,6 @@ public class SeqViewOptions {
         differenceOf(otherannots,other.otherannots);
         differenceOf(seqExpts,other.seqExpts);
         differenceOf(motifs,other.motifs);
-        differenceOf(exprExperiments, other.exprExperiments);
         differenceOf(regionTracks,other.regionTracks);
         differenceOf(regexes,other.regexes);
     }
@@ -272,7 +267,6 @@ public class SeqViewOptions {
         o.otherannots = (ArrayList<String>) otherannots.clone();
         o.seqExpts = (ArrayList<SeqLocatorMatchedExpt>)seqExpts.clone();
         o.motifs = (ArrayList<WeightMatrix>)motifs.clone();
-        o.exprExperiments = (ArrayList<Experiment>)exprExperiments.clone();
         o.regionTracks = (HashMap<String,String>)regionTracks.clone();
         o.regexes = (HashMap<String,String>)regexes.clone();
         return o;

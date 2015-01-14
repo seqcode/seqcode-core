@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.NamedTypedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 /* Generator that returns NamedTypedRegion objects from the specified table. 
    The table must have columns: chrom, chromStart, chromEnd, name, strand, and type.
@@ -52,7 +52,7 @@ public class NamedTypedGenerator<X extends Region> implements Expander<X,NamedTy
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            cxn.close();
             return results.iterator();
         } catch (SQLException ex) {
             throw new DatabaseException("Couldn't get UCSC RefGenes",ex);

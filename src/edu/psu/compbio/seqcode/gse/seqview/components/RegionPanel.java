@@ -5,7 +5,6 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
-import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -18,14 +17,10 @@ import edu.psu.compbio.seqcode.genome.location.NamedTypedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.ScoredRegion;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
-import edu.psu.compbio.seqcode.gse.datasets.expression.ExpressionLoader;
-import edu.psu.compbio.seqcode.gse.datasets.expression.ProbePlatform;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.gsebricks.*;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
-import edu.psu.compbio.seqcode.gse.gsebricks.verbs.expression.LocatedExprMeasurementExpander;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.PerBaseMotifMatch;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
@@ -34,8 +29,6 @@ import edu.psu.compbio.seqcode.gse.seqview.model.*;
 import edu.psu.compbio.seqcode.gse.seqview.paintable.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
-import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.utils.models.Model;
 
 /* this is all for saveImage() */
@@ -485,39 +478,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				e.printStackTrace();
 			}
 		}*/
-
-		
-		if (opts.exprExperiments.size() > 0) {
-			try {
-
-				for(int i = 0; i < opts.exprExperiments.size(); i++) {
-					ExpressionLoader loader = new ExpressionLoader();
-					Experiment expt = opts.exprExperiments.get(i);
-					ProbePlatform plat = expt.getPlatform();
-					LocatedExprMeasurementExpander exp = 
-							new LocatedExprMeasurementExpander(loader, expt.getName(), plat.getName());
-
-					ExpressionProbeModel model = new ExpressionProbeModel(exp);
-					addModel(model);
-
-					ExpressionMeasurementPainter p = new ExpressionMeasurementPainter(model);
-					p.setLabel("Expression");
-					p.setOption(SeqViewOptions.EXPRESSION,expt);
-
-					p.addEventListener(this);
-					addPainter(p);
-					addModelToPaintable(p, model);
-
-					Thread t = new Thread(model);
-					t.start();                    
-				}
-
-			} catch (SQLException e) {
-				e.printStackTrace();
-			} catch (UnknownRoleException e) {
-				e.printStackTrace();
-			}
-		}
 
 		RegionExpanderFactoryLoader<Gene> gfLoader;
 		RegionExpanderFactoryLoader<NamedTypedRegion> annotLoader;
@@ -1576,18 +1536,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			   }
     	   }
 		   repaint(); 
-       }
- 
-       
-       public void reconnectModels(){
-    	   DatabaseFactory.reestablishConnections();
-    	   try {
-    		   genome.renewCoreConnection();
-    	   } catch (UnknownRoleException e) {
-    		   e.printStackTrace();
-    	   } catch (SQLException e) {
-    		   e.printStackTrace();
-    	   }
        }
        
        public void mouseClicked(MouseEvent e) {

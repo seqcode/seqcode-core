@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.RepeatMaskedRegion;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 /**
  * Maps a Region to RepeatMaskedRegions from a UCSC annotations table.
@@ -69,7 +69,7 @@ public class RepeatMaskedGenerator<X extends Region> implements Expander<X,Repea
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            cxn.close();
             return results.iterator();
         } catch (SQLException ex) {
             if (!onetable) {

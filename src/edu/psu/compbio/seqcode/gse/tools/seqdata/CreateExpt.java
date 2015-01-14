@@ -8,7 +8,8 @@ import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 /** 
  * Creates an experiment (if necessary) in the database and prints the DBID on stdout.  
@@ -42,7 +43,7 @@ public class CreateExpt {
     				"\t--exptnote <notes about expt>\n");
     	}else{
 
-	    	java.sql.Connection cxn = DatabaseFactory.getConnection("seqdata");
+	    	java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
 	        cxn.setAutoCommit(false);
 	        Genome genome = Args.parseGenome(args).cdr();
 	        String alignname = Args.parseString(args,"align",null);
@@ -147,15 +148,12 @@ public class CreateExpt {
 	        	}
 	        }
 	        
-	        
-	        core.close();
 	        loader.close();
 	        if (expt == null) {
 	            cxn.rollback();
 	            throw new DatabaseException("Couldn't create/update seqexpt " + alignpieces[2] + " for " + alignpieces[0]);
 	        }
 	        System.out.println(expt.getDBID());
-	        genome.close();
 	        cxn.commit();
 	        cxn.close();
     	}        

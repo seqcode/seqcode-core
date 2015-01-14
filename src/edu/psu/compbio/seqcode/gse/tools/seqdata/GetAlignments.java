@@ -9,7 +9,7 @@ import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 
 /**
  * Returns the ids of the alignments specified on the command line.
@@ -29,7 +29,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.*;
 public class GetAlignments {
     public static void main(String args[]) throws SQLException, NotFoundException, IOException {
         
-        java.sql.Connection cxn = DatabaseFactory.getConnection("seqdata");
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
         cxn.setAutoCommit(false);
         Genome genome = Args.parseGenome(args).cdr();
         Collection<String> alignnames = Args.parseStrings(args,"align");
@@ -75,8 +75,6 @@ public class GetAlignments {
         }
         
         loader.close();
-        core.close();
-        genome.close();
         cxn.close();
     }
 }

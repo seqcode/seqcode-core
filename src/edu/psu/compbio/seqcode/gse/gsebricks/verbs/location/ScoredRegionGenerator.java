@@ -8,7 +8,7 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.ScoredRegion;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 /**
  * ScoreDRegionGenerator parses rows from MySQL UCSC style annotation tables
@@ -66,7 +66,7 @@ public class ScoredRegionGenerator<X extends Region> implements Expander<X,Score
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            cxn.close();
             return results.iterator();
         } catch (SQLException ex) {
             if (useBins) {

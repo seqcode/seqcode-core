@@ -200,7 +200,6 @@ public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			seqModifier.close();
 		}
         if (seqLoader != null) {
             seqLoader.close();

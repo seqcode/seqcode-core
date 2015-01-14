@@ -2,10 +2,9 @@ package edu.psu.compbio.seqcode.genome;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.gse.datasets.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.Sequence;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 
@@ -29,9 +28,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
      */
     public Organism(String species) throws NotFoundException {
         this.species = species;
-        java.sql.Connection cxn = null;
+        Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select id from species where name = '" + species + "'");
             
@@ -40,9 +39,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
                 rs.close();
                 stmt.close();
             } else {
-                DatabaseFactory.freeConnection(cxn);
                 rs.close();
                 stmt.close();
+                cxn.close();
                 throw new NotFoundException("Couldn't find " + species);
             } 
 
@@ -53,9 +52,7 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             ex.printStackTrace();
             throw new DatabaseException("Couldn't connect with role core", ex);
         } finally {
-            if (cxn != null) {
-                DatabaseFactory.freeConnection(cxn);
-            }
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
         if (genomes == null) {
             genomes = new HashMap<String, Genome>();
@@ -73,7 +70,7 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         dbid = speciesID;
         java.sql.Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select name from species where id=" + dbid);
             if (rs.next()) {
@@ -83,7 +80,7 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             } else {
                 rs.close();
                 stmt.close();
-                DatabaseFactory.freeConnection(cxn);
+                cxn.close();
                 throw new NotFoundException("Couldn't find " + dbid);
             }
         } catch (SQLException ex) {
@@ -91,9 +88,7 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         } catch (UnknownRoleException ex) {
             throw new DatabaseException("Couldn't connect with role core", ex);
         } finally {
-            if (cxn != null) {
-                DatabaseFactory.freeConnection(cxn);
-            }
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
         if (genomes == null) {
             genomes = new HashMap<String, Genome>();
@@ -139,9 +134,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
      * @throws SQLException
      */
     public void insertGenome(String version) throws SQLException {
-        java.sql.Connection cxn = null;
+        Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement s = cxn.createStatement();
             String nextIdString = Sequence.getInsertSQL(cxn, "genome_id");
             String insertSQL = String.format("insert into genome(id, species, version) values (%s, %d, '%s')", nextIdString,
@@ -152,9 +147,7 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         } catch (SQLException se) {
             throw se;
         } finally {
-            if (cxn != null) {
-                DatabaseFactory.freeConnection(cxn);
-            }
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
     }
 
@@ -183,9 +176,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
      */
     public Collection<String> getGenomeNames() {
         LinkedList<String> lst = new LinkedList<String>();
-        java.sql.Connection cxn = null;
+        Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select version from genome where species=" + dbid + " order by id");
             while (rs.next()) {
@@ -197,8 +190,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             throw new DatabaseException("Couldn't connect with role core", ex);
         } catch (SQLException se) {
             se.printStackTrace(System.err);
+        }finally{
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
-        DatabaseFactory.freeConnection(cxn);
         return lst;
     }
 
@@ -208,9 +202,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
      */
     public Collection<Integer> getGenomeIDs() {
         LinkedList<Integer> lst = new LinkedList<Integer>();
-        java.sql.Connection cxn = null;
+        Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select id from genome where species=" + dbid);
             while (rs.next()) {
@@ -222,8 +216,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             throw new DatabaseException("Couldn't connect with role core", ex);
         } catch (SQLException se) {
             se.printStackTrace(System.err);
+        }finally{
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
-        DatabaseFactory.freeConnection(cxn);
         return lst;
     }
 
@@ -242,8 +237,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         if (staticGenomes.containsKey(genomeName)) {
             return staticGenomes.get(genomeName);
         }
+        Connection cxn=null;
         try {
-            java.sql.Connection cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement s = cxn.createStatement();
             ResultSet rs = s.executeQuery("select species from genome where version='" + genomeName + "'");
             Genome g = null;
@@ -260,7 +256,6 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
 
             rs.close();
             s.close();
-            DatabaseFactory.freeConnection(cxn);
 
             if (g == null) {
                 throw new NotFoundException("Couldn't find genome: " + genomeName);
@@ -272,6 +267,8 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             throw new DatabaseException("SQLException: " + se.getMessage(), se);
         } catch (UnknownRoleException ex) {
             throw new DatabaseException("Couldn't connect with role core", ex);
+        } finally {
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
     }
 
@@ -286,8 +283,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             return genomeids.get(gid);
         }
 
+        Connection cxn=null;
         try {
-            java.sql.Connection cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement s = cxn.createStatement();
             ResultSet rs = s.executeQuery("select version, species from genome where id=" + gid);
             Genome g = null;
@@ -305,7 +303,6 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
 
             rs.close();
             s.close();
-            DatabaseFactory.freeConnection(cxn);
 
             if (g == null) {
                 throw new NotFoundException("Couldn't find genome: " + gid);
@@ -317,6 +314,8 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             throw new DatabaseException("SQLException: " + se.getMessage(), se);
         } catch (UnknownRoleException ex) {
             throw new DatabaseException("Couldn't connect with role core", ex);
+        } finally {
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
     }
 
@@ -362,7 +361,7 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     public static void insertOrganism(String species) throws SQLException {
         java.sql.Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement s = cxn.createStatement();
             String nextIdString = Sequence.getInsertSQL(cxn, "species_id");
             String sql = String.format("insert into species values (%s, '%s')", nextIdString, species);
@@ -373,9 +372,7 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         } catch (SQLException se) {
             throw se;
         } finally {
-            if (cxn != null) {
-                DatabaseFactory.freeConnection(cxn);
-            }
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
     }
 
@@ -385,9 +382,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
      */
     public static Collection<String> getOrganismNames() {
         LinkedList<String> lst = new LinkedList<String>();
-        java.sql.Connection cxn = null;
+        Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select name from species");
             while (rs.next()) {
@@ -400,9 +397,7 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         } catch (SQLException se) {
             se.printStackTrace(System.err);
         } finally {
-            if (cxn != null) {
-                DatabaseFactory.freeConnection(cxn);
-            }
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
         return lst;
     }
@@ -414,9 +409,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
      * @throws NotFoundException
      */
     public static int speciesID(String species) throws NotFoundException {
-        java.sql.Connection cxn = null;
+        Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select id from species where name ='" + species + "'");
             if (rs.next()) {
@@ -430,9 +425,7 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         } catch (UnknownRoleException ex) {
             throw new DatabaseException("Couldn't connect with role core", ex);
         } finally {
-            if (cxn != null) {
-                DatabaseFactory.freeConnection(cxn);
-            }
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
     }
 
@@ -455,9 +448,9 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
      * @throws NotFoundException
      */
     public static int genomeID(int species, String version) throws NotFoundException {
-        java.sql.Connection cxn = null;
+        Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select id from genome where species = " + species + " and version = '"
                                              + version + "'");
@@ -471,9 +464,7 @@ public class Organism implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         } catch (UnknownRoleException ex) {
             throw new DatabaseException("Couldn't connect with role core", ex);
         } finally {
-            if (cxn != null) {
-                DatabaseFactory.freeConnection(cxn);
-            }
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
     }
 }

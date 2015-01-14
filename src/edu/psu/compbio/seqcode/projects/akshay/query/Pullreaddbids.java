@@ -5,22 +5,23 @@ import java.sql.*;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 
 public class Pullreaddbids extends Pullexpttable {
 	public Genome genome;
 	public String queryalign = "select id from seqalignment where expt=?";
 	public AlignType aligntype=null;
-	public PreparedStatement psalign=null;
-	public ResultSet rsalign=null;
 	/*
 	 * extends to the seqalignmetn SQL table from the seqexpt SQL table
 	 * genome and alignmentype are the extra options
 	 */
 	public Pullreaddbids(String[] command) throws SQLException,NotFoundException{
 		super(command);
+		MetadataLoader core = new MetadataLoader();
 		try{
+			
 			for(int i=0; i < command.length-1; i++){
 				if(command[i].matches("^--.*$") && (command[i].substring(2).matches("genome"))){
 				 genome = new Genome(species.getName(),command[i+1]);
@@ -37,10 +38,15 @@ public class Pullreaddbids extends Pullexpttable {
 	}
 	/*
 	 * Prepares and executes the SQL command and populates the resultset
+	 * 
+	 * Akshay: this doesn't really make sense - this method isn't called by anything. -Shaun 
 	 */
-	
-	public void executeSQLAlignCommand() throws SQLException, NotFoundException{
+	public void executeSQLAlignCommand(ResultSet rsexpt) throws SQLException, NotFoundException{
+		PreparedStatement psalign=null;
+		ResultSet rsalign=null;
+		Connection cxn = null;
 		try{
+			cxn = DatabaseConnectionManager.getConnection(role);
 			while(rsexpt.next()){
 				boolean and = true;
 				if (genome != null){queryalign += (and ? " and ": " ")+"genome = ?"; and=true;  }
@@ -51,17 +57,18 @@ public class Pullreaddbids extends Pullexpttable {
 				if (genome != null){ psalign.setInt(count, genome.getDBID()); count += 1;}
 				if (aligntype != null){ psalign.setInt(count, aligntype.getDBID() ); count += 1;}
 				rsalign = psalign.executeQuery();
-				getTableFromRS();
-				psalign=null;
-				rsalign=null;
+				getTableFromRS(rsalign);
+				psalign.close();
+				rsalign.close();
 				queryalign="select id from seqalignment where expt=?";
-				
 			}
 		}
 		catch (NullPointerException e){
 			e.printStackTrace();
 			throw new NullPointerException("populate the rsexpt by running the executeSQLExptCommand or there are no entries in the " +
 					"database for the given input parameters ");
+		} finally {
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
 		}
 		
 	}
@@ -70,7 +77,7 @@ public class Pullreaddbids extends Pullexpttable {
 	 * iterates over the resultser and generates a table from it
 	 */
 	
-	public void getTableFromRS() throws SQLException, NotFoundException{
+	private void getTableFromRS(ResultSet rsalign) throws SQLException, NotFoundException{
 		while(rsalign.next()){
 			table.add(rsalign.getString("id"));
 		}
@@ -91,24 +98,6 @@ public class Pullreaddbids extends Pullexpttable {
 			
 		}
 		
-	}
-	
-	/*
-	 * Checks if all the connections to the database are closed
-	 */
-	
-	public void closeConnection() throws SQLException{
-		core.close();
-		if (cxn != null){
-			DatabaseFactory.freeConnection(cxn);
-	        cxn = null;
-		}
-	if (psexpt != null){psexpt.close();}
-	if (rsexpt != null){rsexpt.close();}
-	if (psalign != null){psalign.close();}
-	if (rsalign != null){rsalign.close();}
-	
-	
 	}
 
 }

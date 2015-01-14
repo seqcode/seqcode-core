@@ -16,8 +16,8 @@ import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 
 /**
  * Update existing SeqExpt & SeqAlignment descriptions from a file. 
@@ -75,7 +75,7 @@ public class UpdateAlignmentsFromFile {
     				"\t--list <deepseq.list format file>\n");
     		System.exit(1);
     	}
-        java.sql.Connection cxn = DatabaseFactory.getConnection("seqdata");
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
         cxn.setAutoCommit(false);
         
         SeqDataLoader loader = new SeqDataLoader();
@@ -218,7 +218,6 @@ public class UpdateAlignmentsFromFile {
 			}
 		}
 		loader.close();
-        core.close();
 		reader.close();
 		cxn.close();
     }

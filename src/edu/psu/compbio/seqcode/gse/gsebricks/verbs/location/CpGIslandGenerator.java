@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.CpGIsland;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 public class CpGIslandGenerator<X extends Region> implements Expander<X,CpGIsland> {
 
@@ -49,7 +49,7 @@ public class CpGIslandGenerator<X extends Region> implements Expander<X,CpGIslan
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            cxn.close();
             return results.iterator();
         } catch (SQLException ex) {
             throw new DatabaseException("Couldn't get UCSC CpG islands",ex);

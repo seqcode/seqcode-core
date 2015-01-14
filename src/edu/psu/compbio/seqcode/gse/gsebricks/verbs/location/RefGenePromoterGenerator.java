@@ -6,7 +6,6 @@ import java.sql.*;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.Region;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
 
 /**
  * Generator that returns Gene objects from the refGene table (or
@@ -64,7 +63,7 @@ public class RefGenePromoterGenerator extends RefGeneGenerator {
             ps.setInt(9,region.getEnd());
 
             Iterator<Gene> results = parseResults(ps);            
-            DatabaseFactory.freeConnection(cxn);
+            cxn.close();
             return results;
         } catch (SQLException ex) {
             ex.printStackTrace();

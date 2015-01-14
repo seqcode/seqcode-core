@@ -178,14 +178,6 @@ public class SeqView extends JFrame {
         	}
         });
         filemenu.addSeparator();
-        filemenu.add((item = new JMenuItem("Reconnect To Database")));
-        item.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		if(thisviewer.getRegionPanel()!=null && !thisviewer.getRegionPanel().isClosed())
-        			thisviewer.getRegionPanel().reconnectModels();
-        	}
-        });
-        filemenu.addSeparator();
         filemenu.add((item = new JMenuItem("Exit")));
         item.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) { 

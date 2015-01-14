@@ -18,8 +18,8 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 
 /**
@@ -125,11 +125,11 @@ public class BackgroundModelLoader {
   public static Integer getBackgroundModelID(String name, int kmerLen, String modelType) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getBackgroundModelID(name, kmerLen, modelType, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -180,11 +180,11 @@ public class BackgroundModelLoader {
   public static Integer getBackgroundGenomeMapID(int bgModelID, int genomeID) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getBackgroundGenomeMapID(bgModelID, genomeID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -235,11 +235,11 @@ public class BackgroundModelLoader {
   public static BackgroundModelMetadata getBackgroundModelByModelID(int modelID) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getBackgroundModelByModelID(modelID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -283,11 +283,11 @@ public class BackgroundModelLoader {
   public static BackgroundModelMetadata getBackgroundModel(int modelID, int genomeID) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getBackgroundModel(modelID, genomeID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -339,11 +339,11 @@ public class BackgroundModelLoader {
   public static BackgroundModelMetadata getBackgroundModel(String name, int maxKmerLen, String modelType, int genomeID) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getBackgroundModel(name, maxKmerLen, modelType, genomeID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -401,11 +401,11 @@ public class BackgroundModelLoader {
   public static BackgroundModelMetadata getBackgroundModelByMapID(int mapID) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getBackgroundModelByMapID(mapID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -462,11 +462,11 @@ public class BackgroundModelLoader {
   public static List<BackgroundModelMetadata> getAllBackgroundModels(boolean ignoreGenome) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getAllBackgroundModels(ignoreGenome, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -535,11 +535,11 @@ public class BackgroundModelLoader {
   public static List<BackgroundModelMetadata> getBackgroundModelsForGenome(int genomeID) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getBackgroundModelsForGenome(genomeID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -589,11 +589,11 @@ public class BackgroundModelLoader {
   public static List<Integer> getGenomesForBackgroundModel(int modelID) throws SQLException{
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getGenomesForBackgroundModel(modelID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -786,11 +786,11 @@ public class BackgroundModelLoader {
   public static FrequencyBackgroundModel getFrequencyModel(BackgroundModelMetadata md) throws SQLException, NotFoundException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getFrequencyModel(md, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -857,11 +857,11 @@ public class BackgroundModelLoader {
   public static FrequencyBackgroundModel getFrequencyModel(int mapID) throws SQLException, NotFoundException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getFrequencyModel(mapID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -942,11 +942,11 @@ public class BackgroundModelLoader {
   private static List<FrequencyBackgroundModel> getFrequencyModels(Integer mapID, Integer genomeID, Integer modelID, String name, Integer maxKmerLen) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getFrequencyModels(mapID, genomeID, modelID, name, maxKmerLen, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
 
@@ -1037,11 +1037,11 @@ public class BackgroundModelLoader {
   public static List<FrequencyBackgroundModel> getFrequencyModels(BackgroundModelMetadata md) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getFrequencyModels(md, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
 
@@ -1227,11 +1227,11 @@ public class BackgroundModelLoader {
   public static MarkovBackgroundModel getMarkovModel(BackgroundModelMetadata md) throws SQLException, NotFoundException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getMarkovModel(md, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -1294,11 +1294,11 @@ public class BackgroundModelLoader {
   public static MarkovBackgroundModel getMarkovModel(int mapID) throws SQLException, NotFoundException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getMarkovModel(mapID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -1377,11 +1377,11 @@ public class BackgroundModelLoader {
   private static List<MarkovBackgroundModel> getMarkovModels(Integer mapID, Integer genomeID, Integer modelID, String name, Integer maxKmerLen) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getMarkovModels(mapID, genomeID, modelID, name, maxKmerLen, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
 
@@ -1472,11 +1472,11 @@ public class BackgroundModelLoader {
   public static List<MarkovBackgroundModel> getMarkovModels(BackgroundModelMetadata md) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getMarkovModels(md, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
 
@@ -1600,11 +1600,11 @@ public class BackgroundModelLoader {
   public static boolean hasCounts(int mapID) throws SQLException{
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.hasCounts(mapID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -1696,11 +1696,11 @@ public class BackgroundModelLoader {
   public static CountsBackgroundModel getCountsModel(BackgroundModelMetadata md) throws SQLException, NotFoundException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getCountsModel(md, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -1757,11 +1757,11 @@ public class BackgroundModelLoader {
   public static CountsBackgroundModel getCountsModel(int mapID) throws SQLException, NotFoundException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getCountsModel(mapID, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -1841,11 +1841,11 @@ public class BackgroundModelLoader {
   private static List<CountsBackgroundModel> getCountsModels(Integer mapID, Integer genomeID, Integer modelID, String name, Integer maxKmerLen) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getCountsModels(mapID, genomeID, modelID, name, maxKmerLen, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
 
@@ -1936,11 +1936,11 @@ public class BackgroundModelLoader {
   public static List<CountsBackgroundModel> getCountsModels(BackgroundModelMetadata md) throws SQLException {
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       return BackgroundModelLoader.getCountsModels(md, cxn);
     }
     finally {
-      DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
 
@@ -2072,7 +2072,7 @@ public class BackgroundModelLoader {
     }
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       cxn.setAutoCommit(false);
 
       //insert into the background model and background
@@ -2104,9 +2104,7 @@ public class BackgroundModelLoader {
       throw cgsex;
     }
     finally {
-      if (cxn != null) {
-        DatabaseFactory.freeConnection(cxn);
-      }
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
 
@@ -2124,7 +2122,7 @@ public class BackgroundModelLoader {
     }
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       cxn.setAutoCommit(false);
 
       //insert into the background model and background
@@ -2149,9 +2147,7 @@ public class BackgroundModelLoader {
       throw ex;
     }
     finally {
-      if (cxn != null) {
-        DatabaseFactory.freeConnection(cxn);
-      }
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -2171,7 +2167,7 @@ public class BackgroundModelLoader {
     }
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       cxn.setAutoCommit(false);
 
       String modelType;
@@ -2205,9 +2201,7 @@ public class BackgroundModelLoader {
       throw ex;
     }
     finally {
-      if (cxn != null) {
-        DatabaseFactory.freeConnection(cxn);
-      }
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
   
@@ -2225,7 +2219,7 @@ public class BackgroundModelLoader {
     
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       cxn.setAutoCommit(false);
 
       int mapID = model.getMapID();
@@ -2245,9 +2239,7 @@ public class BackgroundModelLoader {
       throw ex;
     }
     finally {
-      if (cxn != null) {
-        DatabaseFactory.freeConnection(cxn);
-      }
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
 
@@ -2265,7 +2257,7 @@ public class BackgroundModelLoader {
     
     java.sql.Connection cxn = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       cxn.setAutoCommit(false);
 
       int mapID = model.getMapID();
@@ -2285,9 +2277,7 @@ public class BackgroundModelLoader {
       throw ex;
     }
     finally {
-      if (cxn != null) {
-        DatabaseFactory.freeConnection(cxn);
-      }
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
 
@@ -2307,7 +2297,7 @@ public class BackgroundModelLoader {
     PreparedStatement getModelType = null;
     ResultSet rs = null;
     try {
-      cxn = DatabaseFactory.getConnection("annotations");
+      cxn = DatabaseConnectionManager.getConnection("annotations");
       cxn.setAutoCommit(false);      
       
       int mapID = model.getMapID();
@@ -2348,9 +2338,7 @@ public class BackgroundModelLoader {
     	if (getModelType != null) {
     		getModelType.close();
     	}
-      if (cxn != null) {
-        DatabaseFactory.freeConnection(cxn);
-      }
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     }
   }
 

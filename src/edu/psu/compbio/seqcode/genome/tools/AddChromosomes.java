@@ -5,12 +5,12 @@ import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
+import edu.psu.compbio.seqcode.gse.utils.database.ClobHandler;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.Sequence;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.FASTAStream;
 
 import java.sql.*;
-import java.util.Properties;
 import java.io.*;
 
 /**
@@ -59,7 +59,7 @@ public class AddChromosomes {
         } else {
             reader = new BufferedReader(new FileReader(new File(fastaname)));
         }
-        java.sql.Connection cxn = DatabaseFactory.getConnection("core");        
+        Connection cxn = DatabaseConnectionManager.getConnection("core");        
 
         boolean ac = cxn.getAutoCommit();
         cxn.setAutoCommit(false);
@@ -148,6 +148,12 @@ public class AddChromosomes {
 
         cxn.commit();
         cxn.setAutoCommit(ac);
+        insertChrom.close();
+        getChromID.close();
+        insertEmptySequence.close();
+        appendSequence.close();
+        updateLength.close();
+        cxn.close();
     }
 
     public static void bulk_load(String args[]) throws IOException, NotFoundException, SQLException {
@@ -160,7 +166,7 @@ public class AddChromosomes {
         } else {
             fasta = new FASTAStream(new File(fastaname));
         }
-        java.sql.Connection cxn = DatabaseFactory.getConnection("core");        
+        Connection cxn = DatabaseConnectionManager.getConnection("core");       
 
         boolean ac = cxn.getAutoCommit();
         cxn.setAutoCommit(false);
@@ -190,11 +196,16 @@ public class AddChromosomes {
             rs.close();
             insertSequence.setInt(1,id);
             insertSequence.setInt(2,seq.length());
-            edu.psu.compbio.seqcode.gse.utils.database.ClobHandler.setClob(cxn, insertSequence, 3, seq);
+            ClobHandler.setClob(cxn, insertSequence, 3, seq);
             insertSequence.execute();
         }                
         cxn.commit();
         cxn.setAutoCommit(ac);
+        insertChrom.close();
+        getChromID.close();
+        insertSequence.close();
+        getSequence.close();
+        cxn.close();
     }
 
 }

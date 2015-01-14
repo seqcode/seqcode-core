@@ -5,7 +5,9 @@ import java.util.*;
 
 import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
+import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 
 public class WeightMatrixLoader implements edu.psu.compbio.seqcode.gse.utils.Closeable {
 
@@ -14,7 +16,7 @@ public class WeightMatrixLoader implements edu.psu.compbio.seqcode.gse.utils.Clo
     private Collection<String> queryWMTable(String field) {
         try {
             java.sql.Connection cxn = 
-                DatabaseFactory.getConnection("annotations");
+                DatabaseConnectionManager.getConnection("annotations");
             PreparedStatement ps = cxn.prepareStatement("select unique(" + field + ") from weightmatrix order by " + field);
             ResultSet rs = ps.executeQuery();
             ArrayList<String> out = new ArrayList<String>();
@@ -27,7 +29,7 @@ public class WeightMatrixLoader implements edu.psu.compbio.seqcode.gse.utils.Clo
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
             return out;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -54,7 +56,7 @@ public class WeightMatrixLoader implements edu.psu.compbio.seqcode.gse.utils.Clo
         WeightMatrix wm = null;
         try {            
             java.sql.Connection cxn = 
-                DatabaseFactory.getConnection("annotations");
+                DatabaseConnectionManager.getConnection("annotations");
             String query = "select wm.id from weightmatrix wm where wm.species = ? and " +
                     " wm.name = ? and wm.version = ?";
             PreparedStatement ps = cxn.prepareStatement(query);
@@ -67,7 +69,7 @@ public class WeightMatrixLoader implements edu.psu.compbio.seqcode.gse.utils.Clo
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);            
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
             if (wm != null) {
                 return wm;
             } else {
@@ -93,7 +95,7 @@ public class WeightMatrixLoader implements edu.psu.compbio.seqcode.gse.utils.Clo
             " weightmatrixcols c where m.id = c.weightmatrix and m.species = ? order by c.weightmatrix, c.position desc";
 
         java.sql.Connection cxn = 
-            DatabaseFactory.getConnection("annotations");
+            DatabaseConnectionManager.getConnection("annotations");
     	PreparedStatement wmStatement = cxn.prepareStatement(query);
     	
     	wmStatement.setInt(1, speciesID);
@@ -101,7 +103,7 @@ public class WeightMatrixLoader implements edu.psu.compbio.seqcode.gse.utils.Clo
         Collection<WeightMatrix> matrices = WeightMatrix.getWeightMatrices(wmResults);
     	wmResults.close();
     	wmStatement.close();
-    	DatabaseFactory.freeConnection(cxn);
+    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
     	
     	return matrices;
     }
@@ -114,7 +116,7 @@ public class WeightMatrixLoader implements edu.psu.compbio.seqcode.gse.utils.Clo
         }
         try {
             java.sql.Connection cxn = 
-                DatabaseFactory.getConnection("annotations");
+                DatabaseConnectionManager.getConnection("annotations");
             ArrayList<WeightMatrix> out = new ArrayList<WeightMatrix>();
             String query;
             query = "select wm.id, wm.species, wm.name, wm.version, wm.type, wm.bg_model_map_id, c.position, c.letter, c.weight " +
@@ -144,7 +146,7 @@ public class WeightMatrixLoader implements edu.psu.compbio.seqcode.gse.utils.Clo
             Collection<WeightMatrix> matrices = WeightMatrix.getWeightMatrices(rs);
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
 
             return matrices;
         } catch (SQLException e) {

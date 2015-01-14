@@ -7,10 +7,9 @@ import java.sql.*;
 import java.text.ParseException;
 
 import edu.psu.compbio.seqcode.genome.Organism;
-import edu.psu.compbio.seqcode.gse.datasets.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.PWMParser;
 
@@ -95,7 +94,7 @@ public class WeightMatrixImport {
     public static int insertMatrixIntoDB(WeightMatrix matrix) 
         throws SQLException, NotFoundException {
         
-        java.sql.Connection cxn =DatabaseFactory.getConnection("annotations");
+        java.sql.Connection cxn =DatabaseConnectionManager.getConnection("annotations");
         int wmid = -1;
         PreparedStatement exists = cxn.prepareStatement("select id from weightmatrix where species = ? and name = ? and version = ? and type = ?");
         exists.setInt(1,matrix.speciesid);
@@ -176,7 +175,7 @@ public class WeightMatrixImport {
         }           
         insertcol.close();
         cxn.commit();
-        DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
         return wmid;
     }       
     

@@ -9,7 +9,8 @@ import java.sql.*;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.utils.database.Sequence;
 
@@ -26,7 +27,7 @@ public class TimeSeriesLoader implements Closeable {
     
     public TimeSeriesLoader() throws SQLException {
         try {
-            cxn = DatabaseFactory.getConnection(role);
+            cxn = DatabaseConnectionManager.getConnection(role);
         } catch (UnknownRoleException e) {
             throw new IllegalArgumentException("Unknown role: " + role, e);
         }
@@ -67,7 +68,7 @@ public class TimeSeriesLoader implements Closeable {
             e.printStackTrace();
         }
         
-        DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
         cxn = null;
     }
     

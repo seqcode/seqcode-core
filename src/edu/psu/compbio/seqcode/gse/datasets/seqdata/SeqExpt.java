@@ -70,7 +70,7 @@ public class SeqExpt implements Comparable<SeqExpt>{
         int targetID = rs.getInt(8);
         int cellsID = rs.getInt(9);
         int readTypeID = rs.getInt(10);
-        MetadataLoader mloader = loader == null ? new MetadataLoader() : loader.getMetadataLoader();
+        MetadataLoader mloader = new MetadataLoader();
         type = mloader.loadExptType(exptTypeID);
         lab = mloader.loadLab(labID);
         condition = mloader.loadExptCondition(condID);

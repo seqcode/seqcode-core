@@ -7,7 +7,9 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
+import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 
 /** maps a Region to a set of sub-regions that are tiled
  * in a particular array design
@@ -35,7 +37,7 @@ public class TiledRegionGenerator<X extends Region> implements Expander<X,Region
         this.minlen = minlen;
         try {
             java.sql.Connection cxn =
-                DatabaseFactory.getConnection("chipchip");
+                DatabaseConnectionManager.getConnection("chipchip");
             PreparedStatement ps = cxn.prepareStatement("select id from arraydesign where name = ?");
             ps.setString(1,design);
             ResultSet rs = ps.executeQuery();
@@ -43,11 +45,11 @@ public class TiledRegionGenerator<X extends Region> implements Expander<X,Region
                 designID = rs.getInt(1);
                 rs.close();
                 ps.close();
-                DatabaseFactory.freeConnection(cxn);
+                cxn.close();
             } else {
                 rs.close();
                 ps.close();
-                DatabaseFactory.freeConnection(cxn);
+                cxn.close();
                 throw new NotFoundException("Couldn't find array design " + design);
             }
         } catch (SQLException ex) {
@@ -62,7 +64,7 @@ public class TiledRegionGenerator<X extends Region> implements Expander<X,Region
             Genome g = r.getGenome();
             int chromid = g.getChromID(r.getChrom());
             java.sql.Connection cxn =
-                DatabaseFactory.getConnection("chipchip");
+                DatabaseConnectionManager.getConnection("chipchip");
             PreparedStatement ps = cxn.prepareStatement("select pl.startpos, pl.stoppos from probelocation pl, probedesign pd where" +
                                                         " pl.id = pd.id and pl.chromosome = ? and pl.stoppos >= ? and pl.startpos <= ? and pd.arraydesign = ? " +
                                                         " and pl.loccount = 1 order by pl.startpos");
@@ -102,7 +104,7 @@ public class TiledRegionGenerator<X extends Region> implements Expander<X,Region
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            cxn.close();
             return results.iterator();
         } catch (SQLException ex) {
             throw new DatabaseException(ex.toString(),ex);

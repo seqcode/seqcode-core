@@ -195,7 +195,6 @@ public class ExportSeqAlignmentList {
 	        }
     		System.out.println(count+" entries exported to new list");
 	        fw.close();
-	        core.close();
 	        loader.close();
         } catch (IOException e) {
 			e.printStackTrace();

@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.NamedTypedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 /** 
  * Generator that returns NamedTypedRegion objects from the specified table. 
@@ -32,7 +32,7 @@ public class SGDOtherGenerator<X extends Region> implements Expander<X,NamedType
             PreparedStatement ps = cxn.prepareStatement("select name, chrom, strand, type, chromStart, chromEnd from " + tablename + " where name = ?");
             ps.setString(1,name);
             Iterator<NamedTypedRegion> results = parseResults(ps);
-            DatabaseFactory.freeConnection(cxn);
+            cxn.close();
             return results;
         } catch (SQLException ex) {
             throw new DatabaseException("Couldn't get UCSC RefGenes",ex);
@@ -56,7 +56,7 @@ public class SGDOtherGenerator<X extends Region> implements Expander<X,NamedType
             ps.setInt(4,region.getStart());
             ps.setInt(5,region.getEnd());
             Iterator<NamedTypedRegion> results = parseResults(ps);
-            DatabaseFactory.freeConnection(cxn);
+            cxn.close();
             return results;
         } catch (SQLException ex) {
             throw new DatabaseException("Couldn't get UCSC SGDGenes",ex);

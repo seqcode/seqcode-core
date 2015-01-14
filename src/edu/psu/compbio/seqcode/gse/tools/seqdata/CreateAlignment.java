@@ -8,7 +8,8 @@ import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 /** 
  * Creates an alignment (if necessary)
@@ -56,7 +57,7 @@ public class CreateAlignment {
     				"\t--idxfile <file name>\n");
     	}else{
 
-	    	java.sql.Connection cxn = DatabaseFactory.getConnection("seqdata");
+	    	java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
 	        cxn.setAutoCommit(false);
 	        Genome genome = Args.parseGenome(args).cdr();
 	        String alignname = Args.parseString(args,"align",null);
@@ -183,15 +184,12 @@ public class CreateAlignment {
 		            }
 	        	}
 	        }
-	        
-	        core.close();
 	        loader.close();
 	        if (alignment == null) {
 	            cxn.rollback();
 	            throw new DatabaseException("Couldn't create/update alignment " + alignpieces[2] + " for " + alignpieces[0]);
 	        }
 	        System.out.println(alignment.getDBID());
-	        genome.close();
 	        cxn.commit();
 	        cxn.close();
     	}        

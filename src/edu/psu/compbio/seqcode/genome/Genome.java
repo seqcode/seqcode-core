@@ -1,8 +1,8 @@
 package edu.psu.compbio.seqcode.genome;
 
 import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 
 import java.util.*;
@@ -13,7 +13,7 @@ import java.sql.*;
  * A <code>Genome</code> represents one version (or genome build) of some species.
  * <i>Note</i>: We assume 1-based, inclusive coordinate.
  */
-public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
+public class Genome{
     
     public static class ChromosomeInfo { 
         
@@ -55,8 +55,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     private static String[] intvals;
     private String species, version;
     private int speciesid, dbid;
-    private java.sql.Connection cxn=null;
-    
+    private boolean hasDBConnection=false;
     private Map<String,ChromosomeInfo> chroms;
     private Map<Integer,ChromosomeInfo> revchroms;
     
@@ -69,7 +68,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     	species = "FakeOrganism";
     	version = tempName;
     	speciesid = dbid = -1;
-    	cxn = null;
+    	hasDBConnection=false;
     	chroms = new HashMap<String,ChromosomeInfo>();
     	revchroms = new HashMap<Integer,ChromosomeInfo>();
     	
@@ -82,7 +81,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     	species = "FakeOrganism";
     	version = tempName;
     	speciesid = dbid = -1;
-    	cxn = null;
+    	hasDBConnection=false;
     	chroms = new HashMap<String,ChromosomeInfo>();
     	revchroms = new HashMap<Integer,ChromosomeInfo>();
     	
@@ -97,7 +96,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     	species = "FakeOrganism";
     	version = tempName;
     	speciesid = dbid = -1;
-    	cxn = null;
+    	hasDBConnection=false;
     	chroms = new HashMap<String,ChromosomeInfo>();
     	revchroms = new HashMap<Integer,ChromosomeInfo>();
     	if(!chrLengths.isFile()){System.err.println("Invalid genome info file name");System.exit(1);}
@@ -136,7 +135,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     	species = "FakeOrganism";
     	version = tempName;
     	speciesid = dbid = -1;
-    	cxn = null;
+    	hasDBConnection=false;
     	chroms = new HashMap<String,ChromosomeInfo>();
     	revchroms = new HashMap<Integer,ChromosomeInfo>();
     	int id=0;
@@ -151,7 +150,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     	species = tempSpecies;
     	version = tempVersion;
     	speciesid = dbid = -1;
-    	cxn = null;
+    	hasDBConnection=false;
     	chroms = new HashMap<String,ChromosomeInfo>();
     	revchroms = new HashMap<Integer,ChromosomeInfo>();
     	
@@ -172,8 +171,9 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         chroms = null;
         revchroms = null;
         
+        Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");
+            cxn = DatabaseConnectionManager.getConnection("core");
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select id from species where name = '" + species + "'");
             if (rs.next()) {
@@ -192,12 +192,14 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             rs.close();
             stmt.close();
 
-            fillChroms();
-        
+            fillChroms(cxn);
+                    
         } catch (SQLException ex) {
             throw new DatabaseException("Couldn't find " + species + ": "+ ex.toString(),ex);
         } catch (UnknownRoleException ex) {
             throw new DatabaseException("Couldn't connect with role core");
+        } finally {
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
     }
     
@@ -207,8 +209,9 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     public Genome(int speciesid, String version) throws NotFoundException {
         this.speciesid = speciesid;
         this.version = version;
+        Connection cxn = null;
         try {
-            cxn = DatabaseFactory.getConnection("core");       
+            cxn = DatabaseConnectionManager.getConnection("core");       
             Statement stmt = cxn.createStatement();
             ResultSet rs = stmt.executeQuery("select name from species where id = " + speciesid);
             
@@ -229,7 +232,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             rs.close();
             stmt.close();
             
-            fillChroms();
+            fillChroms(cxn);
             
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -237,26 +240,17 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         }  catch (UnknownRoleException ex) {
             ex.printStackTrace();
             throw new DatabaseException("Couldn't connect with role core");
+        } finally {
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
     }
-    
-    public boolean isClosed() { 
-        return cxn != null;
-    }
-    
-    public void close() { 
-        DatabaseFactory.freeConnection(cxn);
-        cxn = null;
-    }
-    
+        
     /* retrieves the chromosomes for this Genome from the database and fills
        the relevant data structures: chroms and revchroms */
-    private void fillChroms() throws SQLException {
-        //        System.out.println(String.format("fillChroms() -- %s %d", version, dbid));
-
+    private void fillChroms(Connection cxn) throws SQLException {
         chroms = new HashMap<String,ChromosomeInfo>();
         revchroms = new HashMap<Integer,ChromosomeInfo>();
-        
+
         Statement s = cxn.createStatement();
         
         ResultSet rs = s.executeQuery("select c.id, c.name, cs.len from chromosome c, chromsequence cs " +
@@ -273,7 +267,6 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
             }
             chroms.put(name, info);
             revchroms.put(dbid, info);
-            //			System.out.println(String.format("\t%s #%d (%d)", name, dbid, length));
         }
         
         rs.close();
@@ -284,12 +277,14 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     public String getVersion() {return version;}
     public String getSpecies() {return species;}    
     public String getDescription() throws SQLException { 
-        Statement s = cxn.createStatement();
+        Connection cxn = DatabaseConnectionManager.getConnection("core");
+    	Statement s = cxn.createStatement();
         String desc = null;
         ResultSet rs = s.executeQuery("select description from genome where id=" + dbid);
         if(rs.next()) { desc = rs.getString(1); }
         rs.close();
         s.close();
+        cxn.close();
         return desc;
     }
 
@@ -297,7 +292,8 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
      * Returns the full sequence for the specified chromosome
      */
     public String getChromosomeSequence(ChromosomeInfo info) throws SQLException { 
-        StringBuilder sb = new StringBuilder();
+    	Connection cxn = DatabaseConnectionManager.getConnection("core");
+    	StringBuilder sb = new StringBuilder();
         Statement s = cxn.createStatement();
         ResultSet rs = s.executeQuery("select sequence from chromsequence where id=" + info.getDBID());
         if(rs.next()) { 
@@ -306,6 +302,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         }
         rs.close();
         s.close();
+        cxn.close();
         return sb.toString();        
     }
     
@@ -314,7 +311,8 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
      * length <code>end-start+1</code>.
      */
     public String getChromosomeSequence(ChromosomeInfo info, int start, int end) throws SQLException {
-        StringBuilder sb = new StringBuilder();
+        Connection cxn = DatabaseConnectionManager.getConnection("core");
+    	StringBuilder sb = new StringBuilder();
         Statement s = cxn.createStatement();
         
         int windowStart = start; 
@@ -330,6 +328,7 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
         
         rs.close();
         s.close();
+        cxn.close();
         return sb.toString();
     }
 
@@ -517,13 +516,11 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
                 } else {
                     buffer += curval;
                 }
-                //                System.err.println(pos + ":" + cur + "," + curval + "," + buffer + "," + val);
                 last = cur;
                 lastval = curval;
                 pos++;
             }
             val += buffer;
-            //            System.err.println(",,, " + buffer + "," + val);
             if (random) {
                 return Integer.toString(val) + "_random";
             } else {
@@ -547,23 +544,14 @@ public class Genome implements edu.psu.compbio.seqcode.gse.utils.Closeable {
     public int getDBID() {return dbid;}
     public int getSpeciesDBID() { return speciesid; }
     
-    /**
-     * Get the database connection from the factory again.
-     * Works to reestablish a dropped connection if used with DatabaseFactory.reestablishConnnections
-     * @throws UnknownRoleException
-     * @throws SQLException
-     */
-    public void renewCoreConnection() throws UnknownRoleException, SQLException{
-    	cxn = DatabaseFactory.getConnection("core");
-    }
     
     /** Returns a read connection to the UCSC database for this
      * genome 
      */
-    public java.sql.Connection getUcscConnection() throws SQLException {
+    public Connection getUcscConnection() throws SQLException {
         try {
         	String v = this.getVersion().replaceAll("[^\\w\\-]","_");
-            return DatabaseFactory.getConnection("ucsc_" + v);
+            return DatabaseConnectionManager.getConnection("ucsc_" + v);
         } catch (UnknownRoleException ex) {
             throw new DatabaseException("Couldn't create a database connection for genome " + 
                                         getVersion(),ex);

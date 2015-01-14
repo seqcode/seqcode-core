@@ -32,8 +32,6 @@ public class AlignmentLookup {
 					System.out.println("FOUND");
 				else
 					System.out.println("NOTFOUND");
-		
-				gen.close();
 			} catch (NotFoundException e) {
 				System.out.println("NOTFOUND");
 			} catch (SQLException e) {
