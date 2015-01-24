@@ -57,6 +57,8 @@ public class WIGExporter {
 		WIGExporter wig = new WIGExporter(args);
 		wig.execute();
 		wig.close();
+		
+		System.exit(0);
 	}
 	
 	
