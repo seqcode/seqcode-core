@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.ExtReadHit;
 import edu.psu.compbio.seqcode.deepseq.ReadHit;
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.StrandedPair;
@@ -31,7 +32,10 @@ public class Sample {
 	protected int totalPairs=0; //count of the total number of paired hits
 	protected int uniquePairs=0; //count of the total number of unique paired hits
 	protected float maxReadsPerBP=-1;
-	
+	protected int readLen = 32; //  move towards an experiment-specific read length
+	protected int fivePrimeExt; // five prime extension length in case you want to extend reads
+	protected int threePrimeExt; // three prime extension lenght in case you want to extend reads
+	protected int startShift;// shift offset in case you want to shift reads
 	
 	/**
 	 * Constructor
@@ -46,6 +50,9 @@ public class Sample {
 		totalHits=0;
 		loaders = new ArrayList<HitLoader>();
 		maxReadsPerBP= perBaseReadMax;
+		fivePrimeExt=0;
+		threePrimeExt=0;
+		startShift=0;
 	}
 
 	//Accessors
@@ -58,7 +65,12 @@ public class Sample {
 	public int getPairCount(){return(totalPairs);}
 	public int getUniquePairCount(){return(uniquePairs);}
 	public void setGenome(Genome g){gen=g; cache.setGenome(g);}
-
+	
+	//settors
+	public void setFivePrimeExt(int e){fivePrimeExt=e;}
+	public void setThreePrimeExt(int e){threePrimeExt=e;}
+	public void setStartShift(int e){startShift=e;}
+	public void setReadLen(int e){readLen=e;}
 	/**
 	 * Add a HitLoader to the set
 	 * @param h HitLoader
@@ -131,6 +143,16 @@ public class Sample {
     public float countStrandedBases(Region r, char strand) {
 		return cache.countStrandedBases(r, strand);
     }
+    
+    
+    /**
+     * Covert all hits into ReadHits for a given region
+     * @param r
+     * @param readLen
+     */
+    public List<ReadHit> exportReadHits(Region r, int readLen){
+    	return cache.exportReadHits(r, readLen);
+    }
 
     /**
      * Convert all hits into ReadHits
@@ -140,6 +162,12 @@ public class Sample {
     public List<ReadHit> exportReadHits(int readLen){
 		return(cache.exportReadHits(readLen));
 	}
+    
+    
+    public List<ExtReadHit> exportExtReadHits(Region r){
+    	return(cache.exportExtReadHits(r, readLen, startShift, fivePrimeExt, threePrimeExt));
+    }
+    
     /**
 	 * Simple count correction with a scaling factor and a floor of one. 
 	 * Beware: only works if all reads are loaded.

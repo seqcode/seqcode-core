@@ -277,6 +277,7 @@ public class ExptConfig {
 	public boolean doPoissonGaussWinPerBaseFiltering(){return poissonGaussWinPerBaseFilter;}
 	public boolean doPerBaseFiltering(){return perBaseReadFiltering;}
 	public double getPerBaseLogConf(){return perBaseLogConf;}
+	public float getPerBaseMax(){return perBaseReadLimit;}
 	public double getMappableGenomeProp(){return mappableGenome;}
 	public double getMappableGenomeLength(){return mappableGenome*gen.getGenomeLength();}
 	public List<Integer> getLocalBackgroundWindows(){return localBackgroundWindows;}

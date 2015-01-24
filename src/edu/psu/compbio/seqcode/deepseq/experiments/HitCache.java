@@ -21,6 +21,7 @@ import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 import org.apache.commons.lang3.RandomStringUtils;
 
+import edu.psu.compbio.seqcode.deepseq.ExtReadHit;
 import edu.psu.compbio.seqcode.deepseq.HitPair;
 import edu.psu.compbio.seqcode.deepseq.ReadHit;
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
@@ -479,7 +480,34 @@ public class HitCache {
 		}
 	    return count;
     }
-
+    
+    
+    
+    public List<ExtReadHit> exportExtReadHits(Region r, int readLen, int startShift, int fivePrimeExt, int threePrimeExt){
+    	List<ReadHit> readHits = exportReadHits(r,readLen);
+    	List<ExtReadHit> extReadHits = new ArrayList<ExtReadHit>();
+    	for(ReadHit rh : readHits){
+    		extReadHits.add(new ExtReadHit(gen, rh, startShift, fivePrimeExt, threePrimeExt));
+    	}
+    	return extReadHits;
+    }
+    
+    
+    /**
+     * Exports readhits in a given region
+     * If file caching is being used, it's more efficient to group calls to this method by chromosome.
+     */
+    public List<ReadHit> exportReadHits(Region r, int readLen){
+    	List<ReadHit> reghits = new ArrayList<ReadHit>();
+    	for(StrandedBaseCount sbc : getBases(r)){
+    		int start = sbc.getStrand() == '+' ? sbc.getCoordinate() : sbc.getCoordinate()-readLen+1;
+    		int end = sbc.getStrand() == '+' ? sbc.getCoordinate()+readLen-1 : sbc.getCoordinate();
+    		reghits.add(new ReadHit(r.getChrom(),start,end,sbc.getStrand(),sbc.getCount()));
+    	}
+    	return(reghits);
+    	
+    }
+    
     /**
      * Export all single-end hits to ReadHit objects
      * @param readLen

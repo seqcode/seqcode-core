@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.gse.projects.gps.utilities;
+package edu.psu.compbio.seqcode.projects.sequtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -9,6 +9,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import edu.psu.compbio.seqcode.deepseq.ReadHit;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
@@ -16,7 +20,6 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
-import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
 import edu.psu.compbio.seqcode.gse.projects.gps.discovery.SingleConditionFeatureFinder;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -32,7 +35,8 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 public class WIGExporter {
 	private Organism org;
 	private Genome gen;
-	protected DeepSeqExpt expt;
+	//protected DeepSeqExpt expt;
+	private Sample sample;
 	protected int [] stackedHitCounts;
 	private int winSize=20, winStep=20;
 	private int readLength=1, read5PrimeExt=0, read3PrimeExt=200;
@@ -42,8 +46,9 @@ public class WIGExporter {
 	private String trackColor="0,0,255";
 	private int trackYMax=-1;
 	private boolean dbconnected=false;
-	private int perBaseMax=10;
+	private int perBaseMax=-1;
 	private boolean needlefiltering=false;
+	private boolean cacheAllData;
 	private static final Logger logger = Logger.getLogger(SingleConditionFeatureFinder.class);
 	
 	
@@ -92,6 +97,9 @@ public class WIGExporter {
 			e.printStackTrace();
 		}
 		
+		ExptConfig c = new ExptConfig(gen, args);
+		
+		// WIGExporter specific options
 		outName = Args.parseString(args,"out",outName);
 		trackName = Args.parseString(args,"name",trackName);
 		trackDesc = Args.parseString(args,"description",trackDesc);
@@ -100,38 +108,50 @@ public class WIGExporter {
 		read3PrimeExt = Args.parseInteger(args,"read3ext",read3PrimeExt);
 		readLength = Args.parseInteger(args,"readlen",readLength);
 		winSize = Args.parseInteger(args,"winsize",winSize);
-		perBaseMax = Args.parseInteger(args,"pbmax",perBaseMax);
-		if(ap.hasKey("pbmax")){needlefiltering=true;}
+		
+		//General options processed directly by ExptConfig
+		
+		perBaseMax = (int)c.getPerBaseMax();
+		if(perBaseMax != -1){needlefiltering=true;}
 		if(ap.hasKey("ylimit")){trackYMax=Args.parseInteger(args,"ylimit",-1);}
 	    winStep=winSize;
+	    ExperimentManager manager = new ExperimentManager(c);
+	    sample = manager.getSamples().get(0);
+	    cacheAllData = c.getCacheAllData();
+	    
+	    
 	    		
 	    // Load the experiments
-	    List<SeqLocator> dbexpts = Args.parseSeqExpt(args, "dbexpt");
-	    List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt");
-	    List<File> expts = Args.parseFileHandles(args, "expt");
-	    boolean nonUnique = ap.hasKey("nonunique") ? true : false;
-	    String fileFormat = Args.parseString(args, "format", "ELAND");
-	    if(expts.size()>0 && dbexpts.size() == 0 && rdbexpts.size()==0){
-	       	expt= new DeepSeqExpt(gen, expts, nonUnique, fileFormat, (int)readLength);
-	    }else if (dbexpts.size() > 0 && expts.size() == 0) {
-	    	expt = new DeepSeqExpt(gen, dbexpts, "db", (int)readLength);
-	    	dbconnected = true;
-	    }else if (rdbexpts.size()>0 && expts.size() == 0){
-	    	expt = new DeepSeqExpt(gen, rdbexpts, "readdb", -1);
-	    	dbconnected=true;
-	    }else {
-	      logger.error("Must provide either an aligner output file or Gifford lab DB experiment name for the signal experiment (but not both)");
-	      System.exit(1);
-	    }
-	    logger.info("Expt hit count: " + (int) expt.getHitCount() + ", weight: " + (int) expt.getWeightTotal());
+	    //List<SeqLocator> dbexpts = Args.parseSeqExpt(args, "dbexpt");
+	    //List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt");
+	    //List<File> expts = Args.parseFileHandles(args, "expt");
+	    //boolean nonUnique = ap.hasKey("nonunique") ? true : false;
+	    //String fileFormat = Args.parseString(args, "format", "ELAND");
+	    //if(expts.size()>0 && dbexpts.size() == 0 && rdbexpts.size()==0){
+	     //  	expt= new DeepSeqExpt(gen, expts, nonUnique, fileFormat, (int)readLength);
+	    //}else if (dbexpts.size() > 0 && expts.size() == 0) {
+	    //	expt = new DeepSeqExpt(gen, dbexpts, "db", (int)readLength);
+	    //	dbconnected = true;
+	    //}else if (rdbexpts.size()>0 && expts.size() == 0){
+	    //	expt = new DeepSeqExpt(gen, rdbexpts, "readdb", -1);
+	    //	dbconnected=true;
+	    //}else {
+	     // logger.error("Must provide either an aligner output file or Gifford lab DB experiment name for the signal experiment (but not both)");
+	     // System.exit(1);
+	    //}
+	    //logger.info("Expt hit count: " + (int) expt.getHitCount() + ", weight: " + (int) expt.getWeightTotal());
 	    
 	    read3PrimeExt = Math.max(0, read3PrimeExt-readLength);
-	    expt.setFivePrimeExt(read5PrimeExt);
-	    expt.setThreePrimeExt(read3PrimeExt);
+	    
+	    sample.setFivePrimeExt(read5PrimeExt);
+	    sample.setThreePrimeExt(read3PrimeExt);
+	    
+	    sample.initializeCache(cacheAllData, null);
+	    
 	}
 	
 	public void close(){
-		expt.closeLoaders();
+		sample.close();
 	}
 	
 	public void execute(){
@@ -161,7 +181,7 @@ public class WIGExporter {
 					Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 					
 					ArrayList<ReadHit> hits = new ArrayList<ReadHit>();
-                    hits.addAll(expt.loadExtHits(currSubRegion));
+                    hits.addAll(sample.exportExtReadHits(currSubRegion));
                     double stackedHitCounts[] = makeHitLandscape(hits, currSubRegion, perBaseMax, '.');
                     
                     boolean recording=false;
