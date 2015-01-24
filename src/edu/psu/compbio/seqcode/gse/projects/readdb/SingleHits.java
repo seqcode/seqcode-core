@@ -1,33 +1,34 @@
 package edu.psu.compbio.seqcode.gse.projects.readdb;
 
 import java.io.*;
-import java.nio.*;
 import java.nio.channels.*;
-import java.util.List;
-import java.util.Collections;
 import java.util.Arrays;
 
 /** 
- * Represents the list of sorted reads on disk
+ * Represents the list of sorted reads on disk.
+ * Some alignments store the standard SingleHits and "type 2" SingleHits separately. 
+ * Type 2 SingleHits are used in alignments where the read 2 hits represent something different from read 1 hits. 
+ * For example, in paired-end ChIP-exo, where only read 1 is affected by exonuclease. 
  */
 public class SingleHits extends Hits {
     /**
      * Initializes a Hits object from a file
      */
-    public SingleHits (String prefix, int chrom) throws FileNotFoundException, SecurityException, IOException {
+    public SingleHits (String prefix, int chrom, boolean type2) throws FileNotFoundException, SecurityException, IOException {
         super(chrom,
-              getPositionsFname(prefix,chrom),
-              getWeightsFname(prefix,chrom), 
-              getLaSFname(prefix,chrom));
+              getPositionsFname(prefix,chrom, type2),
+              getWeightsFname(prefix,chrom, type2), 
+              getLaSFname(prefix,chrom, type2));
     }
     public static void writeSingleHits(IntBP positions,
                                        FloatBP weights,
                                        IntBP las,
                                        String prefix,
-                                       int chrom) throws IOException {
-        String postmp = getPositionsFname(prefix,chrom) + ".tmp";
-        String weightstmp = getWeightsFname(prefix,chrom) + ".tmp";
-        String lastmp = getLaSFname(prefix,chrom) + ".tmp";
+                                       int chrom,
+                                       boolean type2 ) throws IOException {
+        String postmp = getPositionsFname(prefix,chrom, type2) + ".tmp";
+        String weightstmp = getWeightsFname(prefix,chrom, type2) + ".tmp";
+        String lastmp = getLaSFname(prefix,chrom, type2) + ".tmp";
         RandomAccessFile positionsRAF = new RandomAccessFile(postmp,"rw");
         RandomAccessFile weightsRAF = new RandomAccessFile(weightstmp,"rw");
         RandomAccessFile lasRAF = new RandomAccessFile(lastmp,"rw");
@@ -40,13 +41,14 @@ public class SingleHits extends Hits {
         lasRAF.close();
 
         /* ideally this part with the renames would atomic... */
-        (new File(postmp)).renameTo(new File(getPositionsFname(prefix,chrom)));
-        (new File(weightstmp)).renameTo(new File(getWeightsFname(prefix,chrom)));
-        (new File(lastmp)).renameTo(new File(getLaSFname(prefix,chrom)));
+        (new File(postmp)).renameTo(new File(getPositionsFname(prefix,chrom, type2)));
+        (new File(weightstmp)).renameTo(new File(getWeightsFname(prefix,chrom, type2)));
+        (new File(lastmp)).renameTo(new File(getLaSFname(prefix,chrom, type2)));
     }
     public static void writeSingleHits(SingleHit[] hits,
                                        String prefix, 
-                                       int chrom) throws IOException {
+                                       int chrom,
+                                       boolean type2) throws IOException {
         IntBP p = new IntBP(hits.length);
         FloatBP w = new FloatBP(hits.length);
         IntBP l = new IntBP(hits.length);
@@ -56,12 +58,13 @@ public class SingleHits extends Hits {
             w.put(i, h.weight);
             l.put(i, makeLAS(h.length, h.strand));
         }
-        writeSingleHits(p,w,l,prefix,chrom);
+        writeSingleHits(p,w,l,prefix,chrom, type2);
     }
     /** appends a sorted list of hits to an existing set of hits. */
     public void appendSingleHits(SingleHit[] hits,
                                  String prefix,
-                                 int chrom) throws IOException {
+                                 int chrom,
+                                 boolean type2) throws IOException {
         if (hits.length == 0) {
             return;
         }
@@ -70,17 +73,18 @@ public class SingleHits extends Hits {
                                        Hits.getStrandOne(getLASBuffer().get(s)),
                                        Hits.getLengthOne(getLASBuffer().get(s)));
         if (hits[0].compareTo(last) > 0 ) {
-            append(hits,prefix,chrom);
+            append(hits,prefix,chrom, type2);
         } else {
-            merge(hits,prefix,chrom);
+            merge(hits,prefix,chrom, type2);
         }
     }
     private void append(SingleHit[] hits,
                        String prefix,
-                       int chrom) throws IOException {
-        RandomAccessFile  positionsRAF = new RandomAccessFile(getPositionsFname(prefix,chrom),"rw");
-        RandomAccessFile weightsRAF = new RandomAccessFile(getWeightsFname(prefix,chrom),"rw");
-        RandomAccessFile lasRAF = new RandomAccessFile(getLaSFname(prefix,chrom),"rw");
+                       int chrom,
+                       boolean type2) throws IOException {
+        RandomAccessFile  positionsRAF = new RandomAccessFile(getPositionsFname(prefix,chrom, type2),"rw");
+        RandomAccessFile weightsRAF = new RandomAccessFile(getWeightsFname(prefix,chrom, type2),"rw");
+        RandomAccessFile lasRAF = new RandomAccessFile(getLaSFname(prefix,chrom, type2),"rw");
         positionsRAF.seek(positionsRAF.length());
         weightsRAF.seek(weightsRAF.length());
         lasRAF.seek(lasRAF.length());
@@ -96,10 +100,11 @@ public class SingleHits extends Hits {
     }
     private void merge(SingleHit[] hits,
                        String prefix,
-                       int chrom) throws IOException {
-        String postmp = getPositionsFname(prefix,chrom) + ".tmp";
-        String weightstmp = getWeightsFname(prefix,chrom) + ".tmp";
-        String lastmp = getLaSFname(prefix,chrom) + ".tmp";
+                       int chrom,
+                       boolean type2) throws IOException {
+        String postmp = getPositionsFname(prefix,chrom, type2) + ".tmp";
+        String weightstmp = getWeightsFname(prefix,chrom, type2) + ".tmp";
+        String lastmp = getLaSFname(prefix,chrom, type2) + ".tmp";
         RandomAccessFile positionsRAF = new RandomAccessFile(postmp,"rw");
         RandomAccessFile weightsRAF = new RandomAccessFile(weightstmp,"rw");
         RandomAccessFile lasRAF = new RandomAccessFile(lastmp,"rw");
@@ -148,11 +153,11 @@ public class SingleHits extends Hits {
         weightsRAF.close();
         lasRAF.close();
         /* ideally this part with the renames would atomic... */
-        (new File(postmp)).renameTo(new File(getPositionsFname(prefix,chrom)));
-        (new File(weightstmp)).renameTo(new File(getWeightsFname(prefix,chrom)));
-        (new File(lastmp)).renameTo(new File(getLaSFname(prefix,chrom)));
+        (new File(postmp)).renameTo(new File(getPositionsFname(prefix,chrom, type2)));
+        (new File(weightstmp)).renameTo(new File(getWeightsFname(prefix,chrom, type2)));
+        (new File(lastmp)).renameTo(new File(getLaSFname(prefix,chrom, type2)));
     }
-    public void resort(String prefix, int chrom) throws IOException {
+    public void resort(String prefix, int chrom, boolean type2) throws IOException {
         IntBP positions = getPositionsBuffer();
         FloatBP weights = getWeightsBuffer();
         IntBP las = getLASBuffer();
@@ -165,9 +170,9 @@ public class SingleHits extends Hits {
         }
         Arrays.sort(indices);
 
-        String postmp = getPositionsFname(prefix,chrom) + ".tmp";
-        String weightstmp = getWeightsFname(prefix,chrom) + ".tmp";
-        String lastmp = getLaSFname(prefix,chrom) + ".tmp";
+        String postmp = getPositionsFname(prefix,chrom, type2) + ".tmp";
+        String weightstmp = getWeightsFname(prefix,chrom, type2) + ".tmp";
+        String lastmp = getLaSFname(prefix,chrom, type2) + ".tmp";
         RandomAccessFile positionsRAF = new RandomAccessFile(postmp,"rw");
         RandomAccessFile weightsRAF = new RandomAccessFile(weightstmp,"rw");
         RandomAccessFile lasRAF = new RandomAccessFile(lastmp,"rw");
@@ -196,19 +201,28 @@ public class SingleHits extends Hits {
         weightsRAF.close();
         lasRAF.close();
         /* ideally this part with the renames would atomic... */
-        (new File(postmp)).renameTo(new File(getPositionsFname(prefix,chrom)));
-        (new File(weightstmp)).renameTo(new File(getWeightsFname(prefix,chrom)));
-        (new File(lastmp)).renameTo(new File(getLaSFname(prefix,chrom)));
+        (new File(postmp)).renameTo(new File(getPositionsFname(prefix,chrom, type2)));
+        (new File(weightstmp)).renameTo(new File(getWeightsFname(prefix,chrom, type2)));
+        (new File(lastmp)).renameTo(new File(getLaSFname(prefix,chrom, type2)));
 
     }
-    private static String getPositionsFname(String prefix, int chrom) {
-        return prefix + chrom + ".spositions";
+    private static String getPositionsFname(String prefix, int chrom, boolean type2) {
+        if(!type2)
+        	return prefix + chrom + ".spositions";
+        else
+        	return prefix + chrom + ".st2positions";
     }
-    private static String getWeightsFname(String prefix, int chrom) {
-        return prefix + chrom + ".sweights";
+    private static String getWeightsFname(String prefix, int chrom, boolean type2) {
+        if(!type2)
+        	return prefix + chrom + ".sweights";
+        else
+        	return prefix + chrom + ".st2weights";
     }
-    private static String getLaSFname(String prefix, int chrom) {
-        return prefix + chrom + ".slas";
+    private static String getLaSFname(String prefix, int chrom, boolean type2) {
+        if(!type2)
+        	return prefix + chrom + ".slas";
+        else
+        	return prefix + chrom + ".st2las";
     }
 
 }

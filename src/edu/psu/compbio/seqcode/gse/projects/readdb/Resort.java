@@ -13,7 +13,7 @@ public class Resort {
             String alignid = args[i];
             System.err.println("Resorting alignment " + alignid);
             try {
-                for (Integer chromid : client.getChroms(alignid,false,false)) {
+                for (Integer chromid : client.getChroms(alignid,false, false,false)) {
                     client.checksort(alignid,chromid);
                 }
             } catch (ClientException e) {

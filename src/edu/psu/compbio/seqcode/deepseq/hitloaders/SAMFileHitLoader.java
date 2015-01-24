@@ -26,8 +26,10 @@ public class SAMFileHitLoader extends FileHitLoader{
 
 	private boolean useChimericReads=false; //Ignore chimeric mappings for now. 
 	
-	public SAMFileHitLoader(File f, boolean nonUnique, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs) {
-    	super(f, nonUnique, loadR1Reads, loadR2Reads, loadPairs);
+	public SAMFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs) {
+    	super(f, nonUnique, true, false, loadPairs);
+    	if(!loadT1Reads || loadT2Reads)
+			System.err.println("SAMFileHitLoader: You asked to load only Type1 or Type2 reads, we do not yet load this information from SAM format.");
     }
     
     /**
@@ -56,18 +58,19 @@ public class SAMFileHitLoader extends FileHitLoader{
 		    	byRead.clear();
 		    }
 		    lastread = record.getReadName();
-		    byRead.add(record);
+		    
+		    byRead.add(record); //Filter by first or second of pair here if loading by type1/2?
 
 		    //load pair if this is a first mate, congruent, proper pair
-		    if(record.getFirstOfPairFlag() && record.getProperPairFlag()){
+		    if(loadPairs && record.getFirstOfPairFlag() && record.getProperPairFlag()){
 		    	boolean neg = record.getReadNegativeStrandFlag();
                 boolean mateneg = record.getMateNegativeStrandFlag();
                 HitPair hp = new HitPair((neg ? record.getAlignmentEnd() : record.getAlignmentStart()),
-                		record.getMateReferenceName(),
+                		record.getMateReferenceName().replaceFirst("^chr", ""),
                 		(mateneg ? record.getMateAlignmentStart()+record.getReadLength()-1 : record.getMateAlignmentStart()), 
                 		mateneg ? 1 : 0,
                 		1);
-                addPair(record.getReferenceName(), neg ? '-':'+', hp);
+                addPair(record.getReferenceName().replaceFirst("^chr", ""), neg ? '-':'+', hp);
 		    }
 		}
 		processRead(byRead);

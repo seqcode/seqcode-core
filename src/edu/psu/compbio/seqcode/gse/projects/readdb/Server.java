@@ -16,8 +16,9 @@ import org.apache.commons.cli.*;
  * <li>--port 52000     port to listen on
  * <li>--threads 5      number of threads to start to handle client requests
  * <li>--cachesize 100  number of chromosomes to keep files open for
- * <li>--maxconn 200    maximum number of client connections
+ * <li>--maxconn 1000    maximum number of client connections
  * <li>--sleepiness 2   how sleepy the server should be waiting for input.  Lower values use more CPU but improve responsiveness
+ * <li>--idlelimit 24  number of hours after which idle task connections are closed 
  * <li>--help           print the usage message and exit
  *
  */
@@ -28,7 +29,7 @@ public class Server {
 
 	private Logger logger;
     private int port;
-    private int numThreads, cacheSize, maxConnections, sleepiness;
+    private int numThreads, cacheSize, maxConnections, sleepiness, taskIdleLimit;
     private boolean debug;
     /* topdir is the top-level directory for our data files.
       pwfile is "${topdir}/users.txt" and groupfile is 
@@ -42,7 +43,8 @@ public class Server {
     // in buffers when the buffer is allocated in bytes.
     public static final int BUFFERLEN = 8192 * 16;
 
-    private LRUCache<Header> headers;
+    private LRUCache<Header> singleHeaders;
+    private LRUCache<Header> pairedHeaders;
     private LRUCache<SingleHits> singleHits;
     private LRUCache<PairedHits> pairedHits;
     private LRUCache<AlignmentACL> acls;    
@@ -53,11 +55,12 @@ public class Server {
         port = 52000;
         sleepiness = 4;
         numThreads = 5;
-        cacheSize = numThreads * 10;
-        maxConnections = 250;
+        cacheSize = numThreads * 20;
+        maxConnections = 1000;
+        taskIdleLimit = 24;
         topdir = "/tmp";
         keepRunning = true;
-        logger = Logger.getLogger("edu.psu.compbio.seqcode.gse.tools.readdb.Server");
+        logger = Logger.getLogger("edu.psu.compbio.seqcode.gse.projects.readdb.Server");
         logger.log(Level.INFO,"created Server");        
 
     }
@@ -70,6 +73,7 @@ public class Server {
         options.addOption("C","cachesize",true,"how many files to keep open (this value times up to 18)");
         options.addOption("M","maxconn",true,"how many connections are allowed");
         options.addOption("S","sleepiness",true,"how sleepy the server should be while waiting for input.  1-100");
+        options.addOption("L","idlelimit",true,"number of hours after which to close idle connections. Negative sets no limit.");
         options.addOption("h","help",false,"print help message");
         CommandLineParser parser = new GnuParser();
         CommandLine line = parser.parse( options, args, false );            
@@ -103,11 +107,14 @@ public class Server {
                 sleepiness = 100;
             }
         }
-
+        if (line.hasOption("idlelimit")) {
+            taskIdleLimit = Integer.parseInt(line.getOptionValue("idlelimit"));
+        }
 
         singleHits = new LRUCache<SingleHits>(cacheSize);
         pairedHits = new LRUCache<PairedHits>(cacheSize);
-        headers = new LRUCache<Header>(cacheSize);
+        singleHeaders = new LRUCache<Header>(cacheSize);
+        pairedHeaders = new LRUCache<Header>(cacheSize);
         acls = new LRUCache<AlignmentACL>(cacheSize);
         debug = line.hasOption("debug");
         logger.log(Level.INFO,String.format("Server parsed args: port %d, threads %d, directory %s",port,numThreads,topdir));
@@ -117,8 +124,8 @@ public class Server {
     public void printHelp() {
         System.out.println("ReadDB server process");
         System.out.println("usage: java edu.psu.compbio.seqcode.gse.projects.readdb.Server --datadir /path/to/datadir --port 52000");
-        System.out.println(" [--threads 4]   use three worker threads to process requests.");
-        System.out.println(" [--cachesize 400]  number of datasets to keep open.  Actual number of open files will be");
+        System.out.println(" [--threads 5]   use this number of worker threads to process requests.");
+        System.out.println(" [--cachesize 100]  number of datasets to keep open.  Actual number of open files will be");
         System.out.println("                  up to 18 times this value");
         System.out.println(" [--maxconn 250]   maximum number of open connections");
         System.out.println(" [--debug]  print debugging output");
@@ -162,12 +169,16 @@ public class Server {
                 Socket s = socket.accept();
                 logger.log(Level.INFO,"accepted from " + s.getInetAddress());
                 s.setSoLinger(false,0);
-                ServerTask st = new ServerTask(this,s);
+                ServerTask st = new ServerTask(this,s, taskIdleLimit*1000*3600);
                 if (debug) {
                     System.err.println("New Task is " + st);
                 }
                 dispatch.addWork(st);
-            } catch (IOException e) {
+            }catch (SocketTimeoutException ste){
+            	System.err.println("Connection timeout: "+ste.getMessage());
+            }catch (SocketException se){
+            	System.err.println("Connection error: "+se.getMessage());
+        	}catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -193,8 +204,9 @@ public class Server {
         return getTopDir() + "defaultACL.txt";
     }    
     public String getSingleHeaderFileName(String alignID,
-                                          int chromID) {
-        return getAlignmentDir(alignID) + System.getProperty("file.separator") + chromID + ".singleindex";
+                                          int chromID,
+                                          boolean isType2) {
+        return getAlignmentDir(alignID) + System.getProperty("file.separator") + chromID + (isType2 ? ".singlet2index" : ".singleindex");
     }    
     public String getPairedHeaderFileName(String alignID,
                                           int chromID,
@@ -202,7 +214,8 @@ public class Server {
         return getAlignmentDir(alignID) + System.getProperty("file.separator") + chromID + ".paired" + (isLeft ? "left" : "right") + "index";
     }
     public Set<Integer> getChroms(String alignID,
-                                 boolean isPaired,
+                                 boolean isType2,
+    							 boolean isPaired,
                                  boolean isLeft) {
         File directory = new File(getAlignmentDir(alignID));
         File[] files = directory.listFiles();
@@ -210,7 +223,7 @@ public class Server {
             return null;
         }
         Set<Integer> output = new HashSet<Integer>();
-        String suffix = isPaired ? (isLeft ? ".pairedleftindex" : ".pairedrightindex") : ".singleindex";
+        String suffix = isPaired ? (isLeft ? ".pairedleftindex" : ".pairedrightindex") : (isType2 ? ".singlet2index" : ".singleindex");
         for (int i = 0; i < files.length; i++) {
             int index = files[i].getName().indexOf(suffix);
             if (index > 0) {
@@ -225,12 +238,13 @@ public class Server {
      * Client code is responsible for locking the file as necessary.
      */
     public SingleHits getSingleHits(String alignID,
-                                    int chrom) throws IOException, SecurityException, FileNotFoundException {
-        String key = alignID + chrom;
+                                    int chrom,
+                                    boolean isType2) throws IOException, SecurityException, FileNotFoundException {
+        String key = alignID + chrom + isType2;
         SingleHits output = singleHits.get(key);
         if (output == null) {
             String prefix = getAlignmentDir(alignID) + System.getProperty("file.separator");
-            output = new SingleHits(prefix,chrom);
+            output = new SingleHits(prefix,chrom,isType2);
             singleHits.add(key, output);
         }
         return output;
@@ -251,21 +265,21 @@ public class Server {
      * Returns the requested Header object.  Creates it or retrieves from cache.
      * Client code is responsible for locking the file as necessary.
      */
-    public Header getSingleHeader(String alignID, int chromID) throws IOException {
-        String key = alignID + chromID;
-        Header output = headers.get(key);
+    public Header getSingleHeader(String alignID, int chromID, boolean isType2) throws IOException {
+        String key = alignID + chromID +isType2;
+        Header output = singleHeaders.get(key);
         if (output == null) {
-            output = Header.readIndexFile(getSingleHeaderFileName(alignID,chromID));
-            headers.add(key, output);
+            output = Header.readIndexFile(getSingleHeaderFileName(alignID,chromID, isType2));
+            singleHeaders.add(key, output);
         }
         return output;
     }
     public Header getPairedHeader(String alignID, int chromID, boolean isLeft) throws IOException {
         String key = alignID + chromID + isLeft;
-        Header output = headers.get(key);
+        Header output = pairedHeaders.get(key);
         if (output == null) {
             output = Header.readIndexFile(getPairedHeaderFileName(alignID,chromID,isLeft));
-            headers.add(key, output);
+            pairedHeaders.add(key, output);
         }
         return output;
     }
@@ -281,21 +295,22 @@ public class Server {
         }
         return output;
     }
-    public void removeSingleHits(String alignID, int chromID) {
-        singleHits.remove(alignID + chromID);
+    public void removeSingleHits(String alignID, int chromID, boolean isType2) {
+        singleHits.remove(alignID + chromID+ isType2);
     }
     public void removePairedHits(String alignID, int chromID, boolean isLeft) {
         pairedHits.remove(alignID + chromID + isLeft);
     }
-    public void removeSingleHeader(String alignID, int chromID) {
-        headers.remove(alignID + chromID);
+    public void removeSingleHeader(String alignID, int chromID, boolean isType2) {
+        singleHeaders.remove(alignID + chromID + isType2);
     }
     public void removePairedHeader(String alignID, int chromID, boolean isLeft) {
-        headers.remove(alignID + chromID + isLeft);
+        pairedHeaders.remove(alignID + chromID + isLeft);
     }
     public void removeACL(String alignID) {acls.remove(alignID);}
     protected void printCacheContents() {
-        headers.printKeys();
+        singleHeaders.printKeys();
+        pairedHeaders.printKeys();
         singleHits.printKeys();
         pairedHits.printKeys();
         acls.printKeys();
@@ -313,7 +328,7 @@ public class Server {
     }
     /**
      * Returns true iff this princ is a server admin.
-     * Server admins can shut the server down.
+     * Server admins can shut the server down and have read/write/admin access to any data.
      *
      * Currently implemented as members of the admin
      * group.

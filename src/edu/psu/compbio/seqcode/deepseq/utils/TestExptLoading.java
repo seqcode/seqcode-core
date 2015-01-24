@@ -60,7 +60,6 @@ public class TestExptLoading {
 		manager = new ExperimentManager(econfig);
 		Genome gen = gconfig.getGenome();
 		
-		
 		Map<ControlledExperiment, Double> meanFragmentCoverage = new HashMap<ControlledExperiment, Double>();
 		//If we have multiple experiments, process one at a time
 		for(ControlledExperiment expt : manager.getReplicates()){
@@ -80,6 +79,7 @@ public class TestExptLoading {
 	            }
 			}
 			System.out.println(expt.getName()+"\t"+expt.getSignal().getHitCount()+"\t"+totalCount);
+			
 		}
 		manager.close();
 	}

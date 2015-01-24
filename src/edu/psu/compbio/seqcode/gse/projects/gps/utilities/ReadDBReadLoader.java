@@ -36,15 +36,17 @@ public class ReadDBReadLoader extends ReadLoader{
 	private List<String> exptNames =new ArrayList<String>();
 	private List<SeqAlignment> aligns = new ArrayList<SeqAlignment>();
 	protected int currID=0;
+	protected boolean loadR2=false;
 
-	public ReadDBReadLoader(Genome g, List<SeqLocator> locs, int rLen){this(g, locs, rLen, false);}
-	public ReadDBReadLoader(Genome g, List<SeqLocator> locs, int rLen, boolean pairedEnd){
+	public ReadDBReadLoader(Genome g, List<SeqLocator> locs, int rLen){this(g, locs, rLen, false, false);}
+	public ReadDBReadLoader(Genome g, List<SeqLocator> locs, int rLen, boolean loadR2, boolean pairedEnd){
 		super(g, rLen);
 
 		if (locs.size() == 0) {
 			System.err.println("Created a ReadDBReadLoader with no ChipSeqLocators");
 		}
 		this.pairedEnd =pairedEnd;
+		this.loadR2 = loadR2;
 		currID=new Random(System.currentTimeMillis()).nextInt();
 		try {
 			//Initialize
@@ -135,9 +137,9 @@ public class ReadDBReadLoader extends ReadLoader{
 		totalWeight=0;
 		try {
 			for(SeqAlignment alignment : aligns) { 
-				double currHits = (double)client.getCount(Integer.toString(alignment.getDBID()), pairedEnd, pairedEnd?true:null, null);
+				double currHits = (double)client.getCount(Integer.toString(alignment.getDBID()), loadR2, pairedEnd, pairedEnd?true:null, null);
 				totalHits+=currHits;
-				double currWeight =(double)client.getWeight(Integer.toString(alignment.getDBID()), pairedEnd, pairedEnd?true:null, null);
+				double currWeight =(double)client.getWeight(Integer.toString(alignment.getDBID()), loadR2,pairedEnd, pairedEnd?true:null, null);
 				totalWeight +=currWeight;
 			}
 		} catch (IOException e) {
@@ -155,8 +157,8 @@ public class ReadDBReadLoader extends ReadLoader{
 		double strandWeight=0;
 		try {
 			for(SeqAlignment alignment : aligns) {
-				strandWeight += (double)client.getWeight(Integer.toString(alignment.getDBID()), 
-						pairedEnd, pairedEnd?true:false, null);
+				strandWeight += (double)client.getWeight(Integer.toString(alignment.getDBID()),
+						loadR2,pairedEnd, pairedEnd?true:false, null);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -176,6 +178,7 @@ public class ReadDBReadLoader extends ReadLoader{
 				if(!pairedEnd){
 					for (SingleHit h : client.getSingleHits(Integer.toString(alignment.getDBID()),
 							r.getGenome().getChromID(r.getChrom()),
+							loadR2,
 							r.getStart(),
 							r.getEnd(),
 							null,
@@ -278,8 +281,9 @@ public class ReadDBReadLoader extends ReadLoader{
 		try {
 			allHits = client.getWeightHistogram(alignids,
 					r.getGenome().getChromID(r.getChrom()),
+					loadR2,
 					pairedEnd,
-					false,
+					0,
 					1,
 					r.getStart(),
 					r.getEnd(),
@@ -313,6 +317,7 @@ public class ReadDBReadLoader extends ReadLoader{
 			for(SeqAlignment alignment : aligns) {
 				for (SingleHit h : client.getSingleHits(Integer.toString(alignment.getDBID()),
 						r.getGenome().getChromID(r.getChrom()),
+						loadR2,
 						r.getStart(),
 						r.getEnd(),
 						null,
@@ -346,6 +351,7 @@ public class ReadDBReadLoader extends ReadLoader{
 				if(!pairedEnd){
 					for (SingleHit h : client.getSingleHits(Integer.toString(alignment.getDBID()),
 							r.getGenome().getChromID(r.getChrom()),
+							loadR2,
 							r.getStart(),
 							r.getEnd(),
 							null,
@@ -381,6 +387,7 @@ public class ReadDBReadLoader extends ReadLoader{
 			for(SeqAlignment alignment : aligns) { 
 				count += client.getCount(Integer.toString(alignment.getDBID()),
 						r.getGenome().getChromID(r.getChrom()),
+						loadR2,
 						pairedEnd,
 						r.getStart(),
 						r.getEnd(),
@@ -403,6 +410,7 @@ public class ReadDBReadLoader extends ReadLoader{
 			for(SeqAlignment alignment : aligns) { 
 				sum += client.getWeight(Integer.toString(alignment.getDBID()),
 						r.getGenome().getChromID(r.getChrom()),
+						loadR2,
 						pairedEnd,
 						r.getStart(),
 						r.getEnd(),

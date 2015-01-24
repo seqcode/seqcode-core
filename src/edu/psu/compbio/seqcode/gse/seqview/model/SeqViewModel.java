@@ -5,11 +5,11 @@ import java.util.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
 
-
 public abstract class SeqViewModel implements Model {
     private HashSet<Listener<EventObject>> listeners;
     private boolean keepRunning;
     private ModelProperties props;
+    protected boolean dataError=false;
     
     public SeqViewModel() {
         listeners = new HashSet<Listener<EventObject>>();
@@ -20,6 +20,7 @@ public abstract class SeqViewModel implements Model {
     public ModelProperties getProperties() {return props;}
 
     public boolean keepRunning() {return keepRunning;}
+    public boolean isDataError(){return dataError;}
     public void stopRunning() {
         keepRunning = false;
         synchronized(this) {

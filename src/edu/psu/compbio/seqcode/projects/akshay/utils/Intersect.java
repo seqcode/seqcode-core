@@ -252,7 +252,7 @@ public class Intersect {
 			
 			for(int r=0; r< reps.size(); r++){
 				SeqLocator tmpLoc = new SeqLocator(ename, reps.get(r), aname);
-				SeqExpander tmpExp = new SeqExpander(tmpLoc);
+				SeqExpander tmpExp = new SeqExpander(tmpLoc,false);
 				Genome.ChromosomeInfo s = gen.getChrom(Id2Chrom.get(c));
 				NamedRegion chrom = new NamedRegion(gen,Id2Chrom.get(c),1,s.getLength(),Id2Chrom.get(c));
 				//System.out.println(this.gen.getChromID(Id2Chrom.get(c))+"\t"+Id2Chrom.get(c));

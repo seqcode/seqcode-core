@@ -5,7 +5,6 @@ import java.awt.*;
 
 import javax.swing.*;
 import java.awt.event.*;
-import javax.swing.event.*;
 import javax.swing.table.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;

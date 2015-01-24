@@ -2,9 +2,7 @@ package edu.psu.compbio.seqcode.projects.shaun;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -15,7 +13,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
@@ -108,7 +105,7 @@ public class SeqData {
             		loc = new SeqLocator(expt.getName(), expt.getReplicate(), align.getName());
         		}
         		
-        		expander = new SeqExpander(loc);
+        		expander = new SeqExpander(loc,false);
         	    loader = new SeqDataLoader();
     	        alignments = new LinkedList<SeqAlignment>();
     	        
@@ -222,7 +219,7 @@ public class SeqData {
 	        }
 
 
-	        expander = new SeqExpander(locator);
+	        expander = new SeqExpander(locator,false);
 	        loc = locator;
 	        countHits();
         } catch (IOException e) {
@@ -262,7 +259,7 @@ public class SeqData {
 		double hits=0;
 		try {
 			for(SeqAlignment alignment : alignments) { 
-				double currHits = (double)loader.countByRegion(alignment, a);
+				double currHits = (double)loader.countByRegion(alignment, a,false);
 				hits+=currHits;
 			}
 			return hits;
@@ -277,7 +274,7 @@ public class SeqData {
 		try {
 			LinkedList<StrandedRegion> total = new LinkedList<StrandedRegion>();
 			for(SeqAlignment alignment : alignments) { 
-				Collection<SeqHit> hits = loader.loadByRegion(alignment, a);
+				Collection<SeqHit> hits = loader.loadByRegion(alignment, a,false);
 				for(SeqHit curr : hits){
 					total.add(hit2region(0, curr));
 				}
@@ -294,7 +291,7 @@ public class SeqData {
 		try {
 			LinkedList<StrandedRegion> total = new LinkedList<StrandedRegion>();
 			for(SeqAlignment alignment : alignments) { 
-				Collection<SeqHit> hits = loader.loadByRegion(alignment, a);
+				Collection<SeqHit> hits = loader.loadByRegion(alignment, a,false);
 				for(SeqHit curr : hits){
 					total.add(hit2region((int)readExtension, curr));
 				}
@@ -314,7 +311,7 @@ public class SeqData {
 		
 		try {
 			for(SeqAlignment alignment : alignments) { 
-				Iterator<SeqHit> h = loader.loadByRegion(alignment, a).iterator();
+				Iterator<SeqHit> h = loader.loadByRegion(alignment, a,false).iterator();
 				while(h.hasNext()){
 					SeqHit csh = h.next();
 					int pos = csh.getStart()-a.getStart();

@@ -24,8 +24,10 @@ import edu.psu.compbio.seqcode.deepseq.ReadHit;
  */
 public class TophatFileHitLoader extends FileHitLoader{
 
-    public TophatFileHitLoader(File f, boolean nonUnique, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs) {
-    	super(f, nonUnique, loadR1Reads, loadR2Reads, loadPairs);
+    public TophatFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs) {
+    	super(f, nonUnique, true, false, loadPairs);
+    	if(!loadT1Reads || loadT2Reads)
+			System.err.println("TophatFileHitLoader: You asked to load only Type1 or Type2 reads, we do not load this information from Tophat SAM format.");
     }
 
     /**

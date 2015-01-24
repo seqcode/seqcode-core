@@ -361,7 +361,11 @@ public class SeqHistogramPainter extends RegionPaintable {
 		
 		//Draw labels
 		g.setStroke(oldStroke);
-		if (getProperties().DrawTrackLabel) {
+		if(histomodel.isDataError()){
+			g.setFont(attrib.getRegionLabelFont(trackWidth,trackHeight));
+			g.setColor(Color.RED);
+			g.drawString("ReadDB Data Error: " +getLabel(),x1 + g.getFont().getSize()*2,y1 + g.getFont().getSize());
+		}else if (getProperties().DrawTrackLabel) {
 			g.setFont(attrib.getRegionLabelFont(trackWidth,trackHeight));
 			g.setColor(Color.black);
 			g.drawString(getLabel(),x1 + g.getFont().getSize()*2,y1 + g.getFont().getSize());

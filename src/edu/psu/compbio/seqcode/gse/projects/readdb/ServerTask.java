@@ -1,7 +1,6 @@
 package edu.psu.compbio.seqcode.gse.projects.readdb;
 
 import java.io.*;
-import java.nio.*;
 import java.nio.channels.*;
 import java.net.*;
 import java.util.*;
@@ -12,11 +11,17 @@ import javax.security.auth.callback.*;
 /** 
  * ServerTask represents a client connection.  Server creates ServerTasks when it receives
  * a connection and passes them to Dispatch.  Dispatch manages a pool of WorkerThreads and
- * assigns them to ServerTasks as the tasks appear to be available.  
+ * assigns them to ServerTasks as the tasks appear to be available. 
+ * 
+ * The current ServerTasks shut themselves down if they haven't been run in a given time period. 
+ *   
  */
 
 public class ServerTask {
-    private static final int SINGLE = 1, PAIRED = 2;
+    
+    /* limit in milliseconds before a task connection is closed by server */
+    private int taskInactivityLimit; 
+    private boolean limitInactivity; 
     /* instance variables */
     /* Server that we're working for.  Need a reference to it so we can ask it
        for paths and configuration information and such
@@ -31,7 +36,6 @@ public class ServerTask {
     /* Socket, streams from the socket */
     private Socket socket;
     private int haventTriedRead;
-    //    private BufferedInputStream instream;
     private BufferedInputStream instream;
     private OutputStream outstream;
     private WritableByteChannel outchannel;
@@ -47,8 +51,9 @@ public class ServerTask {
     private SaslServer sasl;
     private Map<String,String> saslprops;
     private String uname; // temporary, used by authenticate
+    private long lastActivity=0;
 
-    public ServerTask(Server serv, Socket s) throws IOException {
+    public ServerTask(Server serv, Socket s, int inactivityLimit) throws IOException {
         buffer = new byte[8192];
         request = new Request();
         args = new ArrayList<String>();
@@ -70,15 +75,22 @@ public class ServerTask {
         bufferpos = 0;
         sasl = null;
         socket.setTcpNoDelay(true);
-        //         if (server.debug()) {
-        //             System.err.println("New ServerTask " + this + " on socket " + socket);
-        //         }
+        taskInactivityLimit = inactivityLimit;
+        if(taskInactivityLimit>0)
+        	limitInactivity=true;
+        lastActivity = System.currentTimeMillis();
     }
+    
+    /* The shouldClose method checks the last activity time (set in run method) and returns true 
+    *  if past the time limit. Other methods set shouldClose after exceptions or once the task is finished. 
+    */
     public boolean shouldClose() {
-        //         if (shouldClose && server.debug()) {
-        //             System.err.println("Should close " + socket + " for " + this);
-        //         }
-
+    	//Check if we should shut this connection down
+        if(limitInactivity && System.currentTimeMillis()-lastActivity > taskInactivityLimit){
+        	shouldClose=true;
+        	server.getLogger().log(Level.INFO,"serverTask","connection idle more than "+taskInactivityLimit+"ms: closing connection");
+        }
+        
         return shouldClose;
     }
     public void close () {
@@ -133,6 +145,7 @@ public class ServerTask {
             avail = false;
             shouldClose = true;
         }
+        		
         return avail;
     }
     /** prints the response header signifying a valid request.  Only happens after
@@ -225,6 +238,7 @@ public class ServerTask {
      */
     public void run() {
         try {
+        	lastActivity = System.currentTimeMillis();
             if (username == null) {
                 if (!authenticate()) {
                     server.getLogger().logp(Level.INFO,"serverTask","run " + toString(),"not authenticated in ");
@@ -458,24 +472,30 @@ public class ServerTask {
             printAuthError();
             return;
         }
-        Header header;
-        Hits hits;
+        Header header=null;
+        Hits hits=null;
         try {
             if (request.isPaired) {
                 hits = server.getPairedHits(request.alignid, request.chromid, request.isLeft);
                 header = server.getPairedHeader(request.alignid, request.chromid, request.isLeft);
             } else {
-                hits = server.getSingleHits(request.alignid, request.chromid);
-                header = server.getSingleHeader(request.alignid, request.chromid);
+                hits = server.getSingleHits(request.alignid, request.chromid, request.isType2);
+                header = server.getSingleHeader(request.alignid, request.chromid, request.isType2);
             }
         } catch (IOException e) {
-            // happens if the file doesn't exist or if we can't read it at the OS level
-            server.getLogger().logp(Level.INFO,"ServerTask","processFileRequest " + toString(),
+            // We already know the alignment exists and we have permissions at this point. 
+        	// This exception may happen if the file doesn't exist or if we can't read it at the OS level
+        	//Let's choose to ignore the exception for now, and to have the methods below behave like there are 0 hits in this case
+        	header=null;
+        	hits=null;
+        	
+            /*server.getLogger().logp(Level.INFO,"ServerTask","processFileRequest " + toString(),
                                    String.format("read error on header or hits for %s, %d, %s : %s",
                                                  request.alignid, request.chromid, request.isLeft,
                                                  e.toString()));
             printInvalid(e.toString());
             return;
+            */
         }
         if (request.type.equals("count")) {
             processCount(header,hits);
@@ -497,7 +517,7 @@ public class ServerTask {
     }
 
     /* returns true iff the user named in the username field is allowed to
-       access this file
+       access this file, or if the user is in the admin group
     */
     public boolean authorizeRead(AlignmentACL acl) {
         return authorize(acl.getReadACL());
@@ -517,6 +537,8 @@ public class ServerTask {
                 return true;
             }
         }
+        if(server.isAdmin(username))
+        	return true;
         return false;
     }
     public void processAddToGroup() throws IOException {
@@ -648,6 +670,7 @@ public class ServerTask {
             return;
         }        
         Set<Integer> chroms = server.getChroms(request.alignid,
+                							   request.isType2,
                                                request.isPaired,
                                                request.isLeft);
         if (chroms == null) {
@@ -675,12 +698,11 @@ public class ServerTask {
         }
         Lock.writeLock(request.alignid);
         /* step one is to de-cache all the files */
-        Set<Integer> chroms = server.getChroms(request.alignid,
-                                               request.isPaired,
-                                               true);
+        Set<Integer> chroms = server.getChroms(request.alignid,false,request.isPaired,true);
         if (request.isPaired) {
-            chroms.addAll(server.getChroms(request.alignid, true,false));
-        }
+            chroms.addAll(server.getChroms(request.alignid,false, true,false));
+        }else
+        	chroms.addAll(server.getChroms(request.alignid,true, false,true));
         for (int c : chroms) {
             if (request.isPaired) {
                 server.removePairedHits(request.alignid, c, true);
@@ -688,8 +710,10 @@ public class ServerTask {
                 server.removePairedHeader(request.alignid, c, true);
                 server.removePairedHeader(request.alignid, c, false);
             } else {
-                server.removeSingleHits(request.alignid, c);
-                server.removeSingleHeader(request.alignid, c);
+                server.removeSingleHits(request.alignid, c, true);
+                server.removeSingleHeader(request.alignid, c, true);
+                server.removeSingleHits(request.alignid, c, false);
+                server.removeSingleHeader(request.alignid, c, false);
             }
         }
 
@@ -714,10 +738,10 @@ public class ServerTask {
                     name.indexOf(".pairedleftindex") > 0 ||
                     name.indexOf(".pairedrightindex") > 0 ||
                     name.indexOf(".paircode") > 0;  
-                boolean singlefile = name.indexOf("singleindex") > 0||
-                    name.indexOf("spositions") > 0 ||
-                    name.indexOf("sweights") > 0 ||
-                    name.indexOf("slas") > 0;
+                boolean singlefile = name.indexOf("singleindex") > 0|| name.indexOf("singlet2index") > 0||
+                    name.indexOf("spositions") > 0 || name.indexOf("st2positions") > 0 ||
+                    name.indexOf("sweights") > 0 || name.indexOf("st2weights") > 0 ||
+                    name.indexOf("slas") > 0 ||name.indexOf("st2las") > 0;
                 if (request.isPaired && pairedfile) {
                     toDelete.add(prefix + name);
                 } else if (!request.isPaired && singlefile) {
@@ -730,7 +754,6 @@ public class ServerTask {
         }       
         if (allgone) {
             toDelete.add(server.getACLFileName(request.alignid));
-            toDelete.add(directory.getName());
             server.removeACL(request.alignid);
         }
         File f;
@@ -745,6 +768,17 @@ public class ServerTask {
                                        "ServerTask.processDeleteAlignment didn't delete " + fname);
             }
         }
+        if(allgone){
+        	// file system delete directory
+            f = new File(directory.getCanonicalPath());
+        	boolean deleted = f.delete();
+            allDeleted = allDeleted && deleted;
+            if (!deleted) {
+                server.getLogger().logp(Level.INFO,"ServerTask","processDeleteAlignment "+ toString(),
+                                       "ServerTask.processDeleteAlignment didn't delete directory " + directory.getCanonicalPath());
+            }
+        }
+        
         if (allDeleted) {
             printOK();
         } else {
@@ -807,7 +841,7 @@ public class ServerTask {
         SingleHit[] hits = null;
 
         /* if the alignment already exists, read in the old hits */
-        Set<Integer> chroms = server.getChroms(request.alignid, false,false);
+        Set<Integer> chroms = server.getChroms(request.alignid, request.isType2, false,false);
         try {
             if (chroms != null && chroms.contains(request.chromid)) {
                 try {        
@@ -824,9 +858,10 @@ public class ServerTask {
                 }
                 try {
                     server.getSingleHits(request.alignid,
-                                         request.chromid).appendSingleHits(newhits,
+                                         request.chromid, 
+                                         request.isType2).appendSingleHits(newhits,
                                                                            server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
-                                                                           request.chromid);
+                                                                           request.chromid, request.isType2);
                 } catch (Exception e) {
                     server.getLogger().logp(Level.INFO,"ServerTask","processSingleStore "+toString(),"error writing hits",e);
                     printInvalid(e.toString());
@@ -853,20 +888,23 @@ public class ServerTask {
                 server.removeACL(request.alignid); // make sure the server doesn't have this ACL cached
                 SingleHits.writeSingleHits(newhits,
                                            server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
-                                           request.chromid);
+                                           request.chromid,
+                                           request.isType2);
             }
             SingleHits singlehits = new SingleHits(server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
-                                                   request.chromid);
+                                                   request.chromid,
+                                                   request.isType2);
             Header header = new Header(singlehits.getPositionsBuffer().ib);
             header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
-                                                                 request.chromid));
+                                                                 request.chromid,
+                                                                 request.isType2));
         } catch (IOException e) {
             server.getLogger().logp(Level.INFO,"ServerTask","processSingleStore "+ toString(),"IOException trying to save files : " + e.toString(),e);
             return;
         }
         printOK();
-        server.removeSingleHits(request.alignid, request.chromid);
-        server.removeSingleHeader(request.alignid, request.chromid);
+        server.removeSingleHits(request.alignid, request.chromid, request.isType2);
+        server.removeSingleHeader(request.alignid, request.chromid, request.isType2);
     }
 
     public void processPairedStore() throws IOException {
@@ -1033,145 +1071,167 @@ public class ServerTask {
             server.removePairedHeader(request.alignid, request.chromid,false);
 
         } else {
-            SingleHits hits = server.getSingleHits(request.alignid, request.chromid);
+            SingleHits hits = server.getSingleHits(request.alignid, request.chromid, request.isType2);
             Header header = new Header(hits.getPositionsBuffer().ib);
             header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
-                                                                 request.chromid));
-            server.removeSingleHeader(request.alignid, request.chromid);       
+                                                                 request.chromid,
+                                                                 request.isType2));
+            server.removeSingleHeader(request.alignid, request.chromid, request.isType2);       
         }
         printOK();
     }
 
     public void processCount(Header header, Hits hits) throws IOException {
-        printOK();
-        if (request.start == null && request.end == null && request.minWeight == null && request.isPlusStrand == null) {
-            printString(Integer.toString(header.getNumHits()) + "\n");
-            return;
-        }
-        if (request.start == null) {
-            request.start = 0;
-        }
-        if (request.end == null) {
-            request.end = Integer.MAX_VALUE;
-        }
-        int count = 0;
-        int first = header.getFirstIndex(request.start == null ? 0 : request.start);
-        int last = header.getLastIndex(request.end == null ? Integer.MAX_VALUE : request.end);
-        printString(Integer.toString(hits.getCountBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand)) + "\n");
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0\n");
+    	}else{
+	        printOK();
+	        if (request.start == null && request.end == null && request.minWeight == null && request.isPlusStrand == null) {
+	            printString(Integer.toString(header.getNumHits()) + "\n");
+	            return;
+	        }
+	        if (request.start == null) {
+	            request.start = 0;
+	        }
+	        if (request.end == null) {
+	            request.end = Integer.MAX_VALUE;
+	        }
+	        int first = header.getFirstIndex(request.start == null ? 0 : request.start);
+	        int last = header.getLastIndex(request.end == null ? Integer.MAX_VALUE : request.end);
+	        printString(Integer.toString(hits.getCountBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand)) + "\n");
+    	}
     }
     public void processWeight(Header header, Hits hits) throws IOException {
-        printOK();
-        if (request.start == null) {
-            request.start = 0;
-        }
-        if (request.end == null) {
-            request.end = Integer.MAX_VALUE;
-        }
-        int first = header.getFirstIndex(request.start);
-        int last = header.getLastIndex(request.end);
-        printString(Double.toString(hits.getWeightBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand)) + "\n");
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0.0\n");
+    	}else{
+    		printOK();
+	        if (request.start == null) {
+	            request.start = 0;
+	        }
+	        if (request.end == null) {
+	            request.end = Integer.MAX_VALUE;
+	        }
+	        int first = header.getFirstIndex(request.start);
+	        int last = header.getLastIndex(request.end);
+	        printString(Double.toString(hits.getWeightBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand)) + "\n");
+    	}
     }
     public void processGetHits(Header header, Hits hits) throws IOException {
-        int count;
-        if (!(hits instanceof PairedHits)) {
-            if (request.map.containsKey("wantotherchroms") ||
-                request.map.containsKey("wantotherpositions") ||
-                request.map.containsKey("wantpaircodes")) {
-                printString("invalid columns requested for single-ended data\n");
-                return;
-            }
-        }
-        if (request.start == null) {
-            request.start = 0;
-        }
-        if (request.end == null) {
-            request.end = Integer.MAX_VALUE;
-        }
-        int first = header.getFirstIndex(request.start);
-        int last = header.getLastIndex(request.end);
-        if (request.start == 0 && request.end == Integer.MAX_VALUE && request.minWeight == null && request.isPlusStrand == null) {
-            count = header.getNumHits();
-        } else {
-            count = hits.getCountBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand);
-        }
-        printOK();
-        printString(Integer.toString(count) + "\n");
-        if (request.map.containsKey("wantpositions")) {
-            IntBP p = hits.getHitsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }
-        if (request.map.containsKey("wantweights")) {
-            FloatBP p = hits.getWeightsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }
-        if (request.map.containsKey("wantpaircodes")) {
-        	IntBP p = ((PairedHits)hits).getPairCodesBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }
-        if (request.map.containsKey("wantlengthsandstrands")) {
-            IntBP p = hits.getLASBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }
-        if (request.map.containsKey("wantotherchroms")) {
-            IntBP p = ((PairedHits)hits).getOtherChromsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }
-        if (request.map.containsKey("wantotherpositions")) {
-            IntBP p = ((PairedHits)hits).getOtherPositionsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
-            Bits.sendBytes(p.bb, outchannel);
-        }        
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0\n");
+    	}else{
+	    	int count;
+	        if (!(hits instanceof PairedHits)) {
+	            if (request.map.containsKey("wantotherchroms") ||
+	                request.map.containsKey("wantotherpositions") ||
+	                request.map.containsKey("wantpaircodes")) {
+	                printString("invalid columns requested for single-ended data\n");
+	                return;
+	            }
+	        }
+	        if (request.start == null) {
+	            request.start = 0;
+	        }
+	        if (request.end == null) {
+	            request.end = Integer.MAX_VALUE;
+	        }
+	        int first = header.getFirstIndex(request.start);
+	        int last = header.getLastIndex(request.end);
+	        if (request.start == 0 && request.end == Integer.MAX_VALUE && request.minWeight == null && request.isPlusStrand == null) {
+	            count = header.getNumHits();
+	        } else {
+	            count = hits.getCountBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand);
+	        }
+	        printOK();
+	        printString(Integer.toString(count) + "\n");
+	        if (request.map.containsKey("wantpositions")) {
+	            IntBP p = hits.getHitsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+	        if (request.map.containsKey("wantweights")) {
+	            FloatBP p = hits.getWeightsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+	        if (request.map.containsKey("wantpaircodes")) {
+	        	IntBP p = ((PairedHits)hits).getPairCodesBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+	        if (request.map.containsKey("wantlengthsandstrands")) {
+	            IntBP p = hits.getLASBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+	        if (request.map.containsKey("wantotherchroms")) {
+	            IntBP p = ((PairedHits)hits).getOtherChromsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+	        if (request.map.containsKey("wantotherpositions")) {
+	            IntBP p = ((PairedHits)hits).getOtherPositionsBetween(first,last,request.start,request.end,request.minWeight,request.isPlusStrand);
+	            Bits.sendBytes(p.bb, outchannel);
+	        }
+    	}
     }
     public void processHistogram(Header header, Hits hits) throws IOException {
-        int binsize = 10;
-        if (request.start == null) {
-            IntBP ib = hits.getPositionsBuffer();
-            request.start = ib.get(0);
-        }
-        if (request.end == null) {
-            IntBP ib = hits.getPositionsBuffer();
-            request.end = ib.get(ib.limit()-1);
-        }
-        try {
-            binsize = Integer.parseInt(request.map.get("binsize"));
-        } catch (Exception e) {
-            server.getLogger().logp(Level.INFO,"ServerTask","processHistogram "+toString(), "Exception parsing binsize : " + request.map.get("binsize"),e);
-            printString("missing or invalid bin size : " + request.map.get("binsize") + "\n");
-            return;
-        }
-        int dedup = 0;
-        if (request.map.containsKey("dedup")) {
-            dedup = Integer.parseInt(request.map.get("dedup"));
-        }
-        boolean extension = request.map.containsKey("extension");
-        int first = header.getFirstIndex(request.start);
-        int last = header.getLastIndex(request.end);
-        int[] raw = hits.histogram(first,
-                                   last,
-                                   request.start,
-                                   request.end,
-                                   binsize,
-                                   dedup,
-                                   request.minWeight,
-                                   request.isPlusStrand,
-                                   extension);
-        int n = 0;
-        for (int i = 0; i< raw.length; i++) {
-            if (raw[i] > 0) {
-                n++;
-            }
-        }
-        int[] hist = new int[n*2];
-        int pos = 0;
-        for (int i = 0; i< raw.length; i++) {
-            if (raw[i] > 0) {
-                hist[pos*2] = request.start + binsize * i + binsize / 2;
-                hist[pos*2+1] = raw[i];
-                pos++;
-            }
-        }
-        printOK();
-        printString(Integer.toString(hist.length) + "\n");
-        Bits.sendInts(hist, outstream, buffer);        
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0\n");
+    	}else{
+    		int binsize = 10;
+	    	if (request.start == null) {
+	            IntBP ib = hits.getPositionsBuffer();
+	            request.start = ib.get(0);
+	        }
+	        if (request.end == null) {
+	            IntBP ib = hits.getPositionsBuffer();
+	            request.end = ib.get(ib.limit()-1);
+	        }
+	        try {
+	            binsize = Integer.parseInt(request.map.get("binsize"));
+	        } catch (Exception e) {
+	            server.getLogger().logp(Level.INFO,"ServerTask","processHistogram "+toString(), "Exception parsing binsize : " + request.map.get("binsize"),e);
+	            printString("missing or invalid bin size : " + request.map.get("binsize") + "\n");
+	            return;
+	        }
+	        int dedup = 0, extension=0;
+	        if (request.map.containsKey("dedup")) {
+	            dedup = Integer.parseInt(request.map.get("dedup"));
+	        }
+	        if(request.map.containsKey("extension")) {
+	        	extension = Integer.parseInt(request.map.get("extension"));
+	        }
+	        int first = header.getFirstIndex(request.start);
+	        int last = header.getLastIndex(request.end);
+	        int[] raw = hits.histogram(first,
+	                                   last,
+	                                   request.start,
+	                                   request.end,
+	                                   binsize,
+	                                   dedup,
+	                                   request.minWeight,
+	                                   request.isPlusStrand,
+	                                   extension);
+	        int n = 0;
+	        for (int i = 0; i< raw.length; i++) {
+	            if (raw[i] > 0) {
+	                n++;
+	            }
+	        }
+	        int[] hist = new int[n*2];
+	        int pos = 0;
+	        for (int i = 0; i< raw.length; i++) {
+	            if (raw[i] > 0) {
+	                hist[pos*2] = request.start + binsize * i + binsize / 2;
+	                hist[pos*2+1] = raw[i];
+	                pos++;
+	            }
+	        }
+	        printOK();
+	        printString(Integer.toString(hist.length) + "\n");
+	        Bits.sendInts(hist, outstream, buffer);
+    	}
     }
 
     /* returns a histogram of hit weights in a region.  Inputs
@@ -1181,90 +1241,102 @@ public class ServerTask {
      * bins with zero count are not included.
      */
     public void processWeightHistogram(Header header, Hits hits) throws IOException {
-        int binsize = 10;
-        if (request.start == null) {
-            IntBP ib = hits.getPositionsBuffer();
-            request.start = ib.get(0);
-        }
-        if (request.end == null) {
-            IntBP ib = hits.getPositionsBuffer();
-            request.end = ib.get(ib.limit()-1);
-        }
-        try {
-            binsize = Integer.parseInt(request.map.get("binsize"));
-        } catch (Exception e) {
-            server.getLogger().logp(Level.INFO,"ServerTask","processWeightHistogram "+toString(), "Exception parsing binsize : " + request.map.get("binsize"),e);
-            printString("missing or invalid bin size : " + request.map.get("binsize") + "\n");
-            return;
-        }
-        int dedup = 0;
-        if (request.map.containsKey("dedup")) {
-            dedup = Integer.parseInt(request.map.get("dedup"));
-        }
-        boolean extension = request.map.containsKey("extension");
-        int first = header.getFirstIndex(request.start);
-        int last = header.getLastIndex(request.end);
-        float[] raw = hits.weightHistogram(first,
-                                           last,
-                                           request.start,
-                                           request.end,
-                                           binsize,
-                                           dedup,
-                                           request.minWeight,
-                                           request.isPlusStrand,
-                                           extension);
-        int n = 0;
-        for (int i = 0; i< raw.length; i++) {
-            if (raw[i] > 0) {
-                n++;
-            }
-        }
-        int[] parray = new int[n];
-        float[] farray = new float[n];
-        int pos = 0;
-        for (int i = 0; i< raw.length; i++) {
-            if (raw[i] > 0) {
-                parray[pos] = request.start + binsize * i + binsize / 2;
-                farray[pos] = raw[i];
-                pos++;
-            }
-        }
-        printOK();
-        printString(Integer.toString(parray.length) + "\n");
-        Bits.sendInts(parray, outstream, buffer);        
-        Bits.sendFloats(farray, outstream, buffer);
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0\n");
+    	}else{
+	    	int binsize = 10;
+	        if (request.start == null) {
+	            IntBP ib = hits.getPositionsBuffer();
+	            request.start = ib.get(0);
+	        }
+	        if (request.end == null) {
+	            IntBP ib = hits.getPositionsBuffer();
+	            request.end = ib.get(ib.limit()-1);
+	        }
+	        try {
+	            binsize = Integer.parseInt(request.map.get("binsize"));
+	        } catch (Exception e) {
+	            server.getLogger().logp(Level.INFO,"ServerTask","processWeightHistogram "+toString(), "Exception parsing binsize : " + request.map.get("binsize"),e);
+	            printString("missing or invalid bin size : " + request.map.get("binsize") + "\n");
+	            return;
+	        }
+	        int dedup = 0, extension=0;
+	        if (request.map.containsKey("dedup")) {
+	            dedup = Integer.parseInt(request.map.get("dedup"));
+	        }
+	        if(request.map.containsKey("extension")) {
+	        	extension = Integer.parseInt(request.map.get("extension"));
+	        }
+	        int first = header.getFirstIndex(request.start);
+	        int last = header.getLastIndex(request.end);
+	        float[] raw = hits.weightHistogram(first,
+	                                           last,
+	                                           request.start,
+	                                           request.end,
+	                                           binsize,
+	                                           dedup,
+	                                           request.minWeight,
+	                                           request.isPlusStrand,
+	                                           extension);
+	        int n = 0;
+	        for (int i = 0; i< raw.length; i++) {
+	            if (raw[i] > 0) {
+	                n++;
+	            }
+	        }
+	        int[] parray = new int[n];
+	        float[] farray = new float[n];
+	        int pos = 0;
+	        for (int i = 0; i< raw.length; i++) {
+	            if (raw[i] > 0) {
+	                parray[pos] = request.start + binsize * i + binsize / 2;
+	                farray[pos] = raw[i];
+	                pos++;
+	            }
+	        }
+	        printOK();
+	        printString(Integer.toString(parray.length) + "\n");
+	        Bits.sendInts(parray, outstream, buffer);        
+	        Bits.sendFloats(farray, outstream, buffer);
+    	}
     }
     public void processCheckSort(Header header, Hits hits) throws IOException {
-        IntBP ints = hits.getPositionsBuffer();
-        boolean needsort = false;
-        for (int i = 1; i < ints.limit(); i++) {
-            if (ints.get(i-1) > ints.get(i)) {
-                //                printString(String.format("Bad sort at %d : %d > %d.\n",
-                //                                          i,ints.get(i-1),ints.get(i)));
-                needsort = true;
-            }
-        }
-        if (needsort) {
-            if (hits instanceof SingleHits) {
-                server.getLogger().logp(Level.INFO,"ServerTask","processCheckSort",String.format("Resorting %s %d",request.alignid, request.chromid));
-                ((SingleHits)hits).resort(server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
-                                          request.chromid);
-                
-                server.removeSingleHits(request.alignid, request.chromid);
-                server.removeSingleHeader(request.alignid, request.chromid);       
-                hits = server.getSingleHits(request.alignid, request.chromid);
-                
-                header = new Header(hits.getPositionsBuffer().ib);
-                header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
-                                                                     request.chromid));
-
-            } else {
-                printString("Can't resort paired hits");
-                return;
-            }
-        }
-
-        printOK();
+    	if(header==null || hits==null){
+            printString("File does not exist for this chromosome");
+    	}else{
+	    	IntBP ints = hits.getPositionsBuffer();
+	        boolean needsort = false;
+	        for (int i = 1; i < ints.limit(); i++) {
+	            if (ints.get(i-1) > ints.get(i)) {
+	                //                printString(String.format("Bad sort at %d : %d > %d.\n",
+	                //                                          i,ints.get(i-1),ints.get(i)));
+	                needsort = true;
+	            }
+	        }
+	        if (needsort) {
+	            if (hits instanceof SingleHits) {
+	                server.getLogger().logp(Level.INFO,"ServerTask","processCheckSort",String.format("Resorting %s %d",request.alignid, request.chromid));
+	                ((SingleHits)hits).resort(server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
+	                                          request.chromid, 
+	                                          request.isType2);
+	                
+	                server.removeSingleHits(request.alignid, request.chromid, request.isType2);
+	                server.removeSingleHeader(request.alignid, request.chromid, request.isType2);       
+	                hits = server.getSingleHits(request.alignid, request.chromid, request.isType2);
+	                
+	                header = new Header(hits.getPositionsBuffer().ib);
+	                header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
+	                                                                     request.chromid,
+	                                                                     request.isType2));
+	
+	            } else {
+	                printString("Can't resort paired hits");
+	                return;
+	            }
+	        }
+	        printOK();
+    	}
     }
     public String toString() {
         return String.format("thread %s, user %s, remote %s:%d",

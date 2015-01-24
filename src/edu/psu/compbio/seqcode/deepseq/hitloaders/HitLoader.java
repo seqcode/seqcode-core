@@ -24,8 +24,8 @@ import edu.psu.compbio.seqcode.deepseq.ReadHit;
  */
 public abstract class HitLoader {
 
-	protected boolean loadR1=true; //Load left reads
-	protected boolean loadR2=false; //Load right reads (if exists)
+	protected boolean loadType1=true; //Load type1 reads
+	protected boolean loadType2=false; //Load type2 reads (if exists)
 	protected boolean loadPairs=false; //Load pair information (if exists)
 	protected boolean hasPairs = false; //Flag to say there are pairs in the sample 
 	protected double totalHits; //totalHits is the sum of alignment weights
@@ -58,8 +58,8 @@ public abstract class HitLoader {
 	 * @param g Genome
 	 */
 	public HitLoader(boolean loadR1, boolean loadR2, boolean loadPairs){
-		this.loadR1=loadR1;
-		this.loadR2=loadR2;
+		this.loadType1=loadR1;
+		this.loadType2=loadR2;
 		this.loadPairs=loadPairs;
 		totalHits=0;		
 	}
@@ -76,7 +76,7 @@ public abstract class HitLoader {
 	/**
 	 * Get all hits from the appropriate source (implementation-specific).
 	 * Loads single end data to the fivePrimePosList and fivePrimeCountsList.
-	 * Enforcing which reads to load (R1 and/or R2) is also implementation-specific. 
+	 * Enforcing which reads to load (Type1 and/or Type2) is also implementation-specific. 
 	 * Loads pairs to hitPairsList (if requested & if they exist).
 	 * 
 	 */

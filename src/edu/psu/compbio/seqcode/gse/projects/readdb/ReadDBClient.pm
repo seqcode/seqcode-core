@@ -156,9 +156,10 @@ sub alignExists {
 }
 
 sub getChroms {
-  my ($self, $alignid, $isPaired, $isLeft) = @_;
+  my ($self, $alignid, $isType2, $isPaired, $isLeft) = @_;
   $self->{request}{requesttype} = 'getchroms';
   $self->{request}{alignid} = $alignid;
+  $self->{request}{istype2} = $isType2;
   $self->{request}{ispaired} = $isPaired;
   $self->{request}{isleft} = $isLeft;
   $self->sendRequest();
@@ -175,7 +176,7 @@ sub getChroms {
 }
 
 sub getCount {
-  my ($self, $alignid, $isPaired, $isLeft, $isPlusStrand, @chroms) = @_;
+  my ($self, $alignid, $isType2, $isPaired, $isLeft, $isPlusStrand, @chroms) = @_;
   if (@chroms == 0) {
     @chroms = $self->getChroms($alignid);
   }
@@ -184,6 +185,7 @@ sub getCount {
     $self->{request}{requesttype} = 'count';
     $self->{request}{alignid} = $alignid;
     $self->{request}{chromid} = $chrom;
+    $self->{request}{istype2} = $isType2;
     $self->{request}{ispaired} = $isPaired;
     $self->{request}{isleft} = $isLeft;
     $self->{request}{isplusstrand} = $isPlusStrand;
@@ -199,7 +201,7 @@ sub getCount {
 }
 
 sub getWeight {
-  my ($self, $alignid, $isPaired, $isLeft, $isPlusStrand, @chroms) = @_;
+  my ($self, $alignid, $isType2, $isPaired, $isLeft, $isPlusStrand, @chroms) = @_;
   if (@chroms == 0) {
     @chroms = $self->getChroms($alignid);
   }
@@ -208,6 +210,7 @@ sub getWeight {
     $self->{request}{requesttype} = 'weight';
     $self->{request}{alignid} = $alignid;
     $self->{request}{chromid} = $chrom;
+    $self->{request}{istype2} = $isType2;
     $self->{request}{ispaired} = $isPaired;
     $self->{request}{isleft} = $isLeft;
     $self->{request}{isplusstrand} = $isPlusStrand;
@@ -223,10 +226,11 @@ sub getWeight {
 }
 
 sub getCountRange {
-  my ($self,$alignid,$chrom,$isPaired,$start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
+  my ($self,$alignid,$chrom,$isType2,$isPaired,$start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
   $self->{request}{requesttype} = 'count';
   $self->{request}{alignid} = $alignid;
   $self->{request}{chromid} = $chrom;
+  $self->{request}{istype2} = $isType2;
   $self->{request}{ispaired} = $isPaired;
   $self->{request}{isleft} = $isLeft;
   $self->{request}{isplusstrand} = $isPlusStrand;
@@ -243,10 +247,11 @@ sub getCountRange {
 }
 
 sub getWeightRange {
-  my ($self,$alignid,$chrom,$isPaired,$start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
+  my ($self,$alignid,$chrom,$isType2,$isPaired,$start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
   $self->{request}{requesttype} = 'weight';
   $self->{request}{alignid} = $alignid;
   $self->{request}{chromid} = $chrom;
+  $self->{request}{istype2} = $isType2;
   $self->{request}{ispaired} = $isPaired;
   $self->{request}{isleft} = $isLeft;
   $self->{request}{isplusstrand} = $isPlusStrand;
@@ -263,10 +268,11 @@ sub getWeightRange {
 }
 
 sub getHits {
-  my ($self,$alignid,$chrom,$isPaired,$start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
+  my ($self,$alignid,$chrom,$isType2,$isPaired,$start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
   $self->{request}{requesttype} = 'gethits';
   $self->{request}{alignid} = $alignid;
   $self->{request}{chromid} = $chrom;
+  $self->{request}{istype2} = $isType2;
   $self->{request}{ispaired} = $isPaired;
   $self->{request}{isleft} = $isLeft;
   $self->{request}{isplusstrand} = $isPlusStrand;
@@ -301,10 +307,11 @@ sub getHits {
 }
 
 sub getHistogram {
-  my ($self,$alignid,$chrom,$isPaired,$extension,$binsize, $start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
+  my ($self,$alignid,$chrom,$isType2,$isPaired,$extension,$binsize, $start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
   $self->{request}{requesttype} = 'histogram';
   $self->{request}{alignid} = $alignid;
   $self->{request}{chromid} = $chrom;
+  $self->{request}{istype2} = $isType2;
   $self->{request}{ispaired} = $isPaired;
   $self->{request}{isleft} = $isLeft;
   $self->{request}{isplusstrand} = $isPlusStrand;
@@ -312,9 +319,7 @@ sub getHistogram {
   $self->{request}{start} = $start;
   $self->{request}{end} = $stop;
   $self->{request}{map} = {binsize=>$binsize};
-  if ($extension) {
-    $self->{request}{map}{extension}=1;
-  }
+  $self->{request}{map}{extension}=$extension;
   $self->sendRequest();
   my $response = $self->readLine();
 
@@ -332,10 +337,11 @@ sub getHistogram {
 }
 
 sub getWeightHistogram {
-  my ($self,$alignid,$chrom,$isPaired,$extension,$binsize,$start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
+  my ($self,$alignid,$chrom,$isType2,$isPaired,$extension,$binsize,$start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
   $self->{request}{requesttype} = 'weighthistogram';
   $self->{request}{alignid} = $alignid;
   $self->{request}{chromid} = $chrom;
+  $self->{request}{istype2} = $isType2;
   $self->{request}{ispaired} = $isPaired;
   $self->{request}{isleft} = $isLeft;
   $self->{request}{isplusstrand} = $isPlusStrand;
@@ -343,9 +349,7 @@ sub getWeightHistogram {
   $self->{request}{start} = $start;
   $self->{request}{end} = $stop;
   $self->{request}{map} = {binsize=>$binsize};
-  if ($extension) {
-    $self->{request}{map}{extension}=1;
-  }
+  $self->{request}{map}{extension}=1;
   $self->sendRequest();
   my $response = $self->readLine();
   if ($response ne "OK") {

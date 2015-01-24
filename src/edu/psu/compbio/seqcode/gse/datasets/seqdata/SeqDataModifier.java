@@ -156,19 +156,23 @@ public class SeqDataModifier  implements edu.psu.compbio.seqcode.gse.utils.Close
 		}
 	}
 	
-	public void updateSeqAlignmentHitCounts(SeqAlignment align, Integer singlecount, Float singleweight, Integer paircount, Float pairweight) throws SQLException{
+	public void updateSeqAlignmentHitCounts(SeqAlignment align, Integer singlecount, Float singleweight,Integer singletype2count, Float singletype2weight, Integer paircount, Float pairweight) throws SQLException{
 		int id = align.getDBID();
 		PreparedStatement update = SeqAlignment.createUpdateHitsAndWeights(cxn);
         System.err.println("Updating counts for alignment: "+id+" ("+align.getName()+")");
         System.err.println("\tnumhits="+singlecount);
         System.err.println("\ttotalweight="+singleweight);
+        System.err.println("\tnumtype2hits="+singletype2count);
+        System.err.println("\ttotaltype2weight="+singletype2weight);
         System.err.println("\tnumpairs="+paircount);
         System.err.println("\ttotalpairweight="+pairweight);
         update.setInt(1, singlecount);
         update.setFloat(2, singleweight);
-        update.setInt(3, paircount);
-        update.setFloat(4, pairweight);
-        update.setInt(5, id);
+        update.setInt(3, singletype2count);
+        update.setFloat(4, singletype2weight);
+        update.setInt(5, paircount);
+        update.setFloat(6, pairweight);
+        update.setInt(7, id);
         update.execute();
         update.close();
         cxn.commit();

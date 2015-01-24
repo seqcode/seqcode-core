@@ -134,5 +134,9 @@ public class StrandedPair implements Comparable<StrandedPair>{
         }
         return result;
 	}
+	
+	public String toString(){
+		return new String(gen.getChromName(r1Chrom)+":"+r1Coordinate+":"+r1Strand+"\t"+gen.getChromName(r2Chrom)+":"+r2Coordinate+":"+r2Strand+"\t"+weight);
+	}
 			
 }

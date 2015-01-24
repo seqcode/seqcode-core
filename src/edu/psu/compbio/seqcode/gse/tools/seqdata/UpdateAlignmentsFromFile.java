@@ -52,16 +52,18 @@ import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
  *19) UniquelyAlignedHits
  *20) DBLoadedHits
  *21) DBLoadedWeight
- *22) DBLoadedPairs
- *23) DBLoadedPairWeight
- *24) ReadsFile
- *25) AlignDir
- *26) AlignFile
- *27) IDXFile
- *28) AlignParamFile
- *29) ExptNote
- *30) LoadDate
- *31) ExptName
+ *22) DBLoadedType2Hits
+ *23) DBLoadedType2Weight
+ *24) DBLoadedPairs
+ *25) DBLoadedPairWeight
+ *26) ReadsFile
+ *27) AlignDir
+ *28) AlignFile
+ *29) IDXFile
+ *30) AlignParamFile
+ *31) ExptNote
+ *32) LoadDate
+ *33) ExptName
  * 
  */
 public class UpdateAlignmentsFromFile {
@@ -88,7 +90,7 @@ public class UpdateAlignmentsFromFile {
 				
 				//Variables
 				Integer dbid = new Integer(fields[0]);
-				String alignpieces[] = fields[31].split(";");
+				String alignpieces[] = fields[33].split(";");
 				Genome genome = Organism.findGenome(fields[8]);
 				String etypestring = fields[1];
 				String labstring = fields[2];
@@ -107,19 +109,21 @@ public class UpdateAlignmentsFromFile {
 					numreads = new Integer(numreadsStr);
 				Integer numhits = new Integer(fields[20]);
 				Float totalweight = new Float(fields[21]);
-				Integer numpairs = new Integer(fields[22]);
-				Float totalpairweight = new Float(fields[23]);
+				Integer numtype2hits = new Integer(fields[22]);
+				Float totaltype2weight = new Float(fields[23]);
+				Integer numpairs = new Integer(fields[24]);
+				Float totalpairweight = new Float(fields[25]);
 				String permissions = fields[9];
 				String collabexptid = fields[12];
 				String collabalignid = fields[13];
 				String publicsource = fields[10];
 				String publicdbid = fields[11];
-				String fqfile = fields[24];
-				String aligndir = fields[25];
-				String alignfile = fields[26];
-				String idxfile = fields[27];
-				String paramsfname = fields[28];
-				String exptnote = fields[29];
+				String fqfile = fields[26];
+				String aligndir = fields[27];
+				String alignfile = fields[28];
+				String idxfile = fields[29];
+				String paramsfname = fields[30];
+				String exptnote = fields[31];
 				
 				//Have to load alignment and experiment by DBID since the naming may change
 				SeqExpt expt = null;
@@ -181,13 +185,15 @@ public class UpdateAlignmentsFromFile {
 		                update.setInt(5, core.getAlignType(atypestring).getDBID());
 		                update.setInt(6, numhits);
 		                update.setFloat(7, totalweight);
-		                update.setInt(8, numpairs);
-		                update.setFloat(9, totalpairweight);
-		                update.setString(10, aligndir);
-		                update.setString(11, alignfile);
-		                update.setString(12, idxfile);
-		                update.setString(13, collabalignid);
-		                update.setInt(14, dbid);
+		                update.setInt(8, numtype2hits);
+		                update.setFloat(9, totaltype2weight);
+		                update.setInt(10, numpairs);
+		                update.setFloat(11, totalpairweight);
+		                update.setString(12, aligndir);
+		                update.setString(13, alignfile);
+		                update.setString(14, idxfile);
+		                update.setString(15, collabalignid);
+		                update.setInt(16, dbid);
 		                update.execute();
 		                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
 		                cxn.commit();

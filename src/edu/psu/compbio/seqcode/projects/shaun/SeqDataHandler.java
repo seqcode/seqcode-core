@@ -132,7 +132,7 @@ public class SeqDataHandler {
             		loc = new SeqLocator(expt.getName(), expt.getReplicate(), align.getName());
         		}
         		
-        		expander = new SeqExpander(loc);
+        		expander = new SeqExpander(loc,false);
 	        	
 	        } catch (SQLException e) {
 				e.printStackTrace();

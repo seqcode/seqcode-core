@@ -31,6 +31,10 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
         client = new Client();
         ids = new HashSet<String>();
         ids.add(Integer.toString(a.getDBID()));
+        if(!client.exists(Integer.toString(a.getDBID()))){
+        	System.err.println("SeqHistogramModel: Error: "+a.getExpt().getName()+";"+a.getExpt().getReplicate()+";"+a.getName()+"\tRDBID:"+a.getDBID()+" does not exist in ReadDB.");
+        	dataError=true;
+        }
     }
     public SeqHistogramModel (Collection<SeqAlignment> a) throws IOException, ClientException {
         alignments = new HashSet<SeqAlignment>();
@@ -42,6 +46,10 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
         ids = new HashSet<String>();
         for (SeqAlignment align : alignments) {
             ids.add(Integer.toString(align.getDBID()));
+            if(!client.exists(Integer.toString(align.getDBID()))){
+            	System.err.println("SeqHistogramModel: Error: "+align.getExpt().getName()+";"+align.getExpt().getReplicate()+";"+align.getName()+"\tRDBID:"+align.getDBID()+" does not exist in ReadDB.");
+            	dataError=true;
+            }
         }
     }    
     public SeqHistogramModelProperties getProperties() {return props;}
@@ -72,8 +80,6 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
         }
     }
     
-    public boolean connectionOpen(){return client.connectionAlive();}
-    public void reconnect(){client.reConnect();}
     
     public boolean isReady() {return !newinput;}
     public Map<Integer,Float> getPlus() {return resultsPlus;}
@@ -91,7 +97,7 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
             if (newinput) {
                 try {
                     int width = props.BinWidth;
-                    boolean extension = props.ReadExtension;
+                    int extension = props.ReadExtension;
                     // for GaussianKernel, get 1bp resolution data
                     if (props.GaussianKernelVariance!=0 && region.getWidth()<=1000){ 
                     	width = 1;
@@ -102,9 +108,11 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
                     if (props.UseWeights) {
                         if (!props.ShowPairedReads || props.ShowSingleReads) {
                         	try{
-	                            resultsPlus = Aggregator.mergeHistogramsFF(resultsPlus,
+                        		if(props.ShowType1Reads){
+                        			resultsPlus = Aggregator.mergeHistogramsFF(resultsPlus,
 	                                                                       client.getWeightHistogram(ids,
 	                                                                                                 region.getGenome().getChromID(region.getChrom()),
+	                                                                                                 false, //type1
 	                                                                                                 false,
 	                                                                                                 extension,
 	                                                                                                 width,
@@ -114,9 +122,10 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
 	                                                                                                 null,
 	                                                                                                 true));
 	                            
-	                            resultsMinus = Aggregator.mergeHistogramsFF(resultsMinus,
+                        			resultsMinus = Aggregator.mergeHistogramsFF(resultsMinus,
 	                                                                        client.getWeightHistogram(ids,
 	                                                                                                  region.getGenome().getChromID(region.getChrom()),
+	                                                                                                  false, //type1
 	                                                                                                  false,
 	                                                                                                  extension,
 	                                                                                                  width,
@@ -125,6 +134,34 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
 	                                                                                                  region.getEnd(),
 	                                                                                                  null,
 	                                                                                                  false));
+                        		}
+                        		if(props.ShowType2Reads){
+                        			resultsPlus = Aggregator.mergeHistogramsFF(resultsPlus,
+	                                                                       client.getWeightHistogram(ids,
+	                                                                                                 region.getGenome().getChromID(region.getChrom()),
+	                                                                                                 true, //type2
+	                                                                                                 false,
+	                                                                                                 extension,
+	                                                                                                 width,
+	                                                                                                 (int)props.DeDuplicate,
+	                                                                                                 region.getStart(),
+	                                                                                                 region.getEnd(),
+	                                                                                                 null,
+	                                                                                                 true));
+	                            
+                        			resultsMinus = Aggregator.mergeHistogramsFF(resultsMinus,
+	                                                                        client.getWeightHistogram(ids,
+	                                                                                                  region.getGenome().getChromID(region.getChrom()),
+	                                                                                                  true, //type2
+	                                                                                                  false,
+	                                                                                                  extension,
+	                                                                                                  width,
+	                                                                                                  (int)props.DeDuplicate,
+	                                                                                                  region.getStart(),
+	                                                                                                  region.getEnd(),
+	                                                                                                  null,
+	                                                                                                  false));
+                        		}
                         	}catch (Exception ex) {
                                 //Fail silently if there are no single read alignments
                             }
@@ -134,6 +171,7 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
 	                            resultsPlus = Aggregator.mergeHistogramsFF(resultsPlus,
 	                                                                    client.getWeightHistogram(ids,
 	                                                                                              region.getGenome().getChromID(region.getChrom()),
+	                                                                                              false,
 	                                                                                              true,
 	                                                                                              extension,
 	                                                                                              width,
@@ -146,6 +184,7 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
 	                            resultsMinus = Aggregator.mergeHistogramsFF(resultsMinus,
 	                                                                     client.getWeightHistogram(ids,
 	                                                                                               region.getGenome().getChromID(region.getChrom()),
+	                                                                                               false,
 	                                                                                               true,
 	                                                                                               extension,
 	                                                                                               width,
@@ -162,8 +201,10 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
                     } else {
                         if (!props.ShowPairedReads || props.ShowSingleReads) {
                         	try{
-	                            resultsPlus = Aggregator.mergeHistogramsIF(client.getHistogram(ids,
+                        		if(props.ShowType1Reads){
+                        			resultsPlus = Aggregator.mergeHistogramsIF(client.getHistogram(ids,
 	                                                                                           region.getGenome().getChromID(region.getChrom()),
+	                                                                                           false, //type1
 	                                                                                           false,
 	                                                                                           extension,
 	                                                                                           width,
@@ -174,8 +215,9 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
 	                                                                                           true),
 	                                                                    resultsPlus);
 	                            
-	                            resultsMinus = Aggregator.mergeHistogramsIF(client.getHistogram(ids,
+                        			resultsMinus = Aggregator.mergeHistogramsIF(client.getHistogram(ids,
 	                                                                                            region.getGenome().getChromID(region.getChrom()),
+	                                                                                            false, //type1
 	                                                                                            false,
 	                                                                                            extension,
 	                                                                                            width,
@@ -185,6 +227,34 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
 	                                                                                            null,
 	                                                                                            false),
 	                                                                     resultsMinus);
+                        		}
+                        		if(props.ShowType2Reads){
+                        			resultsPlus = Aggregator.mergeHistogramsIF(client.getHistogram(ids,
+	                                                                                           region.getGenome().getChromID(region.getChrom()),
+	                                                                                           true, //type2
+	                                                                                           false,
+	                                                                                           extension,
+	                                                                                           width,
+	                                                                                           (int)props.DeDuplicate,
+	                                                                                           region.getStart(),
+	                                                                                           region.getEnd(),
+	                                                                                           null,
+	                                                                                           true),
+	                                                                    resultsPlus);
+	                            
+                        			resultsMinus = Aggregator.mergeHistogramsIF(client.getHistogram(ids,
+	                                                                                            region.getGenome().getChromID(region.getChrom()),
+	                                                                                            true, //type2
+	                                                                                            false,
+	                                                                                            extension,
+	                                                                                            width,
+	                                                                                            (int)props.DeDuplicate,
+	                                                                                            region.getStart(),
+	                                                                                            region.getEnd(),
+	                                                                                            null,
+	                                                                                            false),
+	                                                                     resultsMinus);
+                        		}
                         	}catch (Exception ex) {
                                 //Fail silently if there are no single read alignments
                             }
@@ -194,6 +264,7 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
 	                            resultsPlus = Aggregator.mergeHistogramsIF(
 	                                                                    client.getHistogram(ids,
 	                                                                                        region.getGenome().getChromID(region.getChrom()),
+	                                                                                        false,
 	                                                                                        true,
 	                                                                                        extension,
 	                                                                                        width,
@@ -207,6 +278,7 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
 	                            resultsMinus = Aggregator.mergeHistogramsIF(
 	                                                                     client.getHistogram(ids,
 	                                                                                         region.getGenome().getChromID(region.getChrom()),
+	                                                                                         false,
 	                                                                                         true,
 	                                                                                         extension,
 	                                                                                         width,

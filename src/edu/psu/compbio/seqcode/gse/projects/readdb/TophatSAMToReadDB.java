@@ -62,6 +62,8 @@ public class TophatSAMToReadDB {
     }       
     public static void processRecord(SAMRecord record) {
 
+    	//NH seems to be an accurate count of hits for Tophat.
+    	//Grouping hits will not work, as Tophat BAM output is sorted by genomic location
     	if (uniqueOnly && record.getIntegerAttribute("NH") > 1) {
             return;
         }
@@ -76,7 +78,7 @@ public class TophatSAMToReadDB {
     		 * Note: if you change this, you may have to change the SAMStats output also
     		 */
     		if(inclPairedEnd){
-	    		if(!record.getNotPrimaryAlignmentFlag() && record.getFirstOfPairFlag() && record.getProperPairFlag() && record.getReadPairedFlag()){
+	    		if(record.getReadPairedFlag() && !record.getNotPrimaryAlignmentFlag() && record.getFirstOfPairFlag() && record.getProperPairFlag() && record.getReadPairedFlag()){
 	                boolean neg = record.getReadNegativeStrandFlag();
 	                boolean mateneg = record.getMateNegativeStrandFlag();
 	                String len = record.getReadLength() + "\t";

@@ -38,7 +38,7 @@ public class Dispatch implements Runnable {
      * be run.  Called by Server when it accepts a new connection.
      */
     public void addWork(ServerTask s) {
-        System.err.println("workqueue size is " + workQueue.size() + "\n");
+        System.err.println("workqueue size is " + workQueue.size());
         while (workQueue.size() > maxConnections) {
             try {
                 if (warnedMaxConn++ % 100 == 0) {

@@ -55,7 +55,7 @@ public class SeqViewOptions {
 	private int preferredWindowTopLeftY;
 	
 	// General connection info
-    public Genome genome;
+    private Genome genome;
 
     // where to start the display.
     // Either use (chrom,start,stop), gene, position (which will be parsed
@@ -138,14 +138,17 @@ public class SeqViewOptions {
         init(genome);
     }
 
+    public void setGenome(Genome g){ genome = g; init(genome);}
+    public Genome getGenome(){return genome;}
+    
     public void init(Genome g){
     	this.loadOptions();
     	genome = g;
-        List<String> chroms = genome.getChromList();
+        List<String> chroms = genome.getChromList(); 
         java.util.Collections.sort(chroms);
         chrom = chroms.get(0);
-        start = 10000;
-        stop = 20000;
+        start = genome.getChromLength(chrom) < 20000 ? 1 : 10000;
+        stop = genome.getChromLength(chrom) < 20000 ? genome.getChromLength(chrom) : 20000;
         gene = null;
         hash = true;
         seqHistogramPainter = true;

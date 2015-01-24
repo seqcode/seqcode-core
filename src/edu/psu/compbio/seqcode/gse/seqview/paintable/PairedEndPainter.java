@@ -66,7 +66,11 @@ public class PairedEndPainter extends RegionPaintable {
 		Stroke oldStroke = g.getStroke();
 		g.setStroke(new BasicStroke((float)linewidth));        
 		java.util.List<PairedHit> hits = model.getResults();
-		if (getProperties().DrawTrackLabel) {
+		if(model.isDataError()){
+			g.setFont(attrib.getLargeLabelFont(width,height));
+			g.setColor(Color.RED);
+			g.drawString("ReadDB Data Error: " +getLabel(),x1 + g.getFont().getSize()*2,y1 + g.getFont().getSize());
+		}else if (getProperties().DrawTrackLabel) {
 			g.setFont(attrib.getLargeLabelFont(width,height));
 			g.setColor(Color.BLACK);
 			g.drawString("Paired " +getLabel(),x1 + g.getFont().getSize()*2,y1 + g.getFont().getSize());

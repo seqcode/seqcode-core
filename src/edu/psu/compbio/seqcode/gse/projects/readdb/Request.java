@@ -8,7 +8,7 @@ import java.util.ArrayList;
 class Request {
     public String type, alignid;
     public Integer chromid, start, end;
-    public Boolean isPaired, isLeft, isPlusStrand;
+    public Boolean isPaired, isLeft, isPlusStrand, isType2;
     public Float minWeight;
     public Map<String,String> map;
     public List<String> list;
@@ -23,6 +23,7 @@ class Request {
         isPaired = null;
         isLeft = true;
         isPlusStrand = null;
+        isType2 = null;
         minWeight = null;
     }
     public void clear() {
@@ -34,6 +35,7 @@ class Request {
         isPaired = null;
         isLeft = true;
         isPlusStrand = null;
+        isType2 = null;
         minWeight = null;
         map.clear();
         list.clear();
@@ -75,6 +77,8 @@ class Request {
                     isLeft = new Boolean(pieces[1]);
                 } else if (pieces[0].equals("isplusstrand")) {
                     isPlusStrand = new Boolean(pieces[1]);
+                } else if (pieces[0].equals("istype2")) {
+                    isType2 = new Boolean(pieces[1]);
                 } else if (pieces[0].equals("minweight")) {
                     try {
                         minWeight = new Float(pieces[1]);
@@ -95,6 +99,9 @@ class Request {
         }
         if (isPaired == null) {
             isPaired = false;
+        }
+        if (isType2 == null) {
+            isType2 = false;
         }
         if (isPaired && isLeft == null) {
             return "must provide isleft when providing ispaired";
@@ -133,6 +140,9 @@ class Request {
         }
         if (isPlusStrand != null) {
             out.append("isplusstrand=" + isPlusStrand + "\n");
+        }
+        if (isType2 != null) {
+            out.append("istype2=" + isType2 + "\n");
         }
         if (minWeight != null) {
             out.append("minweight=" + minWeight + "\n");

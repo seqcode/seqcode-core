@@ -26,7 +26,6 @@ import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.BackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.PointParser;
@@ -40,6 +39,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.shaun.FreqMatrixImport;
+import edu.psu.compbio.seqcode.projects.shaun.SeqExptHandler;
 
 public class MultiHitCounter {
 	

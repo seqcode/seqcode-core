@@ -1,7 +1,6 @@
 package edu.psu.compbio.seqcode.gse.tools.seqdata;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
@@ -36,11 +35,13 @@ public class UpdateHitCounts {
 	        Float oldpairweight = (float)align.getTotalPairWeight();
 	        
 	        Integer singlecount = Args.parseInteger(args,"singlecount", oldsinglecount);
+	        Integer singletype2count = Args.parseInteger(args,"singletype2count", oldsinglecount);
 	        Integer paircount = Args.parseInteger(args,"paircount", oldpaircount);
 	        Float singleweight = Args.parseFloat(args,"singleweight", oldsingleweight);
+	        Float singletype2weight = Args.parseFloat(args,"singletype2weight", oldsingleweight);
 	        Float pairweight = Args.parseFloat(args,"pairweight", oldpairweight);
 	        
-	        modifier.updateSeqAlignmentHitCounts(align, singlecount, singleweight, paircount, pairweight);
+	        modifier.updateSeqAlignmentHitCounts(align, singlecount, singleweight, singletype2count, singletype2weight, paircount, pairweight);
 		     
 	        loader.close();
 	        cxn.close();
@@ -49,6 +50,8 @@ public class UpdateHitCounts {
         			"\t--id <ReadDB ID>\n" +
         			"\t--singlecount <hitcount, single>\n" +
         			"\t--singleweight <hitweight, single>\n" +
+        			"\t--singletype2count <hitcount, single type2>\n" +
+        			"\t--singletype2weight <hitweight, single type2>\n" +
         			"\t--paircount <hitcount, pairs>\n" +
         			"\t--pairweight <hitweight, pairs>\n" +
         			"");

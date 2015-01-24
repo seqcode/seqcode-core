@@ -8,6 +8,7 @@ import java.awt.geom.QuadCurve2D;
 import java.io.File;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
 import edu.psu.compbio.seqcode.gse.seqview.model.InteractionArcModel;
@@ -75,8 +76,12 @@ public class InteractionArcPainter extends RegionPaintable {
 		int linewidth = Math.max(getProperties().LineWidth,1);
 		Stroke oldStroke = g.getStroke();
 		g.setStroke(new BasicStroke((float)linewidth));        
-		java.util.List<PairedHit> hits = model.getResults();
-		if (getProperties().DrawTrackLabel) {
+		List<PairedHit> hits = model.getResults();
+		if(model.isDataError()){
+			g.setFont(attrib.getLargeLabelFont(width,height));
+			g.setColor(Color.RED);
+			g.drawString("ReadDB Data Error: " +getLabel(),x1 + g.getFont().getSize()*2,y1 + g.getFont().getSize());
+		}else if (getProperties().DrawTrackLabel) {
 			g.setFont(attrib.getLargeLabelFont(width,height));
 			g.setColor(Color.BLACK);
 			g.drawString("Paired " +getLabel(),x1 + g.getFont().getSize()*2,y1 + g.getFont().getSize());

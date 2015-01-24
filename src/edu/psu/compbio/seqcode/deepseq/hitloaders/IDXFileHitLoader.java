@@ -16,10 +16,10 @@ import edu.psu.compbio.seqcode.deepseq.ReadHit;
  */
 public class IDXFileHitLoader extends FileHitLoader {
 
-	public IDXFileHitLoader(File f, boolean nonUnique, boolean loadR1Reads, boolean loadR2Reads, boolean loadPairs){
-		super(f, nonUnique, true, true, loadPairs);
-		if(!loadR1Reads || !loadR2Reads)
-			System.err.println("IDXFileHitLoader: You asked to load only R1 or R2 reads, but IDX cannot discriminate between reads for single-end hits.");
+	public IDXFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs){
+		super(f, nonUnique, true, false, loadPairs);
+		if(!loadT1Reads || loadT2Reads)
+			System.err.println("IDXFileHitLoader: You asked to load only Type1 or Type2 reads, but IDX cannot discriminate between reads for single-end hits.");
 		if(loadPairs)
 			System.err.println("IDXFileHitLoader: You asked to load pairs, but IDX cannot represent paired read data.");
 	}

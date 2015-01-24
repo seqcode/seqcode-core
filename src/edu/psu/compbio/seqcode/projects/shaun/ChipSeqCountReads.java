@@ -8,7 +8,6 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;

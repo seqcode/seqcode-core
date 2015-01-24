@@ -13,12 +13,11 @@ import javax.security.auth.callback.*;
  *  <p>Calls throw IOException on network errors.
  *  Calls throw ClientException on other errors (authentication, authorization, invalid request ,etc.
  *
- *  <p>Client generally assumes that the hit positions are the 5' end of the
- *  hit. 
+ *  <p>Client generally assumes that the hit positions are the 5' end of the hit. 
  *
  * <p>Client IS NOT REENTRANT.  Do not overlap calls to a single Client object.
  *
- * <p>The current version of Client keeps a separate thread for pinging the server to see if the connection is alive. 
+ * <p>The current version of Client keeps a separate thread that would close the connection if it is idle too long. 
  * 
  * <p>Most method parameters that are object types (eg Integer, Boolean) are optional.  If a null value
  * is passed then no filtering is done based on that parameter.  
@@ -26,8 +25,10 @@ import javax.security.auth.callback.*;
  * <p>Standard parameters shared across methods:
  * <ul>
  * <li> alignid is the name of the alignment.
+ * <li> isType2 specifies whether to work on ordinary single-ended reads (false) or the "type 2" reads (true). 
+ * 		An example of type 2 reads are the R2 reads in paired-end ChIP-exo. 
  * <li> isPaired specifies whether to work on single-ended reads (false) or paired-end reads (true)
- * <li> isLeft is isPaired is true, then isLeft specifies whether to work on the left read (true)(
+ * <li> isLeft if isPaired is true, then isLeft specifies whether to work on the left read (true)
  *     or right read (false) of the pair
  * <li> plusStrand specifies whether to return only reads on the plus strand (true) or minus strand (false). null
  *     means that reads on both strands should be returned.
@@ -42,26 +43,24 @@ import javax.security.auth.callback.*;
 public class Client implements ReadOnlyClient {    
 
     public static final String SaslMechanisms[] = {"CRAM-MD5","DIGEST-MD5"};
-    /* socket is the socket to talk to the server.  outstream and instream are from
-       the socket
-        */       
-    Socket socket;
+    Socket socket; //the socket to talk to the server.  outstream and instream are from the socket
     OutputStream outstream;
     BufferedInputStream instream;
-    Thread checkAliveThread=null;
-    /* temporary space for receiving data; contents not persistent between method calls */
-    byte[] buffer;
+    Thread closeTimerThread=null; //checks time of last activity - closes connection if idle for too long
+    byte[] buffer; //temporary space for receiving data; contents not persistent between method calls
     private static final int BUFFERLEN = 8192*20;
-    private final int socketLoadDataReadTimeout = 1000*60*30; //socket timeout in ms: set to 30 minutes because we should only be relying on the timeout to server shutdowns, and some uses of Client (e.g. loading a lot of reads to ReadDB) can take a long time on the Server.
+    private final int socketLoadDataReadTimeout = 1000*60*8; //socket timeout in ms: set to 8 minutes because we should only be relying on the timeout to detect server shutdowns, and some uses of Client (e.g. loading a lot of reads to ReadDB) can take a long time on the Server.
     private final int socketQueryReadTimeout = 15000; //socket timeout in ms for queries
-    private final int threadSleepTime = 3000; //check alive thread sleep time in ms
-    private Request request;
+    private final int threadSleepTime = 30000; //check time of last activity thread sleep time in ms
+    private final int connectionIdleTimeLimit = 1000*60*10; //close idle connection after this time (10 minutes)
+    private long lastActivityTime; //Time of last activity is updated by each query 
     private boolean connectionOpen=false;
+    private Request request;
     private boolean printErrors;
     private String hostname, username, password;
     private int portnum;
     
-    /** Connects to a Readdb server on the specified host and port using the specified 
+    /** Connects to a ReadDB server on the specified host and port using the specified 
      * username and password.
      * @throws IOException on network errors
      * @throws ClientException if the client cannot authenticate to the server
@@ -123,8 +122,8 @@ public class Client implements ReadOnlyClient {
     	this.username=username;
     	this.password = passwd;
     	
-    	if(checkAliveThread!=null && checkAliveThread.isAlive())
-        	checkAliveThread.interrupt();
+    	if(closeTimerThread!=null && closeTimerThread.isAlive())
+    		closeTimerThread.interrupt();
     	
     	synchronized(this){
 	    	socket = new Socket(hostname,portnum);
@@ -142,6 +141,7 @@ public class Client implements ReadOnlyClient {
 	        outstream.flush();
 	        instream = new BufferedInputStream(socket.getInputStream());
 	        connectionOpen=true;
+	        lastActivityTime = System.currentTimeMillis();
 	        buffer = new byte[BUFFERLEN];
 	        
 	        if (!authenticate(hostname,username,passwd)) {
@@ -151,16 +151,15 @@ public class Client implements ReadOnlyClient {
 	        printErrors = false;
 	        
 	        //Start a new check alive thread
-	        checkAliveThread = new Thread(new ClientCheckAliveThread(this));
-	        checkAliveThread.start();
+	        closeTimerThread = new Thread(new ClientConnectionTimerThread(this));
+	        closeTimerThread.start();
     	}
     }
     
     /**
-     * ReConnect to the ReadDB sever using the same settings
-     * @return
+     * Re-connect to the ReadDB sever using the same settings
      */
-    public boolean reConnect(){
+    public void reConnect(){
     	try {
 			init(hostname, portnum, username, password);
 		} catch (IOException e) {
@@ -168,7 +167,6 @@ public class Client implements ReadOnlyClient {
 		} catch (ClientException e) {
 			e.printStackTrace();
 		}
-    	return connectionAlive();
     }
     
     /** 
@@ -179,7 +177,9 @@ public class Client implements ReadOnlyClient {
     	String response="";
     	try{
         	synchronized (this){
-    	    	request.clear(); 
+        		if(!connectionOpen)
+        			reConnect();
+        		request.clear(); 
     	        request.type="ping";
     	        sendString(request.toString());
     	        response = readLine();
@@ -193,6 +193,13 @@ public class Client implements ReadOnlyClient {
         	//SocketException could be generated by a timeout
         	return false;
         }
+    }
+    /**
+     * Return some basic information about the server
+     * @return string
+     */
+    public String getServerInfo(){
+    	return("ReadDB\t"+hostname+"\t"+portnum+"\t"+username);
     }
     /**
      * Determines whether the client will print error messages to STDERR.  Useful for debugging 
@@ -222,21 +229,17 @@ public class Client implements ReadOnlyClient {
                 outstream.write((response.length + "\n").getBytes());
                 outstream.write(response);
                 outstream.flush();
-                //                System.err.println("Sent " + response.length + " bytes");
                 int length = Integer.parseInt(readLine());
-                //                System.err.println("Waiting to read " + length + " bytes");
                 byte[] challenge = new byte[length];
                 int read = 0;
                 while (read < length) {
                     read += instream.read(challenge, read, length - read);
-                    //                    System.err.println("   read " + read);
                 }
                 /* the continueByte tells us whether the server
                    expects to do another round.  Necessary because sometimes
                    isComplete() returned true here but the server wasn't done
                 */
                 continueByte = (byte)instream.read();
-                //                System.err.println("Continue byte is " + continueByte);
                 if (!sasl.isComplete()) { 
                     response = sasl.evaluateChallenge(challenge);
                 } else {
@@ -258,9 +261,9 @@ public class Client implements ReadOnlyClient {
     /** sends a string to the server and flushes the socket 
      */
     private void sendString(String s) throws IOException {
-        //System.err.println("SENDING " + s);
-        outstream.write(s.getBytes());
+    	outstream.write(s.getBytes());
         outstream.flush();
+        lastActivityTime = System.currentTimeMillis();
     }
     /** reads one line from the server.  blocking.
      */
@@ -276,6 +279,7 @@ public class Client implements ReadOnlyClient {
         }
         String out = new String(buffer,0,pos);
         //System.err.println("READ " + out);
+        lastActivityTime = System.currentTimeMillis();
         return out;
     }
     /**
@@ -285,6 +289,8 @@ public class Client implements ReadOnlyClient {
      */
     public void shutdown() throws IOException, ClientException{
     	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
 	        request.clear();
 	        request.type = "shutdown";
 	        sendString(request.toString());
@@ -293,12 +299,15 @@ public class Client implements ReadOnlyClient {
     /** this was to fix a bug in the server.  You shouldn't need it for general use.
      * Regenerate the index for this alignment and chromosome
      */
-    public void reIndex(String align, int chrom, boolean paired) throws IOException, ClientException {
+    public void reIndex(String align, int chrom, boolean isType2, boolean paired) throws IOException, ClientException {
     	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
 	    	request.clear();
 	        request.type = "reindex";
 	        request.alignid = align;
 	        request.chromid = chrom;
+	        request.isType2 = isType2;
 	        request.isPaired = paired;
 	        sendString(request.toString());
 	        outstream.flush();
@@ -313,6 +322,8 @@ public class Client implements ReadOnlyClient {
      */
     public void checksort(String align, int chrom) throws IOException, ClientException {
     	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
 	    	request.clear();
 	        request.type = "checksort";
 	        request.alignid = align;
@@ -331,8 +342,12 @@ public class Client implements ReadOnlyClient {
      * to any hits that have already been stored in the alignment.
      
      */
-    public void storeSingle(String alignid, List<SingleHit> allhits) throws IOException, ClientException {
-    	socket.setSoTimeout(socketLoadDataReadTimeout);
+    public void storeSingle(String alignid, List<SingleHit> allhits, boolean isType2) throws IOException, ClientException {
+    	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
+    		socket.setSoTimeout(socketLoadDataReadTimeout);
+    	}
 	    int step = 10000000;
         for (int pos = 0; pos < allhits.size(); pos += step) {
             Map<Integer, List<SingleHit>> map = new HashMap<Integer,List<SingleHit>>();
@@ -354,6 +369,7 @@ public class Client implements ReadOnlyClient {
 	                    request.type="storesingle";
 	                    request.alignid=alignid;
 	                    request.chromid = chromid;
+	                    request.isType2 = isType2;
 	                    request.map.put("numhits",Integer.toString(count));
 	                    try{
 	                    	sendString(request.toString());
@@ -400,7 +416,11 @@ public class Client implements ReadOnlyClient {
      * to any hits that have already been stored in the alignment
      */
     public void storePaired(String alignid, List<PairedHit> allhits) throws IOException, ClientException {
-    	socket.setSoTimeout(socketLoadDataReadTimeout);
+    	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
+    		socket.setSoTimeout(socketLoadDataReadTimeout);
+    	}
     	Map<Integer, List<PairedHit>> map = new HashMap<Integer,List<PairedHit>>();
     	for (PairedHit h : allhits) {
             if (!map.containsKey(h.leftChrom)) {
@@ -482,7 +502,9 @@ public class Client implements ReadOnlyClient {
      */
     public boolean exists(String alignid) throws IOException {
     	synchronized(this){
-	        request.clear(); 
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear(); 
 	        request.type="exists";
 	        request.alignid=alignid;
 	        sendString(request.toString());
@@ -501,8 +523,10 @@ public class Client implements ReadOnlyClient {
      * Deletes an alignment (all chromosomes).  isPaired specifies whether to delete
      * the paired or single ended reads.
      */
-    public void deleteAlignment(String alignid, Boolean isPaired) throws IOException, ClientException {
+    public void deleteAlignment(String alignid, boolean isPaired) throws IOException, ClientException {
     	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
     		request.clear();
 	    	request.type="deletealign";
 	        request.isPaired = isPaired;
@@ -521,10 +545,13 @@ public class Client implements ReadOnlyClient {
     /**
      * Returns the set of chromosomes that exist for this alignment. 
      */
-    public Set<Integer> getChroms(String alignid, boolean isPaired, Boolean isLeft) throws IOException, ClientException {
+    public Set<Integer> getChroms(String alignid, boolean isType2, boolean isPaired, Boolean isLeft) throws IOException, ClientException {
     	synchronized(this){
-	    	request.clear();
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
 	        request.type="getchroms";
+	        request.isType2 = isType2;
 	        request.isLeft = isLeft;
 	        request.isPaired = isPaired;
 	        request.alignid=alignid;
@@ -548,20 +575,20 @@ public class Client implements ReadOnlyClient {
     /**
      * Returns the total number of hits in this alignment.  
      */
-    public int getCount(String alignid, boolean isPaired, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
+    public int getCount(String alignid, boolean isType2, boolean isPaired, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
         int count = 0;
-        for (int c : getChroms(alignid, isPaired, isLeft)) {
-            count += getCount(alignid, c, isPaired, null,null,null,isLeft,plusStrand);
+        for (int c : getChroms(alignid, isType2, isPaired, isLeft)) {
+            count += getCount(alignid, c, isType2, isPaired, null,null,null,isLeft,plusStrand);
         }
         return count;
     }
     /**
      * Returns the sum of the weights of all hits in this alignment
      */
-    public double getWeight(String alignid, boolean isPaired, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
+    public double getWeight(String alignid,  boolean isType2, boolean isPaired, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
         double total = 0;
-        for (int c : getChroms(alignid, isPaired, isLeft)) {
-            total += getWeight(alignid, c, isPaired, null, null, null, isLeft, plusStrand);
+        for (int c : getChroms(alignid, isType2, isPaired, isLeft)) {
+            total += getWeight(alignid, c, isType2, isPaired, null, null, null, isLeft, plusStrand);
         }
         return total;
     }
@@ -569,15 +596,18 @@ public class Client implements ReadOnlyClient {
     /** returns the total number of hits on the specified chromosome in the alignment.
      * Any of the object parameters can be set to null to specify "no value"
      */
-    public int getCount(String alignid, int chromid, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand)  throws IOException, ClientException {
+    public int getCount(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand)  throws IOException, ClientException {
     	synchronized(this){
-	    	request.clear();
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
 	        request.type="count";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
 	        request.end = stop;
 	        request.minWeight = minWeight;
+	        request.isType2 = isType2;
 	        request.isPlusStrand = plusStrand;
 	        request.isPaired = paired;
 	        request.isLeft = isLeft == null ? true : isLeft;
@@ -596,15 +626,18 @@ public class Client implements ReadOnlyClient {
     }
     /** returns the total weight on the specified chromosome in this alignment
      */
-    public double getWeight(String alignid, int chromid, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
+    public double getWeight(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
     	synchronized(this){
-	    	request.clear();
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
 	        request.type="weight";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
 	        request.end = stop;
 	        request.minWeight = minWeight;
+	        request.isType2 = isType2;
 	        request.isPlusStrand = plusStrand;
 	        request.isPaired = paired;
 	        request.isLeft = isLeft == null ? true : isLeft;
@@ -624,15 +657,18 @@ public class Client implements ReadOnlyClient {
     /** 
      * returns the sorted (ascending order) hit positions in the specified range of a chromosome,alignment pair.
      */ 
-    public int[] getPositions(String alignid, int chromid, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
+    public int[] getPositions(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
     	synchronized(this){
-	    	request.clear();
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
 	        request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
 	        request.end = stop;
 	        request.minWeight = minWeight;
+	        request.isType2 = isType2;
 	        request.isPlusStrand = plusStrand;
 	        request.isPaired = paired;
 	        request.isLeft = isLeft;
@@ -654,15 +690,18 @@ public class Client implements ReadOnlyClient {
      * returns the hit weights in the specified range of a chromosome,alignment pair.  The weights
      * will be in the same order as the sorted positions returned by getPositions()
      */ 
-    public float[] getWeightsRange(String alignid, int chromid, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
+    public float[] getWeightsRange(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
     	synchronized(this){
-	    	request.clear();
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
 	        request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
 	        request.end = stop;
 	        request.minWeight = minWeight;
+	        request.isType2 = isType2;
 	        request.isPlusStrand = plusStrand;
 	        request.isPaired = paired;
 	        request.isLeft = isLeft;
@@ -680,8 +719,10 @@ public class Client implements ReadOnlyClient {
 	        return Bits.readFloats(numhits, instream, buffer);
     	}
     }
-    public List<SingleHit> getSingleHits(String alignid, int chromid, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+    public List<SingleHit> getSingleHits(String alignid, int chromid, boolean isType2, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
     	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
     		request.clear();
 	    	request.type="gethits";
 	        request.alignid=alignid;
@@ -689,6 +730,7 @@ public class Client implements ReadOnlyClient {
 	        request.start = start;
 	        request.end = stop;
 	        request.minWeight = minWeight;
+	        request.isType2 = isType2;
 	        request.isPlusStrand = plusStrand;
 	        request.isPaired = false;
 	        request.map.put("wantpositions","1");
@@ -731,7 +773,9 @@ public class Client implements ReadOnlyClient {
     }
     public List<PairedHit> getPairedHits(String alignid, int chromid, boolean isLeft, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
     	synchronized(this){
-	    	request.clear();
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
 	        request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -740,6 +784,7 @@ public class Client implements ReadOnlyClient {
 	        request.minWeight = minWeight;
 	        request.isPlusStrand = plusStrand;
 	        request.isLeft = isLeft;
+	        request.isType2 = false;
 	        request.isPaired = true;
 	        request.map.put("wantpositions","1");
 	        request.map.put("wantweights","1");
@@ -858,12 +903,14 @@ public class Client implements ReadOnlyClient {
      * to get the sign right depending on the strandedness of the chromosome that you're
      * working with.
      */
-    public TreeMap<Integer,Integer> getHistogram(String alignid, int chromid, boolean paired, boolean doReadExtension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
-        return getHistogram(alignid, chromid, paired, doReadExtension,binsize,0,start,stop,minWeight,plusStrand,true);
+    public TreeMap<Integer,Integer> getHistogram(String alignid, int chromid, boolean isType2, boolean paired, int extension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+        return getHistogram(alignid, chromid, isType2, paired, extension,binsize,0,start,stop,minWeight,plusStrand,true);
     }
-    public TreeMap<Integer,Integer> getHistogram(String alignid, int chromid, boolean paired, boolean doReadExtension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand, boolean isLeft) throws IOException, ClientException {
+    public TreeMap<Integer,Integer> getHistogram(String alignid, int chromid, boolean isType2, boolean paired, int extension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand, boolean isLeft) throws IOException, ClientException {
     	synchronized(this){
-	    	request.clear();
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
 	        request.type="histogram";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -871,14 +918,15 @@ public class Client implements ReadOnlyClient {
 	        request.end = stop;
 	        request.isLeft = isLeft;
 	        request.minWeight = minWeight;
+	        request.isType2 = isType2;
 	        request.isPlusStrand = plusStrand;
 	        request.isPaired = paired;
 	        request.map.put("binsize",Integer.toString(binsize));
 	        if (dedup > 0) {
 	            request.map.put("dedup",Integer.toString(dedup));
 	        }
-	        if (doReadExtension) {
-	            request.map.put("extension","1");
+	        if (extension != 0) {
+	            request.map.put("extension",Integer.toString(extension));
 	        }
 	        sendString(request.toString());        
 	        String response = readLine();
@@ -898,29 +946,30 @@ public class Client implements ReadOnlyClient {
 	        return output;
     	}
     }
-    public TreeMap<Integer,Float> getWeightHistogram(String alignid, int chromid, boolean paired, boolean doReadExtension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
-        return getWeightHistogram(alignid, chromid, paired, doReadExtension, binsize, 0, start,stop,minWeight,plusStrand, true);
+    public TreeMap<Integer,Float> getWeightHistogram(String alignid, int chromid, boolean isType2, boolean paired, int extension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+        return getWeightHistogram(alignid, chromid, isType2, paired, extension, binsize, 0, start,stop,minWeight,plusStrand, true);
     }
-    public TreeMap<Integer,Float> getWeightHistogram(String alignid, int chromid, boolean paired, boolean doReadExtension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand, boolean isLeft) throws IOException, ClientException {
+    public TreeMap<Integer,Float> getWeightHistogram(String alignid, int chromid, boolean isType2, boolean paired, int extension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand, boolean isLeft) throws IOException, ClientException {
     	synchronized(this){
-	    	request.clear();
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
 	        request.type="weighthistogram";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
 	        request.end = stop;
 	        request.minWeight = minWeight;
+	        request.isType2 = isType2;
 	        request.isPlusStrand = plusStrand;
 	        request.isLeft = isLeft;
 	        request.isPaired = paired;
 	        request.map.put("binsize",Integer.toString(binsize));
-	        if (dedup > 0) {
+	        if (dedup > 0)
 	            request.map.put("dedup",Integer.toString(dedup));
-	        }
-	
-	        if (doReadExtension) {
-	            request.map.put("extension","1");
-	        }
+	        if (extension!=0)
+	            request.map.put("extension",Integer.toString(extension));
+	        
 	        sendString(request.toString());        
 	        String response = readLine();
 	        if (!response.equals("OK")) {
@@ -941,15 +990,15 @@ public class Client implements ReadOnlyClient {
     	}
     }
 
-    public TreeMap<Integer,Integer> getHistogram(Collection<String> alignids, int chromid, boolean paired, boolean doReadExtension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
-        return getHistogram(alignids,chromid,paired,doReadExtension,binsize,0,start,stop,minWeight,plusStrand);
+    public TreeMap<Integer,Integer> getHistogram(Collection<String> alignids, int chromid, boolean isType2, boolean paired, int extension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+        return getHistogram(alignids,chromid,isType2, paired,extension,binsize,0,start,stop,minWeight,plusStrand);
     }
-    public TreeMap<Integer,Integer> getHistogram(Collection<String> alignids, int chromid, boolean paired, boolean doReadExtension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+    public TreeMap<Integer,Integer> getHistogram(Collection<String> alignids, int chromid, boolean isType2, boolean paired, int extension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
         TreeMap<Integer,Integer> output = null;
         for (String alignid : alignids) {
-            TreeMap<Integer,Integer> o = getHistogram(alignid,chromid,paired,doReadExtension,binsize,dedup,start,stop,minWeight,plusStrand,true);
+            TreeMap<Integer,Integer> o = getHistogram(alignid,chromid,isType2, paired,extension,binsize,dedup,start,stop,minWeight,plusStrand,true);
             if(paired) //run for isLeft =true & false
-            	o.putAll(getHistogram(alignid,chromid,paired,doReadExtension,binsize,dedup,start,stop,minWeight,plusStrand,false));
+            	o.putAll(getHistogram(alignid,chromid,isType2, paired,extension,binsize,dedup,start,stop,minWeight,plusStrand,false));
             for (int k : o.keySet()) { 
                 if ((k - start - binsize / 2) % binsize != 0 ) {
                     System.err.println(String.format("Bad key %d for binsize %d and start %d in %s,%d",
@@ -971,15 +1020,15 @@ public class Client implements ReadOnlyClient {
         }
         return output;
     }
-    public TreeMap<Integer,Float> getWeightHistogram(Collection<String> alignids, int chromid, boolean paired, boolean doReadExtension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
-        return getWeightHistogram(alignids,chromid,paired,doReadExtension,binsize,0,start,stop,minWeight,plusStrand);
+    public TreeMap<Integer,Float> getWeightHistogram(Collection<String> alignids, int chromid, boolean isType2, boolean paired, int extension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+        return getWeightHistogram(alignids,chromid,isType2, paired,extension,binsize,0,start,stop,minWeight,plusStrand);
     }
-    public TreeMap<Integer,Float> getWeightHistogram(Collection<String> alignids, int chromid, boolean paired, boolean doReadExtension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+    public TreeMap<Integer,Float> getWeightHistogram(Collection<String> alignids, int chromid, boolean isType2, boolean paired, int extension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
         TreeMap<Integer,Float> output = null;
         for (String alignid : alignids) {
-            TreeMap<Integer,Float> o = getWeightHistogram(alignid,chromid,paired,doReadExtension,binsize,dedup,start,stop,minWeight,plusStrand, true);
+            TreeMap<Integer,Float> o = getWeightHistogram(alignid,chromid,isType2, paired,extension,binsize,dedup,start,stop,minWeight,plusStrand, true);
             if(paired) //run for isLeft =true & false
-            	o.putAll(getWeightHistogram(alignid,chromid,paired,doReadExtension,binsize,dedup,start,stop,minWeight,plusStrand, false));
+            	o.putAll(getWeightHistogram(alignid,chromid,isType2, paired,extension,binsize,dedup,start,stop,minWeight,plusStrand, false));
             if (output == null) {
                 output = o;
             } else {
@@ -1000,7 +1049,9 @@ public class Client implements ReadOnlyClient {
      */
     public Map<String,Set<String>> getACL(String alignid) throws IOException, ClientException {
     	synchronized(this){
-	    	request.clear();
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
 	        request.type="getacl";
 	        request.alignid=alignid;
 	        sendString(request.toString());
@@ -1024,6 +1075,8 @@ public class Client implements ReadOnlyClient {
     */
     private void fillPartACL(Map<String,Set<String>> output) throws IOException {
     	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
     		String type = readLine();
     		int entries = Integer.parseInt(readLine());
 	        Set<String> out = new HashSet<String>();
@@ -1038,7 +1091,9 @@ public class Client implements ReadOnlyClient {
      */
     public void setACL(String alignid, Set<ACLChangeEntry> changes) throws IOException, ClientException {
     	synchronized(this){
-	    	request.clear();
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
 	        request.type="setacl";
 	        request.alignid=alignid;
 	        for (ACLChangeEntry a : changes) {
@@ -1060,6 +1115,8 @@ public class Client implements ReadOnlyClient {
      */
     public void addToGroup(String princ, String group) throws IOException, ClientException {
     	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
     		request.clear();
 	    	request.type="addtogroup";
 	        request.map.put("princ",princ);
@@ -1079,8 +1136,8 @@ public class Client implements ReadOnlyClient {
      * Closes this connection to the server.
      */
     public void close() {
-    	if(checkAliveThread!=null && checkAliveThread.isAlive())
-    		checkAliveThread.interrupt();
+    	if(closeTimerThread!=null && closeTimerThread.isAlive())
+    		closeTimerThread.interrupt();
         if (socket == null) {
             return;
         }
@@ -1106,30 +1163,59 @@ public class Client implements ReadOnlyClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }    
+        connectionOpen=false;
+    } 
+    /**
+     * Closes this connection to the server.
+     */
+    public void closeConnection() {
+    	if (socket == null) {
+            return;
+        }
+        try {
+            socket.setSoLinger(false,0);
+            request.clear();
+            request.type="bye";
+            sendString(request.toString());
+            outstream.close();
+            outstream = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            instream.close();
+            instream = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            socket.close();
+            socket = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        connectionOpen=false;
+    } 
 
     /**
-     * ClientCheckAliveThread pings the server to check if the connection is still open.
+     * ClientConnectionTimerThread closes the connection if it is idle for too long
      * @author mahony
      *
      */
-    class ClientCheckAliveThread implements Runnable{
+    class ClientConnectionTimerThread implements Runnable{
     	Client parent; //reference to parent class
     	
-    	public ClientCheckAliveThread(Client p){
+    	public ClientConnectionTimerThread(Client p){
     		parent = p;
     	}
 		public void run() {
 			while(true){
 				try {
 	                Thread.sleep(threadSleepTime);
-	            
-	                if(!connectionAlive()){
-	                	connectionOpen=false;
-	                //	System.err.println("ReadDB Client connection closed at:\t"+System.currentTimeMillis());
-	                }else{
-	                	connectionOpen=true;
-	                	//	System.err.println("ReadDB Client connection open at:\t"+System.currentTimeMillis()); //Debug
+	                //System.out.println("ClientConnectionTimerThread: checking ("+(System.currentTimeMillis() - lastActivityTime)+")\tconnectionOpen="+connectionOpen);
+	                if(connectionOpen && System.currentTimeMillis() - lastActivityTime >connectionIdleTimeLimit){
+	                	parent.closeConnection();
+	                	//System.out.println("ClientConnectionTimerThread: connection closed");
 	                }
 				} catch (InterruptedException e) { 
 					Thread.currentThread().interrupt();

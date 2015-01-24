@@ -8,6 +8,7 @@
  */
 package edu.psu.compbio.seqcode.gse.seqview.model;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
     private ArrayList<SeqHit> results;
     private SeqDataProperties props;
 
-    public SeqDataModel(Client c, Collection<SeqAlignment> alignments) {
+    public SeqDataModel(Client c, Collection<SeqAlignment> alignments) throws IOException {
         client = c;
         extension = 0;
         totalSum = null;
@@ -62,6 +63,10 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
             alignids.add(Integer.toString(a.getDBID()));
             if (align == null) {
                 align = a;
+            }
+            if(!client.exists(Integer.toString(a.getDBID()))){
+            	System.err.println("SeqHistogramModel: Error: "+a.getExpt().getName()+";"+a.getExpt().getReplicate()+";"+a.getName()+"\tRDBID:"+a.getDBID()+" does not exist in ReadDB.");
+            	dataError=true;
             }
         }
 
@@ -109,8 +114,6 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
         	newinput = true;
         }
     }
-    public boolean connectionOpen(){return true;}
-    public void reconnect(){}
     
     public boolean isReady() {return !newinput;}
     public synchronized void run() {
@@ -126,49 +129,102 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
                 try {
                     setExtensionAndShift(getProperties().ExtendRead,getProperties().ShiftRead);
                     if (doSums) {
-                        clearValues();
-                        mapToSum(totalSum, client.getWeightHistogram(alignids,
-                                                                     region.getGenome().getChromID(region.getChrom()),
+                    	if(props.ShowType1Reads){
+                    		mapToSum(totalSum, client.getWeightHistogram(alignids,
+                    	                                             region.getGenome().getChromID(region.getChrom()),
+                    	                                             false, //type1
                                                                      false, // paired
-                                                                     extension != 0,
+                                                                     extension,
                                                                      1, // binsize
                                                                      props.DeDuplicate,
                                                                      region.getStart(),
                                                                      region.getEnd(),
                                                                      null,
                                                                      null));
-                        mapToSum(watsonSum, client.getWeightHistogram(alignids,
+                    		mapToSum(watsonSum, client.getWeightHistogram(alignids,
                                                                       region.getGenome().getChromID(region.getChrom()),
+                                                                      false, //type1
                                                                       false, // paired
-                                                                      extension != 0,
+                                                                      extension,
                                                                       1, // binsize
                                                                       props.DeDuplicate,
                                                                       region.getStart(),
                                                                       region.getEnd(),
                                                                       null,
                                                                       true));
-                        mapToSum(crickSum, client.getWeightHistogram(alignids,
+                    		mapToSum(crickSum, client.getWeightHistogram(alignids,
                                                                       region.getGenome().getChromID(region.getChrom()),
+                                                                      false, //type1
                                                                       false, // paired
-                                                                      extension != 0,
+                                                                      extension,
                                                                       1, // binsize
                                                                       props.DeDuplicate,
                                                                       region.getStart(),
                                                                       region.getEnd(),
                                                                       null,
-                                                                      false));                        
+                                                                      false));  
+                    	}
+                    	if(props.ShowType2Reads){
+                    		mapToSum(totalSum, client.getWeightHistogram(alignids,
+                    	                                             region.getGenome().getChromID(region.getChrom()),
+                    	                                             true, //type2
+                                                                     false, // paired
+                                                                     extension,
+                                                                     1, // binsize
+                                                                     props.DeDuplicate,
+                                                                     region.getStart(),
+                                                                     region.getEnd(),
+                                                                     null,
+                                                                     null));
+                    		mapToSum(watsonSum, client.getWeightHistogram(alignids,
+                                                                      region.getGenome().getChromID(region.getChrom()),
+                                                                      true, //type2
+                                                                      false, // paired
+                                                                      extension,
+                                                                      1, // binsize
+                                                                      props.DeDuplicate,
+                                                                      region.getStart(),
+                                                                      region.getEnd(),
+                                                                      null,
+                                                                      true));
+                    		mapToSum(crickSum, client.getWeightHistogram(alignids,
+                                                                      region.getGenome().getChromID(region.getChrom()),
+                                                                      true, //type2
+                                                                      false, // paired
+                                                                      extension,
+                                                                      1, // binsize
+                                                                      props.DeDuplicate,
+                                                                      region.getStart(),
+                                                                      region.getEnd(),
+                                                                      null,
+                                                                      false));  
+                    	}
                     }
                     if (doHits) {
                         results.clear();
                         for (String aid : alignids) {
-                            for (SingleHit hit : client.getSingleHits(aid,
-                                                                      region.getGenome().getChromID(region.getChrom()),
-                                                                      region.getStart(),
-                                                                      region.getEnd(),
-                                                                      null,
-                                                                      null)) {
-                                results.add(convert(hit));                                
-                            }
+                        	if(props.ShowType1Reads){
+	                            for (SingleHit hit : client.getSingleHits(aid,
+	                                                                      region.getGenome().getChromID(region.getChrom()),
+	                                                                      false,
+	                                                                      region.getStart(),
+	                                                                      region.getEnd(),
+	                                                                      null,
+	                                                                      null)) {
+	                                results.add(convert(hit));                                
+	                            }
+                        	}
+                        	if(props.ShowType2Reads){
+	                            for (SingleHit hit : client.getSingleHits(aid,
+	                                                                      region.getGenome().getChromID(region.getChrom()),
+	                                                                      true,
+	                                                                      region.getStart(),
+	                                                                      region.getEnd(),
+	                                                                      null,
+	                                                                      null)) {
+	                                results.add(convert(hit));                                
+	                            }
+                        	}
                         }
                         if(props.DeDuplicate>0)
                         	results = deDuplicateSingleHits(results, props.DeDuplicate);
@@ -188,7 +244,6 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
         return results.iterator();
     }
     private void mapToSum(WeightedRunningOverlapSum sum, TreeMap<Integer,Float> map) {
-        sum.clear();
         for (Integer i : map.keySet()) {
             sum.addWeightedInterval(i, i, map.get(i));
         }

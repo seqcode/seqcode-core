@@ -23,7 +23,6 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.RepeatMaskedRegion;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.MACSParser;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.MACSPeakRegion;

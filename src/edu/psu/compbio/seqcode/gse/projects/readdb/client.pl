@@ -39,3 +39,6 @@ if ($cmd eq 'getChroms') {
     print "$_\n";
   }
 }
+
+$client->close();
+

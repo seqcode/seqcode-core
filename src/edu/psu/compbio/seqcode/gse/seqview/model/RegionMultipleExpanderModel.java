@@ -23,6 +23,4 @@ public class RegionMultipleExpanderModel<OUT> extends MultipleExpanderModel<Regi
     public Region getRegion() {
         return region;
     }
-    public boolean connectionOpen(){return true;}
-    public void reconnect(){}
 }

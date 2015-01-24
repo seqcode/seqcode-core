@@ -100,8 +100,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	private boolean forceupdate = false, firstconfig = true;
 	private File currDirectory = new File(System.getProperty("user.home"));
 	private Hashtable<RegionPaintable, ArrayList<RegionModel>> painterModelMap = new Hashtable<RegionPaintable, ArrayList<RegionModel>>();
-	private Thread connectionChecker=null;
-
+	
 	public RegionPanel(Genome g, SeqViewStatus s, File currDir) {
 		super();
 		status = s;
@@ -110,21 +109,17 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		currentOptions = new SeqViewOptions(g);
 		addPaintersFromOpts(currentOptions);
 		setVisible(true);
-		connectionChecker = new Thread(new CheckOpenConnectionsThread(this));
-		connectionChecker.start();
 	}
 
 	public RegionPanel(SeqViewOptions opts, SeqViewStatus s, File currDir) {
 		super();
 		status = s;
 		currDirectory = currDir;
-		Genome g = opts.genome;
+		Genome g = opts.getGenome();
 		init(g);
 		currentOptions = opts;
 		addPaintersFromOpts(currentOptions);
 		setVisible(true);
-		connectionChecker = new Thread(new CheckOpenConnectionsThread(this));
-		connectionChecker.start();
 		//Find our initial region.
 		Region startingRegion = null;
 		if (opts.gene != null && opts.gene.matches("...*")) {
@@ -169,7 +164,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	 	   	}
 		}
 		closed=true;
-		connectionChecker.interrupt();
 	}
 
 	public void init(Genome g) {
@@ -263,7 +257,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 	 */
 	public void reinit(SeqViewOptions opts) {
 		//Cleanup
-		connectionChecker.interrupt();
 		synchronized(allModels) {
 			for (RegionModel m : allModels) {
 				synchronized(m){
@@ -276,7 +269,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 			Thread.sleep(400);
  	   	} catch (Exception e) { }
 		//Re-initialize (but don't make all the panels again)
-		genome = opts.genome;
+		genome = opts.getGenome();
 		allModels = new HashSet<RegionModel>();
 		painters = new Hashtable<String,ArrayList<RegionPaintable>>();
 		trackPaintOrder = new Hashtable<String,Integer>();
@@ -288,12 +281,9 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		lry = new Hashtable<String,Integer>();
 		painterCount = 0;
 		readyCount = 0;
-		currentRegion = new Region(genome,"1",1,2000);
-		
 		currentOptions = opts;
-		addPaintersFromOpts(opts);
-		setVisible(true);
-		//Find our initial region.
+		
+		//Set our initial region.
 		Region startingRegion = null;
 		if (opts.gene != null && opts.gene.matches("...*")) {
 			startingRegion = regionFromString(genome,opts.gene);
@@ -317,19 +307,23 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		} else {
 			throw new NullPointerException("Need a starting position in either chrom or gene");
 		}
+		
+		//Add painters
+		addPaintersFromOpts(opts);
+		setVisible(true);
+		
+		//Load region list if available
 		if (opts.regionListFile != null) {
 			java.util.List<Region> regions = readRegionsFromFile(genome,opts.regionListFile,false);
 			RegionListPanel p = new RegionListPanel(this,
 					regions);
 			RegionListPanel.makeFrame(p);
 		}
-		connectionChecker = new Thread(new CheckOpenConnectionsThread(this));
-		connectionChecker.start();
 	}
 
 	public void addPaintersFromOpts(SeqViewOptions opts) {        
 
-		if (!(opts.genome.equals(genome))){
+		if (!(opts.getGenome().equals(genome))){
 			System.err.println("Should be the same");
 		}
 		opts.mergeInto(currentOptions);
@@ -867,7 +861,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		for(RegionPaintable rp : allPainters) { 
 			rp.cleanup();
 		}
-		connectionChecker.interrupt();
 		closed=true;
 		try {
 			Thread.sleep(400);
@@ -1585,19 +1578,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		   repaint(); 
        }
  
-       public boolean modelConnectionsOpen(){
-    	   boolean allOpen=true;
-    	   synchronized(allModels) {
-    		   for (RegionModel m : allModels) {
-    			   synchronized(m){
-    				   allOpen = allOpen && m.connectionOpen();
-    			   }
-			   }
-		   }
-    	   if(!allOpen)
-    		   status.setStatus("Database connections closed", Color.red);
-    	   return allOpen;
-       }
        
        public void reconnectModels(){
     	   DatabaseFactory.reestablishConnections();
@@ -1608,20 +1588,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
     	   } catch (SQLException e) {
     		   e.printStackTrace();
     	   }
-    	   synchronized(allModels) {
-    		   for (RegionModel m : allModels) {
-    			   synchronized(m){
-    				   m.reconnect();
-    			   }
-			   }
-		   }
-    	   Region creg = currentRegion;
-    	   reinit(currentOptions);
-    	   setRegion(creg);
-    	   if(this.modelConnectionsOpen())
-    		   status.setStatus("Ready", Color.black);
-    	   else
-    		   status.setStatus("Database connections closed", Color.red);
        }
        
        public void mouseClicked(MouseEvent e) {
@@ -1705,29 +1671,5 @@ Listener<EventObject>, PainterContainer, MouseListener {
     			   }
     		   }
     	   }
-       }
-       
-       /**
-        * CheckOpenConnectionsThread 
-        * Check if all the model's connections are still open. 
-        * @author mahony
-        */
-       class CheckOpenConnectionsThread implements Runnable{
-    	   	RegionPanel parent; //reference to parent class
-       	
-       		public CheckOpenConnectionsThread(RegionPanel p){
-       			parent = p;
-       		}
-       		public void run() {
-       			while(true){
-       				try {
-       					Thread.sleep(3000);
-       					parent.modelConnectionsOpen();
-       				} catch (InterruptedException e) { 
-       					Thread.currentThread().interrupt();
-       					break;
-       				}
-       			}
-       		}
        }
 }

@@ -18,14 +18,16 @@ public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
     private LinkedList<SeqAlignment> alignments;
     private SeqLocator locator;
     private boolean closeLoader;
+    private boolean loadR2;
 
 
-    public SeqExpander(SeqLocator loc) throws SQLException, IOException {
+    public SeqExpander(SeqLocator loc, boolean loadR2) throws SQLException, IOException {
         loader = new SeqDataLoader();
         closeLoader = true;
         locator = loc;
         alignments = null;
         lastGenome = null;
+        this.loadR2 = loadR2;
     }
     private void getAligns(Genome genome) throws SQLException {
         if (alignments != null && genome.equals(lastGenome)) {
@@ -62,7 +64,7 @@ public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
     public Iterator<SeqHit> getHits(Region a) {
         try {
             getAligns(a.getGenome());
-            Collection<SeqHit> hits = loader.loadByRegion(alignments, a);
+            Collection<SeqHit> hits = loader.loadByRegion(alignments, a, loadR2);
             return hits.iterator();
         }
         catch (Exception e) {
@@ -97,7 +99,7 @@ public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
         int hits = 0;
         try {
             getAligns(a.getGenome());
-            hits = loader.countByRegion(alignments, a);
+            hits = loader.countByRegion(alignments, a, loadR2);
             return hits;
         }
         catch (Exception e) {

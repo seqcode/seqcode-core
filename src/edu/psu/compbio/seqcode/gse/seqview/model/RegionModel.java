@@ -12,8 +12,4 @@ public interface RegionModel extends Model {
     public void resetRegion(Region r) throws NullPointerException;
     //Get the current Region
     public Region getRegion();
-    //Check if the connection driving the model is still open.
-    public boolean connectionOpen(); 
-    //Reopen the connection
-    public void reconnect();
 }

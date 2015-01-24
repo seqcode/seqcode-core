@@ -24,6 +24,8 @@ import java.util.*;
 		aligntype int(10) not null,
 		numhits int(15),
 		totalweight float(17,2),
+		numtype2hits int(15),
+		totaltype2weight float(17,2),
 		numpairs int(15),
 		totalpairweight float(17,2),
 		aligndir varchar(400),
@@ -46,6 +48,8 @@ public class SeqAlignment {
 	private AlignType atype;
 	private int numHits;
 	private double totalWeight;
+	private int numType2Hits;
+	private double totalType2Weight;
 	private int numPairs;
 	private double totalPairWeight;
 	private String alignDir, alignFile, idxFile, collabAlignID;
@@ -67,12 +71,14 @@ public class SeqAlignment {
 		permissions = Arrays.asList(rs.getString(5).split(";"));
 		numHits = rs.getInt(7);
 		totalWeight = rs.getFloat(8);
-		numPairs = rs.getInt(9);
-		totalPairWeight = rs.getFloat(10);
-		alignDir = rs.getString(11);
-		alignFile = rs.getString(12);
-		idxFile = rs.getString(13);
-		collabAlignID = rs.getString(14);
+		numType2Hits = rs.getInt(9);
+		totalType2Weight = rs.getFloat(10);
+		numPairs = rs.getInt(11);
+		totalPairWeight = rs.getFloat(12);
+		alignDir = rs.getString(13);
+		alignFile = rs.getString(14);
+		idxFile = rs.getString(15);
+		collabAlignID = rs.getString(16);
 	}
 	
 	public SeqAlignment(ResultSet rs, SeqExpt ex, AlignType a) throws SQLException { 
@@ -89,12 +95,14 @@ public class SeqAlignment {
 		permissions = Arrays.asList(rs.getString(5).split(";"));
 		numHits = rs.getInt(7);
 		totalWeight = rs.getFloat(8);
-		numPairs = rs.getInt(9);
-		totalPairWeight = rs.getFloat(10);
-		alignDir = rs.getString(11);
-		alignFile = rs.getString(12);
-		idxFile = rs.getString(13);
-		collabAlignID = rs.getString(14);
+		numType2Hits = rs.getInt(9);
+		totalType2Weight = rs.getFloat(10);
+		numPairs = rs.getInt(11);
+		totalPairWeight = rs.getFloat(12);
+		alignDir = rs.getString(13);
+		alignFile = rs.getString(14);
+		idxFile = rs.getString(15);
+		collabAlignID = rs.getString(16);
 	}
 	
 	public int getDBID() { return dbid; }
@@ -105,6 +113,8 @@ public class SeqAlignment {
 	public List<String> getPermissions() { return permissions; }
 	public int getNumHits() {return numHits;}
 	public double getTotalWeight() {return totalWeight;}
+	public int getNumType2Hits() {return numType2Hits;}
+	public double getTotalType2Weight() {return totalType2Weight;}
 	public int getNumPairs() {return numPairs;}
 	public double getTotalPairWeight() {return totalPairWeight;}
 	public String getAlignDir() {return alignDir;}
@@ -131,47 +141,47 @@ public class SeqAlignment {
 	}
 
 	public static PreparedStatement createLoadByIDStatement(java.sql.Connection c) throws SQLException { 
-		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where id=?";
+		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numtype2hits, totaltype2weight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where id=?";
 		return c.prepareStatement(query);
 	}
 	
 	public static PreparedStatement createLoadByNameAndExptStatement(java.sql.Connection c) throws SQLException { 
-		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where name=? and expt=?";
+		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numtype2hits, totaltype2weight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where name=? and expt=?";
 		return c.prepareStatement(query);
 	}
 
 	public static PreparedStatement createLoadAllByExptStatement(java.sql.Connection c) throws SQLException { 
-		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where expt=?";
+		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numtype2hits, totaltype2weight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where expt=?";
 		return c.prepareStatement(query);
 	}
 
 	public static PreparedStatement createLoadAllByGenomeStatement(java.sql.Connection c) throws SQLException { 
-		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where genome=?";
+		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numtype2hits, totaltype2weight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where genome=?";
 		return c.prepareStatement(query);
 	}
 
 	public static PreparedStatement createLoadAllByExptAndGenomeStatement(java.sql.Connection c) throws SQLException { 
-		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where expt=? and genome=?";
+		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numtype2hits, totaltype2weight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where expt=? and genome=?";
 		return c.prepareStatement(query);
 	}
 	
 	public static PreparedStatement createInsertStatement(java.sql.Connection c) throws SQLException { 
 		String query = String.format(
-				"insert into seqalignment (expt, name, genome, permissions, aligntype, numhits, totalweight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid) " +
-				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+				"insert into seqalignment (expt, name, genome, permissions, aligntype, numhits, totalweight, numtype2hits, totaltype2weight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid) " +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		return c.prepareStatement(query);
 	}
 	
 	public static PreparedStatement createInsertStatementWithID(java.sql.Connection c) throws SQLException { 
 		String query = String.format(
-				"insert into seqalignment (id, expt, name, genome, permissions, aligntype, numhits, totalweight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid) " +
-				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+				"insert into seqalignment (id, expt, name, genome, permissions, aligntype, numhits, totalweight, numtype2hits, totaltype2weight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid) " +
+				"values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		return c.prepareStatement(query);
 	}
 	
 	public static PreparedStatement createUpdateStatementWithID(java.sql.Connection c) throws SQLException { 
 		String query = String.format(
-				"update seqalignment set expt=?, name=?, genome=?, permissions=?, aligntype=?, numhits=?, totalweight=?, numpairs=?, totalpairweight=?, aligndir=?, alignfile=?, idxfile=?, collabalignid=? " +
+				"update seqalignment set expt=?, name=?, genome=?, permissions=?, aligntype=?, numhits=?, totalweight=?, numpairs=?,  numtype2hits=?, totaltype2weight=?, totalpairweight=?, aligndir=?, alignfile=?, idxfile=?, collabalignid=? " +
 				" where id=?");
 		return c.prepareStatement(query);
 	}
@@ -187,7 +197,7 @@ public class SeqAlignment {
 	}
 	
 	public static PreparedStatement createUpdateHitsAndWeights(java.sql.Connection c) throws SQLException { 
-		String query = "update seqalignment set numhits=?, totalweight=?, numpairs=?, totalpairweight=? where id=?";
+		String query = "update seqalignment set numhits=?, totalweight=?,  numtype2hits=?, totaltype2weight=?, numpairs=?, totalpairweight=? where id=?";
 		return c.prepareStatement(query);
 	}
 	

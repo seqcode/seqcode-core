@@ -21,7 +21,6 @@ import edu.psu.compbio.seqcode.gse.datasets.core.Lab;
 import edu.psu.compbio.seqcode.gse.datasets.core.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.core.ReadType;
 import edu.psu.compbio.seqcode.gse.datasets.core.SeqDataUser;
-import edu.psu.compbio.seqcode.gse.projects.readdb.ACLChangeEntry;
 import edu.psu.compbio.seqcode.gse.projects.readdb.Client;
 import edu.psu.compbio.seqcode.gse.projects.readdb.ClientException;
 import edu.psu.compbio.seqcode.gse.projects.readdb.PairedHit;
@@ -149,7 +148,6 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 
 
 	public Collection<SeqExpt> loadAllExperiments() throws SQLException {
-		System.err.println("Loading core experiment metadata...");
 		labs=getMetadataLoader().loadAllLabs();
 		exptTypes=getMetadataLoader().loadAllExptTypes();
 		exptTargets = getMetadataLoader().loadAllExptTargets();
@@ -158,7 +156,6 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         readTypes = getMetadataLoader().loadAllReadTypes();
         alignTypes = getMetadataLoader().loadAllAlignTypes();
         seqDataUsers = getMetadataLoader().loadAllSeqDataUsers();
-        System.err.println("Loading seqdata experiment info...");
         PreparedStatement ps = SeqExpt.createLoadAll(getConnection());
         ps.setFetchSize(1000);
 		LinkedList<SeqExpt> expts = new LinkedList<SeqExpt>();
@@ -583,11 +580,11 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	 * @return
 	 * @throws IOException
 	 */
-	public List<SeqHit> loadByChrom(SeqAlignment a, int chromid) throws IOException {
+	public List<SeqHit> loadByChrom(SeqAlignment a, int chromid, boolean loadR2) throws IOException {
 		List<SeqHit> data = new ArrayList<SeqHit>();
         String alignid = Integer.toString(a.getDBID());
         try {
-            data.addAll(convert(client.getSingleHits(alignid, chromid,null,null,null,null),a));
+            data.addAll(convert(client.getSingleHits(alignid, chromid,loadR2, null,null,null,null),a));
         } catch (ClientException e) {
             throw new IllegalArgumentException(e);
         }
@@ -619,10 +616,11 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	 * @return
 	 * @throws IOException
 	 */
-	public List<SeqHit> loadByRegion(SeqAlignment align, Region r) throws IOException {
+	public List<SeqHit> loadByRegion(SeqAlignment align, Region r, boolean loadR2) throws IOException {
         try {
             return convert(client.getSingleHits(Integer.toString(align.getDBID()),
                                                 r.getGenome().getChromID(r.getChrom()),
+                                                loadR2,
                                                 r.getStart(),
                                                 r.getEnd(),
                                                 null,
@@ -660,16 +658,16 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	 * @return
 	 * @throws IOException
 	 */
-	public Collection<SeqHit> loadByRegion(List<SeqAlignment> alignments, Region r) throws IOException {
+	public Collection<SeqHit> loadByRegion(List<SeqAlignment> alignments, Region r, boolean loadR2) throws IOException {
 		if (alignments.size() < 1) {
 			throw new IllegalArgumentException("Alignment List must not be empty.");
 		}
         Collection<SeqHit> output = null;
         for (SeqAlignment a : alignments) {
             if (output == null) {
-                output = loadByRegion(a,r);
+                output = loadByRegion(a,r, loadR2);
             } else {
-                output.addAll(loadByRegion(a,r));
+                output.addAll(loadByRegion(a,r, loadR2));
             }
         }
 		return output;
@@ -706,7 +704,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	 * @throws IOException
 	 * @throws ClientException
 	 */
-    public List<Integer> positionsByRegion(List<SeqAlignment> alignments, Region r) throws IOException, ClientException {
+    public List<Integer> positionsByRegion(List<SeqAlignment> alignments, Region r, boolean loadR2) throws IOException, ClientException {
 		if (alignments.size() < 1) {
 			throw new IllegalArgumentException("Alignment List must not be empty.");
 		}
@@ -714,6 +712,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         for (SeqAlignment a : alignments) {
             int[] pos = client.getPositions(Integer.toString(a.getDBID()),
                                             r.getGenome().getChromID(r.getChrom()),
+                                            loadR2,
                                             false,
                                             r.getStart(),
                                             r.getEnd(),
@@ -735,11 +734,12 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	 * @throws IOException
 	 * @throws ClientException
 	 */
-    public List<Integer> positionsByRegion(SeqAlignment alignment, Region r) throws IOException {
+    public List<Integer> positionsByRegion(SeqAlignment alignment, Region r, boolean loadR2) throws IOException {
         List<Integer> output = new ArrayList<Integer>();
         try {
             int[] pos = client.getPositions(Integer.toString(alignment.getDBID()),
                                             r.getGenome().getChromID(r.getChrom()),
+                                            loadR2,
                                             false,
                                             r.getStart(),
                                             r.getEnd(),
@@ -763,10 +763,11 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
      * @return
      * @throws IOException
      */
-	public int countByRegion(SeqAlignment align, Region r) throws IOException {
+	public int countByRegion(SeqAlignment align, Region r, boolean loadR2) throws IOException {
         try {
             return client.getCount(Integer.toString(align.getDBID()),
                                    r.getGenome().getChromID(r.getChrom()),
+                                   loadR2,
                                    false,
                                    r.getStart(),
                                    r.getEnd(),
@@ -786,13 +787,13 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	 * @return
 	 * @throws IOException
 	 */
-	public int countByRegion(List<SeqAlignment> alignments, Region r) throws IOException {
+	public int countByRegion(List<SeqAlignment> alignments, Region r, boolean loadR2) throws IOException {
 		if (alignments.size() < 1) { 
 			throw new IllegalArgumentException("Alignment List must not be empty."); 
 		}
         int total = 0;
         for (SeqAlignment a : alignments) {
-            total += countByRegion(a,r);
+            total += countByRegion(a,r, loadR2);
         }
         return total;
 	}
@@ -805,7 +806,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	 * @return
 	 * @throws IOException
 	 */
-	public double weightByRegion(List<SeqAlignment> alignments, Region r) throws IOException {
+	public double weightByRegion(List<SeqAlignment> alignments, Region r, boolean loadR2) throws IOException {
 		if (alignments.size() < 1) { 
 			throw new IllegalArgumentException("Alignment List must not be empty."); 
 		}
@@ -814,6 +815,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
             try {
                 total += client.getWeight(Integer.toString(a.getDBID()),
                                           r.getGenome().getChromID(r.getChrom()),
+                                          loadR2,
                                           false,
                                           r.getStart(),
                                           r.getEnd(),
@@ -834,10 +836,10 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	 * @return
 	 * @throws SQLException
 	 */
-	public int countAllHits(SeqAlignment align) throws IOException {
+	public int countAllHits(SeqAlignment align, boolean loadR2) throws IOException {
         try {
             return client.getCount(Integer.toString(align.getDBID()),
-                                   false,false,null);
+                                   loadR2,false,false,null);
         } catch (ClientException e) {
             throw new IllegalArgumentException(e);
         }
@@ -849,10 +851,10 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
 	 * @return
 	 * @throws IOException
 	 */
-	public double weighAllHits(SeqAlignment align) throws IOException {
+	public double weighAllHits(SeqAlignment align, boolean loadR2) throws IOException {
         try {
             return client.getWeight(Integer.toString(align.getDBID()),
-                                    false,false,null);
+                                    loadR2,false,false,null);
         } catch (ClientException e) {
             throw new IllegalArgumentException(e);
         }
@@ -862,12 +864,13 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
      * Output maps bin center to weight centered around that bin.  Each read
      * is summarized by its start position.
      */
-    public Map<Integer,Float> histogramWeight(SeqAlignment align, char strand, Region r, int binWidth) throws IOException {
+    public Map<Integer,Float> histogramWeight(SeqAlignment align, char strand, Region r, int binWidth, boolean loadR2) throws IOException {
         try {
             return client.getWeightHistogram(Integer.toString(align.getDBID()),
                                              r.getGenome().getChromID(r.getChrom()),
+                                             loadR2,
                                              false,
-                                             false,
+                                             0,
                                              binWidth,
                                              r.getStart(),
                                              r.getEnd(),
@@ -881,12 +884,13 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
      * Output maps bin center to weight centered around that bin.  Each read
      * is summarized by its start position.
      */
-    public Map<Integer,Integer> histogramCount(SeqAlignment align, char strand, Region r, int binWidth) throws IOException {        
+    public Map<Integer,Integer> histogramCount(SeqAlignment align, char strand, Region r, int binWidth, boolean loadR2) throws IOException {        
         try {
             return client.getHistogram(Integer.toString(align.getDBID()),
                                        r.getGenome().getChromID(r.getChrom()),
+                                       loadR2,
                                        false,
-                                       false,
+                                       0,
                                        binWidth,
                                        r.getStart(),
                                        r.getEnd(),
@@ -900,10 +904,10 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
      * Get the total # of hits and weight for an alignment but only include reads
      * on the specified strand.  
      */
-    public Pair<Long,Double> getAlignmentStrandedCountWeight(SeqAlignment align, char strand) throws IOException {
+    public Pair<Long,Double> getAlignmentStrandedCountWeight(SeqAlignment align, char strand, boolean loadR2) throws IOException {
         try {
-            long count = client.getCount(Integer.toString(align.getDBID()), false, false, strand=='+');
-            double weight = client.getWeight(Integer.toString(align.getDBID()), false, false, strand=='+');
+            long count = client.getCount(Integer.toString(align.getDBID()), false, false, strand=='+', loadR2);
+            double weight = client.getWeight(Integer.toString(align.getDBID()), false, false, strand=='+', loadR2);
             Pair<Long,Double> output = new Pair<Long,Double>(count,weight);
             return output;
         } catch (ClientException e) {

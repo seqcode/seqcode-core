@@ -8,7 +8,6 @@ import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.Organism;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExptHandler;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
