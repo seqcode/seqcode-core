@@ -35,7 +35,7 @@ public class ExperimentCondition {
 		for(ControlledExperiment rep : replicates){
 			if(!signalSamples.contains(rep.getSignal()))
 				signalSamples.add(rep.getSignal());
-			if(!controlSamples.contains(rep.getControl()))
+			if(rep.hasControl() && !controlSamples.contains(rep.getControl()))
 				controlSamples.add(rep.getControl());
 			replicateIndex.put(rep, rep.getIndex());
 			indexedReplicate.put(rep.getIndex(), rep);
