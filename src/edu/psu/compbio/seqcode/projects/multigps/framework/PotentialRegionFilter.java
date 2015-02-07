@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
@@ -473,6 +474,21 @@ public class PotentialRegionFilter {
 		}else{
 			ExperimentManager manager = new ExperimentManager(econfig);
 			BindingManager bman = new BindingManager(manager);
+			//Initialize binding models & binding model record
+			Map<ControlledExperiment, List<BindingModel>> repBindingModels = new HashMap<ControlledExperiment, List<BindingModel>>();
+			for(ControlledExperiment rep : manager.getReplicates()){
+				if(config.getDefaultBindingModel()!=null)
+					bman.setBindingModel(rep, config.getDefaultBindingModel());
+				else if(rep.getExptType()!=null && rep.getExptType().getName().toLowerCase().equals("chipexo"))
+					bman.setBindingModel(rep, new BindingModel(BindingModel.defaultChipExoEmpiricalDistribution));
+				else
+					bman.setBindingModel(rep, new BindingModel(BindingModel.defaultChipSeqEmpiricalDistribution));
+				repBindingModels.put(rep, new ArrayList<BindingModel>());
+				repBindingModels.get(rep).add(bman.getBindingModel(rep));
+			}
+			for(ExperimentCondition cond : manager.getConditions())
+				bman.updateMaxInfluenceRange(cond);
+			
 			RealValuedHistogram histo = new RealValuedHistogram(0, 10000, 20);
 			
 			System.err.println("Conditions:\t"+manager.getConditions().size());
