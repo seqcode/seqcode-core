@@ -119,7 +119,7 @@ public class BindingMixture {
 					currChrTestReg.add(r);
 			
 			if(currChrTestReg.size()>0){
-				int numThreads = config.getMaxThreads()>=currChrTestReg.size() ? config.getMaxThreads() : currChrTestReg.size(); 
+				int numThreads = config.getMaxThreads()>=currChrTestReg.size() ?  currChrTestReg.size() : config.getMaxThreads(); 
 				Thread[] threads = new Thread[numThreads];
 		        ArrayList<Region> threadRegions[] = new ArrayList[numThreads];
 		        int i = 0;
