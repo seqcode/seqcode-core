@@ -72,7 +72,7 @@ public class MultiGPSConfig {
 	protected boolean findMotifs = true; //Run motif-finding for motif prior
 	protected boolean motif_posprior=true; //You can have motif-finding without using the motif-prior
 	protected String MEMEpath="";
-	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus "; //MEMERunner adds -p option if more than one thread is allowed
+	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus "; 
 	public int MEMEminw=6;
 	public int MEMEmaxw=18;
 	protected boolean runDiffTests = true; //Run differential enrichment testing
