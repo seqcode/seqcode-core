@@ -40,9 +40,7 @@ public class MEMERunner {
 		manager=man;
 		
 		MEMEpath = config.getMEMEpath();
-		MEMEargs = config.getMEMEargs();
-		if(config.getMaxThreads()>1)
-			MEMEargs = MEMEargs+" -p "+config.getMaxThreads()+" ";
+		MEMEargs = config.getMEMEargs(); 
 	}
 	
 	/**
