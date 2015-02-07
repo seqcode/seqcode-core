@@ -41,11 +41,11 @@ public class MultiGPSConfig {
 	protected boolean printHelp=false;
 	protected BindingModel defaultModel=null;
 	protected double sigLogConf=-7; 
-	protected double prLogConf=-7; 
+	protected double prLogConf=-4; 
 	protected double qMinThres=0.001;		//Minimum  Q-value for reported binding events
 	protected double differentialSignificanceP = 0.01;
 	protected int maxModelUpdateRounds=3;
-	protected int maxThreads=8;
+	protected int maxThreads=1;				//Number of threads to use. Default is 1 for single processor machines. 
 	protected double alphaScalingFactor = 1.0; //Scale the condition-specific alpha value by this factor
 	protected boolean multicondition_posprior=true; //Multiple condition positional prior
 	protected double prob_shared_binding=0.9; //Prior probability that binding sites are shared between conditions (Constant used to build positional priors between conditions)
@@ -72,7 +72,7 @@ public class MultiGPSConfig {
 	protected boolean findMotifs = true; //Run motif-finding for motif prior
 	protected boolean motif_posprior=true; //You can have motif-finding without using the motif-prior
 	protected String MEMEpath="";
-	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus ";
+	protected String MEMEargs=" -dna -mod zoops -revcomp -nostatus "; //MEMERunner adds -p option if more than one thread is allowed
 	public int MEMEminw=6;
 	public int MEMEmaxw=18;
 	protected boolean runDiffTests = true; //Run differential enrichment testing
@@ -216,6 +216,7 @@ public class MultiGPSConfig {
 				differentialSignificanceP = Args.parseDouble(args,"diffp",differentialSignificanceP);
 				//Threads
 				maxThreads = Args.parseInteger(args,"threads",maxThreads);
+				maxThreads = Math.min(maxThreads, java.lang.Runtime.getRuntime().availableProcessors());
 				//Alpha scaling factor
 				alphaScalingFactor = Args.parseDouble(args,"alphascale",alphaScalingFactor);
 				//Event Fold-change minimum
@@ -395,7 +396,7 @@ public class MultiGPSConfig {
 				"\t--r <max. model update rounds>\n" +
 				"\t--out <out name>\n" +
 				"\t--nonunique [flag to use non-unique reads]\n" +
-				"\t--threads <number of threads to use>\n" +
+				"\t--threads <number of threads to use (default=1)>\n" +
 				"Experiments:\n" +
 				"\t--expt <read file name> AND --format <SAM/BED/IDX/BOWTIE/NOVO/ELAND>\n" +
 				"AND/OR" +
@@ -423,8 +424,9 @@ public class MultiGPSConfig {
 				//"\t--mlsharedconfig [flag to share the component config in the ML step]\n" +
 				"\t--mlconfignotshared [flag to not share component configs in the ML step]\n" +
 				"\t--noscaling [flag to turn off signal vs control scaling]\n" +
-				"\t--medianscale [flag to use scaling by median (default = regression)]\n" +
-				"\t--sesscale [flag to use scaling by SES (default = regression)]\n" +
+				//"\t--medianscale [flag to use scaling by median (default = regression)]\n" +
+				"\t--regressionscale [flag to use scaling by median (default = median)]\n" +
+				"\t--sesscale [flag to use scaling by SES (default = median)]\n" +
 				"\t--scalewin <window size for scaling procedure>\n" +
 				"\t--exclude <file of regions to ignore>\n" +
 				"\t--plotregions <regions to print during EM training>\n" +

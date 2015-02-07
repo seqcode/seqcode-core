@@ -123,7 +123,6 @@ public class MultinomialCondtionTester {
 		GenomeConfig gcon = new GenomeConfig(args);
 		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
 		MultiGPSConfig config = new MultiGPSConfig(gcon, newargs, false);
-		econ.setMedianScaling(true);
 		econ.setScalingSlidingWindow(50000);
 		
 		ExperimentManager manager = new ExperimentManager(econ);

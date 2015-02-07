@@ -4,9 +4,11 @@ import java.util.*;
 import java.io.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
-import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.PointParser;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RegionParser;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
@@ -18,6 +20,7 @@ import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
  *   outputcounts: output counts instead of frequencies
  *   includerc: include counts from reverse complement strand too
  *   topn: only output the top N kmers instead of all of them.
+ *   table: output frequencies per region
  *
  */
 
@@ -25,11 +28,14 @@ public class CountKmers {
 
     private int mink, maxk;
     private Genome genome;
+    private GenomeConfig gconfig;
     private List<Region> regions;
+    private int win;
     private List<int[]> counts;
     private SequenceGenerator seqgen;
     private boolean outputCounts, includeRC;
     private int topN;
+    private boolean fullTable=false;
 
     /* use this if you're going to feed in sequences, but not Regions */
     public void init(int mink, int maxk) {
@@ -46,17 +52,80 @@ public class CountKmers {
     }
 
     public void parseArgs(String args[]) throws NotFoundException {
-        Pair<Organism,Genome> pair = Args.parseGenome(args);
-        Genome genome = pair.cdr();
-        regions = Args.parseRegionsOrDefault(args);
+        gconfig = new GenomeConfig(args);
+        Genome genome = gconfig.getGenome();
+        win = Args.parseInteger(args,"win",-1);
+        String regFile = Args.parseString(args, "regions", null);
+        regions = loadRegionsFromFile(regFile, genome, win);
         outputCounts = Args.parseFlags(args).contains("outputcounts");
         includeRC = Args.parseFlags(args).contains("includerc");
+        fullTable = Args.parseFlags(args).contains("table");
         topN = Args.parseInteger(args,"topn",-1);
-        seqgen = new SequenceGenerator();
+        seqgen = gconfig.getSequenceGenerator();
 
+        for(Region r : regions){
+        	System.out.println(r.getLocationString()+"\t"+r.getWidth());
+        }
         init(Args.parseInteger(args,"mink",1),
              Args.parseInteger(args,"maxk",4));
     }
+    
+	
+	/**
+	 * Loads a set of regions from the third or first column of a file
+	 * (Suitable for GPS & StatisticalPeakFinder files
+	 * @param filename String
+	 * @param win integer width of region to impose (-1 leaves region width alone)
+	 * @return
+	 */
+	public static List<Region> loadRegionsFromFile(String filename, Genome gen, int win){
+		List<Region> regs = new ArrayList<Region>();
+
+		try{
+			File pFile = new File(filename);
+			if(!pFile.isFile()){System.err.println("Invalid file name: "+filename);System.exit(1);}
+			BufferedReader reader = new BufferedReader(new FileReader(pFile));
+			String line;
+			while ((line = reader.readLine()) != null) {
+	            line = line.trim();
+	            String[] words = line.split("\\s+");
+	            
+	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
+	                if(words.length>=3 && words[2].contains(":")){
+		                PointParser pparser = new PointParser(gen);
+		            	Point p = pparser.execute(words[2]);
+		                if(win==-1 && words[0].contains(":") && words[0].contains("-")){
+		                	RegionParser rparser = new RegionParser(gen);
+			            	Region q = rparser.execute(words[0]);
+			            	regs.add(q);
+		                }else{
+		                	regs.add(p.expand(win/2));
+		                }
+	                }else if(words.length>=1 && words[0].contains(":")){
+	                	String[] coords = words[0].split(":");
+		            	if(coords[1].contains("-")){
+		                	RegionParser rparser = new RegionParser(gen);
+			            	Region q = rparser.execute(words[0]);
+			            	if(win==-1){
+			                	if(q!=null){regs.add(q);}
+			                }else
+			                	regs.add(q.getMidpoint().expand(win/2));
+		            	}else{
+		            		PointParser pparser = new PointParser(gen);
+			            	Point p = pparser.execute(words[0]);
+			            	regs.add(p.expand(win/2));
+		            	}
+		            }
+                }
+	        }reader.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return(regs);
+	}
 
     public void addToCounts(Region r) {
         String s = seqgen.execute(r);

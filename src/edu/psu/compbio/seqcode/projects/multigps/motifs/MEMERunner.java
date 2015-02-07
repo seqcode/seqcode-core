@@ -6,8 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +41,8 @@ public class MEMERunner {
 		
 		MEMEpath = config.getMEMEpath();
 		MEMEargs = config.getMEMEargs();
+		if(config.getMaxThreads()>1)
+			MEMEargs = MEMEargs+" -p "+config.getMaxThreads()+" ";
 	}
 	
 	/**

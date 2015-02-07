@@ -126,7 +126,6 @@ public class DifferentialTester {
 		GenomeConfig gcon = new GenomeConfig(args);
 		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
 		MultiGPSConfig config = new MultiGPSConfig(gcon, args,false);
-		econ.setMedianScaling(true);
 		econ.setScalingSlidingWindow(50000);
 		
 		if(config.helpWanted()){

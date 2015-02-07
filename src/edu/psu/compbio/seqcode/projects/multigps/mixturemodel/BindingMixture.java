@@ -362,19 +362,12 @@ public class BindingMixture {
     		double potRegLengthTotal = potRegFilter.getPotRegionLengthTotal();
     		double nonPotRegLengthTotal = config.getGenome().getGenomeLength() - potRegLengthTotal;
     		//Combine control channel counts (avoiding duplication)
-    		double potRegCountsSigChannel=0, nonPotRegCountsSigChannel=0; 
-    		double potRegCountsCtrlChannel=0, nonPotRegCountsCtrlChannel=0; 
-    		ArrayList<Sample> ctrls = new ArrayList<Sample>();
-    		for(ControlledExperiment rep : cond.getReplicates())
-    			if(rep.hasControl() && !ctrls.contains(rep.getControl())){
-    				ctrls.add(rep.getControl());
-    				potRegCountsCtrlChannel+=potRegFilter.getPotRegCountsCtrlChannel(rep);
-    				nonPotRegCountsCtrlChannel+=potRegFilter.getNonPotRegCountsCtrlChannel(rep);
-    			}
-    		for(ControlledExperiment rep : cond.getReplicates()){
-    			potRegCountsSigChannel+=potRegFilter.getPotRegCountsSigChannel(rep);
-				nonPotRegCountsSigChannel+=potRegFilter.getNonPotRegCountsSigChannel(rep);
-    		}
+    		double potRegCountsSigChannel=potRegFilter.getPotRegCountsSigChannel(cond);
+    		double nonPotRegCountsSigChannel=potRegFilter.getNonPotRegCountsSigChannel(cond); 
+    		double potRegCountsCtrlChannel=potRegFilter.getPotRegCountsCtrlChannel(cond);
+    		double nonPotRegCountsCtrlChannel=potRegFilter.getNonPotRegCountsCtrlChannel(cond); 
+    		List<Sample> ctrls = cond.getControlSamples();
+    		
     		//relativeCtrlNoise just tells us if there is a systemic over/under representation of reads in potential regions (in the control)
     		//NOTE: not used for anything right now. 
     		relativeCtrlNoise[e] = (potRegCountsCtrlChannel==0 && nonPotRegCountsCtrlChannel==0) ? 
@@ -397,10 +390,8 @@ public class BindingMixture {
     		ExperimentCondition cond = manager.getIndexedCondition(e);
     		
     		//Don't need to examine noise reads in the update
-    		double noiseReads=0; 
-    		for(ControlledExperiment rep : cond.getReplicates())
-    			noiseReads+=potRegFilter.getNonPotRegCountsSigChannel(rep);
-
+    		double noiseReads=potRegFilter.getNonPotRegCountsSigChannel(cond); 
+    		
     		for(Region r : noiseResp.keySet())
     			noiseReads+=noiseResp.get(r)[e];
     		noisePerBase[e] = noiseReads/config.getGenome().getGenomeLength();  //Signal channel noise per base

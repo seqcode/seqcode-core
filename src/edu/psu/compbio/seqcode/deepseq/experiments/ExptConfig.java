@@ -38,7 +38,8 @@ public class ExptConfig {
 	protected boolean perBaseReadFiltering = true;
 	protected double mappableGenome = 0.8;
 	protected boolean estimateScaling=true;
-	protected boolean scalingByMedian = false; //Default is to estimate scaling by regression
+	protected boolean scalingByRegression=false; //Default is to scale by median
+	//protected boolean scalingByMedian = false; //Default is to estimate scaling by regression
 	protected boolean scalingBySES = false; //Default is to estimate scaling by regression
 	protected int scalingSlidingWindow = 10000; 
 	protected boolean cacheAllHits=true; //Cache all hits
@@ -120,10 +121,12 @@ public class ExptConfig {
 				//////////////////////
 				//Turn off scaling estimation
 				estimateScaling = Args.parseFlags(args).contains("noscaling") ? false : true;
-				//Scale by median or regression
-				scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
-				//Scale by SES or regression
+				//Scale by median is default
+				//scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
+				//Scale by SES
 				scalingBySES = Args.parseFlags(args).contains("sesscale") ? true : false;
+				//Scale by regression
+				scalingByRegression = Args.parseFlags(args).contains("regressionscale") ? true : false;
 				//Scaling window
 				scalingSlidingWindow = Args.parseInteger(args,"scalewin",scalingSlidingWindow);
 				////////////////////////
@@ -280,7 +283,8 @@ public class ExptConfig {
 	public double getMappableGenomeLength(){return mappableGenome*gen.getGenomeLength();}
 	public List<Integer> getLocalBackgroundWindows(){return localBackgroundWindows;}
 	public boolean getEstimateScaling(){return estimateScaling;}
-	public boolean getScalingByMedian(){return scalingByMedian;}
+	//public boolean getScalingByMedian(){return scalingByMedian;}
+	public boolean getScalingByRegression(){return scalingByRegression;}
 	public boolean getScalingBySES(){return scalingBySES;}
 	public int getScalingSlidingWindow(){return scalingSlidingWindow;}
 	public boolean getCacheAllData(){return cacheAllHits;}
@@ -292,7 +296,8 @@ public class ExptConfig {
 	
 	//Some accessors to allow modification of options after config .
 	public void setPerBaseReadFiltering(boolean pbrf){perBaseReadFiltering = pbrf;}
-	public void setMedianScaling(boolean ms){scalingByMedian = ms;}
+	//public void setMedianScaling(boolean ms){scalingByMedian = ms;}
+	public void setRegressionScaling(boolean rs){scalingByRegression = rs;}
 	public void setSESScaling(boolean ses){scalingBySES = ses;}
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
 	public void setFileCacheDirName(String d){fileCacheDir = d;}

@@ -41,10 +41,10 @@ public class ControlledExperiment {
 			ExperimentScaler scaler = new ExperimentScaler(signal, control);
 			if(econfig.getScalingBySES())
 				ctrlScalingRatio = scaler.scalingRatioBySES(econfig.getScalingSlidingWindow());
-			else if(econfig.getScalingByMedian())
-				ctrlScalingRatio = scaler.scalingRatioByMedian(econfig.getScalingSlidingWindow());
-			else
+			else if(econfig.getScalingByRegression())
 				ctrlScalingRatio = scaler.scalingRatioByRegression(econfig.getScalingSlidingWindow());
+			else
+				ctrlScalingRatio = scaler.scalingRatioByMedian(econfig.getScalingSlidingWindow());
 			
 			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
 			sigCount = signalProportion*signal.getHitCount();
@@ -85,10 +85,10 @@ public class ControlledExperiment {
 			ExperimentScaler scaler = new ExperimentScaler(signal, control);
 			if(econfig.getScalingBySES())
 				ctrlScalingRatio = scaler.scalingRatioBySES(econfig.getScalingSlidingWindow());
-			else if(econfig.getScalingByMedian())
-				ctrlScalingRatio = scaler.scalingRatioByMedian(econfig.getScalingSlidingWindow());
-			else
+			else if(econfig.getScalingByRegression())
 				ctrlScalingRatio = scaler.scalingRatioByRegression(econfig.getScalingSlidingWindow());
+			else
+				ctrlScalingRatio = scaler.scalingRatioByMedian(econfig.getScalingSlidingWindow());
 			
 			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
 			sigCount = signalProportion*signal.getHitCount();

@@ -49,6 +49,8 @@ public class ExperimentCondition {
 	public int getIndex(){return index;}
 	public String getName(){return name;}
 	public List<ControlledExperiment> getReplicates(){return replicates;}
+	public List<Sample> getSignalSamples(){return signalSamples;}
+	public List<Sample> getControlSamples(){return controlSamples;}
 	public int getReplicateIndex(ControlledExperiment r){return replicateIndex.get(r);}
 	public ControlledExperiment getIndexedReplicate(int id){return indexedReplicate.get(id);}
 	
