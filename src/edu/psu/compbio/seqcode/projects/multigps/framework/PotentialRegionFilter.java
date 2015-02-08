@@ -28,7 +28,7 @@ import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 /**
  * PotentialRegionFilter: Find a set of regions that are above a threshold in at least one condition. 
  * 		A region the size of the model span (i.e. 2x model range) potentially contains a binding site if 
- * 		it passes all Poisson thresholds in at least one replicate from one condition.
+ * 		it passes the Poisson threshold in at least one condition.
  * 		The Poisson thresholds are based on the model span size to keep consistent with the final used thresholds. 
  * Overall counts for reads in potential regions and outside potential regions are maintained to assist noise model initialization.  
  * 
@@ -76,16 +76,7 @@ public class PotentialRegionFilter {
     			
     		//global threshold
     		conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getPRLogConf(), cond.getTotalSignalCount(), config.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), binWidth, '.', 1, true));
-    		for(Integer i : econfig.getLocalBackgroundWindows()){
-    			if(hasControls){//local control thresholds 
-    				//signal threshold based on what would be expected from the CONTROL locality
-    				conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), config.getPRLogConf(), cond.getTotalControlCount(),  config.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), binWidth, '.', 1, false));
-                }else{
-                	//local signal threshold -- this may bias against locally enriched signal regions, and so should only be used if there is no control or if the control is not yet scaled
-                	if(i.intValue()>=10000) // we don't want the window too small in this case
-                		conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), config.getPRLogConf(), cond.getTotalSignalCount(), config.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), binWidth, '.', 1, true));
-                }	
-    		}
+    		//local windows won't work since we are testing per condition and we don't have a way to scale signal vs controls at the condition level (at least at this stage of execution)
     			
     		System.err.println("PotentialRegionFilter: genomic threshold for "+cond.getName()+" with bin width "+binWidth+" = "+conditionBackgrounds.get(cond).getGenomicModelThreshold());
     			

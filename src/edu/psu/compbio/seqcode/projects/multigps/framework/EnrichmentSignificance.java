@@ -12,7 +12,6 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
-import edu.psu.compbio.seqcode.projects.multigps.stats.Normalization;
 
 /**
  * Test the significance of count enrichment vs control
