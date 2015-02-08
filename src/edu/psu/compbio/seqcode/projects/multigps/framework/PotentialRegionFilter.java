@@ -284,6 +284,7 @@ public class PotentialRegionFilter {
                     	currPotRegions.add(lastPotential);
                     currPotRegions = filterExcluded(currPotRegions);
                     countReadsInRegions(currPotRegions, ipHits, backHits, y==currentRegion.getEnd() ? y : y-expansion);
+                    countReadsInRegionsByRep(currPotRegions, ipHitsByRep, y==currentRegion.getEnd() ? y : y-expansion);
                     //Note: it looks like currPotRegions and threadPotentials are redundant in the above, but they are not.
                     //currPotRegions is only used to count sig/noise reads in the current section. threadPotentials stores regions over the entire run.
                 }

@@ -54,7 +54,7 @@ public class ControlledExperiment {
 		//Start with assumption of no signal
 		sigCount = 0.0;
 		noiseCount = signal.getHitCount();
-		signalProportion = 0;
+		signalProportion = 0.0;
 	}
 	
 	//Accessors
