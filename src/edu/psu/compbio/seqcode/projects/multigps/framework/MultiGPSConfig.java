@@ -40,8 +40,8 @@ public class MultiGPSConfig {
 	protected File outDir=null, interDir=null, imagesDir=null;
 	protected boolean printHelp=false;
 	protected BindingModel defaultModel=null;
-	protected double sigLogConf=-5; 
-	protected double prLogConf=-4; 
+	protected double sigLogConf=-7; 
+	protected double prLogConf=-6; 
 	protected double qMinThres=0.001;		//Minimum  Q-value for reported binding events
 	protected double differentialSignificanceP = 0.01;
 	protected int maxModelUpdateRounds=3;

@@ -589,10 +589,15 @@ public class PotentialRegionFilter {
 				if(r.getWidth()>max)
 					max = r.getWidth();
 			}
-			System.out.println("Potential Regions: "+potentials.size());
-			System.out.println("Min width: "+min+"\tMax width: "+max);
-			histo.printContents();
+			System.err.println("Potential Regions: "+potentials.size());
+			System.err.println("Min width: "+min+"\tMax width: "+max);
+			histo.printContents(true);
 			
+			System.err.println("Proportions of tags in potential regions");
+			for(ExperimentCondition c : manager.getConditions())
+				for(ControlledExperiment r : c.getReplicates())
+					System.err.println("Condition "+c.getName()+":\tRep "+r.getName()+"\t"+r.getSigProp());
+					
 			manager.close();
 		}
 	}
