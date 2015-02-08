@@ -46,10 +46,15 @@ public class ControlledExperiment {
 			else
 				ctrlScalingRatio = scaler.scalingRatioByMedian(econfig.getScalingSlidingWindow());
 			
-			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
-			sigCount = signalProportion*signal.getHitCount();
-			noiseCount = (1-signalProportion)*signal.getHitCount();
+			//I don't trust that this works all the time
+			//signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
+			//sigCount = signalProportion*signal.getHitCount();
+			//noiseCount = (1-signalProportion)*signal.getHitCount();
 		}
+		//Start with assumption of no signal
+		sigCount = 0.0;
+		noiseCount = signal.getHitCount();
+		signalProportion = 0;
 	}
 	
 	//Accessors
@@ -70,7 +75,6 @@ public class ControlledExperiment {
 	public ExperimentType getExptType(){return myExptType;}
 	
 	public void setScaling(double s){ctrlScalingRatio = s;}
-	public void setSigProp(double s){signalProportion = s;}
 	public void setCondition(ExperimentCondition c){myCondition = c;}
 	public void setTarget(ExperimentTarget t){myTarget = t;}
 	public void setExptType(ExperimentType t){myExptType = t;}

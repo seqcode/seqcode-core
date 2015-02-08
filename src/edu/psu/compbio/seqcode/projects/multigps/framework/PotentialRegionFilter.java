@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -51,6 +52,8 @@ public class PotentialRegionFilter {
 	protected HashMap<ExperimentCondition, Double> nonPotRegCountsSigChannel = new HashMap<ExperimentCondition, Double>();
 	protected HashMap<ExperimentCondition, Double> potRegCountsCtrlChannel = new HashMap<ExperimentCondition, Double>();
 	protected HashMap<ExperimentCondition, Double> nonPotRegCountsCtrlChannel = new HashMap<ExperimentCondition, Double>();	
+	protected HashMap<ControlledExperiment, Double> potRegCountsSigChannelByRep = new HashMap<ControlledExperiment, Double>();
+	protected HashMap<ControlledExperiment, Double> nonPotRegCountsSigChannelByRep = new HashMap<ControlledExperiment, Double>();
 	
 	public PotentialRegionFilter(MultiGPSConfig c, ExptConfig econ, ExperimentManager eman, BindingManager bman){
 		manager = eman;
@@ -91,6 +94,10 @@ public class PotentialRegionFilter {
     		nonPotRegCountsSigChannel.put(cond, 0.0);
     		potRegCountsCtrlChannel.put(cond, 0.0);
     		nonPotRegCountsCtrlChannel.put(cond, 0.0);
+    		for(ControlledExperiment rep : cond.getReplicates()){
+    			potRegCountsSigChannelByRep.put(rep, 0.0);
+        		nonPotRegCountsSigChannelByRep.put(rep, 0.0);
+    		}
     	}
 		binStep = config.POTREG_BIN_STEP;
 		if(binStep>maxBinWidth/2)
@@ -103,6 +110,8 @@ public class PotentialRegionFilter {
 	public Double getNonPotRegCountsSigChannel(ExperimentCondition e){ return nonPotRegCountsSigChannel.get(e);}
 	public Double getPotRegCountsCtrlChannel(ExperimentCondition e){ return potRegCountsCtrlChannel.get(e);}
 	public Double getNonPotRegCountsCtrlChannel(ExperimentCondition e){ return nonPotRegCountsCtrlChannel.get(e);}
+	public Double getPotRegCountsSigChannelByRep(ControlledExperiment e){ return potRegCountsSigChannelByRep.get(e);}
+	public Double getNonPotRegCountsSigChannelByRep(ControlledExperiment e){ return nonPotRegCountsSigChannelByRep.get(e);}
 	public List<Region> getPotentialRegions(){return potentialRegions;}
 	public double getPotRegionLengthTotal(){return potRegionLengthTotal;}
 	
@@ -147,7 +156,15 @@ public class PotentialRegionFilter {
                 }
             }
         }
-                
+        
+        //Initialize signal & noise counts based on potential region calls
+        for(ExperimentCondition cond : manager.getConditions()){
+    		for(ControlledExperiment rep : cond.getReplicates()){
+    			if(rep.getSigProp()==0) //Only update if not already initialized
+    				rep.setSigNoiseCounts(potRegCountsSigChannelByRep.get(rep), nonPotRegCountsSigChannelByRep.get(rep));
+    		}
+        }
+        
         for(Region r : potentialRegions)
         	potRegionLengthTotal+=(double)r.getWidth();
         
@@ -194,21 +211,28 @@ public class PotentialRegionFilter {
                     List<Region> currPotRegions = new ArrayList<Region>();
                     List<List<StrandedBaseCount>> ipHits = new ArrayList<List<StrandedBaseCount>>();
                     List<List<StrandedBaseCount>> backHits = new ArrayList<List<StrandedBaseCount>>();
+                    List<List<StrandedBaseCount>> ipHitsByRep = new ArrayList<List<StrandedBaseCount>>();
                     
                     synchronized(manager){
 	                    //Initialize the read lists
                     	for(ExperimentCondition cond : manager.getConditions()){
                     		ipHits.add(new ArrayList<StrandedBaseCount>());
-                    		backHits.add(new ArrayList<StrandedBaseCount>());
-                    	}
-                    	//Load reads by condition
-                    	for(ExperimentCondition cond : manager.getConditions()){
+                			backHits.add(new ArrayList<StrandedBaseCount>());
                     		for(ControlledExperiment rep : cond.getReplicates())
+                    			ipHitsByRep.add(new ArrayList<StrandedBaseCount>());
+                    	}
+                    	//Load signal reads by condition and by replicate, so that signal proportion estimates can be assigned to each replicate 
+                    	for(ExperimentCondition cond : manager.getConditions()){
+                    		for(ControlledExperiment rep : cond.getReplicates()){
                     			ipHits.get(cond.getIndex()).addAll(rep.getSignal().getBases(currSubRegion));
-                    		for(Sample ctrl : cond.getControlSamples())
+                    			ipHitsByRep.get(rep.getIndex()).addAll(rep.getSignal().getBases(currSubRegion));
+                    		}for(Sample ctrl : cond.getControlSamples())
                     			backHits.get(cond.getIndex()).addAll(ctrl.getBases(currSubRegion));
+                    		Collections.sort(ipHits.get(cond.getIndex()));
+                    		Collections.sort(backHits.get(cond.getIndex()));
                     	}
                     }
+                    
             		int numStrandIter = stranded ? 2 : 1;
                     for(int stranditer=1; stranditer<=numStrandIter; stranditer++){
                         //If stranded peak-finding, run over both strands separately
@@ -372,7 +396,7 @@ public class PotentialRegionFilter {
     	}
     	
     	/**
-    	 * Count the total reads within potential regions via semi binary search.
+    	 * Count the total reads within potential regions via semi binary search (by condition).
     	 * Assumes both regs and ipHits are sorted.
     	 * We don't have to check chr String matches, as the hits were extracted from the chromosome
     	 * EndCoord accounts for the extra overhang added to some wide regions
@@ -459,6 +483,62 @@ public class PotentialRegionFilter {
 	    }
     }
     
+    /**
+	 * Count the total reads within potential regions via semi binary search (by replicate).
+	 * Assumes both regs and ipHitsByRep are sorted.
+	 * We don't have to check chr String matches, as the hits were extracted from the chromosome
+	 * EndCoord accounts for the extra overhang added to some wide regions
+	 * We also ignore strandedness here -- the object is to count ALL reads that will be loaded for analysis later
+	 * (and that thus will not be accounted for by the global noise model)  
+	 * @param regs
+	 * @param ipHitsByRep
+	 * @param ctrlHits
+	 * @param endCoord
+	 */
+	protected void countReadsInRegionsByRep(List<Region> regs, List<List<StrandedBaseCount>> ipHitsByRep, int endCoord){
+		//Iterate through experiments
+		for(ExperimentCondition cond : manager.getConditions()){
+			for(ControlledExperiment rep : cond.getReplicates()){
+				double currPotWeightSig=0, currNonPotWeightSig=0;
+				//Iterate through signal hits
+				for(StrandedBaseCount hit : ipHitsByRep.get(rep.getIndex())){
+					if(regs.size()==0)
+						currNonPotWeightSig+=hit.getCount();
+					else{
+						//Binary search for closest region start
+	    				int hpoint = hit.getCoordinate();
+	    				if(hpoint<endCoord){ //Throw this check in for the overhang
+	        				int l = 0, r = regs.size()-1;
+	        	            while (r - l > 1) {
+	        	                int c = (l + r) / 2;
+	        	                if (hpoint >= regs.get(c).getStart()) {
+	        	                    l = c;
+	        	                } else {
+	        	                    r = c;
+	        	                }
+	        	            }
+	        	            boolean inPot = false;
+	        	            for(int x=l; x<=r; x++){
+	        	            	if(hpoint >= regs.get(x).getStart() && hpoint <= regs.get(x).getEnd()){
+	        	            		currPotWeightSig+=hit.getCount(); inPot=true; break;
+	        	            	}
+	        	            }
+	        	            if(!inPot)
+	        	            	currNonPotWeightSig+=hit.getCount();
+	    				}
+					}
+				}
+				
+				synchronized(potRegCountsSigChannelByRep){
+					potRegCountsSigChannelByRep.put(rep, potRegCountsSigChannelByRep.get(rep)+currPotWeightSig);
+				}
+				synchronized(nonPotRegCountsSigChannelByRep){
+					nonPotRegCountsSigChannelByRep.put(rep, nonPotRegCountsSigChannelByRep.get(rep)+currNonPotWeightSig);
+				}
+			}
+		}
+    }
+
     
     /**
 	 * This main method is only for testing the PotentialRegionFilter

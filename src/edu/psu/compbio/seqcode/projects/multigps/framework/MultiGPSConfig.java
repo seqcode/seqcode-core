@@ -40,7 +40,7 @@ public class MultiGPSConfig {
 	protected File outDir=null, interDir=null, imagesDir=null;
 	protected boolean printHelp=false;
 	protected BindingModel defaultModel=null;
-	protected double sigLogConf=-7; 
+	protected double sigLogConf=-5; 
 	protected double prLogConf=-4; 
 	protected double qMinThres=0.001;		//Minimum  Q-value for reported binding events
 	protected double differentialSignificanceP = 0.01;
@@ -49,7 +49,7 @@ public class MultiGPSConfig {
 	protected double alphaScalingFactor = 1.0; //Scale the condition-specific alpha value by this factor
 	protected boolean multicondition_posprior=true; //Multiple condition positional prior
 	protected double prob_shared_binding=0.9; //Prior probability that binding sites are shared between conditions (Constant used to build positional priors between conditions)
-	protected int bmAnalysisWindowMax=5000;
+	protected int bmAnalysisWindowMax=10000;
 	protected int minComponentsForBMUpdate = 500;
 	protected double minComponentReadFactorForBM = 3; //Components must have (this factor times the condition alpha) number of reads assigned before being included in BM update
 	protected boolean smoothingBMDuringUpdate=true;
@@ -79,7 +79,7 @@ public class MultiGPSConfig {
 	protected String Rpath="";
 	protected double edger_overdispersion = 0.15; //Overdispersion used by EdgeR differential enrichment tests
 	protected boolean verbose = false; //Print extra output
-	
+	 
     
 	//Constants
 	public final double LOG2 = Math.log(2);
@@ -393,10 +393,10 @@ public class MultiGPSConfig {
 				"\tOR\n" +
 				"\t--geninfo <genome info file> AND --seq <fasta seq directory>\n" +
 				"\t--d <read distribution model file>\n" +
-				"\t--r <max. model update rounds>\n" +
-				"\t--out <out name>\n" +
+				"\t--r <max. model update rounds (default="+maxModelUpdateRounds+">\n" +
+				"\t--out <out name (default="+outBase+">\n" +
 				"\t--nonunique [flag to use non-unique reads]\n" +
-				"\t--threads <number of threads to use (default=1)>\n" +
+				"\t--threads <number of threads to use (default="+maxThreads+")>\n" +
 				"Experiments:\n" +
 				"\t--expt <read file name> AND --format <SAM/BED/IDX/BOWTIE/NOVO/ELAND>\n" +
 				"AND/OR" +
@@ -407,18 +407,18 @@ public class MultiGPSConfig {
 				"Experiment Design File:\n" +
 				"\t--design <file name>\n" +
 				"Miscellaneous:\n" +
-				"\t--q <Q-value minimum (corrected p-value)>\n" +
-				"\t--minfold <min event fold-change>\n" +
-				"\t--fixedpb <fixed per base limit>\n" +
+				"\t--q <Q-value minimum, i.e corrected p-value(default="+qMinThres+")>\n" +
+				"\t--minfold <min event fold-change (default="+minEventFoldChange+")>\n" +
+				"\t--fixedpb <fixed per base limit (default=estimate from data)>\n" +
 				"\t--poissongausspb <filter per base using a Poisson threshold parameterized by a local Gaussian sliding window>\n" +
-				"\t--prlogconf <Poisson log threshold for potential region scanning>\n" +
-				"\t--alphascale <alpha scaling factor>\n" +
+				"\t--prlogconf <Poisson log threshold for potential region scanning(default="+prLogConf+")>\n" +
+				"\t--alphascale <alpha scaling factor(default="+alphaScalingFactor+">\n" +
 				"\t--nomodelupdate [flag to turn off binding model updates]\n" +
-				"\t--minmodelupdateevents <minimum number of events to support an update>\n" +
+				"\t--minmodelupdateevents <minimum number of events to support an update(default="+minComponentsForBMUpdate+")>\n" +
 				"\t--nomodelsmoothing [flag to turn off binding model smoothing]\n" +
-				"\t--splinesmoothparam <spline smoothing parameter>\n" +
+				"\t--splinesmoothparam <spline smoothing parameter (default="+bindingmodel_spline_smooth+">\n" +
 				"\t--gaussmodelsmoothing [flag to turn on Gaussian model smoothing (default = cubic spline)]\n" +
-				"\t--gausssmoothparam <Gaussian smoothing std dev>\n" +
+				"\t--gausssmoothparam <Gaussian smoothing std dev (default="+bindingmodel_gauss_smooth+">\n" +
 				"\t--jointinmodel [flag to allow joint events in model updates]\n" +
 				"\t--fixedmodelrange [flag to keep binding model range constant]\n" +
 				//"\t--mlsharedconfig [flag to share the component config in the ML step]\n" +
@@ -427,21 +427,21 @@ public class MultiGPSConfig {
 				//"\t--medianscale [flag to use scaling by median (default = regression)]\n" +
 				"\t--regressionscale [flag to use scaling by median (default = median)]\n" +
 				"\t--sesscale [flag to use scaling by SES (default = median)]\n" +
-				"\t--scalewin <window size for scaling procedure>\n" +
+				"\t--scalewin <window size for scaling procedure (default=10000)>\n" +
 				"\t--exclude <file of regions to ignore>\n" +
 				"\t--plotregions <regions to print during EM training>\n" +
 				"\t--noposprior [flag to turn off multi-cond pos prior]\n" +
-				"\t--probshared <probability that events are shared across conditions (pos prior)>\n" +
+				"\t--probshared <probability that events are shared across conditions, i.e. pos prior(default="+prob_shared_binding+")>\n" +
 				"\t--nomotifs [flag to turn off motif-finding & motif priors]\n" +
 				"\t--nomotifprior [flag to turn off motif priors only]\n" +
 				"\t--memepath <path to the meme bin dir (default: meme is in $PATH)>\n" +
-				"\t--memenmotifs <number of motifs MEME should find for each condition>\n" +
+				"\t--memenmotifs <number of motifs MEME should find for each condition (default=3)>\n" +
 				"\t--mememinw <minw arg for MEME (default="+MEMEminw+")>\n"+
 				"\t--mememaxw <maxw arg for MEME (default="+MEMEmaxw+")>\n"+
 				"\t--nodifftests [flag to turn off DE tests]\n" +
 				"\t--rpath <path to the R bin dir (default: R is in $PATH). Note that you need to install edgeR separately>\n" +
-				"\t--edgerod <EdgeR overdispersion>\n" +
-				"\t--diffp <minimum p-value for differential enrichment>\n" +
+				"\t--edgerod <EdgeR overdispersion (default="+edger_overdispersion+")>\n" +
+				"\t--diffp <minimum p-value for differential enrichment (default="+differentialSignificanceP+")>\n" +
 				"\t--verbose [flag to print intermediate files and extra output]\n" +
 				"\t--config <config file: all options can be specified in a name<space>value text file, over-ridden by command-line args>\n" +
 				""));
