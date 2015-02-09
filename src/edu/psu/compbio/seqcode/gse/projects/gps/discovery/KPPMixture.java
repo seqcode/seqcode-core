@@ -271,8 +271,10 @@ public class KPPMixture extends MultiConditionFeatureFinder {
 		
 		// Filtering/reset bases
 		if(config.filterDupReads){
-			applyPoissonFilter(false);
-			applyPoissonFilter(true);
+			if(config.max_hit_per_bp==0)
+				applyPoissonFilter(true);
+			else
+				doBaseFiltering();
 		}
 		
 		// Normalize conditions
@@ -1457,9 +1459,11 @@ public class KPPMixture extends MultiConditionFeatureFinder {
 		for(int t = 0; t < numConditions; t++) {
 			ReadCache ipCache = caches.get(t).car();
 			ipCache.filterAllBases(max_HitCount_per_base);
+			ipCache.displayStats();
 			if(controlDataExist) {
 				ReadCache ctrlCache = caches.get(t).cdr();
 				ctrlCache.filterAllBases(max_HitCount_per_base);
+				ctrlCache.displayStats();
 			}
 		}
 	}
