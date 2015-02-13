@@ -278,8 +278,9 @@ public class PeaksVsGenes {
 			            		if(attribute.toLowerCase().contains("foldchange")){
 			            			if(words[6].contains("OK") && words[9].contains("-inf")){words[9] = Double.toHexString(-1*Double.MAX_VALUE);}
 			            			if(words[6].contains("OK") && words[9].contains("inf")){words[9] = Double.toHexString(Double.MAX_VALUE);}
-			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), Double.parseDouble(words[9]));
 			            			if(words[6].contains("NOTEST") || words[6].contains("FAIL") || words[6].contains("LOWDATA") || words[6].contains("HIDATA")){words[9] = Double.toHexString(0);}
+			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), Double.parseDouble(words[9]));
+			            			
 			            		}else if(attribute.toLowerCase().contains("tstat")){
 			            			if(words[6].contains("OK") && words[9].contains("-inf") && words[10].contains("nan")){words[10] = Double.toHexString(-1*Double.MAX_VALUE);}
 			            			if(words[6].contains("OK") && words[9].contains("inf") && words[10].contains("nan")){words[10] = Double.toHexString(Double.MAX_VALUE);}
