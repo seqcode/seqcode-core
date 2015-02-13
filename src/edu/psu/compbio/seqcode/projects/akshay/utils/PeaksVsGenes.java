@@ -182,7 +182,7 @@ public class PeaksVsGenes {
 	public void setRadius(int r){ radius = r;}
 	
 	public void laodpeaks(String peaksfile, boolean fromDB){
-		peaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, peaksfile, (Integer) null);
+		peaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, peaksfile, -1);
 		if(!fromDB){
 			try{
 				File pFile = new File(peaksfile);
@@ -193,18 +193,20 @@ public class PeaksVsGenes {
 				while ((line = reader.readLine()) != null) {
 					line = line.trim();
 					String[] words = line.split("\t");
-					if(words.length >=1 && !words[0].contains("#") &&  !words[0].equals("Region") && !words[0].equals("Position")){
-						if(words[0].contains("-")){
-		                	RegionParser rparser = new RegionParser(gen);
-			            	Region q = rparser.execute(words[0]);
-			            	peak_attributes.put(q.getMidpoint().getLocationString(), Double.parseDouble(words[1]));		            	
-		            	}else{
-		            		PointParser pparser = new PointParser(gen);
-		            		Point p = pparser.execute(words[0]);
-		            		peak_attributes.put(p.getLocationString(), Double.parseDouble(words[1]));
-		            	}
-					}
+					if(words.length >=2){
+						if(words.length >=1 && !words[0].contains("#") &&  !words[0].equals("Region") && !words[0].equals("Position")){
+							if(words[0].contains("-")){
+								RegionParser rparser = new RegionParser(gen);
+								Region q = rparser.execute(words[0]);
+								peak_attributes.put(q.getMidpoint().getLocationString(), Double.parseDouble(words[1]));		            	
+							}else{
+								PointParser pparser = new PointParser(gen);
+								Point p = pparser.execute(words[0]);
+								peak_attributes.put(p.getLocationString(), Double.parseDouble(words[1]));
+							}
+						}
 						
+					}
 				}
 				reader.close();
 			}catch(Exception e){
@@ -227,14 +229,15 @@ public class PeaksVsGenes {
 					while ((line = reader.readLine()) != null) {
 						line = line.trim();
 						String[] words = line.split("\t");
-						if(words.length >=1 && !words[0].contains("#") &&  !words[0].equals("Region") && !words[0].equals("Position")){
-							String[] subwords = words[0].split(":");
-							PointParser pparser = new PointParser(gen);
-							Point p = pparser.execute(subwords[0]+":"+subwords[1]);
-							StrandedPoint sp = new StrandedPoint(p,subwords[2].charAt(0));
-							gene_attributes.put(sp.getLocationString(), Double.parseDouble(words[1]));
+						if(words.length >=2){
+							if(words.length >=1 && !words[0].contains("#") &&  !words[0].equals("Region") && !words[0].equals("Position")){
+								String[] subwords = words[0].split(":");
+								PointParser pparser = new PointParser(gen);
+								Point p = pparser.execute(subwords[0]+":"+subwords[1]);
+								StrandedPoint sp = new StrandedPoint(p,subwords[2].charAt(0));
+								gene_attributes.put(sp.getLocationString(), Double.parseDouble(words[1]));
+							}
 						}
-							
 					}
 					reader.close();
 				}catch(Exception e){
@@ -270,13 +273,17 @@ public class PeaksVsGenes {
 			            			throw new Exception("Provide which gene attribute to load from cuffdiff file!!");
 			            		}
 			            		if(attribute.toLowerCase().contains("foldchange")){
+			            			if(words[6].contains("OK") && words[9].contains("-inf")){words[9] = Double.toHexString(-1*Double.MAX_VALUE);}
+			            			if(words[6].contains("OK") && words[9].contains("inf")){words[9] = Double.toHexString(Double.MAX_VALUE);}
 			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), Double.parseDouble(words[9]));
 			            		}else if(attribute.toLowerCase().contains("tstat")){
+			            			if(words[6].contains("OK") && words[9].contains("-inf") && words[10].contains("nan")){words[10] = Double.toHexString(-1*Double.MAX_VALUE);}
+			            			if(words[6].contains("OK") && words[9].contains("inf") && words[10].contains("nan")){words[10] = Double.toHexString(Double.MAX_VALUE);}
 			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), Double.parseDouble(words[10]));
 			            		}else if(attribute.toLowerCase().contains("pvalue")){
-			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), Double.parseDouble(words[11]));
+			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), -1*Math.log10(Double.parseDouble(words[11])));
 			            		}else if(attribute.toLowerCase().contains("qvalue")){
-			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), Double.parseDouble(words[12]));
+			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), -1*Math.log10(Double.parseDouble(words[12])));
 			            		}
 			            	}
 			            	
