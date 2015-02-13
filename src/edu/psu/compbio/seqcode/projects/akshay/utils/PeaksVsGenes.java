@@ -230,11 +230,14 @@ public class PeaksVsGenes {
 						line = line.trim();
 						String[] words = line.split("\t");
 						if(words.length >=2){
-							if(words.length >=1 && !words[0].contains("#") &&  !words[0].equals("Region") && !words[0].equals("Position")){
+							if(words.length >=1 && !words[0].contains("#") &&  !words[0].equals("Region") && !words[0].equals("Position") && !words[0].equals("Point")){
 								String[] subwords = words[0].split(":");
 								PointParser pparser = new PointParser(gen);
 								Point p = pparser.execute(subwords[0]+":"+subwords[1]);
 								StrandedPoint sp = new StrandedPoint(p,subwords[2].charAt(0));
+								if(words[1].contains("-Infinity") || words[1].contains("-inf")){
+									words[1] = Double.toHexString(-1*Double.MAX_VALUE);
+								}
 								gene_attributes.put(sp.getLocationString(), Double.parseDouble(words[1]));
 							}
 						}
@@ -276,9 +279,11 @@ public class PeaksVsGenes {
 			            			if(words[6].contains("OK") && words[9].contains("-inf")){words[9] = Double.toHexString(-1*Double.MAX_VALUE);}
 			            			if(words[6].contains("OK") && words[9].contains("inf")){words[9] = Double.toHexString(Double.MAX_VALUE);}
 			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), Double.parseDouble(words[9]));
+			            			if(words[6].contains("NOTEST") || words[6].contains("FAIL") || words[6].contains("LOWDATA") || words[6].contains("HIDATA")){words[9] = Double.toHexString(0);}
 			            		}else if(attribute.toLowerCase().contains("tstat")){
 			            			if(words[6].contains("OK") && words[9].contains("-inf") && words[10].contains("nan")){words[10] = Double.toHexString(-1*Double.MAX_VALUE);}
 			            			if(words[6].contains("OK") && words[9].contains("inf") && words[10].contains("nan")){words[10] = Double.toHexString(Double.MAX_VALUE);}
+			            			if(words[6].contains("NOTEST") || words[6].contains("FAIL") || words[6].contains("LOWDATA") || words[6].contains("HIDATA")){words[10] = Double.toHexString(0);}
 			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), Double.parseDouble(words[10]));
 			            		}else if(attribute.toLowerCase().contains("pvalue")){
 			            			gene_attributes.put(genes.get(genes.size()-1).getLocationString(), -1*Math.log10(Double.parseDouble(words[11])));
