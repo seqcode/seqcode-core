@@ -131,7 +131,7 @@ public class PeaksVsGenes {
 			if(genesbyChrs.containsKey(p.getChrom())){
 				for(StrandedPoint sp : genesbyChrs.get(p.getChrom())){
 					int distance = sp.distance(p);
-					if(distance < radius  && gene_attributes.get(sp.getLocationString()) > threshold){
+					if(distance < radius  && Math.abs(gene_attributes.get(sp.getLocationString())) > threshold){
 						highattgenes.add(sp);
 						hasgene = true;
 						distances.add(distance);
@@ -187,6 +187,7 @@ public class PeaksVsGenes {
 			try{
 				File pFile = new File(peaksfile);
 				if(!pFile.isFile()){System.err.println("Invalid peaks filename");System.exit(1);}
+				peak_attributes = new HashMap<String, Double>();
 				BufferedReader reader = new BufferedReader(new FileReader(pFile));
 				String line;
 				while ((line = reader.readLine()) != null) {
@@ -218,6 +219,7 @@ public class PeaksVsGenes {
 			genes = RegionFileUtilities.loadStrandedPointFromRefTssFile(gen, genefile);
 			if(!fromDB){
 				try{
+					gene_attributes = new HashMap<String, Double>();
 					File gFile = new File(genefile);
 					if(!gFile.isFile()){System.err.println("Invalid genes list filename");System.exit(1);}
 					BufferedReader reader = new BufferedReader(new FileReader(gFile));
@@ -241,6 +243,9 @@ public class PeaksVsGenes {
 			}
 		}else{
 			try{
+				genes = new ArrayList<StrandedPoint>();
+				gene_attributes = new HashMap<String, Double>();
+				startToGenename = new HashMap<String, List<String>>();
 				File gFile = new File(genefile);
 				if(!gFile.isFile()){System.err.println("Invalid cuffdiff filename");System.exit(1);}
 				BufferedReader reader = new BufferedReader(new FileReader(gFile));
