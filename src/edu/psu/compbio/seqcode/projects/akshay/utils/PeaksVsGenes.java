@@ -202,6 +202,11 @@ public class PeaksVsGenes {
 							}else{
 								PointParser pparser = new PointParser(gen);
 								Point p = pparser.execute(words[0]);
+								if(words[1].contains("-Infinity") || words[1].contains("-inf")){
+									words[1] = Double.toHexString(-1*Double.MAX_VALUE);
+								}else if(words[1].contains("Infinity") || words[1].contains("inf")){
+									words[1] = Double.toHexString(Double.MAX_VALUE);
+								}
 								peak_attributes.put(p.getLocationString(), Double.parseDouble(words[1]));
 							}
 						}
