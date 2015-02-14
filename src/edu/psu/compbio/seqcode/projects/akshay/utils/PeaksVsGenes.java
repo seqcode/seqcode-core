@@ -112,7 +112,7 @@ public class PeaksVsGenes {
 			}
 			
 			if(hasgene){
-				String gene_names = StringUtils.join(startToGenename.get(nearestGene.getLocationString()), "\t"); 
+				String gene_names = StringUtils.join(startToGenename.get(nearestGene.getLocationString()), ","); 
 				System.out.println(p.getLocationString()+"\t"+gene_names+"\t"+Integer.toString(MINDISTANCE));
 			}else{
 				System.out.println(p.getLocationString()+"\tNULL\tNULL");
@@ -143,8 +143,8 @@ public class PeaksVsGenes {
 				for(StrandedPoint sp : highattgenes){
 					gene_names.addAll(startToGenename.get(sp.getLocationString()));
 				}
-				String gene_names_string = StringUtils.join(gene_names, "\t");
-				String distance_string = StringUtils.join(distances, "\t");
+				String gene_names_string = StringUtils.join(gene_names, ",");
+				String distance_string = StringUtils.join(distances, ",");
 				System.out.println(p.getLocationString()+"\t"+gene_names_string+"\t"+distance_string);
 			}else{
 				System.out.println(p.getLocationString()+"NULL\tNULL");
