@@ -218,6 +218,7 @@ public class CensusLibraryComplexity {
 				//System.out.println(String.format("%d\t%.0f\t%.0f\t%.0f\t%.0f",i, obs, poissExp, nbExp,lnExp));
 				//System.out.println(String.format("%d\t%.0f\t%.0f\t%.0f",i, obs, poissExp, nbExp));
 			}
+			System.out.println(String.format("More\t%.0f",histo.getBin(histo.getBinContainingVal(histo.getHistoStop()))));
 		}
 	}
 	protected double logTrunc(double x){return Math.log(Math.max(x, 1e-300));}
