@@ -153,17 +153,17 @@ public class PughLabSampleInfo implements Comparable<PughLabSampleInfo>{
     }
     
     public static PreparedStatement createLoadAll(java.sql.Connection c) throws SQLException { 
-        return c.prepareStatement("sampleid, projectid, runid, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
+        return c.prepareStatement("select sampleid, projectid, runid, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
         		"from PughLabSampleInfo");
     }
     
     public static PreparedStatement createLoadBySampleID(java.sql.Connection c) throws SQLException { 
-        return c.prepareStatement("sampleid, projectid, runid, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
+        return c.prepareStatement("select sampleid, projectid, runid, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
         		"from PughLabSampleInfo where sampleid=?");
     }
 
     public static PreparedStatement createLoadByUniqID(java.sql.Connection c) throws SQLException { 
-        return c.prepareStatement("sampleid, projectid, runid, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
+        return c.prepareStatement("select sampleid, projectid, runid, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
         		"from PughLabSampleInfo where uniqid=?");
     }
 
