@@ -41,9 +41,9 @@ import java.sql.SQLException;
  */
 public class PughLabSampleInfo implements Comparable<PughLabSampleInfo>{
 
-	private int sampleid;
-	private String projectid;
-	private String runid;
+	private int sample_id;
+	private String project_id;
+	private String run_id;
 	private String name;
 	private String target;
 	private String antibody;
@@ -67,9 +67,9 @@ public class PughLabSampleInfo implements Comparable<PughLabSampleInfo>{
 	private String sra_id;
 	
 	public PughLabSampleInfo(ResultSet rs)  throws SQLException {
-		sampleid = rs.getInt(1);
-		projectid = rs.getString(2);
-		runid = rs.getString(3);
+		sample_id = rs.getInt(1);
+		project_id = rs.getString(2);
+		run_id = rs.getString(3);
 		name = rs.getString(4);
 		target = rs.getString(5);
 		antibody = rs.getString(6);
@@ -93,9 +93,9 @@ public class PughLabSampleInfo implements Comparable<PughLabSampleInfo>{
 		sra_id = rs.getString(24);
 	}
 	
-	public int getSampleID() {return sampleid;}
-	public String getProjectID() {return  projectid;}
-	public String getRunID() {return  runid;}
+	public int getSampleID() {return sample_id;}
+	public String getProjectID() {return  project_id;}
+	public String getRunID() {return  run_id;}
 	public String getName() {return  name;}
 	public String getTarget() {return  target;}
 	public String getAntibody() {return  antibody;}
@@ -142,28 +142,28 @@ public class PughLabSampleInfo implements Comparable<PughLabSampleInfo>{
     public boolean equals(Object o) { 
         if(!(o instanceof PughLabSampleInfo)) { return false; }
         PughLabSampleInfo c = (PughLabSampleInfo)o;
-        if(sampleid != c.sampleid) { return false; }
+        if(sample_id != c.sample_id) { return false; }
         return true;
     }
     
     public int hashCode() { 
         int code = 17;
-        code += sampleid; code *= 37;
+        code += sample_id; code *= 37;
         return code;
     }
     
     public static PreparedStatement createLoadAll(java.sql.Connection c) throws SQLException { 
-        return c.prepareStatement("select sampleid, projectid, runid, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
+        return c.prepareStatement("select sample_id, project_id, run_id, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
         		"from PughLabSampleInfo");
     }
     
     public static PreparedStatement createLoadBySampleID(java.sql.Connection c) throws SQLException { 
-        return c.prepareStatement("select sampleid, projectid, runid, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
-        		"from PughLabSampleInfo where sampleid=?");
+        return c.prepareStatement("select sample_id, project_id, run_id, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
+        		"from PughLabSampleInfo where sample_id=?");
     }
 
     public static PreparedStatement createLoadByUniqID(java.sql.Connection c) throws SQLException { 
-        return c.prepareStatement("select sampleid, projectid, runid, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
+        return c.prepareStatement("select sample_id, project_id, run_id, name, target, antibody, antibody_volume, strain, mutation, media, perturb, assay_code, rep_code, userid, seq_date, uniq_id, pri_genome, seq_by, comment, ref_genome, success, index_count, public_flag, sra_id " +
         		"from PughLabSampleInfo where uniqid=?");
     }
 
