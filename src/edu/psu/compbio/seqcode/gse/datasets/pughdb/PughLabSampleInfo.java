@@ -133,6 +133,24 @@ public class PughLabSampleInfo implements Comparable<PughLabSampleInfo>{
 	public String toString() { 
     	return buildName();
     }
+
+	//Below are some SeqData naming translations
+	public String getSeqDataTargetName() {
+		String ab = antibody_volume==null ? antibody : antibody+"-"+antibody_volume;
+		return target+"_"+ab;
+	}
+	public String getSeqDataConditionName() {
+		return strain+"_"+mutation+"_"+media+"_"+perturb;
+	}
+	public String getSeqDataCelllineName() {
+		return strain+"_"+mutation;
+	}
+	public String getSeqDataReplicateName() {
+		String repID = assay_code+rep_code;
+		return repID+"_"+userid+"-"+seq_date+"_"+uniq_id;
+	}
+	
+	
     
     public int compareTo(PughLabSampleInfo o){
     	String name = buildName();
