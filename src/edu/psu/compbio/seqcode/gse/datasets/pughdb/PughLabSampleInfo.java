@@ -137,25 +137,53 @@ public class PughLabSampleInfo implements Comparable<PughLabSampleInfo>{
 	//Below are some SeqData naming translations
 	public String getSeqDataTargetName() {
 		String ab = antibody_volume==null ? antibody : antibody+"-"+antibody_volume;
-		return target+"_"+ab;
+		String tname = target+"_"+ab;
+		while(tname.endsWith("_-")){ tname = tname.substring(0,tname.lastIndexOf("_-"));}
+		while(tname.startsWith("-_")){ tname = tname.replaceFirst("-_", "");}
+		return tname;
 	}
 	public String getSeqDataConditionName() {
-		return strain+"_"+mutation+"_"+media+"_"+perturb;
+		String cname = strain+"_"+mutation+"_"+media+"_"+perturb;
+		while(cname.endsWith("_-")){ cname = cname.substring(0,cname.lastIndexOf("_-"));}
+		while(cname.startsWith("-_")){ cname = cname.replaceFirst("-_", "");}
+		return cname;
 	}
 	public String getSeqDataCelllineName() {
-		return strain+"_"+mutation;
+		String cname= strain+"_"+mutation;
+		while(cname.endsWith("_-")){ cname = cname.substring(0,cname.lastIndexOf("_-"));}
+		while(cname.startsWith("-_")){ cname = cname.replaceFirst("-_", "");}
+		return cname;
 	}
 	public String getSeqDataReplicateName() {
 		String repID = assay_code+rep_code;
-		return repID+"_"+userid+"-"+seq_date+"_"+uniq_id;
+		String rname = repID+"_"+userid+"-"+seq_date+"_"+uniq_id;
+		while(rname.endsWith("_-")){ rname = rname.substring(0,rname.lastIndexOf("_-"));}
+		while(rname.startsWith("-_")){ rname = rname.replaceFirst("-_", "");}
+		return rname;
+	}
+	public String convertAssayCode(){
+		String assay = "UNKNOWN";
+	    if(assay_code.equals("XO")){ assay = "CHIPEXO";
+	    }else if(assay_code.equals("CS")){ assay = "CHIPSEQ";
+	    }else if(assay_code.equals("IN") || assay_code.equals("NA")){ assay = "INPUT";
+	    }else if(assay_code.equals("KS")){ assay = "KWIKSEQ";
+	    }else if(assay_code.equals("BS")){ assay = "BISSEQ";
+	    }else if(assay_code.equals("CT")){ assay = "CHIPTOPO";
+	    }else if(assay_code.equals("PS")){ assay = "PERMSEQ"; 
+	    }else if(assay_code.equals("MN")){ assay = "MNASECHIPSEQ";
+	    }
+	    if(target.toLowerCase().matches("no-tag") || target.toLowerCase().matches("no-ab") || target.toLowerCase().matches("None") || target.toLowerCase().matches("IgG")){ 
+	    	assay = "CONTROL";
+	    }
+	    return assay;
 	}
 	
 	
     
     public int compareTo(PughLabSampleInfo o){
-    	String name = buildName();
-    	String oname = o.buildName();
-    	return name.compareTo(oname);
+    	//String name = buildName();
+    	//String oname = o.buildName();
+    	return uniq_id.compareTo(o.uniq_id);
     }
     public boolean equals(Object o) { 
         if(!(o instanceof PughLabSampleInfo)) { return false; }

@@ -18,7 +18,7 @@ public class ExportPughDBSampleList {
 			info = loader.loadAllSamples();
 		
 			for(PughLabSampleInfo i : info){
-				System.out.println(i.buildName()+"\t"+i.getUniqID()+"\t"+i.getSeqDataConditionName()+"\t"+i.getSeqDataTargetName()+"\t"+i.getSeqDataCelllineName()+"\t"+i.getSeqDataReplicateName());
+				System.out.println(i.buildName()+"\t"+i.getUniqID()+"\t"+i.convertAssayCode()+"\t"+i.getSeqDataConditionName()+"\t"+i.getSeqDataTargetName()+"\t"+i.getSeqDataCelllineName()+"\t"+i.getSeqDataReplicateName());
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
