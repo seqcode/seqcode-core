@@ -189,8 +189,9 @@ public class PeaksVsGenes {
 			this.printCloseHighAttributeGenes(0);
 		}else{
 			HashMap<String, List<StrandedPoint>> genesbyChrs = hashbychrom(genes);
-			List<Integer> distances = new ArrayList<Integer>();
+			
 			for(Point p: peaks){
+				List<Integer> distances = new ArrayList<Integer>();
 				List<StrandedPoint> closeGenes= new ArrayList<StrandedPoint>();
 				boolean hasclosegenes = false;
 				if(genesbyChrs.containsKey(p.getChrom())){
