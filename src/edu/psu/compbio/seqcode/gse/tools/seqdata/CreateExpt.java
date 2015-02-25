@@ -3,6 +3,8 @@ package edu.psu.compbio.seqcode.gse.tools.seqdata;
 import java.io.*;
 import java.sql.*;
 
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
+
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
@@ -70,28 +72,33 @@ public class CreateExpt {
 	        try {
 	            expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
 	        } catch (NotFoundException e) {
-	        	//NotFound = create new experiment
-	        	newExpt=true;
-	            System.err.println("Creating experiment " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
-	            PreparedStatement insert = SeqExpt.createInsert(cxn);
-	            insert.setString(1, alignpieces[0]);
-	            insert.setString(2, alignpieces[1]);
-	            insert.setInt(3, genome.getSpeciesDBID());
-	            insert.setInt(4, core.getExptType(etypestring).getDBID());
-	            insert.setInt(5, core.getLab(labstring).getDBID());
-	            insert.setInt(6, core.getExptCondition(conditionstring).getDBID());
-	            insert.setInt(7, core.getExptTarget(targetstring).getDBID());
-	            insert.setInt(8, core.getCellLine(cellsstring).getDBID());
-	            insert.setInt(9, core.getReadType(rtypestring).getDBID());
-	            insert.setInt(10, readlength);
-	            insert.setInt(11, numreads);
-	            insert.setString(12, collabid);
-	            insert.setString(13, publicsource);
-	            insert.setString(14, publicdbid);
-	            insert.setString(15, fqfile);
-	            insert.setString(16, exptnote);
-	            insert.execute();
-	            insert.close();
+	        	try{
+		        	//NotFound = create new experiment
+		        	newExpt=true;
+		            System.err.println("Creating experiment " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
+		            PreparedStatement insert = SeqExpt.createInsert(cxn);
+		            insert.setString(1, alignpieces[0]);
+		            insert.setString(2, alignpieces[1]);
+		            insert.setInt(3, genome.getSpeciesDBID());
+		            insert.setInt(4, core.getExptType(etypestring).getDBID());
+		            insert.setInt(5, core.getLab(labstring).getDBID());
+		            insert.setInt(6, core.getExptCondition(conditionstring).getDBID());
+		            insert.setInt(7, core.getExptTarget(targetstring).getDBID());
+		            insert.setInt(8, core.getCellLine(cellsstring).getDBID());
+		            insert.setInt(9, core.getReadType(rtypestring).getDBID());
+		            insert.setInt(10, readlength);
+		            insert.setInt(11, numreads);
+		            insert.setString(12, collabid);
+		            insert.setString(13, publicsource);
+		            insert.setString(14, publicdbid);
+		            insert.setString(15, fqfile);
+		            insert.setString(16, exptnote);
+		            insert.execute();
+		            insert.close();
+	        	} catch(MySQLIntegrityConstraintViolationException ex){
+	        		//Duplicate primary keys - someone else added the same experiment at the same time
+	        		//Do nothing - it will try loading the experiment again in the next step
+	        	}
 	            try {
 	                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
 	            } catch (NotFoundException e2) {
