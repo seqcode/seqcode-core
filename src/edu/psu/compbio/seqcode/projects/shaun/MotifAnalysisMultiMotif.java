@@ -138,8 +138,16 @@ public class MotifAnalysisMultiMotif {
 			analyzer.setAllThresholds(globalThreshold);
 					
 		//load positive & negative sets
-		analyzer.loadPositive(posFile);
-		analyzer.loadNegative(neg);
+		if(ap.hasKey("seq"))
+		{
+			String gpath = ap.getKeyValue("seq");
+			analyzer.loadPositive(posFile,true,gpath);
+			analyzer.loadNegative(neg,true,gpath);
+		}else{
+			analyzer.loadPositive(posFile,false,"");
+			analyzer.loadNegative(neg,false,"");
+		}
+		
 		
 
 		//Options
@@ -514,14 +522,22 @@ public class MotifAnalysisMultiMotif {
 	public void setPrintROC(boolean pr){printROCCurve = pr;}
 
 	//load positive
-	public void loadPositive(String fname){
+	public void loadPositive(String fname, boolean usecache, String genomePath){
 		posSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, fname, window);
 		posPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, fname, window);
 		posLines = RegionFileUtilities.loadLinesFromFile(fname);
-		posSeq = RegionFileUtilities.getSequencesForRegions(posSet, null);
+		if(usecache){
+			SequenceGenerator seqgen = new SequenceGenerator(gen);
+			seqgen.useCache(true);
+			seqgen.useLocalFiles(true);
+			seqgen.setGenomePath(genomePath);
+			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, seqgen);
+		}else{
+			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, null);
+		}
 	}
 	//load negative
-	public void loadNegative(String name){
+	public void loadNegative(String name, boolean usecache, String genomePath){
 		if(name==null || name.equals("random")){
 			negSet = RegionFileUtilities.randomRegionPick(gen, posSet, numRand, window);
 			negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
@@ -534,7 +550,15 @@ public class MotifAnalysisMultiMotif {
 			}
 		}else{
 			negSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, name, window);
-			negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
+			if(usecache){
+				SequenceGenerator seqgen = new SequenceGenerator(gen);
+				seqgen.useCache(true);
+				seqgen.useLocalFiles(true);
+				seqgen.setGenomePath(genomePath);
+				negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
+			}else{
+				negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
+			}
 		}
 	}
 	
