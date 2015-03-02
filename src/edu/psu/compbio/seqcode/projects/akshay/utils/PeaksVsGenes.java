@@ -21,6 +21,9 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.strings.StringUtils;
+import edu.psu.compbio.seqcode.projects.shaun.rnaseq.GTFReader;
+import edu.psu.compbio.seqcode.projects.shaun.rnaseq.genemodels.GeneTUnit;
+import edu.psu.compbio.seqcode.projects.shaun.rnaseq.genemodels.SplicedTUnit;
 
 public class PeaksVsGenes {
 	
@@ -33,6 +36,7 @@ public class PeaksVsGenes {
 	private boolean fromDB = false;
 	private ExptConfig econfig = null;
 	
+	private boolean gtf = false;
 	
 	private int radius = 50000; // Default is 50kb
 	
@@ -42,16 +46,18 @@ public class PeaksVsGenes {
 	
 	
 	
-	public PeaksVsGenes(Genome g){
+	public PeaksVsGenes(Genome g, boolean gtf_loading, boolean DB_loading){
 		gen =g;
+		gtf = gtf_loading;
+		fromDB = DB_loading;
+		
 	}
 	
 	public static void main(String[] args){
 		GenomeConfig gconfig = new GenomeConfig(args);
 		ArgParser ap = new ArgParser(args);
 		int radius = Args.parseInteger(args, "radius", 50000);
-		String gene_attribute = Args.parseString(args, "gAttribute", "tstat");
-		boolean cuffdiff = ap.hasKey("cuffdiff");
+		
 		
 		boolean printNearestGene = ap.hasKey("printNearestGene");
 		boolean printCloseHighAttributeGenes  = ap.hasKey("printCloseHighAttributeGenes");
@@ -66,23 +72,41 @@ public class PeaksVsGenes {
 			System.err.println("Provide ChIP-Seq peaks file!!");
 			return;
 		}
-		String genefile = Args.parseString(args, "genes", null);
-		if(genefile == null){
-			System.err.println("Provide genes file!!");
-			return;
+		
+		boolean cuffdiff = ap.hasKey("cuffdiff");
+		boolean gtf = !cuffdiff;
+		String gene_attribute = "";
+		String genefile = "";
+		if(cuffdiff){
+			gene_attribute = Args.parseString(args, "gAttribute", "tstat");
+			genefile = Args.parseString(args, "genes", null);
+			if(genefile == null){
+				System.err.println("Provide genes file!!");
+				return;
+			}
+		}else{
+			genefile = Args.parseString(args, "gtf", null);
+			if(genefile == null){
+				System.err.println("Provide gtf file!!");
+				return;
+			}
 		}
-		
-		// For now formDB is always false .. with add that utility later
+
+		// For now formDB is always false .. will add that utility later
 		boolean fromDB=false;
-		PeaksVsGenes analyzer = new PeaksVsGenes(gconfig.getGenome());
+		PeaksVsGenes analyzer = new PeaksVsGenes(gconfig.getGenome(), gtf,fromDB);
 		
-		analyzer.laodpeaks(peaksfile, fromDB);
-		analyzer.laodgenes(genefile, cuffdiff, fromDB, gene_attribute);
+		analyzer.laodpeaks(peaksfile);
+		analyzer.laodgenes(genefile, gene_attribute);
 		analyzer.setRadius(radius);
 		
 		if(printNearestGene){
 			analyzer.printNearestGene();
 		}else if(printCloseHighAttributeGenes){
+			if(gtf && !fromDB){
+				System.err.println("This option only works when using cuffdiff files");
+				return;
+			}
 			analyzer.printCloseHighAttributeGenes(threshold);
 		}else if(printAllCloseGenes){
 			analyzer.printAllCloseGenes();
@@ -123,6 +147,13 @@ public class PeaksVsGenes {
 	}
 	
 	public void printCloseHighAttributeGenes(double threshold){
+		try{
+			if(gtf && !fromDB){
+				throw new Exception("This option needs geneattrbutes (Fold-change, diff-pvalue ...) via cuffdiff or any readDB loading!!");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 		HashMap<String, List<StrandedPoint>> genesbyChrs = hashbychrom(genes);
 		for(Point p: peaks){
 			List<StrandedPoint> highattgenes = new ArrayList<StrandedPoint>();
@@ -154,7 +185,42 @@ public class PeaksVsGenes {
 	
 	
 	public void printAllCloseGenes(){
-		this.printCloseHighAttributeGenes(0);
+		if(!gtf || fromDB){
+			this.printCloseHighAttributeGenes(0);
+		}else{
+			HashMap<String, List<StrandedPoint>> genesbyChrs = hashbychrom(genes);
+			
+			for(Point p: peaks){
+				List<Integer> distances = new ArrayList<Integer>();
+				List<StrandedPoint> closeGenes= new ArrayList<StrandedPoint>();
+				boolean hasclosegenes = false;
+				if(genesbyChrs.containsKey(p.getChrom())){
+					for(StrandedPoint gene : genesbyChrs.get(p.getChrom())){
+						int distance = gene.distance(p);
+						if( distance < radius){
+							closeGenes.add(gene);
+							distances.add(distance);
+							hasclosegenes = true;
+						}
+					}
+				}
+				
+				if(hasclosegenes){
+					List<String> gene_names = new ArrayList<String>();
+					for(StrandedPoint sp : closeGenes){
+						gene_names.addAll(startToGenename.get(sp.getLocationString()));
+					}
+					String gene_names_string = StringUtils.join(gene_names, ",");
+					String distance_string = StringUtils.join(distances, ",");
+					System.out.println(p.getLocationString()+"\t"+gene_names_string+"\t"+distance_string);
+				}else{
+					System.out.println(p.getLocationString()+"\tNULL\tNULL");
+				}
+				
+			}
+			
+		}
+		
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,7 +247,7 @@ public class PeaksVsGenes {
 	
 	public void setRadius(int r){ radius = r;}
 	
-	public void laodpeaks(String peaksfile, boolean fromDB){
+	public void laodpeaks(String peaksfile){
 		peaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, peaksfile, -1);
 		if(!fromDB){
 			try{
@@ -221,35 +287,23 @@ public class PeaksVsGenes {
 		
 	}
 	
-	public void laodgenes(String genefile, boolean cuffdiff, boolean fromDB, String attribute){
-		if(!cuffdiff){
-			genes = RegionFileUtilities.loadStrandedPointFromRefTssFile(gen, genefile);
-			if(!fromDB){
-				try{
-					gene_attributes = new HashMap<String, Double>();
-					File gFile = new File(genefile);
-					if(!gFile.isFile()){System.err.println("Invalid genes list filename");System.exit(1);}
-					BufferedReader reader = new BufferedReader(new FileReader(gFile));
-					String line;
-					while ((line = reader.readLine()) != null) {
-						line = line.trim();
-						String[] words = line.split("\t");
-						if(words.length >=2){
-							if(words.length >=1 && !words[0].contains("#") &&  !words[0].equals("Region") && !words[0].equals("Position") && !words[0].equals("Point")){
-								String[] subwords = words[0].split(":");
-								PointParser pparser = new PointParser(gen);
-								Point p = pparser.execute(subwords[0]+":"+subwords[1]);
-								StrandedPoint sp = new StrandedPoint(p,subwords[2].charAt(0));
-								if(words[1].contains("-Infinity") || words[1].contains("-inf")){
-									words[1] = Double.toHexString(-1*Double.MAX_VALUE);
-								}
-								gene_attributes.put(sp.getLocationString(), Double.parseDouble(words[1]));
-							}
-						}
-					}
-					reader.close();
-				}catch(Exception e){
-					e.printStackTrace();
+	// If gtf is false, it assumes loading from a cuffdiff file
+	// will add options to load gene attributes from other readDB expts later
+	public void laodgenes(String genefile, String attribute){
+		if(gtf){
+			//genes = RegionFileUtilities.loadStrandedPointFromRefTssFile(gen, genefile);
+			GTFReader gffreader = new GTFReader(new File(genefile), gen);
+			List<GeneTUnit> geneObjs = gffreader.loadGenes();
+			genes = new ArrayList<StrandedPoint>();
+			startToGenename = new HashMap<String, List<String>>();
+			for (GeneTUnit gu: geneObjs){
+				genes.add(new StrandedPoint(gu.getTSS(),gu.getStrand()));
+				if(startToGenename.containsKey(genes.get(genes.size()-1).getLocationString())){
+					startToGenename.get(genes.get(genes.size()-1).getLocationString()).add(gu.getName());
+				}else{
+					List<String> g_names = new ArrayList<String>();
+					g_names.add(gu.getName());
+					startToGenename.put(genes.get(genes.size()-1).getLocationString(), g_names);
 				}
 			}
 		}else{
