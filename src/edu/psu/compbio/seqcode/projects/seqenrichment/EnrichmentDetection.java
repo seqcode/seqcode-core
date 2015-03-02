@@ -28,6 +28,6 @@ public abstract class EnrichmentDetection {
 		
 	}
 	
-	public abstract List<Feature> execute();	
+	//public abstract List<Feature> execute();	
 	public abstract void printError();
 }
