@@ -1,0 +1,5 @@
+This package handles various ways of finding enriched regions (variable length) in a sequencing experiment. 
+The code is based on the statistical peak finder code in edu.psu.compbio.seqcode.gse.projects.gps.discovery.
+Here, however, we use the new experiment manager system and will simplify the approaches used in the older classes.
+
+   
