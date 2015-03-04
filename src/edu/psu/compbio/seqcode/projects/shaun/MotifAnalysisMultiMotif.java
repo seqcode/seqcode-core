@@ -114,7 +114,7 @@ public class MotifAnalysisMultiMotif {
         boolean peaksAndMotifs = ap.hasKey("peaksandmotifs");
         boolean peaksAndMotifsBest = ap.hasKey("peaksandmotifsbest");
         boolean peakWinMaxScores = ap.hasKey("peakwinmaxscores");
-        boolean hitStats = ap.hasKey("hitstats");
+        boolean hitStats = ap.hasKey("hitStats");
         boolean multiThres = ap.hasKey("multithres");
         boolean bitPattern = ap.hasKey("bitpattern");
         boolean countPattern = ap.hasKey("countpattern");
@@ -140,12 +140,11 @@ public class MotifAnalysisMultiMotif {
 		//load positive & negative sets
 		if(ap.hasKey("seq"))
 		{
-			String gpath = ap.getKeyValue("seq");
-			analyzer.loadPositive(posFile,true,gpath);
-			analyzer.loadNegative(neg,true,gpath);
+			analyzer.loadPositive(posFile,true);
+			analyzer.loadNegative(neg,true);
 		}else{
-			analyzer.loadPositive(posFile,false,"");
-			analyzer.loadNegative(neg,false,"");
+			analyzer.loadPositive(posFile,false);
+			analyzer.loadNegative(neg,false);
 		}
 		
 		
@@ -522,22 +521,18 @@ public class MotifAnalysisMultiMotif {
 	public void setPrintROC(boolean pr){printROCCurve = pr;}
 
 	//load positive
-	public void loadPositive(String fname, boolean usecache, String genomePath){
+	public void loadPositive(String fname, boolean usecache){
 		posSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, fname, window);
 		posPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, fname, window);
 		posLines = RegionFileUtilities.loadLinesFromFile(fname);
 		if(usecache){
-			SequenceGenerator seqgen = new SequenceGenerator(gen);
-			seqgen.useCache(true);
-			seqgen.useLocalFiles(true);
-			seqgen.setGenomePath(genomePath);
-			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, seqgen);
+			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, gcon.getSequenceGenerator());
 		}else{
 			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, null);
 		}
 	}
 	//load negative
-	public void loadNegative(String name, boolean usecache, String genomePath){
+	public void loadNegative(String name, boolean usecache){
 		if(name==null || name.equals("random")){
 			negSet = RegionFileUtilities.randomRegionPick(gen, posSet, numRand, window);
 			negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
@@ -551,11 +546,7 @@ public class MotifAnalysisMultiMotif {
 		}else{
 			negSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, name, window);
 			if(usecache){
-				SequenceGenerator seqgen = new SequenceGenerator(gen);
-				seqgen.useCache(true);
-				seqgen.useLocalFiles(true);
-				seqgen.setGenomePath(genomePath);
-				negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
+				negSeq = RegionFileUtilities.getSequencesForRegions(negSet, gcon.getSequenceGenerator());
 			}else{
 				negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
 			}
