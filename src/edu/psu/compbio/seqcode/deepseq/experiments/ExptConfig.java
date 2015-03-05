@@ -39,8 +39,8 @@ public class ExptConfig {
 	protected double mappableGenome = 0.8;
 	protected boolean estimateScaling=true;
 	protected boolean scalingByRegression=false; //Default is to scale by median
-	//protected boolean scalingByMedian = false; //Default is to estimate scaling by regression
-	protected boolean scalingBySES = false; //Default is to estimate scaling by regression
+	protected boolean scalingBySES = false; //Default is to estimate scaling by median
+	protected float fixedScalingFactor = 1; //Default is to estimate scaling by median
 	protected int scalingSlidingWindow = 10000; 
 	protected boolean cacheAllHits=true; //Cache all hits
 	protected String fileCacheDir = "hitcache";
@@ -121,6 +121,11 @@ public class ExptConfig {
 				//////////////////////
 				//Turn off scaling estimation
 				estimateScaling = Args.parseFlags(args).contains("noscaling") ? false : true;
+				//Fixed scaling factor if not estimating scaling
+				if(ap.hasKey("fixedscaling")){
+					estimateScaling=false;
+					fixedScalingFactor = Args.parseFloat(args,"fixedscaling",1);
+				}
 				//Scale by median is default
 				//scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
 				//Scale by SES
@@ -283,6 +288,7 @@ public class ExptConfig {
 	public double getMappableGenomeLength(){return mappableGenome*gen.getGenomeLength();}
 	public List<Integer> getLocalBackgroundWindows(){return localBackgroundWindows;}
 	public boolean getEstimateScaling(){return estimateScaling;}
+	public float getFixedScalingFactor(){return fixedScalingFactor;}
 	//public boolean getScalingByMedian(){return scalingByMedian;}
 	public boolean getScalingByRegression(){return scalingByRegression;}
 	public boolean getScalingBySES(){return scalingBySES;}
@@ -338,6 +344,12 @@ public class ExptConfig {
 				"\t--expt <read file name> AND --format <SAM/BED/IDX/BOWTIE/NOVO>\n" +
 				"\tAND/OR" +
 				"\t--rdbexpt <ReadDB experiment identifier>\n" +
+				"Scaling control vs signal counts:\n" +
+				"\t--noscaling [flag to turn off auto estimation of signal vs control scaling factor]\n" +
+				"\t--regressionscale [flag to use scaling by regression (default = scaling by median)]\n" +
+				"\t--sesscale [flag to use scaling by SES (default = scaling by median)]\n" +
+				"\t--fixedscaling <multiply control counts by total tag count ratio and then by this factor if not estimating scaling>" +
+				"\t--scalewin <window size for scaling procedure (default=10000)>\n" +
 				"Miscellaneous Experiment Loading Args:\n" +
 				"\t--fixedpb <fixed per base limit>\n" +
 				"\t--poissongausspb <filter per base using a Poisson threshold parameterized by a local Gaussian sliding window>\n" +

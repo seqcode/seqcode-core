@@ -174,6 +174,10 @@ public class Region implements Comparable<Region>, Saveable {
   public int getEnd() {
     return end;
   }
+  
+  public char getStrand(){
+	  return '.';
+  }
 
 
   public Region clone() {

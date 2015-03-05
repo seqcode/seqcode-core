@@ -50,6 +50,8 @@ public class ControlledExperiment {
 			//signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
 			//sigCount = signalProportion*signal.getHitCount();
 			//noiseCount = (1-signalProportion)*signal.getHitCount();
+		}else{
+			ctrlScalingRatio = control!=null ? (signal.getHitCount()/control.getHitCount())*econfig.getFixedScalingFactor() : 1;
 		}
 		//Start with assumption of no signal
 		sigCount = 0.0;

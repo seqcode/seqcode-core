@@ -58,6 +58,9 @@ public class Point implements Comparable<Point> {
     return location;
   }
 
+  public char getStrand(){
+	  return '.';
+  }
 
   public Point clone() {
     return new Point(g, chrom, location);

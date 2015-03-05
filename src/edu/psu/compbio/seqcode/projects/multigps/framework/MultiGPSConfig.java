@@ -25,14 +25,13 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 
 /**
  * MultiGPSConfig: 
- * 		Maintains all constants needed by multiple classes. 
- *     	Handles various arguments accepted by all deepseq processors.
+ * 		Maintains all constants needed by MultiGPS. 
  *     
  * @author Shaun Mahony
  * @version	%I%, %G%
  */
 public class MultiGPSConfig {
-	public static String version = "0.5";
+	public static String version = "0.6";
 	public boolean isGPS=true;
 	protected GenomeConfig gconfig;
 	protected Genome gen=null;
@@ -388,19 +387,11 @@ public class MultiGPSConfig {
 	 */
 	public String getArgsList(){
 		return(new String("" +
-				"Genome:" +
-				"\t--species <Organism;Genome>\n" +
-				"\tOR\n" +
-				"\t--geninfo <genome info file> AND --seq <fasta seq directory>\n" +
 				"\t--d <read distribution model file>\n" +
 				"\t--r <max. model update rounds (default="+maxModelUpdateRounds+">\n" +
 				"\t--out <out name (default="+outBase+">\n" +
 				"\t--nonunique [flag to use non-unique reads]\n" +
 				"\t--threads <number of threads to use (default="+maxThreads+")>\n" +
-				"Experiments:\n" +
-				"\t--expt <read file name> AND --format <SAM/BED/IDX/BOWTIE/NOVO/ELAND>\n" +
-				"AND/OR" +
-				"\t--rdbexpt <ReadDB experiment identifier>\n" +
 				"Annotations:\n" +
 				"\t--transcripts <transcripts file>\n" +
 				"\t--dbgenes refGene\n" +
@@ -409,25 +400,18 @@ public class MultiGPSConfig {
 				"Miscellaneous:\n" +
 				"\t--q <Q-value minimum, i.e corrected p-value(default="+qMinThres+")>\n" +
 				"\t--minfold <min event fold-change (default="+minEventFoldChange+")>\n" +
-				"\t--fixedpb <fixed per base limit (default=estimate from data)>\n" +
-				"\t--poissongausspb <filter per base using a Poisson threshold parameterized by a local Gaussian sliding window>\n" +
 				"\t--prlogconf <Poisson log threshold for potential region scanning(default="+prLogConf+")>\n" +
 				"\t--alphascale <alpha scaling factor(default="+alphaScalingFactor+">\n" +
 				"\t--nomodelupdate [flag to turn off binding model updates]\n" +
 				"\t--minmodelupdateevents <minimum number of events to support an update(default="+minComponentsForBMUpdate+")>\n" +
 				"\t--nomodelsmoothing [flag to turn off binding model smoothing]\n" +
 				"\t--splinesmoothparam <spline smoothing parameter (default="+bindingmodel_spline_smooth+">\n" +
-				"\t--gaussmodelsmoothing [flag to turn on Gaussian model smoothing (default = cubic spline)]\n" +
+				"\t--gaussmodelsmoothing [flag to turn o Gaussian model smoothing (default = cubic spline)]\n" +
 				"\t--gausssmoothparam <Gaussian smoothing std dev (default="+bindingmodel_gauss_smooth+">\n" +
 				"\t--jointinmodel [flag to allow joint events in model updates]\n" +
 				"\t--fixedmodelrange [flag to keep binding model range constant]\n" +
 				//"\t--mlsharedconfig [flag to share the component config in the ML step]\n" +
 				"\t--mlconfignotshared [flag to not share component configs in the ML step]\n" +
-				"\t--noscaling [flag to turn off signal vs control scaling]\n" +
-				//"\t--medianscale [flag to use scaling by median (default = regression)]\n" +
-				"\t--regressionscale [flag to use scaling by median (default = median)]\n" +
-				"\t--sesscale [flag to use scaling by SES (default = median)]\n" +
-				"\t--scalewin <window size for scaling procedure (default=10000)>\n" +
 				"\t--exclude <file of regions to ignore>\n" +
 				"\t--plotregions <regions to print during EM training>\n" +
 				"\t--noposprior [flag to turn off multi-cond pos prior]\n" +
