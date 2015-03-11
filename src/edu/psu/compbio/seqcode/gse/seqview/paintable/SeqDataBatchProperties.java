@@ -15,7 +15,7 @@ public class SeqDataBatchProperties extends SeqViewProperties {
     public Integer DeDuplicate = 0;
     public Boolean UseWeights = Boolean.TRUE;
     public Integer GaussianKernelVariance = 0;
-    public Boolean ReadExtension = Boolean.FALSE;
+    public Integer ReadExtension = 0;
     
     //For InteractionArcModelProperties
     public Integer ArcDeDuplicate = 1;

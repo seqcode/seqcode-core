@@ -579,7 +579,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
                 rs.close();
             }
         }
-        int id = insertFactor(name);
+        int id = insertExptTarget(name);
         return loadExptTarget(id);
     }
     
@@ -627,7 +627,7 @@ public class MetadataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeab
         return values;
     }	
 	
-    private int insertFactor(String n) throws SQLException {
+    private int insertExptTarget(String n) throws SQLException {
     	Statement s = null;
     	ResultSet rs = null;
     	int id=-1;
