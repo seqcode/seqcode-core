@@ -127,6 +127,9 @@ public class ExperimentCondition {
 	protected void calculateControlScalingFactors(int scalingWindowSize){
 		//No point in doing any of this unless some of the replicates have controls
 		if(controlSamples.size() >0){
+			if(econfig.getPrintLoadingProgress())
+				System.err.print("Calculating scaling factors for condition:\t"+name);
+			
 			ExperimentScaler scaler = new ExperimentScaler();
 			Genome genome = econfig.getGenome();
 			Map<Sample, List<Float>> sampleWindowCounts = new HashMap<Sample, List<Float>>();
@@ -172,14 +175,16 @@ public class ExperimentCondition {
 				for(Sample s : controlSamples)
 					sumCtrl+=sampleWindowCounts.get(s).get(x);
 				pooledControl.add(sumCtrl);
-				
-				if(econfig.getScalingBySES())
-					pooledSampleControlScaling = scaler.scalingRatioBySES(pooledSignal, pooledControl);
-				else if(econfig.getScalingByRegression())
-					pooledSampleControlScaling = scaler.scalingRatioByRegression(pooledSignal, pooledControl);
-				else
-					pooledSampleControlScaling = scaler.scalingRatioByMedian(pooledSignal, pooledControl);
 			}
+			if(econfig.getScalingBySES())
+				pooledSampleControlScaling = scaler.scalingRatioBySES(pooledSignal, pooledControl);
+			else if(econfig.getScalingByRegression())
+				pooledSampleControlScaling = scaler.scalingRatioByRegression(pooledSignal, pooledControl);
+			else
+				pooledSampleControlScaling = scaler.scalingRatioByMedian(pooledSignal, pooledControl);
+			
+			if(econfig.getPrintLoadingProgress())
+				System.err.println("\tComplete.");
 		}
 	}
 }
