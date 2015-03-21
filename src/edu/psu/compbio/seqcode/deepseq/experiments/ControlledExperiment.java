@@ -13,13 +13,10 @@ public class ControlledExperiment {
 
 	protected ExptConfig econfig;
 	protected int index;
-	protected Sample signal=null;
-	protected Sample control=null;
-	protected double ctrlScalingRatio = 1.0; //scaling signal versus control
-	protected double sigCount=0;   //Signal reads in the signal channel
-	protected double noiseCount=0; //Noise reads in the signal channel
-	protected double signalProportion= 0.0; //Fraction of reads assigned to signal. Init to zero to parameterize Poisson background model in the absence of a sig/noise estimate
-	protected boolean estimateScaling=true;
+	protected Sample signal=null; 	//signal channel
+	protected Sample control=null;	//control channel
+	protected double ctrlScalingRatio = 1.0; //scaling signal channel versus control channel
+	protected double signalVsNoiseFraction= 0.0; //Fraction of reads assigned to signal in the signal channel. Init to zero to parameterize Poisson background model in the absence of a sig/noise estimate
 	protected String condName;
 	protected String repName;
 	protected String name;
@@ -27,7 +24,7 @@ public class ControlledExperiment {
 	protected ExperimentTarget myTarget = null;
 	protected ExperimentType myExptType= null;
 	
-	public ControlledExperiment(ExptConfig c, int idx, String cn, String rn, Sample sig, Sample ctrl, boolean estimateScaling){
+	public ControlledExperiment(ExptConfig c, int idx, String cn, String rn, Sample sig, Sample ctrl){
 		econfig = c;
 		index=idx;
 		condName = cn;
@@ -35,28 +32,13 @@ public class ControlledExperiment {
 		name = condName+":"+repName;
 		signal=sig;
 		control = ctrl;
-		this.estimateScaling = estimateScaling;
 		
-		if(estimateScaling){
-			ExperimentScaler scaler = new ExperimentScaler(signal, control);
-			if(econfig.getScalingBySES())
-				ctrlScalingRatio = scaler.scalingRatioBySES(econfig.getScalingSlidingWindow());
-			else if(econfig.getScalingByRegression())
-				ctrlScalingRatio = scaler.scalingRatioByRegression(econfig.getScalingSlidingWindow());
-			else
-				ctrlScalingRatio = scaler.scalingRatioByMedian(econfig.getScalingSlidingWindow());
-			
-			//I don't trust that this works all the time
-			//signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
-			//sigCount = signalProportion*signal.getHitCount();
-			//noiseCount = (1-signalProportion)*signal.getHitCount();
-		}else{
-			ctrlScalingRatio = control!=null ? (signal.getHitCount()/control.getHitCount())*econfig.getFixedScalingFactor() : 1;
-		}
+		//Initialize with read count normalization. 
+		//Other scaling strategies (median, regression, SES) will be initialized in ExperimentCondition
+		ctrlScalingRatio = control!=null ? (signal.getHitCount()/control.getHitCount())*econfig.getFixedScalingFactor() : 1;
+		
 		//Start with assumption of no signal
-		sigCount = 0.0;
-		noiseCount = signal.getHitCount();
-		signalProportion = 0.0;
+		signalVsNoiseFraction = 0.0;
 	}
 	
 	//Accessors
@@ -68,10 +50,8 @@ public class ControlledExperiment {
 	public Sample getControl(){return control;}
 	public boolean hasControl(){return control!=null;}
 	public double getControlScaling(){return ctrlScalingRatio;}
-	public double getSigProp(){return signalProportion;}
-	public void setSigNoiseCounts(double s, double n){sigCount=s; noiseCount=n; signalProportion=sigCount/(sigCount+noiseCount);}
-	public double getSigCount(){return sigCount;}
-	public double getNoiseCount(){return noiseCount;}
+	public double getSignalVsNoiseFraction(){return signalVsNoiseFraction;}
+	public void setSignalVsNoiseFraction(double snf){signalVsNoiseFraction=snf;}
 	public ExperimentCondition getCondition(){return myCondition;}
 	public ExperimentTarget getTarget(){return myTarget;}
 	public ExperimentType getExptType(){return myExptType;}
@@ -81,25 +61,5 @@ public class ControlledExperiment {
 	public void setTarget(ExperimentTarget t){myTarget = t;}
 	public void setExptType(ExperimentType t){myExptType = t;}
 	
-	/**
-	 * Call linear count correction method in signal and recalculate necessary variables here 
-	 * @param perBaseScaling
-	 */
-	public void correctSignalCounts(float perBaseScaling){
-		signal.linearCountCorrection(perBaseScaling);
-		if(estimateScaling){
-			ExperimentScaler scaler = new ExperimentScaler(signal, control);
-			if(econfig.getScalingBySES())
-				ctrlScalingRatio = scaler.scalingRatioBySES(econfig.getScalingSlidingWindow());
-			else if(econfig.getScalingByRegression())
-				ctrlScalingRatio = scaler.scalingRatioByRegression(econfig.getScalingSlidingWindow());
-			else
-				ctrlScalingRatio = scaler.scalingRatioByMedian(econfig.getScalingSlidingWindow());
-			
-			signalProportion = 1-scaler.calculateBackgroundFromScalingRatio();
-			sigCount = signalProportion*signal.getHitCount();
-			noiseCount = (1-signalProportion)*signal.getHitCount();
-		}
-	}
 		
 }

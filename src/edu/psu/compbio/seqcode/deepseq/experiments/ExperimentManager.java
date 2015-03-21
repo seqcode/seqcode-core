@@ -66,11 +66,11 @@ public class ExperimentManager {
 		//This is done in a separate first pass, because it is possible (albeit unlikely)
 		//that multiple conditions share the same hit loader, and you don't want to load things twice.  
 		for(ExptDescriptor e : descriptors){
-			System.err.println("Processing HitLoaders for:\t"+e.condition+"\t"+e.replicate);
+			if(econfig.getPrintLoadingProgress())
+				System.err.println("Processing HitLoaders for:\t"+e.condition+"\t"+e.replicate);
 			for(Pair<String,String> source : e.sources){
 				String name = source.car();
 				String type = source.cdr();
-				System.err.println("Loading from "+type+" hit loader:\t"+name);
 				if(type.equals("READDB")){ //ReadDB HitLoader
 					HitLoader hl = makeReadDBHitLoader(name);
 					//hit loader does not have to be sourced here -- that happens in the samples part below
@@ -90,6 +90,10 @@ public class ExperimentManager {
 				sampleName = e.condition+":"+e.replicate+":signal";
 			else
 				sampleName = e.condition+":"+e.replicate+":control";
+			
+			if(econfig.getPrintLoadingProgress() && loadReads)
+				System.err.print("Loading data from "+sampleName);
+			
 			if(!allSamples.containsKey(sampleName)){
 				Sample samp = new Sample(sampCount, econfig, sampleName, e.perBaseMaxReads);
 				allSamples.put(sampleName, samp);
@@ -100,8 +104,11 @@ public class ExperimentManager {
 				String name = source.car();
 				allSamples.get(sampleName).addHitLoader(loaders.get(name));
 			}
-			if(loadReads)
+			if(loadReads){
 				allSamples.get(sampleName).initializeCache(econfig.getCacheAllData(), econfig.getInitialCachedRegions());
+				if(econfig.getPrintLoadingProgress())
+					System.err.println("\tLoaded.");
+			}
 		}
 		//Merge estimated genomes if necessary
 		if(gen == null){
@@ -130,7 +137,7 @@ public class ExperimentManager {
 							ctrl = allSamples.get("DEFAULT:DEFAULT:control");
 						//If no control specified, ctrl is still null
 						
-						ControlledExperiment rep = new ControlledExperiment(econfig, repCount, e.condition, e.replicate, sig, ctrl, econfig.getEstimateScaling());
+						ControlledExperiment rep = new ControlledExperiment(econfig, repCount, e.condition, e.replicate, sig, ctrl);
 						allReplicates.put(repName, rep);
 						replicates.add(rep);
 						repCount++;
@@ -158,7 +165,7 @@ public class ExperimentManager {
 		}
 		for(String s: replicatesByConditionNames){
 			int index = replicatesByConditionNames.indexOf(s);
-			conditions.add(new ExperimentCondition(econfig, condCount, s, replicatesByConditionReps.get(index)));
+			conditions.add(new ExperimentCondition(econfig, condCount, s, replicatesByConditionReps.get(index), econfig.getEstimateScaling()));
 			condCount++;
 		}
 		
@@ -213,6 +220,21 @@ public class ExperimentManager {
 			conditionIndex.put(conditions.get(i), i);
 			indexedCondition.put(i, conditions.get(i));
 			namedCondition.put(conditions.get(i).getName(), conditions.get(i));
+		}
+		
+		
+		if(econfig.getPrintLoadingProgress()){
+			System.err.println("Loaded all experiments:");
+			for(ExperimentCondition cond : getConditions()){
+				System.err.println(" Condition "+cond.getName()+":\t#Replicates:\t"+cond.getReplicates().size());
+				for(ControlledExperiment r : cond.getReplicates()){
+					System.err.println(" Condition "+cond.getName()+":\tRep "+r.getName());
+					if(r.getControl()==null)
+						System.err.println("\tSignal:\t"+r.getSignal().getHitCount());
+					else
+						System.err.println("\tSignal:\t"+r.getSignal().getHitCount()+"\tControl:\t"+r.getControl().getHitCount());
+				}
+			}
 		}
 	}
 	
@@ -306,19 +328,7 @@ public class ExperimentManager {
 			for(ExperimentTarget t : manager.getTargets()){
 				System.err.println("Target "+t.getName()+":\t#Experiments:\t"+t.getTargetExperiments().size());
 			}
-			System.err.println("Conditions:\t"+manager.getConditions().size());
-			for(ExperimentCondition c : manager.getConditions()){
-				System.err.println("Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
-			}
-			for(ExperimentCondition c : manager.getConditions()){
-				for(ControlledExperiment r : c.getReplicates()){
-					System.err.println("Condition "+c.getName()+":\tRep "+r.getName());
-					if(r.getControl()==null)
-						System.err.println("\tSignal:\t"+r.getSignal().getHitCount());
-					else
-						System.err.println("\tSignal:\t"+r.getSignal().getHitCount()+"\tControl:\t"+r.getControl().getHitCount());
-				}
-			}
+			
 			manager.close();
 		}
 	}

@@ -28,14 +28,12 @@ public class Sample {
 	protected String name;
 	protected String sourceName=""; //String describing the source files or DBIDs 
 	protected double totalHits; //totalHits is the sum of alignment weights
+	protected double totalHitsPos; //totalHitsPos is the sum of alignment weights on the plus strand
+	protected double totalHitsNeg; //totalHitsNeg is the sum of alignment weights on the minus strand
 	protected double uniqueHits; //count of unique mapped positions (just counts the number of bases with non-zero counts - does not treat non-uniquely mapped positions differently)
 	protected double totalPairs=0; //count of the total number of paired hits
 	protected double uniquePairs=0; //count of the total number of unique paired hits
 	protected float maxReadsPerBP=-1;
-	protected int readLen = 32; //  move towards an experiment-specific read length
-	protected int fivePrimeExt; // five prime extension length in case you want to extend reads
-	protected int threePrimeExt; // three prime extension lenght in case you want to extend reads
-	protected int startShift;// shift offset in case you want to shift reads
 	
 	/**
 	 * Constructor
@@ -50,9 +48,6 @@ public class Sample {
 		totalHits=0;
 		loaders = new ArrayList<HitLoader>();
 		maxReadsPerBP= perBaseReadMax;
-		fivePrimeExt=0;
-		threePrimeExt=0;
-		startShift=0;
 	}
 
 	//Accessors
@@ -61,16 +56,12 @@ public class Sample {
 	public String getName(){return name;}
 	public String getSourceName(){return sourceName;}
 	public double getHitCount(){return(totalHits);}
+	public double getStrandedHitCount(char strand){return(strand=='+' ? totalHitsPos : totalHitsNeg);}
 	public double getHitPositionCount(){return(uniqueHits);}
 	public double getPairCount(){return(totalPairs);}
 	public double getUniquePairCount(){return(uniquePairs);}
 	public void setGenome(Genome g){gen=g; cache.setGenome(g);}
 	
-	//settors
-	public void setFivePrimeExt(int e){fivePrimeExt=e;}
-	public void setThreePrimeExt(int e){threePrimeExt=e;}
-	public void setStartShift(int e){startShift=e;}
-	public void setReadLen(int e){readLen=e;}
 	/**
 	 * Add a HitLoader to the set
 	 * @param h HitLoader
@@ -88,6 +79,8 @@ public class Sample {
 	public void initializeCache(boolean cacheEntireGenome, List<Region> initialCachedRegions){
 		cache = new HitCache(econfig.getLoadPairs(), econfig, loaders, maxReadsPerBP, cacheEntireGenome, initialCachedRegions);
 		totalHits = cache.getHitCount();
+		totalHitsPos = cache.getHitCountPos();
+		totalHitsNeg = cache.getHitCountNeg();
 		uniqueHits = cache.getHitPositionCount();
 		totalPairs = cache.getPairCount();
 		uniquePairs = cache.getUniquePairCount();
@@ -116,7 +109,7 @@ public class Sample {
 	}
 	
 	/**
-	 * Load all pairs in a region, regardless of strand.
+	 * Load all paired hits that have an R1 read in a region.
 	 * If caching in local files, group calls to this method by same chromosome. 
 	 * @param r Region
 	 * @return List of StrandedBaseCounts
@@ -164,7 +157,7 @@ public class Sample {
 	}
     
     
-    public List<ExtReadHit> exportExtReadHits(Region r){
+    public List<ExtReadHit> exportExtReadHits(Region r, int readLen, int startShift, int fivePrimeExt, int threePrimeExt){
     	return(cache.exportExtReadHits(r, readLen, startShift, fivePrimeExt, threePrimeExt));
     }
     

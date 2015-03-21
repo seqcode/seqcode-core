@@ -230,15 +230,15 @@ public class BindingEvent implements Comparable<BindingEvent>{
 		head = head + "#Condition\tName\tIndex\tTotalSigCount\tSignalFraction\n";
 		//Add some basic information on the experiments
 		for(ExperimentCondition c : experiments.getConditions()){
-			head = head + "#Condition\t"+c.getName()+"\t"+c.getIndex()+"\t"+c.getTotalSignalCount()+"\t"+String.format("%.3f",c.getSigProp())+"\n";
+			head = head + "#Condition\t"+c.getName()+"\t"+c.getIndex()+"\t"+c.getTotalSignalCount()+"\t"+String.format("%.3f",c.getTotalSignalVsNoiseFrac())+"\n";
 		}
 		head = head + "#Replicate\tParentCond\tName\tIndex\tSigCount\tCtrlCount\tSigCtrlScaling\tSignalFraction\n";
 		for(ExperimentCondition c : experiments.getConditions()){
 			for(ControlledExperiment r : c.getReplicates()){
 				if(r.getControl()==null)
-					head = head + "#Replicate\t"+c.getName()+"\t"+r.getName()+"\t"+r.getIndex()+"\t"+r.getSignal().getHitCount()+"\t0\t1\t"+String.format("%.2f",r.getSigProp())+"\n";
+					head = head + "#Replicate\t"+c.getName()+"\t"+r.getName()+"\t"+r.getIndex()+"\t"+r.getSignal().getHitCount()+"\t0\t1\t"+String.format("%.2f",r.getSignalVsNoiseFraction())+"\n";
 				else
-					head = head + "#Replicate\t"+c.getName()+"\t"+r.getName()+"\t"+r.getIndex()+"\t"+r.getSignal().getHitCount()+"\t"+r.getControl().getHitCount()+"\t"+String.format("%.2f",r.getControlScaling())+"\t"+String.format("%.3f",r.getSigProp())+"\n";
+					head = head + "#Replicate\t"+c.getName()+"\t"+r.getName()+"\t"+r.getIndex()+"\t"+r.getSignal().getHitCount()+"\t"+r.getControl().getHitCount()+"\t"+String.format("%.2f",r.getControlScaling())+"\t"+String.format("%.3f",r.getSignalVsNoiseFraction())+"\n";
 			}
 		}
 		
@@ -340,14 +340,14 @@ public class BindingEvent implements Comparable<BindingEvent>{
 		String head="### MultiGPS output\n";
 		
 		head = head + "#Condition\tName\tIndex\tTotalSigCount\tSignalFraction\n";
-		head = head + "#Condition\t"+c.getName()+"\t"+c.getIndex()+"\t"+c.getTotalSignalCount()+"\t"+String.format("%.3f",c.getSigProp())+"\n";
+		head = head + "#Condition\t"+c.getName()+"\t"+c.getIndex()+"\t"+c.getTotalSignalCount()+"\t"+String.format("%.3f",c.getTotalSignalVsNoiseFrac())+"\n";
 		
 		head = head + "#Replicate\tParentCond\tName\tIndex\tSigCount\tCtrlCount\tCtrlScaling\tSignalFraction\n";
 		for(ControlledExperiment r : c.getReplicates()){
 			if(r.getControl()==null)
-				head = head + "#Replicate\t"+c.getName()+"\t"+r.getName()+"\t"+r.getIndex()+"\t"+r.getSignal().getHitCount()+"\t0\t1\t"+String.format("%.3f",r.getSigProp())+"\n";
+				head = head + "#Replicate\t"+c.getName()+"\t"+r.getName()+"\t"+r.getIndex()+"\t"+r.getSignal().getHitCount()+"\t0\t1\t"+String.format("%.3f",r.getSignalVsNoiseFraction())+"\n";
 			else
-				head = head + "#Replicate\t"+c.getName()+"\t"+r.getName()+"\t"+r.getIndex()+"\t"+r.getSignal().getHitCount()+"\t"+r.getControl().getHitCount()+"\t"+String.format("%.3f",r.getControlScaling())+"\t"+String.format("%.3f",r.getSigProp())+"\n";
+				head = head + "#Replicate\t"+c.getName()+"\t"+r.getName()+"\t"+r.getIndex()+"\t"+r.getSignal().getHitCount()+"\t"+r.getControl().getHitCount()+"\t"+String.format("%.3f",r.getControlScaling())+"\t"+String.format("%.3f",r.getSignalVsNoiseFraction())+"\n";
 		}
 		
 		head = head + "#\n#Point";

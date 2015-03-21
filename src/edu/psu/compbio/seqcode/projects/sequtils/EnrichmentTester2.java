@@ -61,7 +61,7 @@ public class EnrichmentTester2 {
 		List<BindingEvent> events = p2e.execute();
 		
 		//Estimate signal fraction
-		bindingManager.estimateSignalProportion(events);
+		bindingManager.estimateSignalVsNoiseFractions(events);
 		
 		/*//Get the scaling ratio from the scaling events if appropriate
 		if(scalingSites.size()>0){

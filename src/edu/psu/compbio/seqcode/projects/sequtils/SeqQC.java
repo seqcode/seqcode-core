@@ -74,8 +74,6 @@ public class SeqQC {
 		//Library size calculation
 		Map<ControlledExperiment, Double> meanFragmentCoverage = estimateLibrarySize();
 		
-		//Estimate signal proportion
-		Map<ControlledExperiment, Double> sigProps = estimateSignalProportions(meanFragmentCoverage);
 		
 		if(!verbose)
 			for(ControlledExperiment expt : manager.getReplicates())
@@ -261,7 +259,7 @@ public class SeqQC {
 	 * estimateSignalProportions
 	 * @param meanFragmentCoverage
 	 */
-	public Map<ControlledExperiment,Double> estimateSignalProportions(Map<ControlledExperiment,Double> meanFragmentCoverage){
+/*	public Map<ControlledExperiment,Double> estimateSignalProportions(Map<ControlledExperiment,Double> meanFragmentCoverage){
 		Map<ControlledExperiment, Double> sigProps = new HashMap<ControlledExperiment, Double>();
 		
 		if(verbose)
@@ -298,16 +296,16 @@ public class SeqQC {
 			}
 		}
 		
-		/*//Estimate proportion via distribution-fitting
-		BackgroundDetector detector = new BackgroundDetector(config, manager, 200, 100);
-		HashMap<Sample, Double> detectedBP = detector.execute();
-		for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
-			System.out.println(String.format("Signal proportion via fitting for: %s = %.5f", expt.getName(), 1-detectedBP.get(expt.getSignal())));
-		}*/
+		//Estimate proportion via distribution-fitting
+		//BackgroundDetector detector = new BackgroundDetector(config, manager, 200, 100);
+		//HashMap<Sample, Double> detectedBP = detector.execute();
+		//for(ControlledExperiment expt : manager.getExperimentSet().getReplicates()){
+		//	System.out.println(String.format("Signal proportion via fitting for: %s = %.5f", expt.getName(), 1-detectedBP.get(expt.getSignal())));
+		//}
 		
 		return sigProps;
 	}
-	
+*/
 	
 	//Makes integer arrays corresponding to the read starts over the current region
 	protected void makeHitStartArray(List<StrandedBaseCount> hits, Region currReg, char strand){

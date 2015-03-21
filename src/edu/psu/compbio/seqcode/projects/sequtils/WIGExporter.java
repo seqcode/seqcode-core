@@ -145,11 +145,7 @@ public class WIGExporter {
 	    
 	    read3PrimeExt = Math.max(0, read3PrimeExt-readLength);
 	    
-	    sample.setFivePrimeExt(read5PrimeExt);
-	    sample.setThreePrimeExt(read3PrimeExt);
-	    
 	    sample.initializeCache(cacheAllData, null);
-	    
 	}
 	
 	public void close(){
@@ -183,7 +179,7 @@ public class WIGExporter {
 					Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 					
 					ArrayList<ReadHit> hits = new ArrayList<ReadHit>();
-                    hits.addAll(sample.exportExtReadHits(currSubRegion));
+                    hits.addAll(sample.exportExtReadHits(currSubRegion, readLength, 0, read5PrimeExt, read3PrimeExt));
                     double stackedHitCounts[] = makeHitLandscape(hits, currSubRegion, perBaseMax, '.');
                     
                     boolean recording=false;

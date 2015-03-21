@@ -2,6 +2,8 @@ package edu.psu.compbio.seqcode.deepseq.experiments;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.psu.compbio.seqcode.genome.Genome;
@@ -12,49 +14,38 @@ import edu.psu.compbio.seqcode.gse.utils.models.data.DataFrame;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataRegression;
 
 /**
- * ExperimentScaler: calculate a scaling transformation between two deep-seq experiments
+ * ExperimentScaler: calculate a scaling transformation between all Sample pairs in an ExperimentCondition
+ * This is performed on the condition level so that a scaling can also be defined between pooled hits from all signals & controls
+ *  
  * @author Shaun Mahony
  * @version	%I%, %G%
  */
 public class ExperimentScaler {
-	protected Genome genome;
-	protected Sample exptA, exptB;
-	protected int windowSize=10000;
-	protected double scalingRatio=-1;
 	
-	public ExperimentScaler(Sample a, Sample b){
-		exptA = a;
-		exptB = b;
-		genome = a.getGenome();
-	}
+	public ExperimentScaler(){}
 	
 	/**
-	 * Calculate a scaling ratio by fitting a line through the hit count pairs
+	 * Calculate a scaling ratio by fitting a line through the hit count pairs.
+	 * Using a 10Kbp window, this is the same as PeakSeq with Pf=0
 	 * @return double 
 	 */
-	public double scalingRatioByRegression(int win){
-		scalingRatio=1;
-		if(exptB==null)
-			return(1);
-		windowSize = win;
-		ArrayList<PairedCountData> scalingData = new ArrayList<PairedCountData>();
-		for(String chrom:genome.getChromList()) {
-            int chrlen = genome.getChromLength(chrom);
-            for (int start = 1; start  < chrlen - windowSize; start += windowSize) {
-                Region r = new Region(genome, chrom, start, start + windowSize);
-                double countA = exptA.countHits(r);
-                double countB = exptB.countHits(r);
-                scalingData.add(new PairedCountData(countA , countB));                
-            }
-        }
+	public double scalingRatioByRegression(List<Float> setA, List<Float> setB){
+		double scalingRatio=1;
+		if(setA.size()!=setB.size()){
+			System.err.println("ExperimentScaler is trying to scale lists of two different lengths");
+			System.exit(1);
+		}
+			
+		List<PairedCounts> scalingData = new ArrayList<PairedCounts>();
+		for(int x=0; x<setA.size(); x++)
+			scalingData.add(new PairedCounts(setA.get(x), setB.get(x)));                
+
 		//Scaling ratio via Tim's regression                                                                                                                               
-        DataFrame df = new DataFrame(PairedCountData.class, scalingData.iterator());                                                                      
+        DataFrame df = new DataFrame(PairedCounts.class, scalingData.iterator());                                                                      
         DataRegression r = new DataRegression(df, "x~y - 1");                                                                                                               
         r.calculate();                                                                                                                                                      
         Map<String, Double> map = r.collectCoefficients();                                                                                                                  
         scalingRatio = map.get("y");                                                                                                                                        
-        System.err.println(String.format("Scaling ratio estimated by regression = %.3f based on %d regions of size %d",
-        		scalingRatio, scalingData.size(), windowSize));
         return(scalingRatio);
 	}
 	
@@ -62,33 +53,23 @@ public class ExperimentScaler {
 	 * Find the median hit count ratio 
 	 * @return
 	 */
-	public double scalingRatioByMedian(int win){
-		scalingRatio=1;
-		if(exptB==null)
-			return(1);
-		windowSize = win;
-	    ArrayList<Float> ratios = new ArrayList<Float>();
-	    //System.err.println("SCALING: "+exptA.getName()+" vs "+exptB.getName());
-		for(String chrom:genome.getChromList()) {
-            int chrlen = genome.getChromLength(chrom);
-            for (int start = 0; start  < chrlen - windowSize; start += windowSize) {
-                Region r = new Region(genome, chrom, start, start + windowSize);
-                double countA = exptA.countHits(r);
-                double countB = exptB.countHits(r);
-                if(countB>0)
-                	ratios.add((float)(countA / countB));
-                else
-                	ratios.add((float)(countA / 1));
-                double tmpB = countB>0? countB:1;
-                //System.err.println(countA+"\t"+tmpB);
-            }
+	public double scalingRatioByMedian(List<Float> setA, List<Float> setB){
+		double scalingRatio=1;
+		if(setA.size()!=setB.size()){
+			System.err.println("ExperimentScaler is trying to scale lists of two different lengths");
+			System.exit(1);
+		}
+			
+		ArrayList<Float> ratios = new ArrayList<Float>();
+	    for(int x=0; x<setA.size(); x++){
+			if(setA.get(x)>0)
+				ratios.add((float)(setA.get(x) / setB.get(x)));
+			else
+				ratios.add((float)(setA.get(x) / 1));
         }
         Collections.sort(ratios);
 		scalingRatio = ratios.get(ratios.size() / 2);
-        System.err.println(String.format("Scaling ratio estimated by median scaling = %.3f based on %d regions of size %d",
-        		scalingRatio, ratios.size(), windowSize));
-		
-		return(scalingRatio);
+        return(scalingRatio);
 	}
 	
 	/**
@@ -96,67 +77,39 @@ public class ExperimentScaler {
 	 * Also sets a background proportion estimate for the signal channel.  
 	 * @return
 	 */
-	public double scalingRatioBySES(int win){
-		windowSize = win;
-		scalingRatio=1;
-		ArrayList<PairedCounts> counts = new ArrayList<PairedCounts>();
-		
-        //Collect counts        
-		double totalA=0, totalB=0, numWin=0;
-		for(String chrom:genome.getChromList()) {
-            int chrlen = genome.getChromLength(chrom);
-            for (int start = 0; start  < chrlen - windowSize; start += windowSize) {
-                Region r = new Region(genome, chrom, start, start + windowSize);
-                double countA = exptA.countHits(r);
-                double countB = exptB==null ? 0 : exptB.countHits(r);                
-                counts.add(new PairedCounts(countA, countB));
-                
-                totalA+=countA;
-                totalB+=countB;
-                numWin++;
-            }
-        }
-		if(exptB==null){
-			int winCount=0;
-			totalB=totalA;
-			for(String chrom:genome.getChromList()) {
-	            int chrlen = genome.getChromLength(chrom);
-	            for (int start = 0; start  < chrlen - windowSize; start += windowSize) {                
-	                counts.get(winCount).y=totalA/numWin;
-	                winCount++;
-	            }
-	        }
+	public double scalingRatioBySES(List<Float> setA, List<Float> setB){
+		double scalingRatio=1;
+		if(setA.size()!=setB.size()){
+			System.err.println("ExperimentScaler is trying to scale lists of two different lengths");
+			System.exit(1);
 		}
 		
-        Collections.sort(counts);
+		float totalA=0, totalB=0;
+		List<PairedCounts> counts = new ArrayList<PairedCounts>();
+		for(int x=0; x<setA.size(); x++){
+			totalA += setA.get(x);
+			totalB += setB.get(x);
+			counts.add(new PairedCounts(setA.get(x), setB.get(x)));                
+		}
+		
+		Collections.sort(counts);
         
         //SES procedure
         double readRatio = totalA/totalB;
-        double minScaling = readRatio*.05;
         double cumulA=0, cumulB=0, maxDiffAB=0, maxDiffAprop=0, currDiff=0;
         int maxDiffIndex=0, i=0;
         for(PairedCounts pc : counts){
         	cumulA+=pc.x;
         	cumulB+=pc.y;
         	currDiff = (cumulB/totalB)-(cumulA/totalA);
-        	if(currDiff>maxDiffAB && cumulA>0 && cumulB>0 && cumulA/cumulB>minScaling){
+        	if(currDiff>maxDiffAB && cumulA>0 && cumulB>0){
         		maxDiffAB=currDiff;
         		maxDiffIndex=i;
         		maxDiffAprop=(cumulA/totalA);
         		scalingRatio = cumulA/cumulB;
         	}
-        	/*if(i%500==0){
-        		double ratio = cumulB>0 ? cumulA/cumulB : 1;
-    			System.out.println(i+"\t"+cumulA/totalA+"\t"+cumulB/totalB+"\t"+currDiff+"\t"+ratio);
-        	}*/
         	i++;
         }
-        //double ratio = cumulB>0 ? cumulA/cumulB : 1;
-        //System.out.println(i+"\t"+cumulA/totalA+"\t"+cumulB/totalB+"\t"+currDiff+"\t"+ratio);
-        
-        System.err.println(String.format("Scaling ratio estimated by SES = %.3f based on %d regions of size %d",
-        		scalingRatio, counts.size(), windowSize));
-        
 		return(scalingRatio);
 	}
 	
@@ -167,11 +120,11 @@ public class ExperimentScaler {
 	 *  - The method used to calculate the scaling ratio attempted to normalize to background and not all regions (e.g. SES method attempts background normalization) 
 	 * @return
 	 */
-	public Double calculateBackgroundFromScalingRatio(){
-		if(scalingRatio==-1)
+	public Double calculateBackgroundFromScalingRatio(ControlledExperiment expt){
+		if(expt.getControlScaling()==-1)
 			return(-1.0); //scaling not yet performed
-		double ctrlCount = exptB==null ? exptA.getHitCount() : exptB.getHitCount();
-		return(scalingRatio / (exptA.getHitCount()/ctrlCount));
+		double ctrlCount = expt.getControl()==null ? expt.getSignal().getHitCount() : expt.getControl().getHitCount();
+		return(expt.getControlScaling() / (expt.getSignal().getHitCount()/ctrlCount));
 	}
 	
 	/**
@@ -205,30 +158,62 @@ public class ExperimentScaler {
 				}
 			}
 			
-			//Inter-sample normalization
-			for(Sample sampA : exptMan.getSamples()){
-				for(Sample sampB : exptMan.getSamples()){
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex()){
-						
-						System.out.println("\n"+sampA.getName()+" vs "+sampB.getName());
-						double hitRatio = sampA.getHitCount()/sampB.getHitCount();
-						System.out.println("Hit ratio ="+hitRatio);
-						
-						ExperimentScaler scaler = new ExperimentScaler(sampA, sampB);
-						double medRatio = scaler.scalingRatioByMedian(10000);
-						System.out.println("Scaling ratio by median = "+medRatio);
-						
-						double regRatio = scaler.scalingRatioByRegression(10000);
-						System.out.println("Scaling ratio by regression = "+regRatio);
-						
-						double sesRatio = scaler.scalingRatioBySES(200);
-						System.out.println("Scaling ratio by SES = "+sesRatio);
-						
-						double backProp = scaler.calculateBackgroundFromScalingRatio();
-						System.out.println("Estimated background proportion = "+backProp);
-					}
-				}
+			ExperimentScaler scaler = new ExperimentScaler();
+			
+			//Generate the data structures for calculating scaling factors
+			//10000bp window (median & regression)
+			Genome genome = econfig.getGenome();
+			Map<Sample, List<Float>> sampleWindowCounts = new HashMap<Sample, List<Float>>();
+			for(Sample samp : exptMan.getSamples()){
+				List<Float> currSampCounts = new ArrayList<Float>();
+				for(String chrom:genome.getChromList()) {
+		            int chrlen = genome.getChromLength(chrom);
+		            for (int start = 1; start  < chrlen - 10000; start += 10000) {
+		                Region r = new Region(genome, chrom, start, start + 10000);
+		                currSampCounts.add(samp.countHits(r));
+		            }
+		        }
+				sampleWindowCounts.put(samp, currSampCounts);
 			}
+			//Hit ratios
+			for(Sample sampA : exptMan.getSamples())
+				for(Sample sampB : exptMan.getSamples())
+					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex()){
+						double hitRatio = sampA.getHitCount()/sampB.getHitCount();
+						System.out.println("HitRatio\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+hitRatio);
+					}
+			
+			//Median
+			for(Sample sampA : exptMan.getSamples())
+				for(Sample sampB : exptMan.getSamples())
+					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+						System.out.println("Median\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByMedian(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+			//Regression
+			for(Sample sampA : exptMan.getSamples())
+				for(Sample sampB : exptMan.getSamples())
+					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+						System.out.println("Regression\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+
+			
+			//1000bp window (SES)
+			sampleWindowCounts = new HashMap<Sample, List<Float>>();
+			for(Sample samp : exptMan.getSamples()){
+				List<Float> currSampCounts = new ArrayList<Float>();
+				for(String chrom:genome.getChromList()) {
+		            int chrlen = genome.getChromLength(chrom);
+		            for (int start = 1; start  < chrlen - 1000; start += 1000) {
+		                Region r = new Region(genome, chrom, start, start + 1000);
+		                currSampCounts.add(samp.countHits(r));
+		            }
+		        }
+				sampleWindowCounts.put(samp, currSampCounts);
+			}
+			//SES
+			for(Sample sampA : exptMan.getSamples())
+				for(Sample sampB : exptMan.getSamples())
+					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+						System.out.println("SES\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioBySES(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+
 			exptMan.close();
 		}
 	}
@@ -239,7 +224,7 @@ public class ExperimentScaler {
 	 * @author mahony
 	 *
 	 */
-	public class PairedCounts  implements Comparable<PairedCounts>{
+	public class PairedCounts extends Model implements Comparable<PairedCounts>{
 		public Double x,y;
 		public PairedCounts(double a, double b){
 			x=a;
@@ -251,13 +236,5 @@ public class ExperimentScaler {
 			if(x>pc.x){return 1;}
 			return 0;
 		}		
-	}
-	
-	public class PairedCountData extends Model{
-		public Double x,y;
-		public PairedCountData(double a, double b){
-			x=a;
-			y=b;
-		}
 	}
 }

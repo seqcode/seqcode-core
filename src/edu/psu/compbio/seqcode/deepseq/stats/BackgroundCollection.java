@@ -49,7 +49,7 @@ public class BackgroundCollection {
 	 * @param thisExptHitCounts
 	 * @param otherExptHitCounts
 	 */
-	public void updateModels(Region currReg, int currOffset, double [] thisExptHitCounts, double [] otherExptHitCounts, float hitCountBin){
+	public void updateModels(Region currReg, int currOffset, float [] thisExptHitCounts, float [] otherExptHitCounts, float hitCountBin){
 		for(BackgroundModel m : models)
 			m.updateModel(currReg, currOffset, thisExptHitCounts, otherExptHitCounts, hitCountBin);		
 	}

@@ -31,6 +31,7 @@ public class ExptConfig {
 	protected List<ExptDescriptor> expts = new ArrayList<ExptDescriptor>();
 	protected boolean nonUnique=false;
 	protected boolean printHelp=false;
+	protected boolean printLoadingProgress=true;
 	protected List<Integer> localBackgroundWindows=new ArrayList<Integer>(); 
 	protected double perBaseLogConf=-7;
 	protected boolean poissonGaussWinPerBaseFilter = false; //Filter using a poisson Gaussian window
@@ -280,6 +281,7 @@ public class ExptConfig {
 	public boolean getNonUnique(){return nonUnique;}
 	public List<ExptDescriptor> getExperimentDescriptors(){return expts;}
 	public boolean helpWanted(){return printHelp;}
+	public boolean getPrintLoadingProgress(){return printLoadingProgress;}
 	public boolean doPoissonGaussWinPerBaseFiltering(){return poissonGaussWinPerBaseFilter;}
 	public boolean doPerBaseFiltering(){return perBaseReadFiltering;}
 	public double getPerBaseLogConf(){return perBaseLogConf;}
@@ -301,6 +303,7 @@ public class ExptConfig {
 	public boolean getLoadPairs(){return loadPairs;}
 	
 	//Some accessors to allow modification of options after config .
+	public void setPrintLoadingProgress(boolean plp){printLoadingProgress = plp;}
 	public void setPerBaseReadFiltering(boolean pbrf){perBaseReadFiltering = pbrf;}
 	//public void setMedianScaling(boolean ms){scalingByMedian = ms;}
 	public void setRegressionScaling(boolean rs){scalingByRegression = rs;}
@@ -341,14 +344,16 @@ public class ExptConfig {
 				"Experiments:\n" +
 				"\t--design <design file name>\n" +
 				"\tOR\n" +
-				"\t--expt <read file name> AND --format <SAM/BED/IDX/BOWTIE/NOVO>\n" +
+				"\t--expt/--ctrl <signal/control experiment file name> AND --format <SAM/BED/IDX/BOWTIE/NOVO>\n" +
 				"\tAND/OR" +
-				"\t--rdbexpt <ReadDB experiment identifier>\n" +
+				"\t--rdbexpt/--rdbctrl <signal/control ReadDB experiment identifier>\n" +
+				"\t\tNote that if you use --expt/--ctrl or --rdbexpt/--rdbctrl, you can specify the names of the experiment & replicate\n" +
+				"\t\tdirectly in the argument. Here's an example: --exptConditionA-Rep1 somefile.bam\n" +
 				"Scaling control vs signal counts:\n" +
 				"\t--noscaling [flag to turn off auto estimation of signal vs control scaling factor]\n" +
 				"\t--regressionscale [flag to use scaling by regression (default = scaling by median)]\n" +
 				"\t--sesscale [flag to use scaling by SES (default = scaling by median)]\n" +
-				"\t--fixedscaling <multiply control counts by total tag count ratio and then by this factor if not estimating scaling>" +
+				"\t--fixedscaling <multiply control counts by total tag count ratio and then by this factor if not estimating scaling>\n" +
 				"\t--scalewin <window size for scaling procedure (default=10000)>\n" +
 				"Miscellaneous Experiment Loading Args:\n" +
 				"\t--fixedpb <fixed per base limit>\n" +

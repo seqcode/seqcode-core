@@ -79,7 +79,7 @@ public class DifferentialTester {
 		List<BindingEvent> events = p2e.execute();
 		
 		//Estimate signal fraction (necessary for calculating statistics)
-		bindingManager.estimateSignalProportion(events);
+		bindingManager.estimateSignalVsNoiseFractions(events);
 				
 		EnrichmentSignificance tester = new EnrichmentSignificance(config, manager, bindingManager, config.getMinEventFoldChange(), econfig.getMappableGenomeLength());
 		tester.execute();

@@ -262,7 +262,7 @@ public class EventsPostAnalysis {
 		    			"\t\t<td>"+rep.getCondName()+" "+rep.getRepName()+"</td>\n" +
 	    				"\t\t<td>"+rep.getSignal().getHitCount()+"</td>\n" +
 	    				"\t\t<td>"+tmpscale+"</td>\n" +
-	    				"\t\t<td>"+String.format("%.3f",rep.getSigProp())+"</td>\n");
+	    				"\t\t<td>"+String.format("%.3f",rep.getSignalVsNoiseFraction())+"</td>\n");
 	    		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\""+distribFilename+"\")'><img src='"+distribFilename+"' height='300'></a></td>\n");
 	    		fout.write("\t\t</tr>\n");
 			}fout.write("\t</table>\n");

@@ -165,7 +165,7 @@ public class BindingMLAssignment {
         		sigRepHitCountTotals[rep.getIndex()]=0;
         		for(StrandedBaseCount s : signals.get(rep.getIndex()))
         			sigRepHitCountTotals[rep.getIndex()]+=s.getCount();
-        		uniformRepHitCountTotals[rep.getIndex()] = ((rep.getNoiseCount()/econfig.getMappableGenomeLength())*(double)w.getWidth())/rep.getControlScaling(); //Normalizing by control scaling is a hack - usually control scaling will be 1 when the replicate has no control... however, it is not 1 for SES. 
+        		uniformRepHitCountTotals[rep.getIndex()] = (((rep.getSignal().getHitCount()*(1-rep.getSignalVsNoiseFraction()))/econfig.getMappableGenomeLength())*(double)w.getWidth())/rep.getControlScaling(); //Normalizing by control scaling is a hack - usually control scaling will be 1 when the replicate has no control... however, it is not 1 for SES. 
         	}
         	
         	//Load replicate index for each read

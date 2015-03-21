@@ -119,7 +119,7 @@ public class BindingManager {
 	 * list of binding events to everything else. 
 	 * @param regs
 	 */
-	public void estimateSignalProportion(List<BindingEvent> signalEvents){
+	public void estimateSignalVsNoiseFractions(List<BindingEvent> signalEvents){
 		for(ExperimentCondition c : manager.getConditions()){
 			for(ControlledExperiment r : c.getReplicates()){
 				double repSigCount =0, repNoiseCount=0;
@@ -128,8 +128,8 @@ public class BindingManager {
 						repSigCount += event.getRepSigHits(r);
 				}
 				repNoiseCount = r.getSignal().getHitCount() - repSigCount;
-				r.setSigNoiseCounts(repSigCount,  repNoiseCount);
-				System.err.println(r.getName()+"\t"+r.getIndex()+"\tsignal-noise ratio:\t"+String.format("%.4f",r.getSigProp()));
+				r.setSignalVsNoiseFraction(repSigCount/r.getSignal().getHitCount());
+				System.err.println(r.getName()+"\t"+r.getIndex()+"\tsignal-noise ratio:\t"+String.format("%.4f",r.getSignalVsNoiseFraction()));
 			}
 		}
 	}

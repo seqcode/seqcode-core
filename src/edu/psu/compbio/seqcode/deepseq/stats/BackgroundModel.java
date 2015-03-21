@@ -5,6 +5,11 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 /**
  * BackgroundModel: General background for defining thresholds 
  * 
+ * 	Model Types: 
+ * 			Genome-wide = -1
+ * 			CurrentRegion = 0
+ * 			Local window size = positive integer
+ * 
  * @author Shaun Mahony
  * @version	%I%, %G%
  */
@@ -43,15 +48,15 @@ public abstract class BackgroundModel {
 	protected abstract int calcCountThreshold();
 	
 	//Update the threshold (depends on the type of model... local, etc)
-	public void updateModel(Region currReg, int currOffset, double [] thisExptHitCounts, double [] otherExptHitCounts, float hitCountBin){
-		double [] hitCounts = useThisExpt ? thisExptHitCounts : otherExptHitCounts; 
+	public void updateModel(Region currReg, int currOffset, float [] thisExptHitCounts, float [] otherExptHitCounts, float hitCountBinStep){
+		float [] hitCounts = useThisExpt ? thisExptHitCounts : otherExptHitCounts; 
 		if(hitCounts!=null){
 			if(modelType==-1){//Genome-wide
 				if(countThreshold==0){
 					countThreshold = calcCountThreshold();
 				}
 			}else if(modelType==0){//Current region
-				double sum=1;//pseudo count
+				float sum=1;//pseudo count
 				for(int i=0; i<hitCounts.length; i++)
 					sum+=hitCounts[i];
 				totalReads = scaling*sum;
@@ -62,9 +67,9 @@ public abstract class BackgroundModel {
 				int win = modelType;
 				int istart = currOffset-(win/2)<0 ? 0 :currOffset-(win/2);
 				int istop = currOffset+(win/2)>=currReg.getWidth() ? currReg.getWidth()-1 :currOffset+(win/2);
-				int istartbin = (int)(istart/hitCountBin);
-				int istopbin = (int)(istop/hitCountBin);
-				double sum=1;//pseudo count
+				int istartbin = (int)(istart/hitCountBinStep);
+				int istopbin = (int)(istop/hitCountBinStep);
+				float sum=1;//pseudo count
 				for(int i=istartbin; i<=istopbin; i++){
 					sum+=hitCounts[i]; 
 				}

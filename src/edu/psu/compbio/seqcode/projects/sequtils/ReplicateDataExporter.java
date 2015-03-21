@@ -45,7 +45,7 @@ public class ReplicateDataExporter {
 		List<BindingEvent> events = p2e.execute();
 		
 		//Estimate signal-noise ratios
-		bindingManager.estimateSignalProportion(events);
+		bindingManager.estimateSignalVsNoiseFractions(events);
 		
 		bindingManager.setBindingEvents(events);
 		

@@ -127,7 +127,7 @@ public class MultiGPS {
         mixtureModel.execute(false, false); //ML
         bindingManager.setBindingEvents(mixtureModel.getBindingEvents());
         //Update sig & noise counts in each replicate
-        bindingManager.estimateSignalProportion(bindingManager.getBindingEvents());
+        bindingManager.estimateSignalVsNoiseFractions(bindingManager.getBindingEvents());
         System.err.println("ML read assignment finished.");
         
         System.err.println("\n============================= Post-processing ==============================");
@@ -192,18 +192,6 @@ public class MultiGPS {
 			//Just a test to see if we've loaded all conditions
 			if(manager.getConditions().size()==0){
 				System.err.println("No experiments specified. Use --expt or --design options."); System.exit(1);
-			}
-			
-			System.err.println("Loaded experiments:");
-			for(ExperimentCondition c : manager.getConditions()){
-				System.err.println(" Condition "+c.getName()+":\t#Replicates:\t"+c.getReplicates().size());
-				for(ControlledExperiment r : c.getReplicates()){
-					System.err.println(" Condition "+c.getName()+":\tRep "+r.getName());
-					if(r.getControl()==null)
-						System.err.println("\tSignal:\t"+r.getSignal().getHitCount());
-					else
-						System.err.println("\tSignal:\t"+r.getSignal().getHitCount()+"\tControl:\t"+r.getControl().getHitCount());
-				}
 			}
 			
 			MultiGPS gps = new MultiGPS(gcon, econ, config, manager);

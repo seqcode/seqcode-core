@@ -88,6 +88,8 @@ public class HitCache {
 	private ExptConfig econfig;
 	private int numChroms=0;
 	protected double totalHits=0; //totalHits is the sum of alignment weights
+	protected double totalHitsPos=0; //totalHitsPos is the sum of alignment weights on the plus strand
+	protected double totalHitsNeg=0; //totalHitsNeg is the sum of alignment weights on the minus strand
 	protected double uniqueHits=0; //count of unique mapped positions (just counts the number of bases with non-zero counts - does not treat non-uniquely mapped positions differently)
 	protected double totalPairs=0; //count of the total number of paired hits
 	protected double uniquePairs=0; //count of the total number of unique paired hits
@@ -176,6 +178,8 @@ public class HitCache {
 	
 	//Accessors
 	public double getHitCount(){return(totalHits);}
+	public double getHitCountPos(){return(totalHitsPos);}
+	public double getHitCountNeg(){return(totalHitsNeg);}
 	public double getHitPositionCount(){return(uniqueHits);}
 	public double getPairCount(){return(totalPairs);}
 	public double getUniquePairCount(){return(uniquePairs);}
@@ -1288,12 +1292,16 @@ public class HitCache {
 	 */
 	private void updateTotalHits(){
 		totalHits = 0.0;
+		totalHitsPos=0.0;
+		totalHitsNeg=0.0;
 		uniqueHits = 0.0;
 		for(int i = 0; i < fivePrimeCounts.length; i++)
 			for(int j = 0; j < fivePrimeCounts[i].length; j++)
 				if(fivePrimeCounts[i][j]!=null)
 					for(int k = 0; k < fivePrimeCounts[i][j].length; k++){
 						totalHits += fivePrimeCounts[i][j][k];
+						if(j==0){totalHitsPos+= fivePrimeCounts[i][j][k];}
+						else{totalHitsNeg+= fivePrimeCounts[i][j][k];}
 						if(fivePrimeCounts[i][j][k]>0)
 							uniqueHits++;
 					}

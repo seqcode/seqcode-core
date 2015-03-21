@@ -49,14 +49,14 @@ public class EnrichmentSignificanceTesting {
 	 */
 	public void execute() {
 
-		//Calculate relative replicate weights
+		//Calculate relative replicate weights using signal fraction estimates in each signal channel
 		double[] repWeights = new double[exptMan.getReplicates().size()];
 		for(ExperimentCondition c : exptMan.getConditions()){
 			double totalSig =0;
 			for(ControlledExperiment r : c.getReplicates())
-				totalSig += r.getSigCount();
+				totalSig += r.getSignalVsNoiseFraction() * r.getSignal().getHitCount();
 			for(ControlledExperiment r : c.getReplicates())
-				repWeights[r.getIndex()]=r.getSigCount()/totalSig;
+				repWeights[r.getIndex()]=(r.getSignalVsNoiseFraction() * r.getSignal().getHitCount())/totalSig;
 		}
 		
 		//Compute fold difference, log-likelihood, and p-values. 

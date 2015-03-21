@@ -167,14 +167,14 @@ public class SeqEnrichmentByRegion {
 	//Multiple hypothesis testing correction -- assumes peaks ordered according to p-value
 	protected ArrayList<SeqEnrichResult> benjaminiHochbergCorrection(ArrayList<SeqEnrichResult> x){
 		double total = x.size();
-		//double significanceThres=0.01;
+		//double perBinBinomialPThres=0.01;
 		ArrayList<SeqEnrichResult> res = new ArrayList<SeqEnrichResult>();
 		double rank =1;
 		for(SeqEnrichResult y : x){
 			y.p = y.p*(total/rank);
 			if(y.p>1)
 				y.p=1;
-			//if(p.score<=significanceThres)
+			//if(p.score<=perBinBinomialPThres)
 				res.add(y);
 			rank++;
 		}

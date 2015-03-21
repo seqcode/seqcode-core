@@ -151,8 +151,8 @@ public class PotentialRegionFilter {
         //Initialize signal & noise counts based on potential region calls
         for(ExperimentCondition cond : manager.getConditions()){
     		for(ControlledExperiment rep : cond.getReplicates()){
-    			if(rep.getSigProp()==0) //Only update if not already initialized
-    				rep.setSigNoiseCounts(potRegCountsSigChannelByRep.get(rep), nonPotRegCountsSigChannelByRep.get(rep));
+    			if(rep.getSignalVsNoiseFraction()==0) //Only update if not already initialized
+    				rep.setSignalVsNoiseFraction(potRegCountsSigChannelByRep.get(rep)/(potRegCountsSigChannelByRep.get(rep)+nonPotRegCountsSigChannelByRep.get(rep)));
     		}
         }
         
@@ -181,8 +181,8 @@ public class PotentialRegionFilter {
 	
     class PotentialRegionFinderThread implements Runnable {
         private Collection<Region> regions;
-        private double[][] landscape=null;
-        private double[][] starts=null;
+        private float[][] landscape=null;
+        private float[][] starts=null;
         private List<Region> threadPotentials = new ArrayList<Region>();
         
         public PotentialRegionFinderThread(Collection<Region> r) {
@@ -230,9 +230,9 @@ public class PotentialRegionFilter {
                         char str = !stranded ? '.' : (stranditer==1 ? '+' : '-');
 					 
                         makeHitLandscape(ipHits, currSubRegion, maxBinWidth, binStep, str);
-                        double ipHitCounts[][] = landscape.clone();
-                        double ipBinnedStarts[][] = starts.clone();
-                        double backBinnedStarts[][] = null;
+                        float ipHitCounts[][] = landscape.clone();
+                        float ipBinnedStarts[][] = starts.clone();
+                        float backBinnedStarts[][] = null;
                         if (loadControl) {
                             makeHitLandscape(backHits, currSubRegion, maxBinWidth, binStep, str);
                             backBinnedStarts = starts.clone();
@@ -306,7 +306,7 @@ public class PotentialRegionFilter {
         protected List<Region> breakWindow(Region lastPotential, List<List<StrandedBaseCount>> ipHits, int preferredWinLen, char str) {
 			List<Region> parts = new ArrayList<Region>();
 			makeHitLandscape(ipHits, lastPotential, maxBinWidth, binStep, str);
-            double ipHitCounts[][] = landscape.clone();
+            float ipHitCounts[][] = landscape.clone();
             
             int currPartStart = lastPotential.getStart();
             double currPartTotalMin=Double.MAX_VALUE; int currPartTotalMinPos = -1;
@@ -314,7 +314,7 @@ public class PotentialRegionFilter {
             for(int i=lastPotential.getStart(); i<lastPotential.getEnd()-(int)maxBinWidth; i+=(int)binStep){
             	if(lastPotential.getEnd()-currPartStart < (preferredWinLen*1.5))
             		break;
-            	int currBinTotal=0;
+            	float currBinTotal=0;
             	for(ExperimentCondition cond : manager.getConditions())
                 	currBinTotal+=ipHitCounts[cond.getIndex()][currBin];
             	
@@ -357,12 +357,12 @@ public class PotentialRegionFilter {
 		}
 
 		//Makes integer arrays corresponding to the read landscape over the current region.
-        //Reads are semi-extended out to bin width
+        //Reads are semi-extended out to bin width to account for the bin step
         //No needlefiltering here as that is taken care of during read loading (i.e. in Sample)
     	protected void makeHitLandscape(List<List<StrandedBaseCount>> hits, Region currReg, float binWidth, float binStep, char strand){
     		int numBins = (int)(currReg.getWidth()/binStep);
-    		landscape = new double[hits.size()][numBins+1];
-    		starts = new double[hits.size()][numBins+1];
+    		landscape = new float[hits.size()][numBins+1];
+    		starts = new float[hits.size()][numBins+1];
     		float halfWidth = binWidth/2;
 
     		for(ExperimentCondition cond : manager.getConditions()){
@@ -374,7 +374,7 @@ public class PotentialRegionFilter {
 	    				int binoff = inBounds((int)(offset/binStep), 0, numBins);
 	    				starts[cond.getIndex()][binoff]+=r.getCount();
 	    				int binstart = inBounds((int)((double)(offset-halfWidth)/binStep), 0, numBins);
-	    				int binend = inBounds((int)((double)(offset+halfWidth)/binStep), 0, numBins);
+	    				int binend = inBounds((int)((double)(offset)/binStep), 0, numBins);
 	    				for(int b=binstart; b<=binend; b++)
 	    					landscape[cond.getIndex()][b]+=r.getCount();
 	    			}
@@ -597,7 +597,7 @@ public class PotentialRegionFilter {
 			System.err.println("Proportions of tags in potential regions");
 			for(ExperimentCondition c : manager.getConditions())
 				for(ControlledExperiment r : c.getReplicates())
-					System.err.println("Condition "+c.getName()+":\tRep "+r.getName()+"\t"+r.getSigProp());
+					System.err.println("Condition "+c.getName()+":\tRep "+r.getName()+"\t"+r.getSignalVsNoiseFraction());
 					
 			manager.close();
 		}

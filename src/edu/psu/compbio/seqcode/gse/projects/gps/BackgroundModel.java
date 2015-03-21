@@ -66,7 +66,6 @@ public abstract class BackgroundModel {
 			}
 			totalReads = scaling*(sum/(((readLength)/binStep)+1));
 			regionLength=winTrueSize;
-			//mappableRegion=1.0; //any need for this assumption?
 			countThreshold = calcCountThreshold();
 		}
 	}	
