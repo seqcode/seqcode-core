@@ -69,6 +69,7 @@ public class DomainFinder extends FeatureDetection {
 			DomainFinder finder = new DomainFinder(gcon, econ, scon, man);
 			System.err.println("\nBeginning domain finding...");
 			finder.execute();
+			man.close();
 		}
 	}
 	
@@ -137,10 +138,11 @@ public class DomainFinder extends FeatureDetection {
 			Map<ExperimentCondition, List<Feature>> results = new HashMap<ExperimentCondition, List<Feature>>();
 			for(ExperimentCondition cond : manager.getConditions())
 				results.put(cond, new ArrayList<Feature>());
+			Map<ExperimentCondition, List<EnrichedFeature>> currFeatures = new HashMap<ExperimentCondition, List<EnrichedFeature>>();
+			for(ExperimentCondition cond : manager.getConditions())
+				currFeatures.put(cond, new ArrayList<EnrichedFeature>());
 			
 			for(ExperimentCondition cond : manager.getConditions()){
-				List<EnrichedFeature> currFeatures = new ArrayList<EnrichedFeature>();
-				
 				int numStrandIter = strandedEventDetection ? 2 : 1;
 				for(int stranditer=1; stranditer<=numStrandIter; stranditer++){
 					EnrichedFeature lastFeature=null;
@@ -169,17 +171,18 @@ public class DomainFinder extends FeatureDetection {
                         			Region currWin = strandedEventDetection ? 
                         					new StrandedRegion(gen, subRegion.getChrom(), i, i+sconfig.getBinWidth()-1, str) :
                         					new Region(gen, subRegion.getChrom(), i, i+sconfig.getBinWidth()-1);
-                        			lastFeature=addEnrichedDomain(currFeatures, lastFeature, currWin, sigCounts, ctrlCounts, pval);
+                        			lastFeature=addEnrichedDomain(currFeatures.get(cond), lastFeature, currWin, sigCounts, ctrlCounts, pval);
                         		}
                         	}
                         }
 	                	currBin++;
 	                }		
 				}
-				//Trim, quantify, & properly score currFeatures before adding them to the results
-				currFeatures = processDomains(currFeatures, cond);
-				results.get(cond).addAll(currFeatures);
 			}
+			//Trim, quantify, & properly score currFeatures before adding them to the results
+			currFeatures = processDomains(currFeatures, subRegion);
+			for(ExperimentCondition cond : manager.getConditions())
+				results.get(cond).addAll(currFeatures.get(cond));
 			return results;
 		}
 		
@@ -225,18 +228,21 @@ public class DomainFinder extends FeatureDetection {
 		 *  - Counts hits in each feature, per sample 
 		 * 
 		 * @param currFeatures
-		 * @return : List of EnrichedFeatures
+		 * @param current region
+		 * @return : Lists of EnrichedFeatures, indexed by condition
 		 */
-		protected List<EnrichedFeature> processDomains(List<EnrichedFeature> currFeatures, ExperimentCondition currCondition){
-			for(EnrichedFeature f : currFeatures){
-				Map<Sample, List<StrandedBaseCount>> fHitsPos = overlappingHits(hitsPos, f);
-				Map<Sample, List<StrandedBaseCount>> fHitsNeg = overlappingHits(hitsNeg, f);
-				
-				//Trim the coordinates
-				trimFeature(f, fHitsPos, fHitsNeg, currCondition);
-				
-				//Quantify the feature in each Sample and in the condition in which it was found
-				quantifyFeature(f, fHitsPos, fHitsNeg, currCondition);
+		protected Map<ExperimentCondition, List<EnrichedFeature>> processDomains(Map<ExperimentCondition,List<EnrichedFeature>> currFeatures, Region currSubRegion){
+			for(ExperimentCondition currCondition : manager.getConditions()){
+				for(EnrichedFeature f : currFeatures.get(currCondition)){
+					Map<Sample, List<StrandedBaseCount>> fHitsPos = overlappingHits(hitsPos, f);
+					Map<Sample, List<StrandedBaseCount>> fHitsNeg = overlappingHits(hitsNeg, f);
+					
+					//Trim the coordinates
+					trimFeature(f, fHitsPos, fHitsNeg, currCondition);
+					
+					//Quantify the feature in each Sample and in the condition in which it was found
+					quantifyFeature(f, fHitsPos, fHitsNeg, currCondition);
+				}
 			}
 			return(currFeatures);
 		}

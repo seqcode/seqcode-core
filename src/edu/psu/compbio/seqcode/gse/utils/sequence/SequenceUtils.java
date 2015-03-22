@@ -107,31 +107,31 @@ public class SequenceUtils {
 
     /** converts from 2-bit representation to character representation
      */
-    public static char int2Char(int i) { 
+    public static char int2char(int i) { 
         switch(i) { 
         case 0: return 'A';
-        case 1: return 'T';
+        case 1: return 'C';
         case 2: return 'G';
-        case 3: return 'C';
+        case 3: return 'T';
         }
         return 'n';
     }
     
     /** converts from character representation to 2-bit representation
      */
-    public static int char2Int(char c) { 
+    public static int char2int(char c) { 
         switch(c) { 
         case 'a':
         case 'A': 
             return 0; 
-        case 't':
-        case 'T':
+        case 'c':
+        case 'C':
             return 1;
         case 'g':
         case 'G':
             return 2;
-        case 'c':
-        case 'C':
+        case 't':
+        case 'T':
             return 3;
         }
         return -1;
@@ -168,7 +168,7 @@ public class SequenceUtils {
     public static long StringToLong(String a, int offset, int k) {
         long sum = (long)0;
         for(int i = 0; i < k; i++) { 
-            int val = char2Int(a.charAt(i + offset));
+            int val = char2int(a.charAt(i + offset));
             sum = (sum << 2) + val;
         }
         return sum;
@@ -177,7 +177,7 @@ public class SequenceUtils {
     public static String LongToString(Long l, int length) {
         char[] output = new char[length];
         while (length-- > 0) {
-            output[length] = int2Char((int)(l & 3));
+            output[length] = int2char((int)(l & 3));
             l >>= 2;
         }
         return new String(output);
@@ -198,7 +198,7 @@ public class SequenceUtils {
 		StringBuffer sb=new StringBuffer();
 		for (int i=0;i<k;i++){
 			int num = Math.abs(randomEngine.nextInt()) % 4;
-			sb.append(int2Char(num));
+			sb.append(int2char(num));
 		}
 		return sb.toString();
 	}

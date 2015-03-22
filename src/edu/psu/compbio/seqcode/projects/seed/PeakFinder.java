@@ -1,6 +1,7 @@
 package edu.psu.compbio.seqcode.projects.seed;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +61,7 @@ public class PeakFinder extends DomainFinder {
 			PeakFinder finder = new PeakFinder(gcon, econ, scon, man);
 			System.err.println("\nBeginning peak finding...");
 			finder.execute();
+			man.close();
 		}
 	}
 	
@@ -137,35 +139,40 @@ public class PeakFinder extends DomainFinder {
 		 * 		- Point of maximum likelihood, given an empirical read distribution (stranded) 
 		 * 
 		 * @param currFeatures
-		 * @return : List of EnrichedFeatures
+		 * @param current region
+		 * @return : Lists of EnrichedFeatures, indexed by condition
 		 */
-		protected List<EnrichedFeature> processDomains(List<EnrichedFeature> currFeatures, ExperimentCondition currCondition){
-			List<EnrichedFeature> peakFeatures = new ArrayList<EnrichedFeature>();
+		protected Map<ExperimentCondition, List<EnrichedFeature>> processDomains(List<EnrichedFeature> currFeatures, Region currSubRegion){
+			Map<ExperimentCondition, List<EnrichedFeature>> peakFeatures = new HashMap<ExperimentCondition, List<EnrichedFeature>>();
+			for(ExperimentCondition cond : manager.getConditions())
+				peakFeatures.put(cond, new ArrayList<EnrichedFeature>());
 			
-			for(EnrichedFeature currDomain : currFeatures){
-				Map<Sample, List<StrandedBaseCount>> fHitsPos = overlappingHits(hitsPos, currDomain);
-				Map<Sample, List<StrandedBaseCount>> fHitsNeg = overlappingHits(hitsNeg, currDomain);
-				
-				//Trim the coordinates
-				trimFeature(currDomain, fHitsPos, fHitsNeg, currCondition);
-				
-				//Quantify the feature in each Sample and in the condition in which it was found
-				quantifyFeature(currDomain, fHitsPos, fHitsNeg, currCondition);
-				
-				//Find the peaks
-				EnrichedPeakFeature peak;
-				if(sconfig.getPeakFindingApproach() == PeakFindingMethod.LRBALANCE)
-                    peak = findPeakLRBalance(fHitsPos, fHitsNeg, (EnrichedFeature)currDomain, currCondition);
-                //else if(sconfig.getPeakFindingApproach() == PeakFindingMethod.TAGDISTRIBUTION && sconfig.getEventModel()!=null)
-                //    peak = findPeakWithBindingModel(fHitsPos, fHitsNeg, currDomain, currCondition);
-                else if(sconfig.getPeakFindingApproach() == PeakFindingMethod.MAXDENSITY)
-                    peak = findPeakMaxHit(fHitsPos, fHitsNeg, (EnrichedFeature)currDomain, currCondition);
-                else{
-                	System.err.println("PeakFindingMethod "+sconfig.getPeakFindingApproach()+" not defined. Using max density.");
-                	peak = findPeakMaxHit(fHitsPos, fHitsNeg, (EnrichedFeature)currDomain, currCondition);
-                }
-				if(peak!=null)
-					peakFeatures.add(peak);
+			for(ExperimentCondition currCondition : manager.getConditions()){
+				for(EnrichedFeature currDomain : currFeatures){
+					Map<Sample, List<StrandedBaseCount>> fHitsPos = overlappingHits(hitsPos, currDomain);
+					Map<Sample, List<StrandedBaseCount>> fHitsNeg = overlappingHits(hitsNeg, currDomain);
+					
+					//Trim the coordinates
+					trimFeature(currDomain, fHitsPos, fHitsNeg, currCondition);
+					
+					//Quantify the feature in each Sample and in the condition in which it was found
+					quantifyFeature(currDomain, fHitsPos, fHitsNeg, currCondition);
+					
+					//Find the peaks
+					EnrichedPeakFeature peak;
+					if(sconfig.getPeakFindingApproach() == PeakFindingMethod.LRBALANCE)
+	                    peak = findPeakLRBalance(fHitsPos, fHitsNeg, (EnrichedFeature)currDomain, currCondition);
+	                //else if(sconfig.getPeakFindingApproach() == PeakFindingMethod.TAGDISTRIBUTION && sconfig.getEventModel()!=null)
+	                //    peak = findPeakWithBindingModel(fHitsPos, fHitsNeg, currDomain, currCondition);
+	                else if(sconfig.getPeakFindingApproach() == PeakFindingMethod.MAXDENSITY)
+	                    peak = findPeakMaxHit(fHitsPos, fHitsNeg, (EnrichedFeature)currDomain, currCondition);
+	                else{
+	                	System.err.println("PeakFindingMethod "+sconfig.getPeakFindingApproach()+" not defined. Using max density.");
+	                	peak = findPeakMaxHit(fHitsPos, fHitsNeg, (EnrichedFeature)currDomain, currCondition);
+	                }
+					if(peak!=null)
+						peakFeatures.get(currCondition).add(peak);
+				}
 			}
 			return(peakFeatures);
 		}
