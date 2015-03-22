@@ -1,6 +1,8 @@
 package edu.psu.compbio.seqcode.projects.seed;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,9 +119,19 @@ public class PCSPeakFinder extends DomainFinder{
 			}
 		//Print tag sequence composition motifs
 		for(Sample s : manager.getSamples()){
-			String imName = sconfig.getOutputParentDir()+File.separator+sconfig.getOutBase()+s.getName()+"-tag-sequence-motif.png";
-			String motifLabel = s.getName()+" tag-sequence-motif";
-			Utils.printMotifLogo(makeTagSeqCompositionWeightMatrix(s), new File(imName), 75, motifLabel);
+		    String fName = sconfig.getOutputParentDir()+File.separator+sconfig.getOutBase()+s.getName()+"-tag-sequence-motif.motif";
+		    String imName = sconfig.getOutputParentDir()+File.separator+sconfig.getOutBase()+s.getName()+"-tag-sequence-motif.png";
+		    String motifLabel = s.getName()+" tag-sequence-motif";
+		    WeightMatrix wm = makeTagSeqCompositionWeightMatrix(s);
+		    Utils.printMotifLogo(wm, new File(imName), 75, motifLabel);
+			
+		    try {
+			FileWriter fout = new FileWriter(fName);
+			fout.write(WeightMatrix.printTransfacMatrix(wm, motifLabel));
+		    	fout.close();
+		    } catch (IOException e) {
+			e.printStackTrace();
+		    }
 		}
 		
 		
@@ -247,19 +259,25 @@ public class PCSPeakFinder extends DomainFinder{
 				for(StrandedBaseCount sbc : hitsPos.get(s)){
 					int w=0;
 					for(int x=sbc.getCoordinate()-halfSeqWin-currReg.getStart(); x<=sbc.getCoordinate()+halfSeqWin-currReg.getStart(); x++){
-						if(x>=0 && x<currRegionSeq.length)
-							localTagSeqComposition[s.getIndex()][w][SequenceUtils.char2int(currRegionSeq[x])]+=sbc.getCount();
+					    if(x>=0 && x<currRegionSeq.length){
+						int y = SequenceUtils.char2int(currRegionSeq[x]);
+						if(y>=0)
+						       localTagSeqComposition[s.getIndex()][w][y]+=sbc.getCount();
+					    }
 						w++;
 					}
 				}
-				for(StrandedBaseCount sbc : hitsNeg.get(s)){
+				/*				for(StrandedBaseCount sbc : hitsNeg.get(s)){
 					int w=0;
 					for(int x=currReg.getEnd()-sbc.getCoordinate()-halfSeqWin; x<=currReg.getEnd()-sbc.getCoordinate()+halfSeqWin; x++){
-						if(x>=0 && x<currRegionSeqRC.length)
-							localTagSeqComposition[s.getIndex()][w][SequenceUtils.char2int(currRegionSeqRC[x])]+=sbc.getCount();
+					    if(x>=0 && x<currRegionSeqRC.length){
+						int y =	SequenceUtils.char2int(currRegionSeqRC[x]);
+				    		if(y>=0)	   
+							localTagSeqComposition[s.getIndex()][w][y]+=sbc.getCount();
+					    }
 						w++;
 					}
-				}
+					}*/
 			}
 			synchronized(tagSeqComposition){
 				for(int s=0; s<manager.getSamples().size(); s++)
