@@ -27,6 +27,8 @@ public class MetaConfig {
 	public List<String> peakFiles = null;
 	public String outName = "meta";
 	public Color color = Color.blue;
+	public char baseLimit='.'; //Only draw meta-plots for tags with this character at baseLimitRelPosition relative to 5' end (. = draw all tags)
+	public int baseLimitRelPosition=0;
 	
 	public MetaConfig(String [] args){
 		if(args.length < 2){
@@ -65,6 +67,8 @@ public class MetaConfig {
 					color= new Color(R,G,B,A);
 				}
 			}
+			baseLimit = Args.parseString(args, "baselimit", ".").charAt(0);
+			baseLimitRelPosition = Args.parseInteger(args, "baselimitposition", 0);
 		}
 	}
 	
@@ -85,6 +89,8 @@ public class MetaConfig {
 				"\t--out <output root name> \n" +
 				"\t--color <red/green/blue> or --color4 <R G B A>\n" +
 				"\t--strand <+-.>\n" +
+				"\t--baselimit <./A/C/G/T: only draw tags with this base at below position>\n" +
+				"\t--baselimitposition <only draw tags with above base at this position>\n" +
 				"\t--printMatrix [flag to print the matrix of tags] \n"+
 				"\t--cluster [flag to cluster in batch mode] \n" +
 				"\t--batch [a flag to run without displaying the window]\n" +

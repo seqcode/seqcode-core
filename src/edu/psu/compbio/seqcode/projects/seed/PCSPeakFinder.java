@@ -19,10 +19,6 @@ import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
-import edu.psu.compbio.seqcode.projects.seed.DomainFinder.DomainFinderThread;
-import edu.psu.compbio.seqcode.projects.seed.FeatureDetection.FeatureDetectionThread;
-import edu.psu.compbio.seqcode.projects.seed.PeakFinder.PeakFinderThread;
-import edu.psu.compbio.seqcode.projects.seed.SEEDConfig.PeakFindingMethod;
 import edu.psu.compbio.seqcode.projects.seed.features.EnrichedFeature;
 import edu.psu.compbio.seqcode.projects.seed.features.EnrichedPeakFeature;
 import edu.psu.compbio.seqcode.projects.seed.features.Feature;
@@ -123,15 +119,14 @@ public class PCSPeakFinder extends DomainFinder{
 		    String imName = sconfig.getOutputParentDir()+File.separator+sconfig.getOutBase()+s.getName()+"-tag-sequence-motif.png";
 		    String motifLabel = s.getName()+" tag-sequence-motif";
 		    WeightMatrix wm = makeTagSeqCompositionWeightMatrix(s);
-		    Utils.printMotifLogo(wm, new File(imName), 75, motifLabel);
-			
 		    try {
-			FileWriter fout = new FileWriter(fName);
-			fout.write(WeightMatrix.printTransfacMatrix(wm, motifLabel));
+		    	FileWriter fout = new FileWriter(fName);
+		    	fout.write(WeightMatrix.printTransfacMatrix(wm, motifLabel));
 		    	fout.close();
 		    } catch (IOException e) {
-			e.printStackTrace();
+		    	e.printStackTrace();
 		    }
+		    Utils.printMotifLogo(wm, new File(imName), 75, motifLabel); //Note that the painter converts the motif to log oddds
 		}
 		
 		
@@ -267,7 +262,7 @@ public class PCSPeakFinder extends DomainFinder{
 						w++;
 					}
 				}
-				/*				for(StrandedBaseCount sbc : hitsNeg.get(s)){
+				for(StrandedBaseCount sbc : hitsNeg.get(s)){
 					int w=0;
 					for(int x=currReg.getEnd()-sbc.getCoordinate()-halfSeqWin; x<=currReg.getEnd()-sbc.getCoordinate()+halfSeqWin; x++){
 					    if(x>=0 && x<currRegionSeqRC.length){
@@ -277,7 +272,7 @@ public class PCSPeakFinder extends DomainFinder{
 					    }
 						w++;
 					}
-					}*/
+				}
 			}
 			synchronized(tagSeqComposition){
 				for(int s=0; s<manager.getSamples().size(); s++)

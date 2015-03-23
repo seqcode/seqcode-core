@@ -58,7 +58,7 @@ public class MetaMaker {
 				if(mconfig.profilerType.equals("simplechipseq")){
 					profiler = new ChipSeqProfiler(gen, params, manager, mconfig.readExt, mconfig.strand);
 				}else if(mconfig.profilerType.equals("fiveprime")){
-					profiler = new Stranded5PrimeProfiler(gen, params, manager, mconfig.strand);
+					profiler = new Stranded5PrimeProfiler(gconfig, params, manager, mconfig.strand, mconfig.baseLimit, mconfig.baseLimitRelPosition);
 				}else if(mconfig.profilerType.equals("nucleosome")){
 					profiler = new PairedSeqMidpointProfiler(gen, params, manager);
 				}
