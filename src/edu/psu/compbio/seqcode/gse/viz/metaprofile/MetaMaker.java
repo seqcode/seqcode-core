@@ -65,7 +65,7 @@ public class MetaMaker {
 				
 				if(mconfig.batchRun){
 					System.out.println("Batch running...");
-					
+					System.setProperty("java.awt.headless", "true");
 					if(mconfig.peakFiles.size()==1 || mconfig.peakFiles.size()==0){
 						MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile, mconfig.saveSVG);
 						nonframe.setColor(mconfig.color);
