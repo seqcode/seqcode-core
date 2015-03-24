@@ -142,19 +142,19 @@ public class PeakFinder extends DomainFinder {
 		 * @param current region
 		 * @return : Lists of EnrichedFeatures, indexed by condition
 		 */
-		protected Map<ExperimentCondition, List<EnrichedFeature>> processDomains(List<EnrichedFeature> currFeatures, Region currSubRegion){
+		protected Map<ExperimentCondition, List<EnrichedFeature>> processDomains(Map<ExperimentCondition,List<EnrichedFeature>> currFeatures, Region currSubRegion){
 			Map<ExperimentCondition, List<EnrichedFeature>> peakFeatures = new HashMap<ExperimentCondition, List<EnrichedFeature>>();
 			for(ExperimentCondition cond : manager.getConditions())
 				peakFeatures.put(cond, new ArrayList<EnrichedFeature>());
 			
 			for(ExperimentCondition currCondition : manager.getConditions()){
-				for(EnrichedFeature currDomain : currFeatures){
+				for(EnrichedFeature currDomain : currFeatures.get(currCondition)){
 					Map<Sample, List<StrandedBaseCount>> fHitsPos = overlappingHits(hitsPos, currDomain);
 					Map<Sample, List<StrandedBaseCount>> fHitsNeg = overlappingHits(hitsNeg, currDomain);
 					
 					//Trim the coordinates
 					trimFeature(currDomain, fHitsPos, fHitsNeg, currCondition);
-					
+
 					//Quantify the feature in each Sample and in the condition in which it was found
 					quantifyFeature(currDomain, fHitsPos, fHitsNeg, currCondition);
 					
