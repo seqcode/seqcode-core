@@ -14,13 +14,14 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 import edu.psu.compbio.seqcode.projects.seed.features.EnrichedFeature;
-import edu.psu.compbio.seqcode.projects.seed.features.EnrichedPeakFeature;
+import edu.psu.compbio.seqcode.projects.seed.features.EnrichedPCSPeakFeature;
 import edu.psu.compbio.seqcode.projects.seed.features.Feature;
 
 /**
@@ -28,9 +29,10 @@ import edu.psu.compbio.seqcode.projects.seed.features.Feature;
  * @author mahony
  *
  */
-public class PCSPeakFinder extends DomainFinder{
+public class PCSPeakFinder extends PeakFinder{
 	public static String version = "0.1";
 	
+	protected final float bubbleWindow=30;
 	protected int tagSeqWin = 20;
 	protected float[][][] tagSeqComposition; //Sequence composition around tag 5' ends; indexed by Sample, then by relative position around tag 5' end, then by base (ACGT)
 
@@ -168,15 +170,15 @@ public class PCSPeakFinder extends DomainFinder{
 	 * @author mahony
 	 *
 	 */
-	public class PCSPeakFinderThread extends DomainFinderThread {
+	public class PCSPeakFinderThread extends PeakFinderThread {
 
 		protected char[] currRegionSeq;
 		protected char[] currRegionSeqRC;
-		protected SequenceGenerator seqgen;
+		protected SequenceGenerator<Region> seqgen;
 		
 		public PCSPeakFinderThread(List<Region> regs) {
 			super(regs);
-			seqgen = new SequenceGenerator(gconfig.getGenome());
+			seqgen = gconfig.getSequenceGenerator();
 		}
 		
 		/**
@@ -190,12 +192,18 @@ public class PCSPeakFinder extends DomainFinder{
 		 */
 		public Map<ExperimentCondition, List<Feature>> findFeatures(Region subRegion) {
 			
+			//Build the sequence model in the window around the tag 5' locations
+			currRegionSeq = seqgen.execute(subRegion).toCharArray();
+			currRegionSeqRC = currRegionSeq.clone();
+			SequenceUtils.reverseComplement(currRegionSeqRC);
+			
 			//Tag sequence composition
 			calculateTagSequenceComposition(subRegion);
 			
-			//Get the enriched domains using the functionality from the superclass (DomainFinderThread) 
+			//Get the enriched domains using the functionality from the superclass (PeakFinderThread) 
 			//and the over-ridden processDomain methods below 
 			Map<ExperimentCondition, List<Feature>> peaks = super.findFeatures(subRegion);
+			
 			return peaks;
 		}
 		
@@ -209,13 +217,13 @@ public class PCSPeakFinder extends DomainFinder{
 		 * @param current region
 		 * @return : Lists of EnrichedFeatures, indexed by condition
 		 */
-		protected Map<ExperimentCondition, List<EnrichedFeature>> processDomains(List<EnrichedFeature> currFeatures, Region currSubRegion){
+		protected Map<ExperimentCondition, List<EnrichedFeature>> processDomains(Map<ExperimentCondition,List<EnrichedFeature>> currFeatures, Region currSubRegion){
 			Map<ExperimentCondition, List<EnrichedFeature>> peakFeatures = new HashMap<ExperimentCondition, List<EnrichedFeature>>();
 			for(ExperimentCondition cond : manager.getConditions())
 				peakFeatures.put(cond, new ArrayList<EnrichedFeature>());
 			
 			for(ExperimentCondition currCondition : manager.getConditions()){
-				for(EnrichedFeature currDomain : currFeatures){
+				for(EnrichedFeature currDomain : currFeatures.get(currCondition)){
 					Map<Sample, List<StrandedBaseCount>> fHitsPos = overlappingHits(hitsPos, currDomain);
 					Map<Sample, List<StrandedBaseCount>> fHitsNeg = overlappingHits(hitsNeg, currDomain);
 					
@@ -226,9 +234,11 @@ public class PCSPeakFinder extends DomainFinder{
 					quantifyFeature(currDomain, fHitsPos, fHitsNeg, currCondition);
 					
 					//Find the peaks
-					EnrichedPeakFeature peak=null;
+					EnrichedPCSPeakFeature pcspeak= findPCSBubble(fHitsPos, fHitsNeg, (EnrichedFeature)currDomain, currCondition, currSubRegion);
+	                
+					if(pcspeak!=null)
+						peakFeatures.get(currCondition).add(pcspeak);
 					
-					peakFeatures.get(currCondition).add(currDomain);
 				}
 			}
 			return(peakFeatures);
@@ -236,14 +246,13 @@ public class PCSPeakFinder extends DomainFinder{
 		
 		/**
 		 * Calculate the sequence composition around every tag 5' position in the current region, 
-		 * and add the counts to the global models.  
+		 * and add the counts to the global models.
+		 * 
+		 *   Assumes that currRegionSeq and currRegionSeqRC have been properly initialized
 		 * @param currReg
 		 */
 		protected void calculateTagSequenceComposition(Region currReg){
-			//Build the sequence model in the window around the tag 5' locations
-			currRegionSeq = seqgen.execute(currReg).toCharArray();
-			currRegionSeqRC = currRegionSeq.clone();
-			SequenceUtils.reverseComplement(currRegionSeqRC);
+			
 			float[][][] localTagSeqComposition = new float[manager.getSamples().size()][tagSeqWin+1][4];
 			for(int s=0; s<manager.getSamples().size(); s++)
 				for(int i=0; i<=tagSeqWin; i++)
@@ -255,8 +264,8 @@ public class PCSPeakFinder extends DomainFinder{
 					int w=0;
 					for(int x=sbc.getCoordinate()-halfSeqWin-currReg.getStart(); x<=sbc.getCoordinate()+halfSeqWin-currReg.getStart(); x++){
 					    if(x>=0 && x<currRegionSeq.length){
-						int y = SequenceUtils.char2int(currRegionSeq[x]);
-						if(y>=0)
+					    	int y = SequenceUtils.char2int(currRegionSeq[x]);
+					    	if(y>=0)
 						       localTagSeqComposition[s.getIndex()][w][y]+=sbc.getCount();
 					    }
 						w++;
@@ -266,9 +275,9 @@ public class PCSPeakFinder extends DomainFinder{
 					int w=0;
 					for(int x=currReg.getEnd()-sbc.getCoordinate()-halfSeqWin; x<=currReg.getEnd()-sbc.getCoordinate()+halfSeqWin; x++){
 					    if(x>=0 && x<currRegionSeqRC.length){
-						int y =	SequenceUtils.char2int(currRegionSeqRC[x]);
+					    	int y =	SequenceUtils.char2int(currRegionSeqRC[x]);
 				    		if(y>=0)	   
-							localTagSeqComposition[s.getIndex()][w][y]+=sbc.getCount();
+				    			localTagSeqComposition[s.getIndex()][w][y]+=sbc.getCount();
 					    }
 						w++;
 					}
@@ -280,6 +289,96 @@ public class PCSPeakFinder extends DomainFinder{
 						for(int j=0; j<4; j++)
 							tagSeqComposition[s][i][j]+=localTagSeqComposition[s][i][j];
 			}
+		}
+		
+		/**
+		 * Get the base preceding the 5' end of the tag
+		 * @param a
+		 * @param queryReg
+		 * @return
+		 */
+		protected char getPrecedingBase(StrandedBaseCount a, Region queryReg){
+			char b = '.';
+			int wantedPos = a.getStrand()=='+' ? 
+					a.getCoordinate()-1 : 
+					a.getCoordinate()+1;
+			if(wantedPos>=queryReg.getStart() && wantedPos<queryReg.getEnd()){
+				b = a.getStrand()=='+' ? currRegionSeq[wantedPos-queryReg.getStart()] : currRegionSeqRC[queryReg.getEnd()-wantedPos];
+			}
+			return b;
+		}
+		
+		/**
+		 * Find the peak locations based on maximum overlapping read counts (T-preceding tags only). 
+		 * Also quantify the number of tags and bases in the central bubble region, for computing the bubble index. 
+	     * 
+		 * @return : Feature (EnrichedPCSPeakFeature)
+		 */
+		protected EnrichedPCSPeakFeature findPCSBubble(Map<Sample, List<StrandedBaseCount>> fHitsPos, Map<Sample, List<StrandedBaseCount>> fHitsNeg, 
+									EnrichedFeature domain, ExperimentCondition currCondition, Region currSubRegion){
+			float [][] sum = new float[domain.getCoords().getWidth()+1][4];
+			for(int s=0; s<=domain.getCoords().getWidth(); s++)
+				for(int b=0; b<4; b++)
+					sum[s][b]=0;
+
+			for(Sample s : currCondition.getSignalSamples()){
+				if(!strandedEventDetection || domain.getCoords().getStrand()=='+')
+					for(StrandedBaseCount h : fHitsPos.get(s)){
+						int pbase = SequenceUtils.char2int(getPrecedingBase(h, currSubRegion));
+						if(pbase>=0){
+							int start = getLeft(h)-domain.getCoords().getStart(); 
+				            int stop= getRight(h)-domain.getCoords().getStart();
+				            for(int i=start; i<stop; i++)
+				                if(i>=0 && i<sum.length)
+				                    sum[i][pbase]+=h.getCount();
+						}
+					}
+				if(!strandedEventDetection || domain.getCoords().getStrand()=='-')
+					for(StrandedBaseCount h : fHitsNeg.get(s)){
+						int pbase = SequenceUtils.char2int(getPrecedingBase(h, currSubRegion));
+						if(pbase>=0){
+							int start = getLeft(h)-domain.getCoords().getStart(); 
+							int stop= getRight(h)-domain.getCoords().getStart();
+				            for(int i=start; i<stop; i++)
+				                if(i>=0 && i<sum.length)
+				                    sum[i][pbase]+=h.getCount();
+						}
+					}
+			}
+			//Find the peak according to T tags
+			float max = 0; int maxPos = -1;
+			for(int s=0; s<sum.length; s++){
+				if(sum[s][3]>max){ //peaks should be determined only using T-preceding tags in permanganate-ChIP-seq
+					max= sum[s][3];
+					maxPos=s;
+				}
+			}
+			Point p = new Point(gen, domain.getCoords().getChrom(), maxPos+domain.getCoords().getStart());
+			
+			//Calc the counts needed for the bubble index
+			float[] bubbleTags = new float[4];
+			float[] bubbleBases = new float[4];
+			for(int b=0; b<4; b++){bubbleTags[b]=0; bubbleBases[b]=0;}
+			int bubbleStart=(int)(maxPos-(bubbleWindow/2));
+			int bubbleEnd=(int)(maxPos+(bubbleWindow/2));
+			for(int z=bubbleStart; z<bubbleEnd; z++){
+				if(z>=0 && z<=domain.getCoords().getWidth()){
+					for(int b=0; b<4; b++){
+						bubbleTags[b]+=sum[z][b];
+					}
+					bubbleBases[SequenceUtils.char2int(currRegionSeq[z])]++;
+					bubbleBases[SequenceUtils.char2int(SequenceUtils.complementChar(currRegionSeq[z]))]++;
+				}
+			}
+			
+			//Define the feature
+			EnrichedPCSPeakFeature epf=null;
+			try {
+				epf = new EnrichedPCSPeakFeature(domain.getCoords(), p, domain.getSampleCountsPos(), domain.getSampleCountsNeg(), 
+																	domain.getSignalCount(), domain.getControlCount(), domain.getScore(), 
+																	max, bubbleTags, bubbleBases);
+			} catch (Exception e) {}
+			return(epf);
 		}
 	}
 }
