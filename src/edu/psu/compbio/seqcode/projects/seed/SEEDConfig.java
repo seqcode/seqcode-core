@@ -14,6 +14,7 @@ import java.util.TimeZone;
 
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
@@ -42,6 +43,10 @@ public class SEEDConfig {
 	protected List<Region> regionsToIgnore = new ArrayList<Region>(); //List of regions that will be ignored during EM training (i.e. known towers, etc)
 	protected boolean printHelp=false;
 	protected boolean outputGFF=false; //Print the output files in GFF format
+	protected int superStitchWindow = 12500; // Window to stitch typical enhancers to super enhancers
+	protected int minDistalDistance = 2000; // Minmum distance from TSSs to call an element Distal
+	protected List<StrandedPoint> refTSSs = new ArrayList<StrandedPoint>(); // refTSSs; currently loading from a stranded peak file 
+	
 	
 	//Constants
 	public final int MAXSECTION = 50000000; //Size of genomic sections that each thread analyzes
@@ -136,6 +141,14 @@ public class SEEDConfig {
 				else if(pfmethod.equals("lrbal")){peakFinding = PeakFindingMethod.LRBALANCE;}
 				else if(pfmethod.equals("distrib")){peakFinding = PeakFindingMethod.TAGDISTRIBUTION;}
 				else{peakFinding = PeakFindingMethod.MAXDENSITY;}
+				
+				// Super Feature detection method optioins
+				superStitchWindow = Args.parseInteger(args, "supStitchWin", 12500);
+				minDistalDistance  = Args.parseInteger(args, "distalDistance", 2000);
+				if(ap.hasKey("refTSSs")){
+					refTSSs = Utils.loadStrandedPointsFromFile(gconfig.getGenome(), Args.parseString(args, "refTSSs",""));
+				}
+				
 						
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
@@ -167,6 +180,9 @@ public class SEEDConfig {
 	public double getMinSigCtrlFoldDifference(){return minSigCtrlFoldDifference;}
 	public PeakFindingMethod getPeakFindingApproach(){return peakFinding;}
 	public boolean outputGFF(){return outputGFF;}
+	public int getSuperStitchWin(){return superStitchWindow;}
+	public int getMinDistalDistance(){return minDistalDistance;}
+	public List<StrandedPoint> getRefTSSs(){return refTSSs;}
 
 	//Settors
 	public void setTagShift(int s){tagShift=s;}
