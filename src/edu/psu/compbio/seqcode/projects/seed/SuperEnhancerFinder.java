@@ -1,6 +1,7 @@
 package edu.psu.compbio.seqcode.projects.seed;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,45 @@ public class SuperEnhancerFinder extends DomainFinder{
 	}
 	
 	
+	public Map<ExperimentCondition, List<Feature>> postProcess() {
+		System.err.println("\nSuper Enhancer finding complete.");
+		
+		Map<ExperimentCondition, List<Feature>> superEnhancers = new HashMap<ExperimentCondition,List<Feature>>();
+		
+		// Finding inflection points
+		for(ExperimentCondition cond : manager.getConditions()){
+			superEnhancers.put(cond, new ArrayList<Feature>());
+			Collections.sort(features.get(cond));
+			boolean reachedInflectionPoint = false;
+			Feature previousSFE = null;
+			int inflationIndex = 0;
+			for(Feature sef : features.get(cond) ){
+				if(previousSFE == null){
+					previousSFE = sef;
+					inflationIndex++;
+				}else{
+					double inflatioin = sef.getScore() - previousSFE.getScore();
+					if(!reachedInflectionPoint && inflatioin > 1){
+						reachedInflectionPoint = true;
+						inflationIndex++;
+					}
+					if(reachedInflectionPoint){
+						superEnhancers.get(cond).add(sef);
+					}
+					previousSFE = sef;
+				}
+			}
+		}
+		
+		//All Enhancers
+		this.printEventsFile(features, ".all.domains");
+		//Super Enhancers
+		this.printEventsFile(superEnhancers, ".superEnhancer.domains");
+		return features;
+	}
+	
+	
+	
 	/**
 	 * SuperEnhancetFindetThread that searches for super enhancers
 	 * @author akshaykakumanu
@@ -117,15 +157,14 @@ public class SuperEnhancerFinder extends DomainFinder{
 					quantifyFeature(sfe,hitsPos,hitsNeg,ec);
 				}
 				
+				// Reset the score to background corrected signal (Background subtracted signal)
 				
+				for(SuperEnrichedFeature sfe : stitchedTPEs){
+					sfe.setScore(sfe.getSignalCount() - sfe.getControlCount());
+				}
 				
-				
-				
+				superEnhancers.get(ec).addAll(stitchedTPEs);
 			}
-			
-			
-			
-			
 			return superEnhancers;
 		}
 		
@@ -204,10 +243,7 @@ public class SuperEnhancerFinder extends DomainFinder{
 			}
 			
 		}
-		
-		
-		
-		
+			
 		
 	}
 
