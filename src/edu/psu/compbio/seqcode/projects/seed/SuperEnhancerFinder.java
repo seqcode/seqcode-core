@@ -99,6 +99,29 @@ public class SuperEnhancerFinder extends DomainFinder{
 		return features;
 	}
 	
+	public static void main(String[] args){
+		System.setProperty("java.awt.headless", "true");
+		System.err.println("SuperEnhancerFinder version "+SuperEnhancerFinder.version+"\n\n");
+		
+		GenomeConfig gcon = new GenomeConfig(args);
+		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		SEEDConfig scon = new SEEDConfig(gcon, args);
+		
+		if(scon.helpWanted()){
+			//System.out.println(DomainFinder.getDomainFinderArgs());
+			System.err.println(gcon.getArgsList()+
+					econ.getArgsList()+
+					scon.getArgsList());
+		}else{
+			ExperimentManager man = new ExperimentManager(econ);
+			SuperEnhancerFinder finder = new SuperEnhancerFinder(gcon, econ, scon, man);
+			System.err.println("\nBeginning Super Enhancer finding...");
+			finder.execute();
+			man.close();
+			
+		}
+	}
+	
 	
 	
 	/**
