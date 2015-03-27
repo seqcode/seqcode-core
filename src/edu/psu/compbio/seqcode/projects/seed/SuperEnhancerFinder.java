@@ -28,6 +28,10 @@ import edu.psu.compbio.seqcode.projects.seed.features.SuperEnrichedFeature;
  */
 public class SuperEnhancerFinder extends DomainFinder{
 	
+	// pseudocount to calculate fold-change while finding inflectioin point for super enhancers
+	public final int PSEUDOCOUINT  = 1;
+	
+	
 	// Min distance from known TSSs for a feature to be called distal
 	protected int minDistalDistance;
 	
@@ -67,16 +71,34 @@ public class SuperEnhancerFinder extends DomainFinder{
 	public Map<ExperimentCondition, List<Feature>> postProcess() {
 		System.err.println("\nSuper Enhancer finding complete.");
 		
+		for(ExperimentCondition cond : manager.getConditions()){
+			stats.benjaminiHochbergCorrection(features.get(cond));
+		}
+		
 		Map<ExperimentCondition, List<Feature>> superEnhancers = new HashMap<ExperimentCondition,List<Feature>>();
+		Map<ExperimentCondition, List<Feature>> signifFeatures = this.filterByScore(features, sconfig.perBinBinomialPThres, true);
+		
+		// Change the score attribute of the signifFeatures to fold change for the moment
+		for(ExperimentCondition cond : manager.getConditions()){
+			for(Feature f : signifFeatures.get(cond)){
+				if(f instanceof SuperEnrichedFeature){
+					SuperEnrichedFeature sfe = (SuperEnrichedFeature)f;
+					f.setScore(sfe.getSignalCount()/(PSEUDOCOUINT+cond.getPooledSampleControlScaling()*sfe.getControlCount()));
+				}
+			}
+			//Sort them now based on fold-change
+			Collections.sort(signifFeatures.get(cond));
+		}
+		
 		
 		// Finding inflection points
 		for(ExperimentCondition cond : manager.getConditions()){
 			superEnhancers.put(cond, new ArrayList<Feature>());
-			Collections.sort(features.get(cond));
+			
 			boolean reachedInflectionPoint = false;
 			Feature previousSFE = null;
 			int inflationIndex = 0;
-			for(Feature sef : features.get(cond) ){
+			for(Feature sef : signifFeatures.get(cond) ){
 				if(previousSFE == null){
 					previousSFE = sef;
 					inflationIndex++;
@@ -92,12 +114,19 @@ public class SuperEnhancerFinder extends DomainFinder{
 					previousSFE = sef;
 				}
 			}
+			Collections.sort(superEnhancers.get(cond));
+			
 		}
 		
 		//All Enhancers
 		this.printEventsFile(features, ".all.domains");
 		//Super Enhancers
 		this.printEventsFile(superEnhancers, ".superEnhancer.domains");
+		 //Reset Significant features to q-value based sorting 
+		 signifFeatures = this.filterByScore(features, sconfig.perBinBinomialPThres, true);
+		 this.printEventsFile(features, ".p"+sconfig.perBinBinomialPThres+".domains");
+		 
+		
 		return features;
 	}
 	
@@ -191,9 +220,9 @@ public class SuperEnhancerFinder extends DomainFinder{
 				
 				// Reset the score to background corrected signal (Background subtracted signal)
 				
-				for(SuperEnrichedFeature sfe : stitchedTPEs){
-					sfe.setScore(sfe.getSignalCount()/(ec.getPooledSampleControlScaling()*sfe.getControlCount()));
-				}
+				//for(SuperEnrichedFeature sfe : stitchedTPEs){
+				//	sfe.setScore(sfe.getSignalCount()/(ec.getPooledSampleControlScaling()*sfe.getControlCount()));
+				//}
 				
 				superEnhancers.get(ec).addAll(stitchedTPEs);
 			}

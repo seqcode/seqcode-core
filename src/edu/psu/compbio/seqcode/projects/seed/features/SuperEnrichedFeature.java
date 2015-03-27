@@ -9,8 +9,6 @@ public class SuperEnrichedFeature extends EnrichedFeature {
 	
 	protected List<EnrichedFeature> typicalEnrichedFeatures;
 	
-	// Overriding value set in inherited feature 
-	public static boolean scoreIsAPValue=false;
 	
 	// Is the super enriched feature a super enhancer
 	public boolean isSuperEnhancer = false;
