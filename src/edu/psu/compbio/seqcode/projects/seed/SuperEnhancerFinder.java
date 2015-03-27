@@ -8,9 +8,11 @@ import java.util.Map;
 import java.util.Iterator;
 
 
+import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
+import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
@@ -177,13 +179,20 @@ public class SuperEnhancerFinder extends DomainFinder{
 				
 				// Quantify the features 
 				for(SuperEnrichedFeature sfe : stitchedTPEs){
-					quantifyFeature(sfe,hitsPos,hitsNeg,ec);
+					Map<Sample, List<StrandedBaseCount>> sfeHitsPos = overlappingHits(hitsPos, sfe);
+					Map<Sample, List<StrandedBaseCount>> sfeHitsNeg = overlappingHits(hitsNeg, sfe);
+					
+					//Trim the coordinates
+					trimFeature(sfe, sfeHitsPos, sfeHitsNeg, ec);
+					
+					//Quantify the feature in each Sample and in the condition in which it was found
+					quantifyFeature(sfe,sfeHitsPos,sfeHitsNeg,ec);
 				}
 				
 				// Reset the score to background corrected signal (Background subtracted signal)
 				
 				for(SuperEnrichedFeature sfe : stitchedTPEs){
-					sfe.setScore(sfe.getSignalCount() - sfe.getControlCount());
+					sfe.setScore(sfe.getSignalCount()/(ec.getPooledSampleControlScaling()*sfe.getControlCount()));
 				}
 				
 				superEnhancers.get(ec).addAll(stitchedTPEs);
