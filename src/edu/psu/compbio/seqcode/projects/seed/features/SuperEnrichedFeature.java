@@ -42,7 +42,7 @@ public class SuperEnrichedFeature extends EnrichedFeature {
 	public void setSuperEnahncer(boolean isSE){isSuperEnhancer = isSE;}
 	
 	public  String toString() {
-		return new String(coords.toString()+"\t"+String.format("%.1f", signalCount)+"\t"+String.format("%.1f", controlCount)+"\t"+String.format("%.1f", score)+"\t"+Integer.toString(typicalEnrichedFeatures.size()));
+		return new String(coords.toString()+"\t"+String.format("%.1f", signalCount)+"\t"+String.format("%.1f", controlCount)+"\t"+String.format("%.5e", score)+"\t"+Integer.toString(typicalEnrichedFeatures.size()));
 	}
 	
 	public String toGFF() {

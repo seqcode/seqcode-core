@@ -31,6 +31,9 @@ public class SuperEnhancerFinder extends DomainFinder{
 	// pseudocount to calculate fold-change while finding inflectioin point for super enhancers
 	public final int PSEUDOCOUINT  = 1;
 	
+	// At the moment only one TSS is alowed to overlap identified super enahncers
+	public final int NO_OVERLAPPING_TSS_ALLOWED = 1;
+	
 	
 	// Min distance from known TSSs for a feature to be called distal
 	protected int minDistalDistance;
@@ -71,62 +74,9 @@ public class SuperEnhancerFinder extends DomainFinder{
 	public Map<ExperimentCondition, List<Feature>> postProcess() {
 		System.err.println("\nSuper Enhancer finding complete.");
 		
-		for(ExperimentCondition cond : manager.getConditions()){
-			stats.benjaminiHochbergCorrection(features.get(cond));
-		}
-		
-		Map<ExperimentCondition, List<Feature>> superEnhancers = new HashMap<ExperimentCondition,List<Feature>>();
-		Map<ExperimentCondition, List<Feature>> signifFeatures = this.filterByScore(features, sconfig.perBinBinomialPThres, true);
-		
-		// Change the score attribute of the signifFeatures to fold change for the moment
-		for(ExperimentCondition cond : manager.getConditions()){
-			for(Feature f : signifFeatures.get(cond)){
-				if(f instanceof SuperEnrichedFeature){
-					SuperEnrichedFeature sfe = (SuperEnrichedFeature)f;
-					f.setScore(sfe.getSignalCount()/(PSEUDOCOUINT+cond.getPooledSampleControlScaling()*sfe.getControlCount()));
-				}
-			}
-			//Sort them now based on fold-change
-			Collections.sort(signifFeatures.get(cond));
-		}
-		
-		
-		// Finding inflection points
-		for(ExperimentCondition cond : manager.getConditions()){
-			superEnhancers.put(cond, new ArrayList<Feature>());
-			
-			boolean reachedInflectionPoint = false;
-			Feature previousSFE = null;
-			int inflationIndex = 0;
-			for(Feature sef : signifFeatures.get(cond) ){
-				if(previousSFE == null){
-					previousSFE = sef;
-					inflationIndex++;
-				}else{
-					double inflatioin = sef.getScore() - previousSFE.getScore();
-					if(!reachedInflectionPoint && inflatioin > 1){
-						reachedInflectionPoint = true;
-						inflationIndex++;
-					}
-					if(reachedInflectionPoint){
-						superEnhancers.get(cond).add(sef);
-					}
-					previousSFE = sef;
-				}
-			}
-			Collections.sort(superEnhancers.get(cond));
-			
-		}
-		
 		//All Enhancers
 		this.printEventsFile(features, ".all.domains");
-		//Super Enhancers
-		this.printEventsFile(superEnhancers, ".superEnhancer.domains");
-		 //Reset Significant features to q-value based sorting 
-		 signifFeatures = this.filterByScore(features, sconfig.perBinBinomialPThres, true);
-		 this.printEventsFile(features, ".p"+sconfig.perBinBinomialPThres+".domains");
-		 
-		
+
 		return features;
 	}
 	
@@ -193,18 +143,40 @@ public class SuperEnhancerFinder extends DomainFinder{
 				keepOnlyDistalFeature(currFeatures.get(ec));
 			}
 			
+			// Remove black-list regions if provided 
 			
+			for (ExperimentCondition ec : manager.getConditions()){
+				for(Region blackList : sconfig.getRegionsToIgnore()){
+					Iterator<EnrichedFeature> it = currFeatures.get(ec).iterator();
+					while(it.hasNext()){
+						EnrichedFeature ef = it.next();
+						if(ef.getCoords().overlaps(blackList)){
+							it.remove();
+						}
+					}
+				}
+			}
+			
+			// Remove enriched domains less that 100bp. Playing around with the parameter at the moment (Needed especially when extending reads)
+			
+			for (ExperimentCondition ec : manager.getConditions()){
+				Iterator<EnrichedFeature> it = currFeatures.get(ec).iterator();
+				while(it.hasNext()){
+					EnrichedFeature ef = it.next();
+					if(ef.getCoords().getWidth() < 100){
+						it.remove();
+					}
+				}
+			}
+			
+			
+			// Do a bunch of more operations of the enriched features
 			for(ExperimentCondition ec :  manager.getConditions()){
 				// Stitching typical enhancers into super enhancers
 				List<SuperEnrichedFeature> stitchedTPEs = this.stichTypicalEnhancers(currFeatures.get(ec));
 				
-				// Removing SEs spanning more than 2 TSSs
+				// Removing SEs spanning more than 1 TSSs
 				removeMultiGeneSpanningSEs(stitchedTPEs);
-				
-				//Trim the coordinates
-				for(SuperEnrichedFeature sfe: stitchedTPEs){
-					trimFeature(sfe, hitsPos, hitsNeg, ec);
-				}
 				
 				// Quantify the features 
 				for(SuperEnrichedFeature sfe : stitchedTPEs){
@@ -217,12 +189,6 @@ public class SuperEnhancerFinder extends DomainFinder{
 					//Quantify the feature in each Sample and in the condition in which it was found
 					quantifyFeature(sfe,sfeHitsPos,sfeHitsNeg,ec);
 				}
-				
-				// Reset the score to background corrected signal (Background subtracted signal)
-				
-				//for(SuperEnrichedFeature sfe : stitchedTPEs){
-				//	sfe.setScore(sfe.getSignalCount()/(ec.getPooledSampleControlScaling()*sfe.getControlCount()));
-				//}
 				
 				superEnhancers.get(ec).addAll(stitchedTPEs);
 			}
@@ -244,7 +210,7 @@ public class SuperEnhancerFinder extends DomainFinder{
 				int minDistance = Integer.MAX_VALUE;
 				if(refTSSsbyChrom.containsKey(ef.getCoords().getChrom())){
 					for(StrandedPoint sp : refTSSsbyChrom.get(ef.getCoords().getChrom())){
-						int dis = sp.distance(ef.getCoords().getMidpoint());
+						int dis = Math.min(sp.distance(ef.getCoords().startPoint()),sp.distance(ef.getCoords().endPoint()));
 						if(dis < minDistance){
 							minDistance = dis;
 						}
@@ -298,7 +264,7 @@ public class SuperEnhancerFinder extends DomainFinder{
 						}
 					}
 				}
-				if(numTSSs >=2){
+				if(numTSSs > NO_OVERLAPPING_TSS_ALLOWED){
 					it.remove();
 				}
 			}

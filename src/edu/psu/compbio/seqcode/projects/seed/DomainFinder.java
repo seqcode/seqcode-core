@@ -311,7 +311,7 @@ public class DomainFinder extends FeatureDetection {
 			f.setSampleCountsNeg(sampCountsNeg);
 			f.setSignalCount(pooledSigCount);
 			f.setControlCount(pooledCtrlCount);
-			f.setScore(stats.binomialPValue(pooledCtrlCount, (pooledSigCount+pooledCtrlCount), sconfig.getMinSigCtrlFoldDifference()));
+			f.setScore(stats.binomialPValue(pooledCtrlCount*featureCond.getPooledSampleControlScaling(), (pooledSigCount+(pooledCtrlCount*featureCond.getPooledSampleControlScaling())), sconfig.getMinSigCtrlFoldDifference()));
 		}
 		
 	}//End of DomainFinderThread
