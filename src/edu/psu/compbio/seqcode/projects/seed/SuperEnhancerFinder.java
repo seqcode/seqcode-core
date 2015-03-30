@@ -40,6 +40,9 @@ public class SuperEnhancerFinder extends DomainFinder{
 	// Minimum length of an enriched feature to be considered for stitching to get a super enhancer
 	public final int MIN_ENRICHED_FEATURE_LENGHT = 100;
 	
+	//Srep size to calcluate slope
+	public final int SLOPE_CALCULATING_STEP_SIZE = 100;
+	
 	
 	// Min distance from known TSSs for a feature to be called distal
 	protected int minDistalDistance;
@@ -83,35 +86,40 @@ public class SuperEnhancerFinder extends DomainFinder{
 		
 		//Sort super enhancers by signal count
 		
-		Map<ExperimentCondition, List<SuperEnrichedFeature>> superEnhancers = new HashMap<ExperimentCondition,List<SuperEnrichedFeature>>();
+		Map<ExperimentCondition, List<SuperEnrichedFeature>> signal_sorted_features = new HashMap<ExperimentCondition,List<SuperEnrichedFeature>>();
 		for( ExperimentCondition ec : manager.getConditions()){
-			superEnhancers.put(ec, new ArrayList<SuperEnrichedFeature>());
+			signal_sorted_features.put(ec, new ArrayList<SuperEnrichedFeature>());
 			for(Feature f : features.get(ec)){
 				SuperEnrichedFeature sfe = (SuperEnrichedFeature)f;
 				sfe.setScore(sfe.getSignalCount());
-				superEnhancers.get(ec).add(sfe);
+				signal_sorted_features.get(ec).add(sfe);
 			}
-			Collections.sort(superEnhancers.get(ec));
+			Collections.sort(signal_sorted_features.get(ec));
 		}
 		
 		//Calculating slope to find inflection point
+		int inflection_point_index = 0;
 		
 		for( ExperimentCondition ec : manager.getConditions()){
-			int step = 10;
-			for(int i=0; i<superEnhancers.size(); i+=step){
-				int y = i+step;
-				if(y >superEnhancers.size()){y=superEnhancers.size();}
+			boolean reachedInflectionPoint = false;
+			for(int i=0; i<signal_sorted_features.get(ec).size(); i+=SLOPE_CALCULATING_STEP_SIZE){
+				int y = i+SLOPE_CALCULATING_STEP_SIZE*2;
+				if(y >signal_sorted_features.get(ec).size()){y=signal_sorted_features.get(ec).size();}
 			
 				float[] vals = new float[y-i];
 				for(int j=i;j<y;j++){
-					vals[j-i] = superEnhancers.get(ec).get(j).getSignalCount();
+					vals[j-i] = signal_sorted_features.get(ec).get(j).getSignalCount();
 				}
 				
-				double slope = getSlope(vals); 
+				double slope = getSlope(vals);
+				
+				if(slope >=1 && !reachedInflectionPoint){
+					inflection_point_index = i;
+					reachedInflectionPoint = true;
+				}
 				
 				for(int j=i;j<y;j++){
-					
-						superEnhancers.get(ec).get(j).setSlope(slope);
+					signal_sorted_features.get(ec).get(j).setSlope(slope);
 				}
 			}
 		}
@@ -120,12 +128,30 @@ public class SuperEnhancerFinder extends DomainFinder{
 		
 		for(ExperimentCondition ec : manager.getConditions()){
 			finalfeature.put(ec, new ArrayList<Feature>());
-			finalfeature.get(ec).addAll(superEnhancers.get(ec));
+			finalfeature.get(ec).addAll(signal_sorted_features.get(ec));
 		}
 		
-		//All Enhancers
+		Map<ExperimentCondition, List<Feature>> superEnhancers = new HashMap<ExperimentCondition,List<Feature>>();
+		
+		for(ExperimentCondition ec : manager.getConditions()){
+			superEnhancers.put(ec, new ArrayList<Feature>());
+			int index = 0;
+			for(Feature ff :finalfeature.get(ec)){
+				if(index >=  inflection_point_index){
+					superEnhancers.get(ec).add(ff);
+					index++;
+				}
+			}
+		}
+		
+		
+		
+		//All features
 		this.printEventsFile(finalfeature, ".all.domains");
 
+		// Super enhancer features
+		this.printEventsFile(superEnhancers, ".superenhancer.domains");
+		
 		return features;
 	}
 	
