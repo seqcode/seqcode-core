@@ -34,6 +34,12 @@ public class SuperEnhancerFinder extends DomainFinder{
 	// At the moment only one TSS is alowed to overlap identified super enahncers
 	public final int NO_OVERLAPPING_TSS_ALLOWED = 1;
 	
+	// P-value threshold for selcting enriched features to be stitched 
+	public final double PER_ENRICHED_FEATURE_THRES = 0.001;
+	
+	// Minimum length of an enriched feature to be considered for stitching to get a super enhancer
+	public final int MIN_ENRICHED_FEATURE_LENGHT = 100;
+	
 	
 	// Min distance from known TSSs for a feature to be called distal
 	protected int minDistalDistance;
@@ -158,12 +164,16 @@ public class SuperEnhancerFinder extends DomainFinder{
 			}
 			
 			// Remove enriched domains less that 100bp. Playing around with the parameter at the moment (Needed especially when extending reads)
+			// Also removes enriched feature that are have a p-value < 0.001(PER_ENRICHED_FEATURE_THRES). Playing around with the parameter at the moment
 			
 			for (ExperimentCondition ec : manager.getConditions()){
 				Iterator<EnrichedFeature> it = currFeatures.get(ec).iterator();
 				while(it.hasNext()){
 					EnrichedFeature ef = it.next();
-					if(ef.getCoords().getWidth() < 100){
+					Map<Sample, List<StrandedBaseCount>> efHitsPos = overlappingHits(hitsPos, ef);
+					Map<Sample, List<StrandedBaseCount>> efHitsNeg = overlappingHits(hitsNeg, ef);
+					quantifyFeature(ef,efHitsPos,efHitsNeg,ec);
+					if(ef.getCoords().getWidth() < MIN_ENRICHED_FEATURE_LENGHT || ef.getScore() >= PER_ENRICHED_FEATURE_THRES){
 						it.remove();
 					}
 				}
