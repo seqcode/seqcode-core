@@ -41,7 +41,7 @@ public class SuperEnhancerFinder extends DomainFinder{
 	public final int MIN_ENRICHED_FEATURE_LENGHT = 100;
 	
 	//Srep size to calcluate slope
-	public final int SLOPE_CALCULATING_STEP_SIZE = 100;
+	public final int SLOPE_CALCULATING_STEP_SIZE = 10;
 	
 	
 	// Min distance from known TSSs for a feature to be called distal
@@ -103,12 +103,15 @@ public class SuperEnhancerFinder extends DomainFinder{
 		for( ExperimentCondition ec : manager.getConditions()){
 			boolean reachedInflectionPoint = false;
 			for(int i=0; i<signal_sorted_features.get(ec).size(); i+=SLOPE_CALCULATING_STEP_SIZE){
-				int y = i+SLOPE_CALCULATING_STEP_SIZE*2;
+				int x=i-SLOPE_CALCULATING_STEP_SIZE*5;
+				int y = i+SLOPE_CALCULATING_STEP_SIZE*5;
+				if(x<0){x=0;}
 				if(y >signal_sorted_features.get(ec).size()){y=signal_sorted_features.get(ec).size();}
+				
 			
-				float[] vals = new float[y-i];
-				for(int j=i;j<y;j++){
-					vals[j-i] = signal_sorted_features.get(ec).get(j).getSignalCount();
+				float[] vals = new float[y-x];
+				for(int j=x;j<y;j++){
+					vals[j-x] = signal_sorted_features.get(ec).get(j).getSignalCount();
 				}
 				
 				double slope = getSlope(vals);
@@ -118,7 +121,7 @@ public class SuperEnhancerFinder extends DomainFinder{
 					reachedInflectionPoint = true;
 				}
 				
-				for(int j=i;j<y;j++){
+				for(int j=i;j<Math.min(i+SLOPE_CALCULATING_STEP_SIZE, signal_sorted_features.get(ec).size());j++){
 					signal_sorted_features.get(ec).get(j).setSlope(slope);
 				}
 			}
@@ -139,8 +142,8 @@ public class SuperEnhancerFinder extends DomainFinder{
 			for(Feature ff :finalfeature.get(ec)){
 				if(index >=  inflection_point_index){
 					superEnhancers.get(ec).add(ff);
-					index++;
 				}
+				index++;
 			}
 		}
 		
