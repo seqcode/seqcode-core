@@ -43,6 +43,9 @@ public class SuperEnhancerFinder extends DomainFinder{
 	//Srep size to calcluate slope
 	public final int SLOPE_CALCULATING_STEP_SIZE = 10;
 	
+	//Min no of data points to change at inflection point
+	public final double GRADIENT = 0.6;
+	
 	
 	// Min distance from known TSSs for a feature to be called distal
 	protected int minDistalDistance;
@@ -102,9 +105,9 @@ public class SuperEnhancerFinder extends DomainFinder{
 		
 		for( ExperimentCondition ec : manager.getConditions()){
 			boolean reachedInflectionPoint = false;
-			for(int i=0; i<signal_sorted_features.get(ec).size(); i+=SLOPE_CALCULATING_STEP_SIZE){
-				int x=i-SLOPE_CALCULATING_STEP_SIZE*5;
-				int y = i+SLOPE_CALCULATING_STEP_SIZE*5;
+			for(int i=0; i<signal_sorted_features.get(ec).size(); i++){
+				int x=i-(int)(SLOPE_CALCULATING_STEP_SIZE/2);
+				int y = i+(int)(SLOPE_CALCULATING_STEP_SIZE/2);
 				if(x<0){x=0;}
 				if(y >signal_sorted_features.get(ec).size()){y=signal_sorted_features.get(ec).size();}
 				
@@ -116,14 +119,16 @@ public class SuperEnhancerFinder extends DomainFinder{
 				
 				double slope = getSlope(vals);
 				
-				if(slope >=1 && !reachedInflectionPoint){
+				if(slope >=GRADIENT && !reachedInflectionPoint){
 					inflection_point_index = i;
 					reachedInflectionPoint = true;
 				}
 				
-				for(int j=i;j<Math.min(i+SLOPE_CALCULATING_STEP_SIZE, signal_sorted_features.get(ec).size());j++){
-					signal_sorted_features.get(ec).get(j).setSlope(slope);
-				}
+				signal_sorted_features.get(ec).get(i).setSlope(slope);
+				
+				//for(int j=i;j<Math.min(i+SLOPE_CALCULATING_STEP_SIZE, signal_sorted_features.get(ec).size());j++){
+				//	signal_sorted_features.get(ec).get(j).setSlope(slope);
+				//}
 			}
 		}
 		
@@ -161,7 +166,10 @@ public class SuperEnhancerFinder extends DomainFinder{
 	protected double getSlope(float values[]){
 		double slope=0;
 		for(int i=0; i<(values.length-1); i++){
-			slope = values[i+1] - values[i];
+			//slope = slope+(values[i+1] - values[i]);
+			if(values[i+1] >values[i]){
+				slope++;
+			}
 		}
 		return slope/(values.length-1);
 	}
