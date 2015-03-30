@@ -80,40 +80,51 @@ public class SuperEnhancerFinder extends DomainFinder{
 	public Map<ExperimentCondition, List<Feature>> postProcess() {
 		System.err.println("\nSuper Enhancer finding complete.");
 		
+		
+		//Sort super enhancers by signal count
+		
+		Map<ExperimentCondition, List<SuperEnrichedFeature>> superEnhancers = new HashMap<ExperimentCondition,List<SuperEnrichedFeature>>();
+		for( ExperimentCondition ec : manager.getConditions()){
+			superEnhancers.put(ec, new ArrayList<SuperEnrichedFeature>());
+			for(Feature f : features.get(ec)){
+				SuperEnrichedFeature sfe = (SuperEnrichedFeature)f;
+				sfe.setScore(sfe.getSignalCount());
+				superEnhancers.get(ec).add(sfe);
+			}
+			Collections.sort(superEnhancers.get(ec));
+		}
+		
 		//Calculating slope to find inflection point
 		
 		for( ExperimentCondition ec : manager.getConditions()){
 			int step = 10;
-			for(int i=0; i<features.size(); i+=step){
+			for(int i=0; i<superEnhancers.size(); i+=step){
 				int y = i+step;
-				if(y >features.size()){y=features.size();}
+				if(y >superEnhancers.size()){y=superEnhancers.size();}
 			
 				float[] vals = new float[y-i];
 				for(int j=i;j<y;j++){
-					SuperEnrichedFeature sfe = null;
-					// Will add a better way in dealing exceptions here
-					if(features.get(ec).get(i) instanceof SuperEnrichedFeature){
-						sfe = (SuperEnrichedFeature) features.get(ec).get(i);
-					}
-					vals[j-i] = sfe.getSignalCount();
+					vals[j-i] = superEnhancers.get(ec).get(j).getSignalCount();
 				}
 				
 				double slope = getSlope(vals); 
 				
 				for(int j=i;j<y;j++){
-					SuperEnrichedFeature sfe = null;
-					// Will add a better way in dealing exceptions here
-					if(features.get(ec).get(i) instanceof SuperEnrichedFeature){
-						sfe = (SuperEnrichedFeature) features.get(ec).get(i);
-						sfe.setSlope(slope);
-					}
+					
+						superEnhancers.get(ec).get(j).setSlope(slope);
 				}
 			}
 		}
 		
+		Map<ExperimentCondition, List<Feature>> finalfeature = new HashMap<ExperimentCondition,List<Feature>>();
+		
+		for(ExperimentCondition ec : manager.getConditions()){
+			finalfeature.put(ec, new ArrayList<Feature>());
+			finalfeature.get(ec).addAll(superEnhancers.get(ec));
+		}
 		
 		//All Enhancers
-		this.printEventsFile(features, ".all.domains");
+		this.printEventsFile(finalfeature, ".all.domains");
 
 		return features;
 	}
