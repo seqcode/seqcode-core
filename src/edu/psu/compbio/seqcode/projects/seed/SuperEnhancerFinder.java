@@ -80,10 +80,50 @@ public class SuperEnhancerFinder extends DomainFinder{
 	public Map<ExperimentCondition, List<Feature>> postProcess() {
 		System.err.println("\nSuper Enhancer finding complete.");
 		
+		//Calculating slope to find inflection point
+		
+		for( ExperimentCondition ec : manager.getConditions()){
+			int step = 10;
+			for(int i=0; i<features.size(); i+=step){
+				int y = i+step;
+				if(y >features.size()){y=features.size();}
+			
+				float[] vals = new float[y-i];
+				for(int j=i;j<y;j++){
+					SuperEnrichedFeature sfe = null;
+					// Will add a better way in dealing exceptions here
+					if(features.get(ec).get(i) instanceof SuperEnrichedFeature){
+						sfe = (SuperEnrichedFeature) features.get(ec).get(i);
+					}
+					vals[j-i] = sfe.getSignalCount();
+				}
+				
+				double slope = getSlope(vals); 
+				
+				for(int j=i;j<y;j++){
+					SuperEnrichedFeature sfe = null;
+					// Will add a better way in dealing exceptions here
+					if(features.get(ec).get(i) instanceof SuperEnrichedFeature){
+						sfe = (SuperEnrichedFeature) features.get(ec).get(i);
+						sfe.setSlope(slope);
+					}
+				}
+			}
+		}
+		
+		
 		//All Enhancers
 		this.printEventsFile(features, ".all.domains");
 
 		return features;
+	}
+	
+	protected double getSlope(float values[]){
+		double slope=0;
+		for(int i=0; i<(values.length-1); i++){
+			slope = values[i+1] - values[i];
+		}
+		return slope/(values.length-1);
 	}
 	
 	public static void main(String[] args){
