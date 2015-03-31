@@ -354,6 +354,9 @@ public abstract class FeatureDetection {
         			System.err.print(".");
                 }
 			}
+			//Filter excluded regions (if necessary)
+			threadFeatures = filterExcluded(threadFeatures);
+			
 			//Add all threadFeatures to the overall results
 			synchronized(features){
 				for(ExperimentCondition cond : manager.getConditions())
@@ -577,5 +580,29 @@ public abstract class FeatureDetection {
     		}
     		return(subHits);
     	}
+    	
+    	/**
+    	 * Filter out pre-defined regions to ignore (e.g. tower / blacklist regions)
+    	 * @param testRegions
+    	 * @return
+    	 */
+        protected Map<ExperimentCondition, List<Feature>> filterExcluded(Map<ExperimentCondition, List<Feature>> testFeatures) {
+        	if(sconfig.getRegionsToIgnore().size()==0)
+    			return testFeatures;
+        	
+        	for (ExperimentCondition ec : manager.getConditions()){
+				for(Region blackList : sconfig.getRegionsToIgnore()){
+					Iterator<Feature> it = testFeatures.get(ec).iterator();
+					while(it.hasNext()){
+						Feature ef = it.next();
+						if(ef.getCoords().overlaps(blackList)){
+							it.remove();
+						}
+					}
+				}
+			}
+        	return testFeatures;
+    	}
+    	
 	}
 }

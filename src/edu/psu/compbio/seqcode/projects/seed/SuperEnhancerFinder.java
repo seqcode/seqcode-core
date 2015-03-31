@@ -20,7 +20,6 @@ import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
-import edu.psu.compbio.seqcode.projects.seed.FeatureDetection.FeatureDetectionThread;
 import edu.psu.compbio.seqcode.projects.seed.features.EnrichedFeature;
 import edu.psu.compbio.seqcode.projects.seed.features.Feature;
 import edu.psu.compbio.seqcode.projects.seed.features.SuperEnrichedFeature;
@@ -271,7 +270,6 @@ public class SuperEnhancerFinder extends DomainFinder{
 
 		public SuperEnhancerFinderThread(List<Region> regs) {
 			super(regs);
-			// TODO Auto-generated constructor stub
 		}
 		
 		
@@ -300,23 +298,9 @@ public class SuperEnhancerFinder extends DomainFinder{
 				keepOnlyDistalFeature(currFeatures.get(ec));
 			}
 			
-			// Remove black-list regions if provided 
 			
-			for (ExperimentCondition ec : manager.getConditions()){
-				for(Region blackList : sconfig.getRegionsToIgnore()){
-					Iterator<EnrichedFeature> it = currFeatures.get(ec).iterator();
-					while(it.hasNext()){
-						EnrichedFeature ef = it.next();
-						if(ef.getCoords().overlaps(blackList)){
-							it.remove();
-						}
-					}
-				}
-			}
-			
-			// Remove enriched domains less that 100bp. Playing around with the parameter at the moment (Needed especially when extending reads)
+			// Remove enriched domains less than 100bp. Playing around with the parameter at the moment (Needed especially when extending reads)
 			// Also removes enriched feature that are have a p-value < 0.001(PER_ENRICHED_FEATURE_THRES). Playing around with the parameter at the moment
-			
 			for (ExperimentCondition ec : manager.getConditions()){
 				Iterator<EnrichedFeature> it = currFeatures.get(ec).iterator();
 				while(it.hasNext()){
@@ -334,7 +318,7 @@ public class SuperEnhancerFinder extends DomainFinder{
 			// Do a bunch of more operations of the enriched features
 			for(ExperimentCondition ec :  manager.getConditions()){
 				// Stitching typical enhancers into super enhancers
-				List<SuperEnrichedFeature> stitchedTPEs = this.stichTypicalEnhancers(currFeatures.get(ec));
+				List<SuperEnrichedFeature> stitchedTPEs = this.stitchTypicalEnhancers(currFeatures.get(ec));
 				
 				// Removing SEs spanning more than 1 TSSs
 				removeMultiGeneSpanningSEs(stitchedTPEs);
@@ -383,7 +367,7 @@ public class SuperEnhancerFinder extends DomainFinder{
 			}
 		}
 		
-		protected List<SuperEnrichedFeature> stichTypicalEnhancers(List<EnrichedFeature> enhancers){
+		protected List<SuperEnrichedFeature> stitchTypicalEnhancers(List<EnrichedFeature> enhancers){
 			List<SuperEnrichedFeature> superEnhancers = new ArrayList<SuperEnrichedFeature>();
 			SuperEnrichedFeature lastadded = null;
 			try {
@@ -402,7 +386,6 @@ public class SuperEnhancerFinder extends DomainFinder{
 					}
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return superEnhancers;
