@@ -41,10 +41,10 @@ public class SuperEnhancerFinder extends DomainFinder{
 	public final int MIN_ENRICHED_FEATURE_LENGHT = 100;
 	
 	//Srep size to calcluate slope
-	public final int SLOPE_CALCULATING_STEP_SIZE = 10;
+	public final int SLOPE_CALCULATING_STEP_SIZE = 40;
 	
 	//Min no of data points to change at inflection point
-	public final double GRADIENT = 0.6;
+	public final double GRADIENT = 1.0;
 	
 	
 	// Min distance from known TSSs for a feature to be called distal
@@ -125,10 +125,6 @@ public class SuperEnhancerFinder extends DomainFinder{
 				}
 				
 				signal_sorted_features.get(ec).get(i).setSlope(slope);
-				
-				//for(int j=i;j<Math.min(i+SLOPE_CALCULATING_STEP_SIZE, signal_sorted_features.get(ec).size());j++){
-				//	signal_sorted_features.get(ec).get(j).setSlope(slope);
-				//}
 			}
 		}
 		
@@ -150,9 +146,9 @@ public class SuperEnhancerFinder extends DomainFinder{
 				}
 				index++;
 			}
+			Collections.reverse(superEnhancers.get(ec));
 		}
-		
-		
+	
 		
 		//All features
 		this.printEventsFile(finalfeature, ".all.domains");
@@ -166,7 +162,6 @@ public class SuperEnhancerFinder extends DomainFinder{
 	protected double getSlope(float values[]){
 		double slope=0;
 		for(int i=0; i<(values.length-1); i++){
-			//slope = slope+(values[i+1] - values[i]);
 			if(values[i+1] >values[i]){
 				slope++;
 			}
