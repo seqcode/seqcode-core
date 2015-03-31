@@ -50,12 +50,8 @@ public class SuperEnrichedFeature extends EnrichedFeature {
 	}
 	
 	public String toGFF() {
-		String TEs ="";
-		for(EnrichedFeature ef : typicalEnrichedFeatures){
-			TEs.concat(ef.getCoords().getLocationString()+",");
-		}
 		return new String(coords.getChrom()+"\tSEEDS\tSuperfeature\t"+coords.getStart()+"\t"+coords.getEnd()+"\t.\t"+coords.getStrand()+"\t.\t"+
-	"Note="+"Score:"+String.format("%.5e", score)+",Signal="+signalCount+",Control="+controlCount+"; StichedEnhancersCoords="+TEs+"; Slope="+String.format("%.1f", slope));
+	"Note="+"Score:"+String.format("%.5e", score)+",Signal="+signalCount+",Control="+controlCount+"; Slope="+String.format("%.1f", slope));
 	}
 	
 	public String headString() {

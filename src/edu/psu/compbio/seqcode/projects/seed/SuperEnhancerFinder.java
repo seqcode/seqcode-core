@@ -1,7 +1,11 @@
 package edu.psu.compbio.seqcode.projects.seed;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -171,7 +175,24 @@ public class SuperEnhancerFinder extends DomainFinder{
 		this.printEventsFile(superEnhancers_strict, ".superenhancer_strict.domains");
 		this.printEventsFile(superEnhancers_relax, ".superenhancer_relax.domains");
 		
+		//TFs of SFs
+		this.printTFsOfSFs(superEnhancers_relax, ".TFs_of_SFs_relax.domains");
+		this.printTFsOfSFs(superEnhancers_strict, ".TFs_of_SFs_strict.domains");
+		
 		return features;
+	}
+	
+	/**
+	 * Help String for Super Enhancer Finder
+	 * @return
+	 */
+	public static String getDomainFinderArgs() {
+		return(new String("" +
+				"SuperEnhancerFinder arguments:\n"+
+				"\t--supStitchWin <Window to stitch typical enhancers into super enhancers (default: supStitchWin=12500bp)>\n" +
+				"\t--distalDistance <Minmum distnace from TSSs for calling domains (default: distalDistance= 2000bp)>\n" +
+				"\t--refTSSs <TSS annotations, eg :- chr2:45667-45767:+ >\n" +
+				""));
 	}
 	
 	protected double getSlope(float values[]){
@@ -184,9 +205,40 @@ public class SuperEnhancerFinder extends DomainFinder{
 		return slope/(values.length-1);
 	}
 	
+	protected void printTFsOfSFs(Map<ExperimentCondition,List<Feature>> SuperFeatures,String suffix){
+		try {
+			for(ExperimentCondition cond : manager.getConditions()){
+				String condName = cond.getName().equals("experiment") ? "" : "_"+cond.getName();
+	    		String filename = sconfig.getOutputParentDir()+File.separator+sconfig.getOutBase()+condName+suffix;
+				FileWriter fout = new FileWriter(filename);
+				fout.write("#"+getProgramName()+"\n");
+				fout.write("#Arguments:\t"+sconfig.getArgs()+"\n");
+				fout.write("##date "+(new Date()).toString()+"\n");
+				for(Feature f : SuperFeatures.get(cond)){
+					if(f instanceof SuperEnrichedFeature){
+						SuperEnrichedFeature sf = (SuperEnrichedFeature) f;
+						for(EnrichedFeature ef : sf.getTEFs()){
+							fout.write(ef.getCoords().getLocationString()+"\t"+sf.getCoords().getLocationString()+"\n");
+						}
+					}
+				}
+				fout.close();
+			}
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] args){
 		System.setProperty("java.awt.headless", "true");
 		System.err.println("SuperEnhancerFinder version "+SuperEnhancerFinder.version+"\n\n");
+		
+		String SuperEnhancerFinderHelp = new String("" +
+				"SuperEnhancerFinder arguments:\n"+
+				"\t--supStitchWin <Window to stitch typical enhancers into super enhancers (default: supStitchWin=12500bp)>\n" +
+				"\t--distalDistance <Minmum distnace from TSSs for calling domains (default: distalDistance= 2000bp)>\n" +
+				"\t--refTSSs <TSS annotations, eg :- chr2:45667-45767:+ >\n" +
+				"");
 		
 		GenomeConfig gcon = new GenomeConfig(args);
 		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
@@ -196,7 +248,8 @@ public class SuperEnhancerFinder extends DomainFinder{
 			//System.out.println(DomainFinder.getDomainFinderArgs());
 			System.err.println(gcon.getArgsList()+
 					econ.getArgsList()+
-					scon.getArgsList());
+					scon.getArgsList()+
+					SuperEnhancerFinderHelp);
 		}else{
 			ExperimentManager man = new ExperimentManager(econ);
 			SuperEnhancerFinder finder = new SuperEnhancerFinder(gcon, econ, scon, man);
