@@ -1,6 +1,7 @@
 package edu.psu.compbio.seqcode.projects.akshay.utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
@@ -32,6 +33,7 @@ public class SequencingExptRegionsCounter {
 	}
 	
 	public void printCounts(){
+		Collections.sort(regions);
 		ExperimentManager manager = new ExperimentManager(econf);
 		float[][] Counts = new float[regions.size()][manager.getSamples().size()];
 		StringBuilder header = new StringBuilder();
@@ -44,10 +46,11 @@ public class SequencingExptRegionsCounter {
 			int RegionCount = 0;
 			for(Region r : regions){
 				Counts[RegionCount][SampleCount] = sample.countHits(r);
+				RegionCount++;
 			}
-			RegionCount++;
+			SampleCount++;
 		}
-		SampleCount++;
+		
 		
 		header.deleteCharAt(header.length()-1);
 		System.out.println(header.toString());
