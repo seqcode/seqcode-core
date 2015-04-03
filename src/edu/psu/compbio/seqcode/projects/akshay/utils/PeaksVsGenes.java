@@ -109,8 +109,8 @@ public class PeaksVsGenes {
 		if(printNearestGene){
 			analyzer.printNearestGene();
 		}else if(printCloseHighAttributeGenes){
-			if(gtf && !fromDB){
-				System.err.println("This option only works when using cuffdiff files");
+			if(gtf && !fromDB && !ap.hasKey("gAttributeFile")){
+				System.err.println("This option only works when using cuffdiff files or when a gene attribute file is provided");
 				return;
 			}
 			analyzer.printCloseHighAttributeGenes(threshold);
