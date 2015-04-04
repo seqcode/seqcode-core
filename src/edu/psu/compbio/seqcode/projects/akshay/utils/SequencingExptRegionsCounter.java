@@ -33,7 +33,9 @@ public class SequencingExptRegionsCounter {
 	}
 	
 	public void printCounts(){
-		Collections.sort(regions);
+		if(!econf.getCacheAllData()){
+			Collections.sort(regions);
+		}
 		ExperimentManager manager = new ExperimentManager(econf);
 		float[][] Counts = new float[regions.size()][manager.getSamples().size()];
 		StringBuilder header = new StringBuilder();
