@@ -107,6 +107,7 @@ public class GTFReader {
                                "  --species <species;genome>\n" +
                                "  --gtf <GTF file>\n" +
                                "  --tss [print all TSS coordinates]\n" +
+                               "  --genetss [print gene unit TSS coordinates]\n" +
                                "  --singleisotss [print single isoform gene TSSs]\n"+
                                "  --juncs [print all juncs]\n"+
                                "  --junctions [print all junctions with gene names]\n" +
@@ -122,6 +123,15 @@ public class GTFReader {
 			//Load genes
 			GTFReader reader = new GTFReader(new File(gtfFile), currgen);
 			List<GeneTUnit> genes = reader.loadGenes();
+			
+			if(Args.parseFlags(args).contains("genetss")){
+				System.out.println("#TSS-coord\tGeneName\tGeneID");
+				for(GeneTUnit g : genes){
+					if(g.getTSS() != null){
+						System.out.println(g.getTSS().getLocationString()+":"+g.getStrand()+"\t"+g.getName()+"\t"+g.getID());
+					}
+				}
+			}
 			
 			
 			if(Args.parseFlags(args).contains("tss")){
