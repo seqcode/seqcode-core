@@ -2,7 +2,9 @@ package edu.psu.compbio.seqcode.projects.akshay.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -90,6 +92,10 @@ public class PeaksVsGenes {
 				System.err.println("Provide gtf file!!");
 				return;
 			}
+			// When loading from a gtf file you can provide gene attributes separately (StrandedPoint	attribute-value)
+			if(ap.hasKey("gAttributeFile")){
+				gene_attribute = ap.getKeyValue("gAttributeFile");
+			}
 		}
 
 		// For now formDB is always false .. will add that utility later
@@ -103,8 +109,8 @@ public class PeaksVsGenes {
 		if(printNearestGene){
 			analyzer.printNearestGene();
 		}else if(printCloseHighAttributeGenes){
-			if(gtf && !fromDB){
-				System.err.println("This option only works when using cuffdiff files");
+			if(gtf && !fromDB && !ap.hasKey("gAttributeFile")){
+				System.err.println("This option only works when using cuffdiff files or when a gene attribute file is provided");
 				return;
 			}
 			analyzer.printCloseHighAttributeGenes(threshold);
@@ -148,8 +154,8 @@ public class PeaksVsGenes {
 	
 	public void printCloseHighAttributeGenes(double threshold){
 		try{
-			if(gtf && !fromDB){
-				throw new Exception("This option needs geneattrbutes (Fold-change, diff-pvalue ...) via cuffdiff or any readDB loading!!");
+			if(gtf && !fromDB && gene_attributes.size() == 0){
+				throw new Exception("This option needs geneattrbutes (Fold-change, diff-pvalue ...) via cuffdiff or any readDB loading or a gene attribute file!!");
 			}
 		}catch(Exception e){
 			e.printStackTrace();
@@ -162,7 +168,7 @@ public class PeaksVsGenes {
 			if(genesbyChrs.containsKey(p.getChrom())){
 				for(StrandedPoint sp : genesbyChrs.get(p.getChrom())){
 					int distance = sp.distance(p);
-					if(distance < radius  && Math.abs(gene_attributes.get(sp.getLocationString())) > threshold){
+					if(distance < radius  && gene_attributes.get(sp.getLocationString()) > threshold){
 						highattgenes.add(sp);
 						hasgene = true;
 						distances.add(distance);
@@ -289,6 +295,11 @@ public class PeaksVsGenes {
 	
 	// If gtf is false, it assumes loading from a cuffdiff file
 	// will add options to load gene attributes from other readDB expts later
+	/**
+	 * 
+	 * @param genefile
+	 * @param attribute Is attribute name when loading from cuffdiff, and file name when loading from gtf file
+	 */
 	public void laodgenes(String genefile, String attribute){
 		if(gtf){
 			//genes = RegionFileUtilities.loadStrandedPointFromRefTssFile(gen, genefile);
@@ -306,6 +317,39 @@ public class PeaksVsGenes {
 					startToGenename.put(genes.get(genes.size()-1).getLocationString(), g_names);
 				}
 			}
+			
+			// Loading gene attributes form the attribute file
+			try {
+				File attFile = new File(attribute);
+				if(!attFile.isFile()){System.err.println("Invalid gene attribute filename");System.exit(1);}
+				BufferedReader attReader = new BufferedReader(new FileReader(attFile));
+				String line;
+				gene_attributes = new HashMap<String, Double>();
+				while ((line = attReader.readLine()) != null){
+					line = line.trim();
+					String[] words = line.split("\t");
+					if(words.length >=1 && !words[0].contains("#") &&  !words[0].equals("Region") && !words[0].equals("Position")){
+						String[] subwords = words[0].split(":");
+						PointParser pparser = new PointParser(gen);
+						Point p = pparser.execute(subwords[0]+":"+subwords[1]);
+						StrandedPoint sp = new StrandedPoint(p,subwords[2].charAt(0));
+						gene_attributes.put(sp.getLocationString(), Double.parseDouble(words[1]));
+					}
+					
+				}
+				attReader.close();
+				
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			
+			
 		}else{
 			try{
 				genes = new ArrayList<StrandedPoint>();
