@@ -192,7 +192,7 @@ public class PeakFinder extends DomainFinder {
 					for(StrandedBaseCount h : fHitsPos.get(s)){
 						int start = getLeft(h)-domain.getCoords().getStart(); 
 			            int stop= getRight(h)-domain.getCoords().getStart();
-			            for(int i=start; i<stop; i++)
+			            for(int i=start; i<=stop; i++)
 			                if(i>=0 && i<sum.length)
 			                    sum[i]+=h.getCount();
 					}
@@ -200,7 +200,7 @@ public class PeakFinder extends DomainFinder {
 					for(StrandedBaseCount h : fHitsNeg.get(s)){
 						int start = getLeft(h)-domain.getCoords().getStart(); 
 			            int stop= getRight(h)-domain.getCoords().getStart();
-			            for(int i=start; i<stop; i++)
+			            for(int i=start; i<=stop; i++)
 			                if(i>=0 && i<sum.length)
 			                    sum[i]+=h.getCount();
 					}

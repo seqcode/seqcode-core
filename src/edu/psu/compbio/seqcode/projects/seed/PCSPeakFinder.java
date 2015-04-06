@@ -329,7 +329,7 @@ public class PCSPeakFinder extends PeakFinder{
 							int start = getLeft(h)-domain.getCoords().getStart(); 
 				            int stop= getRight(h)-domain.getCoords().getStart();
 				            for(int i=start; i<stop; i++)
-				                if(i>=0 && i<sum.length)
+				                if(i>=0 && i<=sum.length)
 				                    sum[i][pbase]+=h.getCount();
 						}
 					}
@@ -339,7 +339,7 @@ public class PCSPeakFinder extends PeakFinder{
 						if(pbase>=0){
 							int start = getLeft(h)-domain.getCoords().getStart(); 
 							int stop= getRight(h)-domain.getCoords().getStart();
-				            for(int i=start; i<stop; i++)
+				            for(int i=start; i<=stop; i++)
 				                if(i>=0 && i<sum.length)
 				                    sum[i][pbase]+=h.getCount();
 						}
