@@ -92,7 +92,7 @@ public class BindingMixture {
 			double S = N*config.getProbSharedBinding();
 			double L = (double)config.getGenome().getGenomeLength();
 			double infoProbAgivenB = Math.log(config.getProbSharedBinding())/Math.log(2);
-	        double infoProbAgivenNOTB =  Math.log((N-S)/(L-N+S))/Math.log(2);
+	        double infoProbAgivenNOTB =  Math.log((N-S)/(L-N))/Math.log(2);
 			System.err.println("Multi-condition positional priors:\tA given B:"+String.format("%.4f", infoProbAgivenB)+"\tA given notB:"+String.format("%.4f", infoProbAgivenNOTB));
 		}
 	}
