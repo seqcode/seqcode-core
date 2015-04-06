@@ -33,6 +33,7 @@ public class SEEDConfig {
 	protected int binWidth=50;		//Bin size for feature scanning
 	protected int binStep=25;		//Bin step for feature scanning
 	protected int featureMergeWindow=100; //Merge neighboring domains that are this close to one another (in bp)
+	protected int minFeatureSize=0; //Minimum size for a feature (in bp)
 	protected List<Integer> localBackWins=new ArrayList<Integer>(); //MACS-style local background windows
 	protected double perBinPoissonLogPThres=-7; //Log base 10 confidence threshold for use with Poisson background models when scoring bins
 	protected double perBinBinomialPThres = 0.01; //threshold to use with per-bin Binomial test (we can afford to be lax here, as the q-value threshold filters for final results)
@@ -115,6 +116,7 @@ public class SEEDConfig {
 				binWidth = Args.parseInteger(args,"binwidth",binWidth);
 				binStep = Args.parseInteger(args,"binstep",binStep);
 				featureMergeWindow = Args.parseInteger(args,"mergewin",featureMergeWindow);
+				minFeatureSize = Args.parseInteger(args,"minsize",minFeatureSize);
 				
 				//Regions to ignore during analysis
 				if(ap.hasKey("exclude"))
@@ -173,6 +175,7 @@ public class SEEDConfig {
 	public int getBinWidth(){return binWidth;}
 	public int getBinStep(){return binStep;}
 	public int getFeatureMergeWindow(){return featureMergeWindow;}
+	public int getMinFeatureSize(){return minFeatureSize;}
 	public List<Integer> getLocalBackWins(){return localBackWins;}
 	public double getPerBinPoissonLogPThres(){return perBinPoissonLogPThres;}
 	public double getPerBinBinomialPThres(){return perBinBinomialPThres;}
@@ -236,7 +239,8 @@ public class SEEDConfig {
 				"\t--tagsigma <smooth tags using Gaussian with this sigma (default="+tagGaussSigma+")>\n" +
 				"\t--binwidth <width of bin in bp for feature scanning (default="+binWidth+")>\n" +
 				"\t--binstep <bin step size in bp for feature scanning (default="+binStep+")>\n" +
-				"\t--mergewin <size of window in which to merge features/domains (default="+featureMergeWindow+")>\n"+
+				"\t--mergewin <size of window in which to merge features/domains (default="+featureMergeWindow+")>\n" +
+				"\t--minsize <min size of feature/domain (default="+minFeatureSize+")>\n"+
 				"\t--localbackwin <size of local window(s) for MACS-style calculation of expected tag count (default=none)>\n" +
 				"\t--poisslogpthres <log base 10 Poisson confidence threshold for use in finding enriched bins (default="+perBinPoissonLogPThres+")>\n" +
 				"\t--binpthres <uncorrected p-value threshold for use in Binomial test for enriched bins (default="+perBinBinomialPThres+")>\n" +

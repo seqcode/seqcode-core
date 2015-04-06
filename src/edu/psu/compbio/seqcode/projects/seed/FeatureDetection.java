@@ -269,21 +269,23 @@ public abstract class FeatureDetection {
 	}
 	
 	/**
-	 * Filter the features by score
+	 * Filter the features by score & size
 	 * @param features
 	 * @param threshold
 	 * @param below : accept only features below threshold
 	 * @return
 	 */
-	protected Map<ExperimentCondition, List<Feature>> filterByScore(Map<ExperimentCondition, List<Feature>> features, double threshold, boolean below){
+	protected Map<ExperimentCondition, List<Feature>> filter(Map<ExperimentCondition, List<Feature>> features, double threshold, boolean below){
 		Map<ExperimentCondition, List<Feature>> results = new HashMap<ExperimentCondition, List<Feature>>();
 		for(ExperimentCondition cond : manager.getConditions()){
 			List<Feature> cres = new ArrayList<Feature>(); 
 			for(Feature f : features.get(cond)){
-				if(below && f.getScore()<threshold)
-					cres.add(f);
-				else if(!below && f.getScore()>threshold)
-					cres.add(f);
+				if(f.getCoords().getWidth()>= sconfig.getMinFeatureSize()){
+					if(below && f.getScore()<threshold)
+						cres.add(f);
+					else if(!below && f.getScore()>threshold)
+						cres.add(f);
+				}
 			}
 			results.put(cond, cres);
 		}

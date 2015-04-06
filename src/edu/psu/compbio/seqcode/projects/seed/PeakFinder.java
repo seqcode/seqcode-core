@@ -85,7 +85,7 @@ public class PeakFinder extends DomainFinder {
 			stats.benjaminiHochbergCorrection(features.get(cond));
 		}
 		
-		Map<ExperimentCondition, List<Feature>> signifFeatures = this.filterByScore(features, sconfig.perBinBinomialPThres, true);
+		Map<ExperimentCondition, List<Feature>> signifFeatures = this.filter(features, sconfig.perBinBinomialPThres, true);
        	
 		//All domains
 		this.printEventsFile(features, ".all.peaks");
