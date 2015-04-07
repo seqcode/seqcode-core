@@ -14,7 +14,6 @@ public class PoissonBackgroundModel extends BackgroundModel{
 	
 	public PoissonBackgroundModel(int modelType, double logconfidence, double totalReads, double genomeLength, double mappableGenome, double binWidth, char strand, double scaling, boolean useThisExpt) {
 		super(modelType, logconfidence, totalReads, genomeLength, mappableGenome, binWidth, strand, scaling, useThisExpt);
-		countThreshold = calcCountThreshold();
 	}
 
 	//Does the hit count in a region pass the threshold? 
@@ -45,6 +44,10 @@ public class PoissonBackgroundModel extends BackgroundModel{
 			countThres=b;
 		}
 		return(Math.max(1,countThres));
+	}
+	
+	protected float calcExpectedCount(){
+		return(float)((totalReads*binWidth)/(regionLength*mappableRegion));
 	}
 }
 

@@ -43,8 +43,6 @@ public abstract class FeatureDetection {
 	protected ExptConfig econfig;
 	protected ExperimentManager manager;
 	protected SEEDConfig sconfig;
-	protected Map<Sample, BackgroundCollection> sampleBackgrounds;
-	protected Map<ExperimentCondition, BackgroundCollection> conditionBackgrounds;
 	protected Map<ExperimentCondition, List<Feature>> features; //The discovered features (defined per condition)
 	
 	protected boolean strandedEventDetection = false; //Strand aware event detection?
@@ -69,7 +67,6 @@ public abstract class FeatureDetection {
 		
 		sconfig.makeSEEDOutputDirs();
 		
-		initializeBackgrounds();
 	}
 	
 	/**
@@ -198,75 +195,7 @@ public abstract class FeatureDetection {
 		}
 	}
 	
-	/**
-	 * Set up the background models
-	 * 
-	 * By default, the background collections contain only a global Poisson model. 
-	 * If the use of local backgrounds is requested, the following occurs for each CONDITION backgorund model:
-	 * 		If there is a control and the control is scaled, a local threshold based on expectation from CONTROL is added to the signal
-	 * 		If there is no control or the control is not scaled, a local threshold based on expectation from SIGNAL is added to the signal
-	 * This makes the behavior of local background thresholds similar to that used by MACS. 
-	 */
-	protected void initializeBackgrounds(){
-		sampleBackgrounds = new HashMap<Sample, BackgroundCollection>();
-		conditionBackgrounds = new HashMap<ExperimentCondition, BackgroundCollection>();
-		
-		//Set up data structures
-		for(Sample s : manager.getSamples())
-			sampleBackgrounds.put(s, new BackgroundCollection());
-		for(ExperimentCondition c : manager.getConditions())
-			conditionBackgrounds.put(c, new BackgroundCollection());
-		
-        //Non-stranded
-        if(!strandedEventDetection){
-    		//Sample-level genomic backgrounds
-        	for(Sample s : manager.getSamples())
-        		sampleBackgrounds.get(s).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), s.getHitCount(), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '.', 1, true));
-        	//Condition-level genomic backgrounds
-        	for(ExperimentCondition c : manager.getConditions())
-        		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), c.getTotalSignalCount(), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '.', 1, true));
-        	
-            //Condition-level locals backgrounds
-            for(Integer i : sconfig.getLocalBackWins()){
-            	for(ExperimentCondition c : manager.getConditions()){
-            		if(c.getControlSamples().size()>0){
-            			conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getTotalControlCount(), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '.', c.getPooledSampleControlScaling(), false));
-            		}else{
-            			//local signal high -- this may bias against locally enriched signal regions, and so should only be used if there is no control or if the control is not yet scaled
-                    	if(i.intValue()>=5000) // we don't want the window too small in this case
-                    		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getTotalSignalCount(), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '.', c.getPooledSampleControlScaling(), true));
-            		}
-            	}
-            }            
-        }else{ //Stranded
-        	//Sample-level genomic backgrounds
-        	for(Sample s : manager.getSamples()){
-        		sampleBackgrounds.get(s).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), s.getStrandedHitCount('+'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '+', 1, true));
-        		sampleBackgrounds.get(s).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), s.getStrandedHitCount('-'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '-', 1, true));
-        	}
-        	//Condition-level genomic backgrounds
-        	for(ExperimentCondition c : manager.getConditions()){
-        		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalSignalCount('+'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '+', 1, true));
-        		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalSignalCount('-'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '-', 1, true));
-        	}
-        	
-            //Condition-level locals backgrounds
-            for(Integer i : sconfig.getLocalBackWins()){
-            	for(ExperimentCondition c : manager.getConditions()){
-            		if(c.getControlSamples().size()>0){
-            			conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalControlCount('+'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '+', c.getPooledSampleControlScaling(), false));
-            			conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalControlCount('-'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '-', c.getPooledSampleControlScaling(), false));
-            		}else{
-            			//local signal high -- this may bias against locally enriched signal regions, and so should only be used if there is no control or if the control is not yet scaled
-                    	if(i.intValue()>=5000){ // we don't want the window too small in this case
-                    		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalSignalCount('+'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '+', c.getPooledSampleControlScaling(), true));
-                    		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalSignalCount('-'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '-', c.getPooledSampleControlScaling(), true));
-                    	}
-            		}
-            	}
-            }
-        }
-	}
+	
 	
 	/**
 	 * Filter the features by score & size
@@ -303,7 +232,9 @@ public abstract class FeatureDetection {
         protected Map<Sample, List<StrandedBaseCount>> hitsPos; 	//Lists of positive strand tags in the current region. Indexed by Sample.
         protected Map<Sample, List<StrandedBaseCount>> hitsNeg; 	//Lists of negative strand tags in the current region. Indexed by Sample.
         protected float[][][] landscape=null;  		//Binned tag density in the current region after shifting and extending. Indexed by Sample, base, strand
-        protected Map<ExperimentCondition, List<Feature>> threadFeatures;
+        protected Map<ExperimentCondition, BackgroundCollection> conditionBackgrounds; //Backgrounds are in here for thread safety during background model updates
+    	protected Map<Sample, BackgroundCollection> sampleBackgrounds;
+    	protected Map<ExperimentCondition, List<Feature>> threadFeatures;
         protected int shift=sconfig.getTagShift(), hit3Extend=sconfig.getTag3PrimeExtension(), hit5Extend=sconfig.getTag5PrimeExtension();
         
         public FeatureDetectionThread(List<Region> regs){
@@ -311,6 +242,7 @@ public abstract class FeatureDetection {
         	threadFeatures = new HashMap<ExperimentCondition, List<Feature>>();
         	for(ExperimentCondition c : manager.getConditions())
         		threadFeatures.put(c,  new ArrayList<Feature>());
+    		initializeBackgrounds();
         }
         /**
          * Run the thread, executing feature detection on each listed region.
@@ -583,6 +515,75 @@ public abstract class FeatureDetection {
     		return(subHits);
     	}
     	
+    	/**
+    	 * Set up the background models
+    	 * 
+    	 * By default, the background collections contain only a global Poisson model. 
+    	 * If the use of local backgrounds is requested, the following occurs for each CONDITION backgorund model:
+    	 * 		If there is a control and the control is scaled, a local threshold based on expectation from CONTROL is added to the signal
+    	 * 		If there is no control or the control is not scaled, a local threshold based on expectation from SIGNAL is added to the signal
+    	 * This makes the behavior of local background thresholds similar to that used by MACS. 
+    	 */
+    	protected void initializeBackgrounds(){
+    		sampleBackgrounds = new HashMap<Sample, BackgroundCollection>();
+    		conditionBackgrounds = new HashMap<ExperimentCondition, BackgroundCollection>();
+    		
+    		//Set up data structures
+    		for(Sample s : manager.getSamples())
+    			sampleBackgrounds.put(s, new BackgroundCollection());
+    		for(ExperimentCondition c : manager.getConditions())
+    			conditionBackgrounds.put(c, new BackgroundCollection());
+    		
+            //Non-stranded
+            if(!strandedEventDetection){
+        		//Sample-level genomic backgrounds
+            	for(Sample s : manager.getSamples())
+            		sampleBackgrounds.get(s).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), s.getHitCount(), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '.', 1, true));
+            	//Condition-level genomic backgrounds
+            	for(ExperimentCondition c : manager.getConditions())
+            		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), c.getTotalSignalCount(), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '.', 1, true));
+            	
+                //Condition-level locals backgrounds
+                for(Integer i : sconfig.getLocalBackWins()){
+                	for(ExperimentCondition c : manager.getConditions()){
+                		if(c.getControlSamples().size()>0){
+                			conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getTotalControlCount(), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '.', c.getPooledSampleControlScaling(), false));
+                		}else{
+                			//local signal high -- this may bias against locally enriched signal regions, and so should only be used if there is no control or if the control is not yet scaled
+                        	if(i.intValue()>=5000) // we don't want the window too small in this case
+                        		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getTotalSignalCount(), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '.', c.getPooledSampleControlScaling(), true));
+                		}
+                	}
+                }            
+            }else{ //Stranded
+            	//Sample-level genomic backgrounds
+            	for(Sample s : manager.getSamples()){
+            		sampleBackgrounds.get(s).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), s.getStrandedHitCount('+'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '+', 1, true));
+            		sampleBackgrounds.get(s).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), s.getStrandedHitCount('-'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '-', 1, true));
+            	}
+            	//Condition-level genomic backgrounds
+            	for(ExperimentCondition c : manager.getConditions()){
+            		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalSignalCount('+'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '+', 1, true));
+            		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(-1, sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalSignalCount('-'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '-', 1, true));
+            	}
+            	
+                //Condition-level locals backgrounds
+                for(Integer i : sconfig.getLocalBackWins()){
+                	for(ExperimentCondition c : manager.getConditions()){
+                		if(c.getControlSamples().size()>0){
+                			conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalControlCount('+'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '+', c.getPooledSampleControlScaling(), false));
+                			conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalControlCount('-'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '-', c.getPooledSampleControlScaling(), false));
+                		}else{
+                			//local signal high -- this may bias against locally enriched signal regions, and so should only be used if there is no control or if the control is not yet scaled
+                        	if(i.intValue()>=5000){ // we don't want the window too small in this case
+                        		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalSignalCount('+'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '+', c.getPooledSampleControlScaling(), true));
+                        		conditionBackgrounds.get(c).addBackgroundModel(new PoissonBackgroundModel(i.intValue(), sconfig.getPerBinPoissonLogPThres(), c.getStrandedTotalSignalCount('-'), gen.getGenomeLength(), econfig.getMappableGenomeProp(), (double)sconfig.getBinWidth(), '-', c.getPooledSampleControlScaling(), true));
+                        	}
+                		}
+                	}
+                }
+            }
+    	}
     	/**
     	 * Filter out pre-defined regions to ignore (e.g. tower / blacklist regions)
     	 * @param testRegions

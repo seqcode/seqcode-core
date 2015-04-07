@@ -157,12 +157,14 @@ public class DomainFinder extends FeatureDetection {
 	                int currBin=0;
 	                for(int i=subRegion.getStart(); i<subRegion.getEnd()-sconfig.getBinWidth(); i+=sconfig.getBinStep()){
 	                	float sigCounts=condSigCounts[currBin];
-	                	float ctrlCounts= condCtrlCounts==null ? 0 : condCtrlCounts[currBin]*(float)(cond.getPooledSampleControlScaling());
+	                	//If there's no control, use the expected bin count given random distribution
+	                	float ctrlCounts= condCtrlCounts==null ? conditionBackgrounds.get(cond).getGenomicExpectedCount()
+	                			: condCtrlCounts[currBin]*(float)(cond.getPooledSampleControlScaling());
 	                	
                         //First Test: is the read count above the genome-wide thresholds? 
                         if(conditionBackgrounds.get(cond).passesGenomicThreshold((int)sigCounts, str)){
                         	//Second Test: refresh all thresholds & test again
-                        	conditionBackgrounds.get(cond).updateModels(subRegion, i-subRegion.getStart(), condSigCounts, condCtrlCounts, sconfig.getBinStep());
+                    		conditionBackgrounds.get(cond).updateModels(subRegion, i-subRegion.getStart(), condSigCounts, condCtrlCounts, sconfig.getBinStep());
                         	if(conditionBackgrounds.get(cond).passesAllThresholds((int)sigCounts, str)){
                         		//Third Test: Binomial test between signal & (scaled) control 
                         		double pval = stats.binomialPValue(ctrlCounts, (sigCounts+ctrlCounts), sconfig.getMinSigCtrlFoldDifference());
@@ -171,7 +173,7 @@ public class DomainFinder extends FeatureDetection {
                         			Region currWin = strandedEventDetection ? 
                         					new StrandedRegion(gen, subRegion.getChrom(), i, i+sconfig.getBinWidth()-1, str) :
                         					new Region(gen, subRegion.getChrom(), i, i+sconfig.getBinWidth()-1);
-                        			lastFeature=addEnrichedDomain(currFeatures.get(cond), lastFeature, currWin, sigCounts, ctrlCounts, pval);
+                        			lastFeature=addEnrichedDomain(currFeatures.get(cond), lastFeature, currWin, sigCounts, condCtrlCounts==null ? 0 : ctrlCounts, pval);
                         		}
                         	}
                         }
@@ -304,14 +306,17 @@ public class DomainFinder extends FeatureDetection {
 				pooledSigCount+=sampCountsPos[s.getIndex()]+sampCountsNeg[s.getIndex()];
 			for(Sample s : featureCond.getControlSamples())
 				pooledCtrlCount+=sampCountsPos[s.getIndex()]+sampCountsNeg[s.getIndex()];
-			
+			//If there is no control, use the expected number of tags in this region as the control count for the purposes of significance testing
+			float binomialTestCtrlCount = (float) (featureCond.getControlSamples().size()==0 ? 
+					(featureCond.getTotalSignalCount()*f.getCoords().getWidth())/(econfig.getMappableGenomeLength())
+					:(pooledCtrlCount*(float)featureCond.getPooledSampleControlScaling()));
 			
 			//Update the feature
 			f.setSampleCountsPos(sampCountsPos);
 			f.setSampleCountsNeg(sampCountsNeg);
 			f.setSignalCount(pooledSigCount);
 			f.setControlCount(pooledCtrlCount);
-			f.setScore(stats.binomialPValue(pooledCtrlCount*featureCond.getPooledSampleControlScaling(), (pooledSigCount+(pooledCtrlCount*featureCond.getPooledSampleControlScaling())), sconfig.getMinSigCtrlFoldDifference()));
+			f.setScore(stats.binomialPValue(binomialTestCtrlCount, (pooledSigCount+binomialTestCtrlCount), sconfig.getMinSigCtrlFoldDifference()));
 		}
 		
 	}//End of DomainFinderThread

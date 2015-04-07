@@ -1,6 +1,5 @@
 package edu.psu.compbio.seqcode.projects.seed.stats;
 
-import java.util.Collections;
 import java.util.List;
 
 import cern.jet.random.Binomial;

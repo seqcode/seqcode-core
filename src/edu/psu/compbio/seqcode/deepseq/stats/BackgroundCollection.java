@@ -18,7 +18,6 @@ public class BackgroundCollection {
 	
 	/**
 	 * Get the threshold for the genomic model
-	 * @param tType
 	 * @return
 	 */
 	public int getGenomicModelThreshold(){
@@ -26,6 +25,16 @@ public class BackgroundCollection {
 			if(m.isGenomeWide())
 				return m.getThreshold();
 		return -1;
+	}
+	/**
+	 * Get the expected count for the genomic model
+	 * @return
+	 */
+	public float getGenomicExpectedCount(){
+		for(BackgroundModel m : models)
+			if(m.isGenomeWide())
+				return m.getExpectedCount();
+		return 0;
 	}
 	/**
 	 * Get the maximum threshold

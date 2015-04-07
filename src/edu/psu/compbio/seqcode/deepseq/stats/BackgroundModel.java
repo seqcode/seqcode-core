@@ -18,6 +18,7 @@ public abstract class BackgroundModel {
 	protected double logConfidence;
 	protected double confThreshold;
 	protected double totalReads, regionLength, mappableRegion, binWidth;
+	protected float expectedCount=0;
 	protected int countThreshold=0;
 	protected char strand='.';
 	protected boolean useThisExpt=true;
@@ -35,17 +36,22 @@ public abstract class BackgroundModel {
 		strand=str;
 		scaling = sc;
 		useThisExpt = ute;
+		
+		countThreshold = calcCountThreshold();
+		expectedCount = calcExpectedCount();
 	}
 	
 	//Accessors
 	public char getStrand(){return strand;}
 	public boolean isGenomeWide(){return modelType==-1 ? true : false;}
+	public float getExpectedCount(){ return expectedCount;}
 	public int getThreshold(){return countThreshold;}
 	
 	//Required
 	public abstract boolean passesThreshold(int count);
 	public abstract boolean underThreshold(int count);
 	protected abstract int calcCountThreshold();
+	protected abstract float calcExpectedCount();
 	
 	//Update the threshold (depends on the type of model... local, etc)
 	public void updateModel(Region currReg, int currOffset, float [] thisExptHitCounts, float [] otherExptHitCounts, float hitCountBinStep){
@@ -54,6 +60,7 @@ public abstract class BackgroundModel {
 			if(modelType==-1){//Genome-wide
 				if(countThreshold==0){
 					countThreshold = calcCountThreshold();
+					expectedCount = calcExpectedCount();
 				}
 			}else if(modelType==0){//Current region
 				float sum=1;//pseudo count
@@ -63,6 +70,7 @@ public abstract class BackgroundModel {
 				regionLength = currReg.getWidth();
 				mappableRegion=1.0;//Big assumption
 				countThreshold = calcCountThreshold();
+				expectedCount = calcExpectedCount();
 			}else{//Window around current position
 				int win = modelType;
 				int istart = currOffset-(win/2)<0 ? 0 :currOffset-(win/2);
@@ -77,6 +85,7 @@ public abstract class BackgroundModel {
 				regionLength=istop-istart+1;
 				//mappableRegion=1.0; //any need for this assumption?
 				countThreshold = calcCountThreshold();
+				expectedCount = calcExpectedCount();
 			}
 		}
 	}
