@@ -212,51 +212,57 @@ public class HitCache {
 		HashMap<String, ArrayList<HitPair>[]> pairsList = new HashMap<String, ArrayList<HitPair>[]>();
 		
 		for(HitLoader currLoader : loaders){
-			//Get all read hits (necessary here to correct per-base counts appropriately)
-			currLoader.sourceAllHits();
-		
-			//Add the reads to the temporary stores
-			for(String chr: currLoader.getFivePrimePositions().keySet()){
-				if(!posList.containsKey(chr)){
-					ArrayList<Integer>[] currIArrayList = new ArrayList[2];
-					currIArrayList[0]=new ArrayList<Integer>();
-					currIArrayList[1]=new ArrayList<Integer>();
-					posList.put(chr, currIArrayList);
-				}
-				posList.get(chr)[0].addAll(currLoader.getFivePrimePositions().get(chr)[0]);
-				posList.get(chr)[1].addAll(currLoader.getFivePrimePositions().get(chr)[1]);
-			}
-			for(String chr: currLoader.getFivePrimeCounts().keySet()){
-				if(!countsList.containsKey(chr)){
-					ArrayList<Float>[] currFArrayList = new ArrayList[2];
-					currFArrayList[0]=new ArrayList<Float>();
-					currFArrayList[1]=new ArrayList<Float>();
-					countsList.put(chr, currFArrayList);
-				}
-				countsList.get(chr)[0].addAll(currLoader.getFivePrimeCounts().get(chr)[0]);
-				countsList.get(chr)[1].addAll(currLoader.getFivePrimeCounts().get(chr)[1]);
-			}
+			try{
+				//Get all read hits (necessary here to correct per-base counts appropriately)
+				currLoader.sourceAllHits();
 			
-			//Add the pairs to the temporary stores (if requested & exist)
-			//Also sort the pairs (required for telling uniques apart)
-			if(loadPairs && currLoader.hasPairedReads()){
-				hasPairs=true;
-				for(String chr: currLoader.getPairs().keySet()){
-					if(!pairsList.containsKey(chr)){
-						ArrayList<HitPair>[] currLRPArrayList = new ArrayList[2];
-						currLRPArrayList[0]=new ArrayList<HitPair>();
-						currLRPArrayList[1]=new ArrayList<HitPair>();
-						pairsList.put(chr, currLRPArrayList);
+				//Add the reads to the temporary stores
+				for(String chr: currLoader.getFivePrimePositions().keySet()){
+					if(!posList.containsKey(chr)){
+						ArrayList<Integer>[] currIArrayList = new ArrayList[2];
+						currIArrayList[0]=new ArrayList<Integer>();
+						currIArrayList[1]=new ArrayList<Integer>();
+						posList.put(chr, currIArrayList);
 					}
-					pairsList.get(chr)[0].addAll(currLoader.getPairs().get(chr)[0]);
-					pairsList.get(chr)[1].addAll(currLoader.getPairs().get(chr)[1]);
-					Collections.sort(pairsList.get(chr)[0]);
-					Collections.sort(pairsList.get(chr)[1]);
+					posList.get(chr)[0].addAll(currLoader.getFivePrimePositions().get(chr)[0]);
+					posList.get(chr)[1].addAll(currLoader.getFivePrimePositions().get(chr)[1]);
 				}
+				for(String chr: currLoader.getFivePrimeCounts().keySet()){
+					if(!countsList.containsKey(chr)){
+						ArrayList<Float>[] currFArrayList = new ArrayList[2];
+						currFArrayList[0]=new ArrayList<Float>();
+						currFArrayList[1]=new ArrayList<Float>();
+						countsList.put(chr, currFArrayList);
+					}
+					countsList.get(chr)[0].addAll(currLoader.getFivePrimeCounts().get(chr)[0]);
+					countsList.get(chr)[1].addAll(currLoader.getFivePrimeCounts().get(chr)[1]);
+				}
+				
+				//Add the pairs to the temporary stores (if requested & exist)
+				//Also sort the pairs (required for telling uniques apart)
+				if(loadPairs && currLoader.hasPairedReads()){
+					hasPairs=true;
+					for(String chr: currLoader.getPairs().keySet()){
+						if(!pairsList.containsKey(chr)){
+							ArrayList<HitPair>[] currLRPArrayList = new ArrayList[2];
+							currLRPArrayList[0]=new ArrayList<HitPair>();
+							currLRPArrayList[1]=new ArrayList<HitPair>();
+							pairsList.put(chr, currLRPArrayList);
+						}
+						pairsList.get(chr)[0].addAll(currLoader.getPairs().get(chr)[0]);
+						pairsList.get(chr)[1].addAll(currLoader.getPairs().get(chr)[1]);
+						Collections.sort(pairsList.get(chr)[0]);
+						Collections.sort(pairsList.get(chr)[1]);
+					}
+				}
+				
+				//Reset loader to free memory
+				currLoader.resetLoader();
+			}catch(OutOfMemoryError e){
+				e.printStackTrace();
+				System.err.println("Ran out of memory during hit loading; try re-running with increased -Xmx option.");
+				System.exit(1);
 			}
-			
-			//Reset loader to free memory
-			currLoader.resetLoader();
 		}
 		
 		//null genome is estimated here if necessary
