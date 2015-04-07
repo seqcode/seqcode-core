@@ -21,6 +21,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class RandomRegionsNoDups {
 
@@ -38,6 +39,7 @@ public class RandomRegionsNoDups {
 	private SequenceGenerator seqgen = new SequenceGenerator();
 	private double repPropLimit=0.5;
 	private boolean screenRepeats=false;
+	private List<Region> exclude = new ArrayList<Region>();;
 	
 	public static void main(String[] args) {
 		ArgParser ap = new ArgParser(args);
@@ -51,20 +53,29 @@ public class RandomRegionsNoDups {
 					"--seqout <output file name>\n" +
 					"--regout <output file name>\n" +
 					"--peakout <output file name>\n" +
-					"--screenrepeats\n");
+					"--screenrepeats\n" +
+					"--exclude <Regions to exclude>\n");
 		}
 		String species = ap.getKeyValue("species");
 	    String genome = ap.getKeyValue("genome");
 	    String seqFile = ap.hasKey("seqout") ? ap.getKeyValue("seqout") : null;
 	    String regFile = ap.hasKey("regout") ? ap.getKeyValue("regout") : null;
 	    String peakFile = ap.hasKey("peakout") ? ap.getKeyValue("peakout") : null;
+	    String exclude = ap.hasKey("exclude") ? ap.getKeyValue("exclude") : null;
 	    boolean sr = Args.parseFlags(args).contains("screenRepeats");
         
         try{
         	Organism org = Organism.getOrganism(species);
         	Genome g = org.getGenome(genome);
         	
+        	
+     
         	RandomRegionsNoDups rrnd = new RandomRegionsNoDups(g);
+        	if(exclude != null){
+        		List<Region> exclude_regs = new ArrayList<Region>();
+        		exclude_regs = RegionFileUtilities.loadRegionsFromPeakFile(g, exclude, -1);
+        		rrnd.setExcludes(exclude_regs);
+        	}
         	rrnd.setScreenRepeats(sr);
         	rrnd.setLen(ap.hasKey("len") ? new Integer(ap.getKeyValue("len")).intValue() : 200);
         	rrnd.setNum(ap.hasKey("num") ? new Integer(ap.getKeyValue("num")).intValue() : 10);
@@ -90,6 +101,7 @@ public class RandomRegionsNoDups {
 	public void setNum(int n){numSamples=n;}
 	public void setLen(int l){sampleSize=l;}
 	public void setScreenRepeats(boolean s){screenRepeats=s;}
+	public void setExcludes(List<Region> excludes){exclude = excludes;}
 	
 	public List<Region> execute(){
 		//First see how big the genome is:
@@ -140,6 +152,15 @@ public class RandomRegionsNoDups {
 						for(Region r : regList){
 							if(potential.overlaps(r))
 								regionOK=false;
+						}
+						
+						// Screen for any exclude regions provided
+						if(exclude.size() !=0){
+							for(Region ex : exclude){
+								if(potential.overlaps(ex)){
+									regionOK=false;
+								}	
+							}
 						}
 						
 						if(regionOK){

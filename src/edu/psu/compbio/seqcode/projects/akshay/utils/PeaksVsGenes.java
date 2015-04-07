@@ -168,7 +168,7 @@ public class PeaksVsGenes {
 			if(genesbyChrs.containsKey(p.getChrom())){
 				for(StrandedPoint sp : genesbyChrs.get(p.getChrom())){
 					int distance = sp.distance(p);
-					if(distance < radius  && gene_attributes.get(sp.getLocationString()) > threshold){
+					if(distance < radius  && gene_attributes.containsKey(sp.getLocationString()) && gene_attributes.get(sp.getLocationString()) > threshold){
 						highattgenes.add(sp);
 						hasgene = true;
 						distances.add(distance);
