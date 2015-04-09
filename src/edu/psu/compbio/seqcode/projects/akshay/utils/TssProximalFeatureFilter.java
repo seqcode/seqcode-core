@@ -91,6 +91,7 @@ public class TssProximalFeatureFilter {
 	public void setRegions(List<Region> regs){regions = regs;}
 	public void setPeaks(List<Point> pts){peaks =pts;}
 	public void setMinD(int minD){minDistance = minD;}
+	public void setRefTSSs(List<StrandedPoint> refs){refTSSs = refs;}
 	
 	public static void main(String[] args){
 		GenomeConfig gcon = new GenomeConfig(args);
@@ -98,10 +99,12 @@ public class TssProximalFeatureFilter {
 		TssProximalFeatureFilter runner = new TssProximalFeatureFilter(gcon);
 		int minD = Args.parseInteger(args, "minD", 2000);
 		runner.setMinD(minD);
-		if(!ap.hasKey("peaks") && !ap.hasKey("regions")){
+		if(!ap.hasKey("peaks") && !ap.hasKey("regions") && !ap.hasKey("refTSSs")){
 			System.err.println("Provide peaks of regions file!!!");
 			System.exit(1);
 		}else{
+			List<StrandedPoint> refs = RegionFileUtilities.loadStrandedPointFromRefTssFile(gcon.getGenome(), ap.getKeyValue("refTSSs"));
+			runner.setRefTSSs(refs);
 			if(ap.hasKey("peaks")){
 				List<Point> points = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), ap.getKeyValue("peaks"), -1);
 				runner.setPeaks(points);
