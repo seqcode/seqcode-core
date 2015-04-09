@@ -39,7 +39,7 @@ public class TssProximalFeatureFilter {
 					for(StrandedPoint sp : refTSSsbyChrom.get(r.getChrom())){
 						int dis = sp.distance(r.getMidpoint());
 						if(dis < min){
-							dis = min;
+							min  = dis;
 						}
 					}
 				}
@@ -67,7 +67,7 @@ public class TssProximalFeatureFilter {
 					for(StrandedPoint sp : refTSSsbyChrom.get(p.getChrom())){
 						int dis = sp.distance(p);
 						if(dis < min){
-							dis = min;
+							min = dis;
 						}
 					}
 				}
