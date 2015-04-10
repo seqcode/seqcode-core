@@ -25,7 +25,7 @@ public class RandomRegionsNoDupsVarLength {
 	
 		private int numSamples = 1000;
 		private int validSamples=0;
-		//private int sampleSize=200;
+		private int sampleSize=200;
 		private Genome gen;
 		private RepeatMaskedGenerator repMask;
 		private double genomeSize=0;
