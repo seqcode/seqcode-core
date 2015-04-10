@@ -27,7 +27,7 @@ public class FastaExporter {
 	public List<String> fasta = new ArrayList<String>();
 	
 	
-	public FastaExporter(int win, List<Point> points, Genome gen, boolean cache, String seqPathName) {
+	public FastaExporter(int win, List<Point> points, Genome gen) {
 		regs = new ArrayList<Region>();
 		this.win = win;
 		this.gen = gen;
@@ -35,6 +35,10 @@ public class FastaExporter {
 			Region reg = p.expand(win/2);
 			regs.add(reg);
 		}
+		
+	}
+	
+	public void execute(boolean cache, String seqPathName){
 		if(cache){
 			seqgen.useCache(cache);
 			seqgen.setGenomePath(seqPathName);
@@ -44,14 +48,16 @@ public class FastaExporter {
 			String fa = seqgen.execute(r);
 			fasta.add(fa);
 		}
-	}
-	
-	public void printFasta(){
+		
 		for(int i=0; i< regs.size(); i++){
 			System.out.println(">"+regs.get(i).getLocationString());
 			System.out.println(fasta.get(i));
 		}
 	}
+	
+	
+	// Mutators
+	public void setRegions(List<Region> regions){regs = regions;}
 	
 	
 	public static void main(String[] args){
@@ -63,7 +69,11 @@ public class FastaExporter {
 			if(cache){
 				seqPathName = Args.parseString(args, "seq", "");
 			}
-			String points = ap.getKeyValue("locations");
+			
+			if(!ap.hasKey("locations") && !ap.hasKey("regions")){
+				System.err.println("Provide either a location or a regions file !!");
+				System.exit(1);
+			}
 			
 			Genome gen;
 			if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
@@ -79,9 +89,24 @@ public class FastaExporter {
 					gen = null;
 				}
 			}
-			List<Point> search_locs = RegionFileUtilities.loadPeaksFromPeakFile(gen, points, window);
-			FastaExporter exporter = new FastaExporter(window, search_locs, gen, cache, seqPathName);
-			exporter.printFasta();
+			
+			if(ap.hasKey("locations")){
+				String points = ap.getKeyValue("locations");
+				List<Point> search_locs = RegionFileUtilities.loadPeaksFromPeakFile(gen, points, window);
+				FastaExporter exporter = new FastaExporter(window, search_locs, gen);
+				exporter.execute(cache, seqPathName);
+			}else{
+				String regs = ap.getKeyValue("regions");
+				List<Region> search_regs = RegionFileUtilities.loadRegionsFromPeakFile(gen, regs, -1);
+				List<Point> midps  = new ArrayList<Point>();
+				for(Region r : search_regs){
+					midps.add(r.getMidpoint());
+				}
+				FastaExporter exporter = new FastaExporter(window,midps,gen);
+				exporter.setRegions(search_regs);
+				exporter.execute(cache, seqPathName);
+				
+			}
 		}catch(NotFoundException e){
 			e.printStackTrace();
 		} 
