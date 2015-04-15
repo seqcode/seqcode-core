@@ -648,7 +648,8 @@ public class MotifAnalysisSandbox {
 					}
 				}
 				double pOcc = profiler2ProbOcc(profiler, conc);
-				outString = outString + "\t"+ bestMotifScore +"\t"+ numHits +"\t"+ pOcc+"\t";
+				double sumScore = sumPositiveLLScores(profiler);
+				outString = outString + "\t"+ bestMotifScore +"\t"+ numHits +"\t"+ pOcc+"\t"+sumScore+"\t";
 				
 			}
 			while (outString.endsWith("\t")) {
@@ -1216,6 +1217,17 @@ public class MotifAnalysisSandbox {
 				prod*=(1-score2Prob(currScore, conc));
 		}
 		return(1-prod);
+	}
+
+	//Convert a WeightMatrixProfile into a probability of occupancy 
+	public double sumPositiveLLScores(WeightMatrixScoreProfile profile){
+		double sum =0;;
+		for(int i=0; i<profile.length(); i++){
+			double currScore = profile.getMaxScore(i);
+			if(!Double.isNaN(currScore) && !Double.isInfinite(currScore) && currScore>0)
+				sum += currScore;
+		}
+		return(sum);
 	}
 
 	//Load thresholds
