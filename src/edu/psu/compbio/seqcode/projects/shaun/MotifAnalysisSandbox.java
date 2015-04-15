@@ -61,6 +61,7 @@ public class MotifAnalysisSandbox {
 	private int maxGeneDistance=100000;
 	private int motifDensityWinSize=1000000;
 	private int motifDensityStepSize=500000;
+	private double basemotifscore = 0.0;
 	
 	public static void main(String[] args) throws IOException, ParseException {
 		boolean havePeaks=false;
@@ -90,6 +91,7 @@ public class MotifAnalysisSandbox {
                                "--minscore <minimum motif score> " +
                                "--motifthres <file with thresholds> " +
                                "--threslevel <threshold level> " +
+                               "--baseMotifScore <Min score to calculate summed LL>\n " +
                                "\nOPTIONS:\n" +
                                "--printhits " +
                                "--printbesthits " +
@@ -140,6 +142,7 @@ public class MotifAnalysisSandbox {
         int bins = ap.hasKey("bins") ? new Integer(ap.getKeyValue("bins")).intValue():1; //Used by profile printing
         int binsize = ap.hasKey("binsize") ? new Integer(ap.getKeyValue("binsize")).intValue():10; //Used by motif histogram
         double minscore = (ap.hasKey("minscore")) ? new Double(ap.getKeyValue("minscore")).doubleValue() : -10000;
+        double basemotifscore = (ap.hasKey("baseMotifScore")) ? new Double(ap.getKeyValue("baseMotifScore")).doubleValue() : 0;
         genomeSequencePath = ap.hasKey("seq") ? ap.getKeyValue("seq") : null;
         printHits = ap.hasKey("printhits");
         printBestHits = ap.hasKey("printbesthits");
@@ -278,9 +281,9 @@ public class MotifAnalysisSandbox {
 	        
             ////////////////////////////////////////////////////////////////////////
 	        for(WeightMatrix wm : matrixList){
-	        	toolsList.add(new MotifAnalysisSandbox(currgen, wm, matrixList, posLines, posPeaks, posRegs, minscore, genomeSequencePath));
+	        	toolsList.add(new MotifAnalysisSandbox(currgen, wm, matrixList, posLines, posPeaks, posRegs, minscore,basemotifscore, genomeSequencePath));
 	        }
-	        tools = new MotifAnalysisSandbox(currgen, matrix, matrixList,posLines, posPeaks, posRegs, minscore, genomeSequencePath);
+	        tools = new MotifAnalysisSandbox(currgen, matrix, matrixList,posLines, posPeaks, posRegs, minscore, basemotifscore,genomeSequencePath);
 	        
 	        if(printHits){
 	        	if(wholeGenome)
@@ -347,7 +350,7 @@ public class MotifAnalysisSandbox {
 	
 
 	//Constructor 
-	public MotifAnalysisSandbox(Genome g, WeightMatrix wm, List<WeightMatrix> wmList,ArrayList<String> inL, ArrayList<Point> pospeak, ArrayList<Region> posreg, double minscore, String genomeSequencePath){
+	public MotifAnalysisSandbox(Genome g, WeightMatrix wm, List<WeightMatrix> wmList,ArrayList<String> inL, ArrayList<Point> pospeak, ArrayList<Region> posreg, double minscore, double basescore, String genomeSequencePath){
 		gen=g;
 		motif= wm;
 		motifList = wmList;
@@ -357,6 +360,7 @@ public class MotifAnalysisSandbox {
 		averageRegWidth = findAvgWidth(regions);
 		maxRegWidth = findMaxWidth(regions);
 		motifThres = minscore;
+		basemotifscore = basescore;
 		seqgen = new SequenceGenerator(g);
 		if(genomeSequencePath != null){
 			seqgen.useCache(true);
@@ -1224,7 +1228,7 @@ public class MotifAnalysisSandbox {
 		double sum =0;;
 		for(int i=0; i<profile.length(); i++){
 			double currScore = profile.getMaxScore(i);
-			if(!Double.isNaN(currScore) && !Double.isInfinite(currScore) && currScore>0)
+			if(!Double.isNaN(currScore) && !Double.isInfinite(currScore) && currScore>basemotifscore)
 				sum += currScore;
 		}
 		return(sum);
