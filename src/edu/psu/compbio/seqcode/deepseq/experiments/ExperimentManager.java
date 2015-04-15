@@ -305,10 +305,16 @@ public class ExperimentManager {
 	 * Call any cleanup methods
 	 */
 	public void close(){
-		for(String l : loaders.keySet())
+		for(String l : loaders.keySet()){
+			System.err.println("Closing "+l);
 			loaders.get(l).cleanup();
-		for(Sample s : samples)
+			System.err.println("Closed "+l);
+		}
+		for(Sample s : samples){
+			System.err.println("Closing "+s.getName());
 			s.close();
+			System.err.println("Closed "+s.getName());
+		}
 	}
 	
 	/**

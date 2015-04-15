@@ -1365,8 +1365,8 @@ public class HitCache {
 				File[] files = localCacheDir.listFiles();
 				for(int i=0; i<files.length; i++)
 					files[i].delete();
+				localCacheDir.delete();
 			}
-			localCacheDir.delete();
 		}
 	}
 }

@@ -1138,31 +1138,8 @@ public class Client implements ReadOnlyClient {
     public void close() {
     	if(closeTimerThread!=null && closeTimerThread.isAlive())
     		closeTimerThread.interrupt();
-        if (socket == null) {
-            return;
-        }
-        try {
-            socket.setSoLinger(false,0);
-            request.clear();
-            request.type="bye";
-            sendString(request.toString());
-            outstream.close();
-            outstream = null;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            instream.close();
-            instream = null;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.close();
-            socket = null;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        if(connectionOpen)
+        	closeConnection();
         connectionOpen=false;
     } 
     /**
