@@ -86,19 +86,24 @@ public class SequencingExptRegionsCounter {
 		
 		int win = Args.parseInteger(args, "win", 200);
 		
-		if (!ap.hasKey("refTSSs") && !ap.hasKey("peaks")){
-			System.err.println("Provied either a peaks file or a refTSSs file !!!");
+		if (!ap.hasKey("refTSSs") && !ap.hasKey("peaks") && !ap.hasKey("regions")){
+			System.err.println("Provied either a peaks file or a refTSSs file or a regions !!!");
 			System.exit(1);
 		}
-		@SuppressWarnings("unchecked")
-		List<Point> points = (List<Point>) (ap.hasKey("refTSSs") ? RegionFileUtilities.loadStrandedPointFromRefTssFile(gcon.getGenome(), ap.getKeyValue("refTSSs"))
-				: RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), ap.getKeyValue("peaks"), win));
 		
 		List<Region> reg = new ArrayList<Region>();
 		
-		for(Point p: points){
-			reg.add(p.expand(win/2));
+		if(ap.hasKey("peaks") || ap.hasKey("refTSSs")){
+			@SuppressWarnings("unchecked")
+			List<Point> points = (List<Point>) (ap.hasKey("refTSSs") ? RegionFileUtilities.loadStrandedPointFromRefTssFile(gcon.getGenome(), ap.getKeyValue("refTSSs"))
+					: RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), ap.getKeyValue("peaks"), win));
+			for(Point p: points){
+				reg.add(p.expand(win/2));
+			}
+		}else{
+			reg = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), ap.getKeyValue("regions"), -1);
 		}
+		
 		
 		counter.setRegions(reg);
 		counter.printCounts();
