@@ -30,6 +30,7 @@ public class ReadDBHitLoader extends HitLoader{
 	
 	private Genome gen=null;
 	private Client client=null; //ReadDB client
+	private SeqDataLoader loader=null; 
 	private List<SeqLocator> exptLocs;
 	private List<String> exptNames =new ArrayList<String>();
 	private List<SeqAlignment> aligns = new ArrayList<SeqAlignment>();
@@ -69,7 +70,7 @@ public class ReadDBHitLoader extends HitLoader{
 				client = new Client();
 			
 			//Initialize SeqDataLoaders
-            SeqDataLoader loader = new SeqDataLoader(false); 
+            loader = new SeqDataLoader(false); 
 			for(SeqLocator locator : exptLocs){
 				String exptName = locator.getExptName(); exptNames.add(exptName);
 				if (locator.getAlignName() == null) {
@@ -329,8 +330,9 @@ public class ReadDBHitLoader extends HitLoader{
      * Close the client
      */
 	public void cleanup(){
-		if(client!=null){
+		if(client!=null)
 			client.close();
-		}
+		if(loader!=null)
+			loader.close();
 	}
 }

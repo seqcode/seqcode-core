@@ -145,6 +145,14 @@ public class GenomeConfig {
 	public boolean helpWanted(){return printHelp;}
 	
 	/**
+	 * Close database connections in Genome object 
+	 */
+	public void close(){
+		if(!gen.isClosed())
+			gen.close();
+	}
+	
+	/**
 	 * Returns a string describing the arguments handled by this config parser. 
 	 * @return String
 	 */

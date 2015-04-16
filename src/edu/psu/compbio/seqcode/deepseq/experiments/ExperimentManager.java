@@ -306,14 +306,10 @@ public class ExperimentManager {
 	 */
 	public void close(){
 		for(String l : loaders.keySet()){
-			System.err.println("Closing "+l);
 			loaders.get(l).cleanup();
-			System.err.println("Closed "+l);
 		}
 		for(Sample s : samples){
-			System.err.println("Closing "+s.getName());
 			s.close();
-			System.err.println("Closed "+s.getName());
 		}
 	}
 	
