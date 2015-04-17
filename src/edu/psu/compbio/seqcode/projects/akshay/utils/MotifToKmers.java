@@ -54,7 +54,7 @@ public class MotifToKmers {
 	public void setMontif(WeightMatrix matrix){motif = matrix;}
 	public void  setThreslevel(int t){threshlevel = t;}
 	public void setPosOut(String po){posOutFile = po;}
-	public void setNegOut(String no){posOutFile = no;}
+	public void setNegOut(String no){negOutFile = no;}
 	
 	
 	public static void main(String[] args) throws IOException, ParseException{
@@ -140,8 +140,8 @@ public class MotifToKmers {
 		List<String> kmer_order=new ArrayList<String>();
 		for(int k=Kmin; k<=Kmax; k++){ // iterating over different k-mer lengths
 			int numK = (int)Math.pow(4, k);
-			int[] currKKmerCountsP = new int[numK];
-			int[] currKKmerCountsN = new int[numK];
+			int[][] currKKmerCountsP = new int[posSet.size()][numK];
+			int[][] currKKmerCountsN = new int[negSet.size()][numK];
 			boolean[] isMotifKmer = new boolean[numK];
 			
 			List<Double> scores = new ArrayList<Double>();
@@ -173,11 +173,14 @@ public class MotifToKmers {
 				
 			}
 			
+			for(int pr=0; pr<posSet.size(); pr++){
+				for(int i=0; i <numK; i++){
+					currKKmerCountsP[pr][i]=0;
+				}
+			}
 			
+			int prCounter=0;
 			for(Region r : posSet){ // Count kmer frequencies at the positive set
-				for(int i=0; i<numK; i++){
-					currKKmerCountsP[i] = 0;
-				}
 				
 				if(!kmerCountsP.containsKey(r.getLocationString())){
 					kmerCountsP.put(r.getLocationString(),new ArrayList<Integer>());
@@ -190,21 +193,25 @@ public class MotifToKmers {
 					String currK = seq.substring(i, i+k);
 					String revCurrK = SequenceUtils.reverseComplement(currK);
 					if(isMotifKmer[RegionFileUtilities.seq2int(currK)]){
-						currKKmerCountsP[RegionFileUtilities.seq2int(currK)]++;
+						currKKmerCountsP[prCounter][RegionFileUtilities.seq2int(currK)]++;
 					}
 					if(isMotifKmer[RegionFileUtilities.seq2int(revCurrK)]){
-						currKKmerCountsP[RegionFileUtilities.seq2int(revCurrK)]++;
+						currKKmerCountsP[prCounter][RegionFileUtilities.seq2int(revCurrK)]++;
 					}
+				}
+				prCounter++;
+			}
+			
+			for(int nr=0; nr<negSet.size(); nr++){
+				for(int i=0; i <numK; i++){
+					currKKmerCountsN[nr][i]=0;
 				}
 			}
 			
+			int nrCounter = 0;
 			for(Region r : negSet){
-				for(int i=0; i<numK; i++){
-					currKKmerCountsN[i] = 0;
-				}
-				
-				if(!kmerCountsP.containsKey(r.getLocationString())){
-					kmerCountsP.put(r.getLocationString(),new ArrayList<Integer>());
+				if(!kmerCountsN.containsKey(r.getLocationString())){
+					kmerCountsN.put(r.getLocationString(),new ArrayList<Integer>());
 				}
 				
 				String seq = seqgen.execute(r).toUpperCase();
@@ -215,32 +222,41 @@ public class MotifToKmers {
 					String currK = seq.substring(i, i+k);
 					String revCurrK = SequenceUtils.reverseComplement(currK);
 					if(isMotifKmer[RegionFileUtilities.seq2int(currK)]){
-						currKKmerCountsN[RegionFileUtilities.seq2int(currK)]++;
+						currKKmerCountsN[nrCounter][RegionFileUtilities.seq2int(currK)]++;
 					}
 					if(isMotifKmer[RegionFileUtilities.seq2int(revCurrK)]){
-						currKKmerCountsN[RegionFileUtilities.seq2int(revCurrK)]++;
+						currKKmerCountsN[nrCounter][RegionFileUtilities.seq2int(revCurrK)]++;
 					}
 				}
-				
+				nrCounter++;
 			}
 			
+			for(int i=0; i<numK; i++){ // Adding header
+				if(isMotifKmer[i]){
+					headerSB.append("\t");
+					headerSB.append(RegionFileUtilities.int2seq(i, k));
+				}
+			}
+			
+			prCounter =0;
 			for (Region r : posSet){
 				for(int i=0; i<numK; i++){
 					if(isMotifKmer[i]){
-						headerSB.append("\t");
-						headerSB.append(RegionFileUtilities.int2seq(i, k));
-						kmerCountsP.get(r.getLocationString()).add(currKKmerCountsP[i]);
+						kmerCountsP.get(r.getLocationString()).add(currKKmerCountsP[prCounter][i]);
 						kmer_order.add(RegionFileUtilities.int2seq(i, k));
 					}
 				}
+				prCounter++;
 			}
 			
+			nrCounter = 0;
 			for(Region r : negSet){
 				for(int i=0; i<numK; i++){
 					if(isMotifKmer[i]){
-						kmerCountsN.get(r.getLocationString()).add(currKKmerCountsN[i]);
+						kmerCountsN.get(r.getLocationString()).add(currKKmerCountsN[nrCounter][i]);
 					}
 				}
+				nrCounter++;
 			}
 			
 			for(String rlocation : kmerCountsP.keySet()){
@@ -264,12 +280,14 @@ public class MotifToKmers {
 			
 			foutP.write(headerSB.toString()+"\n");
 			foutP.write(posSB.toString()+"\n");
-			foutP.close();
+			
 			
 			foutN.write(headerSB.toString()+"\n");
 			foutN.write(negSB.toString()+"\n");
-			foutN.close();
+			
 		}
+		foutP.close();
+		foutN.close();
 	}
 	
 	
