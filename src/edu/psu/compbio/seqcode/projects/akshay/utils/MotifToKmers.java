@@ -275,17 +275,15 @@ public class MotifToKmers {
 					negSB.append(c);
 				}
 				negSB.append("\n");
-			}
-			
-			
-			foutP.write(headerSB.toString()+"\n");
-			foutP.write(posSB.toString()+"\n");
-			
-			
-			foutN.write(headerSB.toString()+"\n");
-			foutN.write(negSB.toString()+"\n");
-			
+			}			
 		}
+		foutP.write(headerSB.toString()+"\n");
+		foutP.write(posSB.toString()+"\n");
+		
+		
+		foutN.write(headerSB.toString()+"\n");
+		foutN.write(negSB.toString()+"\n");
+
 		foutP.close();
 		foutN.close();
 	}
