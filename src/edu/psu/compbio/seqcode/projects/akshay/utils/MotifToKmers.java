@@ -258,25 +258,27 @@ public class MotifToKmers {
 				}
 				nrCounter++;
 			}
-			
-			for(String rlocation : kmerCountsP.keySet()){
-				posSB.append(rlocation);
-				for(int c : kmerCountsP.get(rlocation)){
-					posSB.append("\t");
-					posSB.append(c);
-				}
-				posSB.append("\n");
-			}
-			
-			for(String rlocation : kmerCountsN.keySet()){
-				negSB.append(rlocation);
-				for(int c : kmerCountsN.get(rlocation)){
-					negSB.append("\t");
-					negSB.append(c);
-				}
-				negSB.append("\n");
-			}			
+					
 		}
+		
+		for(String rlocation : kmerCountsP.keySet()){
+			posSB.append(rlocation);
+			for(int c : kmerCountsP.get(rlocation)){
+				posSB.append("\t");
+				posSB.append(c);
+			}
+			posSB.append("\n");
+		}
+		
+		for(String rlocation : kmerCountsN.keySet()){
+			negSB.append(rlocation);
+			for(int c : kmerCountsN.get(rlocation)){
+				negSB.append("\t");
+				negSB.append(c);
+			}
+			negSB.append("\n");
+		}	
+		
 		foutP.write(headerSB.toString()+"\n");
 		foutP.write(posSB.toString()+"\n");
 		
