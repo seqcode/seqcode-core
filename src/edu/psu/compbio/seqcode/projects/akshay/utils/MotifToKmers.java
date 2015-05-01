@@ -305,12 +305,14 @@ public class MotifToKmers {
 		for(int i=0; i<motif.length()-kmer.length(); i++){
 			float score = (float)0.0;
 			for(int j=0; j< kmer.length(); j++){
-				score += motif.matrix[i][kmerChar[j]];
+				score += motif.matrix[i+j][kmerChar[j]];
 			}
+			
 			if(maxScore <score){
 				maxScore =score;
 			}
 		}
+		
 		return maxScore;
 	}
 	
