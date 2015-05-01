@@ -17,17 +17,17 @@ public class Point implements Comparable<Point> {
   /**
    * The genome that this point corresponds to
    */
-  private Genome g;
+  protected Genome g;
 
   /**
    * The chromosome that this point corresponds to
    */
-  private String chrom;
+  protected String chrom;
 
   /**
    * The location that this point corresponds to
    */
-  private int location;
+  protected int location;
 
 
   public Point(Genome g, String c, int position) {
