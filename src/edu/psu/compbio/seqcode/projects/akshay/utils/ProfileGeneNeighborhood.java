@@ -1,6 +1,10 @@
 package edu.psu.compbio.seqcode.projects.akshay.utils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,7 +20,11 @@ import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScoreProfile;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScorer;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
+import edu.psu.compbio.seqcode.gse.tools.utils.Args;
+import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
+import edu.psu.compbio.seqcode.projects.shaun.MotifAnalysisSandbox;
 import edu.psu.compbio.seqcode.projects.shaun.rnaseq.GTFReader;
 import edu.psu.compbio.seqcode.projects.shaun.rnaseq.genemodels.GeneTUnit;
 
@@ -49,6 +57,61 @@ public class ProfileGeneNeighborhood {
 		gcon = g;
 	}
 	
+	/**
+	 * 
+	 * @param args
+	 * @throws ParseException 
+	 * @throws IOException 
+	 */
+	public static void main(String[] args) throws IOException, ParseException{
+		ArgParser ap = new ArgParser(args);
+		GenomeConfig gc = new GenomeConfig(args);
+		ProfileGeneNeighborhood profiler = new ProfileGeneNeighborhood(gc);
+		
+		int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():150;
+		int rad = ap.hasKey("radius") ? new Integer(ap.getKeyValue("radius")).intValue() : 50000;
+		int clusD = ap.hasKey("clusD") ? new Integer(ap.getKeyValue("clusD")).intValue() : 300;
+		
+		String motiffile = ap.getKeyValue("motiffile");
+		String backfile = ap.getKeyValue("back");
+		
+		List<WeightMatrix> matrixList = MotifAnalysisSandbox.loadMotifFromFile(motiffile, backfile, gc.getGenome());
+		
+		String peaksFile = ap.getKeyValue("peaks");
+		List<Point> peaks = RegionFileUtilities.loadPeaksFromPeakFile(gc.getGenome(), ap.getKeyValue("peaks"), win);
+		String genefile = Args.parseString(args, "gtf", null);
+		
+		//Read selected genes into a list
+		String geneListFile = Args.parseString(args, "geneList", null);
+		File gFile = new File(geneListFile);
+		if(!gFile.isFile()){System.err.println("Invalid positive file name");System.exit(1);}
+        BufferedReader reader = new BufferedReader(new FileReader(gFile));
+        String line;
+        List<String> geneList = new ArrayList<String>();
+        while ((line = reader.readLine()) != null) {
+        	line.trim();
+        	geneList.add(line);
+        }
+		
+		profiler.setWindow(win);
+		profiler.setClusDistance(clusD);
+		profiler.setRadius(rad);
+		profiler.setPeaks(peaks);
+		profiler.setGenes(genefile, geneList);
+		profiler.setMotifs(matrixList);
+		
+		boolean clusterSyntax = ap.hasKey("ClusterSyntax");
+		if(clusterSyntax){profiler.printPeakClusterSyntax();}
+		boolean peakSyntax = ap.hasKey("PeakSyntax");
+		if(peakSyntax){profiler.printPeakSyntax();}
+		
+		profiler.clear();
+		
+		
+		
+		
+	}
+	
 	
 	
 	//Mutators
@@ -61,9 +124,86 @@ public class ProfileGeneNeighborhood {
 	
 	
 	
+	public void printPeakClusterSyntax(){
+		loadpeakClustersAtgenes();
+		StringBuilder sb = new StringBuilder();
+		int nMotifs = motifs.size();
+		for(String gname : peakClustersAtgenes.keySet()){
+			if(peakClustersAtgenes.get(gname).size() == 0){
+				sb.append(gname);sb.append("\t");
+				sb.append("NA\tNA\t");
+				for(int m=0; m<nMotifs; m++){sb.append("NA"); sb.append("\t");}
+				sb.deleteCharAt(sb.length()-1);
+				sb.append("\n");
+			}else{
+				for(PointCluster pc: peakClustersAtgenes.get(gname)){
+					sb.append(gname);sb.append("\t");
+					int strand = genes.get(gname).getStrand() == '+' ? 1: -1;
+					int sign = strand*(genes.get(gname).getLocation()-pc.getLocation()) > 0 ? -1 : +1;
+					int distance = sign*pc.distance(genes.get(gname));
+					sb.append(pc.getPeakLocationsString()+"\t");
+					sb.append(distance);sb.append("\t");
+					String seq = seqgen.execute(pc.expand(win/2));
+					for(int m=0; m<nMotifs; m++){
+						Pair<Integer,Double> mScore = bestMotif(seq,motifs.get(m));
+						sb.append(mScore.cdr());sb.append("\t");
+					}
+					sb.deleteCharAt(sb.length()-1);
+					sb.append("\n");
+				}
+			}
+		}
+		
+		StringBuilder header = new StringBuilder();
+		header.append("Gene\tPeak\tDistance\t");
+		for(WeightMatrix wm : motifs){
+			header.append(wm.getName());header.append("\t");
+		}
+		header.deleteCharAt(header.length()-1);
+		System.out.println(header.toString());
+		System.out.println(sb.toString());
+	}
 	
-	
-	
+	public void printPeakSyntax(){
+		loadpeaksAtgenes();
+		
+		StringBuilder sb = new StringBuilder();
+		int nMotifs = motifs.size();
+		for(String gname : peaksAtgenes.keySet()){
+			if(peaksAtgenes.get(gname).size() == 0){
+				sb.append(gname);sb.append("\t");
+				sb.append("NA\tNA\t");
+				for(int m=0; m<nMotifs; m++){sb.append("NA"); sb.append("\t");}
+				sb.deleteCharAt(sb.length()-1);
+				sb.append("\n");
+			}else{
+				for(Point p: peaksAtgenes.get(gname)){
+					sb.append(gname);sb.append("\t");
+					int strand = genes.get(gname).getStrand() == '+' ? 1: -1;
+					int sign = strand*(genes.get(gname).getLocation()-p.getLocation()) > 0 ? -1 : +1;
+					int distance = sign*p.distance(genes.get(gname));
+					sb.append(p.getLocationString()+"\t");
+					sb.append(distance);sb.append("\t");
+					String seq = peaksSeqs.get(p.getLocation()); 
+					for(int m=0; m<nMotifs; m++){
+						Pair<Integer,Double> mScore = bestMotif(seq,motifs.get(m));
+						sb.append(mScore.cdr());sb.append("\t");
+					}
+					sb.deleteCharAt(sb.length()-1);
+					sb.append("\n");
+				}
+			}
+		}
+		
+		StringBuilder header = new StringBuilder();
+		header.append("Gene\tPeak\tDistance\t");
+		for(WeightMatrix wm : motifs){
+			header.append(wm.getName());header.append("\t");
+		}
+		header.deleteCharAt(header.length()-1);
+		System.out.println(header.toString());
+		System.out.println(sb.toString());
+	}
 	
 	
 	
@@ -156,8 +296,7 @@ public class ProfileGeneNeighborhood {
 	
 	
 	
-	private Pair<Integer,Double> bestMotif(Region r, WeightMatrix motif){
-		String seq = peaksSeqs.get(r.getLocationString());
+	private Pair<Integer,Double> bestMotif(String seq, WeightMatrix motif){
 		WeightMatrixScorer scorer = new WeightMatrixScorer(motif);
 		WeightMatrixScoreProfile profiler = scorer.execute(seq);
 		@SuppressWarnings("unchecked")
@@ -176,6 +315,9 @@ public class ProfileGeneNeighborhood {
 		
 		return byChr;
 	}
+	
+	
+	public void clear(){SequenceGenerator.clearCache();}
 	
 	
 	/**
@@ -210,6 +352,15 @@ public class ProfileGeneNeighborhood {
 			int ns = Math.max(1, peaks.get(0).getLocation() - distance);
 			int ne = Math.min(peaks.get(peaks.size()-1).getLocation() + distance, g.getChromLength(chrom));
 			return new Region(g, chrom, ns, ne);
+		}
+		
+		public String getPeakLocationsString(){
+			StringBuilder retSB = new StringBuilder();
+			for(Point p: peaks){
+				retSB.append(p.getLocationString()+";");
+			}
+			retSB.deleteCharAt(retSB.length()-1);
+			return retSB.toString();
 		}
 		
 		public Point getLastPeak(){return peaks.get(peaks.size()-1);}
