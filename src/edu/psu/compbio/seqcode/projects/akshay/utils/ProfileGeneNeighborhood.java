@@ -55,6 +55,7 @@ public class ProfileGeneNeighborhood {
 	
 	public ProfileGeneNeighborhood(GenomeConfig g) {
 		gcon = g;
+		seqgen = gcon.getSequenceGenerator();
 	}
 	
 	/**
@@ -92,6 +93,7 @@ public class ProfileGeneNeighborhood {
         	line.trim();
         	geneList.add(line);
         }
+		reader.close();
 		
 		profiler.setWindow(win);
 		profiler.setClusDistance(clusD);
