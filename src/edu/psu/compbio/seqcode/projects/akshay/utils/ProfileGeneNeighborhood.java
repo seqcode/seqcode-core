@@ -186,7 +186,7 @@ public class ProfileGeneNeighborhood {
 					int distance = sign*p.distance(genes.get(gname));
 					sb.append(p.getLocationString()+"\t");
 					sb.append(distance);sb.append("\t");
-					String seq = peaksSeqs.get(p.getLocation()); 
+					String seq = peaksSeqs.get(p.getLocationString()); 
 					for(int m=0; m<nMotifs; m++){
 						Pair<Integer,Double> mScore = bestMotif(seq,motifs.get(m));
 						sb.append(mScore.cdr());sb.append("\t");
@@ -243,6 +243,7 @@ public class ProfileGeneNeighborhood {
 	
 	
 	private void loadpeakClustersAtgenes(){
+		peakClustersAtgenes = new HashMap<String,List<PointCluster>>();
 		Map<String,List<Point>> peaksbyChr = hashbychrom(peaks);
 		//Sort the points
 		for(String chrom: peaksbyChr.keySet()){
@@ -282,6 +283,7 @@ public class ProfileGeneNeighborhood {
 	
 	
 	private void loadpeaksAtgenes(){
+		peaksAtgenes = new HashMap<String,List<Point>>();
 		Map<String,List<Point>> peaksbyChr = hashbychrom(peaks);
 		for(String gene_name : geneDomains.keySet()){
 			String geneChr = geneDomains.get(gene_name).getChrom();
