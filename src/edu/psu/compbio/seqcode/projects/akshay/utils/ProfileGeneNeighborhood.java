@@ -49,10 +49,10 @@ public class ProfileGeneNeighborhood {
 	
 	private int win;
 	
+	private SequenceGenerator<Region> seqgen;
+	
+	
 	@SuppressWarnings("unchecked")
-	private SequenceGenerator<Region> seqgen = gcon.getSequenceGenerator();
-	
-	
 	public ProfileGeneNeighborhood(GenomeConfig g) {
 		gcon = g;
 		seqgen = gcon.getSequenceGenerator();
