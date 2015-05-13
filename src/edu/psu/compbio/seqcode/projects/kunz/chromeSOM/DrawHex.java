@@ -25,7 +25,7 @@ public class DrawHex extends JPanel// implements Grid2D
 	public DrawHex()
 	{
 		yNodes=0;xNodes=0;
-		reader("src/kunzSOMstuff/SOMlander.txt");
+		reader("/seqcode/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/SOMlander.txt");
 		nodes = yNodes*xNodes;
 		
     	colors = new ArrayList<Color>();
