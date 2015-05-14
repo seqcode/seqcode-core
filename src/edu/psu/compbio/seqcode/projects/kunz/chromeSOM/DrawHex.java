@@ -17,7 +17,6 @@ public class DrawHex extends JPanel// implements Grid2D
 	public ArrayList<MiniNode> nodeList;
 	public ArrayList<Color> colors;
 	MiniSystem nodeSystem;
-	public BatchMap batchMap;
 	public DrawHex()
 	{
 		String ffs = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/SOMlander.txt";
@@ -42,7 +41,7 @@ public class DrawHex extends JPanel// implements Grid2D
 					mini.counting.add(mini.dataPoints.get(j));
 				}
 			}
-			System.out.println(mini.counting.size());
+			//System.out.println(mini.counting.size());
 		}
 		colors();
 		heatMapping();

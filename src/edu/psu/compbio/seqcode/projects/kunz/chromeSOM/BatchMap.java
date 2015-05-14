@@ -15,13 +15,14 @@ public class BatchMap
 	public double sgm;
 	public ArrayList<DataPoint> points;
 	public String lander;
-	public BatchMap(int xNode, int yNode)
+	public BatchMap(int xNode, int yNode, int sigma)
 	{
 		String ffs = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/SOMlander.txt";
 		lander = ffs;
 		xNodes = xNode;
 		yNodes = yNode;
-		System.out.println(xNodes+","+yNodes);
+		sgm = sigma;
+		//System.out.println(xNodes+","+yNodes);
 		points = new ArrayList<DataPoint>();
 		n = new NodeSystem(xNode,yNode);
 		iterations = 1000;
@@ -118,21 +119,7 @@ public class BatchMap
 		//System.out.println(dot);
 		return dot;
 	}
-	public double cosineSim(Node nope, Node dope)
-	{
-		//cosine similarity
-		double dot = 0;
-		double magN = nope.mag;
-		double magD = dope.mag;
-		
-		for(int i = 0; i < nope.g.length; i++)
-		{
-			dot += (nope.g[i]) * (dope.g[i]);
-		}
-		dot = dot/(magN*magD);
-		//System.out.println(dot);
-		return dot;
-	}
+	
 	public void iterater()
 	{
 		double dd = iterations;
@@ -144,7 +131,6 @@ public class BatchMap
 	public double nFactor(int o, double itercount) 
 	{
 		//System.out.println(o);
-		sgm = 175;
 		double sig = sgm - (sgm*(itercount/iterations)); //sigma = width of Guassian kernel... what is this supposed to start at?
 		
 		double r = 0;

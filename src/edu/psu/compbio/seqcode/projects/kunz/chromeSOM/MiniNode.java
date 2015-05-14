@@ -28,14 +28,11 @@ public class MiniNode
 			s = s.substring(0, s.indexOf(")"));
 		if(s.contains("("))
 			s = s.substring(s.indexOf("(")+1, s.length());
-		//System.out.println(s);
 		if(s.contains(":")&&s.contains("-"))
 		{
 			int chrome = Integer.parseInt(s.substring(s.indexOf("chr")+3, s.indexOf(":")));
 			int minLocus = Integer.parseInt(s.substring(s.indexOf(":")+1, s.indexOf("-")));
 			int maxLocus = Integer.parseInt(s.substring(s.indexOf("-")+1, s.length()));
-			//System.out.println(chrome + ":"+minLocus+"-"+maxLocus);
-			//if(chrome == 13)
 			{
 				DataPoint d = new DataPoint(chrome,minLocus,maxLocus,this);
 				d.name = s;

@@ -2,7 +2,6 @@ package edu.psu.compbio.seqcode.projects.kunz.chromeSOM;
 import java.awt.BorderLayout;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 import javax.swing.*;
 
@@ -13,7 +12,6 @@ public class Grid extends JFrame
     int winW, winH;
 	public BatchMap m;
 	public DrawHex d;
-	public DrawHexAsker a;
 	private static final long serialVersionUID = 1L;
 	public ArrayList<String> s;
 	public String find;
@@ -39,20 +37,9 @@ public class Grid extends JFrame
 	 }
 	 public void batchMap(int x, int y)
 	 {
-		 System.out.println(" \'Veiw\' or \'Train\'");
-		 Scanner sc = new Scanner(System.in);
-		 String cmd = sc.next();
-		 if(cmd.equalsIgnoreCase("Train"))
-		 {
-			 m = new BatchMap(x, y);
-		 	 m.go();
-		 }
+		 m = new BatchMap(x, y, 175);
+		 m.go();
 		 window2.drawGrid();
-	 }
-	 public void setUpGrid()
-	 {
-		 a = new DrawHexAsker();
-		 add(a, BorderLayout.CENTER);
 	 }
 	 public void setUpMenu(JMenuBar menubar)
 	 {
@@ -76,19 +63,56 @@ public class Grid extends JFrame
 	 }
 	 public static void main(String[] args)
 	  {
-	    window2 = new Grid(700,700);
-
-	    JMenuBar menubar = new JMenuBar();
-	    window2.setJMenuBar(menubar);
-	    
-	    window2.batchMap(10,10);
-	         
-	    window2.setUpMenu(menubar);
-	    
-	    window2.setBounds(0,0,700,700);
-	    window2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    window2.setVisible(true);
-	    window2.setResizable(true);	
-	  }
-
+		 //to view: args = "view"
+		 //to train: args = "train" 'int x' 'int y' 'int sigma'
+		if (args.length > 0)
+		{
+	    	if(args[0].equalsIgnoreCase(("train")))
+	    	{
+	    		int xArg = 0;
+		    	int yArg = 0;
+		    	int sigmaArg = 175;
+	    	    
+		    	try {
+	    	        xArg = Integer.parseInt(args[1]);
+	    	    } catch (NumberFormatException e) {
+	    	        System.err.println("Argument" + args[1]);
+	    	    }
+	    	    try {
+	    	        yArg = Integer.parseInt(args[2]);
+	    	    } catch (NumberFormatException e) {
+	    	        System.err.println("Argument" + args[2]);
+	    	    }
+	    	    if(args.length>3)
+		    	{
+	    	    	try {
+		    	        sigmaArg = Integer.parseInt(args[3]);
+		    	    } catch (NumberFormatException e) {
+		    	        System.err.println("Argument" + args[3] + " is not an integer. Sigma set to 175 by default");
+		    	    }
+	    	    }
+	    	    else
+	    	    {
+	    	    	System.err.println("No sigma argument entered. Sigma set to 175 by default");
+	    	    }
+		    	BatchMap o = new BatchMap(xArg,yArg,sigmaArg);
+		    	
+	   		 	o.go();
+	    	}
+	    	if(args[0].equalsIgnoreCase("view"))
+	    	{
+	    		window2 = new Grid(700,700);
+	    	    JMenuBar menubar = new JMenuBar();
+	    	    window2.setJMenuBar(menubar);
+	    	    window2.drawGrid();
+	    	         
+	    	    window2.setUpMenu(menubar);
+	    	    
+	    	    window2.setBounds(0,0,700,700);
+	    	    window2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    	    window2.setVisible(true);
+	    	    window2.setResizable(true);	
+	    	}
+		}
+	}
 }
