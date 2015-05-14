@@ -1,9 +1,6 @@
 package edu.psu.compbio.seqcode.projects.kunz.chromeSOM;
 import java.awt.BorderLayout;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -16,20 +13,22 @@ public class Grid extends JFrame
     int winW, winH;
 	public BatchMap m;
 	public DrawHex d;
+	public DrawHexAsker a;
 	private static final long serialVersionUID = 1L;
 	public ArrayList<String> s;
+	public String find;
 	public Grid(int x, int y)
 	  {
 		 
 		//title the window
-	    super("Hexagonal Grid");
+	    super("Super SOM");
 	    
 	    BorderLayout gui = new BorderLayout();
 	    setLayout(gui);
 	    winW = x; winH = y;
 	    
 	    s = new ArrayList<String>();
-	    }
+	  }
 	 public void drawGrid()
 	 {
 		d = new DrawHex();
@@ -50,6 +49,31 @@ public class Grid extends JFrame
 		 }
 		 window2.drawGrid();
 	 }
+	 public void setUpGrid()
+	 {
+		 a = new DrawHexAsker();
+		 add(a, BorderLayout.CENTER);
+	 }
+	 public void setUpMenu(JMenuBar menubar)
+	 {
+		 JButton button = new JButton("Seach");
+	        menubar.add(button);
+	        final JTextField texter = new JTextField("Chrome...", 20);
+		    menubar.add(texter);
+		    menubar.add(Box.createHorizontalGlue());
+		    
+		    button.addActionListener(new ActionListener() {
+		    	 
+	            public void actionPerformed(ActionEvent e)
+	            {
+	                //Execute when button is pressed
+	                find = texter.getText();
+	                int chr = Integer.parseInt(find);
+	                System.out.print(chr);
+	                d.countingDPS(chr);
+	            }
+	        });   
+	 }
 	 public static void main(String[] args)
 	  {
 	    window2 = new Grid(700,700);
@@ -58,13 +82,13 @@ public class Grid extends JFrame
 	    window2.setJMenuBar(menubar);
 	    
 	    window2.batchMap(10,10);
+	         
+	    window2.setUpMenu(menubar);
+	    
 	    window2.setBounds(0,0,700,700);
 	    window2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    window2.setVisible(true);
 	    window2.setResizable(true);	
-	    
-	    JMenu location = new JMenu("Location");
-	    menubar.add(location);
 	  }
 
 }

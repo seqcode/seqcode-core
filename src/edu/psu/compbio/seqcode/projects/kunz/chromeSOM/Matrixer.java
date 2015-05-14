@@ -67,16 +67,6 @@ public class Matrixer
 				}
 			}
 		}
-	    ////////////////////////////////////////////////lookUpReader();
-	    /*for(int i = 0; i < points.size(); i++)
-		{
-			System.out.print(points.get(i).name+ "  ");
-			for(int j = 0; j<points.get(i).v.size(); j++)
-			{
-				System.out.print(points.get(i).v.get(j) + "\t");
-			}
-			System.out.println();
-		}*/
 	}
 	public void binGenome()
 	{

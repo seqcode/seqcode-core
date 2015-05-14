@@ -10,10 +10,12 @@ public class MiniNode
 	public ArrayList<DataPoint> dataPoints;
 	public int xCoord, yCoord, xLoc, yLoc;
 	public ArrayList<String> fullDPs;
+	public ArrayList<DataPoint> counting;
 	public Color color;
 	MiniNode(String s)
 	{
 		dataPoints = new ArrayList<DataPoint>();
+		counting = new ArrayList<DataPoint>();
 		xCoord = Integer.parseInt(s.substring(s.indexOf("[")+1,s.indexOf(",")));
 		yCoord = Integer.parseInt(s.substring(s.indexOf(",")+1,s.indexOf("]")));
 		//System.out.println(xCoord +", "+yCoord);
@@ -33,7 +35,7 @@ public class MiniNode
 			int minLocus = Integer.parseInt(s.substring(s.indexOf(":")+1, s.indexOf("-")));
 			int maxLocus = Integer.parseInt(s.substring(s.indexOf("-")+1, s.length()));
 			//System.out.println(chrome + ":"+minLocus+"-"+maxLocus);
-			if(chrome == 13)
+			//if(chrome == 13)
 			{
 				DataPoint d = new DataPoint(chrome,minLocus,maxLocus,this);
 				d.name = s;

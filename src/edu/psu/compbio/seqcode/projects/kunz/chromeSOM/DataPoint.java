@@ -24,6 +24,7 @@ public class DataPoint
 		minLocus = min;
 		maxLocus = max;
 		myMini = n;
+		count = true;
 	}
 	public DataPoint(Node n)
 	{
