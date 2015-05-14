@@ -17,9 +17,12 @@ public class Matrixer
 	public Matrixer()
 	{
 		binsize = 20000;
-		lander = "src/kunzSOMstuff/MatrixLanding.txt";
-		file = "src/kunzSOMstuff/YeastInteractions-intra.txt";
-		file2 = "src/kunzSOMstuff/YeastInteractions-inter.txt";
+		String ffs = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/MatrixLanding.txt";
+		lander = ffs;
+		String ff = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/YeastInteractions-intra.txt";
+		file = ff;
+		String f = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/YeastInteractions-inter.txt";
+		file2 = f;
 		inter = new ArrayList<Interaction>();
 		count = 0;
 	}

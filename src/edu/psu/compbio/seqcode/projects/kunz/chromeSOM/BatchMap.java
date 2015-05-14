@@ -17,15 +17,16 @@ public class BatchMap
 	public String lander;
 	public BatchMap(int xNode, int yNode)
 	{
-		lander = "src/kunzSOMstuff/SOMlander.txt";
+		String ffs = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/SOMlander.txt";
+		lander = ffs;
 		xNodes = xNode;
 		yNodes = yNode;
 		System.out.println(xNodes+","+yNodes);
 		points = new ArrayList<DataPoint>();
-		//reader = new Reader("src/kunzSOMstuff/cities1000_dist-matrix.txt", "src/kunzSOMstuff/Look Up.txt");
-		reader = new Reader("src/kunzSOMstuff/MatrixLanding.txt");
 		n = new NodeSystem(xNode,yNode);
 		iterations = 1000;
+		String ff = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/MatrixLanding.txt";
+		reader = new Reader(ff);
 	}
 	public void go()
 	{

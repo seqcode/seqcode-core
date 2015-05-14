@@ -33,7 +33,7 @@ public class MiniNode
 			int minLocus = Integer.parseInt(s.substring(s.indexOf(":")+1, s.indexOf("-")));
 			int maxLocus = Integer.parseInt(s.substring(s.indexOf("-")+1, s.length()));
 			//System.out.println(chrome + ":"+minLocus+"-"+maxLocus);
-			if(chrome == 4)
+			if(chrome == 13)
 			{
 				DataPoint d = new DataPoint(chrome,minLocus,maxLocus,this);
 				d.name = s;

@@ -2,14 +2,10 @@ package edu.psu.compbio.seqcode.projects.kunz.chromeSOM;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Polygon;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 import javax.swing.JPanel;
 
@@ -24,8 +20,9 @@ public class DrawHex extends JPanel// implements Grid2D
 	public BatchMap batchMap;
 	public DrawHex()
 	{
+		String ffs = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/SOMlander.txt";
 		yNodes=0;xNodes=0;
-		reader("/seqcode/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/SOMlander.txt");
+		reader(ffs);
 		nodes = yNodes*xNodes;
 		
     	colors = new ArrayList<Color>();
