@@ -250,7 +250,8 @@ public class Config {
         kmer_remove_mode = Args.parseInteger(args, "kmer_shift_remove", kmer_remove_mode);
                
         ip_ctrl_ratio = Args.parseDouble(args, "icr", ip_ctrl_ratio);
-        maxThreads = Args.parseInteger(args,"t",java.lang.Runtime.getRuntime().availableProcessors());	// default to the # processors
+        maxThreads = Args.parseInteger(args,"t",1);	// default to 1
+        maxThreads = Math.min(maxThreads, java.lang.Runtime.getRuntime().availableProcessors());
         q_value_threshold = Args.parseDouble(args, "q", q_value_threshold);	// q-value
         q_refine = Args.parseDouble(args, "q2", q_refine);	// q-value for refine regions
         if (q_refine==-1)
