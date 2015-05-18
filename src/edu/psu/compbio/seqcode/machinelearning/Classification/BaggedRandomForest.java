@@ -654,7 +654,6 @@ public class BaggedRandomForest extends AbstractClassifier implements OptionHand
     m_bagger.setClassifier(rTree);
     m_bagger.setSeed(m_randomSeed);
     m_bagger.setNumIterations(m_numTrees);
-    m_bagger.setCalcOutOfBag(true);
     m_bagger.setNumExecutionSlots(m_numExecutionSlots);
     m_bagger.buildClassifier(data);
   }
