@@ -106,6 +106,9 @@ public class BaggedRandomForest extends AbstractClassifier implements OptionHand
   
   /** The size of each bag sample, as a percentage of the training size */
   protected int m_BagSizePercent = 100;
+  
+  /** Whether to calculate the out of bag error */
+  protected boolean m_CalcOutOfBag = false;
 
   /**
    * Number of features to consider in random feature selection. If less than 1
@@ -556,6 +559,8 @@ public class BaggedRandomForest extends AbstractClassifier implements OptionHand
       m_numTrees = 100;
     }
     
+    m_CalcOutOfBag = Utils.getFlag('O', options);
+    
     tmpStr = Utils.getOption('P', options);
     if (tmpStr.length() != 0) {
       m_BagSizePercent = Integer.parseInt(tmpStr);
@@ -645,6 +650,7 @@ public class BaggedRandomForest extends AbstractClassifier implements OptionHand
 
     // set up the bagger and build the forest
     m_bagger.setBagSizePercent(m_BagSizePercent);
+    m_bagger.setCalcOutOfBag(m_CalcOutOfBag);
     m_bagger.setClassifier(rTree);
     m_bagger.setSeed(m_randomSeed);
     m_bagger.setNumIterations(m_numTrees);
