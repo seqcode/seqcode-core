@@ -607,7 +607,7 @@ public class BaggedRandomForest extends AbstractClassifier implements OptionHand
    */
   @Override
   public Capabilities getCapabilities() {
-    return new BaggedRandomForest().getCapabilities();
+    return new RandomTree().getCapabilities();
   }
 
   /**
