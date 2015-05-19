@@ -7,6 +7,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import weka.classifiers.AbstractClassifier;
+import weka.classifiers.Classifier;
 import weka.classifiers.meta.Bagging;
 import weka.classifiers.trees.RandomTree;
 import weka.core.AdditionalMeasureProducer;
@@ -25,6 +26,7 @@ import weka.core.TechnicalInformation.Type;
 import weka.core.TechnicalInformationHandler;
 import weka.core.Utils;
 import weka.core.WeightedInstancesHandler;
+import weka.core.SerializationHelper;
 
 /**
  <!-- globalinfo-start -->
@@ -97,6 +99,40 @@ import weka.core.WeightedInstancesHandler;
 public class BaggedRandomForest extends AbstractClassifier implements OptionHandler,
   Randomizable, WeightedInstancesHandler, AdditionalMeasureProducer,
   TechnicalInformationHandler, PartitionGenerator, Aggregateable<BaggedRandomForest> {
+	
+	
+	public double[] getAttributeWeights()
+	{
+		if (m_bagger == null)
+			throw new Error("Random forest not built yet");
+
+		double[] sum = null;
+
+		for (int i = 0; i < m_bagger.getNumIterations(); i++)
+		{
+			Classifier c = m_bagger.getClassifier(i);
+			AttributeRandomTree t = (AttributeRandomTree) c;
+			//			System.out.println(t);
+			int[] numInstances = t.nodeNumInstances();
+			if (sum == null)
+				sum = new double[numInstances.length];
+			for (int j = 0; j < numInstances.length; j++)
+				sum[j] += numInstances[j];
+		}
+
+		double max = -1;
+		for (int i = 0; i < sum.length; i++)
+			if (sum[i] > max)
+				max = sum[i];
+		for (int i = 0; i < sum.length; i++)
+			sum[i] /= max;
+		return sum;
+	}
+	
+	public String[] getAttributes()
+	{
+		return ((AttributeRandomTree) m_bagger.getClassifier(0)).getAttributes();
+	}
 
   /** for serialization */
   static final long serialVersionUID = 1116839470751428698L;
@@ -123,7 +159,7 @@ public class BaggedRandomForest extends AbstractClassifier implements OptionHand
   protected int m_KValue = 0;
 
   /** The bagger. */
-  protected Bagging m_bagger = null;
+  protected AttributeBagging m_bagger = null;
 
   /** The maximum depth of the trees (0 = unlimited) */
   protected int m_MaxDepth = 0;
@@ -612,7 +648,7 @@ public class BaggedRandomForest extends AbstractClassifier implements OptionHand
    */
   @Override
   public Capabilities getCapabilities() {
-    return new RandomTree().getCapabilities();
+    return new AttributeRandomTree().getCapabilities();
   }
 
   /**
@@ -631,13 +667,13 @@ public class BaggedRandomForest extends AbstractClassifier implements OptionHand
     data = new Instances(data);
     data.deleteWithMissingClass();
 
-    m_bagger = new Bagging();
+    m_bagger = new AttributeBagging();
 
     // RandomTree implements WeightedInstancesHandler, so we can
     // represent copies using weights to achieve speed-up.
     m_bagger.setRepresentCopiesUsingWeights(true);
 
-    RandomTree rTree = new RandomTree();
+    AttributeRandomTree rTree = new AttributeRandomTree();
 
     // set up the random tree options
     m_KValue = m_numFeatures;
