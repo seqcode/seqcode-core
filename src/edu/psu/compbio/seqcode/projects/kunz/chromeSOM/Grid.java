@@ -55,8 +55,9 @@ public class Grid extends JFrame
 	            {
 	                //Execute when button is pressed
 	                find = texter.getText();
-	                int chr = Integer.parseInt(find);
-	                System.out.print(chr);
+	                int chr = 0;
+	                try{chr = Integer.parseInt(find);
+	                }catch (NumberFormatException u){chr = 0;}
 	                d.countingDPS(chr);
 	            }
 	        });   
@@ -71,7 +72,7 @@ public class Grid extends JFrame
 	    	{
 	    		int xArg = 0;
 		    	int yArg = 0;
-		    	int sigmaArg = 175;
+		    	int sigmaArg = 3;
 	    	    
 		    	try {
 	    	        xArg = Integer.parseInt(args[1]);
@@ -88,12 +89,12 @@ public class Grid extends JFrame
 	    	    	try {
 		    	        sigmaArg = Integer.parseInt(args[3]);
 		    	    } catch (NumberFormatException e) {
-		    	        System.err.println("Argument" + args[3] + " is not an integer. Sigma set to 175 by default");
+		    	        System.err.println("Argument" + args[3] + " is not an integer. Sigma set to 3 by default");
 		    	    }
 	    	    }
 	    	    else
 	    	    {
-	    	    	System.err.println("No sigma argument entered. Sigma set to 175 by default");
+	    	    	System.err.println("No sigma argument entered. Sigma set to 3 by default");
 	    	    }
 		    	BatchMap o = new BatchMap(xArg,yArg,sigmaArg);
 		    	

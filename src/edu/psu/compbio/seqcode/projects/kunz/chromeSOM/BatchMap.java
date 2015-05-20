@@ -17,7 +17,7 @@ public class BatchMap
 	public String lander;
 	public BatchMap(int xNode, int yNode, int sigma)
 	{
-		String ffs = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/SOMlander.txt";
+		String ffs = System.getProperty("user.dir")+"/SOMlander.txt";
 		lander = ffs;
 		xNodes = xNode;
 		yNodes = yNode;
@@ -26,7 +26,7 @@ public class BatchMap
 		points = new ArrayList<DataPoint>();
 		n = new NodeSystem(xNode,yNode);
 		iterations = 1000;
-		String ff = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/MatrixLanding.txt";
+		String ff = System.getProperty("user.dir")+"/MatrixLanding.txt";
 		reader = new Reader(ff);
 	}
 	public void go()
@@ -46,6 +46,7 @@ public class BatchMap
 		for(int i = 0; i<n.size(); i++)
 			n.get(i).initialize(points.get((int)(Math.random()*points.size())));
 		assignNeighbors();
+		neighborhooder();
 		assignInitialNodes();
 		System.out.println("Initialization Done");
 	}
@@ -116,7 +117,6 @@ public class BatchMap
 			dot += (nope.g[i]) * (dope.g[i]);
 		}
 		dot = dot/(magN*magD);
-		//System.out.println(dot);
 		return dot;
 	}
 	
@@ -129,16 +129,13 @@ public class BatchMap
 		}
 	}
 	public double nFactor(int o, double itercount) 
-	{
-		//System.out.println(o);
-		double sig = sgm - (sgm*(itercount/iterations)); //sigma = width of Guassian kernel... what is this supposed to start at?
-		
+	{                  
+		double sig = sgm-1;
+		sig = (sig - (sig*(itercount/iterations)))+1; //sigma = width of Guassian kernel
 		double r = 0;
-		r = (iterations-itercount) * Math.exp(-1*((o*o)/(2*sig*sig)));
-		/*if(count % 100 == 0)
-		{
-			System.out.println(o + " - " + r + " - "+Math.exp(-1*((o*o)/(2*sig*sig))));
-		}*/
+		//System.out.println((1-(itercount/iterations)));
+		r = (1-(itercount/iterations)) * Math.exp(-1*((o*o)/(2*sig*sig)));
+		//System.out.println(o + "  " + r);
 		return r;
 	}
 	public void iterate(double itercount)
@@ -214,61 +211,60 @@ public class BatchMap
 				}
 			}
 		}
-		neighborhood2();
 	}
-	public void neighborhood2()
+	public void neighborhooder()
 	{
-		Node b; Node a;
 		for(int i = 0; i<n.size(); i++)
 		{
-			a = n.get(i);
-			for(int k = 0; k<a.neighbors.size();k++)
+			Node a = n.get(i);
+			a.neighborHoods = new ArrayList<ArrayList<Node>>();
+			a.neighborHoods.add(new ArrayList<Node>());
+			a.neighborHoods.get(0).add(a);//adds self to the neighborhood 
+			a.neighborHoods.add(a.neighbors);//adds 6 closest neighbors as found by neighborhood method above
+		}
+		int shell = 1;
+		int maxShell = (xNodes + yNodes)/4;
+		while(shell < maxShell)
+		{
+			for(int i = 0; i<n.size(); i++)
 			{
-				b = a.neighbors.get(k);
-				for(int j = 0; j < b.neighbors.size(); j++)
+				Node a = n.get(i);
+				a.neighborHoods.add(new ArrayList<Node>());
+				for(int k = 0; k<a.neighborHoods.get(shell).size();k++)
 				{
-					if(a.neighbors.indexOf(b.neighbors.get(j))==-1&&b.neighbors.get(j)!=a)
+					Node b = a.neighborHoods.get(shell).get(k);
+					for(int j = 0; j < b.neighborHoods.get(shell).size(); j++)
 					{
-						if(a.neighbors2.indexOf(b.neighbors.get(j))==-1)
-							a.neighbors2.add(b.neighbors.get(j));
+						Node add = b.neighborHoods.get(shell).get(j);
+						if(!a.neighborHoodContains(add)) //checks Node a's neighborHoods to see if Node add is already present
+						{
+							a.neighborHoods.get(shell+1).add(add);
+						}
 					}
 				}
 			}
+			shell++;
 		}
-		neighborhood3();
-	}
-	public void neighborhood3()
-	{
-		Node b; Node a;
-		for(int i = 0; i<n.size(); i++)
+		/*
+		 * For Diagnosing neighborhood issues
+		 */
+		/*Node bb = n.get(0);
+		int p = 0; 
+		for(int i = 0; i< bb.neighborHoods.size(); i++)
 		{
-			a = n.get(i);
-			for(int k = 0; k<a.neighbors2.size();k++)
+			System.out.println(i + " " +bb.neighborHoods.get(i).size());
+			for(int k = 0; k<bb.neighborHoods.get(i).size(); k++)
 			{
-				b = a.neighbors2.get(k);
-				for(int j = 0; j < b.neighbors.size(); j++)
-				{
-					if(a.neighbors2.indexOf(b.neighbors.get(j))==-1 && a.neighbors.indexOf(b.neighbors.get(j))==-1 && b.neighbors.get(j)!=a)
-					{
-						if(a.neighbors3.indexOf(b.neighbors.get(j))==-1)
-							a.neighbors3.add(b.neighbors.get(j));
-					}
-				}
+				p++;
 			}
 		}
-		assignNeighborHoods();
-	}
-	public void assignNeighborHoods()
-	{
-		for(int i = 0; i<n.size(); i++)
-		{
-			n.get(i).neighborHoods();
-		}
+		System.out.println(p);
+		*/
 	}
 	public void finishTraining()
 	{
-		System.out.println("Training done");
 		writeFile();
+		System.out.println("Training done");
 	}
 	public void writeFile()
 	{
@@ -305,19 +301,5 @@ public class BatchMap
 		}
 	}
 	
-	//To be cut and moved/redone in draw hex
-	public void findCountedDPS(ArrayList<String> theWord)
-	{
-		for(int i = 0; i<n.size(); i++)
-		{
-			n.get(i).countedPoints.clear();
-			for(int j = 0; j < n.get(i).dataPoints.size(); j++)
-			{
-				if(theWord.contains(n.get(i).dataPoints.get(j).chrome))
-				{
-					n.get(i).countedPoints.add(n.get(i).dataPoints.get(j));
-				}
-			}
-		}
-	}
+	
 }

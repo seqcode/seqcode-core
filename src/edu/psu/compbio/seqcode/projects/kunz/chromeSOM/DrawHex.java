@@ -19,7 +19,7 @@ public class DrawHex extends JPanel// implements Grid2D
 	MiniSystem nodeSystem;
 	public DrawHex()
 	{
-		String ffs = System.getProperty("user.dir")+"/src/edu/psu/compbio/seqcode/projects/kunz/chromeSOM/SOMlander.txt";
+		String ffs = System.getProperty("user.dir")+"/SOMlander.txt";
 		yNodes=0;
 		xNodes=0;
 		reader(ffs);
@@ -36,14 +36,15 @@ public class DrawHex extends JPanel// implements Grid2D
 			mini.counting.clear();
 			for(int j =0; j<mini.dataPoints.size(); j++)
 			{
-				if (mini.dataPoints.get(j).chrome == chr)
-				{
+				if (chr == 0)
 					mini.counting.add(mini.dataPoints.get(j));
-				}
+				else if (mini.dataPoints.get(j).chrome == chr)
+					mini.counting.add(mini.dataPoints.get(j));
 			}
 			//System.out.println(mini.counting.size());
 		}
-		colors();
+	    maxDataPoints = 0;
+	    minDataPoints = 0;
 		heatMapping();
 		repaint();
 	}
@@ -82,7 +83,6 @@ public class DrawHex extends JPanel// implements Grid2D
 				current.addDP(whole);
 		}
 		nodeSystem = new MiniSystem(nodeList,xNodes,yNodes);
-		
 	}
 	public void paintComponent(Graphics g)
 	  {
@@ -197,15 +197,15 @@ public class DrawHex extends JPanel// implements Grid2D
 				minDataPoints = nodeList.get(i).counting.size();
 		}
 		if(maxDataPoints == minDataPoints) maxDataPoints++;
-		   for(int i = 0; i<nodeSystem.size(); i++)
-		   {	   
-			   MiniNode p = nodeSystem.get(i);
-			   if(p.counting.size() == 0)
-			   {
-				   p.color = Color.GRAY;
-			   }
-			   else
-				   p.color = colors.get(((p.counting.size()-minDataPoints)*(colors.size()-1)/(maxDataPoints-minDataPoints)));
+	   for(int i = 0; i<nodeSystem.size(); i++)
+	   {	   
+		   MiniNode p = nodeSystem.get(i);
+		   if(p.counting.size() == 0)
+		   {
+			   p.color = Color.GRAY;
+		   }
+		   else
+			   p.color = colors.get(((p.counting.size()-minDataPoints)*(colors.size()-1)/(maxDataPoints-minDataPoints)));
+	   }
 	}
-}
 }
