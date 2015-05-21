@@ -14,6 +14,7 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
+import edu.psu.compbio.seqcode.projects.seed.stats.FeatureStatistics;
 
 
 /**
@@ -25,6 +26,8 @@ public class SequencingExptRegionsCounter {
 	
 	ExptConfig econf;
 	GenomeConfig gconf;
+	
+	double minSigCtrlFoldDifference;
 	
 	List<Region> regions;
 	
@@ -121,19 +124,37 @@ public class SequencingExptRegionsCounter {
 				RegionCount++;
 			}
 			
+			FeatureStatistics stats = new FeatureStatistics();
 			// Do bionomial testing 
-			
-			
-			
+			for(Region r : regions){
+				int RegionCount=0;
+				double pval = stats.binomialPValue(pooledCtrlCounts[RegionCount], pooledCtrlCounts[RegionCount]+
+						pooledSigCounts[RegionCount],minSigCtrlFoldDifference);
+				enrichment[RegionCount] = -1*Math.log10(pval);
+				RegionCount++;
+			}
 		}
 		
+		header.deleteCharAt(header.length()-1);
+		System.out.println(header.toString());
 		
+		StringBuilder enrichmentSb = new StringBuilder();
 		
+		for(int r=0; r<regions.size(); r++){
+			enrichmentSb.append(regions.get(r).getLocationString());
+			enrichmentSb.append("\t");
+			enrichmentSb.append(enrichment[r]);
+			enrichmentSb.append("\n");
+		}
+		System.out.println(enrichmentSb.toString());
+		
+		manager.close();
 	}
 	
 	
 	
 	public void setRegions(List<Region> regs){regions = regs;}
+	public void serMinSigCntrlFoldDiff(double min){minSigCtrlFoldDifference = min;}
 	
 	public static void main(String[] args){
 		GenomeConfig gcon = new GenomeConfig(args);
@@ -144,6 +165,8 @@ public class SequencingExptRegionsCounter {
 		SequencingExptRegionsCounter counter = new SequencingExptRegionsCounter(econ, gcon);
 		
 		int win = Args.parseInteger(args, "win", 200);
+		
+		double minSigCtrlFoldDifference = Args.parseDouble(args,"minfolddiff",1);
 		
 		if (!ap.hasKey("refTSSs") && !ap.hasKey("peaks") && !ap.hasKey("regions")){
 			System.err.println("Provied either a peaks file or a refTSSs file or a regions !!!");
@@ -165,7 +188,13 @@ public class SequencingExptRegionsCounter {
 		
 		
 		counter.setRegions(reg);
-		counter.printCounts();
+		counter.serMinSigCntrlFoldDiff(minSigCtrlFoldDifference);
+		if(ap.hasKey("counts")){
+			counter.printCounts();
+		}else if(ap.hasKey("enrichment")){
+			counter.printInputEnrichment();
+		}
+		
 		
 		
 	}
