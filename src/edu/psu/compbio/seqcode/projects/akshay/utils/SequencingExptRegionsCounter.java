@@ -118,16 +118,16 @@ public class SequencingExptRegionsCounter {
 				}
 			}
 			// Scale the control counts
+			int RegionCount=0;
 			for(Region r : regions){
-				int RegionCount=0;
 				pooledCtrlCounts[RegionCount] = pooledCtrlCounts[RegionCount]*ec.getPooledSampleControlScaling();
 				RegionCount++;
 			}
 			
 			FeatureStatistics stats = new FeatureStatistics();
 			// Do bionomial testing 
+			RegionCount=0;
 			for(Region r : regions){
-				int RegionCount=0;
 				double pval = stats.binomialPValue(pooledCtrlCounts[RegionCount], pooledCtrlCounts[RegionCount]+
 						pooledSigCounts[RegionCount],minSigCtrlFoldDifference);
 				enrichment[RegionCount] = -1*Math.log10(pval);
