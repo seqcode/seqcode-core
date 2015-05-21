@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
@@ -72,6 +73,64 @@ public class SequencingExptRegionsCounter {
 		
 		manager.close();
 	}
+	
+	
+	public void printInputEnrichment(){
+		if(!econf.getCacheAllData()){
+			Collections.sort(regions);
+		}
+		ExperimentManager manager = new ExperimentManager(econf);
+		double[] enrichment = new double[regions.size()];
+		StringBuilder header = new StringBuilder();
+		header.append("#Region");
+		header.append("\t");
+		
+		for(ExperimentCondition ec: manager.getConditions()){
+			header.append(ec.getName());
+			header.append("\t");
+			double[] pooledSigCounts= new double[regions.size()];
+			double[] pooledCtrlCounts = new double[regions.size()];
+			
+			for(Sample sigs : ec.getSignalSamples()){
+				int RegionCount=0;
+				for(Region r : regions){
+					pooledSigCounts[RegionCount] = pooledSigCounts[RegionCount] + sigs.countHits(r);
+					RegionCount++;
+				}
+			}
+			
+			if(ec.getControlSamples().size() != 0 ){
+				for(Sample ctrls : ec.getControlSamples()){
+					int RegionCount=0;
+					for(Region r : regions){
+						pooledCtrlCounts[RegionCount] = pooledCtrlCounts[RegionCount] + ctrls.countHits(r);
+						RegionCount++;
+					}
+				}
+			}else{
+				int RegionCount=0;
+				for(Region r : regions){
+					pooledCtrlCounts[RegionCount] = ec.getTotalSignalCount()*r.getWidth()/econf.getMappableGenomeLength();
+					RegionCount++;
+				}
+			}
+			// Scale the control counts
+			for(Region r : regions){
+				int RegionCount=0;
+				pooledCtrlCounts[RegionCount] = pooledCtrlCounts[RegionCount]*ec.getPooledSampleControlScaling();
+				RegionCount++;
+			}
+			
+			// Do bionomial testing 
+			
+			
+			
+		}
+		
+		
+		
+	}
+	
 	
 	
 	public void setRegions(List<Region> regs){regions = regs;}
