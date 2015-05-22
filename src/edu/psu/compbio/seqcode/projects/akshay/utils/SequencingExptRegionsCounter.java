@@ -175,7 +175,7 @@ public class SequencingExptRegionsCounter {
 		
 		int win = Args.parseInteger(args, "win", 200);
 		
-		String label = ap.hasKey("exptlabel") ? ap.getKeyValue("exptlabel") : "IP";
+		String label = ap.hasKey("label") ? ap.getKeyValue("label") : "IP";
 		
 		double minSigCtrlFoldDifference = Args.parseDouble(args,"minfolddiff",1);
 		
