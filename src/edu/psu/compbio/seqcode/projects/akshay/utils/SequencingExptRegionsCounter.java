@@ -28,12 +28,14 @@ public class SequencingExptRegionsCounter {
 	GenomeConfig gconf;
 	
 	double minSigCtrlFoldDifference;
+	FeatureStatistics stats;
 	
 	List<Region> regions;
 	
 	public SequencingExptRegionsCounter(ExptConfig econfig, GenomeConfig gconfig) {
 		econf = econfig;
 		gconf = gconfig;
+		stats = new FeatureStatistics();
 	}
 	
 	public void printCounts(){
@@ -124,12 +126,11 @@ public class SequencingExptRegionsCounter {
 				RegionCount++;
 			}
 			
-			FeatureStatistics stats = new FeatureStatistics();
+			
 			// Do bionomial testing 
 			RegionCount=0;
 			for(Region r : regions){
-				double pval = stats.binomialPValue(pooledCtrlCounts[RegionCount], pooledCtrlCounts[RegionCount]+
-						pooledSigCounts[RegionCount],minSigCtrlFoldDifference);
+				double pval = stats.binomialPValue(pooledCtrlCounts[RegionCount], pooledCtrlCounts[RegionCount]+pooledSigCounts[RegionCount],minSigCtrlFoldDifference);
 				enrichment[RegionCount] = -1*Math.log10(pval);
 				RegionCount++;
 			}
@@ -198,8 +199,6 @@ public class SequencingExptRegionsCounter {
 		
 		
 	}
-
-	
 	
 
 }
