@@ -27,6 +27,8 @@ public class Grid extends JFrame
 	    
 	    s = new ArrayList<String>();
 	  }
+	
+	 //For viewing
 	 public void drawGrid()
 	 {
 		d = new DrawHex();
@@ -35,12 +37,16 @@ public class Grid extends JFrame
     	d.colors();
     	d.heatMapping();
 	 }
+	 
+	 //For training
 	 public void batchMap(int x, int y)
 	 {
 		 m = new BatchMap(x, y, 175);
 		 m.go();
 		 window2.drawGrid();
 	 }
+	 
+	 //Finds and shows chromes
 	 public void setUpMenu(JMenuBar menubar)
 	 {
 		 JButton button = new JButton("Seach");

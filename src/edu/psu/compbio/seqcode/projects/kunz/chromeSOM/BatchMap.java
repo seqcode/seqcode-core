@@ -25,23 +25,29 @@ public class BatchMap
 		//System.out.println(xNodes+","+yNodes);
 		points = new ArrayList<DataPoint>();
 		n = new NodeSystem(xNode,yNode);
-		iterations = 1000;
+		iterations = 5000;
 		String ff = System.getProperty("user.dir")+"/MatrixLanding.txt";
 		reader = new Reader(ff);
 	}
-	public void go()
+	
+	//initialize -> iterate -> terminate
+	public void go() 
 	{
 		generateDataPoints();
 		initialize();
 		iterater();
 		finishTraining();
 	}
-	public void generateDataPoints()
+	
+	//Reader class used to generate data points from file 
+	public void generateDataPoints() 
 	{
-		reader.matrixReader();
+		reader.matrixReader(); 									//reader object and file location set in constructor
 		points = reader.points;
 	}
-	public void initialize() //random
+	
+	//Node vectors are each set equal to a randomly selected data point's vector - Also calls for neighbor assignment
+	public void initialize() 
 	{
 		for(int i = 0; i<n.size(); i++)
 			n.get(i).initialize(points.get((int)(Math.random()*points.size())));
@@ -50,38 +56,42 @@ public class BatchMap
 		assignInitialNodes();
 		System.out.println("Initialization Done");
 	}
-	public void assignInitialNodes()  // reimplement to check nodes more efficiently 
+	
+	//Assigns data points to nodes based on cosine similarity metric (cosineSim() method)
+	public void assignInitialNodes()  
 	{
-		for(int i = 0; i<points.size(); i++)
-			points.get(i).updateMag();
+		for(int i = 0; i<points.size(); i++) 					//Data Points and Nodes have a magnitude field that refers to their vectors' magnitudes
+			points.get(i).updateMag();							//Magnitude is found and saved because they are used so many times over in cosine similarity method
 		for(int i = 0; i<n.size(); i++)
 			n.get(i).updateMag();
 		Node noodle; DataPoint doodle;
-		for(int i = 0; i<points.size(); i++)
+		for(int i = 0; i<points.size(); i++)					//Goes through each data points
 		{
 			doodle = points.get(i);
-			noodle = n.get((int)(Math.random()*n.size()));
+			noodle = n.get((int)(Math.random()*n.size())); 		//initial node is randomly selected
 			doodle.myNode = noodle;
 			double cosineSim = cosineSim(noodle, doodle);
 			Node compare;
-			for(int j = 0; j < n.size(); j++)
+			for(int j = 0; j < n.size(); j++) 					//Each data point goes through each Node looking for most similar
 			{
 				compare = n.get(j);
 				double dist = cosineSim(compare,doodle);
-				if(dist>cosineSim)
+				if(dist>cosineSim)  							//Node with highest cosine similarity value to data point = most similar
 				{
 					cosineSim = dist;
 					noodle = compare;
 				}
 			}
-			doodle.myNode.dataPoints.remove(doodle);
+			doodle.myNode.dataPoints.remove(doodle); 			//keeping track of which data points and Nodes are assigned to eachother
 			doodle.myNode = noodle;
 			noodle.dataPoints.add(doodle);	
 		}
 	}
+	
+	//Assigns data points to nodes based on cosine similarity metric (cosineSim() method)
 	public void assignNodes()
 	{
-		for(int i = 0; i<n.size(); i++)
+		for(int i = 0; i<n.size(); i++) 						//Data point vectors do not change -> only Node update is needed aside from initial  
 			n.get(i).updateMag();
 		for(int i = 0; i<points.size(); i++)
 		{
@@ -105,9 +115,9 @@ public class BatchMap
 		}
 	}
 	
-	public double cosineSim(Node nope, DataPoint dope)
-	{
-		//cosine similarity
+	//Cosine similarity
+	public double cosineSim(Node nope, DataPoint dope)							//Cosine Similarity = (A · B)/(||A||*||B||)
+	{																			//Higher values indicate more similarity (ranges from [-1, 1])
 		double dot = 0;
 		double magN = nope.mag;
 		double magD = dope.mag;
@@ -120,6 +130,7 @@ public class BatchMap
 		return dot;
 	}
 	
+	//Calls iterate methods the number of times dictated by the parameter
 	public void iterater()
 	{
 		double dd = iterations;
@@ -128,37 +139,39 @@ public class BatchMap
 			iterate(i);
 		}
 	}
+	
+	//Finds the weight factor of a given data point based on learning rate and neighborhood function
 	public double nFactor(int o, double itercount) 
 	{                  
 		double sig = sgm-1;
-		sig = (sig - (sig*(itercount/iterations)))+1; //sigma = width of Guassian kernel
+		sig = (sig - (sig*(itercount/iterations)))+1; 							//sigma = width of Guassian kernel (sgm ->1)
 		double r = 0;
-		//System.out.println((1-(itercount/iterations)));
-		r = (1-(itercount/iterations)) * Math.exp(-1*((o*o)/(2*sig*sig)));
-		//System.out.println(o + "  " + r);
+		double lr = (1-(itercount/iterations)); 								//lr = learning rate (1 -> 0) 
+		r = lr * Math.exp(-1*((o*o)/(2*sig*sig)));
 		return r;
 	}
+	
+	//Where the magic happens
 	public void iterate(double itercount)
 	{
-		for(int i = 0; i< n.size(); i++)
+		for(int i = 0; i< n.size(); i++) 										//Updates each Node; neighborhood shells -> nodes -> data points
 		{
 			Node nodey = n.get(i);
-			double[] numVec = new double[nodey.g.length]; for(int m = 0; m<nodey.g.length; m++) {numVec[m] = 0.0;}
-			double sumDenom = 0;
+			double[] numVec = new double[nodey.g.length]; for(int m = 0; m<nodey.g.length; m++) {numVec[m] = 0.0;}  //initialize a matrix for sum of all datapoints*weight for weighted average
+			double sumDenom = 0;																					//SumDenom = sum of weight factors used as denominator in weighted average
 			
-			for(int o = 0; o < nodey.neighborHoods.size(); o++)
+			for(int o = 0; o < nodey.neighborHoods.size(); o++)        			//Cycles through neighborhood shells, starting with most similar
 			{
-				for(int k = 0; k<nodey.neighborHoods.get(o).size(); k++)
+				for(int k = 0; k<nodey.neighborHoods.get(o).size(); k++)		//Cycles through Nodes in each shell
 				{
 					Node nono = nodey.neighborHoods.get(o).get(k);
 					
 					double nj = nono.dataPoints.size();
-					double h = nFactor(o,itercount); //o = degree of separation between nodes (0-3)
-					
+					double h = nFactor(o,itercount); 							//o = degree of separation between nodes = how many shells apart					
 					//double weight = nj*h;
 					double weight = h;
 					
-					for(int j = 0; j<nj; j++)
+					for(int j = 0; j<nj; j++)									//Cycles through the data points assigned to each Node in each shell
 					{
 						DataPoint p = nono.dataPoints.get(j);
 						for(int l = 0; l<p.g.length; l++)
@@ -170,17 +183,19 @@ public class BatchMap
 					}
 				}
 			}
-			for(int l = 0; l<numVec.length; l++)
+			for(int l = 0; l<numVec.length; l++) 						//Takes weighted average = updated vector for node
 			{
 				double doo = numVec[l]/sumDenom;
 				numVec[l] = doo;
 			}
-			nodey.g = numVec;
+			nodey.g = numVec;									//Node vectors are updated in order, but reassignment happens after all are updated -> batched SOM
 		}
 		count++;
 		assignNodes();
 	}
-	public void assignNeighbors() 
+	
+	//Assigns the first shell of neighbors - hard coded to follow hex grid rules
+	public void assignNeighbors() 								
 	{
 		for(int i = 0; i<xNodes; i++)
 		{
@@ -212,15 +227,17 @@ public class BatchMap
 			}
 		}
 	}
-	public void neighborhooder()
+	
+	//Each node has every other node (including self) assigned to a shell based on the initial shell from assignNeighbors() method
+	public void neighborhooder()						
 	{
 		for(int i = 0; i<n.size(); i++)
 		{
 			Node a = n.get(i);
 			a.neighborHoods = new ArrayList<ArrayList<Node>>();
 			a.neighborHoods.add(new ArrayList<Node>());
-			a.neighborHoods.get(0).add(a);//adds self to the neighborhood 
-			a.neighborHoods.add(a.neighbors);//adds 6 closest neighbors as found by neighborhood method above
+			a.neighborHoods.get(0).add(a);							//adds self to the neighborhood neighborhood[0]
+			a.neighborHoods.add(a.neighbors);						//adds 6 closest neighbors as found by assignNeighbors() method to neighborhood[1]
 		}
 		int shell = 1;
 		int maxShell = (xNodes + yNodes)/4;
@@ -236,7 +253,7 @@ public class BatchMap
 					for(int j = 0; j < b.neighborHoods.get(shell).size(); j++)
 					{
 						Node add = b.neighborHoods.get(shell).get(j);
-						if(!a.neighborHoodContains(add)) //checks Node a's neighborHoods to see if Node add is already present
+						if(!a.neighborHoodContains(add)) 							//checks Node a's neighborHoods to see if Node add is already present
 						{
 							a.neighborHoods.get(shell+1).add(add);
 						}
@@ -246,7 +263,7 @@ public class BatchMap
 			shell++;
 		}
 		/*
-		 * For Diagnosing neighborhood issues
+		 	For Diagnosing neighborhood issues
 		 */
 		/*Node bb = n.get(0);
 		int p = 0; 
@@ -261,18 +278,22 @@ public class BatchMap
 		System.out.println(p);
 		*/
 	}
-	public void finishTraining()
+	
+	//Called by go() after iterations are complete - not very useful, just calls another methods and outprints
+	public void finishTraining()       
 	{
 		writeFile();
 		System.out.println("Training done");
 	}
+	
+	//Saves trained SOM in text file
 	public void writeFile()
 	{
 		BufferedWriter b;
 		try 
 		{
 			FileWriter ff = new FileWriter(lander,true);
-			b = new BufferedWriter(ff);
+			b = new BufferedWriter(ff);											//ff set in constructor = the file name of the SOMlander
 			PrintWriter printer = new PrintWriter(b);
 			printer.print(xNodes+"x"+yNodes+ "\nSigma:" + sgm +"\n");
 			for(int i = 0; i<yNodes; i++)

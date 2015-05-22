@@ -73,7 +73,7 @@ public class Matrixer
 		n = findChromeNum();
 		a = maxForEach(binsize,n);
 		a1 = new int[n];
-		System.out.println(n);
+		System.out.println("Chromes: " + n);
 		int totalBins = 0;
 		for(int i =0; i<a.length;i++)
 		{
@@ -82,7 +82,7 @@ public class Matrixer
 		}
 		for(int i =0; i<a.length;i++)
 			System.out.println(a[i]);
-		System.out.println(totalBins);
+		System.out.println("Total bins: "+ totalBins);
 		bigpapa = new int[totalBins][totalBins];
 		for(int i =0; i< inter.size();i++)
 		{
