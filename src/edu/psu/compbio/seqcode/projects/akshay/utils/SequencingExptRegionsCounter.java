@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import cern.jet.random.Binomial;
+import cern.jet.random.engine.DRand;
+
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
@@ -14,6 +17,7 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
+import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 import edu.psu.compbio.seqcode.projects.seed.stats.FeatureStatistics;
 
 
@@ -24,18 +28,15 @@ import edu.psu.compbio.seqcode.projects.seed.stats.FeatureStatistics;
  */
 public class SequencingExptRegionsCounter {
 	
-	ExptConfig econf;
-	GenomeConfig gconf;
+	protected ExptConfig econf;
+	protected GenomeConfig gconf;
 	
-	double minSigCtrlFoldDifference;
-	FeatureStatistics stats;
-	
-	List<Region> regions;
+	protected double minSigCtrlFoldDifference;
+	protected List<Region> regions;
 	
 	public SequencingExptRegionsCounter(ExptConfig econfig, GenomeConfig gconfig) {
 		econf = econfig;
 		gconf = gconfig;
-		stats = new FeatureStatistics();
 	}
 	
 	public void printCounts(){
@@ -130,7 +131,7 @@ public class SequencingExptRegionsCounter {
 			// Do bionomial testing 
 			RegionCount=0;
 			for(Region r : regions){
-				double pval = stats.binomialPValue(pooledCtrlCounts[RegionCount], pooledCtrlCounts[RegionCount]+pooledSigCounts[RegionCount],minSigCtrlFoldDifference);
+				double pval = StatUtil.binomialPValue(pooledCtrlCounts[RegionCount], (pooledCtrlCounts[RegionCount]+pooledSigCounts[RegionCount]), 1/(1+this.minSigCtrlFoldDifference));
 				enrichment[RegionCount] = -1*Math.log10(pval);
 				RegionCount++;
 			}
