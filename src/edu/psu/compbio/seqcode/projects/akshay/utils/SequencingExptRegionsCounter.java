@@ -33,6 +33,7 @@ public class SequencingExptRegionsCounter {
 	
 	protected double minSigCtrlFoldDifference;
 	protected List<Region> regions;
+	protected String label;
 	
 	public SequencingExptRegionsCounter(ExptConfig econfig, GenomeConfig gconfig) {
 		econf = econfig;
@@ -90,10 +91,15 @@ public class SequencingExptRegionsCounter {
 		StringBuilder header = new StringBuilder();
 		header.append("#Region");
 		header.append("\t");
+		if(label != null){
+			header.append(label);
+		}
 		
 		for(ExperimentCondition ec: manager.getConditions()){
-			header.append(ec.getName());
-			header.append("\t");
+			if(label == null){
+				header.append(ec.getName());
+				header.append("\t");
+			}
 			double[] pooledSigCounts= new double[regions.size()];
 			double[] pooledCtrlCounts = new double[regions.size()];
 			
@@ -136,8 +142,8 @@ public class SequencingExptRegionsCounter {
 				RegionCount++;
 			}
 		}
+		if(label == null){header.deleteCharAt(header.length()-1);}
 		
-		header.deleteCharAt(header.length()-1);
 		System.out.println(header.toString());
 		
 		StringBuilder enrichmentSb = new StringBuilder();
@@ -156,7 +162,8 @@ public class SequencingExptRegionsCounter {
 	
 	
 	public void setRegions(List<Region> regs){regions = regs;}
-	public void serMinSigCntrlFoldDiff(double min){minSigCtrlFoldDifference = min;}
+	public void setMinSigCntrlFoldDiff(double min){minSigCtrlFoldDifference = min;}
+	public void setExptLable(String lab){label = lab;}
 	
 	public static void main(String[] args){
 		GenomeConfig gcon = new GenomeConfig(args);
@@ -167,6 +174,8 @@ public class SequencingExptRegionsCounter {
 		SequencingExptRegionsCounter counter = new SequencingExptRegionsCounter(econ, gcon);
 		
 		int win = Args.parseInteger(args, "win", 200);
+		
+		String label = ap.hasKey("exptlabel") ? ap.getKeyValue("exptlabel") : "IP";
 		
 		double minSigCtrlFoldDifference = Args.parseDouble(args,"minfolddiff",1);
 		
@@ -190,7 +199,8 @@ public class SequencingExptRegionsCounter {
 		
 		
 		counter.setRegions(reg);
-		counter.serMinSigCntrlFoldDiff(minSigCtrlFoldDifference);
+		counter.setMinSigCntrlFoldDiff(minSigCtrlFoldDifference);
+		counter.setExptLable(label);
 		if(ap.hasKey("counts")){
 			counter.printCounts();
 		}else if(ap.hasKey("enrichment")){
