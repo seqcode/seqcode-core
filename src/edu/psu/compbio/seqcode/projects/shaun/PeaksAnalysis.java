@@ -297,7 +297,7 @@ public class PeaksAnalysis {
 			TnumK = TnumK + ((int)Math.pow(4, k))*3;
 		}
 		int[] kmerCounts = new int[TnumK];
-		System.out.println("Region");
+		System.out.print("Region");
 		int currIndex = 0;
 		
 		//Print header
@@ -310,11 +310,11 @@ public class PeaksAnalysis {
 			}
 			//Print central kmers
 			for(int i=0; i<numK; i++){
-				System.out.println("\t"+RegionFileUtilities.int2seq(i, k)+"_C");
+				System.out.print("\t"+RegionFileUtilities.int2seq(i, k)+"_C");
 			}
 			// Print right kmers
 			for(int i=0; i<numK; i++){
-				System.out.println("\t"+RegionFileUtilities.int2seq(i, k)+"_R");
+				System.out.print("\t"+RegionFileUtilities.int2seq(i, k)+"_R");
 			}
 		}
 		System.out.println("");
@@ -330,7 +330,7 @@ public class PeaksAnalysis {
 			for(int k=kmin; k<=kmax; k++){
 				int currKStart = 0;
 				for(int k_sub=kmin; k_sub<k; k_sub++){
-					currKStart = currKStart  +  ((int)Math.pow(4, k))*3;
+					currKStart = currKStart  +  ((int)Math.pow(4, k_sub))*3;
 				}
 				// Count left kmers
 				for(int i=0; i<((int)(seq.length()/3)-k+1); i++){
