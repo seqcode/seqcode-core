@@ -129,6 +129,7 @@ public class PeaksAnalysis {
 	        //options
 	        boolean printSeqs = ap.hasKey("printseqs");
 	        boolean printSeqKmers = ap.hasKey("printseqkmers");
+	        boolean printTiledSeqKmers = ap.hasKey("printtiledseqkmers");
 	        int printSeqKmersK = ap.hasKey("printseqkmers") ? new Integer(ap.getKeyValue("printseqkmers")).intValue():4;;
 	        boolean printMeta = ap.hasKey("metapeak");
 	        boolean weightedCounts = ap.hasKey("weightcount");
@@ -164,6 +165,12 @@ public class PeaksAnalysis {
 				analyzer.printPeakSeqs(repeatScreen);
 			if(printSeqKmers)
 				analyzer.printPeakSeqKmers(printSeqKmersK, useCache, genomePath);
+			
+			if(printTiledSeqKmers){
+				int kmin = ap.hasKey("kmin") ? new Integer(ap.getKeyValue("kmin")).intValue():3;
+				int kmax =  ap.hasKey("kmax") ? new Integer(ap.getKeyValue("kmax")).intValue():8;
+				analyzer.printPeakSeqTiledKmers(kmin, kmax, useCache, genomePath);
+			}
 			
 			//analyzer.printMotifInfo();
 			
@@ -275,6 +282,94 @@ public class PeaksAnalysis {
 			System.out.println("");
 		}
 	}
+	
+	//Divide the sequence into 3 regions and print kmer counts in the left, right and central regions
+	public void printPeakSeqTiledKmers(int kmin, int kmax, boolean useCache, String genPath){
+		SequenceGenerator seqgen = new SequenceGenerator();
+		seqgen.useCache(useCache);
+		if(useCache){
+			seqgen.useLocalFiles(true);
+			seqgen.setGenomePath(genPath);
+		}
+		
+		int TnumK = 0;
+		for(int k=kmin; k<=kmax; k++){
+			TnumK = TnumK + ((int)Math.pow(4, k))*3;
+		}
+		int[] kmerCounts = new int[TnumK];
+		System.out.println("Region");
+		int currIndex = 0;
+		
+		//Print header
+		for(int k=kmin; k<=kmax; k++){
+			int numK = (int)Math.pow(4, k);
+			
+			//Print left kmers 
+			for(int i=0; i<numK; i++){
+				System.out.print("\t"+RegionFileUtilities.int2seq(i, k)+"_L");
+			}
+			//Print central kmers
+			for(int i=0; i<numK; i++){
+				System.out.println("\t"+RegionFileUtilities.int2seq(i, k)+"_C");
+			}
+			// Print right kmers
+			for(int i=0; i<numK; i++){
+				System.out.println("\t"+RegionFileUtilities.int2seq(i, k)+"_R");
+			}
+		}
+		System.out.println("");
+		
+		for(Region r : posSet){
+			for(int i=0; i<kmerCounts.length; i++){
+				kmerCounts[i] = 0;
+			}
+			
+			String seq = seqgen.execute(r).toUpperCase();
+			if(seq.contains("N"))
+				continue;
+			for(int k=kmin; k<=kmax; k++){
+				int currKStart = 0;
+				for(int k_sub=kmin; k_sub<k; k_sub++){
+					currKStart = currKStart  +  ((int)Math.pow(4, k))*3;
+				}
+				// Count left kmers
+				for(int i=0; i<((int)(seq.length()/3)-k+1); i++){
+					String currK = seq.substring(i, i+k);
+					String revCurrK =SequenceUtils.reverseComplement(currK);
+					int  currKInt = RegionFileUtilities.seq2int(currK);
+					int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
+					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+					kmerCounts[currKStart+kmer]++;
+				}
+				//Count central kmers
+				for(int i=(int)(seq.length()/3); i<((int)(seq.length()*2/3)-k+1); i++){
+					String currK = seq.substring(i, i+k);
+					String revCurrK =SequenceUtils.reverseComplement(currK);
+					int  currKInt = RegionFileUtilities.seq2int(currK);
+					int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
+					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+					kmerCounts[currKStart+ ((int)Math.pow(4, k))+kmer]++;
+				}
+				//Count right kmers
+				for(int i=(int)(seq.length()*2/3); i<(seq.length()-k+1); i++){
+					String currK = seq.substring(i, i+k);
+					String revCurrK =SequenceUtils.reverseComplement(currK);
+					int  currKInt = RegionFileUtilities.seq2int(currK);
+					int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
+					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+					kmerCounts[currKStart+ ((int)Math.pow(4, k))*2+kmer]++;
+				}
+			}
+			System.out.print(r.getLocationString());
+			for(int i=0; i<kmerCounts.length; i++)
+				System.out.print("\t"+kmerCounts[i]);
+			System.out.println("");
+			
+			
+			
+		}
+	}
+		
 	
 	
 	///////////////////////////////////////////////////////////////////////
