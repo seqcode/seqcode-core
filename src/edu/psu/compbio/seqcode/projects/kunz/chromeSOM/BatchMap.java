@@ -15,17 +15,15 @@ public class BatchMap
 	public double sgm;
 	public ArrayList<DataPoint> points;
 	public String lander;
-	public BatchMap(int xNode, int yNode, int sigma)
+	public BatchMap(int xNode, int yNode, int sigma,int it)
 	{
-		String ffs = System.getProperty("user.dir")+"/SOMlander.txt";
-		lander = ffs;
 		xNodes = xNode;
 		yNodes = yNode;
 		sgm = sigma;
 		//System.out.println(xNodes+","+yNodes);
 		points = new ArrayList<DataPoint>();
 		n = new NodeSystem(xNode,yNode);
-		iterations = 5000;
+		iterations = it;
 		String ff = System.getProperty("user.dir")+"/MatrixLanding.txt";
 		reader = new Reader(ff);
 	}
@@ -292,7 +290,10 @@ public class BatchMap
 		BufferedWriter b;
 		try 
 		{
-			FileWriter ff = new FileWriter(lander,true);
+			String g = "SOM ("+xNodes+"x"+yNodes+"), "+(int)sgm+", " + iterations +".txt";
+			System.out.println(g);
+			
+			FileWriter ff = new FileWriter(g,true);
 			b = new BufferedWriter(ff);											//ff set in constructor = the file name of the SOMlander
 			PrintWriter printer = new PrintWriter(b);
 			printer.print(xNodes+"x"+yNodes+ "\nSigma:" + sgm +"\n");

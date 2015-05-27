@@ -17,9 +17,9 @@ public class DrawHex extends JPanel// implements Grid2D
 	public ArrayList<MiniNode> nodeList;
 	public ArrayList<Color> colors;
 	MiniSystem nodeSystem;
-	public DrawHex()
+	public DrawHex(String s)
 	{
-		String ffs = System.getProperty("user.dir")+"/SOMlander.txt";
+		String ffs = System.getProperty("user.dir")+"/"+s;
 		yNodes=0;
 		xNodes=0;
 		reader(ffs);
