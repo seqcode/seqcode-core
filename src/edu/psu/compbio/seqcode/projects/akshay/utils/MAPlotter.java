@@ -42,8 +42,9 @@ public class MAPlotter {
 		while ((line = reader.readLine()) != null) {
 			line = line.trim();
 			String[] words = line.split("\\s+");
-			unitToIndex.put(words[0], u);
-			indextoUnit.put(u, words[0]);
+			 String pointStr = words[0].replaceAll("\"", "");
+			unitToIndex.put(pointStr, u);
+			indextoUnit.put(u, pointStr);
 			u++;
 		}reader.close();
 		
@@ -65,7 +66,7 @@ public class MAPlotter {
             if(words[5].equals("Inf")){words[5]="Infinite";} if(words[5].equals("-Inf")){words[5]="-Infinite";}
             //Format: 
             //Point logFC logCPM LR PValue FDR
-            String pointStr = words[0].replaceAll("\"", "");
+           
             
             Double logFC = new Double(words[1]);
             if(logFC>LOG_FC_LIMIT){ logFC=LOG_FC_LIMIT; }
