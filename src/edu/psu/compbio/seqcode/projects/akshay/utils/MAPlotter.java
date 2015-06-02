@@ -150,7 +150,7 @@ public class MAPlotter {
 		
 		
 		ThreeClassScatterPlotMaker plotter = new ThreeClassScatterPlotMaker("Main");
-		plotter.saveMAplot(maMatrixOther, maMatrixDE, maMatrixConst,  0.0, "ScatterPlot", true);
+		plotter.saveMAplot(maMatrixOther, maMatrixDE, maMatrixConst,  0.0, "ScatterPlot.png", true);
 		
 		
 		
@@ -172,7 +172,7 @@ public class MAPlotter {
 			if(datapoints_highlight!=null)
 				this.addDataset("DE", datapoints_highlight, new Color(0,0,255,80), 3);
 			if(datapoints_constant !=null)
-				this.addDataset("Constant", datapoints_constant, new Color(255,80,0,0), 3);
+				this.addDataset("Constant", datapoints_constant, new Color(255,0,0,80), 3);
 			this.setXAxisLabel("A");
 			this.setYAxisLabel("M");
 			this.setXRangeFromData();
