@@ -324,6 +324,8 @@ public class PeaksAnalysis {
 				kmerCounts[i] = 0;
 			}
 			
+			StrandedRegion sr = (StrandedRegion)r;
+			
 			String seq = seqgen.execute(r).toUpperCase();
 			if(seq.contains("N"))
 				continue;
@@ -339,7 +341,11 @@ public class PeaksAnalysis {
 					int  currKInt = RegionFileUtilities.seq2int(currK);
 					int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
 					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
-					kmerCounts[currKStart+kmer]++;
+					if(sr.getStrand() == '+')
+						kmerCounts[currKStart+kmer]++;
+					else
+						kmerCounts[currKStart+ ((int)Math.pow(4, k))*2+kmer]++;
+					
 				}
 				//Count central kmers
 				for(int i=(int)(seq.length()/3); i<((int)(seq.length()*2/3)-k+1); i++){
@@ -357,7 +363,10 @@ public class PeaksAnalysis {
 					int  currKInt = RegionFileUtilities.seq2int(currK);
 					int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
 					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
-					kmerCounts[currKStart+ ((int)Math.pow(4, k))*2+kmer]++;
+					if(sr.getStrand() == '+')
+						kmerCounts[currKStart+ ((int)Math.pow(4, k))*2+kmer]++;
+					else
+						kmerCounts[currKStart+kmer]++;
 				}
 			}
 			System.out.print(r.getLocationString());
