@@ -249,7 +249,12 @@ public class RegionFileUtilities {
 		            	}else{
 		            		PointParser pparser = new PointParser(gen);
 			            	Point p = pparser.execute(words[0]);
-			            	StrandedRegion sp = new StrandedRegion(p.expand(win/2), strand);
+			            	String[] subwords = words[0].split(":");
+			            	StrandedRegion sp=null;
+			            	if(subwords.length>=3)
+			            		sp = new StrandedRegion(p.expand(win/2), subwords[2].charAt(0));
+			            	else
+			            		sp = new StrandedRegion(p.expand(win/2), strand);
 			            	regs.add(sp);
 		            	}
 		            }
