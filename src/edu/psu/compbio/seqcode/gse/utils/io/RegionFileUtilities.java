@@ -158,8 +158,15 @@ public class RegionFileUtilities {
 			                	regs.add(new StrandedRegion(sq.getMidpoint().expand(win/2), sq.getStrand()));
 		            	}else{
 		            		PointParser pparser = new PointParser(gen);
-			            	Point p = pparser.execute(words[0]);
-			            	StrandedRegion sp = new StrandedRegion(p.expand(win/2), strand);
+		            		String[] subwords = words[0].split(":");
+		            		StringBuilder sb = new StringBuilder();
+		            		sb.append(subwords[0]);sb.append(":");sb.append(subwords[1]);
+			            	Point p = pparser.execute(sb.toString());
+			            	StrandedRegion sp=null;
+			            	if(subwords.length>=3)
+			            		sp = new StrandedRegion(p.expand(win/2), subwords[2].charAt(0));
+			            	else
+			            		sp = new StrandedRegion(p.expand(win/2), strand);
 			            	regs.add(sp);
 		            	}
 		            }
@@ -248,8 +255,10 @@ public class RegionFileUtilities {
 			                	regs.add(sq.expand(win/2, win/2));
 		            	}else{
 		            		PointParser pparser = new PointParser(gen);
-			            	Point p = pparser.execute(words[0]);
-			            	String[] subwords = words[0].split(":");
+		            		String[] subwords = words[0].split(":");
+		            		StringBuilder sb = new StringBuilder();
+		            		sb.append(subwords[0]);sb.append(":");sb.append(subwords[1]);
+			            	Point p = pparser.execute(sb.toString());
 			            	StrandedRegion sp=null;
 			            	if(subwords.length>=3)
 			            		sp = new StrandedRegion(p.expand(win/2), subwords[2].charAt(0));
