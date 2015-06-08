@@ -149,7 +149,8 @@ public class RegionFileUtilities {
 		                	regs.add(sp);
 		                }
 	                }else if(words.length>=1 && words[0].contains(":")){
-		            	if(words[0].contains("-")){
+	                	String[] subwords = words[0].split(":");
+		            	if(subwords[1].contains("-")){
 		            		StrandedRegionParser rparser = new StrandedRegionParser(gen);
 		            		StrandedRegion sq = rparser.execute(words[0]);
 			            	if(win==-1){
@@ -158,10 +159,7 @@ public class RegionFileUtilities {
 			                	regs.add(new StrandedRegion(sq.getMidpoint().expand(win/2), sq.getStrand()));
 		            	}else{
 		            		PointParser pparser = new PointParser(gen);
-		            		String[] subwords = words[0].split(":");
-		            		StringBuilder sb = new StringBuilder();
-		            		sb.append(subwords[0]);sb.append(":");sb.append(subwords[1]);
-			            	Point p = pparser.execute(sb.toString());
+			            	Point p = pparser.execute(subwords[0]+":"+subwords[1]);
 			            	StrandedRegion sp=null;
 			            	if(subwords.length>=3)
 			            		sp = new StrandedRegion(p.expand(win/2), subwords[2].charAt(0));
@@ -246,7 +244,8 @@ public class RegionFileUtilities {
 		                	regs.add(sp);
 		                }
 	                }else if(words.length>=1 && words[0].contains(":")){
-		            	if(words[0].contains("-")){
+	                	String[] subwords = words[0].split(":");
+		            	if(subwords[1].contains("-")){
 		            		StrandedRegionParser rparser = new StrandedRegionParser(gen);
 		            		StrandedRegion sq = rparser.execute(words[0]);
 			            	if(win==-1){
@@ -255,10 +254,7 @@ public class RegionFileUtilities {
 			                	regs.add(sq.expand(win/2, win/2));
 		            	}else{
 		            		PointParser pparser = new PointParser(gen);
-		            		String[] subwords = words[0].split(":");
-		            		StringBuilder sb = new StringBuilder();
-		            		sb.append(subwords[0]);sb.append(":");sb.append(subwords[1]);
-			            	Point p = pparser.execute(sb.toString());
+			            	Point p = pparser.execute(subwords[0]+":"+subwords[1]);
 			            	StrandedRegion sp=null;
 			            	if(subwords.length>=3)
 			            		sp = new StrandedRegion(p.expand(win/2), subwords[2].charAt(0));
