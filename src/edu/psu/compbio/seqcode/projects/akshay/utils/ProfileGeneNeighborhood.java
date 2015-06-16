@@ -77,8 +77,6 @@ public class ProfileGeneNeighborhood {
 		String motiffile = ap.getKeyValue("motiffile");
 		String backfile = ap.getKeyValue("back");
 		
-		List<WeightMatrix> matrixList = MotifAnalysisSandbox.loadMotifFromFile(motiffile, backfile, gc.getGenome());
-		
 		String peaksFile = ap.getKeyValue("peaks");
 		List<Point> peaks = RegionFileUtilities.loadPeaksFromPeakFile(gc.getGenome(), ap.getKeyValue("peaks"), win);
 		String genefile = Args.parseString(args, "gtf", null);
@@ -102,14 +100,18 @@ public class ProfileGeneNeighborhood {
 		profiler.setRadius(rad);
 		profiler.setPeaks(peaks);
 		profiler.setGenes(genefile, geneList);
-		profiler.setMotifs(matrixList);
 		
-		boolean clusterSyntax = ap.hasKey("ClusterSyntax");
-		if(clusterSyntax){profiler.printPeakClusterSyntax();}
-		boolean peakSyntax = ap.hasKey("PeakSyntax");
-		if(peakSyntax){profiler.printPeakSyntax();}
-		boolean closePeaks = ap.hasKey("closePeaks");
-		if(closePeaks){profiler.printPeaksatGenes();}
+		
+		
+		if(ap.hasKey("ClusterSyntax")){
+			List<WeightMatrix> matrixList = MotifAnalysisSandbox.loadMotifFromFile(motiffile, backfile, gc.getGenome());
+			profiler.setMotifs(matrixList);
+			profiler.printPeakClusterSyntax();}
+		else if(ap.hasKey("PeakSyntax")){
+			List<WeightMatrix> matrixList = MotifAnalysisSandbox.loadMotifFromFile(motiffile, backfile, gc.getGenome());
+			profiler.setMotifs(matrixList);
+			profiler.printPeakSyntax();}
+		else if(ap.hasKey("closePeaks")){profiler.printPeaksatGenes();}
 		
 		profiler.clear();
 		
