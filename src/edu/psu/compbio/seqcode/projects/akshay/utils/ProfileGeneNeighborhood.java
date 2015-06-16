@@ -91,7 +91,8 @@ public class ProfileGeneNeighborhood {
         List<String> geneList = new ArrayList<String>();
         while ((line = reader.readLine()) != null) {
         	line.trim();
-        	geneList.add(line);
+        	String[] words =line.split("\t");
+        	geneList.add(words[0]);
         }
 		reader.close();
 		
@@ -123,6 +124,7 @@ public class ProfileGeneNeighborhood {
 	public void setPeaks(List<Point> pts){peaks =pts; loadPeakSeqs();}
 	public void setGenes(String gfffile, List<String> geneList){loadGenes(gfffile,geneList);}
 	public void setMotifs(List<WeightMatrix> m){motifs = m;}
+	
 	
 	
 	
