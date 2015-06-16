@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.machinelearning.Classification;
 
-import weka.classifiers.s;
+import weka.classifiers.*;
 import weka.classifiers.trees.*;
 
 public class WekaRandomForest {
