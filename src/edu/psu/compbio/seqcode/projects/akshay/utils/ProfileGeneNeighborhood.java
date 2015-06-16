@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -107,6 +108,8 @@ public class ProfileGeneNeighborhood {
 		if(clusterSyntax){profiler.printPeakClusterSyntax();}
 		boolean peakSyntax = ap.hasKey("PeakSyntax");
 		if(peakSyntax){profiler.printPeakSyntax();}
+		boolean closePeaks = ap.hasKey("closePeaks");
+		if(closePeaks){profiler.printPeaksatGenes();}
 		
 		profiler.clear();
 		
@@ -126,6 +129,30 @@ public class ProfileGeneNeighborhood {
 	public void setMotifs(List<WeightMatrix> m){motifs = m;}
 	
 	
+	/**
+	 * Just Prints all the peaks near the input gene-list
+	 * 
+	 */
+	public void printPeaksatGenes(){
+		loadpeaksAtgenes();
+		
+		List<Point> closepeaks = new ArrayList<Point>();
+		
+		
+		for(String gn : peaksAtgenes.keySet()){
+			if(peaksAtgenes.get(gn).size() !=0){
+				for(Point p: peaksAtgenes.get(gn)){
+					closepeaks.add(p);
+				}
+			}
+		}
+		HashSet<Point> output = new HashSet<>(closepeaks);
+		for(Point p: output){
+			System.out.println(p.getLocationString());
+		}
+		
+		
+	}
 	
 	
 	public void printPeakClusterSyntax(){
