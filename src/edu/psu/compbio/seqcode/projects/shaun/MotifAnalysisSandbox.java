@@ -66,7 +66,7 @@ public class MotifAnalysisSandbox {
 	public static void main(String[] args) throws IOException, ParseException {
 		boolean havePeaks=false;
 		boolean printHits=false, printBestHits=false, printHitInfo=false, printPeakClosestHits=false, printSeqs=false, printSeqsNoMotifs=false, printclosesthitorientation=false;
-		boolean printSeqsWithMotifs=false, printPeakInfo=false, printPeaksWithMotifs=false, printPeaksNoMotifs=false;
+		boolean printSeqsWithMotifs=false, printPeakInfo=false, printPeaksWithMotifs=false, printPeaksNoMotifs=false, printHitPoints=false;
 		boolean printMotifScore=false, printMotifPerc=false, printRankMotifPerc=false, motifDistHist=false, screenMotifs=false, scoreSeqs=false;
 		boolean motifDensity=false, pocc=false, wholeGenome=false, printprofiles=false, motifHisto=false;;
 		String seqFile=null;
@@ -98,6 +98,7 @@ public class MotifAnalysisSandbox {
                                "--printhitinfo " +
                                "--printpeakclosesthits " +
                                "--printclosesthitorientation" + 
+                               "--printHitPoints" +
                                "--printseqs " +
                                "--printseqsnomotifs " +
                                "--printseqswithmotifs " +
@@ -161,6 +162,7 @@ public class MotifAnalysisSandbox {
         printclosesthitorientation = ap.hasKey("printclosesthitorientation");
         motifDistHist= ap.hasKey("motifdisthist");
         motifHisto= ap.hasKey("motifhisto");
+        printHitPoints = ap.hasKey("printHitPoints");
         motifDensity= ap.hasKey("motifdensity");
         screenMotifs= ap.hasKey("screenmotifs");
         scoreSeqs = ap.hasKey("scoreseqs");
@@ -321,6 +323,8 @@ public class MotifAnalysisSandbox {
 	        	tools.peak2ClosestMotifHisto(binsize);
 	        if(motifHisto)
 	        	tools.peak2motifHisto(binsize);
+	        if(printHitPoints)
+	        	tools.printMotifHitsAndPoints();
 	        if(printclosesthitorientation)
 	        	tools.printClosestMotifOrientation();
 	        if(screenMotifs)
