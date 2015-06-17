@@ -143,16 +143,16 @@ public class ProfileGeneNeighborhood {
 		
 		for(String gn : peaksAtgenes.keySet()){
 			if(peaksAtgenes.get(gn).size() !=0){
+				StringBuilder sb = new StringBuilder();
+				sb.append(gn);sb.append("\t");
 				for(Point p: peaksAtgenes.get(gn)){
+					sb.append(p.getLocationString());sb.append("\t");
 					closepeaks.add(p);
 				}
+				sb.deleteCharAt(sb.length()-1);
+				System.out.println(sb.toString());
 			}
-		}
-		HashSet<Point> output = new HashSet<>(closepeaks);
-		for(Point p: output){
-			System.out.println(p.getLocationString());
-		}
-		
+		}		
 		
 	}
 	
