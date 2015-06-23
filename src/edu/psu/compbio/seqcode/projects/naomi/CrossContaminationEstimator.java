@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.projects.naomi;
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.HashMap;
 //import java.util.Collections;
 //import java.util.Arrays;
@@ -30,11 +30,12 @@ public class CrossContaminationEstimator {
 	
 	public void printDataPoints(){
 		
+		System.out.println("inside printDataPoints()");
+		
 		ExperimentManager manager = new ExperimentManager(econfig);
 
 		Genome genome = gconfig.getGenome();
 		List<String> chromNames = genome.getChromList();
-		int chromNum = chromNames.size();
 		int maxchromSize= 0;
 		for (String chrom : chromNames){
 			if (genome.getChromLength(chrom)< maxchromSize){
@@ -128,10 +129,10 @@ public class CrossContaminationEstimator {
 			}
 
 		//printing datapoints
-		int i = 0;
-		while (dataPoints [i][0] !=0){
-			System.out.println(dataPoints[i][0]+"\t"+dataPoints[i][1]+"\t"+dataPoints[i][2]);			
-			i ++;
+		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
+			if (dataPoints[i][0] != 0){
+				System.out.println(dataPoints[i][0]+"\t"+dataPoints[i][1]+"\t"+dataPoints[i][2]);
+			}
 		}
 	}								
 	
@@ -143,7 +144,6 @@ public class CrossContaminationEstimator {
 //		ArgParser ap = new ArgParser(args);
 		
 		CrossContaminationEstimator estimator = new CrossContaminationEstimator (gconf, econf);
-		estimator.printDataPoints();
-		
+		estimator.printDataPoints();	
 	}
 }
