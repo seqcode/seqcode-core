@@ -49,7 +49,7 @@ public class KmerModelScanner {
 		}
 		
 		for(Region r: regions){
-			String seq = seqgen.execute(r);
+			String seq = seqgen.execute(r).toUpperCase();
 			double maxScore = Double.MIN_VALUE;
 			String bestMotif = "";
 			for(int l=minM; l<=maxM; l++){
