@@ -30,16 +30,10 @@ public class CrossContaminationEstimator {
 	
 	public void printDataPoints(){
 		
-		//checking
-		System.out.println("inside printDataPoints()");
-		
 		ExperimentManager manager = new ExperimentManager(econfig);
 
 		Genome genome = gconfig.getGenome();
 		List<String> chromNames = genome.getChromList();
-		
-		//checking
-		System.out.println("chromosome names: "+chromNames);
 		
 		int maxchromSize= 0;
 		for (String chrom : chromNames){
@@ -47,9 +41,11 @@ public class CrossContaminationEstimator {
 				maxchromSize = genome.getChromLength(chrom);
 			}
 		}
+		
+		//checking
+		System.out.println("max chrom size is: "+maxchromSize);
 
 		int sampleSize = manager.getSamples().size();
-		System.out.println("samplesize: "+sampleSize);
 		
 //		float [][] sampleCounts = new float [(int) genome.getGenomeLength()][sampleSize];
 //		for (int i = 0; i< genome.getGenomeLength(); i++){
@@ -64,11 +60,6 @@ public class CrossContaminationEstimator {
 			for (int j = 0; j <3; j ++){
 				dataPoints[i][j] = 0;
 			}
-		}
-		
-		//checking
-		for (int i = 0; i<10;i++){
-			System.out.println("printing dataPoints: "+dataPoints[i][0]);
 		}
 		
 		float[][] bpCounts = new float [maxchromSize][sampleSize];
@@ -106,8 +97,7 @@ public class CrossContaminationEstimator {
 				//checking
 				for (int i = 0; i<10;i++){
 					System.out.println("printing bpcounts: "+bpCounts[i][0]);
-				}
-				
+				}				
 				
 				sampleCounter++;
 			}
