@@ -62,6 +62,8 @@ public class CrossContaminationEstimator {
 			}
 		}
 		
+		System.out.println("genome length is: "+genome.getGenomeLength());
+		
 		float[][] bpCounts = new float [maxchromSize][sampleSize];
 		for (int i = 0; i< maxchromSize;i++){
 			for (int j = 0; j<sampleSize;j ++){
@@ -84,8 +86,7 @@ public class CrossContaminationEstimator {
 			}
 			
 			int sampleCounter=0;
-			
-			//there is something wrong here. arrayindexout of bounds
+
 			for (Sample sample : sampleCountsMap.keySet()){
 				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
 				for (StrandedBaseCount hits: currentCounts){
@@ -118,9 +119,7 @@ public class CrossContaminationEstimator {
 					}
 				}
 				if(maxcounts!=0){
-					//checking by printing. this is not printed
-					System.out.println("printing maxcount, restSum, and maxIndex" );
-					System.out.println(maxcounts+"\t"+restSum+"\t"+maxIndex);
+					//this is working for only the first iteration and throwing array out of bound exception
 					dataPoints[dataPointsIndex][0] = maxcounts;
 					dataPoints[dataPointsIndex][1] = restSum;
 					dataPoints[dataPointsIndex][2] = maxIndex;	
@@ -130,6 +129,10 @@ public class CrossContaminationEstimator {
 				maxcounts = 0;
 				restSum = 0;
 			}
+			System.out.println("dataPointsIndex is: "+dataPointsIndex);
+			
+			//end of chromosome iteration
+			
 			//clearing values in bpCounts
 			for (int i = 0; i<maxchromSize; i++){
 				for (int j = 0; j <sampleSize; j++){
