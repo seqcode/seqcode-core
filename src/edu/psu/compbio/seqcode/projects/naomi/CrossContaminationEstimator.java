@@ -81,13 +81,11 @@ public class CrossContaminationEstimator {
 			Map<Sample, List<StrandedBaseCount>> sampleCountsMap = new HashMap<Sample, List<StrandedBaseCount>>();
 			for (Sample sample : manager.getSamples()){
 				sampleCountsMap.put(sample,sample.getBases(currChrom)); 
-				
-				//checking
-				System.out.println("printing sample: "+sample);
 			}
 			
 			int sampleCounter=0;
 			
+			//there is something wrong here. arrayindexout of bounds
 			for (Sample sample : sampleCountsMap.keySet()){
 				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
 				for (StrandedBaseCount hits: currentCounts){
