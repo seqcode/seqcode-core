@@ -41,7 +41,7 @@ public class CrossContaminationEstimator {
 //			}
 //		}
 
-		int sampleSize = manager.getSamples().size();
+//		int sampleSize = manager.getSamples().size();
 		
 //		float [][] sampleCounts = new float [(int) genome.getGenomeLength()][sampleSize];
 //		for (int i = 0; i< genome.getGenomeLength(); i++){
@@ -83,27 +83,27 @@ public class CrossContaminationEstimator {
 			
 			System.out.println("currentchromSize is: "+currchromSize);
 			
-			float[][] bpCounts = new float [currchromSize][sampleSize];
+			float[][] bpCounts = new float [currchromSize][sampleCountsMap.size()];
 			for (int i = 0; i<currchromSize;i++){
-				for (int j = 0; j<sampleSize; j++){
+				for (int j = 0; j<sampleCountsMap.size(); j++){
 					bpCounts[i][j] = 0;
 				}
 			}
-			
-			int sampleCounter=0;
 
 			//maybe this is fishy
 			for (Sample sample : manager.getSamples()){
 				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
 				for (StrandedBaseCount hits: currentCounts){
-					bpCounts[hits.getCoordinate()][sampleCounter]=hits.getCount();	
+					bpCounts[hits.getCoordinate()][sample.getIndex()]=hits.getCount();	
+					//chekcing
+					if (hits.getCount()>13);System.out.println("printing hits.getcount(): "+hits.getCount());
 				}
-				sampleCounter++;
+
 			}
 			
 			System.out.println("printing bpCounts");
 			for (int i = 0;i <100; i++){
-				for (int s = 0; s<sampleSize;s++){
+				for (int s = 0; s<sampleCountsMap.size();s++){
 					System.out.println(bpCounts[i][s]);
 				}
 			}
@@ -116,13 +116,13 @@ public class CrossContaminationEstimator {
 			//for each position in the chromosome, find the max among samples and copy it to dataPoints
 			for (int i = 0; i<currchromSize;i++){
 				// iterating one position among different samples
-				for (int samp = 0; samp<sampleSize;samp++){
+				for (int samp = 0; samp<sampleCountsMap.size();samp++){
 					if (bpCounts[i][samp]>maxcounts){
 						maxcounts = bpCounts[i][samp];
 						maxIndex = samp;
 					}					
 				}
-				for (int samp = 0; samp<sampleSize;samp++){
+				for (int samp = 0; samp<sampleCountsMap.size();samp++){
 					if (bpCounts[i][samp] != maxcounts){
 						restSum = restSum + bpCounts[i][samp];
 					}
@@ -135,7 +135,7 @@ public class CrossContaminationEstimator {
 					
 					dataPointsIndex++;
 				}
-				System.out.println("printing maxcounts, restSum"+maxcounts+"\t"+restSum+"\t"+ maxIndex);
+//				System.out.println("printing maxcounts, restSum"+maxcounts+"\t"+restSum+"\t"+ maxIndex);
 				maxIndex = 0;
 				maxcounts = 0;
 				restSum = 0;
@@ -155,14 +155,14 @@ public class CrossContaminationEstimator {
 			sampleCountsMap.clear();		
 		}
 		
-		System.out.println("#max tag number\tsum of other sample's tag\tsample identifier");
+//		System.out.println("#max tag number\tsum of other sample's tag\tsample identifier");
 
 		//printing datapoints
-		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-			if (dataPoints[i][0] != 0){
-				System.out.println(dataPoints[i][0]+"\t"+dataPoints[i][1]+"\t"+dataPoints[i][2]);
-			}
-		}
+//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
+//			if (dataPoints[i][0] != 0){
+//				System.out.println(dataPoints[i][0]+"\t"+dataPoints[i][1]+"\t"+dataPoints[i][2]);
+//			}
+//		}
 	}								
 	
 	public static void main(String[] args){
