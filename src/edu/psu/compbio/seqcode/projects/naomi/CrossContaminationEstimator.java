@@ -94,12 +94,7 @@ public class CrossContaminationEstimator {
 				}
 				sampleCounter++;
 			}
-			
-			//checking
-			for (int i = 0; i<10;i++){
-				System.out.println("printing bpcounts: "+bpCounts[i][1]);
-			}	
-			
+
 			int maxIndex = 0;
 			float maxcounts = 0;
 			float restSum = 0;
@@ -123,8 +118,9 @@ public class CrossContaminationEstimator {
 					dataPoints[dataPointsIndex][0] = maxcounts;
 					dataPoints[dataPointsIndex][1] = restSum;
 					dataPoints[dataPointsIndex][2] = maxIndex;	
+					
+					dataPointsIndex++;
 				}
-				dataPointsIndex++;	
 				maxIndex = 0;
 				maxcounts = 0;
 				restSum = 0;
