@@ -82,6 +82,7 @@ public class CrossContaminationEstimator {
 			int currchromSize= currChrom.getWidth()+1;
 			
 			System.out.println("currentchromSize is: "+currchromSize);
+			System.out.println("sampleCountsMap is: "+sampleCountsMap.size());
 			
 			float[][] bpCounts = new float [currchromSize][sampleCountsMap.size()];
 			for (int i = 0; i<currchromSize;i++){
@@ -94,18 +95,11 @@ public class CrossContaminationEstimator {
 			for (Sample sample : manager.getSamples()){
 				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
 				for (StrandedBaseCount hits: currentCounts){
-					bpCounts[hits.getCoordinate()][sample.getIndex()]=hits.getCount();	
+					bpCounts[hits.getCoordinate()][sample.getIndex()]+=hits.getCount();	
 					//chekcing
 					if (hits.getCount()>13) System.out.println("printing hits.getcount(): "+hits.getCount());
 				}
-
-			}
-			
-			System.out.println("printing bpCounts");
-			for (int i = 0;i <100; i++){
-				for (int s = 0; s<sampleCountsMap.size();s++){
-					System.out.println(bpCounts[i][s]);
-				}
+				currentCounts = null;
 			}
 
 			int maxIndex = 0;
