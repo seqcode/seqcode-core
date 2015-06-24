@@ -93,9 +93,13 @@ public class CrossContaminationEstimator {
 
 			//maybe this is fishy
 			for (Sample sample : manager.getSamples()){
+				System.out.println("sample condition is: "+sample.getHitPositionCount());
+				System.out.println("sample is: "+sample.getName());
+				
 				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
 				for (StrandedBaseCount hits: currentCounts){
 					bpCounts[hits.getCoordinate()][sample.getIndex()]+=hits.getCount();	
+					if (hits.getCount()>13) System.out.println("counts bigger than 13: "+hits.getCount());
 				}
 				currentCounts = null;
 			}
