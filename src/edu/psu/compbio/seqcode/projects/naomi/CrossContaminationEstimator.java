@@ -96,7 +96,7 @@ public class CrossContaminationEstimator {
 				for (StrandedBaseCount hits: currentCounts){
 					bpCounts[hits.getCoordinate()][sample.getIndex()]=hits.getCount();	
 					//chekcing
-					if (hits.getCount()>13);System.out.println("printing hits.getcount(): "+hits.getCount());
+					if (hits.getCount()>13) System.out.println("printing hits.getcount(): "+hits.getCount());
 				}
 
 			}
