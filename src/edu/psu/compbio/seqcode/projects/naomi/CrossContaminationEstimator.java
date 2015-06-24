@@ -37,7 +37,7 @@ public class CrossContaminationEstimator {
 		
 		int maxchromSize= 0;
 		for (String chrom : chromNames){
-			if (genome.getChromLength(chrom)< maxchromSize){
+			if (genome.getChromLength(chrom)> maxchromSize){
 				maxchromSize = genome.getChromLength(chrom);
 			}
 		}
