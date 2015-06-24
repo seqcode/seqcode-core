@@ -41,9 +41,6 @@ public class CrossContaminationEstimator {
 				maxchromSize = genome.getChromLength(chrom);
 			}
 		}
-		
-		//checking
-		System.out.println("max chrom size is: "+maxchromSize);
 
 		int sampleSize = manager.getSamples().size();
 		
@@ -61,8 +58,6 @@ public class CrossContaminationEstimator {
 				dataPoints[i][j] = 0;
 			}
 		}
-		
-		System.out.println("genome length is: "+genome.getGenomeLength());
 		
 		float[][] bpCounts = new float [maxchromSize][sampleSize];
 		for (int i = 0; i< maxchromSize;i++){
@@ -125,7 +120,6 @@ public class CrossContaminationEstimator {
 				maxcounts = 0;
 				restSum = 0;
 			}
-			System.out.println("dataPointsIndex is: "+dataPointsIndex);
 			
 			//end of chromosome iteration
 			
@@ -138,6 +132,8 @@ public class CrossContaminationEstimator {
 			// remove all mapping 
 			sampleCountsMap.clear();		
 			}
+		
+		System.out.println("max tag number\tsum of other sample's tag\tsample identifier");
 
 		//printing datapoints
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
