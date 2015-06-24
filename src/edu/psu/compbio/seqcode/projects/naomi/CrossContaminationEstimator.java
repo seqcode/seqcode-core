@@ -91,14 +91,13 @@ public class CrossContaminationEstimator {
 				for (StrandedBaseCount hits: currentCounts){
 					bpCounts[hits.getCoordinate()][sampleCounter]=hits.getCount();	
 				}
-				
-				//checking
-				for (int i = 0; i<10;i++){
-					System.out.println("printing bpcounts: "+bpCounts[i][1]);
-				}				
-				
 				sampleCounter++;
 			}
+			
+			//checking
+			for (int i = 0; i<10;i++){
+				System.out.println("printing bpcounts: "+bpCounts[i][1]);
+			}	
 			
 			int maxIndex = 0;
 			float maxcounts = 0;
@@ -107,25 +106,27 @@ public class CrossContaminationEstimator {
 			//for each position in the chromosome, find the max among samples and copy it to dataPoints
 			for (int i = 0; i<maxchromSize;i++){
 				// iterating one position among different samples
-				for (int j = 0; j<sampleSize;j++){
-					if (bpCounts[i][j]>maxcounts){
-						bpCounts[i][j] = maxcounts;
-						maxIndex = j;
+				for (int samp = 0; samp<sampleSize;samp++){
+					if (bpCounts[i][samp]>maxcounts){
+						maxcounts = bpCounts[i][samp];
+						maxIndex = samp;
 					}					
 				}
-				for (int j = 0; j<sampleSize;j++){
-					if (maxcounts != bpCounts[i][j]){
-						restSum = restSum + bpCounts[i][j];
+				for (int samp = 0; samp<sampleSize;samp++){
+					if (bpCounts[i][samp] != maxcounts){
+						restSum = restSum + bpCounts[i][samp];
 					}
 				}
 				if(maxcounts!=0){
-					//checking by printing
+					//checking by printing. this is not printed
+					System.out.println("printing maxcount, restSum, and maxIndex" );
 					System.out.println(maxcounts+"\t"+restSum+"\t"+maxIndex);
 					dataPoints[dataPointsIndex][0] = maxcounts;
 					dataPoints[dataPointsIndex][1] = restSum;
 					dataPoints[dataPointsIndex][2] = maxIndex;	
 				}
-				dataPointsIndex++;		
+				dataPointsIndex++;	
+				maxIndex = 0;
 				maxcounts = 0;
 				restSum = 0;
 			}
