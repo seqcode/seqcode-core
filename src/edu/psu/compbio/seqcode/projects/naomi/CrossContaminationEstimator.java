@@ -77,12 +77,12 @@ public class CrossContaminationEstimator {
 			Map<Sample, List<StrandedBaseCount>> sampleCountsMap = new HashMap<Sample, List<StrandedBaseCount>>();
 			for (Sample sample : manager.getSamples()){
 				sampleCountsMap.put(sample,sample.getBases(currChrom)); 
+				System.out.println("sample in sampleCountsMap: "+sample);
 			}
 			
 			int currchromSize= currChrom.getWidth()+1;
 			
 			System.out.println("currentchromSize is: "+currchromSize);
-			System.out.println("sampleCountsMap is: "+sampleCountsMap.size());
 			
 			float[][] bpCounts = new float [currchromSize][sampleCountsMap.size()];
 			for (int i = 0; i<currchromSize;i++){
@@ -133,8 +133,6 @@ public class CrossContaminationEstimator {
 				restSum = 0;
 			}
 			
-			//end of chromosome iteration
-			
 			//clearing values in bpCounts
 //			for (int i = 0; i<maxchromSize; i++){
 //				for (int j = 0; j <sampleSize; j++){
@@ -146,15 +144,16 @@ public class CrossContaminationEstimator {
 			// remove all mapping 
 			sampleCountsMap.clear();		
 		}
+		//end of chromosome iteration
 		
 		System.out.println("#max tag number\tsum of other sample's tag\tsample identifier");
 
 		//printing datapoints
-		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-			if (dataPoints[i][0] != 0){
-				System.out.println(dataPoints[i][0]+"\t"+dataPoints[i][1]+"\t"+dataPoints[i][2]);
-			}
-		}
+//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
+//			if (dataPoints[i][0] != 0){
+//				System.out.println(dataPoints[i][0]+"\t"+dataPoints[i][1]+"\t"+dataPoints[i][2]);
+//			}
+//		}
 	}								
 	
 	public static void main(String[] args){
