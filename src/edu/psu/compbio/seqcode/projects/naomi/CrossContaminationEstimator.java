@@ -91,9 +91,8 @@ public class CrossContaminationEstimator {
 				}
 			}
 
-			//maybe this is fishy
+			//maybe this is wrong
 			for (Sample sample : manager.getSamples()){
-				System.out.println("sample condition is: "+sample.getHitPositionCount());
 				System.out.println("sample is: "+sample.getName());
 				
 				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
@@ -153,11 +152,11 @@ public class CrossContaminationEstimator {
 		System.out.println("#max tag number\tsum of other sample's tag\tsample identifier");
 
 		//printing datapoints
-//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-//			if (dataPoints[i][0] != 0){
-//				System.out.println(dataPoints[i][0]+"\t"+dataPoints[i][1]+"\t"+dataPoints[i][2]);
-//			}
-//		}
+		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
+			if (dataPoints[i][0] != 0){
+				System.out.println(dataPoints[i][0]+"\t"+dataPoints[i][1]+"\t"+dataPoints[i][2]);
+			}
+		}
 	}								
 	
 	public static void main(String[] args){
