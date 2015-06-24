@@ -30,12 +30,17 @@ public class CrossContaminationEstimator {
 	
 	public void printDataPoints(){
 		
+		//checking
 		System.out.println("inside printDataPoints()");
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
 
 		Genome genome = gconfig.getGenome();
 		List<String> chromNames = genome.getChromList();
+		
+		//checking
+		System.out.println("chromosome names: "+chromNames);
+		
 		int maxchromSize= 0;
 		for (String chrom : chromNames){
 			if (genome.getChromLength(chrom)< maxchromSize){
@@ -44,6 +49,7 @@ public class CrossContaminationEstimator {
 		}
 
 		int sampleSize = manager.getSamples().size();
+		System.out.println("samplesize: "+sampleSize);
 		
 //		float [][] sampleCounts = new float [(int) genome.getGenomeLength()][sampleSize];
 //		for (int i = 0; i< genome.getGenomeLength(); i++){
@@ -58,6 +64,11 @@ public class CrossContaminationEstimator {
 			for (int j = 0; j <3; j ++){
 				dataPoints[i][j] = 0;
 			}
+		}
+		
+		//checking
+		for (int i = 0; i<10;i++){
+			System.out.println("printing dataPoints: "+dataPoints[i][0]);
 		}
 		
 		float[][] bpCounts = new float [maxchromSize][sampleSize];
@@ -79,6 +90,9 @@ public class CrossContaminationEstimator {
 			Map<Sample, List<StrandedBaseCount>> sampleCountsMap = new HashMap<Sample, List<StrandedBaseCount>>();
 			for (Sample sample : manager.getSamples()){
 				sampleCountsMap.put(sample,sample.getBases(currChrom)); 
+				
+				//checking
+				System.out.println("printing sample: "+sample);
 			}
 			
 			int sampleCounter=0;
@@ -88,6 +102,13 @@ public class CrossContaminationEstimator {
 				for (StrandedBaseCount hits: currentCounts){
 					bpCounts[hits.getCoordinate()][sampleCounter]=hits.getCount();	
 				}
+				
+				//checking
+				for (int i = 0; i<10;i++){
+					System.out.println("printing bpcounts: "+bpCounts[i][0]);
+				}
+				
+				
 				sampleCounter++;
 			}
 			
@@ -110,6 +131,8 @@ public class CrossContaminationEstimator {
 					}
 				}
 				if(maxcounts!=0){
+					//checking by printing
+					System.out.println(maxcounts+"\t"+restSum+"\t"+maxIndex);
 					dataPoints[dataPointsIndex][0] = maxcounts;
 					dataPoints[dataPointsIndex][1] = restSum;
 					dataPoints[dataPointsIndex][2] = maxIndex;	
