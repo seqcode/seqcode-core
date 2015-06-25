@@ -388,7 +388,7 @@ public class MultiGPSConfig {
 	public String getArgsList(){
 		return(new String("" +
 				"Genome:" +
-				"\t--species <Organism;Genome>\n" +
+				"\t--species <Species;Genome>\n" +
 				"\tOR\n" +
 				"\t--geninfo <genome info file> AND --seq <fasta seq directory>\n" +
 				"\t--d <read distribution model file>\n" +

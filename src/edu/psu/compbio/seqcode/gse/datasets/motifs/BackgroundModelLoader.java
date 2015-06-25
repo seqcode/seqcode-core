@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
@@ -920,7 +919,7 @@ public class BackgroundModelLoader {
         boolean hasNext = true;
         while (hasNext) {
           int mapID = rs.getInt(mapIDIndex);
-          FrequencyBackgroundModel mbm = new FrequencyBackgroundModel(rs.getString(nameIndex), Organism.findGenome(rs.getInt(genomeIDIndex)), rs.getInt(kmerLenIndex));
+          FrequencyBackgroundModel mbm = new FrequencyBackgroundModel(rs.getString(nameIndex), Genome.findGenome(rs.getInt(genomeIDIndex)), rs.getInt(kmerLenIndex));
           mbm.setMapID(mapID);
           mbm.setModelID(rs.getInt(modelIDIndex));
           models.add(mbm);
@@ -1355,7 +1354,7 @@ public class BackgroundModelLoader {
         boolean hasNext = true;
         while (hasNext) {
           int mapID = rs.getInt(mapIDIndex);
-          MarkovBackgroundModel mbm = new MarkovBackgroundModel(rs.getString(nameIndex), Organism.findGenome(rs.getInt(genomeIDIndex)), rs.getInt(kmerLenIndex));
+          MarkovBackgroundModel mbm = new MarkovBackgroundModel(rs.getString(nameIndex), Genome.findGenome(rs.getInt(genomeIDIndex)), rs.getInt(kmerLenIndex));
           mbm.setMapID(mapID);
           mbm.setModelID(rs.getInt(modelIDIndex));
           models.add(mbm);
@@ -1819,7 +1818,7 @@ public class BackgroundModelLoader {
         boolean hasNext = true;
         while (hasNext) {
           int mapID = rs.getInt(mapIDIndex);
-          CountsBackgroundModel mbm = new CountsBackgroundModel(rs.getString(nameIndex), Organism.findGenome(rs.getInt(genomeIDIndex)), rs.getInt(kmerLenIndex));
+          CountsBackgroundModel mbm = new CountsBackgroundModel(rs.getString(nameIndex), Genome.findGenome(rs.getInt(genomeIDIndex)), rs.getInt(kmerLenIndex));
           mbm.setMapID(mapID);
           mbm.setModelID(rs.getInt(modelIDIndex));
           models.add(mbm);
@@ -2680,17 +2679,17 @@ public class BackgroundModelLoader {
     CountsBackgroundModel testCountValuesMM8_2 = null;
 
     try {
-      testValuesMM8_3 = BackgroundModelIO.parseMarkovBackgroundModel("mm8.back", Organism.findGenome("mm8"));
-      testValuesMM8_2 = BackgroundModelIO.parseMarkovBackgroundModel("mm8_1.back", Organism.findGenome("mm8"));
-      testValuesYeast_3 = BackgroundModelIO.parseMarkovBackgroundModel("yeast2.back", Organism.findGenome("sacCer1"));
-      testValuesYeast_2 = BackgroundModelIO.parseMarkovBackgroundModel("yeast1.back", Organism.findGenome("sacCer1"));
-      testValuesHuman_2 = BackgroundModelIO.parseMarkovBackgroundModel("human_1.back", Organism.findGenome("hg17"));
+      testValuesMM8_3 = BackgroundModelIO.parseMarkovBackgroundModel("mm8.back", Genome.findGenome("mm8"));
+      testValuesMM8_2 = BackgroundModelIO.parseMarkovBackgroundModel("mm8_1.back", Genome.findGenome("mm8"));
+      testValuesYeast_3 = BackgroundModelIO.parseMarkovBackgroundModel("yeast2.back", Genome.findGenome("sacCer1"));
+      testValuesYeast_2 = BackgroundModelIO.parseMarkovBackgroundModel("yeast1.back", Genome.findGenome("sacCer1"));
+      testValuesHuman_2 = BackgroundModelIO.parseMarkovBackgroundModel("human_1.back", Genome.findGenome("hg17"));
     
-      testFreqValuesMM8_3 = BackgroundModelIO.parseFrequencyBackgroundModel("testfreq3.back", Organism.findGenome("mm8"));
-      testFreqValuesMM8_2 = BackgroundModelIO.parseFrequencyBackgroundModel("testfreq2.back", Organism.findGenome("mm8"));
+      testFreqValuesMM8_3 = BackgroundModelIO.parseFrequencyBackgroundModel("testfreq3.back", Genome.findGenome("mm8"));
+      testFreqValuesMM8_2 = BackgroundModelIO.parseFrequencyBackgroundModel("testfreq2.back", Genome.findGenome("mm8"));
 
-      testCountValuesMM8_3 = BackgroundModelIO.parseCountsBackgroundModel("testcount3.back", Organism.findGenome("mm8"));
-      testCountValuesMM8_2 = BackgroundModelIO.parseCountsBackgroundModel("testcount2.back", Organism.findGenome("mm8"));
+      testCountValuesMM8_3 = BackgroundModelIO.parseCountsBackgroundModel("testcount3.back", Genome.findGenome("mm8"));
+      testCountValuesMM8_2 = BackgroundModelIO.parseCountsBackgroundModel("testcount2.back", Genome.findGenome("mm8"));
     }
     catch (IOException ex) {
       logger.fatal(ex);

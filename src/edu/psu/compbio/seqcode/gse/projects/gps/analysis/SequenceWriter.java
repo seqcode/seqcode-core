@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Set;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
@@ -30,7 +30,7 @@ public class SequenceWriter {
 	public SequenceWriter(String[] args){
 		this.args = args;
 		try {
-	    	Pair<Organism, Genome> pair = Args.parseGenome(args);
+	    	Pair<Species, Genome> pair = Args.parseGenome(args);
 	    	if(pair==null){
 	    	  System.err.println("No genome provided; provide a Gifford lab DB genome name");
 	    	  System.exit(1);

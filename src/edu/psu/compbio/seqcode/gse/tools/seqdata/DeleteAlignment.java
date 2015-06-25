@@ -50,7 +50,7 @@ public class DeleteAlignment {
 	        seqDatamodifier.deleteSeqAlignment(align);
 	        
 	        //Delete the SeqExpt if no other SeqAlignments depend
-	        if(loader.loadAllAlignments(expt).size()==0){
+	        if(loader.loadAlignmentsBySeqExpt(expt).size()==0){
 	        	System.err.println("Deleting experiment: "+expt.getName()+"\t"+expt.getDBID());
 	        	seqDatamodifier.deleteSeqExpt(expt);
 	        }

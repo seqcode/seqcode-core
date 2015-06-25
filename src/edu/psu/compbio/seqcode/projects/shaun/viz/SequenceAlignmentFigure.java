@@ -14,7 +14,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.FASTALoader;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
@@ -114,8 +114,8 @@ public class SequenceAlignmentFigure {
             return;
         }
         try {
-        	Pair<Organism, Genome> pair = Args.parseGenome(args);
-        	Organism currorg = pair.car();
+        	Pair<Species, Genome> pair = Args.parseGenome(args);
+        	Species currorg = pair.car();
         	Genome currgen = pair.cdr();
         	String outFile = ap.hasKey("out") ? ap.getKeyValue("out") : "out.png";
         	String seqOutFile = ap.hasKey("seqout") ? ap.getKeyValue("seqout") : null;

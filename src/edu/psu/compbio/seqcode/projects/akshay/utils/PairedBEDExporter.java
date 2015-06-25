@@ -13,7 +13,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
@@ -115,7 +115,7 @@ public class PairedBEDExporter {
 		int maxFrag = 0;
 		try {
 			if(ap.hasKey("species")){
-				Pair<Organism, Genome> pair = Args.parseGenome(args);
+				Pair<Species, Genome> pair = Args.parseGenome(args);
 				if(pair != null){
 					g = pair.cdr();
 					

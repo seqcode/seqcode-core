@@ -24,10 +24,10 @@ public class Pullreaddbids extends Pullexpttable {
 			
 			for(int i=0; i < command.length-1; i++){
 				if(command[i].matches("^--.*$") && (command[i].substring(2).matches("genome"))){
-				 genome = new Genome(species.getName(),command[i+1]);
+				 genome = new Genome(species,command[i+1]);
 				}
 				if(command[i].matches("^--.*$") && (command[i].substring(2).matches("aligntype"))){
-					aligntype = core.getAlignType(command[i+1]);
+					aligntype = core.loadAlignType(command[i+1], false, false);
 				 
 				}
 			}

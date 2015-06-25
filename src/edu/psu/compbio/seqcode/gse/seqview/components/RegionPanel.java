@@ -389,7 +389,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 				SeqDataLoader loader = new SeqDataLoader();
 
 				for(int i = 0; i < opts.seqExpts.size(); i++) { 
-					Collection<SeqAlignment> alignments = loader.loadAlignments(opts.seqExpts.get(i).locator, genome);
+					Collection<SeqAlignment> alignments = opts.seqExpts.get(i).aligns;
 
 					boolean isChIP=true;
 					boolean allPaired = true;

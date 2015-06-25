@@ -4,18 +4,18 @@ import java.io.*;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExptDescriptor;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.BayesmentsExptDescriptor;
 
 
-public class Config {
+public class BayesmentsConfig {
 	
 	protected Genome gen;
-	protected List<ExptDescriptor> expts =  new ArrayList<ExptDescriptor>();
+	protected List<BayesmentsExptDescriptor> expts =  new ArrayList<BayesmentsExptDescriptor>();
 	protected String[] args;
 	protected boolean printHelp = false;
 	protected boolean poissonGaussWinPerBaseFilter = false;
@@ -82,7 +82,7 @@ public class Config {
 	
 	
 	
-	public Config(String[] arguments){
+	public BayesmentsConfig(String[] arguments){
 		this.args = arguments;
 		ArgParser ap =  new ArgParser(args);
 		if(ap.hasKey("h") || args.length == 0){
@@ -92,7 +92,7 @@ public class Config {
 			try{
 				//Load genomes
 				if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
-					Pair<Organism,Genome> orggen = Args.parseGenome(this.args);
+					Pair<Species,Genome> orggen = Args.parseGenome(this.args);
 					this.gen = orggen.cdr();
 				}
 				else{
@@ -172,14 +172,14 @@ public class Config {
 					            
 					            //Check if we have other entries for this experiment
 					            boolean found=false;
-					            for(ExptDescriptor e : this.expts){
+					            for(BayesmentsExptDescriptor e : this.expts){
 					            	if(e.signal==signal && e.condition.equals(cond) && e.replicate.equals(rep)){
 					            		found = true;
 					            		e.sources.add(src);
 					            	}
 					            }
 					            if(!found){
-					            	expts.add(new ExptDescriptor(cond, rep, feature,  signal, src, currCondPerBaseReads,winsize));
+					            	expts.add(new BayesmentsExptDescriptor(cond, rep, feature,  signal, src, currCondPerBaseReads,winsize));
 					            }
 				            }else{
 				            	System.err.println("Error in design file. Cannot parse line: \n"+line);
@@ -300,7 +300,7 @@ public class Config {
 	// List of all Accessors
 	
 	public Genome getGenome(){return this.gen;}
-	public List<ExptDescriptor> getExperiments(){return expts;}
+	public List<BayesmentsExptDescriptor> getExperiments(){return expts;}
 	public boolean helpWanter(){return printHelp;}
 	public float getPerBaseReadLimit(){return this.perBaseReadLimit;}
 	public boolean doPoissonGaussWinPerBaseFiltering(){return this.poissonGaussWinPerBaseFilter;}
@@ -396,7 +396,7 @@ public class Config {
 	public String getArgsList(){
 		return(new String("" +
 				"Genome:" +
-				"\t--species|genome|gen <Organism;Genome>\n" +
+				"\t--species|genome|gen <Species;Genome>\n" +
 				"\tOR\n" +
 				"\t--geninfo|g <genome info file> AND --seq <fasta seq directory>\n"+
 				"\t--fixedpb <fixed per base limit>\n"+

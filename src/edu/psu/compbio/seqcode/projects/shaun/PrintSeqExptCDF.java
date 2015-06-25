@@ -3,14 +3,14 @@ package edu.psu.compbio.seqcode.projects.shaun;
 import java.util.ArrayList;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class PrintSeqExptCDF {
 
-	private static Organism org;
+	private static Species org;
 	private static Genome gen;
 	private static int cdfThres=100;
 
@@ -31,8 +31,8 @@ public class PrintSeqExptCDF {
         String outName = ap.getKeyValue("out");
         
     	try {
-			org = Organism.getOrganism(species);
-			gen = org.getGenome(genome);
+			org = Species.getSpecies(species);
+			gen = new Genome(org, genome);
 			
 			SeqDataHandler exHandle = new SeqDataHandler(org, gen, exptName);
 			exHandle.compileCDF(cdfThres);

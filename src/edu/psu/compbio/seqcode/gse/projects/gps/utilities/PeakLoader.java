@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
@@ -261,7 +261,7 @@ public class PeakLoader {
 		try {
 			List<File> files = Args.parseFileHandles(args, "file");
 			String format = Args.parseString(args, "format", "");
-			Pair<Organism, Genome> organ_species = Args.parseGenome(args);
+			Pair<Species, Genome> organ_species = Args.parseGenome(args);
 			Genome g = organ_species.cdr();
 			
 			if( (files.size() == 0) || format.equals("") || (organ_species == null) ) { printErrorMessage(); System.exit(-1); }

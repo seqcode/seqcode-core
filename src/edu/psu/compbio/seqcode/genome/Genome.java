@@ -1,8 +1,10 @@
 package edu.psu.compbio.seqcode.genome;
 
+import edu.psu.compbio.seqcode.genome.location.ChromosomeInfo;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
+import edu.psu.compbio.seqcode.gse.utils.database.Sequence;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 
 import java.util.*;
@@ -10,95 +12,87 @@ import java.io.*;
 import java.sql.*;
 
 /**
- * A <code>Genome</code> represents one version (or genome build) of some species.
+ * Genome represents one version (or genome build) of some species.
  * <i>Note</i>: We assume 1-based, inclusive coordinate.
  */
 public class Genome{
+	//static cache of all Genomes
+	private static Map<String,Genome> staticGenomes = new HashMap<String,Genome>();
+    private static Map<Integer, Genome> genomeids = new HashMap<Integer,Genome>();
     
-    public static class ChromosomeInfo { 
-        
-        private int length;
-        private String name;
-        private int dbid;
-        
-        private ChromosomeInfo(int id, int len, String n) { 
-            length = len;
-            dbid = id;
-            name = n;
-        }
-        
-        public String getName() { return name; }
-        public int getDBID() { return dbid; }
-        public int getLength() { return length; }
-        
-        public int hashCode() { 
-            int code = 17;
-            code += dbid; code *= 37;
-            code += name.hashCode(); code *= 37;
-            code += length; code *= 37;
-            return code;
-        }
-        
-        public boolean equals(Object o) { 
-            if(!(o instanceof ChromosomeInfo)) { return false; }
-            ChromosomeInfo i = (ChromosomeInfo)o;
-            if(dbid != i.dbid) { return false; }
-            if(!name.equals(i.name)) { return false; }
-            if(length != i.length) { return false; }
-            return true;
-        }
-        
-        public String toString() { return name  + " (" + length + " bp)"; }
-    }
-	
-    private static int[] romvals;
-    private static String[] intvals;
-    private String species, version;
-    private int speciesid, dbid;
-    private boolean hasDBConnection=false;
-    private Map<String,ChromosomeInfo> chroms;
-    private Map<Integer,ChromosomeInfo> revchroms;
+    private Species species;
+    private String version;
+    private int dbid;
+    private Map<String,ChromosomeInfo> chromsByName;
+    private Map<Integer,ChromosomeInfo> chromsByID;
+    
     
     /**
-     * This constructor is *only* for creating a 'temporary' genome, with the 
-     * given name, that does not correspond to an element in the database.
-     * @param tempName
+     * Constructs a new Genome from a Species and a genome version.
      */
-    public Genome(String tempName) { 
-    	species = "FakeOrganism";
-    	version = tempName;
-    	speciesid = dbid = -1;
-    	hasDBConnection=false;
-    	chroms = new HashMap<String,ChromosomeInfo>();
-    	revchroms = new HashMap<Integer,ChromosomeInfo>();
-    	
-    	ChromosomeInfo info = new ChromosomeInfo(-1, 10000, "chrom");
-    	chroms.put(info.getName(), info);
-    	revchroms.put(-1, info);
+    public Genome(Species species, String version) throws NotFoundException {
+        this.species = species;
+        this.version = version;
+        Connection cxn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            cxn = DatabaseConnectionManager.getConnection("core");       
+            stmt = cxn.createStatement();
+            
+            rs = stmt.executeQuery("select id from genome where species = " + species.getDBID() + 
+                                             " and version ='" + version + "'");
+            
+            if (rs.next()) {
+                dbid = rs.getInt(1);
+            } else {
+                throw new NotFoundException("Couldn't find " + species.getName() + " version " + version);
+            }
+            
+            fillChroms(cxn);
+            
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            throw new DatabaseException("Couldn't find " + species + ": "+ ex.toString(),ex);
+        }  catch (UnknownRoleException ex) {
+            ex.printStackTrace();
+            throw new DatabaseException("Couldn't connect with role core");
+        } finally {
+        	if (rs != null) { try {rs.close(); } catch (SQLException ex) {  }}
+        	if (stmt != null) { try { stmt.close();} catch (SQLException ex) { } }
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
+        }
     }
-
-    public Genome(String tempName, Integer... lengths) { 
-    	species = "FakeOrganism";
-    	version = tempName;
-    	speciesid = dbid = -1;
-    	hasDBConnection=false;
-    	chroms = new HashMap<String,ChromosomeInfo>();
-    	revchroms = new HashMap<Integer,ChromosomeInfo>();
-    	
-    	for(int i = 0; i < lengths.length; i++) { 
-    		ChromosomeInfo info = new ChromosomeInfo(-(i+1), lengths[i], String.format("chr%d", i+1));
-        	chroms.put(info.getName(), info);
-        	revchroms.put(info.dbid, info);
-    	}
+       
+    /**
+     * Constructs a new Genome from almost complete info
+     * 	Only used when a connection is open already for populating chromosome lengths
+     *  Only used within the static methods below to populate a table of all genomes
+     */
+    private Genome(Species s, int dbid, String version, Connection cxn) throws NotFoundException {
+        this.species = s;
+        this.version = version;
+        this.dbid = dbid;
+        
+        try {
+			fillChroms(cxn);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
     }
     
+    /**
+     * Construct a Genome from a file of chromosome lengths
+     * @param tempName
+     * @param chrLengths
+     * @param inventids
+     */
     public Genome(String tempName, File chrLengths, boolean inventids) {
-    	species = "FakeOrganism";
+    	species = new Species(-1, "FakeOrganism");
     	version = tempName;
-    	speciesid = dbid = -1;
-    	hasDBConnection=false;
-    	chroms = new HashMap<String,ChromosomeInfo>();
-    	revchroms = new HashMap<Integer,ChromosomeInfo>();
+    	dbid = -1;
+    	chromsByName = new HashMap<String,ChromosomeInfo>();
+    	chromsByID = new HashMap<Integer,ChromosomeInfo>();
     	if(!chrLengths.isFile()){System.err.println("Invalid genome info file name");System.exit(1);}
         BufferedReader reader;
 		try {
@@ -118,8 +112,8 @@ public class Genome{
 	            	} else {
 	            		info = new ChromosomeInfo(Integer.parseInt(words[2]), Integer.parseInt(words[1]), chr);
 	            	}
-	            	chroms.put(info.getName(), info);
-	            	revchroms.put(info.dbid, info);
+	            	chromsByName.put(info.getName(), info);
+	            	chromsByID.put(info.getDBID(), info);
 	            }
 	    	}
 		} catch (FileNotFoundException e) {
@@ -131,129 +125,38 @@ public class Genome{
 		}
     }
     
+    /**
+     * Construct a genome from a Map of names and lengths
+     *  (mostly used to merge fake genomes that are data generated)
+     * @param tempName
+     * @param chrLengthMap
+     */
     public Genome(String tempName, Map<String, Integer> chrLengthMap) {
-    	species = "FakeOrganism";
+    	species = new Species(-1, "FakeOrganism");
     	version = tempName;
-    	speciesid = dbid = -1;
-    	hasDBConnection=false;
-    	chroms = new HashMap<String,ChromosomeInfo>();
-    	revchroms = new HashMap<Integer,ChromosomeInfo>();
+    	dbid = -1;
+    	chromsByName = new HashMap<String,ChromosomeInfo>();
+    	chromsByID = new HashMap<Integer,ChromosomeInfo>();
     	int id=0;
     	for(String s : chrLengthMap.keySet()){
     		ChromosomeInfo info = new ChromosomeInfo(id--, chrLengthMap.get(s), s);
-        	chroms.put(info.getName(), info);
-        	revchroms.put(info.dbid, info);
+        	chromsByName.put(info.getName(), info);
+        	chromsByID.put(info.getDBID(), info);
     	}
     }
     
-    public Genome(String tempSpecies, String tempVersion, Pair<String,Integer>... lengths) { 
-    	species = tempSpecies;
-    	version = tempVersion;
-    	speciesid = dbid = -1;
-    	hasDBConnection=false;
-    	chroms = new HashMap<String,ChromosomeInfo>();
-    	revchroms = new HashMap<Integer,ChromosomeInfo>();
-    	
-    	for(int i = 0; i < lengths.length; i++) { 
-    		Pair<String,Integer> p = lengths[i];
-        	ChromosomeInfo info = new ChromosomeInfo(-(i+1), lengths[i].cdr(), lengths[i].car());
-        	chroms.put(info.getName(), info);
-        	revchroms.put(info.dbid, info);
-    	}
-    }
-
     /**
-     * Constructs a new Genome with the specified species name and genome version.
+     * Retrieves the chromosomes for this Genome from the database and fills
+     * the relevant data structures: chroms and chromsByID
+     * @param cxn
+     * @throws SQLException
      */
-    public Genome(String species, String version) throws NotFoundException {
-        this.species = species;
-        this.version = version;
-        chroms = null;
-        revchroms = null;
-        
-        Connection cxn = null;
-        try {
-            cxn = DatabaseConnectionManager.getConnection("core");
-            Statement stmt = cxn.createStatement();
-            ResultSet rs = stmt.executeQuery("select id from species where name = '" + species + "'");
-            if (rs.next()) {
-                this.speciesid = rs.getInt(1);
-            } else {
-                throw new NotFoundException("Couldn't find " + species);
-            }
-            rs.close();
-            rs = stmt.executeQuery("select id from genome where species = " + speciesid + 
-                                             " and version ='" + version + "'");
-            if (rs.next()) {
-                dbid = rs.getInt(1);
-            } else {
-                throw new NotFoundException("Couldn't find " + species);
-            }
-            rs.close();
-            stmt.close();
-
-            fillChroms(cxn);
-                    
-        } catch (SQLException ex) {
-            throw new DatabaseException("Couldn't find " + species + ": "+ ex.toString(),ex);
-        } catch (UnknownRoleException ex) {
-            throw new DatabaseException("Couldn't connect with role core");
-        } finally {
-            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
-        }
-    }
-    
-    /**
-     * Constructs a new Genome from a species database identifier and a genome version.
-     */
-    public Genome(int speciesid, String version) throws NotFoundException {
-        this.speciesid = speciesid;
-        this.version = version;
-        Connection cxn = null;
-        try {
-            cxn = DatabaseConnectionManager.getConnection("core");       
-            Statement stmt = cxn.createStatement();
-            ResultSet rs = stmt.executeQuery("select name from species where id = " + speciesid);
-            
-            if (rs.next()) {
-                this.species = rs.getString(1);
-            } else {
-                throw new NotFoundException("Couldn't find " + species);
-            }
-            rs.close();
-            rs = stmt.executeQuery("select id from genome where species = " + speciesid + 
-                                             " and version ='" + version + "'");
-            
-            if (rs.next()) {
-                dbid = rs.getInt(1);
-            } else {
-                throw new NotFoundException("Couldn't find " + species + " version " + version);
-            }
-            rs.close();
-            stmt.close();
-            
-            fillChroms(cxn);
-            
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            throw new DatabaseException("Couldn't find " + species + ": "+ ex.toString(),ex);
-        }  catch (UnknownRoleException ex) {
-            ex.printStackTrace();
-            throw new DatabaseException("Couldn't connect with role core");
-        } finally {
-            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
-        }
-    }
-        
-    /* retrieves the chromosomes for this Genome from the database and fills
-       the relevant data structures: chroms and revchroms */
     private void fillChroms(Connection cxn) throws SQLException {
-        chroms = new HashMap<String,ChromosomeInfo>();
-        revchroms = new HashMap<Integer,ChromosomeInfo>();
+        chromsByName = new HashMap<String,ChromosomeInfo>();
+        chromsByID = new HashMap<Integer,ChromosomeInfo>();
 
-        Statement s = cxn.createStatement();
-        
-        ResultSet rs = s.executeQuery("select c.id, c.name, cs.len from chromosome c, chromsequence cs " +
+        Statement stmt = cxn.createStatement();
+        ResultSet rs = stmt.executeQuery("select c.id, c.name, cs.len from chromosome c, chromsequence cs " +
                 "where c.id=cs.id and c.genome=" + dbid);
         while(rs.next()) { 
             int dbid = rs.getInt(1);
@@ -261,142 +164,71 @@ public class Genome{
             int length = rs.getInt(3);
             
             ChromosomeInfo info = new ChromosomeInfo(dbid, length, name);
-            if(chroms.containsKey(name) || revchroms.containsKey(dbid)) { 
+            if(chromsByName.containsKey(name) || chromsByID.containsKey(dbid)) { 
                 throw new IllegalArgumentException("Duplicate name \"" + name + 
                         "\" seems to exist in genome " + version);
             }
-            chroms.put(name, info);
-            revchroms.put(dbid, info);
+            chromsByName.put(name, info);
+            chromsByID.put(dbid, info);
         }
         
-        rs.close();
-        s.close();
+        if (rs != null) { try {rs.close(); } catch (SQLException ex) {  }}
+        if (stmt != null) { try { stmt.close();} catch (SQLException ex) { } }
+    	
     }
 
-    public String getName() {return species; }
+    //Accessors
     public String getVersion() {return version;}
-    public String getSpecies() {return species;}    
-    public String getDescription() throws SQLException { 
-        Connection cxn = DatabaseConnectionManager.getConnection("core");
-    	Statement s = cxn.createStatement();
-        String desc = null;
-        ResultSet rs = s.executeQuery("select description from genome where id=" + dbid);
-        if(rs.next()) { desc = rs.getString(1); }
-        rs.close();
-        s.close();
-        cxn.close();
-        return desc;
-    }
+    public int getDBID() {return dbid;}
+    public Species getSpecies(){return species;}
+    public String getSpeciesName() {return species.getName();}    
+    public int getSpeciesDBID() { return species.getDBID(); }
+    public String toString() { return getSpeciesName() +","+getVersion(); }
 
-    /**
-     * Returns the full sequence for the specified chromosome
-     */
-    public String getChromosomeSequence(ChromosomeInfo info) throws SQLException { 
-    	Connection cxn = DatabaseConnectionManager.getConnection("core");
-    	StringBuilder sb = new StringBuilder();
-        Statement s = cxn.createStatement();
-        ResultSet rs = s.executeQuery("select sequence from chromsequence where id=" + info.getDBID());
-        if(rs.next()) { 
-            String seq = rs.getString(1);
-            sb.append(seq);
-        }
-        rs.close();
-        s.close();
-        cxn.close();
-        return sb.toString();        
-    }
-    
-    /**
-     * Returns a substring of the chromosomes sequence starting at <code>start</code> and of 
-     * length <code>end-start+1</code>.
-     */
-    public String getChromosomeSequence(ChromosomeInfo info, int start, int end) throws SQLException {
-        Connection cxn = DatabaseConnectionManager.getConnection("core");
-    	StringBuilder sb = new StringBuilder();
-        Statement s = cxn.createStatement();
-        
-        int windowStart = start; 
-        int windowLength = (end-start+1);
-        
-        ResultSet rs = s.executeQuery("select substr(sequence," + windowStart + "," + windowLength + ") " +
-                "from chromsequence where id=" + info.getDBID());
-        
-        if(rs.next()) { 
-            String seq = rs.getString(1);
-            sb.append(seq);
-        }
-        
-        rs.close();
-        s.close();
-        cxn.close();
-        return sb.toString();
-    }
-
-    /** Maps a chromosome database identifier to a name */        
-    public String getChromName(int chromID) { return revchroms.get(chromID).getName(); }
-    /** Returns true iff this Genome contains a chromosome with the supplied database identifier */
-    public boolean containsChromID(int chromID) { return revchroms.containsKey(chromID); }
-    /** Returns true iff this Genome contains a chromosome with the supplied name */
-    public boolean containsChromName(String chromName) { return chroms.containsKey(chromName); }
-    /** Maps a chromosome name to its database identifier */
+    //Chromosome-related accessors
+    public Collection<ChromosomeInfo> getChromInfo(){ if(chromsByName!=null){return chromsByName.values();}else{return null;}}
+    public List<String> getChromList() { return new LinkedList<String>(chromsByName.keySet()); }
+    public ChromosomeInfo getChrom(String name) { return chromsByName.get(name); }
+    public boolean containsChromName(String chromName) { return chromsByName.containsKey(chromName); }
+    public String getChromName(int chromID) { return chromsByID.get(chromID).getName(); }
     public int getChromID(String chromName) { 
-        if (chroms.get(chromName) == null) {
+        if (chromsByName.get(chromName) == null) {
             throw new NullPointerException("Null chromosome for " + chromName);
         }
-        return chroms.get(chromName).getDBID(); 
+        return chromsByName.get(chromName).getDBID(); 
     }
-    /** Returns the complete mapping from chromosome names to DBIDs for this Genome */
-    public Map<String,Integer> getChromIDMap() { 
-        Map<String,Integer> chromID = new HashMap<String,Integer>();
-        for(String n : chroms.keySet()) { chromID.put(n, chroms.get(n).getDBID()); }
-        return chromID;
-    }
-    /** Returns the complete mapping from chromosome DBIDs to names for this Genome */
-    public Map<Integer,String> getRevChromIDMap() { 
-        Map<Integer,String> chromID = new HashMap<Integer,String>();
-        for(int dbid : revchroms.keySet()) { chromID.put(dbid, revchroms.get(dbid).getName()); }
-        return chromID;
-    }
-    /** Returns the length of the specified chromosome, in base pairs */
-    public int getChromLength(String chromName) { return chroms.get(chromName).getLength(); }
-    /** Returns the complete map from chromosome name to length */
+    public int getChromLength(String chromName) { return chromsByName.get(chromName).getLength(); }
     public Map<String,Integer> getChromLengthMap() { 
         Map<String,Integer> chromLengths = new HashMap<String,Integer>();
-        for(String n : chroms.keySet()) { chromLengths.put(n, chroms.get(n).getLength()); }
+        for(String n : chromsByName.keySet()) { chromLengths.put(n, chromsByName.get(n).getLength()); }
         return chromLengths;
     }
-    public long getGenomeSize() {
-        long size = 0;
-        Map<String,Integer> m = getChromLengthMap();
-        for (int i : m.values()) {
-            size += i;
-        }
-        return size;
-    }
+    
     /** Returns the genome info string with chromosome name <tab> length format*/
     public String getGenomeInfo(){
     	StringBuilder sb = new StringBuilder();
-    	for(String n : chroms.keySet()) { sb.append(n).append("\t").append(chroms.get(n).getLength()).append("\n"); }
+    	for(String n : chromsByName.keySet()) { sb.append(n).append("\t").append(chromsByName.get(n).getLength()).append("\n"); }
         return sb.toString();
     }
-    /** Converts a goofy chromosome name (eg, chrIV) to a more sensible name (eg 4) */
-    public String fixChromName(String chrom) {return fixChrom(chrom);}
-    /** Maps a sensible chromosome name back to the roman numeral form */
-    public String unfixChromName(String chrom) {return unfixChrom(chrom);}
-    public String unfixChromName(int chrom) {return unfixChrom(chrom);}
-    
+
+    /**
+     * Return total length of all chromosomes
+     * @return
+     */
     public double getGenomeLength() { 
         double totalLen=0;
-        for(String n : chroms.keySet()) { totalLen+= (double)chroms.get(n).getLength();}
+        for(String n : chromsByName.keySet()) { totalLen+= (double)chromsByName.get(n).getLength();}
         return totalLen;
     }
 
-
-    public static String unfixChrom(String c) {
-        return unfixChrom(Integer.parseInt(c));
+    
+    //Roman numeral to integer translation helpers
+	private static int[] romvals;
+    private static String[] intvals;
+    public static String convertChromNameToRoman(String c) {
+        return convertChromNameToRoman(Integer.parseInt(c));
     }
-
-    public static String unfixChrom(int chrom) {
+    public static String convertChromNameToRoman(int chrom) {
         if(intvals == null) { 
             intvals = new String[10];
             intvals[0] = "X";
@@ -410,23 +242,17 @@ public class Genome{
             intvals[8] = "VIII";
             intvals[9] = "IX";
         }
-        
         StringBuilder sb = new StringBuilder();
         sb.append("chr");
-        
         while(chrom >= 10) { 
             chrom -= 10;
             sb.append(intvals[0]);
         }
-        
-        if(chrom > 0) { 
+        if(chrom > 0)
             sb.append(intvals[chrom]);
-        }
-        
         return sb.toString();
     }
-    
-    public static String fixChrom(String chrom) {
+    public static String convertChromNameFromRoman(String chrom) {
         if (romvals == null) {
             romvals = new int[Character.getNumericValue('Z')];
             romvals[Character.getNumericValue('X')] = 10;
@@ -438,50 +264,14 @@ public class Genome{
         if (chr.matches("^[cC][hH][rR].*")) {
             chr = chr.substring(3);
         } 
-//         if (isyeast && chr.matches("^[XVI]+$")) {
-//             int val = 0, pos = 1, curval, lastval, buffer; char cur, last;
-//             boolean random = false;
-//             if (chr.matches("_random$")) {
-//                 random = true;
-//                 chr.replaceFirst("_random$","");
-//             }            
-//             last = chr.charAt(0);
-//             lastval = romvals[Character.getNumericValue(last)];
-//             buffer = lastval;
-//             //            System.err.println("== " + buffer);
-//             while (pos < chr.length()) {
-//                 cur = chr.charAt(pos);
-//                 curval = romvals[Character.getNumericValue(cur)];
-//                 if (curval > lastval) {
-//                     val += curval - lastval;
-//                     buffer = 0;
-//                 } else if (cur != last) {
-//                     val += buffer;
-//                     buffer = curval;
-//                 } else {
-//                     buffer += curval;
-//                 }
-//                 //                System.err.println(pos + ":" + cur + "," + curval + "," + buffer + "," + val);
-//                 last = cur;
-//                 lastval = curval;
-//                 pos++;
-//             }
-//             val += buffer;
-//             //            System.err.println(",,, " + buffer + "," + val);
-//             if (random) {
-//                 return Integer.toString(val) + "_random";
-//             } else {
-//                 return Integer.toString(val);
-//             }
-//         } else 
+
         if (chr.matches("^[1234567890MmtUnXY]+(_random)?[LRh]?$")) {
             return chr;
         } else {
             throw new NumberFormatException("Can't fix chrom name " + chrom + "," + chr);
         }
     }
-
-    public static String fixYeastChrom(String chrom) {
+    public static String convertYeastChromNameFromRoman(String chrom) {
         if (romvals == null) {
             romvals = new int[Character.getNumericValue('Z')];
             romvals[Character.getNumericValue('X')] = 10;
@@ -536,21 +326,15 @@ public class Genome{
         }
     }
 
-    /** Returns a list of all chromosome names in this GEnome */
-    public List<String> getChromList() { return new LinkedList<String>(chroms.keySet()); }
-    /** Maps a chromosome name to the corresponding <code>ChromosomeInfo</code> object */
-    public ChromosomeInfo getChrom(String name) { return chroms.get(name); }
-    /** Returns the database identifier for this Genome */
-    public int getDBID() {return dbid;}
-    public int getSpeciesDBID() { return speciesid; }
     
     
-    /** Returns a read connection to the UCSC database for this
-     * genome 
+    /** 
+     * Returns a read connection to the annotation database for this genome 
      */
-    public Connection getUcscConnection() throws SQLException {
+    public Connection getAnnotationDBConnection() throws SQLException {
         try {
         	String v = this.getVersion().replaceAll("[^\\w\\-]","_");
+        	//We should store these table names in core and load at runtime
             return DatabaseConnectionManager.getConnection("ucsc_" + v);
         } catch (UnknownRoleException ex) {
             throw new DatabaseException("Couldn't create a database connection for genome " + 
@@ -558,23 +342,213 @@ public class Genome{
         }
 
     }
+        
     
-    public String toString() {
-        return getSpecies() +","+getVersion();
+    /**
+	 * Load all Genomes from database 
+	 * @return
+	 */
+    public static Collection<Genome> getAllGenomes(boolean forceRefreshFromDB){
+    	List<Genome> gens = new ArrayList<Genome>();
+    	
+    	if(staticGenomes.isEmpty() || forceRefreshFromDB){
+    		staticGenomes.clear(); genomeids.clear();
+	    	Connection cxn = null;
+	        Statement stmt = null;
+	        ResultSet rs = null;
+	        try {
+	            cxn = DatabaseConnectionManager.getConnection("core");
+	            stmt = cxn.createStatement();
+	            rs = stmt.executeQuery("select id, species, version from genome");
+	            
+	            while(rs.next()) { 
+	            	Genome gen = new Genome(Species.getSpecies(rs.getInt(2)), rs.getInt(1), rs.getString(3), cxn);
+	            	gens.add(gen);
+	            	staticGenomes.put(gen.getVersion(), gen);
+	            	genomeids.put(gen.getDBID(), gen);
+	            }
+	
+	        } catch (SQLException ex) {
+	            ex.printStackTrace();
+	            throw new DatabaseException("mySQL error: " + ex.toString(), ex);
+	        } catch (UnknownRoleException ex) {
+	            ex.printStackTrace();
+	            throw new DatabaseException("Couldn't connect with role core", ex);
+	        } catch (NotFoundException e) {
+				e.printStackTrace();
+			} finally {
+	        	if (rs != null) { try {rs.close(); } catch (SQLException ex) {  }}
+		        if (stmt != null) { try { stmt.close();} catch (SQLException ex) { } }
+	        	if (cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
+	        }
+    	}else{
+    		gens.addAll(staticGenomes.values());
+    	}
+    	return gens;
     }
     
-    public int hashCode() {
-        return getSpecies().hashCode()*37 + getVersion().hashCode();
+    /**
+     * Return all Genomes for a given Species
+	 * @param genomeName
+	 * @return
+	 * @throws NotFoundException
+	 */
+	public static Collection<Genome> getAllGenomesBySpecies(Species s) throws NotFoundException {
+		if(staticGenomes.isEmpty()){
+        	getAllGenomes(true);
+        }
+		List<Genome> sGens = new ArrayList<Genome>();
+		for(Genome g : staticGenomes.values()){
+			if(g.getSpeciesName().equals(s.getName()))
+				sGens.add(g);
+		}
+		return sGens;
+	}
+    
+    
+    /**
+	 * @param gid
+	 * @return
+	 * @throws NotFoundException
+	 */
+	public static Genome findGenome(int gid) throws NotFoundException {
+		if(staticGenomes.isEmpty()){
+        	getAllGenomes(false);
+        }
+		if (genomeids.containsKey(gid)) {
+	        return genomeids.get(gid);
+	    }
+	
+	    Connection cxn=null;
+	    Statement stmt = null;
+	    ResultSet rs = null;
+	    
+	    try {
+	        cxn = DatabaseConnectionManager.getConnection("core");
+	        stmt = cxn.createStatement();
+	        rs = stmt.executeQuery("select version, species from genome where id=" + gid);
+	        Genome g = null;
+	
+	        if (rs.next()) {
+	            String genomeName = rs.getString(1);
+	            int orgID = rs.getInt(2);
+	            Species org = Species.getSpecies(orgID);
+		        g = new Genome(org, genomeName);
+	        }
+	
+	        if (g == null) {
+	            throw new NotFoundException("Couldn't find genome: " + gid);
+	        }
+	        genomeids.put(gid,g);
+	        staticGenomes.put(g.getSpeciesName(), g);
+	        return g;
+	
+	    } catch (SQLException se) {
+	        throw new DatabaseException("SQLException: " + se.getMessage(), se);
+	    } catch (UnknownRoleException ex) {
+	        throw new DatabaseException("Couldn't connect with role core", ex);
+	    } finally {
+	    	if (rs != null) { try {rs.close(); } catch (SQLException ex) {  }}
+	        if (stmt != null) { try { stmt.close();} catch (SQLException ex) { } }
+	    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
+	    }
+	}
+
+	/**
+	 * @param genomeName
+	 * @return
+	 * @throws NotFoundException
+	 */
+	public static Genome findGenome(String genomeName) throws NotFoundException {
+		if(staticGenomes.isEmpty()){
+        	getAllGenomes(false);
+        }
+		if (staticGenomes.containsKey(genomeName)) {
+	        return staticGenomes.get(genomeName);
+	    }
+	    Connection cxn=null;
+	    Statement stmt = null;
+	    ResultSet rs = null;
+	    
+	    try {
+	        cxn = DatabaseConnectionManager.getConnection("core");
+	        stmt = cxn.createStatement();
+	        rs = stmt.executeQuery("select species from genome where version='" + genomeName + "'");
+	        Genome g = null;
+	
+	        if (rs.next()) {
+	            int orgID = rs.getInt(1);
+	            Species org = Species.getSpecies(orgID);
+		        g = new Genome(org, genomeName);
+	        }
+	
+	        if (g == null) {
+	            throw new NotFoundException("Couldn't find genome: " + genomeName);
+	        }
+	        staticGenomes.put(genomeName, g);
+	        genomeids.put(g.getDBID(), g);
+	        return g;
+	
+	    } catch (SQLException se) {
+	        throw new DatabaseException("SQLException: " + se.getMessage(), se);
+	    } catch (UnknownRoleException ex) {
+	        throw new DatabaseException("Couldn't connect with role core", ex);
+	    } finally {
+	    	if (rs != null) { try {rs.close(); } catch (SQLException ex) {  }}
+	        if (stmt != null) { try { stmt.close();} catch (SQLException ex) { } }
+	    	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
+	    }
+	}
+	
+	/**
+     * Returns all of the versions/builds for this species.
+     * @return
+     */
+    public static Collection<String> getAllGenomeNames(boolean forceRefreshFromDB) {
+    	if(staticGenomes.isEmpty() || forceRefreshFromDB){
+        	getAllGenomes(forceRefreshFromDB);
+        }
+    	return staticGenomes.keySet();
+    }
+
+	/**
+     * Insert a new Genome into the database 
+     * @param version
+     * @throws SQLException
+     */
+    public static void insertGenome(Species species, String version) throws SQLException {
+        Connection cxn = null;
+        Statement stmt = null;
+        try {
+            cxn = DatabaseConnectionManager.getConnection("core");
+            stmt = cxn.createStatement();
+            String nextIdString = Sequence.getInsertSQL(cxn, "genome_id");
+            String insertSQL = String.format("insert into genome(id, species, version) values (%s, %d, '%s')", nextIdString,
+            		species.getDBID(), version);
+            stmt.executeUpdate(insertSQL);
+        } catch (UnknownRoleException ex) {
+            throw new DatabaseException("Couldn't connect with role core", ex);
+        } catch (SQLException se) {
+            throw se;
+        } finally {
+            if (stmt != null) { try { stmt.close();} catch (SQLException ex) { } }
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
+        }
+    }
+    
+	public int hashCode() {
+        return getSpeciesName().hashCode()*37 + getVersion().hashCode();
     }
 
     public boolean equals(Object o) {
         if (o instanceof Genome) {
             Genome other = (Genome)o;
-            return (getSpecies().equals(other.getSpecies()) &&
+            return (getSpeciesName().equals(other.getSpeciesName()) &&
                     getVersion().equals(other.getVersion()));
         } else {
             return false;
         }
     }
+
 }
 

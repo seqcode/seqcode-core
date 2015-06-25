@@ -16,12 +16,14 @@ import java.util.*;
 import java.sql.SQLException;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
+import edu.psu.compbio.seqcode.genome.location.ChromosomeInfo;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.motifs.WeightMatrixScanner;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -168,6 +170,8 @@ public class MotifOccurrenceMatrix {
     public void computeMatrix() throws SQLException {
         WMHitScoreComparator comparator = new WMHitScoreComparator();
         List<Region> promoters = new ArrayList<Region>();
+        SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>(genome);
+        
         for (int j = 0; j < genes.size(); j++) {
             Region promoter = getPromoterForGene(genes.get(j));
             promoters.add(promoter);
@@ -183,8 +187,7 @@ public class MotifOccurrenceMatrix {
                     continue;
                 }
 
-                Genome.ChromosomeInfo chrinfo = genome.getChrom(promoter.getChrom());
-                String seq = genome.getChromosomeSequence(chrinfo, promoter.getStart(), promoter.getEnd());
+                String seq = seqgen.execute(promoter);
                 List<WMHit> hits = WeightMatrixScanner.scanSequence(m,
                                                                     (float)(m.getMaxScore() * .75),
                                                                     seq.toCharArray());

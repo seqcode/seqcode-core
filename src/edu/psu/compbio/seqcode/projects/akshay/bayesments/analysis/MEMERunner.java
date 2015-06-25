@@ -14,21 +14,21 @@ import java.util.Map;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
 import edu.psu.compbio.seqcode.projects.multigps.stats.StreamGobbler;
 
 
 
 public class MEMERunner {
 	
-	protected Config config;
+	protected BayesmentsConfig config;
 	protected Genome gen;
 	protected String MEMEpath;
 	protected String MEMEargs;
 	protected Float pseudo = (float)0.001; 
 	
 	//Constructor
-	public MEMERunner(Config c){
+	public MEMERunner(BayesmentsConfig c){
 		config=c;
 		MEMEpath = config.getMEMEpath();
 		MEMEargs = config.getMEMEargs();

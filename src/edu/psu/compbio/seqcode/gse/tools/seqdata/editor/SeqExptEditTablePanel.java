@@ -34,7 +34,7 @@ import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataModifier;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
-import edu.psu.compbio.seqcode.gse.seqview.components.SeqLMETableModel;
+import edu.psu.compbio.seqcode.gse.seqview.components.SeqAlignmentTableModel;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.components.GenericEditTablePanel;
@@ -50,7 +50,7 @@ public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
 
     public SeqExptEditTablePanel() { 
     	try {
-            seqLoader = new SeqDataLoader(true);
+            seqLoader = new SeqDataLoader(true, true);
             seqModifier = new SeqDataModifier(seqLoader);
     	} catch (AccessControlException e1) {
     		e1.printStackTrace();
@@ -71,7 +71,7 @@ public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
 		try {
     		ArrayList<String> types = new ArrayList<String>();
     		types.add("");
-        	for(ExptType e : seqLoader.getExptTypes())
+        	for(ExptType e : seqLoader.getMetadataLoader().loadAllExptTypes(false))
 				types.add(e.getName());
 			Collections.sort(types);
 			jcbType = new JComboBox(types.toArray()); jcbType.setEditable(true);

@@ -40,7 +40,7 @@ public class ScoredRegionGenerator<X extends Region> implements Expander<X,Score
     public Iterator<ScoredRegion> execute(X region) {
         try {
             java.sql.Connection cxn =
-                getGenome().getUcscConnection();
+                getGenome().getAnnotationDBConnection();
 
             String sql = getSQL(region.getStart(), region.getEnd());
 

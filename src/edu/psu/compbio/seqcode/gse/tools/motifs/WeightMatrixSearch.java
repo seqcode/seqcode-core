@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.gse.tools.motifs;
 import java.util.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
@@ -50,7 +50,7 @@ public class WeightMatrixSearch {
             System.exit(1);
         }
         try {
-            Organism o = new Organism(species);
+            Species o = new Species(species);
             java.sql.Connection cxn =DatabaseConnectionManager.getConnection("annotations");
             java.sql.Connection corecxn =DatabaseConnectionManager.getConnection("core");
             PreparedStatement namestmt = cxn.prepareStatement(getmatrixname);

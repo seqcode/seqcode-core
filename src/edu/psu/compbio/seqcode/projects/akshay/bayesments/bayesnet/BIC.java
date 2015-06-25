@@ -1,7 +1,7 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet;
 
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
 
 public class BIC {
 	protected EMtrain model;
@@ -22,7 +22,7 @@ public class BIC {
 	protected int numChromStates;
 	protected int numFacStates;
 	
-	protected Config conf;
+	protected BayesmentsConfig conf;
 	protected int N;
 	protected int C;
 	protected int F;
@@ -34,7 +34,7 @@ public class BIC {
 	
 	
 	
-	public BIC(Config conf, EMtrain model, int nChromStates, int nFacStates) {
+	public BIC(BayesmentsConfig conf, EMtrain model, int nChromStates, int nFacStates) {
 		this.conf = conf;
 		this.model = model;
 		

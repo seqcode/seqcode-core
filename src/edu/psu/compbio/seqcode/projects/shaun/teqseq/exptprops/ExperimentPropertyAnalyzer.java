@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -76,7 +76,7 @@ public class ExperimentPropertyAnalyzer {
         try {
         	GenomeLoader gLoad=null;
         	if(ap.hasKey("species")){
-				Pair<Organism, Genome> pair = Args.parseGenome(args);
+				Pair<Species, Genome> pair = Args.parseGenome(args);
 				Genome currgen = pair.cdr();
 				gLoad = new GenomeLoader(currgen);
         	}else{

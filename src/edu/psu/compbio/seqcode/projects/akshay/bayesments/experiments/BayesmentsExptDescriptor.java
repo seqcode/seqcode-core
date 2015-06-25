@@ -6,7 +6,7 @@ import java.util.List;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
 
-public class ExptDescriptor {
+public class BayesmentsExptDescriptor {
 	
 	public String condition;
 	public String replicate;
@@ -18,10 +18,10 @@ public class ExptDescriptor {
 	public int winsize;
 	
 	
-	public ExptDescriptor(String condition, String replicate, String feature, boolean signal, Pair<String, String> src, int winsize) {
+	public BayesmentsExptDescriptor(String condition, String replicate, String feature, boolean signal, Pair<String, String> src, int winsize) {
 		this(condition, replicate, feature, signal, src, -1, winsize);
 	}
-	public ExptDescriptor(String condition, String replicate, String feature, boolean signal, Pair<String, String> src, float perBaseReadLimit, int winsize ) {
+	public BayesmentsExptDescriptor(String condition, String replicate, String feature, boolean signal, Pair<String, String> src, float perBaseReadLimit, int winsize ) {
 		this.condition = condition;
 		this.replicate = replicate;
 		this.feature = feature;

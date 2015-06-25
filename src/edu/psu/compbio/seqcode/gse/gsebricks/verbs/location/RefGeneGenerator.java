@@ -5,7 +5,7 @@ import java.io.*;
 import java.sql.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.ExonicGene;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -340,7 +340,6 @@ public class RefGeneGenerator<X extends Region>
             }
             if (wantalias && symboltable != null && symboltable.equals("kgXref")) {
                 try {
-                    cxn = genome.getUcscConnection();
                     String aliassql = "select distinct(kgAlias.alias) from kgAlias, kgXref where kgXref.kgID = kgAlias.kgID and kgXref." +
                         namecolumn + " = ?";
                     getalias = cxn.prepareStatement(aliassql);
@@ -360,7 +359,7 @@ public class RefGeneGenerator<X extends Region>
         }
         int offset = 1;
         try {
-        	Connection cxn = genome.getUcscConnection();
+        	Connection cxn = genome.getAnnotationDBConnection();
         	prepareStatements(cxn);
             String chr = region.getChrom();
             if (prependChr && !chr.matches("^(chr|scaffold).*")) {
@@ -386,7 +385,7 @@ public class RefGeneGenerator<X extends Region>
         }
     }
     public synchronized Iterator<Gene> getAll() throws SQLException {
-    		Connection cxn = genome.getUcscConnection();
+    		Connection cxn = genome.getAnnotationDBConnection();
     		prepareStatements(cxn);
     		Iterator<Gene> results = parseResults(getallps);
     		close();
@@ -395,7 +394,7 @@ public class RefGeneGenerator<X extends Region>
         }
     public synchronized Iterator<Gene> byName(String name) {
         try {
-        	Connection cxn = genome.getUcscConnection();
+        	Connection cxn = genome.getAnnotationDBConnection();
     		prepareStatements(cxn);
             nameps.setString(1,name);
             if (symboltable != null) {
@@ -644,10 +643,10 @@ public class RefGeneGenerator<X extends Region>
             throw new RuntimeException("Must supply --species 'species;genome'");
         }
 
-        Organism org;
+        Species org;
         Genome genome;
-        org = new Organism(specname);
-        genome = org.getGenome(genomename);
+        org = new Species(specname);
+        genome = new Genome(org, genomename);
         RefGeneGenerator gen = new RefGeneGenerator(genome);
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--up")) {

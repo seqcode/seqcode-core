@@ -1,10 +1,10 @@
 package edu.psu.compbio.seqcode.gse.seqview.components;
 
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedExpt;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedAligns;
 import edu.psu.compbio.seqcode.gse.viz.components.ObjectTableModel;
 
-public class SeqLMETableModel extends ObjectTableModel<SeqLocatorMatchedExpt> {
+public class SeqAlignmentTableModel extends ObjectTableModel<SeqLocatorMatchedAligns> {
     
     private int compareNameVersions(String n1, String v1, String n2, String v2) { 
         int c = v1.compareTo(v2);
@@ -12,7 +12,7 @@ public class SeqLMETableModel extends ObjectTableModel<SeqLocatorMatchedExpt> {
         return n1.compareTo(n2);
     }
     
-    private int findNewIndex(SeqLocatorMatchedExpt bs) {
+    private int findNewIndex(SeqLocatorMatchedAligns bs) {
         String n = bs.locator.getExptName(), v = bs.locator.getAlignName();
         for(int i = 0; i < getSize(); i++) { 
             SeqLocator os = getObject(i).locator;

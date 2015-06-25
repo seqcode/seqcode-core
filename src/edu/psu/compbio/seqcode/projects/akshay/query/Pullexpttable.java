@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.projects.akshay.query;
 import java.sql.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.utils.*;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
@@ -18,7 +18,7 @@ public class Pullexpttable {
 	public ExptTarget expttarget=null;
 	public CellLine celline=null;
 	public ReadType readtype=null;
-	public Organism species=null;
+	public Species species=null;
 	public List<String> table= new ArrayList<String>();
 	
 	public static final String role = "seqdata";
@@ -35,30 +35,30 @@ public class Pullexpttable {
 				
 			 for(int i=0; i < command.length-1; i++){
 				 if(command[i].matches("^--.*$") && (command[i].substring(2).matches("expttype"))){
-					 expttype = core.getExptType(command[i+1]);
+					 expttype = core.loadExptType(command[i+1], false, false);
 					
 				 }
 				 if(command[i].matches("^--.*$") && (command[i].substring(2).matches("lab"))){
-					 lab = core.getLab(command[i+1]);
+					 lab = core.loadLab(command[i+1], false, false);
 					 
 				 }
 				 if(command[i].matches("^--.*$") && (command[i].substring(2).matches("exptcondition"))){
-					 exptcondition = core.getExptCondition(command[i+1]);
+					 exptcondition = core.loadExptCondition(command[i+1], false, false);
 					 
 				 }
 				 if(command[i].matches("^--.*$") && (command[i].substring(2).matches("expttarget"))){
-					 expttarget = core.getExptTarget(command[i+1]);
+					 expttarget = core.loadExptTarget(command[i+1], false, false);
 					 
 				 }
 				 if(command[i].matches("^--.*$") && (command[i].substring(2).matches("cellline"))){
-					 celline = core.getCellLine(command[i+1]);
+					 celline = core.loadCellLine(command[i+1], false, false);
 					 
 				 }
 				 if(command[i].matches("^--.*$") && (command[i].substring(2).matches("readtype"))){
-					 readtype = core.getReadType(command[i+1]);
+					 readtype = core.loadReadType(command[i+1], false, false);
 				 }
 				 if(command[i].matches("^--.*$") && (command[i].substring(2).matches("species"))){
-					 species = new Organism(command[i+1]);
+					 species = new Species(command[i+1]);
 				 }
 			}
 		}
@@ -77,7 +77,9 @@ public class Pullexpttable {
 	public void executeSQLExptCommand() throws SQLException{
 		Connection cxn = null;
 		PreparedStatement psexpt=null;
+		ResultSet rsexpt = null;
 		MetadataLoader core = new MetadataLoader();
+		core.cacheAllMetadata();
 		try{
 			cxn = DatabaseConnectionManager.getConnection(role);
 			
@@ -105,14 +107,14 @@ public class Pullexpttable {
 			if (readtype != null){psexpt.setInt(count, readtype.getDBID()); count+=1;}
 			if (species != null){ psexpt.setInt(count, species.getDBID()); count +=1;}
 		
-			ResultSet rsexpt = psexpt.executeQuery();
+			rsexpt = psexpt.executeQuery();
 			getTableFromRS(rsexpt, core);
-			rsexpt.close();
-			psexpt.close();
-			
+
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		} finally {
+			if (rsexpt != null) { try {rsexpt.close(); } catch (SQLException ex) {  }}
+			if (psexpt != null) { try {psexpt.close(); } catch (SQLException ex) {  }}
 			if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
         }
 	}
@@ -122,16 +124,16 @@ public class Pullexpttable {
 	 */
 	private void getTableFromRS(ResultSet rsexpt, MetadataLoader trackback) throws SQLException, NotFoundException{ 
 		try{
-			Organism org=null;
+			Species org=null;
 		
 			while(rsexpt.next()){
 				System.out.println(rsexpt.getString(1));
-				org = new Organism(Integer.parseInt(rsexpt.getString("species")));
+				org = new Species(Integer.parseInt(rsexpt.getString("species")));
 				
 				table.add(rsexpt.getString(1)+ "\t"+rsexpt.getString(2)+"\t"+ rsexpt.getString("replicate")+"\t"+org.getName()+"\t"+
-						trackback.loadExptType(Integer.parseInt(rsexpt.getString("expttype"))).getName()+"\t"+trackback.loadLab(Integer.parseInt(rsexpt.getString("lab"))).getName()+"\t"+
-						trackback.loadExptCondition(Integer.parseInt(rsexpt.getString("exptcondition"))).getName()+"\t"+trackback.loadExptTarget(Integer.parseInt(rsexpt.getString("expttarget"))).getName()+"\t"+
-						trackback.loadCellLine(Integer.parseInt(rsexpt.getString("cellline"))).getName()+"\t"+trackback.loadReadType(Integer.parseInt(rsexpt.getString("readtype"))).getName());
+						trackback.loadExptType(Integer.parseInt(rsexpt.getString("expttype")), false).getName()+"\t"+trackback.loadLab(Integer.parseInt(rsexpt.getString("lab")), false).getName()+"\t"+
+						trackback.loadExptCondition(Integer.parseInt(rsexpt.getString("exptcondition")), false).getName()+"\t"+trackback.loadExptTarget(Integer.parseInt(rsexpt.getString("expttarget")), false).getName()+"\t"+
+						trackback.loadCellLine(Integer.parseInt(rsexpt.getString("cellline")), false).getName()+"\t"+trackback.loadReadType(Integer.parseInt(rsexpt.getString("readtype")), false).getName());
 			}
 		}
 		catch (NullPointerException e){

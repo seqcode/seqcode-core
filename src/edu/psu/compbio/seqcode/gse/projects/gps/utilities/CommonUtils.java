@@ -21,7 +21,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
@@ -657,12 +657,12 @@ public class CommonUtils {
     public static void main(String args[]){
 		// load motif
     	Genome genome;
-    	Organism org=null;
+    	Species org=null;
     	WeightMatrix motif = null;
     	ArgParser ap = new ArgParser(args);
 		Set<String> flags = Args.parseFlags(args);		
 	    try {
-	      Pair<Organism, Genome> pair = Args.parseGenome(args);
+	      Pair<Species, Genome> pair = Args.parseGenome(args);
 	      if(pair==null){
 	        //Make fake genome... chr lengths provided???
 	        if(ap.hasKey("geninfo")){

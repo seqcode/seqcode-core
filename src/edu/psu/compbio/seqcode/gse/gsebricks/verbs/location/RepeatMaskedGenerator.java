@@ -37,7 +37,7 @@ public class RepeatMaskedGenerator<X extends Region> implements Expander<X,Repea
     public Iterator<RepeatMaskedRegion> execute(X region) {
         try {
             java.sql.Connection cxn =
-                genome.getUcscConnection();
+                genome.getAnnotationDBConnection();
             String chr = region.getChrom();
             if (!chr.matches("^(chr|scaffold).*")) {
                 chr = "chr" + chr;

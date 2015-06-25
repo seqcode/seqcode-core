@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
@@ -67,7 +67,7 @@ public class FastaExporter {
 			
 			Genome gen;
 			if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
-				Pair<Organism, Genome> orggen = Args.parseGenome(args);
+				Pair<Species, Genome> orggen = Args.parseGenome(args);
 				gen = orggen.cdr();
 			} 
 			else{

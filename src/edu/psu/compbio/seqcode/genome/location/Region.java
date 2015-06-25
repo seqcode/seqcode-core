@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Genome.ChromosomeInfo;
+import edu.psu.compbio.seqcode.genome.location.ChromosomeInfo;
 import edu.psu.compbio.seqcode.gse.utils.Saveable;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 

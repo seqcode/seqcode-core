@@ -28,7 +28,7 @@ public class SGDOtherGenerator<X extends Region> implements Expander<X,NamedType
     public Iterator<NamedTypedRegion> byName(String name) {
         try {
             java.sql.Connection cxn =
-                genome.getUcscConnection();
+                genome.getAnnotationDBConnection();
             PreparedStatement ps = cxn.prepareStatement("select name, chrom, strand, type, chromStart, chromEnd from " + tablename + " where name = ?");
             ps.setString(1,name);
             Iterator<NamedTypedRegion> results = parseResults(ps);
@@ -43,7 +43,7 @@ public class SGDOtherGenerator<X extends Region> implements Expander<X,NamedType
     public Iterator<NamedTypedRegion> execute(X region) {
         try {
             java.sql.Connection cxn =
-                genome.getUcscConnection();
+                genome.getAnnotationDBConnection();
             PreparedStatement ps = cxn.prepareStatement("select name, chrom, strand, type, chromStart, chromEnd from " + tablename + " where chrom = ? and " +
                                                         "((chromStart <= ? and chromEnd >= ?) or (chromStart >= ? and chromStart <= ?)) order by chromStart");
             String chr = region.getChrom();
@@ -83,7 +83,7 @@ public class SGDOtherGenerator<X extends Region> implements Expander<X,NamedType
             ps.close();
             return results.iterator();
         } catch (SQLException ex) {
-            throw new DatabaseException("Couldn't get UCSC RefGenes",ex);
+            throw new DatabaseException("Couldn't get SGD Other DB",ex);
         }
     }       
 }

@@ -9,7 +9,6 @@ import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 
 /**
  * Returns the ids of the alignments specified on the command line.
@@ -29,8 +28,6 @@ import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 public class GetAlignments {
     public static void main(String args[]) throws SQLException, NotFoundException, IOException {
         
-        java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
-        cxn.setAutoCommit(false);
         Genome genome = Args.parseGenome(args).cdr();
         Collection<String> alignnames = Args.parseStrings(args,"align");
         String etypestring = Args.parseString(args,"expttype",null);
@@ -41,26 +38,26 @@ public class GetAlignments {
         String rtypestring = Args.parseString(args,"readtype",null);
 
         SeqDataLoader loader = new SeqDataLoader();
-        MetadataLoader core = new MetadataLoader();
+        MetadataLoader core = loader.getMetadataLoader();
 
         Integer target = null, cells = null, condition = null, lab = null, expttype = null, readtype = null;
         if (targetstring != null) {
-            target = core.getExptTarget(targetstring).getDBID();
+            target = core.loadExptTarget(targetstring, false, false).getDBID();
         }
         if (cellsstring != null) {
-            cells = core.getCellLine(cellsstring).getDBID();
+            cells = core.loadCellLine(cellsstring, false, false).getDBID();
         }
         if (conditionstring != null) {
-            condition = core.getExptCondition(conditionstring).getDBID();
+            condition = core.loadExptCondition(conditionstring, false, false).getDBID();
         }
         if (labstring != null) {
-            lab = core.getLab(labstring).getDBID();
+            lab = core.loadLab(labstring, false, false).getDBID();
         }
         if (etypestring != null) {
-            expttype = core.getExptType(etypestring).getDBID();
+            expttype = core.loadExptType(etypestring, false, false).getDBID();
         }
         if (rtypestring != null) {
-            readtype = core.getReadType(rtypestring).getDBID();
+            readtype = core.loadReadType(rtypestring, false, false).getDBID();
         }
 
         for (String an : alignnames) {
@@ -75,6 +72,5 @@ public class GetAlignments {
         }
         
         loader.close();
-        cxn.close();
     }
 }

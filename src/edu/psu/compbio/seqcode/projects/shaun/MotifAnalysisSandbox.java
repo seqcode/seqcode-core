@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
@@ -176,10 +176,10 @@ public class MotifAnalysisSandbox {
         
 		try {
 			Genome currgen=null;
-			Organism currorg=null;
+			Species currorg=null;
 			//Load genome
 			if(ap.hasKey("species")){
-				Pair<Organism, Genome> pair = Args.parseGenome(args);
+				Pair<Species, Genome> pair = Args.parseGenome(args);
 				if(pair != null){
 					currorg = pair.car();
 					currgen = pair.cdr();

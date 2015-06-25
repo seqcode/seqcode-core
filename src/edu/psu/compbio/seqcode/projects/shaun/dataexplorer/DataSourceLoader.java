@@ -9,13 +9,14 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.TreeSet;
 
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
-import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 import edu.psu.compbio.seqcode.projects.shaun.FreqMatrixImport;
 
@@ -119,13 +120,15 @@ public class DataSourceLoader {
 					ArrayList<SeqLocator> locs = new ArrayList<SeqLocator>();
 					for(int i=6; i<words.length; i++){
 						String[] pieces = words[i].split(";");
-						if (pieces.length == 2) {
-		                    locs.add(new SeqLocator(pieces[0], pieces[1]));
-		                } else if (pieces.length == 3) {
-		                    locs.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
-		                } else {
-		                    System.err.println("Couldn't parse a ChipSeqLocator from " + words[i]);
-		                }
+	                	Set<String> reps = new TreeSet<String>();
+		            	if (pieces.length == 2) {
+		            		locs.add(new SeqLocator(pieces[0], reps, pieces[1]));					
+			            } else if (pieces.length == 3) {
+			            	reps.add(pieces[1]);
+			            	locs.add(new SeqLocator(pieces[0], reps, pieces[2]));
+			            } else {
+			                throw new RuntimeException("Couldn't parse a SeqLocator from " + words[i]);
+			            }
 					}
 					if(sourceType.equals("dbexpt")){
 						DeepSeqExpt dse = new DeepSeqExpt(gen, locs, "db", readLen);

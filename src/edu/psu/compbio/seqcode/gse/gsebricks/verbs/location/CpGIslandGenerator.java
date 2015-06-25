@@ -21,7 +21,7 @@ public class CpGIslandGenerator<X extends Region> implements Expander<X,CpGIslan
     public Iterator<CpGIsland> execute(X region) {
         try {
             java.sql.Connection cxn =
-                genome.getUcscConnection();
+                genome.getAnnotationDBConnection();
             PreparedStatement ps = cxn.prepareStatement("select chromStart, chromEnd, cpgNum, gcNum, perCpg, perGc, obsExp from " + tablename + " where chrom = ? and " +
                                                         "((chromStart <= ? and chromEnd >= ?) or (chromStart >= ? and chromStart <= ?)) order by chromStart");
             String chr = region.getChrom();

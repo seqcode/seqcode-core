@@ -5,7 +5,7 @@ package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
@@ -49,7 +49,7 @@ public class SeqExpt implements Comparable<SeqExpt>{
     private ExptCondition condition;
     private CellLine cells;
     private ReadType readType;
-    private Organism species;
+    private Species species;
     private int readlength, numReads;
     private String collabID, publicSource, publicDBID, fqFile, exptNote;
     
@@ -59,7 +59,7 @@ public class SeqExpt implements Comparable<SeqExpt>{
         replicate = rs.getString(3);
         int speciesID = rs.getInt(4);
         try {
-            species = Organism.getOrganism(speciesID);
+            species = Species.getSpecies(speciesID);
         } catch (NotFoundException e) {
             species = null;
             e.printStackTrace();
@@ -70,14 +70,14 @@ public class SeqExpt implements Comparable<SeqExpt>{
         int targetID = rs.getInt(8);
         int cellsID = rs.getInt(9);
         int readTypeID = rs.getInt(10);
-        MetadataLoader mloader = new MetadataLoader();
-        type = mloader.loadExptType(exptTypeID);
-        lab = mloader.loadLab(labID);
-        condition = mloader.loadExptCondition(condID);
-        target = mloader.loadExptTarget(targetID);
-        cells = mloader.loadCellLine(cellsID);
-        readType = mloader.loadReadType(readTypeID);
-
+        MetadataLoader mloader = loader == null ? new MetadataLoader() : loader.getMetadataLoader();
+        type = mloader.loadExptType(exptTypeID, false);
+        lab = mloader.loadLab(labID, false);
+        condition = mloader.loadExptCondition(condID, false);
+        target = mloader.loadExptTarget(targetID, false);
+        cells = mloader.loadCellLine(cellsID, false);
+        readType = mloader.loadReadType(readTypeID, false);
+        
         readlength = rs.getInt(11);
         numReads = rs.getInt(12);
         collabID = rs.getString(13);
@@ -90,7 +90,7 @@ public class SeqExpt implements Comparable<SeqExpt>{
     public int getDBID() { return dbid; }
     public String getName() { return name; }
     public String getReplicate() { return replicate; }
-    public Organism getOrganism() { return species; }
+    public Species getOrganism() { return species; }
     public Lab getLab() {return lab;}
     public ExptType getExptType() {return type;}
     public ExptTarget getExptTarget() { return target; }
@@ -107,6 +107,10 @@ public class SeqExpt implements Comparable<SeqExpt>{
     
     public String toString() { 
     	return String.format("%s (%s)", name, replicate);
+    }
+    
+    public boolean isReplicateOf(SeqExpt se){
+    	return name.equals(se.name);
     }
     
     public int compareTo(SeqExpt o){

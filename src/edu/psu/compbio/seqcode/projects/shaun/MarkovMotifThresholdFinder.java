@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.CountsBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
@@ -65,15 +65,15 @@ public class MarkovMotifThresholdFinder {
         
         try {
 			//Load genome
-			Organism currorg = Organism.getOrganism(species);
+			Species currorg = Species.getSpecies(species);
 			//Genome currgen = currorg.getGenome(genome);
 
 	        //Load the background model
 	        MarkovBackgroundModel backMod;
 	        if(backFile == null){
-	          backMod = new MarkovBackgroundModel(CountsBackgroundModel.modelFromWholeGenome(Organism.findGenome(genome)));
+	          backMod = new MarkovBackgroundModel(CountsBackgroundModel.modelFromWholeGenome(Genome.findGenome(genome)));
 	        }else{
-	        	backMod = BackgroundModelIO.parseMarkovBackgroundModel(backFile, Organism.findGenome(genome));
+	        	backMod = BackgroundModelIO.parseMarkovBackgroundModel(backFile, Genome.findGenome(genome));
 	        }
 	        
 	        //Pre-load the random sequences

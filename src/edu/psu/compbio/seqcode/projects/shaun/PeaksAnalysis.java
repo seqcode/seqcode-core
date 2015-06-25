@@ -17,7 +17,7 @@ import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.RepeatMaskedRegion;
@@ -41,7 +41,7 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 public class PeaksAnalysis {
-	private Organism org=null;
+	private Species org=null;
 	private Genome gen =null;
 	private List<Region> posSet;
 	private List<Point> posPeaks=null;
@@ -106,8 +106,8 @@ public class PeaksAnalysis {
             return;
         }
         try {
-        	Pair<Organism, Genome> pair = Args.parseGenome(args);
-        	Organism currorg = pair.car();
+        	Pair<Species, Genome> pair = Args.parseGenome(args);
+        	Species currorg = pair.car();
         	Genome currgen = pair.cdr();
 			
 	        String peaksFile = ap.hasKey("peaks") ? ap.getKeyValue("peaks") : (ap.hasKey("macspeaks") ? ap.getKeyValue("macspeaks"):null);
@@ -198,7 +198,7 @@ public class PeaksAnalysis {
 		}
 	}
 	
-	public PeaksAnalysis(Organism o, Genome g){
+	public PeaksAnalysis(Species o, Genome g){
 		org = o;
 		gen=g;
 	}

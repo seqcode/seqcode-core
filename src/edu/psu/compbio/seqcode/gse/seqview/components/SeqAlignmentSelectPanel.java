@@ -1,11 +1,3 @@
-/*
- * Created on Jan 11, 2008
- *
- * TODO 
- * 
- * To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package edu.psu.compbio.seqcode.gse.seqview.components;
 
 import java.util.*;
@@ -22,31 +14,31 @@ import java.sql.*;
 
 import edu.psu.compbio.seqcode.gse.datasets.core.ExptType;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
-import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedAligns.SeqLMENotReplicatesException; 
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.viz.components.GenericSelectPanel;
 
-public class SeqLMESelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt> {
+public class SeqAlignmentSelectPanel extends GenericSelectPanel<SeqLocatorMatchedAligns> {
     
 	private SeqDataLoader seqLoader;
     
-    private TreeSet<SeqLocatorMatchedExpt> lme;
+    private TreeSet<SeqLocatorMatchedAligns> lmes;
     private ArrayList<SeqAlignment> alignments;
     private JComboBox jcbType;
     private JTextField regexLab, regexCond, regexTarget, regexCell, regexAlign, regexRep;
-    private SeqLMETableModel selectedModel, filteredModel;
+    private SeqAlignmentTableModel selectedModel, filteredModel;
 
-    public SeqLMESelectPanel() { 
+    public SeqAlignmentSelectPanel() { 
         try {
-            seqLoader = new SeqDataLoader(true);
+            seqLoader = new SeqDataLoader(true, true);
         } catch (Exception e) {
             e.printStackTrace();
             seqLoader = null;
         }
-        lme = new TreeSet<SeqLocatorMatchedExpt>();
+        lmes = new TreeSet<SeqLocatorMatchedAligns>();
         alignments = new ArrayList<SeqAlignment>();
-        selectedModel = new SeqLMETableModel();
-        filteredModel = new SeqLMETableModel();
+        selectedModel = new SeqAlignmentTableModel();
+        filteredModel = new SeqAlignmentTableModel();
         init(filteredModel,selectedModel);
     }
     public JPanel getInputsPanel() {
@@ -56,7 +48,7 @@ public class SeqLMESelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt>
 		try {
     		ArrayList<String> types = new ArrayList<String>();
     		types.add("");
-        	for(ExptType e : seqLoader.getExptTypes())
+        	for(ExptType e : seqLoader.getMetadataLoader().loadAllExptTypes(false))
 				types.add(e.getName());
 			Collections.sort(types);
 			jcbType = new JComboBox(types.toArray()); jcbType.setEditable(true);
@@ -94,123 +86,116 @@ public class SeqLMESelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt>
 	        inputPanel.add(regexRep);
         
         } catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         
         return inputPanel;
     }
 
-    /* this is different than CollapseLocatorsByName because it
-       keys on the SeqExpt
-    */
-    public Collection<SeqLocatorMatchedExpt> getFilteredForSelected() {
+    public Collection<SeqLocatorMatchedAligns> getFilteredForSelected() {
         Map<Pair<String,String>, Set<String>> reps = new HashMap<Pair<String,String>, Set<String>>();
-        Map<Pair<String,String>, List<SeqExpt>> expts = new HashMap<Pair<String,String>, List<SeqExpt>>();
-        for (SeqLocatorMatchedExpt le : super.getFilteredForSelected()) {
-        	List<SeqExpt> e = le.expts;
-        	SeqLocator l = le.locator;
+        Map<Pair<String,String>, List<SeqAlignment>> aligns = new HashMap<Pair<String,String>, List<SeqAlignment>>();
+        for (SeqLocatorMatchedAligns lme : super.getFilteredForSelected()) {
+        	Collection<SeqAlignment> a = lme.aligns;
+            SeqLocator l = lme.locator;
             Pair<String,String> key = new Pair<String,String>(l.getExptName(), l.getAlignName());
             if (!reps.containsKey(key)) {
-                reps.put(key, new HashSet<String>());
-                expts.put(key, new ArrayList<SeqExpt>());
-            }
-            if(reps.containsKey(key)){
-            	//TODO: we should really check that all the SeqExpts are consistent, since
-            	//only the first one is used to print expt information. 
-            	reps.get(key).addAll(l.getReplicates());
-            	expts.get(key).addAll(e);
-            }
+	            reps.put(key, new HashSet<String>());
+	            aligns.put(key, new ArrayList<SeqAlignment>());
+	        }
+	        if(reps.containsKey(key)){
+	            reps.get(key).addAll(l.getReplicates());
+	            aligns.get(key).addAll(a);
+	        }
         }
-        ArrayList<SeqLocatorMatchedExpt> output = new ArrayList<SeqLocatorMatchedExpt>();
+        ArrayList<SeqLocatorMatchedAligns> output = new ArrayList<SeqLocatorMatchedAligns>();
         for (Pair<String,String> nv : reps.keySet()) {
-            output.add(new SeqLocatorMatchedExpt(expts.get(nv),
-            		new SeqLocator(nv.car(), reps.get(nv), nv.cdr())));
+            try {
+				output.add(new SeqLocatorMatchedAligns(aligns.get(nv),
+				            new SeqLocator(nv.car(), reps.get(nv), nv.cdr())));
+			} catch (SeqLMENotReplicatesException e) {
+				System.err.println(e.getMessage());
+				e.printStackTrace();
+			}
         }
         return output;
     }
 
     public void retrieveData() {
-        try {
-            synchronized(lme) {
-                lme.clear();
+    	try {
+            synchronized(lmes) {
+                lmes.clear();
                 alignments.clear();
-                alignments.addAll(seqLoader.loadAlignments(getGenome()));
-                for(SeqAlignment align : alignments) { 
-                	List<SeqExpt> e = new ArrayList<SeqExpt>();
-                	e.add(align.getExpt());
-                    lme.add(new SeqLocatorMatchedExpt(e,
-                    		new SeqLocator(align.getExpt().getName(), align.getExpt().getReplicate(), align.getName())));
+                alignments.addAll(seqLoader.loadAllAlignments(getGenome()));
+                for(SeqAlignment align : alignments) {
+                	List<SeqAlignment> a = new ArrayList<SeqAlignment>();
+                	a.add(align);
+                    lmes.add(new SeqLocatorMatchedAligns(a,
+                                new SeqLocator(align.getExpt().getName(), align.getExpt().getReplicate(), align.getName())));
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e.toString(), e);
-        }
+        } catch (SeqLMENotReplicatesException e1) {
+        	System.err.println(e1.getMessage());
+			e1.printStackTrace();
+		}
     }
     public void updateComponents() {
         selectedModel.clear();
         filteredModel.clear();
-        synchronized(lme) {
-            for (SeqLocatorMatchedExpt l : lme) {
+        synchronized(lmes) {
+            for (SeqLocatorMatchedAligns l : lmes) {
                 filteredModel.addObject(l);
             }
         }
     }
     public void info() {
-    	ArrayList<SeqLocator> locs = new ArrayList<SeqLocator>();
     	int[] inds = filteredList.getSelectedRows();
         for (int i = 0; i < inds.length; i++) {
-        	SeqLocatorMatchedExpt o = filteredModel.getObject(inds[i]);
-        	locs.add(o.locator);
-        }
-        for(SeqLocator loc : locs){
-        	try {
-				Collection<SeqAlignment> aligns = seqLoader.loadAlignments(loc, getGenome());
-				for(SeqAlignment align : aligns){
-					SeqExpt expt = align.getExpt();
-					String info=" "+expt.getName()+";"+expt.getReplicate()+";"+align.getName();
-					info = info+ "\n\n SeqExpt info:\n";
-					info = info+ "\tID: "+expt.getDBID()+"\n";
-					info = info+ "\tName: "+expt.getName()+"\n";
-					info = info+ "\tRep: "+expt.getReplicate()+"\n";
-					info = info+ "\tSpecies: "+expt.getOrganism().getName()+"\n";
-					info = info+ "\tLab: "+expt.getLab().getName()+"\n";
-					info = info+ "\tExptType: "+expt.getExptType().getName()+"\n";
-					info = info+ "\tExptCondition: "+expt.getExptCondition().getName()+"\n";
-					info = info+ "\tExptTarget: "+expt.getExptTarget().getName()+"\n";
-					info = info+ "\tExptCellLine: "+expt.getCellLine().getName()+"\n";
-					info = info+ "\tReadType: "+expt.getReadType().getName()+"\n";
-					info = info+ "\tReadLen: "+expt.getReadLength()+"\n";
-					info = info+ "\tNumRead: "+expt.getNumRead()+"\n";
-					info = info+ "\tCollabID: "+expt.getCollabID()+"\n";
-					info = info+ "\tPublicSource: "+expt.getPublicSource()+"\n";
-					info = info+ "\tPublicDBID: "+expt.getPublicDBID()+"\n";
-					info = info+ "\tFQFile: "+expt.getFQFile()+"\n";
-					info = info+ "\tExptNote: "+expt.getExptNote()+"\n";
-		            info = info+ " SeqAlignment info:\n";
-					info = info+ "\tID: "+align.getDBID()+"\n";
-					info = info+ "\tName: "+align.getName()+"\n";
-					info = info+ "\tGenome: "+align.getGenome().getVersion()+"\n";
-					info = info+ "\tAlignType: "+align.getAlignType().getName()+"\n";
-					info = info+ "\tPermissions: "+align.getPermissions()+"\n";
-					info = info+ "\tNumHits: "+align.getNumHits()+"\n";
-					info = info+ "\tTotalWeight: "+align.getTotalWeight()+"\n";
-					info = info+ "\tAlignDir: "+align.getAlignDir()+"\n";
-					info = info+ "\tAlignFile: "+align.getAlignFile()+"\n";
-					info = info+ "\tIDXFile: "+align.getIDXFile()+"\n";
-					info = info+ "\tCollabAlignID: "+align.getCollabAlignID()+"\n";
-					
-					JFrame frame = new JFrame();
-					JTextArea textArea = new JTextArea(info);
-					frame.add(textArea);
-					frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-					frame.pack();
-					frame.setVisible(true);
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-			} catch (NotFoundException e) {
-				e.printStackTrace();
+        	SeqLocatorMatchedAligns lma = filteredModel.getObject(inds[i]);
+        	
+			Collection<SeqAlignment> aligns = lma.aligns;
+			for(SeqAlignment align : aligns){
+				SeqExpt expt = align.getExpt();
+				String info=" "+expt.getName()+";"+expt.getReplicate()+";"+align.getName();
+				info = info+ "\n\n SeqExpt info:\n";
+				info = info+ "\tID: "+expt.getDBID()+"\n";
+				info = info+ "\tName: "+expt.getName()+"\n";
+				info = info+ "\tRep: "+expt.getReplicate()+"\n";
+				info = info+ "\tSpecies: "+expt.getOrganism().getName()+"\n";
+				info = info+ "\tLab: "+expt.getLab().getName()+"\n";
+				info = info+ "\tExptType: "+expt.getExptType().getName()+"\n";
+				info = info+ "\tExptCondition: "+expt.getExptCondition().getName()+"\n";
+				info = info+ "\tExptTarget: "+expt.getExptTarget().getName()+"\n";
+				info = info+ "\tExptCellLine: "+expt.getCellLine().getName()+"\n";
+				info = info+ "\tReadType: "+expt.getReadType().getName()+"\n";
+				info = info+ "\tReadLen: "+expt.getReadLength()+"\n";
+				info = info+ "\tNumRead: "+expt.getNumRead()+"\n";
+				info = info+ "\tCollabID: "+expt.getCollabID()+"\n";
+				info = info+ "\tPublicSource: "+expt.getPublicSource()+"\n";
+				info = info+ "\tPublicDBID: "+expt.getPublicDBID()+"\n";
+				info = info+ "\tFQFile: "+expt.getFQFile()+"\n";
+				info = info+ "\tExptNote: "+expt.getExptNote()+"\n";
+	            info = info+ " SeqAlignment info:\n";
+				info = info+ "\tID: "+align.getDBID()+"\n";
+				info = info+ "\tName: "+align.getName()+"\n";
+				info = info+ "\tGenome: "+align.getGenome().getVersion()+"\n";
+				info = info+ "\tAlignType: "+align.getAlignType().getName()+"\n";
+				info = info+ "\tPermissions: "+align.getPermissions()+"\n";
+				info = info+ "\tNumHits: "+align.getNumHits()+"\n";
+				info = info+ "\tTotalWeight: "+align.getTotalWeight()+"\n";
+				info = info+ "\tAlignDir: "+align.getAlignDir()+"\n";
+				info = info+ "\tAlignFile: "+align.getAlignFile()+"\n";
+				info = info+ "\tIDXFile: "+align.getIDXFile()+"\n";
+				info = info+ "\tCollabAlignID: "+align.getCollabAlignID()+"\n";
+				
+				JFrame frame = new JFrame();
+				JTextArea textArea = new JTextArea(info);
+				frame.add(textArea);
+				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				frame.pack();
+				frame.setVisible(true);
 			}
         }
     }
@@ -246,27 +231,32 @@ public class SeqLMESelectPanel extends GenericSelectPanel<SeqLocatorMatchedExpt>
         if(regRep != null && regRep.length() > 0)
         	pattRep = Pattern.compile(regRep);
         
-        synchronized(lme) {
-            lme.clear();
+        synchronized(lmes) {
+            lmes.clear();
             for (SeqAlignment align : alignments){
                 if( (pattType == null || pattType.matcher(align.getExpt().getExptType().getName().toLowerCase()).find()) &&
-                	(pattLab == null || pattLab.matcher(align.getExpt().getLab().getName().toLowerCase()).find()) &&
-                	(pattCond == null || pattCond.matcher(align.getExpt().getExptCondition().getName().toLowerCase()).find()) &&
-                	(pattTarget == null || pattTarget.matcher(align.getExpt().getExptTarget().getName().toLowerCase()).find()) &&
-                	(pattCell == null || pattCell.matcher(align.getExpt().getCellLine().getName().toLowerCase()).find()) &&
-                	(pattAlign == null || pattAlign.matcher(align.getName().toLowerCase()).find()) &&
-                	(pattRep == null || pattRep.matcher(align.getExpt().getReplicate().toLowerCase()).find())
-                		) {
-                	List<SeqExpt> e = new ArrayList<SeqExpt>();
-                	e.add(align.getExpt());
-                    lme.add(new SeqLocatorMatchedExpt(e,
-                    		new SeqLocator(align.getExpt().getName(),
-                                                    align.getExpt().getReplicate(),
-                                                    align.getName())));
+                        (pattLab == null || pattLab.matcher(align.getExpt().getLab().getName().toLowerCase()).find()) &&
+                        (pattCond == null || pattCond.matcher(align.getExpt().getExptCondition().getName().toLowerCase()).find()) &&
+                        (pattTarget == null || pattTarget.matcher(align.getExpt().getExptTarget().getName().toLowerCase()).find()) &&
+                        (pattCell == null || pattCell.matcher(align.getExpt().getCellLine().getName().toLowerCase()).find()) &&
+                        (pattAlign == null || pattAlign.matcher(align.getName().toLowerCase()).find()) &&
+                        (pattRep == null || pattRep.matcher(align.getExpt().getReplicate().toLowerCase()).find())
+                                ) {
+                	List<SeqAlignment> a = new ArrayList<SeqAlignment>();
+                	a.add(align);
+                    try {
+						lmes.add(new SeqLocatorMatchedAligns(a,
+						            new SeqLocator(align.getExpt().getName(),
+						                                align.getExpt().getReplicate(),
+						                                align.getName())));
+					} catch (SeqLMENotReplicatesException e1) {
+						System.err.println(e1.getMessage());
+						e1.printStackTrace();
+					}
                 }
             }
             filteredModel.clear();
-            for (SeqLocatorMatchedExpt l : lme) {
+            for (SeqLocatorMatchedAligns l : lmes) {
                 filteredModel.addObject(l);
             }
         }

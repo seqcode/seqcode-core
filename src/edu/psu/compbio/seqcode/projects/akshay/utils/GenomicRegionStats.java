@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -115,7 +115,7 @@ public class GenomicRegionStats {
 		ArgParser ap = new ArgParser(args);
 		Genome g = null;
 		if(ap.hasKey("species")){
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			Pair<Species, Genome> pair = Args.parseGenome(args);
 			if(pair != null){
 				
 				g = pair.cdr();

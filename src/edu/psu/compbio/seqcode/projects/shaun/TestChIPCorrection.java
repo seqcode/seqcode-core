@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.projects.shaun;
 import java.util.Iterator;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
@@ -55,8 +55,8 @@ public class TestChIPCorrection {
         
 		try {
 			System.out.println(exptName+"\t"+backName);
-			Organism org = Organism.getOrganism(species);
-			Genome gen = org.getGenome(genome);
+			Species org = Species.getSpecies(species);
+			Genome gen = new Genome(org, genome);
 				
 			SeqDataHandler IPhandle = new SeqDataHandler(org, gen, exptName);
 			SeqDataHandler backhandle = new SeqDataHandler(org, gen, backName);

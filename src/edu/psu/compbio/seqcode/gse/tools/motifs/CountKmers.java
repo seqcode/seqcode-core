@@ -4,7 +4,7 @@ import java.util.*;
 import java.io.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
@@ -46,7 +46,7 @@ public class CountKmers {
     }
 
     public void parseArgs(String args[]) throws NotFoundException {
-        Pair<Organism,Genome> pair = Args.parseGenome(args);
+        Pair<Species,Genome> pair = Args.parseGenome(args);
         Genome genome = pair.cdr();
         regions = Args.parseRegionsOrDefault(args);
         outputCounts = Args.parseFlags(args).contains("outputcounts");

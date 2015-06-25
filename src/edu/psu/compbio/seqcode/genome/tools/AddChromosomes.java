@@ -1,7 +1,7 @@
 package edu.psu.compbio.seqcode.genome.tools;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
@@ -48,7 +48,7 @@ public class AddChromosomes {
 	}
 
     public static void incremental_load(String[] args) throws IOException, NotFoundException, SQLException {
-        Pair<Organism,Genome> pair = Args.parseGenome(args);
+        Pair<Species,Genome> pair = Args.parseGenome(args);
         Genome genome = pair.getLast();
         String fastaname = Args.parseString(args,"fasta",null);
         
@@ -157,7 +157,7 @@ public class AddChromosomes {
     }
 
     public static void bulk_load(String args[]) throws IOException, NotFoundException, SQLException {
-        Pair<Organism,Genome> pair = Args.parseGenome(args);
+        Pair<Species,Genome> pair = Args.parseGenome(args);
         Genome genome = pair.getLast();
         String fastaname = Args.parseString(args,"fasta",null);
         FASTAStream fasta;

@@ -8,7 +8,7 @@ import java.util.Random;
 import javax.swing.JFrame;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
@@ -20,7 +20,7 @@ public class MakeHistogramPlot {
 	private PaintableFrame plotter;
 	private int screenSizeX=1000, screenSizeY=900;
 	private String inputFile;
-	private Organism org;
+	private Species org;
 	private Genome gen;
 	private final boolean display = true;
 	private final boolean useBackground = true;
@@ -39,8 +39,8 @@ public class MakeHistogramPlot {
 	
 	public MakeHistogramPlot(String df){
 		try {
-			org = Organism.getOrganism("Mus musculus");
-			gen = org.getGenome("mm8");
+			org = Species.getSpecies("Mus musculus");
+			gen = new Genome(org, "mm8");
 		} catch (NotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

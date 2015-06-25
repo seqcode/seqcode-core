@@ -14,7 +14,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.*;
@@ -28,15 +27,16 @@ public class DiffSeqExptPaintable extends AbstractPaintable {
 	
 	public static void main(String[] args) { 
 		try {
-			Genome g = Organism.findGenome("mm8");
+			Genome g = Genome.findGenome("mm8");
 
 			Region r = new Region(g, "6", 52000000, 52200000);
 			
 			List<SeqLocator> expts = new ArrayList<SeqLocator>();
 			List<SeqLocator> bases = new ArrayList<SeqLocator>();
-			expts.add(new SeqLocator("PPG Day2+8h RAR HBG3", "bowtie_unique"));
-			bases.add(new SeqLocator("PPG Day2 RAR HBG3", "bowtie_unique"));
-
+			Set<String> reps = new TreeSet<String>();
+			expts.add(new SeqLocator("PPG Day2+8h RAR HBG3",reps,  "bowtie_unique"));
+			bases.add(new SeqLocator("PPG Day2 RAR HBG3", reps, "bowtie_unique"));
+            
 			DiffSeqExptPaintable p = new DiffSeqExptPaintable(g, r, expts, bases, 2000, 1000, 1);
 
 			PaintableFrame pf = new PaintableFrame("Test", p);

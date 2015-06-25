@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.gse.datasets.motifs;
 import java.sql.*;
 import java.util.*;
 
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
@@ -89,7 +89,7 @@ public class WeightMatrixLoader implements edu.psu.compbio.seqcode.gse.utils.Clo
     
     }
     
-    public Collection<WeightMatrix> loadMatrices(Organism species) throws SQLException { 
+    public Collection<WeightMatrix> loadMatrices(Species species) throws SQLException { 
     	int speciesID = species.getDBID();
         String query = "select m.id, m.species, m.name, m.version, m.type, m.bg_model_map_id, c.position, c.letter, c.weight from weightmatrix m, " +
             " weightmatrixcols c where m.id = c.weightmatrix and m.species = ? order by c.weightmatrix, c.position desc";

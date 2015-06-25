@@ -11,7 +11,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
@@ -57,7 +56,7 @@ public abstract class BackgroundModel extends BackgroundModelMetadata {
    */
   public BackgroundModel(BackgroundModelMetadata md) throws NotFoundException {
     super(md);
-    this.gen = Organism.findGenome(this.genomeID);
+    this.gen = Genome.findGenome(this.genomeID);
     modelProbs = new HashMap[maxKmerLen + 1];
     for (int i = 1; i <= maxKmerLen; i++) {
       modelProbs[i] = new HashMap<String, Double>();

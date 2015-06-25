@@ -328,7 +328,7 @@ public class BackgroundDetector {
 		if(config.helpWanted()){
 			System.err.println("BackgroundDetector:");
 			System.err.println("Genome:" +
-					"\t--species <Organism;Genome>\n" +
+					"\t--species <Species;Genome>\n" +
 					"\tOR\n" +
 					"\t--geninfo <genome info file> AND --seq <fasta seq directory>\n" +
 					"Experiments:\n" +

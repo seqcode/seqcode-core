@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -22,7 +22,7 @@ public class CLIPSeqPeakFinder extends ChipSeqPeakFinder{
 	/* command-line driver */
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		boolean  metaPeak=false;
-		Pair<Organism,Genome> pair = Args.parseGenome(args);
+		Pair<Species,Genome> pair = Args.parseGenome(args);
 		if(pair==null){printError();return;}
 		List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
         List<SeqLocator> back = Args.parseSeqExpt(args,"back");

@@ -26,7 +26,7 @@ public class NamedGenerator<X extends Region> implements Expander<X,NamedRegion>
     public Iterator<NamedRegion> execute(X region) {
         try {
             java.sql.Connection cxn =
-                genome.getUcscConnection();
+                genome.getAnnotationDBConnection();
             PreparedStatement ps = cxn.prepareStatement("select name, chromStart, chromEnd from " + tablename + " where chrom = ? and " +
                                                         "((chromStart <= ? and chromEnd >= ?) or (chromStart >= ? and chromStart <= ?)) order by chromStart");
             String chr = region.getChrom();

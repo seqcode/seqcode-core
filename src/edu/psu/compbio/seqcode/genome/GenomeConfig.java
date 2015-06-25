@@ -84,7 +84,7 @@ public class GenomeConfig {
 				
 				//Load genome
 				if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
-					Pair<Organism, Genome> pair = Args.parseGenome(args);
+					Pair<Species, Genome> pair = Args.parseGenome(args);
 					if(pair != null){
 						gen = pair.cdr();
 						sequenceAvailable=true;
@@ -151,7 +151,7 @@ public class GenomeConfig {
 	public String getArgsList(){
 		return(new String("" +
 				"Genome:" +
-				"\t--species <Organism;Genome>\n" +
+				"\t--species <Species;Genome>\n" +
 				"\tOR\n" +
 				"\t--geninfo <genome info file>" +
 				"Genome Sequence Caching:" +

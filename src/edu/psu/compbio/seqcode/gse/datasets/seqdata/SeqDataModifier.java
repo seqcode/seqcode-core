@@ -47,36 +47,39 @@ public class SeqDataModifier {
 	
 	public void deleteAlignmentParameters(SeqAlignment align) throws SQLException {
 		Connection cxn=null;
+		Statement del = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
-            Statement del = cxn.createStatement();
+            del = cxn.createStatement();
             del.execute("delete from alignmentparameters where alignment = " + align.getDBID());
-            del.close();
 		} catch (SQLException e) {
             throw new DatabaseException(e.toString(),e);
         } finally {
+        	if (del != null) { try {del.close();} catch (SQLException ex) { } }
         	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
         }
 	}
 	
 	public void deleteSeqAlignment(SeqAlignment align) throws SQLException{
 		Connection cxn=null;
+		PreparedStatement ps = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
-            PreparedStatement deleteAlign = SeqAlignment.createDeleteByIDStatement(cxn);
-	        deleteAlign.setInt(1, align.getDBID());
-	        deleteAlign.execute();
-	        deleteAlign.close();
+            ps = SeqAlignment.createDeleteByIDStatement(cxn);
+	        ps.setInt(1, align.getDBID());
+	        ps.execute();
 	        cxn.commit();
 		} catch (SQLException e) {
             throw new DatabaseException(e.toString(),e);
         } finally {
+        	if (ps != null) { try {ps.close();} catch (SQLException ex) { } }
         	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
         }
 	}
     
 	public void deleteSeqExpt(SeqExpt expt) throws SQLException{
 		Connection cxn=null;
+		PreparedStatement ps = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
             Lab lab = expt.getLab();
@@ -84,10 +87,10 @@ public class SeqDataModifier {
 			ExptTarget target = expt.getExptTarget();
 			CellLine cells = expt.getCellLine();
 			
-			PreparedStatement deleteExpt = SeqExpt.createDeleteByDBID(cxn);
-	    	deleteExpt.setInt(1, expt.getDBID());
-	    	deleteExpt.execute();
-	    	deleteExpt.close();
+			ps = SeqExpt.createDeleteByDBID(cxn);
+	    	ps.setInt(1, expt.getDBID());
+	    	ps.execute();
+	    	
 	    	cxn.commit();
 	    	
 	    	//Delete core.lab if no SeqExpts depend
@@ -105,6 +108,7 @@ public class SeqDataModifier {
 		} catch (SQLException e) {
             throw new DatabaseException(e.toString(),e);
         } finally {
+        	if (ps != null) { try {ps.close();} catch (SQLException ex) { } }
         	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
         }
 	}
@@ -130,30 +134,31 @@ public class SeqDataModifier {
 	}
 	
 	public void coreCleanup() throws SQLException{
-		for(Lab lab : seqLoader.getLabs()){
+		for(Lab lab : seqLoader.getMetadataLoader().loadAllLabs(true)){
 			//Delete core.lab if no SeqExpts depend
 			if(seqLoader.loadExperiments(lab).size()==0)
 				deleteLab(lab);
 		}
-		for(ExptCondition cond : seqLoader.getExptConditions()){
+		for(ExptCondition cond : seqLoader.getMetadataLoader().loadAllExptConditions(true)){
 			//Delete core.exptcondition if no SeqExpts depend
 			if(seqLoader.loadExperiments(cond).size()==0)
 				deleteExptCondition(cond);
     	}
-		for(ExptTarget target : seqLoader.getExptTargets()){
+		for(ExptTarget target : seqLoader.getMetadataLoader().loadAllExptTargets(true)){
 			//Delete core.expttarget if no SeqExpts depend
 			if(seqLoader.loadExperiments(target).size()==0)
 				deleteExptTarget(target);
     	}
-		for(CellLine cells : seqLoader.getCellLines()){
+		for(CellLine cells : seqLoader.getMetadataLoader().loadAllCellLines(true)){
 			//Delete core.cellline if no  SeqExpts depend
 			if(seqLoader.loadExperiments(cells).size()==0)
 				deleteCellLine(cells);
     	}
 	}
 	
-	public void updateSeqExpt(SeqExpt expt, String updateExptType, String updateLab, String updateCond, String updateTarget, String updateCell, String updateRep, String updatePubSrc, String updatePubID, String updateCollabExptID) throws SQLException, DuplicateDatabaseEntryException{
+	public void updateSeqExpt(MetadataLoader mloader, SeqExpt expt, String updateExptType, String updateLab, String updateCond, String updateTarget, String updateCell, String updateRep, String updatePubSrc, String updatePubID, String updateCollabExptID) throws SQLException, DuplicateDatabaseEntryException{
 		Connection cxn=null;
+		PreparedStatement update = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
             String updateName = updateLab+" "+updateCond+" "+updateTarget+" "+updateCell;
@@ -162,16 +167,15 @@ public class SeqDataModifier {
 			if(testExpt!=null && testExpt.getDBID()!=expt.getDBID()) //It's okay if these are the same experiments (you might sometimes want to just update the publication source, etc).
 				throw new DuplicateDatabaseEntryException("SeqDataModifier.updateSeqExpt wants to create a duplicate SeqExpt");
 			else{
-				MetadataLoader mloader = new MetadataLoader();
-				PreparedStatement update = SeqExpt.createShortUpdateWithID(cxn);
+				update = SeqExpt.createShortUpdateWithID(cxn);
 				update.setString(1, updateName);
 		        update.setString(2, updateRep);
 		        update.setInt(3, expt.getOrganism().getDBID());
-		        update.setInt(4, mloader.getExptType(updateExptType).getDBID());
-		        update.setInt(5, mloader.getLab(updateLab).getDBID());
-		        update.setInt(6, mloader.getExptCondition(updateCond).getDBID());
-		        update.setInt(7, mloader.getExptTarget(updateTarget).getDBID());
-		        update.setInt(8, mloader.getCellLine(updateCell).getDBID());
+		        update.setInt(4, mloader.loadExptType(updateExptType, true, false).getDBID());
+		        update.setInt(5, mloader.loadLab(updateLab, true, false).getDBID());
+		        update.setInt(6, mloader.loadExptCondition(updateCond, true, false).getDBID());
+		        update.setInt(7, mloader.loadExptTarget(updateTarget, true, false).getDBID());
+		        update.setInt(8, mloader.loadCellLine(updateCell, true, false).getDBID());
 		        update.setString(9, updateCollabExptID);
 		        update.setString(10, updatePubSrc);
 		        update.setString(11, updatePubID);
@@ -185,21 +189,22 @@ public class SeqDataModifier {
 		        	cxn.rollback();
 		            throw new DatabaseException("Couldn't update experiment for " + updateName + "," + updateRep);
 		        }
-		        update.close();
 			}
 		} catch (SQLException e) {
             throw new DatabaseException(e.toString(),e);
         } finally {
+        	if (update != null) { try {update.close();} catch (SQLException ex) { } }
         	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
         }
 	}
 	
 	public void updateSeqAlignmentHitCounts(SeqAlignment align, Integer singlecount, Float singleweight,Integer singletype2count, Float singletype2weight, Integer paircount, Float pairweight) throws SQLException{
 		Connection cxn=null;
+		PreparedStatement update = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
             int id = align.getDBID();
-			PreparedStatement update = SeqAlignment.createUpdateHitsAndWeights(cxn);
+			update = SeqAlignment.createUpdateHitsAndWeights(cxn);
 	        System.err.println("Updating counts for alignment: "+id+" ("+align.getName()+")");
 	        System.err.println("\tnumhits="+singlecount);
 	        System.err.println("\ttotalweight="+singleweight);
@@ -215,20 +220,21 @@ public class SeqDataModifier {
 	        update.setFloat(6, pairweight);
 	        update.setInt(7, id);
 	        update.execute();
-	        update.close();
 	        cxn.commit();
 		} catch (SQLException e) {
             throw new DatabaseException(e.toString(),e);
         } finally {
+        	if (update != null) { try {update.close();} catch (SQLException ex) { } }
         	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
         }
 	}
 	
 	public void updateSeqAlignmentPermissions(SeqAlignment align, String permissions) throws SQLException{
 		Connection cxn=null;
+		PreparedStatement permUpdate = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
-            PreparedStatement permUpdate = SeqAlignment.createUpdatePermissions(cxn);
+            permUpdate = SeqAlignment.createUpdatePermissions(cxn);
 	    	permUpdate.setString(1, permissions);
 	    	permUpdate.setInt(2, align.getDBID());
 	    	permUpdate.execute();
@@ -236,6 +242,7 @@ public class SeqDataModifier {
 		} catch (SQLException e) {
             throw new DatabaseException(e.toString(),e);
         } finally {
+        	if (permUpdate != null) { try {permUpdate.close();} catch (SQLException ex) { } }
         	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+role, ex); }
         }
 	}

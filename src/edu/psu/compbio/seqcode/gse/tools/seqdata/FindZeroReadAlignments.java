@@ -23,7 +23,7 @@ public class FindZeroReadAlignments {
         Collection<SeqExpt> allExpts = loader.loadAllExperiments();
         for(SeqExpt expt : allExpts){
         	if(expt.getNumRead()==0){
-        		Collection<SeqAlignment> aligns = loader.loadAllAlignments(expt);
+        		Collection<SeqAlignment> aligns = loader.loadAlignmentsBySeqExpt(expt);
         		for(SeqAlignment align : aligns){
         			System.out.println(align.getDBID()+"\t"+expt.getName()+"\t"+expt.getReplicate()+"\t"+align.getName()+"\t"+align.getGenome()+"\t"+align.getAlignFile());
         		}

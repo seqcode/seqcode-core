@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -163,7 +163,7 @@ public class GTFAnnotationLoader extends AnnotationLoader{
         try {
         	GenomeLoader gl=null;
         	if(ap.hasKey("species")){
-        		Pair<Organism, Genome> pair = Args.parseGenome(args);
+        		Pair<Species, Genome> pair = Args.parseGenome(args);
         		Genome currgen = pair.cdr();
         		gl = new GenomeLoader(currgen);
         	}else if(ap.hasKey("fai")){

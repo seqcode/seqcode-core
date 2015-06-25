@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
@@ -84,7 +84,7 @@ public class BindingModelGenerator {
     	boolean pairedEnd = ap.hasKey("paired"); 
     	
         try {
-        	Pair<Organism, Genome> pair = Args.parseGenome(args);
+        	Pair<Species, Genome> pair = Args.parseGenome(args);
 			DeepSeqExpt signal=null;
 	        if(expts.size()>0 && dbexpts.size() == 0 && rdbexpts.size()==0){
 	        	signal = new DeepSeqExpt(pair.cdr(), expts, nonUnique, fileFormat, rL);

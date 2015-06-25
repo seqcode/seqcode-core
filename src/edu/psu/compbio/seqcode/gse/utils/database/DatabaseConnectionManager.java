@@ -141,19 +141,19 @@ public abstract class DatabaseConnectionManager {
         }
         p.setUsername(props.getProperty("user"));
         p.setPassword(props.getProperty("passwd"));
-        p.setJmxEnabled(true);
+        //p.setJmxEnabled(true);
         p.setTestWhileIdle(false);
         p.setTestOnBorrow(true);
         p.setValidationQuery("SELECT 1");
-        p.setTestOnReturn(false);
         p.setValidationInterval(30000);
+        p.setTestOnReturn(false);
         p.setTimeBetweenEvictionRunsMillis(30000);
         p.setMaxActive(100);
-        p.setInitialSize(10);
+        p.setInitialSize(5);
         p.setMaxWait(1000);
         p.setRemoveAbandonedTimeout(30000);
         p.setMinEvictableIdleTimeMillis(30000);
-        p.setMinIdle(10);
+        p.setMinIdle(5);
         p.setLogAbandoned(true);
         p.setRemoveAbandoned(true);
         p.setJdbcInterceptors(
@@ -259,4 +259,11 @@ public abstract class DatabaseConnectionManager {
         return false;
     }
 
+    /**
+     * Clean up DataSources
+     */
+    public static void close(){
+    	for(String s : sources.keySet())
+    		sources.get(s).close();
+    }
 }

@@ -156,7 +156,7 @@ public class BackgroundDetectingEnrichmentTester {
 		if(econfig.helpWanted()){
 			System.err.println("BackgroundDetectingEnrichmentTester:");
 			System.err.println("Genome:" +
-					"\t--species <Organism;Genome>\n" +
+					"\t--species <Species;Genome>\n" +
 					"\tOR\n" +
 					"\t--geninfo <genome info file> AND --seq <fasta seq directory>\n" +
 					"Experiments:\n" +

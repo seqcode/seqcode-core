@@ -1,7 +1,7 @@
 package edu.psu.compbio.seqcode.genome.tools;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
@@ -23,13 +23,13 @@ public class AddGenome {
             System.exit(1);
         }
         try {
-            Organism o = new Organism(species);
+            Species o = new Species(species);
             try {
-                Genome g = o.getGenome(genome);
+                Genome g = new Genome(o, genome);
                 System.err.println("Genome " + genome + " already exists.");
                 System.exit(2);
             } catch (NotFoundException e) {
-                o.insertGenome(genome);
+                Genome.insertGenome(o, genome);
             }
         } catch (NotFoundException e) {
             System.err.println("Species " + species + " doesn't exist.  Please create with AddSpecies");

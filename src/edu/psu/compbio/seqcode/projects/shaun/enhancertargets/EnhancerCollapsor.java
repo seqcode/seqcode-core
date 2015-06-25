@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedPoint;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -47,7 +47,7 @@ public class EnhancerCollapsor {
             return;
         }
         try {
-    		Pair<Organism, Genome> pair = Args.parseGenome(args);
+    		Pair<Species, Genome> pair = Args.parseGenome(args);
     		Collection<String> peakSet = ap.hasKey("peaks") ? Args.parseStrings(args, "peaks") : null;
     		int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():200;
     		String out = ap.hasKey("out") ? new String(ap.getKeyValue("out")):"out.txt";

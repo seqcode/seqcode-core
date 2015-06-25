@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -37,7 +37,7 @@ public class JointEventAnalysis {
   static final int maxAnnotDistance=50000;
   
   private Genome genome;
-  private Organism org;
+  private Species org;
   private String[] args;
   private WeightMatrix motif = null;
   private double motifThreshold;
@@ -60,7 +60,7 @@ public class JointEventAnalysis {
     ArgParser ap = new ArgParser(args);
     
     try {
-      Pair<Organism, Genome> pair = Args.parseGenome(args);
+      Pair<Species, Genome> pair = Args.parseGenome(args);
       if(pair==null){
         //Make fake genome... chr lengths provided???
         if(ap.hasKey("geninfo")){

@@ -31,7 +31,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
     private boolean active;
 
     /* these methods (through store()) are primarily for constructing a 
-       ChipSeqAnalysis and saving it to the DB */
+       SeqAnalysis and saving it to the DB */
     public SeqAnalysis (String name, String version, String program) {
         this.name = name;
         this.version = version;
@@ -256,7 +256,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
         HashSet<SeqAlignment> bg = new HashSet<SeqAlignment>();
         ResultSet rs = ps.executeQuery();
         try {
-            SeqDataLoader loader = new SeqDataLoader(false);
+            SeqDataLoader loader = new SeqDataLoader(false, true);
             while (rs.next()) {
                 if (rs.getString(2).equals("foreground")) {
                     fg.add(loader.loadAlignment(rs.getInt(1)));
@@ -346,29 +346,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
         if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
         return result;        
     }
-    public int countResults(Genome genome) throws SQLException {
-        java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
-        String chrstring = "";
-        Map<String,Integer> map = genome.getChromIDMap();
-        Iterator<Integer> iter = map.values().iterator();
-        if (iter.hasNext()) {
-            chrstring = Integer.toString(iter.next());
-        }
-        while (iter.hasNext()) {
-            chrstring = chrstring + "," + Integer.toString(iter.next());
-        }
-
-        String query = "select count(*) from analysisresults where analysis = ? and chromosome in (" +chrstring+")";
-        PreparedStatement ps = cxn.prepareStatement(query);
-        ps.setInt(1,dbid);
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        int count = rs.getInt(1);
-        rs.close();
-        ps.close();
-        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
-        return count;
-    }
+   
 
     /** retrieves all ChipSeqAnalysis objects from the database */
     public static Collection<SeqAnalysis> getAll() throws DatabaseException, SQLException {

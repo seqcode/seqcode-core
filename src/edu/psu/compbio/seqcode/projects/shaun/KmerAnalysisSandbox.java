@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.CountsBackgroundModel;
@@ -73,7 +73,7 @@ public class KmerAnalysisSandbox {
         }else{
         	try {
     			//Load genome
-    	        Pair<Organism, Genome> pair = Args.parseGenome(args);
+    	        Pair<Species, Genome> pair = Args.parseGenome(args);
     	        Genome currgen = pair.cdr();
     	        int k = ap.hasKey("k") ? new Integer(ap.getKeyValue("k")).intValue():6;
     	        int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():200;

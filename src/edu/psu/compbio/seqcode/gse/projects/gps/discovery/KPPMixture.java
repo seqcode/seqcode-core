@@ -188,7 +188,7 @@ public class KPPMixture extends MultiConditionFeatureFinder {
 		}
      // if mappable_genome_length is not provided, compute as 0.8 of total genome size
         if (config.mappable_genome_length<0){		
-	        config.mappable_genome_length = 0.8 * gen.getGenomeSize();
+	        config.mappable_genome_length = 0.8 * gen.getGenomeLength();
 	        System.out.println(String.format("\nMappable Genome Length is %,d.", (long)config.mappable_genome_length));
         }
         

@@ -48,7 +48,7 @@ public class ReadDBHitLoader extends HitLoader{
 	 * @param loadType2Reads boolean (load type 2 reads if they exist)
 	 * @param loadPairs boolean
 	 */
-	public ReadDBHitLoader(Genome g, List<SeqLocator> locs, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs){
+	public ReadDBHitLoader(SeqDataLoader loader, Genome g, List<SeqLocator> locs, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs){
 		super(loadT1Reads, loadT2Reads, loadPairs);
 		gen=g;
 		exptLocs = locs;
@@ -67,58 +67,11 @@ public class ReadDBHitLoader extends HitLoader{
 			//Start a new ReadDB client
 			if(client==null)
 				client = new Client();
-			
-			//Initialize SeqDataLoaders
-            SeqDataLoader loader = new SeqDataLoader(false); 
+
+			//Process the SeqLocators
 			for(SeqLocator locator : exptLocs){
 				String exptName = locator.getExptName(); exptNames.add(exptName);
-				if (locator.getAlignName() == null) {
-		            if(locator.getReplicates().isEmpty()) { //No alignment name, no replicate names
-		            	Collection<SeqExpt> expts = loader.loadExperiments(locator.getExptName());
-		        		for(SeqExpt expt : expts) { 
-		                	Collection<SeqAlignment> aligns;
-							aligns = loader.loadAllAlignments(expt);
-							for (SeqAlignment currentAlign : aligns) {
-		            			if (currentAlign.getGenome().equals(g)) { 
-		            				aligns.add(currentAlign);
-		    						break;
-		    					}
-		            		}
-		    			}
-		            } else { //No alignment name, given replicate names
-		                for(String repName : locator.getReplicates()) { 
-		                    SeqExpt expt = loader.loadExperiment(locator.getExptName(), repName);
-		                    SeqAlignment alignment = 
-		                        loader.loadAlignment(expt, locator.getAlignName(), g);
-		                    if(alignment != null) { 
-		                        aligns.add(alignment);
-		                        break;
-		                    }
-		                }
-		            }
-		        } else {
-		        	if(locator.getReplicates().isEmpty()) {//Given alignment name, no replicate names
-		        		Collection<SeqExpt> expts = loader.loadExperiments(locator.getExptName());
-                        System.err.println("Have name but no replicates.  Got " + expts.size() + " experiments for " + locator.getExptName());
-		        		for(SeqExpt expt : expts) { 
-		                	Collection<SeqAlignment> alignments;
-							alignments = loader.loadAllAlignments(expt);
-							for (SeqAlignment currentAlign : alignments) {
-                                System.err.println("  " + currentAlign);
-		            			if (currentAlign.getGenome().equals(g) && currentAlign.getName().equals(locator.getAlignName())) { 
-		            				aligns.add(currentAlign);
-		    						break;
-		    					}
-		            		}
-		    			}
-		            }else{
-		            	for (String replicate : locator.getReplicates()) {//Given alignment name, given replicate names
-		            		SeqAlignment a = loader.loadAlignment(loader.loadExperiment(locator.getExptName(),replicate),locator.getAlignName(),g);
-							if(a!=null)
-								aligns.add(a);
-		        		}
-		            }
-		        }
+				aligns.addAll(loader.loadAlignments(locator, gen));
 			}
 	        for(SeqAlignment alignment : aligns) {
 	        	if(client.exists(Integer.toString(alignment.getDBID()))){
@@ -139,7 +92,7 @@ public class ReadDBHitLoader extends HitLoader{
 		            }
 		            availPairedChroms.put(alignment, new HashSet<Integer>());
 		            if(alignment.getNumPairs()>0){
-		            		availPairedChroms.get(alignment).addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,true, null));
+		            	availPairedChroms.get(alignment).addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,true, null));
 		            }
 	        	}else{
 	        		System.err.println("ReadDBHitLoader: Error: "+alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName()+"\tRDBID:"+alignment.getDBID()+" does not exist in ReadDB.");
@@ -147,20 +100,16 @@ public class ReadDBHitLoader extends HitLoader{
 	        	}
 		    }
 	        
-            if (exptLocs.size() != 0 && aligns.size() == 0) {
-                System.err.println("Locators were " + exptLocs + " but didn't get any alignments");
-            }
-			
+            
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClientException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (NotFoundException e) {
 			e.printStackTrace();
-		} catch (ClientException e) {
-			e.printStackTrace();
 		}
-		
 	}
 
 	/**

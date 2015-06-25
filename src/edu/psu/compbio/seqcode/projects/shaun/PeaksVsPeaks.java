@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -31,7 +31,7 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class PeaksVsPeaks {
 
-	private Organism org=null;
+	private Species org=null;
 	private Genome gen =null;
 	private List<Region> posSet;
 	private List<Point> posPeaks;
@@ -80,8 +80,8 @@ public class PeaksVsPeaks {
         }
         
         try {
-	        Pair<Organism, Genome> pair = Args.parseGenome(args);
-	    	Organism currorg = pair.car();
+	        Pair<Species, Genome> pair = Args.parseGenome(args);
+	    	Species currorg = pair.car();
 	    	Genome currgen = pair.cdr();
 	    	String posFile = ap.hasKey("peaks") ? ap.getKeyValue("peaks"):null;
 	        String neg = ap.hasKey("neg") ? ap.getKeyValue("neg"):null;
@@ -148,7 +148,7 @@ public class PeaksVsPeaks {
 		}
 	}
 	
-	public PeaksVsPeaks(Organism o, Genome g){
+	public PeaksVsPeaks(Species o, Genome g){
 		org = o;
 		gen=g;
 	}

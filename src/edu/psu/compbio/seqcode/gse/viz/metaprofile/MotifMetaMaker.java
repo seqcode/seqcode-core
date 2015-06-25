@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
@@ -31,7 +31,7 @@ public class MotifMetaMaker {
 		try {
 			if(args.length < 2){ printError();}
 			
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			Pair<Species, Genome> pair = Args.parseGenome(args);
 			Genome gen = pair.cdr();
 			int winLen = Args.parseInteger(args,"win", 10000);
 			int bins = Args.parseInteger(args,"bins", 100);

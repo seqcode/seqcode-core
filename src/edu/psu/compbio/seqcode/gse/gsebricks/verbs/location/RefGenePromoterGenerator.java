@@ -41,7 +41,7 @@ public class RefGenePromoterGenerator extends RefGeneGenerator {
     public Iterator<Gene> execute(Region region) {
         try {
             java.sql.Connection cxn =
-                getGenome().getUcscConnection();
+                getGenome().getAnnotationDBConnection();
             String query = "select name, chrom, strand, txStart, txEnd " + (isRetrievingExons() ? ",exonCount, exonStarts, exonEnds" : "") + 
                 " from " + getTable() + " where chrom = ? and " +
                 "((strand = '+' and ((txStart - " + up + "  <= ? and txStart + " + down + " >= ?) or (txStart - " + up + " >= ? and txStart - " + up + "<= ?))) or " + 

@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrixImport;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -355,7 +355,7 @@ public class PWMParser {
         int taxospecid = Integer.parseInt(matcher.group(1));
         String specname = speciesmap.get(taxospecid);
         try {
-          matrix.speciesid = (new Organism(specname)).getDBID();
+          matrix.speciesid = (new Species(specname)).getDBID();
           matrix.species = specname;
         }
         catch (NotFoundException e) {
@@ -368,7 +368,7 @@ public class PWMParser {
         matcher = grouppatt.matcher(pieces[4]);
         if (matcher.find() && matcher.group(1).equals("mammals")) {
           try {
-            matrix.speciesid = (new Organism("Mus musculus")).getDBID();
+            matrix.speciesid = (new Species("Mus musculus")).getDBID();
           }
           catch (NotFoundException e) {
             continue; // shouldn't happen unless I typoed the name above
@@ -450,7 +450,7 @@ public class PWMParser {
     Vector<float[]> arrays = new Vector<float[]>();
 
     // Read in Transfac format first
-    Organism currentSpecies = null;
+    Species currentSpecies = null;
     String name = null, id = null, accession = null;
     Pattern speciesPattern = Pattern.compile(".*Species:.*, (.*)\\.");
     while ((line = br.readLine()) != null) {
@@ -478,7 +478,7 @@ public class PWMParser {
           if (matcher.matches()) {
             String specname = matcher.group(1);
             try {
-              currentSpecies = new Organism(specname);
+              currentSpecies = new Species(specname);
               // System.err.println("Got species " + specname);
             }
             catch (NotFoundException e) {

@@ -1,9 +1,13 @@
 package edu.psu.compbio.seqcode.deepseq.experiments;
 
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import edu.psu.compbio.seqcode.deepseq.hitloaders.BEDFileHitLoader;
 import edu.psu.compbio.seqcode.deepseq.hitloaders.BowtieFileHitLoader;
@@ -15,6 +19,7 @@ import edu.psu.compbio.seqcode.deepseq.hitloaders.SAMFileHitLoader;
 import edu.psu.compbio.seqcode.deepseq.hitloaders.TophatFileHitLoader;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
@@ -28,6 +33,7 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 public class ExperimentManager {
 
 	protected ExptConfig econfig;
+	protected SeqDataLoader sdloader = null;
 	protected Genome gen;
 	
 	//Experiment tree elements
@@ -62,6 +68,24 @@ public class ExperimentManager {
 		List<ExptDescriptor> descriptors = econfig.getExperimentDescriptors();
 		int repCount=0, condCount=0, sampCount=0, targCount=0, etypeCount=0;
 		
+		//Pre-step; do we need a SeqDataLoader?
+		boolean makeSeqDataLoader = false;
+		for(ExptDescriptor e : descriptors){
+			for(Pair<String,String> source : e.sources){
+				String type = source.cdr();
+				if(type.equals("READDB")) 
+					makeSeqDataLoader=true;
+			}
+		}
+		if(makeSeqDataLoader)
+			try {
+				sdloader = new SeqDataLoader();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		
 		//Firstly, initialize all hit loaders. 
 		//This is done in a separate first pass, because it is possible (albeit unlikely)
 		//that multiple conditions share the same hit loader, and you don't want to load things twice.  
@@ -72,7 +96,7 @@ public class ExperimentManager {
 				String type = source.cdr();
 				System.err.println("Loading from "+type+" hit loader:\t"+name);
 				if(type.equals("READDB")){ //ReadDB HitLoader
-					HitLoader hl = makeReadDBHitLoader(name);
+					HitLoader hl = makeReadDBHitLoader(sdloader, name);
 					//hit loader does not have to be sourced here -- that happens in the samples part below
 					loaders.put(name, hl);
 				}else{  //Assume File HitLoader
@@ -214,6 +238,9 @@ public class ExperimentManager {
 			indexedCondition.put(i, conditions.get(i));
 			namedCondition.put(conditions.get(i).getName(), conditions.get(i));
 		}
+		
+		if(sdloader!=null)
+			sdloader.close();
 	}
 	
 	//Accessors
@@ -231,17 +258,22 @@ public class ExperimentManager {
 	 * Add a ReadDB HitLoader.
 	 * @param locs List of ChipSeqLocators
 	 */
-	private HitLoader makeReadDBHitLoader(String name){
+	private HitLoader makeReadDBHitLoader(SeqDataLoader loader, String name){
+		if(loader==null)
+			throw new RuntimeException("SeqDataLoader not initialized in makeReadDBHitLoader");
+		
 		List<SeqLocator> locs = new ArrayList<SeqLocator>();
 		String[] pieces = name.trim().split(";");
-        if (pieces.length == 2) {
-            locs.add(new SeqLocator(pieces[0], pieces[1]));
+		Set<String> reps = new TreeSet<String>(); 
+		if (pieces.length == 2) {
+			locs.add(new SeqLocator(pieces[0], reps, pieces[1]));
         } else if (pieces.length == 3) {
-            locs.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
+        	reps.add(pieces[1]);
+        	locs.add(new SeqLocator(pieces[0], reps, pieces[2]));
         } else {
             throw new RuntimeException("Couldn't parse a SeqLocator from " + name);
         }
-		return (new ReadDBHitLoader(gen, locs, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs()));
+		return (new ReadDBHitLoader(loader, gen, locs, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs()));
 	}
 	
 

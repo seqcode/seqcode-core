@@ -6,17 +6,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.EventMetaMaker;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.BIC;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.EMtrain;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet.MAPassignment;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Sequences;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsEMan;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
 
 /**
@@ -28,15 +30,17 @@ public class Bayesments {
 	
 	public static void main(String[] args) throws IOException{
 		// Build the MultiGPSConfig class the comman line arguments
-		Config c = new Config(args);
+		BayesmentsConfig c = new BayesmentsConfig(args);
 		if(c.helpWanter()){
 			System.err.println("Bayesments:");
 			System.err.println(c.getArgsList());
 		}else{
 			// Make the output directories using the provided root name
 			c.makeGPSOutputDirs(true);
-			
+			GenomeConfig gcon = new GenomeConfig(args);
+			ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
 			ExperimentManager manager = null;
+			BayesmentsEMan bem = null;
 			GenomicLocations trainingData = null;
 			Sequences seqs = null;
 			List<WeightMatrix> motifs = new ArrayList<WeightMatrix>();
@@ -48,15 +52,16 @@ public class Bayesments {
 				String[] fac_cons_names = {"K562", "GM12878", "H1-hESC"}; 
 				// Store the reads by building the ExperimentManager
 				System.out.println("Loading Reads\n");
-				manager = new ExperimentManager(c,c.loadReads());
+				manager = new ExperimentManager(econ, true);
+				bem = new BayesmentsEMan(c, manager);
 				
 				// Read and store the training data in a GenomicLocations object
 				System.out.println("Filling Training Data\n");
-				trainingData = new GenomicLocations(manager,c);
+				trainingData = new GenomicLocations(manager,gcon, c, bem);
 				
 				// Plot the cumulative plots of the training data
 				System.out.println("Plotting the traning data");
-				trainingData.plotData(c, manager);
+				trainingData.plotData(c, manager, bem);
 				
 				if(!c.runOnlyChrom()){
 					//Reading the genome sequence and intializing the sequences class object
@@ -91,9 +96,9 @@ public class Bayesments {
 				for(int j=0; j<nCols; j++){
 					if(!c.doSimulation()){
 						if(c.runOnlyChrom() || motifs == null){
-							trainer = new EMtrain(c, trainingData, null, manager,i+c.getMinChromStates(), j+c.getMinFacStates(), c.doRegularization(), false, false);
+							trainer = new EMtrain(c, trainingData, null, manager, bem,i+c.getMinChromStates(), j+c.getMinFacStates(), c.doRegularization(), false, false);
 						}else{
-							trainer = new EMtrain(c, trainingData, seqs, manager, i+c.getMinChromStates(), j+c.getMinFacStates(), c.doRegularization(), false, true);
+							trainer = new EMtrain(c, trainingData, seqs, manager, bem, i+c.getMinChromStates(), j+c.getMinFacStates(), c.doRegularization(), false, true);
 						}
 					}else{
 						trainer = new EMtrain(c, i+c.getMinChromStates(), j+c.getMinFacStates(), c.doRegularization(), false);
@@ -123,9 +128,9 @@ public class Bayesments {
 			
 			if(!c.doSimulation()){
 				if(c.runOnlyChrom() || motifs == null){
-					trainer = new EMtrain(c, trainingData, null, manager,nChromStates,nFacStates,c.doRegularization(), true, false);
+					trainer = new EMtrain(c, trainingData, null, manager, bem,nChromStates,nFacStates,c.doRegularization(), true, false);
 				}else{
-					trainer = new EMtrain(c, trainingData, seqs, manager,nChromStates,nFacStates, c.doRegularization(), true, true);
+					trainer = new EMtrain(c, trainingData, seqs, manager, bem,nChromStates,nFacStates, c.doRegularization(), true, true);
 				}
 				
 			}else{

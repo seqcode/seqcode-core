@@ -17,7 +17,7 @@ import cern.jet.stat.Probability;
 
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;

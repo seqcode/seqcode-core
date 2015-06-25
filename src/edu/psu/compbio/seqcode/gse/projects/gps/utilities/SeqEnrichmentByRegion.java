@@ -11,7 +11,7 @@ import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -43,7 +43,7 @@ public class SeqEnrichmentByRegion {
 		
 		ArgParser ap = new ArgParser(args);
 		try {
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			Pair<Species, Genome> pair = Args.parseGenome(args);
 			gen = pair.cdr();
 		} catch (NotFoundException e) {
 			// TODO Auto-generated catch block
@@ -96,7 +96,7 @@ public class SeqEnrichmentByRegion {
         Collection<String> dbgenes = Args.parseStrings(args,"dbgenes");
         //Special case default
         if(dbgenes.size()==0 && tfiles.size()==0 && dbconnected){
-        	String geneSource = gen.getSpecies().equals("Saccharomyces cerevisiae") ? "sgdGene":"refGene";
+        	String geneSource = gen.getSpeciesName().equals("Saccharomyces cerevisiae") ? "sgdGene":"refGene";
         	geneAnnotations.add(new AnnotationLoader(gen, geneSource,geneSource, maxAnnotDistance, annotOverlapOnly));
 		}
         for(String s:dbgenes)

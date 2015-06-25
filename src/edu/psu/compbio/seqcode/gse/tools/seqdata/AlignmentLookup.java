@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -18,7 +18,7 @@ public class AlignmentLookup {
 		if(Args.parseArgs(args).contains("expt") && Args.parseArgs(args).contains("species")){
 			SeqDataLoader loader=null;
 			try {		
-				Pair<Organism,Genome> pair = Args.parseGenome(args);
+				Pair<Species,Genome> pair = Args.parseGenome(args);
 				Genome gen = pair.cdr();
 				List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
 				if(expts.size()>1){
@@ -26,7 +26,7 @@ public class AlignmentLookup {
 					System.exit(1);
 				}
 				SeqLocator expt = expts.get(0);
-				loader = new SeqDataLoader(false);
+				loader = new SeqDataLoader(false, true);
 			
 				if(loader.loadAlignments(expt, gen).size()>0)
 					System.out.println("FOUND");
