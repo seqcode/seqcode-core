@@ -132,13 +132,13 @@ public class CrossContaminationEstimator {
 				System.out.println(xyPairs[i][0]+"\t"+xyPairs[i][1]+"\t"+xyPairs[i][2]);			
 	}			
 	
-	public void K_LineMeans(int k){
+//	public void K_LineMeans(int k){
 		
-		float [][] xyPairs = getXYpairs();
+//		float [][] xyPairs = getXYpairs();
 		
 		
 		
-	}
+//	}
 	
 	public static void main(String[] args){
 		
@@ -150,6 +150,6 @@ public class CrossContaminationEstimator {
 		estimator.printXYpairs();
 		// trying k = 2
 		int k = 2;		
-		estimator.K_LinesMeans(k);
+//		estimator.K_LineMeans(k);
 	}
 }
