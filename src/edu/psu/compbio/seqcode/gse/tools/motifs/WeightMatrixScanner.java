@@ -5,13 +5,11 @@ import java.util.*;
 import java.util.Date;
 import java.sql.*;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Sink;
@@ -19,8 +17,8 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.PerBaseMotifMatch;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.FASTAStream;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
@@ -62,8 +60,8 @@ public class WeightMatrixScanner {
         scanner.close();
     }
     public WeightMatrixScanner() throws SQLException, UnknownRoleException {
-        cxn =DatabaseFactory.getConnection("annotations");
-        core =DatabaseFactory.getConnection("core");
+        cxn =DatabaseConnectionManager.getConnection("annotations");
+        core =DatabaseConnectionManager.getConnection("core");
         setup();
     }
     public void close() throws SQLException {

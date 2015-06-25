@@ -13,7 +13,6 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.viz.utils.GenomeSelectPanel;
 
@@ -186,7 +185,7 @@ class DefaultComponentTranslator implements PreferencesComponentTranslator {
 		if(val instanceof Genome) { 
 			GenomeSelectPanel gsp = (GenomeSelectPanel)comp;
 			try {
-				return Organism.findGenome(gsp.getGenome());
+				return Genome.findGenome(gsp.getGenome());
 			} catch (NotFoundException e) {
 				e.printStackTrace();
 				return val;

@@ -12,20 +12,20 @@ import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.EventMetaMaker;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.CoutPlotter;
 
 public class Sequences {
 	
 	protected List<Point> locations;
 	protected Genome gen;
-	protected Config conf;
+	protected BayesmentsConfig conf;
 	protected int winSize;
 	protected String[] sequences;
 	protected double Xs[][];
 	protected List<WeightMatrix> motifs_log_odds;
 	
-	public Sequences(Config conf) {
+	public Sequences(BayesmentsConfig conf) {
 		this.conf = conf;
 		this.winSize = conf.getSeqWinSize();
 		File peaksFile = conf.getPeaksFile();
@@ -38,7 +38,7 @@ public class Sequences {
 		}
 	}
 	
-	public Sequences(Config conf, List<Point> locations) {
+	public Sequences(BayesmentsConfig conf, List<Point> locations) {
 		this.conf =conf;
 		this.gen = conf.getGenome();
 		this.locations = locations;

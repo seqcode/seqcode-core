@@ -5,8 +5,8 @@ import java.sql.*;
 import java.text.DecimalFormat;
 
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 
 /* weight matrix representation as float[][]:
@@ -110,7 +110,7 @@ public class WeightMatrix {
     public static Collection<WeightMatrix> getAllWeightMatrices() {
         try {
             long start = System.currentTimeMillis();
-            java.sql.Connection cxn =DatabaseFactory.getConnection("annotations");
+            java.sql.Connection cxn =DatabaseConnectionManager.getConnection("annotations");
             PreparedStatement ps = cxn.prepareStatement("select m.id, m.species, m.name, m.version, m.type, m.bg_model_map_id, c.position, c.letter, c.weight from "
                                                         + "weightmatrix m, weightmatrixcols c where "
                                                         + " m.id = c.weightmatrix order by c.weightmatrix, c.position desc");
@@ -120,7 +120,7 @@ public class WeightMatrix {
             Collection<WeightMatrix> matrices = WeightMatrix.getWeightMatrices(rs);
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
             long end = System.currentTimeMillis();
             System.err.println(String.format("getAllWeightMatrices took %d and %d",middle-start,end-middle));
             return matrices;
@@ -181,7 +181,7 @@ public class WeightMatrix {
     public static WeightMatrix getWeightMatrix(int dbid) throws NotFoundException {
         WeightMatrix matrix = null;
         try {
-            java.sql.Connection cxn =DatabaseFactory.getConnection("annotations");
+            java.sql.Connection cxn =DatabaseConnectionManager.getConnection("annotations");
 
             PreparedStatement ps = cxn.prepareStatement("select position, letter, weight from weightmatrixcols where weightmatrix = ? order by position desc");
             ps.setInt(1,dbid);
@@ -223,7 +223,7 @@ public class WeightMatrix {
             }
             rs.close();
             ps.close();            
-            DatabaseFactory.freeConnection(cxn);     
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); } 
         } catch (SQLException ex) {
             throw new NotFoundException("Can't find WM " + dbid,ex);
         } catch (UnknownRoleException ex) {
@@ -488,7 +488,7 @@ public class WeightMatrix {
                                         String wmversion) throws NotFoundException {
         int wmid = -1;
         try {
-            java.sql.Connection cxn =DatabaseFactory.getConnection("annotations");
+            java.sql.Connection cxn =DatabaseConnectionManager.getConnection("annotations");
             PreparedStatement ps = cxn.prepareStatement("select id from weightmatrix where species = ? " + 
                                                         "and name = ? and version = ?");
             ps.setInt(1,speciesid);
@@ -500,13 +500,13 @@ public class WeightMatrix {
             } else {
                 rs.close();
                 ps.close();
-                DatabaseFactory.freeConnection(cxn);     
+                if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }     
                 throw new NotFoundException("Can't find WM " + wmname + ", " + wmversion + " in species " + 
                                             speciesid);
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);     
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }     
         } catch (SQLException ex) {
             throw new NotFoundException("Can't find WM " + wmname + ", " + wmversion + " in species " + 
                                         speciesid,ex);
@@ -520,7 +520,7 @@ public class WeightMatrix {
                                         String wmversion) throws NotFoundException {
         int wmid = -1;
         try {
-            java.sql.Connection cxn =DatabaseFactory.getConnection("annotations");
+            java.sql.Connection cxn =DatabaseConnectionManager.getConnection("annotations");
             PreparedStatement ps = cxn.prepareStatement("select id from weightmatrix where name = ? and version = ?");
             ps.setString(1,wmname);
             ps.setString(2,wmversion);
@@ -532,12 +532,12 @@ public class WeightMatrix {
             } else {
                 rs.close();
                 ps.close();
-                DatabaseFactory.freeConnection(cxn);     
+                if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }    
                 throw new NotFoundException("Can't find WM " + wmname + ", " + wmversion);
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);     
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }     
         } catch (SQLException ex) {
             throw new NotFoundException("Can't find WM " + wmname + ", " + wmversion,ex);
         } catch (UnknownRoleException ex) {

@@ -5,7 +5,7 @@ import java.io.*;
 import java.sql.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.ExonicGene;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -42,10 +42,9 @@ import edu.psu.compbio.seqcode.gse.utils.database.*;
  */
 
 public class RefGeneGenerator<X extends Region> 
-    implements Expander<X,Gene>, SelfDescribingVerb, DefaultConstantsParameterized, edu.psu.compbio.seqcode.gse.utils.Closeable {
+    implements Expander<X,Gene>, SelfDescribingVerb, DefaultConstantsParameterized {
 
     private PreparedStatement ps, nameps, getalias, getgenesym, getallps;
-    private java.sql.Connection cxn;
     private Genome genome;
     private String tablename, symboltable, namecolumn, symbolcolumn;
     private int aliastype;
@@ -171,14 +170,12 @@ public class RefGeneGenerator<X extends Region>
         if (symboltable == null) {
             wantalias = false;
         }
-        prepare();
     }
     
     /* fill in exon fields of Genes */
     public boolean isRetrievingExons() { return wantsExons; }
     public void retrieveExons(boolean b) {
         wantsExons = b;
-        prepare();
     }
     /** if retrieveCoding is true, then the start and 
      *  stop will be of the coding region rather than the transcribed region
@@ -186,7 +183,6 @@ public class RefGeneGenerator<X extends Region>
     public boolean isRetrievingCodingRegion() {return wantCoding;}
     public void retrieveCoding(boolean b) {
         wantCoding = b;
-        prepare();
     }
     public String getStartField() {
         return wantCoding ? "cdsStart" : "txStart";
@@ -260,37 +256,29 @@ public class RefGeneGenerator<X extends Region>
     */
     public void close() {
         try {
-            if (ps != null && !ps.isClosed()) {
+            if (ps != null) {
                 ps.close();
                 ps = null;
             }
-            if (nameps != null && !nameps.isClosed()) {
+            if (nameps != null) {
                 nameps.close();
                 nameps = null;
             }
-            if (getalias != null && !getalias.isClosed()) {
+            if (getalias != null) {
                 getalias.close();
                 getalias = null;
             }
-            if (getgenesym != null && !getgenesym.isClosed()) {
+            if (getgenesym != null) {
                 getgenesym.close();
                 getgenesym = null;
             }
-            if (getallps != null && !getallps.isClosed()) {
+            if (getallps != null) {
                 getallps.close();
                 getallps = null;
-            }
-
-            if (cxn != null) {
-                DatabaseFactory.freeConnection(cxn);
-                cxn = null;
             }            
         } catch (SQLException e) {
             throw new DatabaseException(e.toString(), e);
         }
-    }
-    public boolean isClosed() {
-        return cxn == null;
     }
     /* generate SQL PreparedStatements based on the current 
        query parameters.  Set ps and nameps.
@@ -299,7 +287,7 @@ public class RefGeneGenerator<X extends Region>
        in execute() so the bind variables set up in the sql query
        here are bound in the proper order in execute().
     */
-    private void prepare() {
+    private void prepareStatements(Connection cxn) {
         ps = null;
         nameps = null;
         if (genome == null) {
@@ -307,7 +295,6 @@ public class RefGeneGenerator<X extends Region>
             return;
         }
         try {
-            cxn = genome.getUcscConnection();
             StringBuffer query = new StringBuffer(getFields());
             query.append(" from ");
             query.append(tablename);
@@ -353,13 +340,12 @@ public class RefGeneGenerator<X extends Region>
             }
             if (wantalias && symboltable != null && symboltable.equals("kgXref")) {
                 try {
-                    cxn = genome.getUcscConnection();
                     String aliassql = "select distinct(kgAlias.alias) from kgAlias, kgXref where kgXref.kgID = kgAlias.kgID and kgXref." +
                         namecolumn + " = ?";
                     getalias = cxn.prepareStatement(aliassql);
                 } catch (SQLException ex) {
-                ex.printStackTrace();
-                wantalias = false;
+                	ex.printStackTrace();
+                	wantalias = false;
                 }                
             }
         } catch (SQLException e) {
@@ -368,13 +354,13 @@ public class RefGeneGenerator<X extends Region>
     }
 
     public synchronized Iterator<Gene> execute(X region) {
-    	try {    
-    		if (!region.getGenome().equals(genome) || ps == null || ps.isClosed()) {
-	            close();
-	            setGenome(region.getGenome(), tablename);
-	        }
-        	int offset = 1;
-        
+        if (!region.getGenome().equals(genome)) {
+            setGenome(region.getGenome(), tablename);
+        }
+        int offset = 1;
+        try {
+        	Connection cxn = genome.getAnnotationDBConnection();
+        	prepareStatements(cxn);
             String chr = region.getChrom();
             if (prependChr && !chr.matches("^(chr|scaffold).*")) {
                 chr = "chr" + chr;
@@ -389,7 +375,9 @@ public class RefGeneGenerator<X extends Region>
                 offset = bindClosestOrder(ps, offset, region);
                 ps.setInt(offset++, closestN);
             } 
-            Iterator<Gene> results = parseResults(ps);            
+            Iterator<Gene> results = parseResults(ps);
+            close();
+            cxn.close();
             return results;
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -397,15 +385,24 @@ public class RefGeneGenerator<X extends Region>
         }
     }
     public synchronized Iterator<Gene> getAll() throws SQLException {
-            return parseResults(getallps);  
+    		Connection cxn = genome.getAnnotationDBConnection();
+    		prepareStatements(cxn);
+    		Iterator<Gene> results = parseResults(getallps);
+    		close();
+            cxn.close();
+            return results;
         }
     public synchronized Iterator<Gene> byName(String name) {
         try {
+        	Connection cxn = genome.getAnnotationDBConnection();
+    		prepareStatements(cxn);
             nameps.setString(1,name);
             if (symboltable != null) {
                 nameps.setString(2,name);
             }
             Iterator<Gene> results = parseResults(nameps);
+            close();
+            cxn.close();
             return results;
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -646,10 +643,10 @@ public class RefGeneGenerator<X extends Region>
             throw new RuntimeException("Must supply --species 'species;genome'");
         }
 
-        Organism org;
+        Species org;
         Genome genome;
-        org = new Organism(specname);
-        genome = org.getGenome(genomename);
+        org = new Species(specname);
+        genome = new Genome(org, genomename);
         RefGeneGenerator gen = new RefGeneGenerator(genome);
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("--up")) {

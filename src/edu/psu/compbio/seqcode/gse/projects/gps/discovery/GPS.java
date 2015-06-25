@@ -16,7 +16,7 @@ import cern.jet.random.Binomial;
 import cern.jet.random.engine.DRand;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
@@ -56,7 +56,7 @@ public class GPS {
 			printHelp();
 			System.exit(1);
         }
-        Pair<Organism, Genome> pair = Args.parseGenome(args);
+        Pair<Species, Genome> pair = Args.parseGenome(args);
         if(pair != null) {
             genome = pair.cdr();
         } else {

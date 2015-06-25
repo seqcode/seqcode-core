@@ -16,7 +16,7 @@ public class TSVToStringMapper implements Mapper<Object, String> {
     public String execute(Object o) {
         if (o instanceof Genome) {
             Genome g = (Genome) o;
-            return g.getSpecies() + "\t" + g.getVersion();
+            return g.getSpeciesName() + "\t" + g.getVersion();
         } else if (o instanceof Gene) {
             Gene g = (Gene) o;
             StringBuffer out = new StringBuffer();

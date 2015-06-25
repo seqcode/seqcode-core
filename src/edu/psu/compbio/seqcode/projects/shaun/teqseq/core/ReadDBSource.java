@@ -50,7 +50,7 @@ public class ReadDBSource{
 		try {
 			client = new Client();
 			
-			SeqDataLoader loader = new SeqDataLoader(false);
+			SeqDataLoader loader = new SeqDataLoader(false, true);
 			
 			//Initialize Single-end ChipSeqLoaders
             for(SeqLocator locator : singleLocs){

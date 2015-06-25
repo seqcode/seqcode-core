@@ -3,7 +3,6 @@ package edu.psu.compbio.seqcode.gse.seqview.model;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
-import edu.psu.compbio.seqcode.gse.utils.*;
 
 public class MultipleExpanderModel<IN,OUT> extends SeqViewModel implements Runnable {
 

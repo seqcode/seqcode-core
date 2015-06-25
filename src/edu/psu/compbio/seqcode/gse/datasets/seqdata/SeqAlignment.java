@@ -1,7 +1,6 @@
 package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.datasets.core.AlignType;
 import edu.psu.compbio.seqcode.gse.datasets.core.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -60,25 +59,25 @@ public class SeqAlignment {
 		name = rs.getString(3);
 		int genomeID = rs.getInt(4);
 		int atypeID =  rs.getInt(6);
+		MetadataLoader mloader= loader==null ? new MetadataLoader() : loader.getMetadataLoader();
 		try {
 			expt = loader.loadExperiment(exptID);
-			genome = Organism.findGenome(genomeID);
-			MetadataLoader mloader = loader == null ? new MetadataLoader() : loader.getMetadataLoader();
-			atype = mloader.loadAlignType(atypeID);
+			genome = Genome.findGenome(genomeID);
+			atype = mloader.loadAlignType(atypeID, false);
+			permissions = Arrays.asList(rs.getString(5).split(";"));
+			numHits = rs.getInt(7);
+			totalWeight = rs.getFloat(8);
+			numType2Hits = rs.getInt(9);
+			totalType2Weight = rs.getFloat(10);
+			numPairs = rs.getInt(11);
+			totalPairWeight = rs.getFloat(12);
+			alignDir = rs.getString(13);
+			alignFile = rs.getString(14);
+			idxFile = rs.getString(15);
+			collabAlignID = rs.getString(16);
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
-		permissions = Arrays.asList(rs.getString(5).split(";"));
-		numHits = rs.getInt(7);
-		totalWeight = rs.getFloat(8);
-		numType2Hits = rs.getInt(9);
-		totalType2Weight = rs.getFloat(10);
-		numPairs = rs.getInt(11);
-		totalPairWeight = rs.getFloat(12);
-		alignDir = rs.getString(13);
-		alignFile = rs.getString(14);
-		idxFile = rs.getString(15);
-		collabAlignID = rs.getString(16);
 	}
 	
 	public SeqAlignment(ResultSet rs, SeqExpt ex, AlignType a) throws SQLException { 
@@ -88,7 +87,7 @@ public class SeqAlignment {
 		int genomeID = rs.getInt(4);
 		atype =  a; 
 		try {
-			genome = Organism.findGenome(genomeID);
+			genome = Genome.findGenome(genomeID);
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
@@ -150,6 +149,10 @@ public class SeqAlignment {
 		return c.prepareStatement(query);
 	}
 
+	public static PreparedStatement createLoadAllStatement(java.sql.Connection c) throws SQLException { 
+		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numtype2hits, totaltype2weight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment";
+		return c.prepareStatement(query);
+	}
 	public static PreparedStatement createLoadAllByExptStatement(java.sql.Connection c) throws SQLException { 
 		String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numtype2hits, totaltype2weight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid from seqalignment where expt=?";
 		return c.prepareStatement(query);

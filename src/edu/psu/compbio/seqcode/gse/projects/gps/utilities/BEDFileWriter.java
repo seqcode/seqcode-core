@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Vector;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
@@ -29,7 +29,7 @@ public class BEDFileWriter{
 		ArgParser ap = new ArgParser(args);
 		
 		try {
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			Pair<Species, Genome> pair = Args.parseGenome(args);
 			if(pair==null){
 				//Make fake genome... chr lengths provided???
 				if(ap.hasKey("geninfo")){

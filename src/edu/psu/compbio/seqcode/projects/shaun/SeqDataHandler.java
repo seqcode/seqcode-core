@@ -26,7 +26,7 @@ import cern.jet.random.engine.DRand;
 import cern.jet.random.engine.RandomEngine;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.RepeatMaskedRegion;
@@ -46,7 +46,7 @@ public class SeqDataHandler {
 	private double readLength = 26.0;
 	private double readExtension = 174;
 	private String exptName;
-	private Organism currentOrg=null;
+	private Species currentOrg=null;
 	private Genome currentGen=null;
 	private double hitCount = 0;
 	private double totalSeq = 0;
@@ -62,11 +62,11 @@ public class SeqDataHandler {
 	private boolean cdfCompiled=false;
 	
 	
-	public SeqDataHandler(Organism o, Genome g, String exptName){
+	public SeqDataHandler(Species o, Genome g, String exptName){
 		this(o, g, exptName, "");
 	}
 	 
-	public SeqDataHandler(Organism o, Genome g,  String exptName, String replicate){
+	public SeqDataHandler(Species o, Genome g,  String exptName, String replicate){
 		currentOrg=o;
 		currentGen=g;
 		this.exptName=exptName;
@@ -95,7 +95,7 @@ public class SeqDataHandler {
 					
         			for (SeqExpt expt : expts) {
         				Collection<SeqAlignment> aligns;
-						aligns = chipSeqLoader.loadAllAlignments(expt);
+						aligns = chipSeqLoader.loadAlignmentsBySeqExpt(expt);
 						
                 		for (SeqAlignment currentAlign : aligns) {
                 			if (currentAlign.getGenome().equals(g)) { 
@@ -120,7 +120,7 @@ public class SeqDataHandler {
 					
         			SeqAlignment align = null;
             		Collection<SeqAlignment> aligns;
-					aligns = chipSeqLoader.loadAllAlignments(expt);
+					aligns = chipSeqLoader.loadAlignmentsBySeqExpt(expt);
 					
             		for (SeqAlignment currentAlign : aligns) {
             			if (currentAlign.getGenome().equals(g)) { 
@@ -152,7 +152,7 @@ public class SeqDataHandler {
 	public void setReadExtension(double re){readExtension=re;}
 	public double getExtendedReadLength(){return(readLength+readExtension);}
 	public double getExtension(){return readExtension;}
-	public Organism getOrg(){return currentOrg;}
+	public Species getOrg(){return currentOrg;}
 	public Genome getGenome(){return currentGen;}
 	public String getExptName(){return exptName;}
 	public SeqExpander getExpander(){return expander;}

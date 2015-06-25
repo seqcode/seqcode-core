@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.ScoredStrandedRegion;
@@ -105,7 +105,7 @@ public class ConsensusAnalysisSandbox {
 			Genome currgen=null;
 			//Load genome
 			if(ap.hasKey("species")){
-				Pair<Organism, Genome> pair = Args.parseGenome(args);
+				Pair<Species, Genome> pair = Args.parseGenome(args);
 				if(pair != null){
 					currgen = pair.cdr();
 				}

@@ -1,13 +1,10 @@
 package edu.psu.compbio.seqcode.gse.datasets.motifs;
 import java.util.*;
 import java.sql.*;
-import java.text.DecimalFormat;
-import java.text.FieldPosition;
 
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 
 public class WeightMatrixScan {
@@ -20,7 +17,7 @@ public class WeightMatrixScan {
     public static WeightMatrixScan getWeightMatrixScan(int dbid) throws NotFoundException {
         WeightMatrixScan scan = null;
         try {
-            java.sql.Connection cxn =DatabaseFactory.getConnection("annotations");
+            java.sql.Connection cxn =DatabaseConnectionManager.getConnection("annotations");
             PreparedStatement ps = cxn.prepareStatement("select weightmatrix,name,cutoff from weightmatrixscan where " +
                                                         " id = ?");
             ps.setInt(1,dbid);
@@ -34,11 +31,11 @@ public class WeightMatrixScan {
                 scan.hasscandbid = true;
                 rs.close();
                 ps.close();
-                DatabaseFactory.freeConnection(cxn);
+                if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
             } else {
                 rs.close();
                 ps.close();
-                DatabaseFactory.freeConnection(cxn);
+                if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
                 throw new NotFoundException("Can't find WMSID " + dbid);
             }
         } catch (SQLException ex) {
@@ -53,7 +50,7 @@ public class WeightMatrixScan {
         java.sql.Connection cxn = null;
         ArrayList<WeightMatrixScan> results = new ArrayList<WeightMatrixScan>();
         try {
-            cxn = DatabaseFactory.getConnection("annotations");
+            cxn = DatabaseConnectionManager.getConnection("annotations");
             PreparedStatement ps = cxn.prepareStatement("select id from weightmatrixscan where weightmatrix = ?");
             ps.setInt(1,matrixid);
             ResultSet rs = ps.executeQuery();
@@ -70,7 +67,7 @@ public class WeightMatrixScan {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
-            DatabaseFactory.freeConnection(cxn);
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
         }
         return results;
     }
@@ -79,7 +76,7 @@ public class WeightMatrixScan {
         java.sql.Connection cxn = null;
         WeightMatrixScan results = null;
         try {
-            cxn = DatabaseFactory.getConnection("annotations");
+            cxn = DatabaseConnectionManager.getConnection("annotations");
             PreparedStatement ps = cxn.prepareStatement("select id from weightmatrixscan where weightmatrix = ? and name = ?");
             ps.setInt(1,matrixid);
             ps.setString(2,scanname);
@@ -97,7 +94,7 @@ public class WeightMatrixScan {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
-            DatabaseFactory.freeConnection(cxn);
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
         }
         return results;
     }
@@ -106,7 +103,7 @@ public class WeightMatrixScan {
         java.sql.Connection cxn = null;
         ArrayList<WeightMatrixScan> results = new ArrayList<WeightMatrixScan>();
         try {
-            cxn = DatabaseFactory.getConnection("annotations");
+            cxn = DatabaseConnectionManager.getConnection("annotations");
             String sql = "select wms.id from weightmatrix wm, weightmatrixscan wms " +
                 "where wm.id = wms.weightmatrix and wm.species = ?";
             if (name != null) { sql += " and wm.name = ? ";}
@@ -136,7 +133,7 @@ public class WeightMatrixScan {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
-            DatabaseFactory.freeConnection(cxn);
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
         }
         return results;
     }
@@ -145,7 +142,7 @@ public class WeightMatrixScan {
         java.sql.Connection cxn = null;
         ArrayList<WeightMatrixScan> results = new ArrayList<WeightMatrixScan>();
         try {
-            cxn = DatabaseFactory.getConnection("annotations");
+            cxn = DatabaseConnectionManager.getConnection("annotations");
             String sql = "select wms.id from weightmatrix wm, weightmatrixscan wms, wms_scanned_genomes wsg " +
                 "where wm.id = wms.weightmatrix and wsg.genome = ? and wsg.scan = wms.id";
             if (name != null) { sql += " and wm.name = ? ";}
@@ -175,7 +172,7 @@ public class WeightMatrixScan {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
-            DatabaseFactory.freeConnection(cxn);
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
         }
         return results;
     }
@@ -184,7 +181,7 @@ public class WeightMatrixScan {
         java.sql.Connection cxn = null;
         ArrayList<String> results = new ArrayList<String>();
         try {
-            cxn = DatabaseFactory.getConnection("annotations");
+            cxn = DatabaseConnectionManager.getConnection("annotations");
             String sql = "select unique(" + field + ") from weightmatrix wm, weightmatrixscan wms, wms_scanned_genomes wsg " +
                 "where wm.id = wms.weightmatrix and wsg.genome = ? and wms.id = wsg.scan order by " + field;
             //            System.err.println("SQL IS " + sql);
@@ -207,7 +204,7 @@ public class WeightMatrixScan {
         } catch (SQLException ex) {
             ex.printStackTrace();
         } finally {
-            DatabaseFactory.freeConnection(cxn);
+        	if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
         }
         return results;
     }

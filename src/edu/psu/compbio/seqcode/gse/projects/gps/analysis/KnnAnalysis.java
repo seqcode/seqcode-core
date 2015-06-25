@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Set;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSParser;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSPeak;
 import edu.psu.compbio.seqcode.gse.projects.gps.discovery.BindingMixture;
@@ -43,7 +42,7 @@ public class KnnAnalysis {
 		this.args = args;
 
 		try {
-			genome = Organism.findGenome("mm8");
+			genome = Genome.findGenome("mm8");
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}

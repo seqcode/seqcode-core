@@ -2,18 +2,11 @@ package edu.psu.compbio.seqcode.projects.akshay.utils;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Genome.ChromosomeInfo;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHitPair;
 import edu.psu.compbio.seqcode.genome.location.Region;
 

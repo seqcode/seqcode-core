@@ -5,7 +5,6 @@ import java.util.regex.*;
 import java.io.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.gsebricks.iterators.SingleIterator;
@@ -25,7 +24,7 @@ public class FastaWriter<X extends Region> implements Sink<X>, Closeable {
         FastaWriter writer = new FastaWriter(System.out);
 		Pattern p = Pattern.compile("(.*):([\\d]+)-([\\d]+)");
         try {
-			Genome genome = Organism.findGenome(args[0]);
+			Genome genome = Genome.findGenome(args[0]);
 			SingleIterator<File> fitr = new SingleIterator<File>(new File(args[1]));
 			Iterator<String> lines = new ExpanderIterator<File,String>(new FileLineExpander(), fitr);
 			while(lines.hasNext()) { 

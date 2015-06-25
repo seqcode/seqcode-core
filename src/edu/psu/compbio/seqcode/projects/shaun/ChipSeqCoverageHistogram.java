@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -49,7 +49,7 @@ public class ChipSeqCoverageHistogram {
 	public static void main(String[] args) {
 		try{
 			ArgParser ap = new ArgParser(args);
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			Pair<Species, Genome> pair = Args.parseGenome(args);
 			
 	        List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
 	        int rL = 36, rE=164, ws=50, wo=25;

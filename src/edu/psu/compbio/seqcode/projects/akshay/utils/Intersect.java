@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Iterator;
 
 import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.ChromosomeInfo;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -253,7 +254,7 @@ public class Intersect {
 			for(int r=0; r< reps.size(); r++){
 				SeqLocator tmpLoc = new SeqLocator(ename, reps.get(r), aname);
 				SeqExpander tmpExp = new SeqExpander(tmpLoc,false);
-				Genome.ChromosomeInfo s = gen.getChrom(Id2Chrom.get(c));
+				ChromosomeInfo s = gen.getChrom(Id2Chrom.get(c));
 				NamedRegion chrom = new NamedRegion(gen,Id2Chrom.get(c),1,s.getLength(),Id2Chrom.get(c));
 				//System.out.println(this.gen.getChromID(Id2Chrom.get(c))+"\t"+Id2Chrom.get(c));
 				Iterator<SeqHitPair> itr = tmpExp.getPairs(chrom);

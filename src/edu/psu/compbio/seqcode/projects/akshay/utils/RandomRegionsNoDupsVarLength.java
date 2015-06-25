@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.RepeatMaskedRegion;
@@ -71,8 +71,8 @@ public class RandomRegionsNoDupsVarLength {
 		    int maxL = Args.parseInteger(args, "maxlen", 1000);
 	        
 	        try{
-	        	Organism org = Organism.getOrganism(species);
-	        	Genome g = org.getGenome(genome);
+	        	Species org = Species.getSpecies(species);
+	        	Genome g = Genome.findGenome(genome);
 	        	
 	        	
 	     

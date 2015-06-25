@@ -10,7 +10,9 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.types.*;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Mapper;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
+import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.FASTAStream;
 
 /** 
@@ -94,7 +96,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
             
         }
         if (chromseq == null) {
-            java.sql.Connection cxn = DatabaseFactory.getConnection("core");
+            java.sql.Connection cxn = DatabaseConnectionManager.getConnection("core");
             PreparedStatement ps = cxn.prepareStatement("select sequence from chromsequence where id = ?");
             ps.setInt(1,chromid);
             ResultSet rs = ps.executeQuery();
@@ -103,7 +105,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
             }   
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         }
         if (chromseq == null) {
             return;
@@ -142,7 +144,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
 	            }
 	            if (result == null) {
 	                java.sql.Connection cxn =
-	                DatabaseFactory.getConnection("core");
+	                DatabaseConnectionManager.getConnection("core");
 	                cxn.setAutoCommit(false);
 	                PreparedStatement ps;
 	                //1-based version (mysql substr is 1-based)
@@ -158,7 +160,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
 	                rs.close();
 	                ps.close();
 	                cxn.commit();
-	                DatabaseFactory.freeConnection(cxn);
+	                if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
 	            }
 	        } catch (SQLException ex) {
 	            ex.printStackTrace();           

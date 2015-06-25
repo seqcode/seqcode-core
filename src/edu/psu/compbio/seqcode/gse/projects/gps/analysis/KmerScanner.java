@@ -14,7 +14,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
@@ -112,11 +112,11 @@ public class KmerScanner {
 		System.out.println("KCM loading:\t"+CommonUtils.timeElapsed(t1));
 		// genome info and binding events
 		Genome genome=null;
-		Organism org=null;
+		Species org=null;
 		ArgParser ap = new ArgParser(args);
 		Set<String> flags = Args.parseFlags(args);		
 	    try {
-	      Pair<Organism, Genome> pair = Args.parseGenome(args);
+	      Pair<Species, Genome> pair = Args.parseGenome(args);
 	      if(pair==null){
 	        System.err.println("No genome provided; provide a Gifford lab DB genome name.");;System.exit(1);
 	      }else{

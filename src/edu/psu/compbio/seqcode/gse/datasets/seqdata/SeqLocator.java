@@ -1,46 +1,33 @@
-/*
- * Created as ChipSeqLocator on Jan 11, 2008
- */
 package edu.psu.compbio.seqcode.gse.datasets.seqdata;
 
-import java.sql.SQLException;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Iterator;
-
-import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 /**
  * @author tdanford
  * @author mahony
  * 
- * SeqLocator names a subset of the available SeqAlignments (rows from the 
- * seqalignment table), which satisfy the following conditions:
+ * SeqLocator describes a subset of SeqAlignments (rows from the 
+ * seqalignment table) from a single SeqExpt, which satisfy the following conditions:
  *  
- * (1) the seqexpt.name matches the given exptName in the locator
- * (2) only the alignments with the given alignName are indicated
- * (3) if the locator's 'reps' field is non-empty, then only those replicates whose
+ * (1) all SeqAlignments share the same name (i.e. are from the same aligner)
+ * (2) if the locator's 'reps' field is non-empty, then only those replicates whose
  *     names appear in that set are indicated.
+ *     
+ * Created as ChipSeqLocator on Jan 11, 2008
  */
 public class SeqLocator implements Comparable<SeqLocator> {
 
-    private String exptName, alignName;
+    private String exptName;
+    private String alignName;
     // The reps field has a particular semantics -- if it contains any entries, then 
     // the locator designates *only* those replicates (of the named experiment) 
     // that have the given alignment name too.
     // On the other hand, if "reps" is empty, then the locator designates *all* 
     // available replicates for which the given alignment name is valid.
-    private Set<String> reps;
-    
-    
-    public SeqLocator(String ename, String aname) {
-        exptName = ename;
-        alignName = aname;
-        reps = new TreeSet<String>();
-    }
+    private Set<String> reps; 
     
     public SeqLocator(String ename, String rname, String aname) {
         exptName = ename;
@@ -66,8 +53,7 @@ public class SeqLocator implements Comparable<SeqLocator> {
     
     public String getExptName() { return exptName; }
     public String getAlignName() { return alignName; }
-    
-    public Collection<String> getReplicates() { return reps; }
+    public Collection<String> getReplicates() { return reps; }    
     
     public String getReplicateString() {
         if(reps.isEmpty()) { return "all"; }
@@ -127,31 +113,5 @@ public class SeqLocator implements Comparable<SeqLocator> {
         }
         if(!alignName.equals(loc.alignName)) { return false; }
         return true;
-    }
-    
-    public Collection<SeqAlignment> loadAlignments(SeqDataLoader loader, Genome genome) 
-    	throws SQLException, NotFoundException {
-    	
-    	LinkedList<SeqAlignment> alignments = new LinkedList<SeqAlignment>();
-
-        if(getReplicates().isEmpty()) { 
-        	Collection<SeqExpt> expts = loader.loadExperiments(getExptName());
-        	for(SeqExpt expt : expts) { 
-        		SeqAlignment alignment = loader.loadAlignment(expt, getAlignName(), genome);
-        		if(alignment != null) { 
-        			alignments.add(alignment);
-        		}
-        	}
-        } else {
-        	for(String repName : getReplicates()) { 
-        		SeqExpt expt = loader.loadExperiment(getExptName(), repName);
-        		SeqAlignment alignment = loader.loadAlignment(expt, getAlignName(), genome);
-        		if(alignment != null) { 
-        			alignments.add(alignment);
-        		}
-        	}
-        }
-
-        return alignments;
     }
 }

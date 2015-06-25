@@ -7,7 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSParser;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSPeak;
@@ -20,7 +20,7 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 public class GPSQuickStats{
   
   private Genome genome;
-  private Organism org;
+  private Species org;
   private String[] args;
   private WeightMatrix motif = null;
   private double motifThreshold;
@@ -38,7 +38,7 @@ public class GPSQuickStats{
     ArgParser ap = new ArgParser(args);
     
     try {
-      Pair<Organism, Genome> pair = Args.parseGenome(args);
+      Pair<Species, Genome> pair = Args.parseGenome(args);
       if(pair==null){
         //Make fake genome... chr lengths provided???
         if(ap.hasKey("geninfo")){

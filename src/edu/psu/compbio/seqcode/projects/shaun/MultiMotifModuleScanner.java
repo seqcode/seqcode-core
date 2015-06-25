@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -78,7 +78,7 @@ public class MultiMotifModuleScanner {
             return;
         }
         try {
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			Pair<Species, Genome> pair = Args.parseGenome(args);
 			Genome currgen = pair.cdr();
 			Collection<String> primMotifFiles = Args.parseStrings(args, "primmotif");
 			Collection<String> secMotifFiles = Args.parseStrings(args, "secmotif");

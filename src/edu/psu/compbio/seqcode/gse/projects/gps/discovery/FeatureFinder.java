@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.projects.gps.features.Feature;
@@ -55,7 +55,7 @@ public abstract class FeatureFinder {
 			ArgParser ap = new ArgParser(args);
 			//Load genome
 			if(ap.hasKey("species")){
-				Pair<Organism, Genome> pair = Args.parseGenome(args);
+				Pair<Species, Genome> pair = Args.parseGenome(args);
 				if(pair != null){
 					gen = pair.cdr();
 					dbconnected=true;
@@ -84,8 +84,8 @@ public abstract class FeatureFinder {
 			Collection<String> dbgenes = Args.parseStrings(args,"dbgenes");
 			//Special case default
 			if(dbgenes.size()==0 && tfiles.size()==0 && dbconnected){
-			    String geneSource = (gen.getSpecies().equals("Saccharomyces cerevisiae") ||
-						 gen.getSpecies().equals("Mycobacterium tuberculosis") )? 
+			    String geneSource = (gen.getSpeciesName().equals("Saccharomyces cerevisiae") ||
+						 gen.getSpeciesName().equals("Mycobacterium tuberculosis") )? 
 				"sgdGene":"refGene";
 			    geneAnnotations.add(new AnnotationLoader(gen, geneSource,geneSource, maxAnnotDistance, annotOverlapOnly));
 			}

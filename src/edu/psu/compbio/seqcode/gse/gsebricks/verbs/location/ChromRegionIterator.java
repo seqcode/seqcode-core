@@ -6,6 +6,7 @@ package edu.psu.compbio.seqcode.gse.gsebricks.verbs.location;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.location.ChromosomeInfo;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 
 /**
@@ -26,7 +27,7 @@ public class ChromRegionIterator implements Iterator<NamedRegion> {
         index = 0;
         
         for(String chromName : genome.getChromList()) { 
-            Genome.ChromosomeInfo s = genome.getChrom(chromName);
+            ChromosomeInfo s = genome.getChrom(chromName);
             NamedRegion region = new NamedRegion(genome, chromName, 1, s.getLength() , chromName);
             regions.add(region);
         }

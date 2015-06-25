@@ -6,7 +6,7 @@ import java.util.List;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 /**
- * ExptDescriptor: simple class for describing an experiment to be loaded
+ * BayesmentsExptDescriptor: simple class for describing an experiment to be loaded
  * @author Shaun Mahony
  * @version	%I%, %G%
  */
@@ -21,7 +21,7 @@ public class ExptDescriptor {
 	public float perBaseMaxReads = -1;
 	
 	/**
-	 * ExptDescriptor constructor
+	 * BayesmentsExptDescriptor constructor
 	 * @param type : (optional) Experiment type (CHIPSEQ/CHIPEXO/INPUT/DNASESEQ/RNASEQ/etc) [String]
 	 * @param targ : (optional) Target of the assay; e.g. protein name for ChIP experiments [String]
 	 * @param cond : Experiment condition name [String]
@@ -41,7 +41,7 @@ public class ExptDescriptor {
 	}
 	
 	/**
-	 * ExptDescriptor constructor
+	 * BayesmentsExptDescriptor constructor
 	 * @param type : (optional) Experiment type (CHIPSEQ/CHIPEXO/INPUT/DNASESEQ/RNASEQ/etc) [String]
 	 * @param targ : (optional) Target of the assay; e.g. protein name for ChIP experiments [String]
 	 * @param cond : Experiment condition name [String]

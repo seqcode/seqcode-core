@@ -92,11 +92,11 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 			collabExptID = editExpts.get(0).getCollabID();
 			
 			try{
-				users = new ArrayList(seqLoader.getSeqDataUsers());
+				users = new ArrayList(seqLoader.getMetadataLoader().loadAllSeqDataUsers(false));
 				for(SeqDataUser u : users)
 					sharedUsers.put(u.getName(), false);
 				for(SeqExpt e : editExpts)
-					editAligns.addAll(seqLoader.loadAllAlignments(e));
+					editAligns.addAll(seqLoader.loadAlignmentsBySeqExpt(e));
 				for(String us : editAligns.get(0).getPermissions())
 					sharedUsers.put(us, true);
 				
@@ -187,7 +187,7 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 		try {
     		ArrayList<String> types = new ArrayList<String>();
     		types.add("");
-        	for(ExptType e : seqLoader.getExptTypes())
+        	for(ExptType e : seqLoader.getMetadataLoader().loadAllExptTypes(false))
 				types.add(e.getName());
 			Collections.sort(types);
 			jcbType = new JComboBox(types.toArray());
@@ -334,18 +334,18 @@ public class SeqDataEditEntryForm extends JFrame implements ActionListener {
 			
 			System.err.println("UPDATING:\t"+updateName+"\t"+updateExptType+"\t"+updateLab+"\t"+updateCond+"\t"+updateTarget+"\t"+updateCell+"\t"+updateRep+"\t"+updatePubSrc+"\t"+updatePubID+"\t"+updateCollabExptID+"\t"+expt.getDBID());
 			try {
-				seqModifier.updateSeqExpt(expt, updateExptType, updateLab, updateCond, updateTarget, updateCell, updateRep, updatePubSrc, updatePubID, updateCollabExptID);
+				seqModifier.updateSeqExpt(seqLoader.getMetadataLoader(), expt, updateExptType, updateLab, updateCond, updateTarget, updateCell, updateRep, updatePubSrc, updatePubID, updateCollabExptID);
 			} catch (DuplicateDatabaseEntryException e) {
 				System.err.println("Cannot update "+expt.getName()+";"+expt.getReplicate()+" to "+updateName+";"+updateRep+" as this will result in a duplicate SeqExpt key.");
 				JOptionPane.showMessageDialog(null, "Cannot update "+expt.getName()+";"+expt.getReplicate()+" to "+updateName+";"+updateRep+" as this will result in a duplicate SeqExpt key.", "Error: attempted duplicate", JOptionPane.INFORMATION_MESSAGE);
 			}
 			
 			//Update the permissions of each alignment
-            for(SeqAlignment align : seqLoader.loadAllAlignments(expt)){
+            for(SeqAlignment align : seqLoader.loadAlignmentsBySeqExpt(expt)){
             	seqModifier.updateSeqAlignmentPermissions(align, newPermissions);
             }
 			
-            for(SeqAlignment align : seqLoader.loadAllAlignments(expt)){
+            for(SeqAlignment align : seqLoader.loadAlignmentsBySeqExpt(expt)){
 				//System.out.println(align.getDBID()+"\t"+newPermissions);
 				String[] princs = new String[users.size()];
 				String[] ops = new String[users.size()];

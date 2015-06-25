@@ -14,7 +14,7 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
@@ -33,7 +33,7 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
  * @version	%I%, %G%
  */
 public class WIGExporter {
-	private Organism org;
+	private Species org;
 	private Genome gen;
 	//protected DeepSeqExpt expt;
 	private Sample sample;
@@ -81,7 +81,7 @@ public class WIGExporter {
 		ArgParser ap = new ArgParser(args);
 		try {
 			if(ap.hasKey("species")){
-				Pair<Organism, Genome> pair = Args.parseGenome(args);
+				Pair<Species, Genome> pair = Args.parseGenome(args);
 				if(pair != null){
 					gen = pair.cdr();
 					dbconnected=true;

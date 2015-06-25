@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -32,7 +32,7 @@ import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 public class MotifDimerTester {
-	private Organism org;
+	private Species org;
 	private Genome gen;
 	private WeightMatrix motifA;
 	private WeightMatrix motifB;
@@ -138,8 +138,8 @@ public class MotifDimerTester {
         ArrayList<String> lines= new ArrayList<String>();;
 		try {
 			//Load genome
-			Organism currorg = Organism.getOrganism(species);
-			Genome currgen = currorg.getGenome(genome);
+			Species currorg = Species.getSpecies(species);
+			Genome currgen = new Genome(currorg, genome);
 			
 			//Load motifs
 			WeightMatrix matrixA = null;
@@ -222,7 +222,7 @@ public class MotifDimerTester {
 	}
 	
 	//Constructor 
-	public MotifDimerTester(Organism o, Genome g, WeightMatrix wmA, WeightMatrix wmB, double minA, double minB){
+	public MotifDimerTester(Species o, Genome g, WeightMatrix wmA, WeightMatrix wmB, double minA, double minB){
 		org=o;
 		gen=g;
 		motifA= wmA;

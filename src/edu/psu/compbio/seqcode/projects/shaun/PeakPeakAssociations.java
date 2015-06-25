@@ -18,7 +18,7 @@ import cern.jet.random.Normal;
 import cern.jet.random.engine.DRand;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -35,7 +35,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
  */
 public class PeakPeakAssociations {
 
-	private Organism org=null;
+	private Species org=null;
 	private Genome gen =null;
 	private ArrayList<Region> posSet;
 	private ArrayList<Point> posPeaks;
@@ -97,8 +97,8 @@ public class PeakPeakAssociations {
         
         
         try {
-			Organism currorg = Organism.getOrganism(species);
-			Genome currgen = currorg.getGenome(genome);
+			Species currorg = Species.getSpecies(species);
+			Genome currgen = new Genome(currorg, genome);
         
 			//initialize
 			PeakPeakAssociations analyzer = new PeakPeakAssociations(currorg, currgen);
@@ -136,7 +136,7 @@ public class PeakPeakAssociations {
 		}
 	}
 	
-	public PeakPeakAssociations(Organism o, Genome g){
+	public PeakPeakAssociations(Species o, Genome g){
 		org = o;
 		gen=g;
 	}

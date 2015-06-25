@@ -4,7 +4,7 @@ import java.util.*;
 import java.sql.*;
 import java.text.ParseException;
 
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.datasets.*;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.CountsBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
@@ -80,11 +80,11 @@ public class FreqMatrixImport {
             System.err.println("Must supply a --wmfile"); System.exit(1);
         }
         if(backfile==null && genome!=null){
-          back = new MarkovBackgroundModel(CountsBackgroundModel.modelFromWholeGenome(Organism.findGenome(genome)));        	
+          back = new MarkovBackgroundModel(CountsBackgroundModel.modelFromWholeGenome(Genome.findGenome(genome)));        	
         }else if(backfile==null){
         	System.err.println("Must supply --backfile or --genome"); System.exit(1);
         }else{
-        	back = BackgroundModelIO.parseMarkovBackgroundModel(backfile, Organism.findGenome(genome));        	
+        	back = BackgroundModelIO.parseMarkovBackgroundModel(backfile, Genome.findGenome(genome));        	
         }
         try {
             if(fmname==null) { 

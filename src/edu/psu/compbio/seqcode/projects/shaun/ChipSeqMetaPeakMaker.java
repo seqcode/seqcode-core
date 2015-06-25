@@ -9,9 +9,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
@@ -25,7 +27,7 @@ import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
 
 public class ChipSeqMetaPeakMaker {
 
-	private Organism org;
+	private Species org;
 	private Genome gen;
 	private ArrayList<Region> regions;
 	private ArrayList<Point> peaks;
@@ -35,7 +37,7 @@ public class ChipSeqMetaPeakMaker {
 	//main
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		int readLen=26, readExt=0;
-		Pair<Organism,Genome> pair = Args.parseGenome(args);
+		Pair<Species,Genome> pair = Args.parseGenome(args);
 		if(pair==null){return;}
 		List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
 		String peaks = Args.parseString(args,"peaks","error");
@@ -49,7 +51,7 @@ public class ChipSeqMetaPeakMaker {
 	}
 	
 	//Constructor
-	public ChipSeqMetaPeakMaker(Organism o, Genome g, int histwindow, int numBins){
+	public ChipSeqMetaPeakMaker(Species o, Genome g, int histwindow, int numBins){
 		org=o;
 		gen =g;
 		regions = new ArrayList<Region>();
@@ -90,8 +92,10 @@ public class ChipSeqMetaPeakMaker {
 	}
 	public RealValuedHistogram execute(String [][] exp, double readLength, double readExtension){
 		ArrayList<SeqLocator> locs = new ArrayList<SeqLocator>();
-		for(String[] e : exp)
-			locs.add(new SeqLocator(e[0], e[1]));
+		Set<String> reps = new TreeSet<String>();
+		for(String[] e : exp){
+			locs.add(new SeqLocator(e[0], reps, e[1]));					
+		}
 		return(execute(locs, readLength, readExtension));
 	}
 	public RealValuedHistogram execute(List<SeqLocator> locs, double readLength, double readExtension){

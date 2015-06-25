@@ -9,7 +9,7 @@ import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataModifier;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 
 /**
  * Updates the hit counts and weights stored in the db.
@@ -21,7 +21,7 @@ public class UpdateHitCounts {
 	public static void main(String args[]) throws SQLException, NotFoundException, IOException {
 		ArgParser ap = new ArgParser(args);
         if(ap.hasKey("id")) { 
-	        java.sql.Connection cxn = DatabaseFactory.getConnection("seqdata");
+	        java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
 	        cxn.setAutoCommit(false);
 	        Integer id = Args.parseInteger(args,"id", -1);
 	        

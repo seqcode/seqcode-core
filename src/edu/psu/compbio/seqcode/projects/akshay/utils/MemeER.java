@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -258,7 +258,7 @@ public class MemeER {
 			
 			Genome gen;
 			if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
-				Pair<Organism, Genome> orggen = Args.parseGenome(args);
+				Pair<Species, Genome> orggen = Args.parseGenome(args);
 				gen = orggen.cdr();
 			} 
 			else{

@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 /**
  *  Generator that returns StrandedRegion objects from the specified
@@ -36,7 +36,7 @@ public class StrandedRegionGenerator<X extends Region> implements Expander<X,Str
     public Iterator<StrandedRegion> execute(X region) {
         try {
             java.sql.Connection cxn =
-                genome.getUcscConnection();
+                genome.getAnnotationDBConnection();
             PreparedStatement ps = cxn.prepareStatement("select strand, chromStart, chromEnd from " + tablename + " where chrom = ? and " +
                                                         "((chromStart <= ? and chromEnd >= ?) or (chromStart >= ? and chromStart <= ?)) order by chromStart");
             String chr = region.getChrom();
@@ -60,7 +60,7 @@ public class StrandedRegionGenerator<X extends Region> implements Expander<X,Str
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            cxn.close();
             return results.iterator();
         } catch (SQLException ex) {
             throw new DatabaseException("Couldn't get UCSC RefGenes",ex);

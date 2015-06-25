@@ -9,7 +9,7 @@ import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Sequences;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
 
 /**
  * Class that performs  MAP assignment using the parameters of the trained Bayeseian network using the EM framework
@@ -30,7 +30,7 @@ public class MAPassignment {
 	//protected GenomicLocations trainingdata;
 	//protected Sequences seqs;
 	protected EMtrain model;
-	protected Config conf;
+	protected BayesmentsConfig conf;
 	protected boolean inSeqMode;
 	protected int N;
 	protected int F;
@@ -53,7 +53,7 @@ public class MAPassignment {
 	 * @param model
 	 * @param conf
 	 */
-	public MAPassignment(EMtrain model, Config conf, List<Point> locations, int nChromStates, int nFacStates) {
+	public MAPassignment(EMtrain model, BayesmentsConfig conf, List<Point> locations, int nChromStates, int nFacStates) {
 		this.model = model;
 		this.N = model.getNumTrainingEgs();
 		this.C = model.getnumChromConds();

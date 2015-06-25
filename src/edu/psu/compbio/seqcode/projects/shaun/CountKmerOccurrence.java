@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
@@ -57,7 +57,7 @@ public class CountKmerOccurrence {
 	private static int B=4;
 	private static int bitsInType = 64;
 	private static int k=26;
-	private static Organism org;
+	private static Species org;
 	private static Genome gen;
 	private static String genomeName;
 	private ArrayList <String> chrNameLookup; 
@@ -112,8 +112,8 @@ public class CountKmerOccurrence {
 			}
 			
 			try {
-				org = Organism.getOrganism(organism);
-				gen = org.getGenome(genome);						
+				org = Species.getSpecies(organism);
+				gen = new Genome(org, genome);						
 			} catch (NotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

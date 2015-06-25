@@ -15,7 +15,6 @@ public class Printexpttable {
 		for(String[] command : map.values()){
 			Pullexpttable gexp = new Pullexpttable(command);
 			gexp.executeSQLExptCommand();
-			gexp.getTableFromRS();
 			gexp.printTable();
 		}
 	}

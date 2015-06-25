@@ -26,8 +26,8 @@ public class GuessControlExpt {
     public static void main(String args[]) throws Exception {
         genome = Args.parseGenome(args).cdr();
         List<SeqLocator> locators = Args.parseSeqExpt(args);
-        loader = new SeqDataLoader(false);
-        core = new MetadataLoader();
+        loader = new SeqDataLoader(false, true);
+        core = loader.getMetadataLoader();
         controlTypeNames = new ArrayList<String>();
         controlTypeNames.add("CONTROL");
         controlTypeNames.add("INPUT");
@@ -36,7 +36,7 @@ public class GuessControlExpt {
         boolean strict = Args.parseFlags(args).contains("strict");
 
         for (String f : controlTypeNames) {
-            ExptType type = core.findExptType(f);
+            ExptType type = core.loadExptType(f, false, false);
             if (type != null) {
                 controlTypeIDs.add(type.getDBID());
             }

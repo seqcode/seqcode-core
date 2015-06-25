@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.genome.tools;
 
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
@@ -17,11 +17,11 @@ public class AddSpecies {
             System.exit(1);
         }
         try {
-            Organism o = new Organism(species);
+            Species o = new Species(species);
             System.err.println("Species " + species + " already exists");
             System.exit(2);
         } catch (NotFoundException e) {
-            Organism.insertOrganism(species);
+            Species.insertSpecies(species);
         }
     }
 

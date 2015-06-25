@@ -14,7 +14,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.FASTALoader;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
@@ -115,7 +115,7 @@ public class SequenceAlignmentFigure {
 			List<String> seqs = null;
     	
         	if(ap.hasKey("species") && ap.hasKey("gen") && (ap.hasKey("peaks") || ap.hasKey("bed"))){
-	        	Pair<Organism, Genome> pair = Args.parseGenome(args);
+	        	Pair<Species, Genome> pair = Args.parseGenome(args);
 	        	Genome currgen = pair.cdr();
 	        	String genomeSequencePath = ap.hasKey("gen") ? ap.getKeyValue("gen") : null;
         		SequenceGenerator seqgen = new SequenceGenerator(currgen);

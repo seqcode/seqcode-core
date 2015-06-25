@@ -3,11 +3,11 @@ package edu.psu.compbio.seqcode.gse.tools.motifs;
 import java.util.*;
 import java.sql.*;
 
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 
 public class WeightMatrixSearch {
@@ -50,9 +50,9 @@ public class WeightMatrixSearch {
             System.exit(1);
         }
         try {
-            Organism o = new Organism(species);
-            java.sql.Connection cxn =DatabaseFactory.getConnection("annotations");
-            java.sql.Connection corecxn =DatabaseFactory.getConnection("core");
+            Species o = new Species(species);
+            java.sql.Connection cxn =DatabaseConnectionManager.getConnection("annotations");
+            java.sql.Connection corecxn =DatabaseConnectionManager.getConnection("core");
             PreparedStatement namestmt = cxn.prepareStatement(getmatrixname);
             PreparedStatement speciesstmt = corecxn.prepareStatement("select name from species where id = ?");
             
@@ -105,7 +105,8 @@ public class WeightMatrixSearch {
                 }
             }
             namestmt.close();
-            DatabaseFactory.freeConnection(cxn);
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
+            if(corecxn!=null) try {corecxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -123,7 +124,7 @@ public class WeightMatrixSearch {
     public static Map<WeightMatrix,Double> search(WeightMatrix query, double cutoff, WMComparator comp) {
         HashMap<WeightMatrix,Double> results = new HashMap<WeightMatrix,Double>();
         try {
-            java.sql.Connection cxn =DatabaseFactory.getConnection("annotations");
+            java.sql.Connection cxn =DatabaseConnectionManager.getConnection("annotations");
             PreparedStatement stmt = cxn.prepareStatement(getmatrices);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -141,7 +142,7 @@ public class WeightMatrixSearch {
             }
             rs.close();
             stmt.close();
-            DatabaseFactory.freeConnection(cxn);
+            if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
         } catch (SQLException ex) {
             throw new DatabaseException(ex.toString(),ex);
         } catch (UnknownRoleException ex) {

@@ -3,7 +3,6 @@ package edu.psu.compbio.seqcode.projects.akshay.bayesments.utils;
 import java.io.File;
 
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
 
 /**
  * Utility class that contains some useful static methods

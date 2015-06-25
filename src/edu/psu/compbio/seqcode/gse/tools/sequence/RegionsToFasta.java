@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedStrandedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
@@ -27,8 +27,8 @@ public class RegionsToFasta {
         try {
         	String outfile = Args.parseString(args, "outfile", "");
         	String infile = Args.parseString(args, "infile", "");
-            Pair<Organism,Genome> pair = Args.parseGenome(args);
-            Organism organism = pair.car();
+            Pair<Species,Genome> pair = Args.parseGenome(args);
+            Species organism = pair.car();
             Genome genome = pair.cdr();
             FastaWriter writer;
             if (!outfile.equals("")) {

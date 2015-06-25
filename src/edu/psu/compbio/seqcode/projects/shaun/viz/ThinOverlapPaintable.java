@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -24,7 +26,6 @@ import java.io.IOException;
 
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
@@ -40,13 +41,14 @@ public class ThinOverlapPaintable extends AbstractPaintable {
 	
 	public static void main(String[] args) { 
 		try {
-			Genome g = Organism.findGenome("mm8");
+			Genome g = Genome.findGenome("mm8");
 
 			Region r = new Region(g, "6", 52020000, 52050000);
 
 			String chrom = r.getChrom();
 						
-			SeqLocator loc = new SeqLocator("PPG Day2+8h RAR HBG3", "bowtie_unique");
+			Set<String> reps = new TreeSet<String>();
+			SeqLocator loc = new SeqLocator("PPG Day2+8h RAR HBG3", reps, "bowtie_unique");
 
 			LinkedList<Region> highlights = new LinkedList<Region>();
 			highlights.add(new Region(g, chrom, 52030000, 52040000));

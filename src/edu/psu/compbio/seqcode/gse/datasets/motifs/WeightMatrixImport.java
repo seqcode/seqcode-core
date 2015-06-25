@@ -6,11 +6,10 @@ import java.util.regex.*;
 import java.sql.*;
 import java.text.ParseException;
 
-import edu.psu.compbio.seqcode.genome.Organism;
-import edu.psu.compbio.seqcode.gse.datasets.*;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.utils.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
-import edu.psu.compbio.seqcode.gse.utils.database.DatabaseFactory;
 import edu.psu.compbio.seqcode.gse.utils.database.UnknownRoleException;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.PWMParser;
 
@@ -95,7 +94,7 @@ public class WeightMatrixImport {
     public static int insertMatrixIntoDB(WeightMatrix matrix) 
         throws SQLException, NotFoundException {
         
-        java.sql.Connection cxn =DatabaseFactory.getConnection("annotations");
+        java.sql.Connection cxn =DatabaseConnectionManager.getConnection("annotations");
         int wmid = -1;
         PreparedStatement exists = cxn.prepareStatement("select id from weightmatrix where species = ? and name = ? and version = ? and type = ?");
         exists.setInt(1,matrix.speciesid);
@@ -176,7 +175,7 @@ public class WeightMatrixImport {
         }           
         insertcol.close();
         cxn.commit();
-        DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role annotations", ex); }
         return wmid;
     }       
     
@@ -199,7 +198,7 @@ public class WeightMatrixImport {
     Vector<float[]> arrays = new Vector<float[]>();
 
     // Read in Transfac format first
-    Organism currentSpecies = null;
+    Species currentSpecies = null;
     String name = null, id = null, accession = null;
     Pattern speciesPattern = Pattern.compile(".*Species:.*, (.*)\\.");
     while ((line = br.readLine()) != null) {
@@ -227,7 +226,7 @@ public class WeightMatrixImport {
           if (matcher.matches()) {
             String specname = matcher.group(1);
             try {
-              currentSpecies = new Organism(specname);
+              currentSpecies = new Species(specname);
               // System.err.println("Got species " + specname);
             }
             catch (NotFoundException e) {
@@ -323,7 +322,7 @@ public class WeightMatrixImport {
         List<WeightMatrix> matrices = null;
         System.err.println("type is " + wmtype+ " and file is " + wmfile + " and version is " + wmversion);
         if(wmtype.matches(".*TAMO.*")) { 
-            int speciesid = (new Organism(species)).getDBID();
+            int speciesid = (new Species(species)).getDBID();
             matrices = PWMParser.readTamoMatrices(wmfile);
             for(WeightMatrix matrix : matrices) { 
                 matrix.speciesid = speciesid;
@@ -376,7 +375,7 @@ public class WeightMatrixImport {
         matrix.name = wmname;
         matrix.version = wmversion;
         matrix.type = wmtype;
-        matrix.speciesid = (new Organism(species)).getDBID();
+        matrix.speciesid = (new Species(species)).getDBID();
         return insertMatrixIntoDB(matrix);
     }
     
@@ -408,7 +407,7 @@ public class WeightMatrixImport {
     matrix.name = wmname;
     matrix.version = wmversion;
     matrix.type = wmtype;
-    matrix.speciesid = (new Organism(species)).getDBID();
+    matrix.speciesid = (new Species(species)).getDBID();
     return insertMatrixIntoDB(matrix);
  }
     /**

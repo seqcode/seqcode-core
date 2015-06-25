@@ -7,12 +7,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.ExonicGene;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.Point;
@@ -44,7 +46,7 @@ public class MultidataSpatialSetup {
 	private int rstop = 0;
 	private String chr;
 	private Genome gen;
-	private Organism org;
+	private Species org;
 	
 
 	public static void main(String[] args) {
@@ -62,8 +64,8 @@ public class MultidataSpatialSetup {
 	public MultidataSpatialSetup(String df){
 		inputFile = df;
 		try {
-			org = Organism.getOrganism("Mus musculus");
-			gen = org.getGenome("mm8");
+			org = Species.getSpecies("Mus musculus");
+			gen = Genome.findGenome("mm8");
 			
 			//Load the file contents
 			loadFile(inputFile);
@@ -146,7 +148,8 @@ public class MultidataSpatialSetup {
 						Region site = new Region(gen, tokens[3], new Integer(tokens[4]).intValue(), new Integer(tokens[5]).intValue());
 						lits.add(site);
 					}else if(tokens[0].equals("Expt")){//Experiments
-						SeqLocator l = new SeqLocator(tokens[2], tokens[3]);
+						Set<String> reps = new TreeSet<String>();
+						SeqLocator l = new SeqLocator(tokens[2], reps, tokens[3]);
 						locs.put(tokens[1], l);
 					}
 					

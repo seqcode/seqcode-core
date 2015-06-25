@@ -20,12 +20,12 @@ public class Sequence {
      */
     public static String getInsertSQL(Connection c,
                                       String seqname) {
-        if (DatabaseFactory.isOracle(c)) {
+        if (DatabaseConnectionManager.isOracle(c)) {
             return seqname + ".nextval";
-        } else if (DatabaseFactory.isMySQL(c)) {
+        } else if (DatabaseConnectionManager.isMySQL(c)) {
             return "NULL";
         } else {
-            throw new IllegalArgumentException("Unknown database type " + DatabaseFactory.getType(c));
+            throw new IllegalArgumentException("Unknown database type " + DatabaseConnectionManager.getType(c));
         }
     }
     
@@ -36,12 +36,12 @@ public class Sequence {
      * same as in the call to <code>getInsertSQL</code>.
      */
     public static String getLastSQL(Connection c, String seqname) { 
-        if (DatabaseFactory.isOracle(c)) {
+        if (DatabaseConnectionManager.isOracle(c)) {
             return seqname + ".currval";
-        } else if (DatabaseFactory.isMySQL(c)) {
+        } else if (DatabaseConnectionManager.isMySQL(c)) {
             return "last_insert_id()";
         } else {
-            throw new IllegalArgumentException("Unknown database type " + DatabaseFactory.getType(c));
+            throw new IllegalArgumentException("Unknown database type " + DatabaseConnectionManager.getType(c));
         }
     }
     
@@ -53,12 +53,12 @@ public class Sequence {
      */
     public static String getLastSQLStatement(Connection c,
                                              String seqname) {
-        if (DatabaseFactory.isOracle(c)) {
+        if (DatabaseConnectionManager.isOracle(c)) {
             return "select " + seqname + ".currval from dual";
-        } else if (DatabaseFactory.isMySQL(c)) {
+        } else if (DatabaseConnectionManager.isMySQL(c)) {
             return "select last_insert_id()";
         } else {
-            throw new IllegalArgumentException("Unknown database type " + DatabaseFactory.getType(c));
+            throw new IllegalArgumentException("Unknown database type " + DatabaseConnectionManager.getType(c));
         }
     }
 }

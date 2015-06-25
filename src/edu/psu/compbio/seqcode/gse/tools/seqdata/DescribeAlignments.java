@@ -7,7 +7,7 @@ import java.io.IOException;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 
 /**
  * Returns the SeqExpt and SeqAlignment data associated with the alignment IDs specified on the command line.
@@ -18,7 +18,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.*;
 public class DescribeAlignments {
     public static void main(String args[]) throws SQLException, NotFoundException, IOException {
         
-        java.sql.Connection cxn = DatabaseFactory.getConnection("seqdata");
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
         cxn.setAutoCommit(false);
         Collection<Integer> ids = Args.parseIntegers(args,"id");
         

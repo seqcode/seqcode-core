@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -12,7 +12,7 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RefGeneGenerator;
 
 public class SeqDataLikelihoodRatio {
-	private Organism currentOrg;
+	private Species currentOrg;
 	private Genome currentGen;
 	private SeqDataHandler ipChannel;
 	private SeqDataHandler backChannel;
@@ -31,7 +31,7 @@ public class SeqDataLikelihoodRatio {
 			currentOrg = ipChannel.getOrg();
 			currentGen = ipChannel.getGenome();
 		}else{
-			System.err.println("Organism/genome mismatch");System.exit(0);
+			System.err.println("Species/genome mismatch");System.exit(0);
 		}
 		
 		//Initialize the handlers if not already done

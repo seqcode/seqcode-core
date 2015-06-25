@@ -10,7 +10,7 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.core.ExptType;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
@@ -103,7 +103,7 @@ public abstract class GenericEditTablePanel<X> extends JPanel implements Closeab
         
         ArrayList<String> orgs = new ArrayList<String>();
 		orgs.add("");
-		Collection<String> organisms = Organism.getOrganismNames();
+		Collection<String> organisms = Species.getAllSpeciesNames(false);
 		for (String o : organisms) { orgs.add(o); }
 		Collections.sort(orgs);
         speciesCBox = new JComboBox(orgs.toArray());

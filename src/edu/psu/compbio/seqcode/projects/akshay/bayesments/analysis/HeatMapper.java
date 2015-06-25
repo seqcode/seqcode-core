@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import org.tc33.jheatchart.HeatChart;
 
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
 
 public class HeatMapper {
@@ -15,13 +15,13 @@ public class HeatMapper {
 	String Xtitle=null;
 	String Ytitle=null;
 	String[] xlab;
-	Config conf;
+	BayesmentsConfig conf;
 	int nrow;
 	int ncol;
 	String chart_name;
 	
 	
-	public HeatMapper(Config c, double[][] matrix, String Xtitle, String Ytitle, String[] xlab, String chart_name) {
+	public HeatMapper(BayesmentsConfig c, double[][] matrix, String Xtitle, String Ytitle, String[] xlab, String chart_name) {
 		this.matrix = matrix;
 		this.nrow = matrix.length;
 		this.ncol = matrix[0].length;

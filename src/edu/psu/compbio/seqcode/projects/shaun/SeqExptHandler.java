@@ -71,7 +71,7 @@ public class SeqExptHandler {
 
                     for (SeqExpt expt : expts) {
                         Collection<SeqAlignment> aligns;
-                        aligns = seqLoader.loadAllAlignments(expt);
+                        aligns = seqLoader.loadAlignmentsBySeqExpt(expt);
 
                         for (SeqAlignment currentAlign : aligns) {
                             if (currentAlign.getGenome().equals(g)) {
@@ -95,7 +95,7 @@ public class SeqExptHandler {
 
                     SeqAlignment align = null;
                     Collection<SeqAlignment> aligns;
-                    aligns = seqLoader.loadAllAlignments(expt);
+                    aligns = seqLoader.loadAlignmentsBySeqExpt(expt);
 
                     for (SeqAlignment currentAlign : aligns) {
                         if (currentAlign.getGenome().equals(g)) {
@@ -151,7 +151,7 @@ public class SeqExptHandler {
                 List<SeqLocator> locs = new Vector<SeqLocator>();
                 for (SeqExpt expt : expts) {
                     Collection<SeqAlignment> aligns;
-                    aligns = loader.loadAllAlignments(expt);
+                    aligns = loader.loadAlignmentsBySeqExpt(expt);
                     for (SeqAlignment currentAlign : aligns) {
                         if (currentAlign.getGenome().equals(g)) {
             				SeqLocator currentLoc = new SeqLocator(expt.getName(), 
@@ -188,7 +188,7 @@ public class SeqExptHandler {
                 List<SeqLocator> locs = new Vector<SeqLocator>();
                 for (SeqExpt expt : expts) {
                     Collection<SeqAlignment> aligns;
-                    aligns = loader.loadAllAlignments(expt);
+                    aligns = loader.loadAlignmentsBySeqExpt(expt);
                     for (SeqAlignment currentAlign : aligns) {
                         if (currentAlign.getGenome().equals(g) && currentAlign.getName().equals(locator.getAlignName())) {
             				SeqLocator currentLoc = new SeqLocator(expt.getName(), 

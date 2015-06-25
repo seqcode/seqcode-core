@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 
 import edu.psu.compbio.seqcode.gse.datasets.core.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
@@ -92,7 +93,6 @@ public class ExportSeqAlignmentList {
 	public void execute(){
 	    try{
 	    	SeqDataLoader loader = new SeqDataLoader();
-	        MetadataLoader core = new MetadataLoader();
 	        HashMap<Integer, DeepSeqEntry> oldList = new HashMap<Integer, DeepSeqEntry>();
 	    
         	FileWriter fw = new FileWriter(outFile);
@@ -144,58 +144,56 @@ public class ExportSeqAlignmentList {
     		}
     		System.out.println(oldList.size()+" entries loaded from old list");
     		
-	        
+    		
 	        //Now load what is actually in the database, filling in missing entries with the old file
     		int count=0;
 	        fw.write("#ReadDBID\tExptType\tLab\tExptCondition\tExptTarget\tCellLine\tReplicate\tAligner\tGenome\tPermissions\tPubSource\tPublicDBID\tCollabExptID\tCollabAlignID\tReadType\tAlignType\tReadLength\tTotalReads\tAlignedHits\tUniquelyAlignedHits\tDBLoadedHits\tDBLoadedWeight\tDBLoadedPairs\tDBLoadedPairWeight\tReadsFile\tAlignDir\tAlignFile\tIDXFile\tAlignParamFile\tExptNotes\tLoadDate\tExptName\n");
-    		for(SeqExpt expt : loader.loadAllExperiments()){
-	        	for(SeqAlignment align : loader.loadAllAlignments(expt)){
-	        		String permissions ="";
-	        		for(String p : align.getPermissions())
-	        			permissions = permissions+p+";";
-	        		if(!oldList.containsKey(align.getDBID()))
-	        			System.out.println("NOTFOUND\t"+align.getDBID()+"\t"+expt.getName()+";"+expt.getReplicate()+";"+align.getName()+";"+align.getGenome().getVersion());
-	        		else{
-	        			fw.write(align.getDBID()+"\t"+
-	        				expt.getExptType().getName()+"\t"+
-	        				expt.getLab().getName()+"\t"+
-	        				expt.getExptCondition().getName()+"\t"+
-	        				expt.getExptTarget().getName()+"\t"+
-	        				expt.getCellLine().getName()+"\t"+
-	        				expt.getReplicate()+"\t"+
-	        				align.getName()+"\t"+
-	        				align.getGenome().getVersion()+"\t"+
-	        				permissions+"\t"+
-	        				expt.getPublicSource()+"\t"+
-	        				expt.getPublicDBID()+"\t"+
-	        				expt.getCollabID()+"\t"+
-	        				align.getCollabAlignID()+"\t"+
-	        				expt.getReadType().getName()+"\t"+
-	        				align.getAlignType().getName()+"\t"+
-	        				expt.getReadLength()+"\t"+
-	        				expt.getNumRead()+"\t"+
-	        				oldList.get(align.getDBID()).alignedhitsStr+"\t"+
-	        				oldList.get(align.getDBID()).uniqalignedhitsStr+"\t"+
-	        				align.getNumHits()+"\t"+
-	        				align.getTotalWeight()+"\t"+
-	        				align.getNumPairs()+"\t"+
-	        				align.getTotalPairWeight()+"\t"+
-	        				(expt.getFQFile().equals("") ? oldList.get(align.getDBID()).fqfile : expt.getFQFile())+"\t"+
-	        				align.getAlignDir()+"\t"+
-	        				align.getAlignFile()+"\t"+
-	        				align.getIDXFile()+"\t"+
-	        				oldList.get(align.getDBID()).paramsfname+"\t"+
-	        				expt.getExptNote()+"\t"+
-	        				oldList.get(align.getDBID()).loaddate+"\t"+
-	        				expt.getName()+";"+expt.getReplicate()+";"+align.getName()+"\n"
-	        				);
-	        			count++;
-	        		}
-	        	}
+    		for(SeqAlignment align : loader.loadAllAlignments()){
+    			SeqExpt expt =align.getExpt(); 
+        		String permissions ="";
+        		for(String p : align.getPermissions())
+        			permissions = permissions+p+";";
+        		if(!oldList.containsKey(align.getDBID()))
+        			System.out.println("NOTFOUND\t"+align.getDBID()+"\t"+expt.getName()+";"+expt.getReplicate()+";"+align.getName()+";"+align.getGenome().getVersion());
+        		else{
+        			fw.write(align.getDBID()+"\t"+
+        				expt.getExptType().getName()+"\t"+
+        				expt.getLab().getName()+"\t"+
+        				expt.getExptCondition().getName()+"\t"+
+        				expt.getExptTarget().getName()+"\t"+
+        				expt.getCellLine().getName()+"\t"+
+        				expt.getReplicate()+"\t"+
+        				align.getName()+"\t"+
+        				align.getGenome().getVersion()+"\t"+
+        				permissions+"\t"+
+        				expt.getPublicSource()+"\t"+
+        				expt.getPublicDBID()+"\t"+
+        				expt.getCollabID()+"\t"+
+        				align.getCollabAlignID()+"\t"+
+        				expt.getReadType().getName()+"\t"+
+        				align.getAlignType().getName()+"\t"+
+        				expt.getReadLength()+"\t"+
+        				expt.getNumRead()+"\t"+
+        				oldList.get(align.getDBID()).alignedhitsStr+"\t"+
+        				oldList.get(align.getDBID()).uniqalignedhitsStr+"\t"+
+        				align.getNumHits()+"\t"+
+        				align.getTotalWeight()+"\t"+
+        				align.getNumPairs()+"\t"+
+        				align.getTotalPairWeight()+"\t"+
+        				(expt.getFQFile().equals("") ? oldList.get(align.getDBID()).fqfile : expt.getFQFile())+"\t"+
+        				align.getAlignDir()+"\t"+
+        				align.getAlignFile()+"\t"+
+        				align.getIDXFile()+"\t"+
+        				oldList.get(align.getDBID()).paramsfname+"\t"+
+        				expt.getExptNote()+"\t"+
+        				oldList.get(align.getDBID()).loaddate+"\t"+
+        				expt.getName()+";"+expt.getReplicate()+";"+align.getName()+"\n"
+        				);
+        			count++;
+        		}
 	        }
     		System.out.println(count+" entries exported to new list");
 	        fw.close();
-	        core.close();
 	        loader.close();
         } catch (IOException e) {
 			e.printStackTrace();

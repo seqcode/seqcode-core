@@ -10,7 +10,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.utils.*;
 
 /**
@@ -49,7 +49,7 @@ public class GenomeSelectPanel extends JPanel implements EventSource<ActionEvent
     public GenomeSelectPanel(Genome g) { 
     	super();
     	defaultGenome = g.getVersion();
-    	defaultSpecies = g.getSpecies();
+    	defaultSpecies = g.getSpeciesName();
     	init();
     }
     
@@ -129,7 +129,7 @@ public class GenomeSelectPanel extends JPanel implements EventSource<ActionEvent
 	}
 	
 	private void populateSpecies() { 
-		TreeSet<String> names = new TreeSet<String>(Organism.getOrganismNames());
+		TreeSet<String> names = new TreeSet<String>(Species.getAllSpeciesNames(false));
 		String sel = null;
 		speciesModel.removeAllElements();
 		for(String n : names) { 
@@ -144,7 +144,7 @@ public class GenomeSelectPanel extends JPanel implements EventSource<ActionEvent
 	
 	private void populateGenome() {
 		try { 
-			Organism org = Organism.getOrganism(getSpecies());
+			Species org = Species.getSpecies(getSpecies());
 			TreeSet<String> names = new TreeSet<String>(org.getGenomeNames());
 			genomeModel.removeAllElements();
 			String sel = null;
@@ -166,8 +166,8 @@ public class GenomeSelectPanel extends JPanel implements EventSource<ActionEvent
 	
 	public Genome findGenome() { 
 		try { 
-			Organism org = Organism.getOrganism(getSpecies());
-			Genome g = org.getGenome(getGenome());
+			Species org = Species.getSpecies(getSpecies());
+			Genome g = new Genome(org, getGenome());
 			return g;
 		} catch(NotFoundException e) { 
 			return null;

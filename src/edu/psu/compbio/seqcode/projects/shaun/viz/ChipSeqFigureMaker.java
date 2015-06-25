@@ -5,7 +5,7 @@ import java.io.File;
 import javax.swing.JFrame;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -29,8 +29,8 @@ public class ChipSeqFigureMaker {
         }
         
         try {
-        	Pair<Organism, Genome> pair = Args.parseGenome(args);
-        	Organism currorg = pair.car();
+        	Pair<Species, Genome> pair = Args.parseGenome(args);
+        	Species currorg = pair.car();
         	Genome currgen = pair.cdr();
             String ofile = ap.getKeyValue("options");
             ChipSeqFigureMaker figure = new ChipSeqFigureMaker(ofile, currgen);

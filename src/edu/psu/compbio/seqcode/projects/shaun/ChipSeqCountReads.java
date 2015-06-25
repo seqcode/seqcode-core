@@ -5,7 +5,7 @@ import java.io.File;
 import java.sql.SQLException;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
@@ -27,7 +27,7 @@ public class ChipSeqCountReads {
 	/* command-line driver */
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		boolean  metaPeak=false;
-        Pair<Organism,Genome> pair = Args.parseGenome(args);
+        Pair<Species,Genome> pair = Args.parseGenome(args);
         List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
         if (expts.size() == 0) {
             System.err.println("Usage:\n " +

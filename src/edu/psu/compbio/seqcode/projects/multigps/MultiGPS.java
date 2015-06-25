@@ -200,7 +200,6 @@ public class MultiGPS {
 			manager.close();
 		}
 		System.err.println("Closing");
-		gcon.close();
 		//System.exit(0);
 	}
 	

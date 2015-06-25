@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.RepeatMaskedRegion;
@@ -65,8 +65,8 @@ public class RandomRegionsNoDups {
 	    boolean sr = Args.parseFlags(args).contains("screenRepeats");
         
         try{
-        	Organism org = Organism.getOrganism(species);
-        	Genome g = org.getGenome(genome);
+        	Species org = Species.getSpecies(species);
+        	Genome g = new Genome(org, genome);
         	
         	
      

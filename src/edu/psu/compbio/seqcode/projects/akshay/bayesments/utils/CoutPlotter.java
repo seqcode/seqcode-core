@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
 import edu.psu.compbio.seqcode.projects.multigps.stats.StreamGobbler;
 
 /**
@@ -16,7 +16,7 @@ import edu.psu.compbio.seqcode.projects.multigps.stats.StreamGobbler;
 public class CoutPlotter {
 	// List of counts to be plotted
 	public float[] counts;
-	public Config config;
+	public BayesmentsConfig config;
 	//name tag to name the output file
 	public String name_tag;
 	
@@ -26,7 +26,7 @@ public class CoutPlotter {
 	 * @param config
 	 * @param name
 	 */
-	public CoutPlotter(float[] counts, Config config, String name) {
+	public CoutPlotter(float[] counts, BayesmentsConfig config, String name) {
 		this.counts = counts;
 		this.config =config;
 		this.name_tag = name;

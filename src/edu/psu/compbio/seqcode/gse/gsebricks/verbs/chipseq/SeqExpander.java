@@ -10,20 +10,22 @@ import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-
+/**
+ * SeqExpander: legacy class for interacting with SeqAlignments
+ * @author mahony
+ * 
+ */
 public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
 
     private SeqDataLoader loader;
     private Genome lastGenome;
     private LinkedList<SeqAlignment> alignments;
     private SeqLocator locator;
-    private boolean closeLoader;
     private boolean loadR2;
 
 
     public SeqExpander(SeqLocator loc, boolean loadR2) throws SQLException, IOException {
         loader = new SeqDataLoader();
-        closeLoader = true;
         locator = loc;
         alignments = null;
         lastGenome = null;
@@ -36,19 +38,11 @@ public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
         alignments = new LinkedList<SeqAlignment>();
         lastGenome = genome;
         try {
-            alignments.addAll(locator.loadAlignments(loader, genome));
-        } catch (SQLException e) {
-            e.printStackTrace(System.err);
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public SeqExpander(SeqDataLoader l, SeqAlignment a, boolean closeLoader) {
-        loader = l;
-        alignments = new LinkedList<SeqAlignment>();
-        alignments.add(a);
-        this.closeLoader = closeLoader;
+			alignments.addAll(loader.loadAlignments(locator, genome));
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+		}
+        
     }
 
 
@@ -121,9 +115,7 @@ public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
 
 
     public void close() {
-        if (closeLoader) {
-            loader.close();
-        }
+        loader.close();
         loader = null;
         if (alignments != null) {
             alignments.clear();

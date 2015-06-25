@@ -54,7 +54,7 @@ import edu.psu.compbio.seqcode.gse.viz.DynamicAttribute;
  *
  */
 public class SeqView extends JFrame {
-	protected SeqViewOptions options=new SeqViewOptions();
+	protected SeqViewOptions options;
 	protected SeqViewOptionsFrame optionsFrame;
 	protected SeqViewOptionsPane optionsPane;
 	protected RegionPanel regPanel=null;
@@ -82,16 +82,14 @@ public class SeqView extends JFrame {
         
         //Load command-line options
         options = SeqViewOptions.parseCL(args);
-        setTitle(options.getGenome().getSpecies() + " " + options.getGenome().getVersion());
+        setTitle(options.getGenome().getSpeciesName() + " " + options.getGenome().getVersion());
         regPanel = new RegionPanel(options, status, currDirectory); 
     	add(regPanel, BorderLayout.CENTER);
     	status.setStatus("Genome loaded... loading experiment list", Color.red);
-        
         //Initiate options pane & frame
         optionsPane = new SeqViewOptionsPane(options);
         optionsFrame = new SeqViewOptionsFrame(optionsPane, this);
         status.setStatus("Genome loaded", Color.black);
-        
         //Close operations
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         final SeqView thisviewer = this;
@@ -127,7 +125,7 @@ public class SeqView extends JFrame {
         	add(regPanel, BorderLayout.PAGE_START);
     	}else if ( options==null  || !options.getGenome().equals(opts.getGenome())) {
             //Overwrite panel for different genome
-        	setTitle(opts.getGenome().getSpecies() + " " + opts.getGenome().getVersion());
+        	setTitle(opts.getGenome().getSpeciesName() + " " + opts.getGenome().getVersion());
             regPanel.reinit(opts);
         } else {
         	if (options != null && opts.getGenome().equals(options.getGenome())) {
@@ -175,14 +173,6 @@ public class SeqView extends JFrame {
         item.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		new SaveRegionsAsFasta(thisviewer.getRegionPanel().getRegion());
-        	}
-        });
-        filemenu.addSeparator();
-        filemenu.add((item = new JMenuItem("Reconnect To Database")));
-        item.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		if(thisviewer.getRegionPanel()!=null && !thisviewer.getRegionPanel().isClosed())
-        			thisviewer.getRegionPanel().reconnectModels();
         	}
         });
         filemenu.addSeparator();

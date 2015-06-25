@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.TreeSet;
 
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
@@ -23,7 +25,7 @@ import be.ac.ulg.montefiore.run.jahmm.io.OpdfReader;
 import be.ac.ulg.montefiore.run.jahmm.io.OpdfWriter;
 import be.ac.ulg.montefiore.run.jahmm.learn.*;
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -81,7 +83,7 @@ public class ChipSeqHMMDomainFinder {
 	private int readShift = 50;
 	private boolean shiftTags = true;
 	private boolean needlefiltering=true;
-	private Organism org;
+	private Species org;
 	private Genome gen;
 	private double genomeLen=0;
 	private ArrayList<SeqExptHandler> IPhandles;
@@ -177,8 +179,8 @@ public class ChipSeqHMMDomainFinder {
         trainFile = trainFileName;
         try {
 			//Load the reads
-			org = Organism.getOrganism(species);
-			gen = org.getGenome(genome);
+			org = Species.getSpecies(species);
+			gen = new Genome(org, genome);
 			genomeLen = gen.getGenomeLength(); 
 			
 			for(String exptName : ips){
@@ -186,10 +188,15 @@ public class ChipSeqHMMDomainFinder {
 				SeqLocator curr=null;
 				if (exptName.indexOf(';') != -1) {
                     String[] pieces = exptName.split(";");
-                    if(pieces.length==2)
-                    	curr = new SeqLocator(pieces[0], pieces[1]);
-                    else if(pieces.length==3)
-                    	curr = new SeqLocator(pieces[0], pieces[1], pieces[2]);
+                	Set<String> reps = new TreeSet<String>();
+	            	if (pieces.length == 2) {
+	            		curr = new SeqLocator(pieces[0], reps, pieces[1]);					
+		            } else if (pieces.length == 3) {
+		            	reps.add(pieces[1]);
+		            	curr = new SeqLocator(pieces[0], reps, pieces[2]);
+		            } else {
+		                throw new RuntimeException("Couldn't parse a SeqAlignmentsLocator from " + exptName);
+		            }
                 }else{
                 	System.err.println("Experiment name incorrectly assigned");
                 }

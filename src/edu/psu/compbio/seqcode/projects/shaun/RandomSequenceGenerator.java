@@ -5,7 +5,7 @@ import java.text.ParseException;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -34,7 +34,7 @@ public class RandomSequenceGenerator {
         int length = new Integer(ap.getKeyValue("len")).intValue();
         int number = new Integer(ap.getKeyValue("num")).intValue();
         String mFile = ap.getKeyValue("markov");
-        Pair<Organism, Genome> pair = Args.parseGenome(args);        
+        Pair<Species, Genome> pair = Args.parseGenome(args);        
         
         MarkovBackgroundModel model = BackgroundModelIO.parseMarkovBackgroundModel(mFile, pair.cdr());
         
