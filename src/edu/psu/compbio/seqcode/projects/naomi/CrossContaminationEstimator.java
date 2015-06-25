@@ -1,6 +1,7 @@
 package edu.psu.compbio.seqcode.projects.naomi;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class CrossContaminationEstimator {
 		econfig = econ;
 	}
 	
-	public void printDataPoints(){
+	public float [][] getXYpairs(){
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
 		Genome genome = gconfig.getGenome();
@@ -102,13 +103,42 @@ public class CrossContaminationEstimator {
 			sampleCountsMap.clear();		
 		}//end of chromosome iteration
 		
-		System.out.println("#max_tag_number\tsum_of_other_sample's_tags\tsampleID");
-		//printing datapoints
+		//iterate dataPoints to figure out non-zero dataPoints[i][0] (=maxTag number)
+		int dataPointsSize = 0;		
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-			if (dataPoints[i][0] != 0)
-				System.out.println(dataPoints[i][0]+"\t"+dataPoints[i][1]+"\t"+dataPoints[i][2]);			
+			if (dataPoints[i][0]!=0)
+				dataPointsSize++;
 		}
-	}								
+		
+		//copy non-zero dataPoints to xyPoints
+		float [][] xyPairs = new float[dataPointsSize][3];		
+		for (int i = 0; i<(int) genome.getGenomeLength();i++){
+			if (dataPoints[i][0]!=0){
+				for (int s= 0; s<3;s++)
+					xyPairs[i][s]=dataPoints[i][s];
+			}
+		}
+	
+		return (xyPairs);
+	}
+
+	public void printXYpairs(){
+			
+		float [][] xyPairs = getXYpairs();
+		
+		//printing xyPairs
+		System.out.println("#max_tag_number\tsum_of_other_sample's_tags\tsampleID");
+		for (int i = 0; i< xyPairs.length; i++)
+				System.out.println(xyPairs[i][0]+"\t"+xyPairs[i][1]+"\t"+xyPairs[i][2]);			
+	}			
+	
+	public void K_LineMeans(int k){
+		
+		float [][] xyPairs = getXYpairs();
+		
+		
+		
+	}
 	
 	public static void main(String[] args){
 		
@@ -116,6 +146,10 @@ public class CrossContaminationEstimator {
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		
 		CrossContaminationEstimator estimator = new CrossContaminationEstimator (gconf, econf);
-		estimator.printDataPoints();	
+		estimator.getXYpairs();	
+		estimator.printXYpairs();
+		// trying k = 2
+		int k = 2;		
+		estimator.K_LinesMeans(k);
 	}
 }
