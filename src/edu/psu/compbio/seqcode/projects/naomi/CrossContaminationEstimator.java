@@ -309,7 +309,7 @@ public class CrossContaminationEstimator {
 //		estimator.getXYpairs();	
 //		estimator.printXYpairs();
 		// trying with various k
-		for (int k = 6; k<=7;k++)
+		for (int k = 1; k<=7;k++)
 			estimator.K_LineMeans(k);
 		
 	}
