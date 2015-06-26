@@ -148,7 +148,7 @@ public class CrossContaminationEstimator {
 			if (seg<90){
 				while (seg<90){
 					angles.add(seg);
-					seg++;
+					seg+=seg;
 				}
 			}
 			angles.add((double) 90-0.000000000000001);
@@ -199,6 +199,7 @@ public class CrossContaminationEstimator {
 		while (!previousSlopes.equals(slopes)||iteration_tracker<10){ 
 			
 			//testing
+			System.out.println("**************inside while loop*******************");
 			System.out.println("content of previousSlopes is: ");
 			for (double previous : previousSlopes)
 				System.out.println(previous);
@@ -215,6 +216,10 @@ public class CrossContaminationEstimator {
 			double sqareDistance = 0;
 			for (double slope : slopes){
 				neg_inverse=-(1/slope);
+				
+				//testing
+				System.out.println("neg_inverse is: "+neg_inverse);
+				
 				for (int i = 0; i<xyPairs.length; i++){
 					intersect = xyPairs[i][1]-(neg_inverse*xyPairs[i][0]);
 					x_point = intersect/(slope-neg_inverse);
@@ -234,10 +239,10 @@ public class CrossContaminationEstimator {
 						
 			//testing
 			System.out.println("contents of distance Array: ");
-//			for (int i = 0; i<10;i++){
-//				for (int j = 0; j <K; j++)
-//					System.out.println(distanceArray[i][K]);
-//			}
+			for (int i = 0; i<10;i++){
+				for (int j = 0; j <K; j++)
+					System.out.println(distanceArray[i][K]);
+			}
 
 			//find minimum distance and put the distance in xySlopes array
 			double minimum = Integer.MAX_VALUE;
@@ -248,6 +253,7 @@ public class CrossContaminationEstimator {
 						minimum = distanceArray[i][s];
 						minIndex = s;
 					}
+					System.out.println("min value and index are: "+minimum+"\t"+minIndex);
 				}
 				xySlopes[i] = slopes.get(minIndex);		
 			}
