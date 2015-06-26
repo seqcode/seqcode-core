@@ -133,18 +133,17 @@ public class CrossContaminationEstimator {
 				System.out.println(xyPairs[i][0]+"\t"+xyPairs[i][1]+"\t"+xyPairs[i][2]);			
 	}			
 	
-	public void K_LineMeans(int k){
+	public void K_LineMeans(int K){
 		
-		System.out.println("current K is: "+k);
+		System.out.println("current K is: "+K);
 		
 		List<Double> angles = new ArrayList<Double>();	
 		//fix when k==1 . currently the program cannot handle when k==1
-		if (k==1){
+		if (K==1){
 			angles.add((double) 45);
-		}else if (k>=2){
-			angles.add((double)Integer.MIN_VALUE);
-			System.out.println("min value is :"+Integer.MIN_VALUE);		
-			double seg = 90/(k-1);
+		}else if (K>=2){
+			angles.add((double)0.000000000000001);
+			double seg = 90/(K-1);
 			System.out.println("seg value is: "+seg);
 			if (seg<90){
 				while (seg<90){
@@ -152,7 +151,7 @@ public class CrossContaminationEstimator {
 					seg++;
 				}
 			}
-			angles.add((double) 90-Integer.MIN_VALUE);
+			angles.add((double) 90-0.000000000000001);
 		}
 		
 		//testing 
@@ -186,7 +185,7 @@ public class CrossContaminationEstimator {
 		double [] xySlopes = new double [xyPairs.length];
 		
 		//distanceArray holds squared distance of each point to each slope
-		double distanceArray[][] = new double [xyPairs.length][k];		
+		double distanceArray[][] = new double [xyPairs.length][K];		
 		
 		//this is to test how many iteration it is making
 		int iteration_tracker = 1;
@@ -230,17 +229,17 @@ public class CrossContaminationEstimator {
 			}
 						
 			//testing
-			System.out.println("congtents of distance Array: ");
+			System.out.println("contents of distance Array: ");
 			for (int i = 0; i<10;i++){
-				for (int j = 0; j <k; j++)
-					System.out.println(distanceArray[i][k]);
+				for (int j = 0; j <K; j++)
+					System.out.println(distanceArray[i][K]);
 			}
 
 			//find minimum distance and put the distance in xySlopes array
 			double minimum = Integer.MAX_VALUE;
 			int minIndex = 0;
 			for (int i = 0; i <xyPairs.length;i++){
-				for (int s = 0; s<k;s++){
+				for (int s = 0; s<K;s++){
 					if (distanceArray[i][s]<minimum){
 						minimum = distanceArray[i][s];
 						minIndex = s;
