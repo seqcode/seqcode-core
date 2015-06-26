@@ -135,6 +135,8 @@ public class CrossContaminationEstimator {
 	
 	public void K_LineMeans(int K){
 		
+		System.out.println("******************inside K_LinesMeans******************");
+		
 		System.out.println("current K is: "+K);
 		
 		List<Double> angles = new ArrayList<Double>();	
@@ -199,7 +201,7 @@ public class CrossContaminationEstimator {
 		while (!previousSlopes.equals(slopes)||iteration_tracker<10){ 
 			
 			//testing
-			System.out.println("**************inside while loop*******************");
+			System.out.println("*inside while loop*");
 			System.out.println("content of previousSlopes is: ");
 			for (double previous : previousSlopes)
 				System.out.println(previous);
@@ -238,11 +240,11 @@ public class CrossContaminationEstimator {
 			}
 						
 			//testing
-			System.out.println("contents of distance Array: ");
-			for (int i = 0; i<10;i++){
-				for (int j = 0; j <K; j++)
-					System.out.println(distanceArray[i][j]);
-			}
+//			System.out.println("contents of distance Array: ");
+//			for (int i = 0; i<10;i++){
+//				for (int j = 0; j <K; j++)
+//					System.out.println(distanceArray[i][j]);
+//			}
 
 			//find minimum distance and put the distance in xySlopes array
 			double minimum = Integer.MAX_VALUE;
@@ -254,8 +256,6 @@ public class CrossContaminationEstimator {
 						minIndex = s;
 					}
 				}
-//				if (minIndex!=0)
-//					System.out.println("min value and index are: "+minimum+"\t"+minIndex);
 				xySlopes[i] = slopes.get(minIndex);	
 				minimum = Integer.MAX_VALUE;
 				minIndex = 0;
@@ -263,8 +263,8 @@ public class CrossContaminationEstimator {
 			
 			//testing
 			System.out.println("contents of xySlopes: " );
-			for (int i = 0; i <10;i++)
-				System.out.println(xySlopes);
+			for (int i = 0; i <5;i++)
+				System.out.println(xySlopes[i]);
 		
 			float xSum = 0;
 			float ySum = 0;
@@ -331,7 +331,7 @@ public class CrossContaminationEstimator {
 //		estimator.getXYpairs();	
 //		estimator.printXYpairs();
 		// trying with various k
-		for (int k = 2; k<=7;k++)
+		for (int k = 1; k<=7;k++)
 			estimator.K_LineMeans(k);
 		
 	}
