@@ -2,6 +2,7 @@ package edu.psu.compbio.seqcode.deepseq.experiments;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,6 @@ public class ExperimentScaler {
 		Collections.sort(counts);
         
         //SES procedure
-        double readRatio = totalA/totalB;
         double cumulA=0, cumulB=0, maxDiffAB=0, maxDiffAprop=0, currDiff=0;
         int maxDiffIndex=0, i=0;
         for(PairedCounts pc : counts){
@@ -110,6 +110,54 @@ public class ExperimentScaler {
         	}
         	i++;
         }
+		return(scalingRatio);
+	}
+	
+	/**
+	 * Find the scaling ratio according to the NCIS method from Liang & Keles (BMC Bioinf 2012).
+	 * Also sets a background proportion estimate for the signal channel.  
+	 * Should be run using *all* genomic windows in the Lists. 
+	 * Uses ratios that are based on at least 75% of genomic regions by default. 
+	 * @return
+	 */
+	public double scalingRatioByNCIS(List<Float> setA, List<Float> setB){
+		double scalingRatio=1;
+		if(setA.size()!=setB.size()){
+			System.err.println("ExperimentScaler is trying to scale lists of two different lengths");
+			System.exit(1);
+		}
+		
+		float totalA=0, totalB=0; float numPairs = (float)setA.size();
+		List<PairedCounts> counts = new ArrayList<PairedCounts>();
+		for(int x=0; x<setA.size(); x++){
+			totalA += setA.get(x);
+			totalB += setB.get(x);
+			counts.add(new PairedCounts(setA.get(x), setB.get(x)));                
+		}
+		
+		//NCIS uses increasing total tag counts versus enrichment ratio
+		Collections.sort(counts, new Comparator<PairedCounts>(){
+            public int compare(PairedCounts o1, PairedCounts o2) {return o1.compareByTotal(o2);}
+        });
+        
+        //NCIS procedure
+        double cumulA=0, cumulB=0, currRatio=0, lastRatio=-1;
+        float i=0;
+        for(PairedCounts pc : counts){
+        	cumulA+=pc.x;
+        	cumulB+=pc.y;
+        	
+        	i++;
+        	if(i/numPairs > 0.75 && cumulA>0 && cumulB>0){ //NCIS estimates begin using the lower 3 quartiles of the genome (based on total tags)
+	        	currRatio = (cumulA/cumulB);
+	        	if(lastRatio==-1 || currRatio<lastRatio){
+	        		lastRatio = currRatio;
+	        	}else{
+	        		break;
+	        	}
+        	}
+        }
+        scalingRatio = currRatio;
 		return(scalingRatio);
 	}
 	
@@ -230,11 +278,26 @@ public class ExperimentScaler {
 			x=a;
 			y=b;
 		}
-		//Sort on the X variables
+		/**
+		 * Sort on increasing X variables
+		 * @see java.lang.Comparable#compareTo(java.lang.Object)
+		 */
 		public int compareTo(PairedCounts pc) {
 			if(x<pc.x){return -1;}
 			if(x>pc.x){return 1;}
 			return 0;
-		}		
+		}
+		
+		/**
+		 * Compare based on the sum of both paired counts
+		 * @param pc
+		 * @return
+		 */
+		public int compareByTotal(PairedCounts pc){
+			if((x+y)<(pc.x+pc.y)){return -1;}
+			if((x+y)>(pc.x+pc.y)){return 1;}
+			return 0;
+		}
+		
 	}
 }
