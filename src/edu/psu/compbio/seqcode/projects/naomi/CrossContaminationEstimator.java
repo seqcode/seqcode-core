@@ -239,7 +239,7 @@ public class CrossContaminationEstimator {
 						
 			//testing
 			System.out.println("contents of distance Array: ");
-			for (int i = 0; i<10;i++){
+			for (int i = 0; i<100;i++){
 				for (int j = 0; j <K; j++)
 					System.out.println(distanceArray[i][j]);
 			}
@@ -253,8 +253,9 @@ public class CrossContaminationEstimator {
 						minimum = distanceArray[i][s];
 						minIndex = s;
 					}
-					System.out.println("min value and index are: "+minimum+"\t"+minIndex);
 				}
+				if (minIndex!=0)
+					System.out.println("min value and index are: "+minimum+"\t"+minIndex);
 				xySlopes[i] = slopes.get(minIndex);	
 				minimum = Integer.MAX_VALUE;
 				minIndex = 0;
