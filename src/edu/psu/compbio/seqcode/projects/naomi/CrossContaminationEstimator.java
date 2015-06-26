@@ -225,11 +225,7 @@ public class CrossContaminationEstimator {
 					x_point = intersect/(slope-neg_inverse);
 					y_point = slope*x_point;
 					squareDistance = Math.pow(x_point-xyPairs[i][0],2)+Math.pow(y_point-xyPairs[i][1],2);
-					
-					System.out.println("xy points in data: "+xyPairs[i][0]+"\t"+xyPairs[i][1]);
-					System.out.println("intersect,x_point,y_point,squareDistance: "+intersect+"\t"+x_point+"\t"+y_point+"\t"+squareDistance);
-					
-				//error! array out of bound exception					
+					//error! array out of bound exception					
 					distanceArray[i][slopes.indexOf(slope)]= squareDistance;
 					
 					//initialize everything
