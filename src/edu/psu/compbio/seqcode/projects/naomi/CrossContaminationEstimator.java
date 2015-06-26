@@ -140,13 +140,13 @@ public class CrossContaminationEstimator {
 		if (k==1){
 			angles.add((double) 45);
 		}else if (k>=2){
-			angles.add((double) 0);
-			double seg = 90/(k-1);
+			angles.add((double) 0+Integer.MIN_VALUE);
+			double seg = 90/(k-1)+Integer.MIN_VALUE;
 			while (seg<90){
 				angles.add(seg);
 				seg++;
 			}
-			angles.add((double) 90);
+			angles.add((double) 90-Integer.MIN_VALUE);
 		}
 		// converting angle in degree to radians, and tangent to get slopes
 		List<Double> slopes = new ArrayList<Double>();
@@ -171,7 +171,8 @@ public class CrossContaminationEstimator {
 		int iteration_tracker = 1;
 		
 		//iterating till slopes stop changing
-		while (!previousSlopes.equals(slopes)||iteration_tracker<100){ 
+		//error !iteration is not stopping by comparing to the previous slope list!!!!
+		while (!previousSlopes.equals(slopes)||iteration_tracker<10){ 
 		
 			//calculating intersect, intersecting x and y points and squared distances from slope
 			double neg_inverse = 0;
@@ -186,6 +187,8 @@ public class CrossContaminationEstimator {
 					x_point = intersect/(slope-neg_inverse);
 					y_point = slope*x_point;
 					sqareDistance = Math.pow(x_point-xyPairs[i][0],2)+Math.pow(y_point-xyPairs[i][1],2);
+					
+				//error! array out of bound exception
 					distanceArray[i][slopes.indexOf(slope)]= sqareDistance;
 					//initialize everything
 					intersect = 0;
@@ -260,7 +263,7 @@ public class CrossContaminationEstimator {
 				
 		CrossContaminationEstimator estimator = new CrossContaminationEstimator (gconf, econf);
 		estimator.getXYpairs();	
-		estimator.printXYpairs();
+//		estimator.printXYpairs();
 		// trying with various k
 		for (int k = 1; k<=7;k++){
 			System.out.println("current K is: "+k);
