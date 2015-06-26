@@ -226,12 +226,11 @@ public class CrossContaminationEstimator {
 					y_point = slope*x_point;
 					squareDistance = Math.pow(x_point-xyPairs[i][0],2)+Math.pow(y_point-xyPairs[i][1],2);
 					
-				//error! array out of bound exception
+					System.out.println("xy points in data: "+xyPairs[i][0]+"\t"+xyPairs[i][1]);
+					System.out.println("intersect,x_point,y_point,squareDistance: "+intersect+"\t"+x_point+"\t"+y_point+"\t"+squareDistance);
 					
+				//error! array out of bound exception					
 					distanceArray[i][slopes.indexOf(slope)]= squareDistance;
-					System.out.println("i, slopes index are: "+i+"\t"+slopes.indexOf(slope));
-					System.out.println("sqareDistance is: "+squareDistance);
-					System.out.println("content is: "+distanceArray[i][slopes.indexOf(slope)]);
 					
 					//initialize everything
 					intersect = 0;
@@ -243,11 +242,11 @@ public class CrossContaminationEstimator {
 			}
 						
 			//testing
-//			System.out.println("contents of distance Array: ");
-//			for (int i = 0; i<10;i++){
-//				for (int j = 0; j <K; j++)
-//					System.out.println(distanceArray[i][K]);
-//			}
+			System.out.println("contents of distance Array: ");
+			for (int i = 0; i<10;i++){
+				for (int j = 0; j <K; j++)
+					System.out.println(distanceArray[i][j]);
+			}
 
 			//find minimum distance and put the distance in xySlopes array
 			double minimum = Integer.MAX_VALUE;
