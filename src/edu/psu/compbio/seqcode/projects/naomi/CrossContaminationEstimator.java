@@ -14,6 +14,7 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
+//import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 
 public class CrossContaminationEstimator {
 	
@@ -132,24 +133,138 @@ public class CrossContaminationEstimator {
 				System.out.println(xyPairs[i][0]+"\t"+xyPairs[i][1]+"\t"+xyPairs[i][2]);			
 	}			
 	
-//	public void K_LineMeans(int k){
+	public void K_LineMeans(int k){
 		
-//		float [][] xyPairs = getXYpairs();
+		List<Double> angles = new ArrayList<Double>();	
+		//fix when k==1
+		if (k==1){
+			angles.add((double) 45);
+		}else if (k>=2){
+			angles.add((double) 0);
+			double seg = 90/(k-1);
+			while (seg<90){
+				angles.add(seg);
+				seg++;
+			}
+			angles.add((double) 90);
+		}
+		// converting angle in degree to radians, and tangent to get slopes
+		List<Double> slopes = new ArrayList<Double>();
+		for (double angle : angles)
+			slopes.add(Math.tan(Math.toRadians(angle)));
 		
+		angles.clear();
 		
+		List<Double> previousSlopes = new ArrayList<Double>();
+		for (int i = 0; i<slopes.size();i++){
+			previousSlopes.add((double) 0);
+		}
 		
-//	}
+		float [][] xyPairs = getXYpairs();		
+		//xyPairs_slope is a parallel double arrays of xyPairs (hence, same index system) that hold slope values.
+		double [] xySlopes = new double [xyPairs.length];
+		
+		//distanceArray holds squared distance of each point to each slope
+		double distanceArray[][] = new double [xyPairs.length][k];		
+		
+		//this is to test how many iteration it is making
+		int iteration_tracker = 1;
+		
+		//iterating till slopes stop changing
+		while (!previousSlopes.equals(slopes)||iteration_tracker<100){ 
+		
+			//calculating intersect, intersecting x and y points and squared distances from slope
+			double neg_inverse = 0;
+			double intersect = 0;
+			double x_point = 0;
+			double y_point = 0;
+			double sqareDistance = 0;
+			for (double slope : slopes){
+				neg_inverse=-(1/slope);
+				for (int i = 0; i<xyPairs.length; i++){
+					intersect = xyPairs[i][1]-(neg_inverse*xyPairs[i][0]);
+					x_point = intersect/(slope-neg_inverse);
+					y_point = slope*x_point;
+					sqareDistance = Math.pow(x_point-xyPairs[i][0],2)+Math.pow(y_point-xyPairs[i][1],2);
+					distanceArray[i][slopes.indexOf(slope)]= sqareDistance;
+					//initialize everything
+					intersect = 0;
+					x_point = 0;
+					y_point = 0;
+					sqareDistance = 0;
+				}
+				neg_inverse = 0;
+			}
+
+			//find minimum distance and put the distance in xySlopes array
+			double minimum = Integer.MAX_VALUE;
+			int minIndex = 0;
+			for (int i = 0; i <xyPairs.length;i++){
+				for (int s = 0; s<k;s++){
+					if (distanceArray[i][s]<minimum){
+						minimum = distanceArray[i][s];
+						minIndex = s;
+					}
+				}
+				xySlopes[i] = slopes.get(minIndex);		
+			}
+		
+			float xSum = 0;
+			float ySum = 0;
+			int N = 0;	
+			double xMeans = xSum/N;
+			double yMeans = ySum/N;
+			//copy slopes in previousSlopes and remove contents of slopes
+			previousSlopes.clear();
+			previousSlopes.addAll(slopes);
+			//List<Double> previousSlopes = new ArrayList<Double>(slopes);
+			slopes.clear();
+			
+			//comparing the values of slope not the object; this may cause issues when testing
+			for (double slope : previousSlopes){
+				for (int i = 0; i<xyPairs.length;i++){
+					if (xySlopes[i]==slope){
+						xSum+=xyPairs[i][0];
+						ySum+=xyPairs[i][1];
+						N++;
+					}
+				}
+				xMeans = xSum/N;
+				yMeans = ySum/N;
+				slopes.add(yMeans/xMeans);
+				//initialize everything
+				xSum = 0;
+				ySum = 0;
+				N = 0;
+				xMeans = 0;
+				yMeans = 0;
+			}
+			
+			System.out.println("current iteration number is: "+iteration_tracker);
+			System.out.println("printing current list of slopes");
+			for (double slope : slopes)
+				System.out.println(slope);
+			
+			iteration_tracker++;
+			
+		}//finish the loop once the values in slopes stop changing
+	}
 	
 	public static void main(String[] args){
 		
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		
+		//later add option to take different k 
+//		ArgParser ap = new ArgParser(args);
+				
 		CrossContaminationEstimator estimator = new CrossContaminationEstimator (gconf, econf);
 		estimator.getXYpairs();	
 		estimator.printXYpairs();
-		// trying k = 2
-		int k = 2;		
-//		estimator.K_LineMeans(k);
+		// trying with various k
+		for (int k = 1; k<=7;k++){
+			System.out.println("current K is: "+k);
+			estimator.K_LineMeans(k);
+		}
 	}
 }
