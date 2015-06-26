@@ -135,13 +135,17 @@ public class CrossContaminationEstimator {
 	
 	public void K_LineMeans(int k){
 		
+		System.out.println("current K is: "+k);
+		
 		List<Double> angles = new ArrayList<Double>();	
 		//fix when k==1 . currently the program cannot handle when k==1
 		if (k==1){
 			angles.add((double) 45);
 		}else if (k>=2){
-			angles.add((double) 0+Integer.MIN_VALUE);
-			double seg = 90/(k-1)+Integer.MIN_VALUE;
+			angles.add((double)Integer.MIN_VALUE);
+			System.out.println("min value is :"+Integer.MIN_VALUE);		
+			double seg = 90/(k-1);
+			System.out.println("seg value is: "+seg);
 			if (seg<90){
 				while (seg<90){
 					angles.add(seg);
@@ -315,9 +319,8 @@ public class CrossContaminationEstimator {
 //		estimator.getXYpairs();	
 //		estimator.printXYpairs();
 		// trying with various k
-		for (int k = 2; k<=7;k++){
-			System.out.println("current K is: "+k);
+		for (int k = 2; k<=7;k++)
 			estimator.K_LineMeans(k);
-		}
+		
 	}
 }
