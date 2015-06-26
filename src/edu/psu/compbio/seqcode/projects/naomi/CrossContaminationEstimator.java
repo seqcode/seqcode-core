@@ -135,30 +135,51 @@ public class CrossContaminationEstimator {
 	
 	public void K_LineMeans(int k){
 		
+		System.out.println("current K is: "+k);
+		
 		List<Double> angles = new ArrayList<Double>();	
-		//fix when k==1
+		//fix when k==1 . currently the program cannot handle when k==1
 		if (k==1){
 			angles.add((double) 45);
 		}else if (k>=2){
-			angles.add((double) 0+Integer.MIN_VALUE);
-			double seg = 90/(k-1)+Integer.MIN_VALUE;
-			while (seg<90){
-				angles.add(seg);
-				seg++;
+			angles.add((double)Integer.MIN_VALUE);
+			System.out.println("min value is :"+Integer.MIN_VALUE);		
+			double seg = 90/(k-1);
+			System.out.println("seg value is: "+seg);
+			if (seg<90){
+				while (seg<90){
+					angles.add(seg);
+					seg++;
+				}
 			}
 			angles.add((double) 90-Integer.MIN_VALUE);
 		}
+		
+		//testing 
+		System.out.println("contents of angle: ");
+		for (int i = 0; i<angles.size();i++)
+			System.out.println(angles.get(i));
+		
 		// converting angle in degree to radians, and tangent to get slopes
 		List<Double> slopes = new ArrayList<Double>();
 		for (double angle : angles)
 			slopes.add(Math.tan(Math.toRadians(angle)));
 		
+		//testing
+		System.out.println("contents of slopes: ");
+		for (int i = 0; i <slopes.size(); i++)
+			System.out.println(slopes.get(i));
+		
 		angles.clear();
 		
 		List<Double> previousSlopes = new ArrayList<Double>();
-		for (int i = 0; i<slopes.size();i++){
+		for (int i = 0; i<slopes.size();i++)
 			previousSlopes.add((double) 0);
-		}
+		
+		//testing
+		System.out.println("contents of previousSlopes: ");
+		for (int i = 0; i<previousSlopes.size();i++)
+			System.out.println(previousSlopes.get(i));
 		
 		float [][] xyPairs = getXYpairs();		
 		//xyPairs_slope is a parallel double arrays of xyPairs (hence, same index system) that hold slope values.
@@ -173,6 +194,15 @@ public class CrossContaminationEstimator {
 		//iterating till slopes stop changing
 		//error !iteration is not stopping by comparing to the previous slope list!!!!
 		while (!previousSlopes.equals(slopes)||iteration_tracker<10){ 
+			
+			//testing
+			System.out.println("content of previousSlopes is: ");
+			for (double previous : previousSlopes)
+				System.out.println(previous);
+			
+			System.out.println("contents of slopes is: ");
+			for (double sl : slopes)
+				System.out.println(sl);
 		
 			//calculating intersect, intersecting x and y points and squared distances from slope
 			double neg_inverse = 0;
@@ -198,6 +228,13 @@ public class CrossContaminationEstimator {
 				}
 				neg_inverse = 0;
 			}
+						
+			//testing
+			System.out.println("congtents of distance Array: ");
+			for (int i = 0; i<10;i++){
+				for (int j = 0; j <k; j++)
+					System.out.println(distanceArray[i][k]);
+			}
 
 			//find minimum distance and put the distance in xySlopes array
 			double minimum = Integer.MAX_VALUE;
@@ -211,6 +248,11 @@ public class CrossContaminationEstimator {
 				}
 				xySlopes[i] = slopes.get(minIndex);		
 			}
+			
+			//testing
+			System.out.println("contents of xySlopes: " );
+			for (int i = 0; i <10;i++)
+				System.out.println(xySlopes);
 		
 			float xSum = 0;
 			float ySum = 0;
@@ -220,11 +262,19 @@ public class CrossContaminationEstimator {
 			//copy slopes in previousSlopes and remove contents of slopes
 			previousSlopes.clear();
 			previousSlopes.addAll(slopes);
-			//List<Double> previousSlopes = new ArrayList<Double>(slopes);
+			
+			//testing
+			System.out.println("contents of previousSlopes: ");
+			for (double s : previousSlopes)
+				System.out.println(s);
+			
 			slopes.clear();
 			
-			//comparing the values of slope not the object; this may cause issues when testing
+			//comparing the values of slope not the object; this may cause issues when excecuting
 			for (double slope : previousSlopes){
+				//testing
+				System.out.println("current slope is: "+slope);
+				
 				for (int i = 0; i<xyPairs.length;i++){
 					if (xySlopes[i]==slope){
 						xSum+=xyPairs[i][0];
@@ -235,12 +285,16 @@ public class CrossContaminationEstimator {
 				xMeans = xSum/N;
 				yMeans = ySum/N;
 				slopes.add(yMeans/xMeans);
+				
+				System.out.println("xSum is: "+xSum+" ySum is: "+ySum+" N is "+N+" xMeans is "+xMeans+" yMeans is "+yMeans);
+				
 				//initialize everything
 				xSum = 0;
 				ySum = 0;
 				N = 0;
 				xMeans = 0;
 				yMeans = 0;
+
 			}
 			
 			System.out.println("current iteration number is: "+iteration_tracker);
@@ -262,12 +316,11 @@ public class CrossContaminationEstimator {
 //		ArgParser ap = new ArgParser(args);
 				
 		CrossContaminationEstimator estimator = new CrossContaminationEstimator (gconf, econf);
-		estimator.getXYpairs();	
+//		estimator.getXYpairs();	
 //		estimator.printXYpairs();
 		// trying with various k
-		for (int k = 1; k<=7;k++){
-			System.out.println("current K is: "+k);
+		for (int k = 2; k<=7;k++)
 			estimator.K_LineMeans(k);
-		}
+		
 	}
 }
