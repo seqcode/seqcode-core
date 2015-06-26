@@ -146,11 +146,12 @@ public class CrossContaminationEstimator {
 		}else if (K>=2){
 			angles.add((double)0.000000000000001);
 			double seg = 90/(K-1);
+			double total = seg;
 			System.out.println("seg value is: "+seg);
-			if (seg<90){
-				while (seg<90){
-					angles.add(seg);
-					seg+=seg;
+			if (total<90){
+				while (total<90){
+					angles.add(total);
+					total+=seg;
 				}
 			}
 			angles.add((double) 90-0.000000000000001);
@@ -166,22 +167,11 @@ public class CrossContaminationEstimator {
 		for (double angle : angles)
 			slopes.add(Math.tan(Math.toRadians(angle)));
 		
-		//testing
-		System.out.println("contents and index of slopes: ");
-		for (double slope: slopes)
-			System.out.println(slope+"\t"+slopes.indexOf(slope));
-		
 		angles.clear();
 		
 		List<Double> previousSlopes = new ArrayList<Double>();
 		for (int i = 0; i<slopes.size();i++)
 			previousSlopes.add((double) 0);
-		
-		//testing
-		System.out.println("contents of previousSlopes: ");
-		for (int i = 0; i<previousSlopes.size();i++)
-			System.out.println(previousSlopes.get(i));
-
 		
 		float [][] xyPairs = getXYpairs();		
 		//xyPairs_slope is a parallel double arrays of xyPairs (hence, same index system) that hold slope values.
@@ -206,9 +196,9 @@ public class CrossContaminationEstimator {
 			for (double previous : previousSlopes)
 				System.out.println(previous);
 			
-			System.out.println("contents of slopes is: ");
-			for (double sl : slopes)
-				System.out.println(sl);
+			System.out.println("contents and index of slopes is: ");
+			for (double slope: slopes)
+				System.out.println(slope+"\t"+slopes.indexOf(slope));
 		
 			//calculating intersect, intersecting x and y points and squared distances from slope
 			double neg_inverse = 0;
@@ -238,13 +228,6 @@ public class CrossContaminationEstimator {
 				}
 				neg_inverse = 0;
 			}
-						
-			//testing
-//			System.out.println("contents of distance Array: ");
-//			for (int i = 0; i<10;i++){
-//				for (int j = 0; j <K; j++)
-//					System.out.println(distanceArray[i][j]);
-//			}
 
 			//find minimum distance and put the distance in xySlopes array
 			double minimum = Integer.MAX_VALUE;
@@ -260,12 +243,7 @@ public class CrossContaminationEstimator {
 				minimum = Integer.MAX_VALUE;
 				minIndex = 0;
 			}
-			
-			//testing
-			System.out.println("contents of xySlopes: " );
-			for (int i = 0; i <5;i++)
-				System.out.println(xySlopes[i]);
-		
+
 			float xSum = 0;
 			float ySum = 0;
 			int N = 0;	
@@ -331,7 +309,7 @@ public class CrossContaminationEstimator {
 //		estimator.getXYpairs();	
 //		estimator.printXYpairs();
 		// trying with various k
-		for (int k = 1; k<=7;k++)
+		for (int k = 6; k<=7;k++)
 			estimator.K_LineMeans(k);
 		
 	}
