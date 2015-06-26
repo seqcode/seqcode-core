@@ -165,9 +165,9 @@ public class CrossContaminationEstimator {
 			slopes.add(Math.tan(Math.toRadians(angle)));
 		
 		//testing
-		System.out.println("contents of slopes: ");
-		for (int i = 0; i <slopes.size(); i++)
-			System.out.println(slopes.get(i));
+		System.out.println("contents and index of slopes: ");
+		for (double slope: slopes)
+			System.out.println(slope+"\t"+slopes.indexOf(slope));
 		
 		angles.clear();
 		
