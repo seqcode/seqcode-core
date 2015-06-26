@@ -142,9 +142,11 @@ public class CrossContaminationEstimator {
 		}else if (k>=2){
 			angles.add((double) 0+Integer.MIN_VALUE);
 			double seg = 90/(k-1)+Integer.MIN_VALUE;
-			while (seg<90){
-				angles.add(seg);
-				seg++;
+			if (seg<90){
+				while (seg<90){
+					angles.add(seg);
+					seg++;
+				}
 			}
 			angles.add((double) 90-Integer.MIN_VALUE);
 		}
