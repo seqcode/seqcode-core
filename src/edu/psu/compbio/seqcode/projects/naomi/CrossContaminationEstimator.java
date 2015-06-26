@@ -179,10 +179,14 @@ public class CrossContaminationEstimator {
 		System.out.println("contents of previousSlopes: ");
 		for (int i = 0; i<previousSlopes.size();i++)
 			System.out.println(previousSlopes.get(i));
+
 		
 		float [][] xyPairs = getXYpairs();		
 		//xyPairs_slope is a parallel double arrays of xyPairs (hence, same index system) that hold slope values.
 		double [] xySlopes = new double [xyPairs.length];
+		
+		//testing
+		System.out.println("xyPairs.length is: "+xyPairs.length);
 		
 		//distanceArray holds squared distance of each point to each slope
 		double distanceArray[][] = new double [xyPairs.length][K];		
@@ -230,10 +234,10 @@ public class CrossContaminationEstimator {
 						
 			//testing
 			System.out.println("contents of distance Array: ");
-			for (int i = 0; i<10;i++){
-				for (int j = 0; j <K; j++)
-					System.out.println(distanceArray[i][K]);
-			}
+//			for (int i = 0; i<10;i++){
+//				for (int j = 0; j <K; j++)
+//					System.out.println(distanceArray[i][K]);
+//			}
 
 			//find minimum distance and put the distance in xySlopes array
 			double minimum = Integer.MAX_VALUE;
