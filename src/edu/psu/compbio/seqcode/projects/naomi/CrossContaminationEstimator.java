@@ -136,7 +136,7 @@ public class CrossContaminationEstimator {
 	public void K_LineMeans(int k){
 		
 		List<Double> angles = new ArrayList<Double>();	
-		//fix when k==1
+		//fix when k==1 . currently the program cannot handle when k==1
 		if (k==1){
 			angles.add((double) 45);
 		}else if (k>=2){
@@ -224,7 +224,7 @@ public class CrossContaminationEstimator {
 			}
 						
 			//testing
-			System.out.println("congtent of distance Array: ");
+			System.out.println("congtents of distance Array: ");
 			for (int i = 0; i<10;i++){
 				for (int j = 0; j <k; j++)
 					System.out.println(distanceArray[i][k]);
@@ -310,10 +310,10 @@ public class CrossContaminationEstimator {
 //		ArgParser ap = new ArgParser(args);
 				
 		CrossContaminationEstimator estimator = new CrossContaminationEstimator (gconf, econf);
-		estimator.getXYpairs();	
+//		estimator.getXYpairs();	
 //		estimator.printXYpairs();
 		// trying with various k
-		for (int k = 1; k<=7;k++){
+		for (int k = 2; k<=7;k++){
 			System.out.println("current K is: "+k);
 			estimator.K_LineMeans(k);
 		}
