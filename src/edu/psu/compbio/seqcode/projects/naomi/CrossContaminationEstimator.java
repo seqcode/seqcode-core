@@ -213,7 +213,7 @@ public class CrossContaminationEstimator {
 			double intersect = 0;
 			double x_point = 0;
 			double y_point = 0;
-			double sqareDistance = 0;
+			double squareDistance = 0;
 			for (double slope : slopes){
 				neg_inverse=-(1/slope);
 				
@@ -224,25 +224,30 @@ public class CrossContaminationEstimator {
 					intersect = xyPairs[i][1]-(neg_inverse*xyPairs[i][0]);
 					x_point = intersect/(slope-neg_inverse);
 					y_point = slope*x_point;
-					sqareDistance = Math.pow(x_point-xyPairs[i][0],2)+Math.pow(y_point-xyPairs[i][1],2);
+					squareDistance = Math.pow(x_point-xyPairs[i][0],2)+Math.pow(y_point-xyPairs[i][1],2);
 					
 				//error! array out of bound exception
-					distanceArray[i][slopes.indexOf(slope)]= sqareDistance;
+					
+					distanceArray[i][slopes.indexOf(slope)]= squareDistance;
+					System.out.println("i, slopes index are: "+i+"\t"+slopes.indexOf(slope));
+					System.out.println("sqareDistance is: "+squareDistance);
+					System.out.println("content is: "+distanceArray[i][slopes.indexOf(slope)]);
+					
 					//initialize everything
 					intersect = 0;
 					x_point = 0;
 					y_point = 0;
-					sqareDistance = 0;
+					squareDistance = 0;
 				}
 				neg_inverse = 0;
 			}
 						
 			//testing
-			System.out.println("contents of distance Array: ");
-			for (int i = 0; i<10;i++){
-				for (int j = 0; j <K; j++)
-					System.out.println(distanceArray[i][K]);
-			}
+//			System.out.println("contents of distance Array: ");
+//			for (int i = 0; i<10;i++){
+//				for (int j = 0; j <K; j++)
+//					System.out.println(distanceArray[i][K]);
+//			}
 
 			//find minimum distance and put the distance in xySlopes array
 			double minimum = Integer.MAX_VALUE;
