@@ -145,7 +145,7 @@ public class CrossContaminationEstimator {
 			angles.add((double) 45);
 		}else if (K>=2){
 			angles.add((double)0.000000000000001);
-			double seg = 90/(K-1);
+			double seg = (double)90/((double)(K-1));
 			double total = seg;
 			System.out.println("seg value is: "+seg);
 			if (total<90){
@@ -309,7 +309,7 @@ public class CrossContaminationEstimator {
 //		estimator.getXYpairs();	
 //		estimator.printXYpairs();
 		// trying with various k
-		for (int k = 1; k<=7;k++)
+		for (int k = 5; k<=10;k++)
 			estimator.K_LineMeans(k);
 		
 	}
