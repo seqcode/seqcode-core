@@ -255,7 +255,9 @@ public class CrossContaminationEstimator {
 					}
 					System.out.println("min value and index are: "+minimum+"\t"+minIndex);
 				}
-				xySlopes[i] = slopes.get(minIndex);		
+				xySlopes[i] = slopes.get(minIndex);	
+				minimum = Integer.MAX_VALUE;
+				minIndex = 0;
 			}
 			
 			//testing
