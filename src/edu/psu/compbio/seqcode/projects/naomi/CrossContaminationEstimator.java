@@ -1,5 +1,8 @@
 package edu.psu.compbio.seqcode.projects.naomi;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,7 +17,8 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
-//import edu.psu.compbio.seqcode.gse.utils.ArgParser;
+import edu.psu.compbio.seqcode.gse.tools.utils.Args;
+import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 
 public class CrossContaminationEstimator {
 	
@@ -123,24 +127,24 @@ public class CrossContaminationEstimator {
 		return (xyPairs);
 	}
 
-	public void printXYpairs(){
+	public void printXYpairs(String out) throws FileNotFoundException, UnsupportedEncodingException {
 			
 		float [][] xyPairs = getXYpairs();
 		
+		PrintWriter writer = new PrintWriter(out,"UTF-8");
 		//printing xyPairs
-		System.out.println("#max_tag_number\tsum_of_other_sample's_tags\tsampleID");
+		writer.println("#max_tag_number\tsum_of_other_sample's_tags\tsampleID");
 		for (int i = 0; i< xyPairs.length; i++)
-				System.out.println(xyPairs[i][0]+"\t"+xyPairs[i][1]+"\t"+xyPairs[i][2]);			
+				System.out.println(xyPairs[i][0]+"\t"+xyPairs[i][1]+"\t"+xyPairs[i][2]);
+		writer.close();
 	}			
 	
 	public void K_LineMeans(int K){
 		
-		System.out.println("******************inside K_LinesMeans******************");
-		
-		System.out.println("current K is: "+K);
+		System.out.println("*******computing slopes in K_LinesMeans********current K is: "+ K);
 		
 		List<Double> angles = new ArrayList<Double>();	
-		//fix when k==1 . currently the program cannot handle when k==1
+
 		if (K==1){
 			angles.add((double) 45);
 		}else if (K>=2){
@@ -156,11 +160,6 @@ public class CrossContaminationEstimator {
 			}
 			angles.add((double) 90-0.000000000000001);
 		}
-		
-		//testing 
-		System.out.println("contents of angle: ");
-		for (int i = 0; i<angles.size();i++)
-			System.out.println(angles.get(i));
 		
 		// converting angle in degree to radians, and tangent to get slopes
 		List<Double> slopes = new ArrayList<Double>();
@@ -188,18 +187,8 @@ public class CrossContaminationEstimator {
 		
 		//iterating till slopes stop changing
 		//error !iteration is not stopping by comparing to the previous slope list!!!!
-		while (!previousSlopes.equals(slopes)||iteration_tracker<10){ 
+		while (!previousSlopes.equals(slopes)){ 
 			
-			//testing
-			System.out.println("*inside while loop*");
-			System.out.println("content of previousSlopes is: ");
-			for (double previous : previousSlopes)
-				System.out.println(previous);
-			
-			System.out.println("contents and index of slopes is: ");
-			for (double slope: slopes)
-				System.out.println(slope+"\t"+slopes.indexOf(slope));
-		
 			//calculating intersect, intersecting x and y points and squared distances from slope
 			double neg_inverse = 0;
 			double intersect = 0;
@@ -208,9 +197,6 @@ public class CrossContaminationEstimator {
 			double squareDistance = 0;
 			for (double slope : slopes){
 				neg_inverse=-(1/slope);
-				
-				//testing
-				System.out.println("neg_inverse is: "+neg_inverse);
 				
 				for (int i = 0; i<xyPairs.length; i++){
 					intersect = xyPairs[i][1]-(neg_inverse*xyPairs[i][0]);
@@ -253,17 +239,10 @@ public class CrossContaminationEstimator {
 			previousSlopes.clear();
 			previousSlopes.addAll(slopes);
 			
-			//testing
-			System.out.println("contents of previousSlopes: ");
-			for (double s : previousSlopes)
-				System.out.println(s);
-			
 			slopes.clear();
 			
 			//comparing the values of slope not the object; this may cause issues when excecuting
 			for (double slope : previousSlopes){
-				//testing
-				System.out.println("current slope is: "+slope);
 				
 				for (int i = 0; i<xyPairs.length;i++){
 					if (xySlopes[i]==slope){
@@ -297,20 +276,34 @@ public class CrossContaminationEstimator {
 		}//finish the loop once the values in slopes stop changing
 	}
 	
-	public static void main(String[] args){
+	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException{
+		
+		/***
+		 * You need to specify --fixedpb otherwise upper count limit would be set to a random number
+		 * The method can take --count --file [file name] or --count
+		 * or
+		 * --K [number] or --varK
+		 ***/
 		
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		
-		//later add option to take different k 
-//		ArgParser ap = new ArgParser(args);
-				
 		CrossContaminationEstimator estimator = new CrossContaminationEstimator (gconf, econf);
-//		estimator.getXYpairs();	
-//		estimator.printXYpairs();
-		// trying with various k
-		for (int k = 5; k<=10;k++)
-			estimator.K_LineMeans(k);
 		
+		ArgParser ap = new ArgParser(args);
+		
+		if (ap.hasKey("count") && ap.hasKey("file")){
+			String outName = null;
+			outName = Args.parseString(args, "file", "count.txt");
+			estimator.printXYpairs(outName);
+		}
+		
+		if (ap.hasKey("K")){
+			int k_num = Args.parseInteger(args,"K",5);
+			estimator.K_LineMeans(k_num);
+		}else if (ap.hasKey("varK")){
+			for (int k = 1;k<=5;k++)
+				estimator.K_LineMeans(k);
+		}			
 	}
 }
