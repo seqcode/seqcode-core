@@ -46,7 +46,7 @@ public class ExptConfig {
 	protected boolean cacheAllHits=true; //Cache all hits
 	protected String fileCacheDir = "hitcache";
 	protected List<Region> initialCachedRegions=null;
-	//No command-line options are provided for the following, as different loaders will have different behaviors here
+	//Different loaders will have different behaviors in the following
 	//For example, some file formats cannot store pairs. ReadDB ignores the difference between R1 & R2 in single-end, etc.
 	protected boolean loadType1Reads = true; //Load Type1 reads
 	protected boolean loadType2Reads = false; //Load Type2 reads (if exists and distinguishable)

@@ -209,20 +209,21 @@ public class ExperimentScaler {
 			ExperimentScaler scaler = new ExperimentScaler();
 			
 			//Generate the data structures for calculating scaling factors
-			//10000bp window (median & regression)
+			//Window size loaded by ExptConfig option --scalewin
 			Genome genome = econfig.getGenome();
 			Map<Sample, List<Float>> sampleWindowCounts = new HashMap<Sample, List<Float>>();
 			for(Sample samp : exptMan.getSamples()){
 				List<Float> currSampCounts = new ArrayList<Float>();
 				for(String chrom:genome.getChromList()) {
 		            int chrlen = genome.getChromLength(chrom);
-		            for (int start = 1; start  < chrlen - 10000; start += 10000) {
-		                Region r = new Region(genome, chrom, start, start + 10000);
+		            for (int start = 1; start  < chrlen - econfig.getScalingSlidingWindow(); start += econfig.getScalingSlidingWindow()) {
+		                Region r = new Region(genome, chrom, start, start + econfig.getScalingSlidingWindow());
 		                currSampCounts.add(samp.countHits(r));
 		            }
 		        }
 				sampleWindowCounts.put(samp, currSampCounts);
 			}
+			
 			//Hit ratios
 			for(Sample sampA : exptMan.getSamples())
 				for(Sample sampB : exptMan.getSamples())
@@ -236,31 +237,27 @@ public class ExperimentScaler {
 				for(Sample sampB : exptMan.getSamples())
 					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
 						System.out.println("Median\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByMedian(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
-			//Regression
+			
+			//Regression on full dataset
 			for(Sample sampA : exptMan.getSamples())
 				for(Sample sampB : exptMan.getSamples())
 					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
 						System.out.println("Regression\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
 
+			//PeakSeq approach here (i.e. regression using a subset of windows that don't overlap potential regions
 			
-			//1000bp window (SES)
-			sampleWindowCounts = new HashMap<Sample, List<Float>>();
-			for(Sample samp : exptMan.getSamples()){
-				List<Float> currSampCounts = new ArrayList<Float>();
-				for(String chrom:genome.getChromList()) {
-		            int chrlen = genome.getChromLength(chrom);
-		            for (int start = 1; start  < chrlen - 1000; start += 1000) {
-		                Region r = new Region(genome, chrom, start, start + 1000);
-		                currSampCounts.add(samp.countHits(r));
-		            }
-		        }
-				sampleWindowCounts.put(samp, currSampCounts);
-			}
+			
 			//SES
 			for(Sample sampA : exptMan.getSamples())
 				for(Sample sampB : exptMan.getSamples())
 					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
 						System.out.println("SES\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioBySES(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+
+			//NCIS
+			for(Sample sampA : exptMan.getSamples())
+				for(Sample sampB : exptMan.getSamples())
+					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+						System.out.println("NCIS\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByNCIS(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
 
 			exptMan.close();
 		}

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -260,9 +262,9 @@ public class ChIPReadSimulator {
 				
 				//Generate noise reads
 				Random readSampler = new Random();
-				int noiseReads = (int)((double)numTotalFrags[co][r]*noiseProbabilities[co][r]);
+				int noiseFrags = (int)((double)numTotalFrags[co][r]*noiseProbabilities[co][r]);
 				if(noiseSource==null) //Poisson
-					for(int i=0; i<noiseReads; i++){
+					for(int i=0; i<noiseFrags; i++){
 						ReadHit rh=null;
 						double noiserand = noiseGenerator.nextDouble();
 						double strandrand = strandGenerator.nextDouble();
@@ -287,11 +289,21 @@ public class ChIPReadSimulator {
 						frags.add(rh);
 					}
 				else{
+					//If the noise source is a control experiment, we shouldn't sample fragments with replacement.
+					//Rather, we treat each control experiment read as a distinct fragment in the initial library 
 					int noiseSourceSize = noiseSource.size();
-					for(int i=0; i<noiseReads; i++){
-						double rand = readSampler.nextDouble();
-						int index = (int)((double)noiseSourceSize*rand);
-						ReadHit rh = noiseSource.get(index);
+					if(noiseSourceSize<noiseFrags){
+						System.err.println("Provided control has fewer reads than the requested noise fragments");
+						System.exit(1);
+					}
+					//fragindex is a list of non-repeating random numbers
+					Integer[] fragindex = new Integer[noiseSourceSize];
+				    for (int i = 0; i < noiseSourceSize; i++)
+				    	fragindex[i] = i;
+				    Collections.shuffle(Arrays.asList(fragindex));
+					//Extract the fragments
+					for(int i=0; i<noiseFrags; i++){
+						ReadHit rh = noiseSource.get(fragindex[i]);
 						frags.add(rh);
 					}
 				}
@@ -343,9 +355,14 @@ public class ChIPReadSimulator {
 	}
 	public void setNoiseSource(List<Sample> controls){
 		noiseSource = new ArrayList<ReadHit>();
-		for(Sample s : controls)
-			noiseSource.addAll(s.exportReadHits(rLen));
-		System.err.println("Noise reads will be sourced from "+noiseSource.size()+" loaded read hit locations");
+		for(Sample s : controls){
+			//Add each read hit as its own fragment
+			for(ReadHit rh : s.exportReadHits(rLen)){
+				for(float x=0; x<rh.getWeight(); x+=1.0)
+					noiseSource.add(rh);
+			}
+		}
+		System.err.println(noiseSource.size()+" control reads sourced as distinct fragments");
 	}
 
 	// clean up

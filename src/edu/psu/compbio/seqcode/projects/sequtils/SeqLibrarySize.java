@@ -292,7 +292,7 @@ public class SeqLibrarySize {
 	}
 	
 	public void close(){
-		if(manager==null)
+		if(manager!=null)
 			manager.close();
 	}
 	
