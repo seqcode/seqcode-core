@@ -135,7 +135,7 @@ public class CrossContaminationEstimator {
 		//printing xyPairs
 		writer.println("#max_tag_number\tsum_of_other_sample's_tags\tsampleID");
 		for (int i = 0; i< xyPairs.length; i++)
-				System.out.println(xyPairs[i][0]+"\t"+xyPairs[i][1]+"\t"+xyPairs[i][2]);
+			writer.println(xyPairs[i][0]+"\t"+xyPairs[i][1]+"\t"+xyPairs[i][2]);
 		writer.close();
 	}			
 	
