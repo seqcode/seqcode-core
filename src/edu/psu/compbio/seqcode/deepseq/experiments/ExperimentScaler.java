@@ -13,6 +13,10 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.utils.models.Model;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataFrame;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataRegression;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
+import edu.psu.compbio.seqcode.projects.multigps.framework.PotentialRegionFilter;
 
 /**
  * ExperimentScaler: calculate a scaling transformation between all Sample pairs in an ExperimentCondition
@@ -183,13 +187,30 @@ public class ExperimentScaler {
 		
 		GenomeConfig gconfig = new GenomeConfig(args);
 		ExptConfig econfig = new ExptConfig(gconfig.getGenome(), args);
+		MultiGPSConfig mgpsconfig = new MultiGPSConfig(gconfig, args, false);
+		
 		
 		if(gconfig.helpWanted()){
 			System.err.println("ExperimentScaler:");
 			System.err.println(gconfig.getArgsList()+"\n"+econfig.getArgsList());
 		}else{
-			Genome gen = gconfig.getGenome();
 			ExperimentManager exptMan = new ExperimentManager(econfig);
+			BindingManager bindingManager = new BindingManager(exptMan);
+			//Initialize binding models & binding model record
+			Map<ControlledExperiment, List<BindingModel>>  repBindingModels = new HashMap<ControlledExperiment, List<BindingModel>>();
+			for(ControlledExperiment rep : exptMan.getReplicates()){
+				if(mgpsconfig.getDefaultBindingModel()!=null)
+					bindingManager.setBindingModel(rep, mgpsconfig.getDefaultBindingModel());
+				else if(rep.getExptType()!=null && rep.getExptType().getName().toLowerCase().equals("chipexo"))
+					bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipExoEmpiricalDistribution));
+				else
+					bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipSeqEmpiricalDistribution));
+				repBindingModels.put(rep, new ArrayList<BindingModel>());
+				repBindingModels.get(rep).add(bindingManager.getBindingModel(rep));
+			}
+			for(ExperimentCondition cond : exptMan.getConditions())
+				bindingManager.updateMaxInfluenceRange(cond);
+			
 			
 			//Test
 			System.err.println("Conditions:\t"+exptMan.getConditions().size());
@@ -208,20 +229,35 @@ public class ExperimentScaler {
 			
 			ExperimentScaler scaler = new ExperimentScaler();
 			
+			//Potential regions reqd by PeakSeq method
+			PotentialRegionFilter potentialFilter = new PotentialRegionFilter(mgpsconfig, econfig, exptMan, bindingManager);
+			List<Region> potentials = potentialFilter.execute();
+			
 			//Generate the data structures for calculating scaling factors
 			//Window size loaded by ExptConfig option --scalewin
 			Genome genome = econfig.getGenome();
 			Map<Sample, List<Float>> sampleWindowCounts = new HashMap<Sample, List<Float>>();
+			Map<Sample, List<Float>> noPotSampleWindowCounts = new HashMap<Sample, List<Float>>();
 			for(Sample samp : exptMan.getSamples()){
 				List<Float> currSampCounts = new ArrayList<Float>();
+				List<Float> noPotCurrSampCounts = new ArrayList<Float>();
 				for(String chrom:genome.getChromList()) {
 		            int chrlen = genome.getChromLength(chrom);
 		            for (int start = 1; start  < chrlen - econfig.getScalingSlidingWindow(); start += econfig.getScalingSlidingWindow()) {
 		                Region r = new Region(genome, chrom, start, start + econfig.getScalingSlidingWindow());
 		                currSampCounts.add(samp.countHits(r));
+		                
+		                boolean overlapsPotentials=false;
+		                for(Region p : potentials)
+		                	if(r.overlaps(p)){
+		                		overlapsPotentials=true; break;
+		                	}
+		                if(!overlapsPotentials)
+		                	noPotCurrSampCounts.add(samp.countHits(r));
 		            }
 		        }
 				sampleWindowCounts.put(samp, currSampCounts);
+				noPotSampleWindowCounts.put(samp, noPotCurrSampCounts);
 			}
 			
 			//Hit ratios
@@ -238,14 +274,12 @@ public class ExperimentScaler {
 					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
 						System.out.println("Median\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByMedian(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
 			
-			//Regression on full dataset
+			//Regression on full dataset (i.e. PeakSeq using Pf=0)
 			for(Sample sampA : exptMan.getSamples())
 				for(Sample sampB : exptMan.getSamples())
 					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
 						System.out.println("Regression\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
 
-			//PeakSeq approach here (i.e. regression using a subset of windows that don't overlap potential regions
-			
 			
 			//SES
 			for(Sample sampA : exptMan.getSamples())
@@ -259,6 +293,13 @@ public class ExperimentScaler {
 					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
 						System.out.println("NCIS\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByNCIS(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
 
+			//Regression after filtering out potential regions (i.e. PeakSeq using Pf=1)
+			for(Sample sampA : exptMan.getSamples())
+				for(Sample sampB : exptMan.getSamples())
+					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+						System.out.println("PeakSeq\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(noPotSampleWindowCounts.get(sampA), noPotSampleWindowCounts.get(sampB)));
+
+			
 			exptMan.close();
 		}
 	}
