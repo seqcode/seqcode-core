@@ -63,6 +63,7 @@ public class ChIPReadSimulator {
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
 	private HashMap<Point, Boolean> eventIsJoint = new HashMap<Point, Boolean>();
 	private List<ReadHit> noiseSource=null;
+	private boolean subsampleControl=false;
 	
 	public ChIPReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, int jointSpacing, String outPath){
 		model=m;
@@ -324,9 +325,16 @@ public class ChIPReadSimulator {
 				try {
 					int numFrags = frags.size();
 					for(int x=0; x<numReads; x++){
-						double rand = readSampler.nextDouble();
-						int index = (int)((double)numFrags*rand);
-						ReadHit rh = frags.get(index);
+						ReadHit rh;
+						if(noiseSource==null || !subsampleControl){
+							double rand = readSampler.nextDouble();
+							int index = (int)((double)numFrags*rand);
+							rh = frags.get(index);
+						}else{
+							//Here, the options tell us to just *subsample* the control reads directly without replacement. 
+							//This is easy here, as frags should contain a randomly ordered subset of control reads already
+							rh = frags.get(x);
+						}
 						writers[co][r].write(rh.getChrom()+"\t"+rh.getStart()+"\t"+rh.getEnd()+"\tU\t0\t"+rh.getStrand()+"\n");
 					}
 				} catch (IOException e) {
@@ -353,13 +361,16 @@ public class ChIPReadSimulator {
 	public void setJointEventRate(double jointRate){
 		this.jointEventRate = jointRate;
 	}
-	public void setNoiseSource(List<Sample> controls){
+	public void setNoiseSource(List<Sample> controls, boolean subsample){
+		subsampleControl = subsample;
 		noiseSource = new ArrayList<ReadHit>();
 		for(Sample s : controls){
 			//Add each read hit as its own fragment
 			for(ReadHit rh : s.exportReadHits(rLen)){
-				for(float x=0; x<rh.getWeight(); x+=1.0)
-					noiseSource.add(rh);
+				for(float x=0; x<rh.getWeight(); x+=1.0){
+					ReadHit newRH = new ReadHit(rh.getChrom(), rh.getStart(), rh.getEnd(), rh.getStrand());
+					noiseSource.add(newRH);
+				}
 			}
 		}
 		System.err.println(noiseSource.size()+" control reads sourced as distinct fragments");
@@ -373,7 +384,6 @@ public class ChIPReadSimulator {
 					writers[co][r].close();
 				}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -419,7 +429,7 @@ public class ChIPReadSimulator {
 		int c=2, r=2, numdata, jointSpacing=200;
 		double frags=1000000, reads=1000000, a, up, down, diff, jointRate=0.0;
 		String bmfile;
-		boolean printEvents=true;
+		boolean printEvents=true, subsampleControl=false;
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h") || !ap.hasKey("emp")){
 			System.err.println("ChIPReadSimulator:\n" +
@@ -437,6 +447,7 @@ public class ChIPReadSimulator {
 					"\t--model <binding model file>\n" +
 					"\t--noise <noise probability per replicate>\n" +
 					"\t--ctrl <control experiment to replace Poisson for noise data>\n" +
+					"\t--subsample <subsample the control experiment non-redundantly>\n" +
 					"\t--format <SAM/IDX>\n" +
 					"\t--jointrate <proportion of peaks that are joint binding events>\n" +
 					"\t--jointspacing <spacing between joint events>\n" +
@@ -493,6 +504,12 @@ public class ChIPReadSimulator {
 				outFile = ap.getKeyValue("out");
 			}if(ap.hasKey("noevents")){
 				printEvents=false;
+			}if(ap.hasKey("subsample")){
+				subsampleControl=true;
+				if(reads>frags){
+					System.err.println("Can't subsample in cases where frags is less than reads!");
+					System.exit(1);
+				}
 			}
 			double noiseProb   = Args.parseDouble(args, "noise", 0.9);
 			double [][] noiseProbs = new double[c][r];
@@ -525,7 +542,7 @@ public class ChIPReadSimulator {
 	        ExperimentManager manager=null;
 	        if(ap.hasKey("ctrl")){
 				manager = new ExperimentManager(econ);
-				sim.setNoiseSource(manager.getSamples());
+				sim.setNoiseSource(manager.getSamples(), subsampleControl);
 			}
 			
 	        sim.setTotalReads((int) reads);
