@@ -24,6 +24,12 @@ public class CrossContaminationEstimator {
 	
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
+
+	public final float CONST1 = 1000000;
+	//public final float CONST1 = 3000000;
+	//previously I tried CONST1 = 2000000
+	//perhaps CONST1=1000000 is better for K=3, but CONST1 3000000 may better for K=2
+	// tried 3000000 but it did not improve the results
 	
 	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ){	
 		gconfig = gcon;
@@ -109,21 +115,49 @@ public class CrossContaminationEstimator {
 		}//end of chromosome iteration
 		
 		//iterate dataPoints to figure out non-zero dataPoints[i][0] (=maxTag number)
-		int dataPointsSize = 0;		
+//		int dataPointsSize = 0;		
+//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
+//			if (dataPoints[i][0]!=0)
+//				dataPointsSize++;
+//		}		
+		//copy non-zero dataPoints to xyPoints
+//		float [][] xyPairs = new float[dataPointsSize][3];		
+//		for (int i = 0; i<(int) genome.getGenomeLength();i++){
+//			if (dataPoints[i][0]!=0){
+//				for (int s= 0; s<3;s++)
+//					xyPairs[i][s]=dataPoints[i][s];
+//			}
+//		}
+		
+		//only copying datapoints which go over some upper limits
+		int SumAllCounts = 0;
+		for (Sample sample: manager.getSamples()){
+			SumAllCounts+= sample.getHitCount();
+		}		
+		double upperLimit = 0;
+		upperLimit = SumAllCounts/CONST1;
+		
+		System.out.println("upperLimit is: "+upperLimit);
+		
+		int dataPointsSize = 0;
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-			if (dataPoints[i][0]!=0)
+			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit)
 				dataPointsSize++;
 		}
 		
-		//copy non-zero dataPoints to xyPoints
-		float [][] xyPairs = new float[dataPointsSize][3];		
+		System.out.println("dataPointsSize is: "+dataPointsSize);
+		
+		int xy_index = 0;
+		
+		float [][] xyPairs = new float[dataPointsSize][3];
 		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-			if (dataPoints[i][0]!=0){
-				for (int s= 0; s<3;s++)
-					xyPairs[i][s]=dataPoints[i][s];
-			}
-		}
-	
+			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit){
+				for (int s = 0; s<3;s++){
+					xyPairs[xy_index][s]= dataPoints[i][s];
+				}
+				xy_index++;
+			}				
+		}	
 		return (xyPairs);
 	}
 
@@ -280,7 +314,7 @@ public class CrossContaminationEstimator {
 		
 		/***
 		 * You need to specify --fixedpb otherwise upper count limit would be set to a random number
-		 * The method can take --count --file [file name] or --count
+		 * The method can take --count --file [file name] 
 		 * or
 		 * --K [number] or --varK
 		 ***/
