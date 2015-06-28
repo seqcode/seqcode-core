@@ -25,9 +25,11 @@ public class CrossContaminationEstimator {
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
 
-	public final float CONST1 = 3000000;
-	//previously I tried CONST1=2000000
-	//perhaps CONST1=1000000 is better for K=3, but CONST1 3000000 is better for K=2
+	public final float CONST1 = 1000000;
+	//public final float CONST1 = 3000000;
+	//previously I tried CONST1 = 2000000
+	//perhaps CONST1=1000000 is better for K=3, but CONST1 3000000 may better for K=2
+	// tried 3000000 but it did not improve the results
 	
 	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ){	
 		gconfig = gcon;
