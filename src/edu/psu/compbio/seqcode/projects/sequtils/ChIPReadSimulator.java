@@ -244,7 +244,7 @@ public class ChIPReadSimulator {
 									}
 								}
 								//Make the ReadHit
-								if(fivePrimeEnd<chrLen)
+								if((fivePrimeEnd+rLen-1)<chrLen)
 									rh = new ReadHit(chr, fivePrimeEnd, fivePrimeEnd+rLen-1, '+');			
 							}else{
 								for(int j=eventWidth-1; j>=0; j--){
@@ -254,9 +254,11 @@ public class ChIPReadSimulator {
 									}
 								}
 								//Make the ReadHit
-								rh = new ReadHit(chr, Math.max(1, fivePrimeEnd-rLen+1), fivePrimeEnd, '-');
+								if(fivePrimeEnd<chrLen)
+									rh = new ReadHit(chr, Math.max(1, fivePrimeEnd-rLen+1), fivePrimeEnd, '-');
 							}
-							frags.add(rh);
+							if(rh!=null)
+								frags.add(rh);
 						}
 					}
 				}
