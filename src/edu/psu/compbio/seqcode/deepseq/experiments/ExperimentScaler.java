@@ -55,7 +55,7 @@ public class ExperimentScaler {
 	}
 	
 	/**
-	 * Find the median hit count ratio 
+	 * Find the median hit count ratio in bins that have non-zero counts
 	 * @return
 	 */
 	public double scalingRatioByMedian(List<Float> setA, List<Float> setB){
@@ -67,10 +67,8 @@ public class ExperimentScaler {
 			
 		ArrayList<Float> ratios = new ArrayList<Float>();
 	    for(int x=0; x<setA.size(); x++){
-			if(setB.get(x)>0)
+			if(setA.get(x)>0 && setB.get(x)>0)
 				ratios.add((float)(setA.get(x) / setB.get(x)));
-			else
-				ratios.add((float)(setA.get(x) / 1));
         }
         Collections.sort(ratios);
 		scalingRatio = ratios.get(ratios.size() / 2);
@@ -262,7 +260,7 @@ public class ExperimentScaler {
 				noPotSampleWindowCounts.put(samp, noPotCurrSampCounts);
 			}
 			System.out.println("Sliding window size for scaling methods: "+econfig.getScalingSlidingWindow());
-			System.out.println("\tNumbers of windows:\tAll="+sampleWindowCounts.get(exptMan.getSamples().get(0))+"\tnoPotenials="+noPotSampleWindowCounts.get(exptMan.getSamples().get(0))+"\n");
+			System.out.println("\tNumbers of windows:\tAll="+sampleWindowCounts.get(exptMan.getSamples().get(0)).size()+"\tnoPotenials="+noPotSampleWindowCounts.get(exptMan.getSamples().get(0)).size()+"\n");
 			
 			
 			//Hit ratios
