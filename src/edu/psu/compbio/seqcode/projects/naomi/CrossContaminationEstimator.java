@@ -154,18 +154,18 @@ public class CrossContaminationEstimator {
 //			}				
 //		}	
 		
-		float CONST=5;
+		float CONST=10;
 		
 		int dataPointSize = 0;
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-			if (dataPoints[i][0] > CONST && dataPoints[i][1] > CONST)
+			if ((dataPoints[i][0] + dataPoints[i][1]) > CONST)
 				dataPointSize++;
 		}
 		System.out.println("dataPointsSize is: "+dataPointSize);
 		int xy_index = 0;
 		xyPairs = new float [dataPointSize][3];
 		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-			if (dataPoints[i][0] > CONST && dataPoints[i][1] > CONST){
+			if ((dataPoints[i][0] + dataPoints[i][1]) > CONST){
 				for (int s = 0; s<3;s++){
 					xyPairs[xy_index][s] = dataPoints[i][s];
 				}
