@@ -55,7 +55,7 @@ public class ExperimentScaler {
 	}
 	
 	/**
-	 * Find the median hit count ratio 
+	 * Find the median hit count ratio in bins that have non-zero counts
 	 * @return
 	 */
 	public double scalingRatioByMedian(List<Float> setA, List<Float> setB){
@@ -67,10 +67,8 @@ public class ExperimentScaler {
 			
 		ArrayList<Float> ratios = new ArrayList<Float>();
 	    for(int x=0; x<setA.size(); x++){
-			if(setA.get(x)>0)
+			if(setA.get(x)>0 && setB.get(x)>0)
 				ratios.add((float)(setA.get(x) / setB.get(x)));
-			else
-				ratios.add((float)(setA.get(x) / 1));
         }
         Collections.sort(ratios);
 		scalingRatio = ratios.get(ratios.size() / 2);
@@ -232,6 +230,7 @@ public class ExperimentScaler {
 			//Potential regions reqd by PeakSeq method
 			PotentialRegionFilter potentialFilter = new PotentialRegionFilter(mgpsconfig, econfig, exptMan, bindingManager);
 			List<Region> potentials = potentialFilter.execute();
+			System.out.println("\t"+potentials.size()+" potential regions.\n");
 			
 			//Generate the data structures for calculating scaling factors
 			//Window size loaded by ExptConfig option --scalewin
@@ -248,10 +247,11 @@ public class ExperimentScaler {
 		                currSampCounts.add(samp.countHits(r));
 		                
 		                boolean overlapsPotentials=false;
-		                for(Region p : potentials)
+		                for(Region p : potentials){
 		                	if(r.overlaps(p)){
 		                		overlapsPotentials=true; break;
 		                	}
+		                }
 		                if(!overlapsPotentials)
 		                	noPotCurrSampCounts.add(samp.countHits(r));
 		            }
@@ -259,46 +259,65 @@ public class ExperimentScaler {
 				sampleWindowCounts.put(samp, currSampCounts);
 				noPotSampleWindowCounts.put(samp, noPotCurrSampCounts);
 			}
+			System.out.println("Sliding window size for scaling methods: "+econfig.getScalingSlidingWindow());
+			System.out.println("\tNumbers of windows:\tAll="+sampleWindowCounts.get(exptMan.getSamples().get(0)).size()+"\tnoPotenials="+noPotSampleWindowCounts.get(exptMan.getSamples().get(0)).size()+"\n");
+			
 			
 			//Hit ratios
-			for(Sample sampA : exptMan.getSamples())
-				for(Sample sampB : exptMan.getSamples())
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex()){
-						double hitRatio = sampA.getHitCount()/sampB.getHitCount();
-						System.out.println("HitRatio\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+hitRatio);
-					}
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex()){
+							double hitRatio = sampA.getHitCount()/sampB.getHitCount();
+							System.out.println("HitRatio\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+hitRatio);
+						}
+				}
+			}
 			
 			//Median
-			for(Sample sampA : exptMan.getSamples())
-				for(Sample sampB : exptMan.getSamples())
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
-						System.out.println("Median\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByMedian(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+							System.out.println("Median\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByMedian(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+				}
+			}
 			
 			//Regression on full dataset (i.e. PeakSeq using Pf=0)
-			for(Sample sampA : exptMan.getSamples())
-				for(Sample sampB : exptMan.getSamples())
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
-						System.out.println("Regression\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
-
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+							System.out.println("Regression\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+				}
+			}
 			
 			//SES
-			for(Sample sampA : exptMan.getSamples())
-				for(Sample sampB : exptMan.getSamples())
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
-						System.out.println("SES\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioBySES(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
-
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+							System.out.println("SES\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioBySES(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+				}
+			}
+			
 			//NCIS
-			for(Sample sampA : exptMan.getSamples())
-				for(Sample sampB : exptMan.getSamples())
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
-						System.out.println("NCIS\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByNCIS(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
-
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+							System.out.println("NCIS\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByNCIS(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+				}
+			}
+			
 			//Regression after filtering out potential regions (i.e. PeakSeq using Pf=1)
-			for(Sample sampA : exptMan.getSamples())
-				for(Sample sampB : exptMan.getSamples())
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
-						System.out.println("PeakSeq\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(noPotSampleWindowCounts.get(sampA), noPotSampleWindowCounts.get(sampB)));
-
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+							System.out.println("PeakSeq\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(noPotSampleWindowCounts.get(sampA), noPotSampleWindowCounts.get(sampB)));
+				}
+			}
 			
 			exptMan.close();
 		}

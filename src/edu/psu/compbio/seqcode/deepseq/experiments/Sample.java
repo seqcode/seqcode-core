@@ -34,13 +34,14 @@ public class Sample {
 	protected double totalPairs=0; //count of the total number of paired hits
 	protected double uniquePairs=0; //count of the total number of unique paired hits
 	protected float maxReadsPerBP=-1;
+	protected boolean isSignal=true;
 	
 	/**
 	 * Constructor
 	 * @param g Genome (can be null to estimate from data)
 	 * @param name String
 	 */
-	public Sample(int index, ExptConfig c, String name, float perBaseReadMax){
+	public Sample(int index, ExptConfig c, String name, float perBaseReadMax, boolean signal){
 		this.index = index;
 		this.name = name;
 		econfig = c;
@@ -48,6 +49,7 @@ public class Sample {
 		totalHits=0;
 		loaders = new ArrayList<HitLoader>();
 		maxReadsPerBP= perBaseReadMax;
+		isSignal = signal;
 	}
 
 	//Accessors
@@ -61,6 +63,7 @@ public class Sample {
 	public double getPairCount(){return(totalPairs);}
 	public double getUniquePairCount(){return(uniquePairs);}
 	public void setGenome(Genome g){gen=g; cache.setGenome(g);}
+	public boolean isSignal(){return isSignal;}
 	
 	/**
 	 * Add a HitLoader to the set

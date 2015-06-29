@@ -119,7 +119,7 @@ public class ExperimentManager {
 				System.err.print("Loading data from "+sampleName);
 			
 			if(!allSamples.containsKey(sampleName)){
-				Sample samp = new Sample(sampCount, econfig, sampleName, e.perBaseMaxReads);
+				Sample samp = new Sample(sampCount, econfig, sampleName, e.perBaseMaxReads, e.signal);
 				allSamples.put(sampleName, samp);
 				samples.add(samp);
 				sampCount++;
