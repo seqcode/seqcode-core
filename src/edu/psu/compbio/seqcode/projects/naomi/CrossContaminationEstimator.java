@@ -24,19 +24,18 @@ public class CrossContaminationEstimator {
 	
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
+	protected float[][] xyPairs;
 
-	public final float CONST1 = 1000000;
-	//public final float CONST1 = 3000000;
-	//previously I tried CONST1 = 2000000
-	//perhaps CONST1=1000000 is better for K=3, but CONST1 3000000 may better for K=2
-	// tried 3000000 but it did not improve the results
+//	public final float CONST1 = 1000000;
+	//public final float CONST1 = 2000000;
 	
-	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ){	
+	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ, float[][] xypairs){	
 		gconfig = gcon;
 		econfig = econ;
+		xyPairs = xypairs;
 	}
 	
-	public float [][] getXYpairs(){
+	public void loadXYpairs(){
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
 		Genome genome = gconfig.getGenome();
@@ -130,40 +129,52 @@ public class CrossContaminationEstimator {
 //		}
 		
 		//only copying datapoints which go over some upper limits
-		int SumAllCounts = 0;
-		for (Sample sample: manager.getSamples()){
-			SumAllCounts+= sample.getHitCount();
-		}		
-		double upperLimit = 0;
-		upperLimit = SumAllCounts/CONST1;
+//		int SumAllCounts = 0;
+//		for (Sample sample: manager.getSamples()){
+//			SumAllCounts+= sample.getHitCount();
+//		}		
+//		double upperLimit = 0;
+//		upperLimit = SumAllCounts/CONST1;
 		
-		System.out.println("upperLimit is: "+upperLimit);
+//		System.out.println("upperLimit is: "+upperLimit);
 		
-		int dataPointsSize = 0;
+//		int dataPointSize = 0;
+//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
+//			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit)
+//				dataPointSize++;
+//		}		
+//		System.out.println("dataPointSize is: "+dataPointSize);		
+//		int xy_index = 0;		
+//		float [][] xyPairs = new float[dataPointsSize][3];
+//		for (int i = 0; i<(int) genome.getGenomeLength();i++){
+//			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit){
+//				for (int s = 0; s<3;s++){
+//					xyPairs[xy_index][s]= dataPoints[i][s];
+//				}
+//				xy_index++;
+//			}				
+//		}	
+		
+		float CONST=5;
+		
+		int dataPointSize = 0;
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit)
-				dataPointsSize++;
+			if (dataPoints[i][0] > CONST && dataPoints[i][1] > CONST)
+				dataPointSize++;
 		}
-		
-		System.out.println("dataPointsSize is: "+dataPointsSize);
-		
+		System.out.println("dataPointsSize is: "+dataPointSize);
 		int xy_index = 0;
-		
-		float [][] xyPairs = new float[dataPointsSize][3];
+		float [][] xyPairs = new float [dataPointSize][3];
 		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit){
+			if (dataPoints[i][0] > CONST && dataPoints[i][1] > CONST)
 				for (int s = 0; s<3;s++){
-					xyPairs[xy_index][s]= dataPoints[i][s];
+					xyPairs[xy_index][s] = dataPoints[i][s];
 				}
-				xy_index++;
-			}				
-		}	
-		return (xyPairs);
+			xy_index++;
+		}
 	}
 
-	public void printXYpairs(String out) throws FileNotFoundException, UnsupportedEncodingException {
-			
-		float [][] xyPairs = getXYpairs();
+	public void printXYpairs(String out, float[][] xyPairs) throws FileNotFoundException, UnsupportedEncodingException {
 		
 		PrintWriter writer = new PrintWriter(out,"UTF-8");
 		//printing xyPairs
@@ -173,7 +184,7 @@ public class CrossContaminationEstimator {
 		writer.close();
 	}			
 	
-	public void K_LineMeans(int K){
+	public void K_LineMeans(int K, float[][] xyPairs){
 		
 		System.out.println("*******computing slopes in K_LinesMeans********current K is: "+ K);
 		
@@ -205,8 +216,7 @@ public class CrossContaminationEstimator {
 		List<Double> previousSlopes = new ArrayList<Double>();
 		for (int i = 0; i<slopes.size();i++)
 			previousSlopes.add((double) 0);
-		
-		float [][] xyPairs = getXYpairs();		
+			
 		//xyPairs_slope is a parallel double arrays of xyPairs (hence, same index system) that hold slope values.
 		double [] xySlopes = new double [xyPairs.length];
 		
@@ -322,22 +332,27 @@ public class CrossContaminationEstimator {
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		
-		CrossContaminationEstimator estimator = new CrossContaminationEstimator (gconf, econf);
+		float [][] xypairs = null;
+		
+		CrossContaminationEstimator estimator = new CrossContaminationEstimator (gconf, econf, xypairs);
+		
+		estimator.loadXYpairs();
 		
 		ArgParser ap = new ArgParser(args);
 		
 		if (ap.hasKey("count") && ap.hasKey("file")){
 			String outName = null;
 			outName = Args.parseString(args, "file", "count.txt");
-			estimator.printXYpairs(outName);
+			estimator.printXYpairs(outName, xypairs);
 		}
 		
 		if (ap.hasKey("K")){
 			int k_num = Args.parseInteger(args,"K",5);
-			estimator.K_LineMeans(k_num);
+			estimator.K_LineMeans(k_num, xypairs);
 		}else if (ap.hasKey("varK")){
-			for (int k = 1;k<=5;k++)
-				estimator.K_LineMeans(k);
+			for (int k = 1;k<=4;k++)
+				estimator.K_LineMeans(k, xypairs);
 		}			
 	}
+
 }
