@@ -175,7 +175,7 @@ public class CrossContaminationEstimator {
 		}
 	}
 
-	public void printXYpairs(String out, float[][] xyPairs) throws FileNotFoundException, UnsupportedEncodingException {
+	public void printXYpairs(String out) throws FileNotFoundException, UnsupportedEncodingException {
 		
 		PrintWriter writer = new PrintWriter(out,"UTF-8");
 		//printing xyPairs
@@ -185,7 +185,7 @@ public class CrossContaminationEstimator {
 		writer.close();
 	}			
 	
-	public void K_LineMeans(int K, float[][] xyPairs){
+	public void K_LineMeans(int K){
 		
 		System.out.println("*******computing slopes in K_LinesMeans********current K is: "+ K);
 		
@@ -344,15 +344,15 @@ public class CrossContaminationEstimator {
 		if (ap.hasKey("count") && ap.hasKey("file")){
 			String outName = null;
 			outName = Args.parseString(args, "file", "count.txt");
-			estimator.printXYpairs(outName, xypairs);
+			estimator.printXYpairs(outName);
 		}
 		
 		if (ap.hasKey("K")){
 			int k_num = Args.parseInteger(args,"K",5);
-			estimator.K_LineMeans(k_num, xypairs);
+			estimator.K_LineMeans(k_num);
 		}else if (ap.hasKey("varK")){
 			for (int k = 1;k<=4;k++)
-				estimator.K_LineMeans(k, xypairs);
+				estimator.K_LineMeans(k);
 		}			
 	}
 
