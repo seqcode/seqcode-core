@@ -67,7 +67,7 @@ public class ExperimentScaler {
 			
 		ArrayList<Float> ratios = new ArrayList<Float>();
 	    for(int x=0; x<setA.size(); x++){
-			if(setA.get(x)>0)
+			if(setB.get(x)>0)
 				ratios.add((float)(setA.get(x) / setB.get(x)));
 			else
 				ratios.add((float)(setA.get(x) / 1));
@@ -232,7 +232,7 @@ public class ExperimentScaler {
 			//Potential regions reqd by PeakSeq method
 			PotentialRegionFilter potentialFilter = new PotentialRegionFilter(mgpsconfig, econfig, exptMan, bindingManager);
 			List<Region> potentials = potentialFilter.execute();
-			System.err.println("\t"+potentials.size()+" potential regions.\n");
+			System.out.println("\t"+potentials.size()+" potential regions.\n");
 			
 			//Generate the data structures for calculating scaling factors
 			//Window size loaded by ExptConfig option --scalewin
@@ -249,10 +249,11 @@ public class ExperimentScaler {
 		                currSampCounts.add(samp.countHits(r));
 		                
 		                boolean overlapsPotentials=false;
-		                for(Region p : potentials)
+		                for(Region p : potentials){
 		                	if(r.overlaps(p)){
 		                		overlapsPotentials=true; break;
 		                	}
+		                }
 		                if(!overlapsPotentials)
 		                	noPotCurrSampCounts.add(samp.countHits(r));
 		            }
@@ -260,6 +261,9 @@ public class ExperimentScaler {
 				sampleWindowCounts.put(samp, currSampCounts);
 				noPotSampleWindowCounts.put(samp, noPotCurrSampCounts);
 			}
+			System.out.println("Sliding window size for scaling methods: "+econfig.getScalingSlidingWindow());
+			System.out.println("\tNumbers of windows:\tAll="+sampleWindowCounts.get(exptMan.getSamples().get(0))+"\tnoPotenials="+noPotSampleWindowCounts.get(exptMan.getSamples().get(0))+"\n");
+			
 			
 			//Hit ratios
 			for(Sample sampA : exptMan.getSamples()){ 
