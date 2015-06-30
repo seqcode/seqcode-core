@@ -26,7 +26,7 @@ public class CrossContaminationEstimator {
 	protected ExptConfig econfig;
 	protected float[][] xyPairs;
 
-//	public final float CONST1 = 1000000;
+	public final float CONST1 = 20000;
 	//public final float CONST1 = 2000000;
 	
 	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ){	
@@ -128,50 +128,52 @@ public class CrossContaminationEstimator {
 //		}
 		
 		//only copying datapoints which go over some upper limits
-//		int SumAllCounts = 0;
-//		for (Sample sample: manager.getSamples()){
-//			SumAllCounts+= sample.getHitCount();
-//		}		
-//		double upperLimit = 0;
-//		upperLimit = SumAllCounts/CONST1;
+		int sampleSize = 0;
+		int SumAllCounts = 0;
+		for (Sample sample: manager.getSamples()){
+			SumAllCounts+= sample.getHitCount();
+			sampleSize++;
+		}		
+		double upperLimit = 0;
+		upperLimit = SumAllCounts/(sampleSize*CONST1);
 		
-//		System.out.println("upperLimit is: "+upperLimit);
-		
-//		int dataPointSize = 0;
-//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-//			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit)
-//				dataPointSize++;
-//		}		
-//		System.out.println("dataPointSize is: "+dataPointSize);		
-//		int xy_index = 0;		
-//		float [][] xyPairs = new float[dataPointsSize][3];
-//		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-//			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit){
-//				for (int s = 0; s<3;s++){
-//					xyPairs[xy_index][s]= dataPoints[i][s];
-//				}
-//				xy_index++;
-//			}				
-//		}	
-		
-		float CONST=20;
+		System.out.println("upperLimit is: "+upperLimit);
 		
 		int dataPointSize = 0;
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-			if ((dataPoints[i][0] + dataPoints[i][1]) > CONST)
+			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit)
 				dataPointSize++;
-		}
-		System.out.println("dataPointsSize is: "+dataPointSize);
-		int xy_index = 0;
-		xyPairs = new float [dataPointSize][3];
+		}		
+		System.out.println("dataPointSize is: "+dataPointSize);		
+		int xy_index = 0;		
+		float [][] xyPairs = new float[dataPointSize][3];
 		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-			if ((dataPoints[i][0] + dataPoints[i][1]) > CONST){
+			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit){
 				for (int s = 0; s<3;s++){
-					xyPairs[xy_index][s] = dataPoints[i][s];
+					xyPairs[xy_index][s]= dataPoints[i][s];
 				}
 				xy_index++;
-			}
-		}
+			}				
+		}	
+		
+//		float CONST=20;
+		
+//		int dataPointSize = 0;
+//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
+//			if ((dataPoints[i][0] + dataPoints[i][1]) > CONST)
+//				dataPointSize++;
+//		}
+//		System.out.println("dataPointsSize is: "+dataPointSize);
+//		int xy_index = 0;
+//		xyPairs = new float [dataPointSize][3];
+//		for (int i = 0; i<(int) genome.getGenomeLength();i++){
+//			if ((dataPoints[i][0] + dataPoints[i][1]) > CONST){
+//				for (int s = 0; s<3;s++){
+//					xyPairs[xy_index][s] = dataPoints[i][s];
+//				}
+//				xy_index++;
+//			}
+//		}
 	}
 
 	public void printXYpairs(String out) throws FileNotFoundException, UnsupportedEncodingException {
