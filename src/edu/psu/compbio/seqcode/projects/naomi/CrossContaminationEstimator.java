@@ -154,7 +154,7 @@ public class CrossContaminationEstimator {
 //			}				
 //		}	
 		
-		float CONST=10;
+		float CONST=20;
 		
 		int dataPointSize = 0;
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
