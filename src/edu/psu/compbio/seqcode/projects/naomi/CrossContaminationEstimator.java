@@ -136,7 +136,7 @@ public class CrossContaminationEstimator {
 		}		
 		double upperLimit = 0;
 		upperLimit = SumAllCounts/(sampleSize*CONST1);
-		float CONST=5;
+		float CONST=10;
 		
 		System.out.println("upperLimit is: "+upperLimit);
 		
