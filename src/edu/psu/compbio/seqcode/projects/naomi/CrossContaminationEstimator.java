@@ -26,7 +26,7 @@ public class CrossContaminationEstimator {
 	protected ExptConfig econfig;
 	protected float[][] xyPairs;
 
-	public final float CONST1 = 100000;
+	public final float CONST1 = 200000;
 	//public final float CONST1 = 2000000;
 	
 	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ){	
@@ -136,19 +136,20 @@ public class CrossContaminationEstimator {
 		}		
 		double upperLimit = 0;
 		upperLimit = SumAllCounts/(sampleSize*CONST1);
+		float CONST=5;
 		
 		System.out.println("upperLimit is: "+upperLimit);
 		
 		int dataPointSize = 0;
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit)
+			if (((dataPoints[i][0]+dataPoints[i][1])>upperLimit)&&(dataPoints[i][0]+dataPoints[i][1])>CONST)
 				dataPointSize++;
 		}		
 		System.out.println("dataPointSize is: "+dataPointSize);		
 		int xy_index = 0;		
 		xyPairs = new float[dataPointSize][3];
 		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-			if ((dataPoints[i][0]+dataPoints[i][1])>upperLimit){
+			if (((dataPoints[i][0]+dataPoints[i][1])>upperLimit)&&(dataPoints[i][0]+dataPoints[i][1])>CONST){
 				for (int s = 0; s<3;s++){
 					xyPairs[xy_index][s]= dataPoints[i][s];
 				}
