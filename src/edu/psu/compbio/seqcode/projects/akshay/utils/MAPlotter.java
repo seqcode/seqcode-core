@@ -189,11 +189,11 @@ public class MAPlotter {
 			this.setYLogScale(false);
 			this.addDataset("other", datapoints, new Color(75,75,75,80), 3);
 			if(datapoints_highlight_gt!=null)
-				this.addDataset("DE_gt", datapoints_highlight_gt, new Color(0,0,255,80), 3);
+				this.addDataset("DE_gt", datapoints_highlight_gt, new Color(132,112,255,80), 3);
 			if(datapoints_highlight_lt!=null)
-				this.addDataset("DE_lt", datapoints_highlight_lt,new Color(0,255,0,80), 3);
+				this.addDataset("DE_lt", datapoints_highlight_lt,new Color(0,191,255,80), 3);
 			if(datapoints_constant !=null)
-				this.addDataset("Constant", datapoints_constant, new Color(255,0,0,80), 3);
+				this.addDataset("Constant", datapoints_constant, new Color(0,0,255,80), 3);
 			this.setXAxisLabel("A");
 			this.setYAxisLabel("M");
 			this.setXRangeFromData();
