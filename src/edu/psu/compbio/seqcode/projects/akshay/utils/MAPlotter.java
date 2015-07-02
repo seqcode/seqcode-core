@@ -83,23 +83,33 @@ public class MAPlotter {
         
 	}
 	
-	public void plot(String DEevents, String ConstantEvents) throws IOException{
+	public void plot(String DEevents_gt, String DEevents_lt,  String ConstantEvents) throws IOException{
 		
-		List<Pair<Double,Double>> DEhighlight = new ArrayList<Pair<Double,Double>>();
+		List<Pair<Double,Double>> DEhighlight_gt = new ArrayList<Pair<Double,Double>>();
+		List<Pair<Double,Double>> DEhighlight_lt = new ArrayList<Pair<Double,Double>>();
 		List<Pair<Double,Double>> ConstantHighlight = new ArrayList<Pair<Double,Double>>();
 		List<Pair<Double,Double>> otherMA = new ArrayList<Pair<Double,Double>>();
 		
-		HashMap<String, Integer> inDE = new HashMap<String, Integer>();
+		HashMap<String, Integer> inDE_gt = new HashMap<String, Integer>();
+		HashMap<String, Integer> inDE_lt = new HashMap<String, Integer>();
 		HashMap<String, Integer> isConst = new HashMap<String, Integer>();
 		
 		
-		BufferedReader DEreader = new BufferedReader(new FileReader(DEevents));
+		BufferedReader DEreader_gt = new BufferedReader(new FileReader(DEevents_gt));
 		String line;
-		while ((line = DEreader.readLine()) != null) {
+		while ((line = DEreader_gt.readLine()) != null) {
 			line  = line.trim();
 			String[] words = line.split("\\s+");
-			inDE.put(words[0], 0);
-		}DEreader.close();
+			inDE_gt.put(words[0], 0);
+		}DEreader_gt.close();
+		
+		
+		BufferedReader DEreader_lt = new BufferedReader(new FileReader(DEevents_lt));
+		while ((line = DEreader_lt.readLine()) != null) {
+			line  = line.trim();
+			String[] words = line.split("\\s+");
+			inDE_lt.put(words[0], 0);
+		}DEreader_lt.close();
 		
 		BufferedReader Constreader = new BufferedReader(new FileReader(ConstantEvents));
 		while ((line = Constreader.readLine()) != null) {
@@ -115,8 +125,10 @@ public class MAPlotter {
 			if(avg<A_min)
 				avg = A_min;
 			
-			if(inDE.containsKey(indextoUnit.get(d)))
-				DEhighlight.add(new Pair<Double,Double>(fold,avg));
+			if(inDE_gt.containsKey(indextoUnit.get(d)))
+				DEhighlight_gt.add(new Pair<Double,Double>(fold,avg));
+			else if(inDE_lt.containsKey(indextoUnit.get(d)))
+				DEhighlight_lt.add(new Pair<Double,Double>(fold,avg));
 			else if(isConst.containsKey(indextoUnit.get(d)))
 				ConstantHighlight.add(new Pair<Double,Double>(fold,avg));
 			else
@@ -124,13 +136,20 @@ public class MAPlotter {
 		}
 		
 		// make matrices
-		Matrix maMatrixDE = new Matrix(DEhighlight.size(),2);
+		Matrix maMatrixDE_gt = new Matrix(DEhighlight_gt.size(),2);
+		Matrix maMatrixDE_lt = new Matrix(DEhighlight_lt.size(),2);
 		Matrix maMatrixConst = new Matrix(ConstantHighlight.size(),2);
 		Matrix maMatrixOther = new Matrix(otherMA.size(),2);
 		int count=0;
-		for(Pair<Double,Double> v : DEhighlight){
-			maMatrixDE.set(count, 0, v.cdr());
-			maMatrixDE.set(count, 1, v.car());
+		for(Pair<Double,Double> v : DEhighlight_gt){
+			maMatrixDE_gt.set(count, 0, v.cdr());
+			maMatrixDE_gt.set(count, 1, v.car());
+			count++;
+		}
+		count=0;
+		for(Pair<Double,Double> v : DEhighlight_lt){
+			maMatrixDE_lt.set(count, 0, v.cdr());
+			maMatrixDE_lt.set(count, 1, v.car());
 			count++;
 		}
 		count=0;
@@ -150,7 +169,7 @@ public class MAPlotter {
 		
 		
 		ThreeClassScatterPlotMaker plotter = new ThreeClassScatterPlotMaker("Main");
-		plotter.saveMAplot(maMatrixOther, maMatrixDE, maMatrixConst,  0.0, "ScatterPlot.png", true);
+		plotter.saveMAplot(maMatrixOther, maMatrixDE_gt, maMatrixDE_lt,  maMatrixConst,  0.0, "ScatterPlot.png", true);
 		
 		
 		
@@ -163,14 +182,16 @@ public class MAPlotter {
 			super(title);
 		}
 		
-		public void saveMAplot(Matrix datapoints, Matrix datapoints_highlight, Matrix datapoints_constant, Double yLine, String outFilename, boolean rasterImage){
+		public void saveMAplot(Matrix datapoints, Matrix datapoints_highlight_gt,Matrix datapoints_highlight_lt, Matrix datapoints_constant, Double yLine, String outFilename, boolean rasterImage){
 			this.setWidth(800);
 			this.setHeight(800);
 			this.setXLogScale(false);
 			this.setYLogScale(false);
 			this.addDataset("other", datapoints, new Color(75,75,75,80), 3);
-			if(datapoints_highlight!=null)
-				this.addDataset("DE", datapoints_highlight, new Color(0,0,255,80), 3);
+			if(datapoints_highlight_gt!=null)
+				this.addDataset("DE_gt", datapoints_highlight_gt, new Color(0,0,255,80), 3);
+			if(datapoints_highlight_lt!=null)
+				this.addDataset("DE_lt", datapoints_highlight_lt,new Color(0,255,0,80), 3);
 			if(datapoints_constant !=null)
 				this.addDataset("Constant", datapoints_constant, new Color(255,0,0,80), 3);
 			this.setXAxisLabel("A");
@@ -209,13 +230,14 @@ public class MAPlotter {
 		ArgParser ap = new ArgParser(args);
 		
 		String diffFilename = ap.getKeyValue("EdgeRmat");
-		String DEevents = ap.getKeyValue("DEevents");
+		String DEevents_gt = ap.getKeyValue("DEevents_gt");
+		String DEevents_lt = ap.getKeyValue("DEevents_lt");
 		String ConstantEvents = ap.getKeyValue("ConstantEvents");
 		
 		MAPlotter ma = new MAPlotter();
 		
 		ma.loadMatices(diffFilename);
-		ma.plot(DEevents, ConstantEvents);
+		ma.plot(DEevents_gt,DEevents_lt, ConstantEvents);
 	}
 	
 	
