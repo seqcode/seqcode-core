@@ -247,7 +247,7 @@ public class SeqViewOptions {
         }
     }
 
-    public SeqViewOptions clone() {System.out.println("SeqViewOptions clone");
+    public SeqViewOptions clone() {
         SeqViewOptions o = new SeqViewOptions(genome);
         o.chrom = chrom;
         o.gene = gene;

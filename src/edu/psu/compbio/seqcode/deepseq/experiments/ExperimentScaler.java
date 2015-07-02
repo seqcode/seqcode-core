@@ -2,6 +2,7 @@ package edu.psu.compbio.seqcode.deepseq.experiments;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,10 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.utils.models.Model;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataFrame;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataRegression;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
+import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
+import edu.psu.compbio.seqcode.projects.multigps.framework.PotentialRegionFilter;
 
 /**
  * ExperimentScaler: calculate a scaling transformation between all Sample pairs in an ExperimentCondition
@@ -50,7 +55,7 @@ public class ExperimentScaler {
 	}
 	
 	/**
-	 * Find the median hit count ratio 
+	 * Find the median hit count ratio in bins that have non-zero counts
 	 * @return
 	 */
 	public double scalingRatioByMedian(List<Float> setA, List<Float> setB){
@@ -62,10 +67,8 @@ public class ExperimentScaler {
 			
 		ArrayList<Float> ratios = new ArrayList<Float>();
 	    for(int x=0; x<setA.size(); x++){
-			if(setA.get(x)>0)
+			if(setA.get(x)>0 && setB.get(x)>0)
 				ratios.add((float)(setA.get(x) / setB.get(x)));
-			else
-				ratios.add((float)(setA.get(x) / 1));
         }
         Collections.sort(ratios);
 		scalingRatio = ratios.get(ratios.size() / 2);
@@ -95,7 +98,6 @@ public class ExperimentScaler {
 		Collections.sort(counts);
         
         //SES procedure
-        double readRatio = totalA/totalB;
         double cumulA=0, cumulB=0, maxDiffAB=0, maxDiffAprop=0, currDiff=0;
         int maxDiffIndex=0, i=0;
         for(PairedCounts pc : counts){
@@ -110,6 +112,54 @@ public class ExperimentScaler {
         	}
         	i++;
         }
+		return(scalingRatio);
+	}
+	
+	/**
+	 * Find the scaling ratio according to the NCIS method from Liang & Keles (BMC Bioinf 2012).
+	 * Also sets a background proportion estimate for the signal channel.  
+	 * Should be run using *all* genomic windows in the Lists. 
+	 * Uses ratios that are based on at least 75% of genomic regions by default. 
+	 * @return
+	 */
+	public double scalingRatioByNCIS(List<Float> setA, List<Float> setB){
+		double scalingRatio=1;
+		if(setA.size()!=setB.size()){
+			System.err.println("ExperimentScaler is trying to scale lists of two different lengths");
+			System.exit(1);
+		}
+		
+		float totalA=0, totalB=0; float numPairs = (float)setA.size();
+		List<PairedCounts> counts = new ArrayList<PairedCounts>();
+		for(int x=0; x<setA.size(); x++){
+			totalA += setA.get(x);
+			totalB += setB.get(x);
+			counts.add(new PairedCounts(setA.get(x), setB.get(x)));                
+		}
+		
+		//NCIS uses increasing total tag counts versus enrichment ratio
+		Collections.sort(counts, new Comparator<PairedCounts>(){
+            public int compare(PairedCounts o1, PairedCounts o2) {return o1.compareByTotal(o2);}
+        });
+        
+        //NCIS procedure
+        double cumulA=0, cumulB=0, currRatio=0, lastRatio=-1;
+        float i=0;
+        for(PairedCounts pc : counts){
+        	cumulA+=pc.x;
+        	cumulB+=pc.y;
+        	
+        	i++;
+        	if(i/numPairs > 0.75 && cumulA>0 && cumulB>0){ //NCIS estimates begin using the lower 3 quartiles of the genome (based on total tags)
+	        	currRatio = (cumulA/cumulB);
+	        	if(lastRatio==-1 || currRatio<lastRatio){
+	        		lastRatio = currRatio;
+	        	}else{
+	        		break;
+	        	}
+        	}
+        }
+        scalingRatio = currRatio;
 		return(scalingRatio);
 	}
 	
@@ -135,13 +185,30 @@ public class ExperimentScaler {
 		
 		GenomeConfig gconfig = new GenomeConfig(args);
 		ExptConfig econfig = new ExptConfig(gconfig.getGenome(), args);
+		MultiGPSConfig mgpsconfig = new MultiGPSConfig(gconfig, args, false);
+		
 		
 		if(gconfig.helpWanted()){
 			System.err.println("ExperimentScaler:");
 			System.err.println(gconfig.getArgsList()+"\n"+econfig.getArgsList());
 		}else{
-			Genome gen = gconfig.getGenome();
 			ExperimentManager exptMan = new ExperimentManager(econfig);
+			BindingManager bindingManager = new BindingManager(exptMan);
+			//Initialize binding models & binding model record
+			Map<ControlledExperiment, List<BindingModel>>  repBindingModels = new HashMap<ControlledExperiment, List<BindingModel>>();
+			for(ControlledExperiment rep : exptMan.getReplicates()){
+				if(mgpsconfig.getDefaultBindingModel()!=null)
+					bindingManager.setBindingModel(rep, mgpsconfig.getDefaultBindingModel());
+				else if(rep.getExptType()!=null && rep.getExptType().getName().toLowerCase().equals("chipexo"))
+					bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipExoEmpiricalDistribution));
+				else
+					bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipSeqEmpiricalDistribution));
+				repBindingModels.put(rep, new ArrayList<BindingModel>());
+				repBindingModels.get(rep).add(bindingManager.getBindingModel(rep));
+			}
+			for(ExperimentCondition cond : exptMan.getConditions())
+				bindingManager.updateMaxInfluenceRange(cond);
+			
 			
 			//Test
 			System.err.println("Conditions:\t"+exptMan.getConditions().size());
@@ -160,60 +227,98 @@ public class ExperimentScaler {
 			
 			ExperimentScaler scaler = new ExperimentScaler();
 			
+			//Potential regions reqd by PeakSeq method
+			PotentialRegionFilter potentialFilter = new PotentialRegionFilter(mgpsconfig, econfig, exptMan, bindingManager);
+			List<Region> potentials = potentialFilter.execute();
+			System.out.println("\t"+potentials.size()+" potential regions.\n");
+			
 			//Generate the data structures for calculating scaling factors
-			//10000bp window (median & regression)
+			//Window size loaded by ExptConfig option --scalewin
 			Genome genome = econfig.getGenome();
 			Map<Sample, List<Float>> sampleWindowCounts = new HashMap<Sample, List<Float>>();
+			Map<Sample, List<Float>> noPotSampleWindowCounts = new HashMap<Sample, List<Float>>();
 			for(Sample samp : exptMan.getSamples()){
 				List<Float> currSampCounts = new ArrayList<Float>();
+				List<Float> noPotCurrSampCounts = new ArrayList<Float>();
 				for(String chrom:genome.getChromList()) {
 		            int chrlen = genome.getChromLength(chrom);
-		            for (int start = 1; start  < chrlen - 10000; start += 10000) {
-		                Region r = new Region(genome, chrom, start, start + 10000);
+		            for (int start = 1; start  < chrlen - econfig.getScalingSlidingWindow(); start += econfig.getScalingSlidingWindow()) {
+		                Region r = new Region(genome, chrom, start, start + econfig.getScalingSlidingWindow());
 		                currSampCounts.add(samp.countHits(r));
+		                
+		                boolean overlapsPotentials=false;
+		                for(Region p : potentials){
+		                	if(r.overlaps(p)){
+		                		overlapsPotentials=true; break;
+		                	}
+		                }
+		                if(!overlapsPotentials)
+		                	noPotCurrSampCounts.add(samp.countHits(r));
 		            }
 		        }
 				sampleWindowCounts.put(samp, currSampCounts);
+				noPotSampleWindowCounts.put(samp, noPotCurrSampCounts);
 			}
+			System.out.println("Sliding window size for scaling methods: "+econfig.getScalingSlidingWindow());
+			System.out.println("\tNumbers of windows:\tAll="+sampleWindowCounts.get(exptMan.getSamples().get(0)).size()+"\tnoPotenials="+noPotSampleWindowCounts.get(exptMan.getSamples().get(0)).size()+"\n");
+			
+			
 			//Hit ratios
-			for(Sample sampA : exptMan.getSamples())
-				for(Sample sampB : exptMan.getSamples())
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex()){
-						double hitRatio = sampA.getHitCount()/sampB.getHitCount();
-						System.out.println("HitRatio\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+hitRatio);
-					}
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex()){
+							double hitRatio = sampA.getHitCount()/sampB.getHitCount();
+							System.out.println("HitRatio\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+hitRatio);
+						}
+				}
+			}
 			
 			//Median
-			for(Sample sampA : exptMan.getSamples())
-				for(Sample sampB : exptMan.getSamples())
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
-						System.out.println("Median\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByMedian(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
-			//Regression
-			for(Sample sampA : exptMan.getSamples())
-				for(Sample sampB : exptMan.getSamples())
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
-						System.out.println("Regression\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
-
-			
-			//1000bp window (SES)
-			sampleWindowCounts = new HashMap<Sample, List<Float>>();
-			for(Sample samp : exptMan.getSamples()){
-				List<Float> currSampCounts = new ArrayList<Float>();
-				for(String chrom:genome.getChromList()) {
-		            int chrlen = genome.getChromLength(chrom);
-		            for (int start = 1; start  < chrlen - 1000; start += 1000) {
-		                Region r = new Region(genome, chrom, start, start + 1000);
-		                currSampCounts.add(samp.countHits(r));
-		            }
-		        }
-				sampleWindowCounts.put(samp, currSampCounts);
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+							System.out.println("Median\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByMedian(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+				}
 			}
+			
+			//Regression on full dataset (i.e. PeakSeq using Pf=0)
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+							System.out.println("Regression\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+				}
+			}
+			
 			//SES
-			for(Sample sampA : exptMan.getSamples())
-				for(Sample sampB : exptMan.getSamples())
-					if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
-						System.out.println("SES\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioBySES(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
-
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+							System.out.println("SES\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioBySES(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+				}
+			}
+			
+			//NCIS
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+							System.out.println("NCIS\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByNCIS(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+				}
+			}
+			
+			//Regression after filtering out potential regions (i.e. PeakSeq using Pf=1)
+			for(Sample sampA : exptMan.getSamples()){ 
+				if(sampA.isSignal()){
+					for(Sample sampB : exptMan.getSamples())
+						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
+							System.out.println("PeakSeq\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByRegression(noPotSampleWindowCounts.get(sampA), noPotSampleWindowCounts.get(sampB)));
+				}
+			}
+			
 			exptMan.close();
 		}
 	}
@@ -230,11 +335,26 @@ public class ExperimentScaler {
 			x=a;
 			y=b;
 		}
-		//Sort on the X variables
+		/**
+		 * Sort on increasing X variables
+		 * @see java.lang.Comparable#compareTo(java.lang.Object)
+		 */
 		public int compareTo(PairedCounts pc) {
 			if(x<pc.x){return -1;}
 			if(x>pc.x){return 1;}
 			return 0;
-		}		
+		}
+		
+		/**
+		 * Compare based on the sum of both paired counts
+		 * @param pc
+		 * @return
+		 */
+		public int compareByTotal(PairedCounts pc){
+			if((x+y)<(pc.x+pc.y)){return -1;}
+			if((x+y)>(pc.x+pc.y)){return 1;}
+			return 0;
+		}
+		
 	}
 }
