@@ -351,11 +351,11 @@ public class PeaksAnalysis {
 					int revCurrKP1Int = RegionFileUtilities.seq2int(revCurrKP1);
 					int kmerP1 = currKP1Int<revCurrKP1Int? currKP1Int:revCurrKP1Int;
 					for(int l=j+1;l<(currSubSeq.length()-k+1); l++){
-						String currKP2 = currSubSeq.substring(j,j+k);
+						String currKP2 = currSubSeq.substring(l,l+k);
 						String revCurrKP2 = SequenceUtils.reverseComplement(currKP2);
 						int currKP2Int = RegionFileUtilities.seq2int(currKP2);
 						int revCurrKP2Int = RegionFileUtilities.seq2int(revCurrKP2);
-						int kmerP2 = currKP2Int>revCurrKP2Int? currKP2Int: revCurrKP2Int;
+						int kmerP2 = currKP2Int<revCurrKP2Int? currKP2Int: revCurrKP2Int;
 						kmerCoO[kmerP1][kmerP2]=1;
 						kmerCoO[kmerP2][kmerP1]=1;
 					}
