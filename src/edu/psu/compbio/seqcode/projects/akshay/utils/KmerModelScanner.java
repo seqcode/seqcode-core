@@ -3,6 +3,8 @@ package edu.psu.compbio.seqcode.projects.akshay.utils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
@@ -11,12 +13,14 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
+import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
+import edu.psu.compbio.seqcode.projects.seed.features.SuperEnrichedFeature;
 
 public class KmerModelScanner {
 	
-	
+	protected GenomeConfig gcon;
 	protected double[] kmerweights;
 	protected List<Point> peaks;
 	protected List<Region> regions;
@@ -25,8 +29,8 @@ public class KmerModelScanner {
 	protected int maxM; //Maximum length to consider for motif finding
 	//protected int n; // Number of motifs to look at each 
 	
-	public KmerModelScanner() {
-		
+	public KmerModelScanner(GenomeConfig gc) {
+		gcon=gc;
 	}
 	
 	
@@ -39,6 +43,59 @@ public class KmerModelScanner {
 	public void setminM(int m){minM=m;}
 	public void setmaxM(int m){maxM=m;}
 	
+	public void printKmerMountains(boolean useCache, String genpath, double oddsThresh){
+		@SuppressWarnings("rawtypes")
+		SequenceGenerator seqgen = new SequenceGenerator();
+		seqgen.useCache(useCache);
+		if(useCache){
+			seqgen.useLocalFiles(true);
+			seqgen.setGenomePath(genpath);
+		}
+		for(Region r : regions){
+			String seq = seqgen.execute(r).toUpperCase();
+			if(seq.contains("N"))
+				continue;
+			List<Pair<Region,Double>> mountains = new ArrayList<Pair<Region,Double>>();
+			for(int l=minM; l<=maxM; l++){
+				for(int i=0; i<(seq.length()-l+1); i++){
+					String motif = seq.substring(i, i+l);
+					double score=0.0;
+					for(int j=0; j<motif.length()-k+1; j++){
+						String currk = motif.substring(j, j+k);
+						String revcurrk = SequenceUtils.reverseComplement(currk);
+						int  currKInt = RegionFileUtilities.seq2int(currk);
+						int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
+						int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+						score = score+kmerweights[kmer];
+					}
+					Region hill = new Region(gcon.getGenome(),r.getChrom(),r.getStart()+i,r.getStart()+i+l);
+					
+					Iterator<Pair<Region,Double>> it = mountains.iterator();
+					boolean add=true;
+					while(it.hasNext()){
+						Pair<Region,Double> pr = it.next();
+						Region currHill = pr.car();
+						Double currScore = pr.cdr();
+						if(currHill.contains(hill) && currScore<score){
+							it.remove();
+							add=true;
+						}else if(currHill.contains(hill) && currScore> score){
+							add=false;
+						}
+					}
+					if(add){
+						mountains.add(new Pair(hill,score));
+					}
+					
+				}
+			}
+			
+			for(Pair<Region,Double> hillpair: mountains){
+				System.out.println(r.getLocationString()+"\t"+hillpair.car().getLocationString()+"\t"+hillpair.cdr());
+			}	
+		}
+	}
+	
 	public void scanPeaks(boolean useCache, String genpath){
 		@SuppressWarnings("rawtypes")
 		SequenceGenerator seqgen = new SequenceGenerator();
@@ -50,6 +107,8 @@ public class KmerModelScanner {
 		
 		for(Region r: regions){
 			String seq = seqgen.execute(r).toUpperCase();
+			if(seq.contains("N"))
+				continue;
 			double maxScore = Double.MIN_VALUE;
 			String bestMotif = "";
 			for(int l=minM; l<=maxM; l++){
@@ -106,17 +165,20 @@ public class KmerModelScanner {
         	genPath = ap.getKeyValue("seq");
         }
         
-        KmerModelScanner scanner = new KmerModelScanner();
+        KmerModelScanner scanner = new KmerModelScanner(gcon);
         scanner.setK(k);
         scanner.setKmerWeights(ws);
         scanner.setmaxM(M);
         scanner.setminM(m);
         scanner.setPeaks(ps);
         scanner.setRegions(rs);
-        
-        scanner.scanPeaks(cache, genPath);
-            
-		
+        if(ap.hasKey("scan")){
+        	scanner.scanPeaks(cache, genPath);
+        }
+        if(ap.hasKey("printMountains")){
+        	Double threshold = Double.parseDouble(ap.getKeyValue("oddsthresh"));
+        	scanner.printKmerMountains(cache, genPath, threshold);
+        }
 	}
 	
 	
