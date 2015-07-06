@@ -32,7 +32,6 @@ public class Reader
 		}
 	    try {
             line = br.readLine();
-            line = br.readLine();
 	        while (line != null) 
 	        {
 	        	line = br.readLine();

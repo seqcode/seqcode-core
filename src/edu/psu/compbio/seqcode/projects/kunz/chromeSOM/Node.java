@@ -58,6 +58,19 @@ public class Node
 		neighborHoods.add(neighbors2);
 		neighborHoods.add(neighbors3);
 	}
+	public boolean neighborHoodContains(Node add)
+	{
+		boolean bb = false;
+		for(int i = 0; i < neighborHoods.size(); i++)
+		{
+			for(int j = 0; j< neighborHoods.get(i).size(); j++)
+			{
+				if(neighborHoods.get(i).indexOf(add)!=-1)
+					bb = true;
+			}
+		}
+		return bb;
+	}
 	public void updateMag()
 	{
 		double magD = 0;

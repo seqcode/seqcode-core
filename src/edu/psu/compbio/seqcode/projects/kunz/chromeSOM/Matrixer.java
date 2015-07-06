@@ -17,9 +17,12 @@ public class Matrixer
 	public Matrixer()
 	{
 		binsize = 20000;
-		lander = "src/kunzSOMstuff/MatrixLanding.txt";
-		file = "src/kunzSOMstuff/YeastInteractions-intra.txt";
-		file2 = "src/kunzSOMstuff/YeastInteractions-inter.txt";
+		String ffs = System.getProperty("user.dir")+"/MatrixLanding.txt";
+		lander = ffs;
+		String ff = System.getProperty("user.dir")+"/YeastInteractions-intra.txt";
+		file = ff;
+		String f = System.getProperty("user.dir")+"/YeastInteractions-inter.txt";
+		file2 = f;
 		inter = new ArrayList<Interaction>();
 		count = 0;
 	}
@@ -64,23 +67,13 @@ public class Matrixer
 				}
 			}
 		}
-	    ////////////////////////////////////////////////lookUpReader();
-	    /*for(int i = 0; i < points.size(); i++)
-		{
-			System.out.print(points.get(i).name+ "  ");
-			for(int j = 0; j<points.get(i).v.size(); j++)
-			{
-				System.out.print(points.get(i).v.get(j) + "\t");
-			}
-			System.out.println();
-		}*/
 	}
 	public void binGenome()
 	{
 		n = findChromeNum();
 		a = maxForEach(binsize,n);
 		a1 = new int[n];
-		System.out.println(n);
+		System.out.println("Chromes: " + n);
 		int totalBins = 0;
 		for(int i =0; i<a.length;i++)
 		{
@@ -89,7 +82,7 @@ public class Matrixer
 		}
 		for(int i =0; i<a.length;i++)
 			System.out.println(a[i]);
-		System.out.println(totalBins);
+		System.out.println("Total bins: "+ totalBins);
 		bigpapa = new int[totalBins][totalBins];
 		for(int i =0; i< inter.size();i++)
 		{

@@ -2,14 +2,10 @@ package edu.psu.compbio.seqcode.projects.kunz.chromeSOM;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Polygon;
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 import javax.swing.JPanel;
 
@@ -21,15 +17,36 @@ public class DrawHex extends JPanel// implements Grid2D
 	public ArrayList<MiniNode> nodeList;
 	public ArrayList<Color> colors;
 	MiniSystem nodeSystem;
-	public BatchMap batchMap;
-	public DrawHex()
+	public DrawHex(String s)
 	{
-		yNodes=0;xNodes=0;
-		reader("src/kunzSOMstuff/SOMlander.txt");
+		String ffs = System.getProperty("user.dir")+"/"+s;
+		yNodes=0;
+		xNodes=0;
+		reader(ffs);
 		nodes = yNodes*xNodes;
 		
     	colors = new ArrayList<Color>();
     	colorNum=100;
+	}
+	public void countingDPS(int chr)
+	{
+		for(int i =0; i<nodeSystem.size();i++)
+		{
+			MiniNode mini = nodeSystem.get(i);
+			mini.counting.clear();
+			for(int j =0; j<mini.dataPoints.size(); j++)
+			{
+				if (chr == 0)
+					mini.counting.add(mini.dataPoints.get(j));
+				else if (mini.dataPoints.get(j).chrome == chr)
+					mini.counting.add(mini.dataPoints.get(j));
+			}
+			//System.out.println(mini.counting.size());
+		}
+	    maxDataPoints = 0;
+	    minDataPoints = 0;
+		heatMapping();
+		repaint();
 	}
 	public void reader(String f)
 	{
@@ -66,7 +83,6 @@ public class DrawHex extends JPanel// implements Grid2D
 				current.addDP(whole);
 		}
 		nodeSystem = new MiniSystem(nodeList,xNodes,yNodes);
-		
 	}
 	public void paintComponent(Graphics g)
 	  {
@@ -79,17 +95,16 @@ public class DrawHex extends JPanel// implements Grid2D
 	    	g.fillPolygon(nodeList.get(i).p);
 	    	g.setColor(Color.BLACK);
 	    	g.setFont(new Font("Serif", 5, 9));
-	    	//g.drawString(""+nodeList.get(i).xVal+","+nodeList.get(i).yVal, nodeList.get(i).xLoc, nodeList.get(i).yLoc);
-	    	g.drawString(""+nodeList.get(i).dataPoints.size(),nodeList.get(i).xLoc, nodeList.get(i).yLoc);
+	    	g.drawString(""+nodeList.get(i).counting.size(),nodeList.get(i).xLoc, nodeList.get(i).yLoc);
 	    	g.drawPolygon(nodeList.get(i).p);
 	    }
 	}
 	public void nodeBuild(int winW, int winH)
 	{  
 		int xMin = (int)(.1 * winW);
-	    int yMin = (int)(.1 * winH);
+	    int yMin = (int)(.05 * winH);
 	    int xMax = (int)(.90 * winW);
-	    int yMax = (int)(.90 * winH);
+	    int yMax = (int)(.85 * winH);
 		
 	    double winWidth = xMax-xMin;
 	    double winHeight = yMax-yMin;
@@ -172,25 +187,25 @@ public class DrawHex extends JPanel// implements Grid2D
 	}
 	public void heatMapping()
 	{
-		minDataPoints = nodeList.get(0).dataPoints.size();
-		maxDataPoints = nodeList.get(0).dataPoints.size();
+		minDataPoints = nodeList.get(0).counting.size();
+		maxDataPoints = nodeList.get(0).counting.size();
 		for(int i = 0; i<nodeList.size(); i++)
 		{
-			if(nodeList.get(i).dataPoints.size()>maxDataPoints)
-				maxDataPoints = nodeList.get(i).dataPoints.size();
-			if(nodeList.get(i).dataPoints.size()<minDataPoints)
-				minDataPoints = nodeList.get(i).dataPoints.size();
+			if(nodeList.get(i).counting.size()>maxDataPoints)
+				maxDataPoints = nodeList.get(i).counting.size();
+			if(nodeList.get(i).counting.size()<minDataPoints)
+				minDataPoints = nodeList.get(i).counting.size();
 		}
 		if(maxDataPoints == minDataPoints) maxDataPoints++;
-		   for(int i = 0; i<nodeSystem.size(); i++)
-		   {	   
-			   MiniNode p = nodeSystem.get(i);
-			   if(p.dataPoints.size() == 0)
-			   {
-				   p.color = Color.GRAY;
-			   }
-			   else
-				   p.color = colors.get(((p.dataPoints.size()-minDataPoints)*(colors.size()-1)/(maxDataPoints-minDataPoints)));
+	   for(int i = 0; i<nodeSystem.size(); i++)
+	   {	   
+		   MiniNode p = nodeSystem.get(i);
+		   if(p.counting.size() == 0)
+		   {
+			   p.color = Color.GRAY;
+		   }
+		   else
+			   p.color = colors.get(((p.counting.size()-minDataPoints)*(colors.size()-1)/(maxDataPoints-minDataPoints)));
+	   }
 	}
-}
 }
