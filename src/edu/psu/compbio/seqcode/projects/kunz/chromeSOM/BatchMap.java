@@ -166,8 +166,8 @@ public class BatchMap
 					
 					double nj = nono.dataPoints.size();
 					double h = nFactor(o,itercount); 							//o = degree of separation between nodes = how many shells apart					
-					//double weight = nj*h;
-					double weight = h;
+					double weight = nj*h;
+					//double weight = h;
 					
 					for(int j = 0; j<nj; j++)									//Cycles through the data points assigned to each Node in each shell
 					{

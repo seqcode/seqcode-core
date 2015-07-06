@@ -67,6 +67,25 @@ public class Grid extends JFrame
 		 //to train: args = "train" 'int x' 'int y' 'int sigma'
 		if (args.length > 0)
 		{
+			if(args[0].equalsIgnoreCase("tester"))
+			{
+				BatchMap o = new BatchMap(6,6,2,5000); o.go();
+				o = new BatchMap(8,8,2,5000); o.go();
+				o = new BatchMap(10,10,2,5000); o.go();
+				o = new BatchMap(12,12,2,5000); o.go();
+				o = new BatchMap(6,6,3,5000); o.go();
+				o = new BatchMap(8,8,3,5000); o.go();
+				o = new BatchMap(10,10,3,5000); o.go();
+				o = new BatchMap(12,12,3,5000); o.go();
+				o = new BatchMap(6,6,4,5000); o.go();
+				o = new BatchMap(8,8,4,5000); o.go();
+				o = new BatchMap(10,10,4,5000); o.go();
+				o = new BatchMap(12,12,4,5000); o.go();
+				o = new BatchMap(6,6,5,5000); o.go();
+				o = new BatchMap(8,8,5,5000); o.go();
+				o = new BatchMap(10,10,5,5000); o.go();
+				o = new BatchMap(12,12,5,5000); o.go();
+			}
 	    	if(args[0].equalsIgnoreCase(("train")))
 	    	{
 	    		int xArg = 0;
