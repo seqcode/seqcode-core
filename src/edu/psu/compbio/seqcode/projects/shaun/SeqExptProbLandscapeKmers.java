@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -18,7 +18,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class SeqExptProbLandscapeKmers {
 
-	private static Organism org;
+	private static Species org;
 	private static Genome gen;
 	private static SeqDataHandler IPhandle;
 	private static SeqDataHandler backhandle;
@@ -92,8 +92,8 @@ public class SeqExptProbLandscapeKmers {
 	
 	public SeqExptProbLandscapeKmers(String o, String g, String ex, String bk, int k){
 		try {
-			org = Organism.getOrganism(o);
-			gen = org.getGenome(g);
+			org = Species.getSpecies(o);
+			gen = new Genome(org, g);
 			
 			IPhandle = new SeqDataHandler(org, gen, ex);
 			backhandle = new SeqDataHandler(org, gen, bk);

@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -54,7 +54,7 @@ public class DnaMethOverlapStat {
 		
 		Genome gen = null;
 		if(ap.hasKey("species")){
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			Pair<Species, Genome> pair = Args.parseGenome(args);
 			if(pair != null){
 				
 				gen = pair.cdr();

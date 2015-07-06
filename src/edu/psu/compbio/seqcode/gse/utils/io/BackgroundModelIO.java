@@ -10,7 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.BackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.CountsBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.FrequencyBackgroundModel;
@@ -33,7 +32,7 @@ public class BackgroundModelIO {
 
   public static void main(String[] args) {
   	try {
-  		MarkovBackgroundModel mbg = BackgroundModelIO.parseMarkovBackgroundModel("mm8.back", Organism.findGenome("mm8"));
+  		MarkovBackgroundModel mbg = BackgroundModelIO.parseMarkovBackgroundModel("mm8.back", Genome.findGenome("mm8"));
   		BackgroundModelIO.printProbsToFile(mbg, "foo.back");
   	}
   	catch (NotFoundException nfex) {

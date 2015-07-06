@@ -10,7 +10,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
@@ -30,7 +30,7 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
  * @version	%I%, %G%
  */
 public class IDXExporter {
-	private Organism org;
+	private Species org;
 	private Genome gen;
 	protected DeepSeqExpt expt;
 	protected int [] stackedHitCountsPos;
@@ -64,7 +64,7 @@ public class IDXExporter {
 		ArgParser ap = new ArgParser(args);
 		try {
 			if(ap.hasKey("species")){
-				Pair<Organism, Genome> pair = Args.parseGenome(args);
+				Pair<Species, Genome> pair = Args.parseGenome(args);
 				if(pair != null){
 					gen = pair.cdr();
 					dbconnected=true;

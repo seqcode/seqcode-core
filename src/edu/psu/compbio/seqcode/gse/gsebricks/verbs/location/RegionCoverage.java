@@ -4,7 +4,7 @@ import java.io.PrintStream;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
@@ -170,14 +170,14 @@ public class RegionCoverage extends Coverage {
 		public RegionCoverageModel(RegionCoverage c, CoverageModel m) {
 			keys = m.keys.clone();
 			coverages = m.coverages.clone();
-			species = c.genome.getSpecies();
+			species = c.genome.getSpeciesName();
 			version = c.genome.getVersion();
 		}
 		
 		public Genome loadGenome() { 
 			try {
-				Organism org = Organism.getOrganism(species);
-				return org.getGenome(version);
+				Species org = Species.getSpecies(species);
+				return new Genome(org, version);
 			} catch (NotFoundException e) {
 				e.printStackTrace();
 				return null;

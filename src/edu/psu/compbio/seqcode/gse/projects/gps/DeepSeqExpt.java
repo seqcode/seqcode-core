@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RegionParser;
@@ -148,8 +148,8 @@ public class DeepSeqExpt {
         	try {
         		Genome gen=null;
 	        	if(ap.hasKey("species")&&ap.hasKey("genome")){
-	        		Organism currorg = Organism.getOrganism(ap.getKeyValue("species"));
-	        		gen = currorg.getGenome(ap.getKeyValue("genome"));
+	        		Species currorg = Species.getSpecies(ap.getKeyValue("species"));
+	        		gen = new Genome(currorg, ap.getKeyValue("genome"));
 	            }else if(ap.hasKey("geninfo")){
 	            	gen = new Genome("Genome", new File(ap.getKeyValue("geninfo")), true);
 	        	}

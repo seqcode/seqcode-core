@@ -17,7 +17,7 @@ import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.RepeatMaskedRegion;
@@ -41,7 +41,7 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 public class PeaksAnalysis {
-	private Organism org=null;
+	private Species org=null;
 	private Genome gen =null;
 	private List<Region> posSet;
 	private List<Point> posPeaks=null;
@@ -106,8 +106,8 @@ public class PeaksAnalysis {
             return;
         }
         try {
-        	Pair<Organism, Genome> pair = Args.parseGenome(args);
-        	Organism currorg = pair.car();
+        	Pair<Species, Genome> pair = Args.parseGenome(args);
+        	Species currorg = pair.car();
         	Genome currgen = pair.cdr();
 			
 	        String peaksFile = ap.hasKey("peaks") ? ap.getKeyValue("peaks") : (ap.hasKey("macspeaks") ? ap.getKeyValue("macspeaks"):null);
@@ -129,6 +129,9 @@ public class PeaksAnalysis {
 	        //options
 	        boolean printSeqs = ap.hasKey("printseqs");
 	        boolean printSeqKmers = ap.hasKey("printseqkmers");
+	        boolean printTiledSeqKmers = ap.hasKey("printtiledseqkmers");
+	        boolean printSeqKmersCoOccurence = ap.hasKey("printSeqKmersCoOccurence");
+	        int printSeqKmersCoOccurenceK = ap.hasKey("printSeqKmersCoOccurence") ? new Integer(ap.getKeyValue("printSeqKmersCoOccurence")).intValue():4;
 	        int printSeqKmersK = ap.hasKey("printseqkmers") ? new Integer(ap.getKeyValue("printseqkmers")).intValue():4;;
 	        boolean printMeta = ap.hasKey("metapeak");
 	        boolean weightedCounts = ap.hasKey("weightcount");
@@ -165,6 +168,17 @@ public class PeaksAnalysis {
 			if(printSeqKmers)
 				analyzer.printPeakSeqKmers(printSeqKmersK, useCache, genomePath);
 			
+			if(printTiledSeqKmers){
+				int kmin = ap.hasKey("kmin") ? new Integer(ap.getKeyValue("kmin")).intValue():3;
+				int kmax =  ap.hasKey("kmax") ? new Integer(ap.getKeyValue("kmax")).intValue():8;
+				analyzer.printPeakSeqTiledKmers(kmin, kmax, useCache, genomePath);
+			}
+			
+			if(printSeqKmersCoOccurence){
+				int s = ap.hasKey("slide") ? new Integer(ap.getKeyValue("slide")).intValue():10;
+				analyzer.printPeakSeqKmerCoocurrence(printSeqKmersCoOccurenceK, useCache,genomePath , s);
+			}
+			
 			//analyzer.printMotifInfo();
 			
 			analyzer.loadExperiments(args);
@@ -198,7 +212,7 @@ public class PeaksAnalysis {
 		}
 	}
 	
-	public PeaksAnalysis(Organism o, Genome g){
+	public PeaksAnalysis(Species o, Genome g){
 		org = o;
 		gen=g;
 	}
@@ -275,6 +289,229 @@ public class PeaksAnalysis {
 			System.out.println("");
 		}
 	}
+	
+	
+	// Print the number of times 2 kmers co-occurr in a given sliding window 
+	// 									and
+	// Prints the kmer frequency counts
+	// Prints only those kmer-pairs that frequently occur in the given list of peaks. This is to maintain a manageble feature space
+	public void printPeakSeqKmerCoocurrence(int k, boolean useCache, String genPath, int s){
+		SequenceGenerator seqgen = new SequenceGenerator();
+		seqgen.useCache(useCache);
+		if(useCache){
+			seqgen.useLocalFiles(true);
+			seqgen.setGenomePath(genPath);
+		}
+		int numK = (int)Math.pow(4, k);
+		int[] kmerCounts = new int[numK];
+		int[][] kmerCoO = new int[numK][numK];
+		
+		//Print header
+		System.out.print("Region");
+		for(int i=0; i<numK; i++){
+			System.out.print("\t"+RegionFileUtilities.int2seq(i, k));
+		}
+		for(int r=0; r<numK; r++){
+			for(int c=r; c<numK; c++){
+				System.out.print("\t"+RegionFileUtilities.int2seq(r, k)+"-"+RegionFileUtilities.int2seq(c, k));
+			}
+		}
+		System.out.println("");
+		
+		double[][] kmerCountsAvg = new double[posSet.size()][numK];
+		double[][][] kmerCoOAvg = new double[posSet.size()][numK][numK];
+		int reg_index=0;
+		for(Region r: posSet){
+			// Initialize 
+			for(int i=0; i<numK; i++)
+				kmerCounts[i]=0;
+			for(int i=0; i<numK; i++){
+				for(int j=0; j<numK; j++){
+					kmerCoO[i][j]=0;
+				}
+			}
+			
+			String seq = seqgen.execute(r).toUpperCase();
+			if(seq.contains("N")){
+				for(int i=0; i<numK; i++){
+					kmerCountsAvg[reg_index][i]=0;
+				}
+				for(int i=0;i<numK; i++){
+					for(int j=0; j<numK; j++){
+						kmerCoOAvg[reg_index][i][j]=0;
+					}
+				}
+				reg_index++;
+				continue;
+			}
+			// Count kmer freqs
+			for(int i=0; i<(seq.length()-k+1); i++){
+				String currK = seq.substring(i, i+k);
+				String revCurrK =SequenceUtils.reverseComplement(currK);
+				int  currKInt = RegionFileUtilities.seq2int(currK);
+				int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
+				int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+				kmerCounts[kmer]++;
+				kmerCountsAvg[reg_index][kmer]++;
+			}
+			
+			// Count the co-occurrence
+			for(int i=0; i<(seq.length()-s+1);i++){
+				String currSubSeq = seq.substring(i,i+s);
+				for(int j=0;j<(currSubSeq.length()-k+1-1);j++){
+					String currKP1 = currSubSeq.substring(j, j+k);
+					String revCurrKP1 = SequenceUtils.reverseComplement(currKP1);
+					int currKP1Int = RegionFileUtilities.seq2int(currKP1);
+					int revCurrKP1Int = RegionFileUtilities.seq2int(revCurrKP1);
+					int kmerP1 = currKP1Int<revCurrKP1Int? currKP1Int:revCurrKP1Int;
+					for(int l=j+1;l<(currSubSeq.length()-k+1); l++){
+						String currKP2 = currSubSeq.substring(l,l+k);
+						String revCurrKP2 = SequenceUtils.reverseComplement(currKP2);
+						int currKP2Int = RegionFileUtilities.seq2int(currKP2);
+						int revCurrKP2Int = RegionFileUtilities.seq2int(revCurrKP2);
+						int kmerP2 = currKP2Int<revCurrKP2Int? currKP2Int: revCurrKP2Int;
+						kmerCoO[kmerP1][kmerP2]=1;
+						kmerCoO[kmerP2][kmerP1]=1;
+						kmerCoOAvg[reg_index][kmerP1][kmerP2]=1;
+						kmerCoOAvg[reg_index][kmerP2][kmerP1]=1;
+						
+					}
+				}
+			}
+			System.out.print(r.getLocationString());
+			for(int i=0; i<numK; i++)
+				System.out.print("\t"+kmerCounts[i]);
+			for(int i=0; i<numK; i++){
+				for(int j=i; j<numK; j++){
+					System.out.print("\t"+kmerCoO[i][j]);
+				}
+			}
+			System.out.println("");
+			reg_index++;
+		}
+		
+		System.out.print("Overall_incidence");
+		for(int i=0; i<numK; i++){
+			int sum=0;
+			for(int ri=0; ri<kmerCountsAvg.length; ri++){
+				if(kmerCountsAvg[ri][i]>0){
+					sum++;
+				}
+			}
+			System.out.print(sum);
+		}
+		for(int i=0; i<numK; i++){
+			for(int j=0; j<numK; j++){
+				int sum=0;
+				for(int ri=0; ri<kmerCoOAvg.length; ri++){
+					if(kmerCoOAvg[ri][i][j] > 0){
+						sum++;
+					}
+				}
+				System.out.print(sum);
+			}
+		}
+		System.out.println("");
+		
+	}
+	
+	
+	//Divide the sequence into 3 regions and print kmer counts in the left, right and central regions
+	public void printPeakSeqTiledKmers(int kmin, int kmax, boolean useCache, String genPath){
+		SequenceGenerator seqgen = new SequenceGenerator();
+		seqgen.useCache(useCache);
+		if(useCache){
+			seqgen.useLocalFiles(true);
+			seqgen.setGenomePath(genPath);
+		}
+		
+		int TnumK = 0;
+		for(int k=kmin; k<=kmax; k++){
+			TnumK = TnumK + ((int)Math.pow(4, k))*3;
+		}
+		int[] kmerCounts = new int[TnumK];
+		System.out.print("Region");
+		int currIndex = 0;
+		
+		//Print header
+		for(int k=kmin; k<=kmax; k++){
+			int numK = (int)Math.pow(4, k);
+			
+			//Print left kmers 
+			for(int i=0; i<numK; i++){
+				System.out.print("\t"+RegionFileUtilities.int2seq(i, k)+"_L");
+			}
+			//Print central kmers
+			for(int i=0; i<numK; i++){
+				System.out.print("\t"+RegionFileUtilities.int2seq(i, k)+"_C");
+			}
+			// Print right kmers
+			for(int i=0; i<numK; i++){
+				System.out.print("\t"+RegionFileUtilities.int2seq(i, k)+"_R");
+			}
+		}
+		System.out.println("");
+		
+		for(Region r : posSet){
+			for(int i=0; i<kmerCounts.length; i++){
+				kmerCounts[i] = 0;
+			}
+			
+			StrandedRegion sr = (StrandedRegion)r;
+			
+			String seq = seqgen.execute(r).toUpperCase();
+			if(seq.contains("N"))
+				continue;
+			for(int k=kmin; k<=kmax; k++){
+				int currKStart = 0;
+				for(int k_sub=kmin; k_sub<k; k_sub++){
+					currKStart = currKStart  +  ((int)Math.pow(4, k_sub))*3;
+				}
+				// Count left kmers
+				for(int i=0; i<((int)(seq.length()/3)-k+1); i++){
+					String currK = seq.substring(i, i+k);
+					String revCurrK =SequenceUtils.reverseComplement(currK);
+					int  currKInt = RegionFileUtilities.seq2int(currK);
+					int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
+					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+					if(sr.getStrand() == '+')
+						kmerCounts[currKStart+kmer]++;
+					else
+						kmerCounts[currKStart+ ((int)Math.pow(4, k))*2+kmer]++;
+					
+				}
+				//Count central kmers
+				for(int i=(int)(seq.length()/3); i<((int)(seq.length()*2/3)-k+1); i++){
+					String currK = seq.substring(i, i+k);
+					String revCurrK =SequenceUtils.reverseComplement(currK);
+					int  currKInt = RegionFileUtilities.seq2int(currK);
+					int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
+					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+					kmerCounts[currKStart+ ((int)Math.pow(4, k))+kmer]++;
+				}
+				//Count right kmers
+				for(int i=(int)(seq.length()*2/3); i<(seq.length()-k+1); i++){
+					String currK = seq.substring(i, i+k);
+					String revCurrK =SequenceUtils.reverseComplement(currK);
+					int  currKInt = RegionFileUtilities.seq2int(currK);
+					int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
+					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+					if(sr.getStrand() == '+')
+						kmerCounts[currKStart+ ((int)Math.pow(4, k))*2+kmer]++;
+					else
+						kmerCounts[currKStart+kmer]++;
+				}
+			}
+			System.out.print(r.getLocationString());
+			for(int i=0; i<kmerCounts.length; i++)
+				System.out.print("\t"+kmerCounts[i]);
+			System.out.println("");
+			
+			
+			
+		}
+	}
+		
 	
 	
 	///////////////////////////////////////////////////////////////////////

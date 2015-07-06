@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.gse.tools.sequence;
 import java.io.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.StrandedRegionParser;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
@@ -21,8 +21,8 @@ public class StrandedRegionsToFasta {
 
     public static void main(String args[]) {
         try {
-            Pair<Organism,Genome> pair = Args.parseGenome(args);
-            Organism organism = pair.car();
+            Pair<Species,Genome> pair = Args.parseGenome(args);
+            Species organism = pair.car();
             Genome genome = pair.cdr();
             StrandedRegionParser parser = new StrandedRegionParser(genome);
             SequenceGenerator seqgen = new SequenceGenerator();

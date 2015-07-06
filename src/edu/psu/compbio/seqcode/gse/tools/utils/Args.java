@@ -6,7 +6,7 @@ import java.io.*;
 import java.sql.SQLException;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
@@ -28,7 +28,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
  * @version 1.0
  */
 public class Args {
-    private static Map<String[], Organism> orgs = new HashMap<String[], Organism>();
+    private static Map<String[], Species> orgs = new HashMap<String[], Species>();
     private static Map<String[], Genome> genomes = new HashMap<String[], Genome>();
     private static Map<String[], Set<String>> flags = new HashMap<String[],Set<String>>();
     private static Map<String[], Set<String>> arguments = new HashMap<String[],Set<String>>();
@@ -273,12 +273,12 @@ public class Args {
 
     /** Parses <tt>--species "Mus musculus;mm8"</tt> into a Species and Genome
      *  Also parses <tt>--genome mm8</tt> or <tt>--gen mm8</tt> into a Genome and inferred Species
-     *  @see edu.psu.compbio.seqcode.genome.Organism
+     *  @see edu.psu.compbio.seqcode.genome.Species
      *  @see edu.psu.compbio.seqcode.genome.Genome
      */
-    public static Pair<Organism,Genome> parseGenome(String args[]) throws NotFoundException {
+    public static Pair<Species,Genome> parseGenome(String args[]) throws NotFoundException {
         if (orgs.containsKey(args) && genomes.containsKey(args)) {
-            return new Pair<Organism,Genome>(orgs.get(args),
+            return new Pair<Species,Genome>(orgs.get(args),
                                              genomes.get(args));
         }
 
@@ -290,7 +290,7 @@ public class Args {
                 genomename = pieces[1];
             }
         }
-        Organism org=null;
+        Species org=null;
         Genome genome=null;
         if(speciesname==null && genomename==null){
         	for (int i = 0; i < args.length; i++) {
@@ -300,16 +300,16 @@ public class Args {
         	if(genomename==null)
         		return null;
         	else{
-        		genome =Organism.findGenome(genomename);
-        		org = new Organism(genome.getSpecies());
+        		genome =Genome.findGenome(genomename);
+        		org = new Species(genome.getSpeciesName());
         	}
         }else{
-        	org = new Organism(speciesname);
-        	genome =Organism.findGenome(genomename);
+        	org = new Species(speciesname);
+        	genome =Genome.findGenome(genomename);
         }
         orgs.put(args,org);
         genomes.put(args,genome);
-        return new Pair<Organism,Genome>(org,genome);
+        return new Pair<Species,Genome>(org,genome);
     }
     
     
@@ -332,13 +332,15 @@ public class Args {
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals(argname)) {
                 String[] pieces = args[++i].trim().split(";");
-                if (pieces.length == 2) {
-                    output.add(new SeqLocator(pieces[0], pieces[1]));
-                } else if (pieces.length == 3) {
-                    output.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
-                } else {
-                    throw new RuntimeException("Couldn't parse a ChipSeqLocator from " + args[i]);
-                }
+            	Set<String> reps = new TreeSet<String>();
+            	if (pieces.length == 2) {
+            		output.add(new SeqLocator(pieces[0], reps, pieces[1]));					
+	            } else if (pieces.length == 3) {
+	            	reps.add(pieces[1]);
+	            	output.add(new SeqLocator(pieces[0], reps, pieces[2]));
+	            } else {
+	                throw new RuntimeException("Couldn't parse a SeqAlignmentsLocator from " + args[++i]);
+	            }
             }
         }
         return output;
@@ -352,10 +354,10 @@ public class Args {
             for (String base : bases) {
                 String pieces[] = base == null ? null : base.split(";");
                 if (pieces != null && pieces.length != 2 ) {
-                    throw new RuntimeException("Invalid string for ChipSeqAnalysis " + base);
+                    throw new RuntimeException("Invalid string for SeqAnalysis " + base);
                 }
                 SeqAnalysis a = null;
-                loader = new SeqDataLoader(false);
+                loader = new SeqDataLoader(false, true);
                 if (pieces != null) {
                     a = SeqAnalysis.get(loader,pieces[0],pieces[1]);
                 }
@@ -385,7 +387,7 @@ public class Args {
         SeqAnalysis a = null;
         SeqDataLoader loader = null;
         try {
-            loader = new SeqDataLoader(false);
+            loader = new SeqDataLoader(false, true);
             if (pieces != null) {
                 try {
                     a = SeqAnalysis.get(loader,pieces[0],pieces[1]);
@@ -426,15 +428,15 @@ public class Args {
      *   @see edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrixScan
      */
     public static List<WeightMatrixScan> parseWMScans(String args[]) throws NotFoundException {
-        Organism org = parseGenome(args).getFirst();
+        Species org = parseGenome(args).getFirst();
         List<WeightMatrixScan> output = new ArrayList<WeightMatrixScan>();
         WeightMatrixLoader wmloader = new WeightMatrixLoader();
         for (int i = 0; i < args.length; i++) {    
             if (args[i].equals("--scan") || args[i].equals("--wmscan")) {
                 String[] pieces = args[++i].split(";");
-                Organism thisorg = org;
+                Species thisorg = org;
                 if (pieces.length == 4) {
-                    thisorg = new Organism(pieces[3]);
+                    thisorg = new Species(pieces[3]);
                 }
 
                 WeightMatrix matrix = wmloader.query(thisorg.getDBID(),pieces[0],pieces[1]);

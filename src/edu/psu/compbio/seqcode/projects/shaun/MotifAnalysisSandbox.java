@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
@@ -65,8 +65,8 @@ public class MotifAnalysisSandbox {
 	
 	public static void main(String[] args) throws IOException, ParseException {
 		boolean havePeaks=false;
-		boolean printHits=false, printBestHits=false, printHitInfo=false, printPeakClosestHits=false, printSeqs=false, printSeqsNoMotifs=false;
-		boolean printSeqsWithMotifs=false, printPeakInfo=false, printPeaksWithMotifs=false, printPeaksNoMotifs=false;
+		boolean printHits=false, printBestHits=false, printHitInfo=false, printPeakClosestHits=false, printSeqs=false, printSeqsNoMotifs=false, printclosesthitorientation=false;
+		boolean printSeqsWithMotifs=false, printPeakInfo=false, printPeaksWithMotifs=false, printPeaksNoMotifs=false, printHitPoints=false;
 		boolean printMotifScore=false, printMotifPerc=false, printRankMotifPerc=false, motifDistHist=false, screenMotifs=false, scoreSeqs=false;
 		boolean motifDensity=false, pocc=false, wholeGenome=false, printprofiles=false, motifHisto=false;;
 		String seqFile=null;
@@ -97,6 +97,8 @@ public class MotifAnalysisSandbox {
                                "--printbesthits " +
                                "--printhitinfo " +
                                "--printpeakclosesthits " +
+                               "--printclosesthitorientation" + 
+                               "--printHitPoints" +
                                "--printseqs " +
                                "--printseqsnomotifs " +
                                "--printseqswithmotifs " +
@@ -157,8 +159,10 @@ public class MotifAnalysisSandbox {
         printMotifScore = ap.hasKey("printmotifscore");
         printMotifPerc = ap.hasKey("printmotifperc");
         printRankMotifPerc = ap.hasKey("printrankmotifperc");
+        printclosesthitorientation = ap.hasKey("printclosesthitorientation");
         motifDistHist= ap.hasKey("motifdisthist");
         motifHisto= ap.hasKey("motifhisto");
+        printHitPoints = ap.hasKey("printHitPoints");
         motifDensity= ap.hasKey("motifdensity");
         screenMotifs= ap.hasKey("screenmotifs");
         scoreSeqs = ap.hasKey("scoreseqs");
@@ -179,10 +183,10 @@ public class MotifAnalysisSandbox {
         
 		try {
 			Genome currgen=null;
-			Organism currorg=null;
+			Species currorg=null;
 			//Load genome
 			if(ap.hasKey("species")){
-				Pair<Organism, Genome> pair = Args.parseGenome(args);
+				Pair<Species, Genome> pair = Args.parseGenome(args);
 				if(pair != null){
 					currorg = pair.car();
 					currgen = pair.cdr();
@@ -319,6 +323,10 @@ public class MotifAnalysisSandbox {
 	        	tools.peak2ClosestMotifHisto(binsize);
 	        if(motifHisto)
 	        	tools.peak2motifHisto(binsize);
+	        if(printHitPoints)
+	        	tools.printMotifHitsAndPoints();
+	        if(printclosesthitorientation)
+	        	tools.printClosestMotifOrientation();
 	        if(screenMotifs)
 	        	tools.screenMotifHits();
 	        if(scoreSeqs && seqFile !=null){
@@ -467,6 +475,36 @@ public class MotifAnalysisSandbox {
 		}
 		
 	}
+	
+	// Find the best closest motif match to the peaks and print the orientation
+	public void printClosestMotifOrientation(){
+		for(int i=0; i<regions.size(); i++){
+			Region r  = regions.get(i);
+			Point p = peaks.get(i);
+			
+			WeightMatrixScoreProfile profiler = scorer.execute(r);
+			int closeDist=1000000;
+			boolean goodMotif=false;
+			String goodMotifOrientation="";
+			for(int z=0; z<r.getWidth(); z++){
+				int mpos = z+(motif.length()/2);
+				char currStrand= profiler.getMaxStrand();
+				double currScore = profiler.getMaxScore(z);
+				if(currScore >=motifThres && Math.abs((p.getLocation()-r.getStart())-mpos)<Math.abs(closeDist)){
+					closeDist = (p.getLocation()-r.getStart())-mpos;
+					goodMotif = true;
+					goodMotifOrientation = Character.toString(currStrand);
+				}
+			}
+			
+			if(goodMotif){
+				System.out.println(p.getLocationString()+"\t"+goodMotifOrientation);
+			}
+			
+		}
+	}
+	
+	
 	
 	//Find the closest motif match to the peak (that's over the threshold) 
 	public void peak2ClosestMotifHisto(int binS){

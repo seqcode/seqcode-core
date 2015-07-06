@@ -7,11 +7,10 @@ import edu.psu.compbio.seqcode.gse.datasets.core.CellLine;
 import edu.psu.compbio.seqcode.gse.datasets.core.ExptCondition;
 import edu.psu.compbio.seqcode.gse.datasets.core.ExptTarget;
 import edu.psu.compbio.seqcode.gse.datasets.core.Lab;
-import edu.psu.compbio.seqcode.gse.datasets.core.MetadataModifier;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.*;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.*;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
 
 /**
  * Delete the SeqAlignment entry associated with the alignment ID specified on the command line.
@@ -23,7 +22,7 @@ import edu.psu.compbio.seqcode.gse.utils.database.*;
 public class DeleteAlignment {
     public static void main(String args[]) throws SQLException, NotFoundException, IOException {
         
-    	java.sql.Connection cxn = DatabaseFactory.getConnection("seqdata");
+    	java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
         cxn.setAutoCommit(false);
         Integer id = Args.parseInteger(args,"id", -1);
         
@@ -51,7 +50,7 @@ public class DeleteAlignment {
 	        seqDatamodifier.deleteSeqAlignment(align);
 	        
 	        //Delete the SeqExpt if no other SeqAlignments depend
-	        if(loader.loadAllAlignments(expt).size()==0){
+	        if(loader.loadAlignmentsBySeqExpt(expt).size()==0){
 	        	System.err.println("Deleting experiment: "+expt.getName()+"\t"+expt.getDBID());
 	        	seqDatamodifier.deleteSeqExpt(expt);
 	        }

@@ -6,14 +6,14 @@ import java.io.*;
 import java.sql.SQLException;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
-import edu.psu.compbio.seqcode.gse.datasets.expression.Experiment;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.*;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedExpt;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedAligns;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedAligns.SeqLMENotReplicatesException;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class SeqViewOptions {
@@ -69,8 +69,7 @@ public class SeqViewOptions {
     public boolean hash=true, seqletters=true, polya=false, gccontent=false, pyrpurcontent=false, cpg=false, regexmatcher=false;
     public ArrayList<String> genes, ncrnas, otherannots;
     public ArrayList<WeightMatrix> motifs;
-    public ArrayList<Experiment> exprExperiments;
-    public ArrayList<SeqLocatorMatchedExpt> seqExpts;
+    public ArrayList<SeqLocatorMatchedAligns> seqExpts;
     // filename to label mappings.  These are loaded from a file and the data held statically
     public HashMap<String,String> regionTracks, regexes;
     
@@ -110,7 +109,7 @@ public class SeqViewOptions {
     }
     public SeqViewOptions(String gname) {
         try {
-        	genome = Organism.findGenome(gname);
+        	genome = Genome.findGenome(gname);
         } catch (NotFoundException e) {
             e.printStackTrace();
             throw new IllegalArgumentException(gname);
@@ -130,7 +129,7 @@ public class SeqViewOptions {
         }
         
         try {
-        	genome = Organism.findGenome(genomeStr);
+        	genome = Genome.findGenome(genomeStr);
         } catch (NotFoundException e) {
             e.printStackTrace();
             throw new IllegalArgumentException(genomeStr);
@@ -155,9 +154,8 @@ public class SeqViewOptions {
         genes = new ArrayList<String>();
         ncrnas = new ArrayList<String>();
         otherannots = new ArrayList<String>();
-        seqExpts = new ArrayList<SeqLocatorMatchedExpt>();
+        seqExpts = new ArrayList<SeqLocatorMatchedAligns>();
         motifs = new ArrayList<WeightMatrix>();
-        exprExperiments = new ArrayList<Experiment>();
         regionTracks = new HashMap<String,String>();
         regexes = new HashMap<String,String>();
     }
@@ -187,7 +185,6 @@ public class SeqViewOptions {
         mergeInto(otherannots,union.otherannots);
         mergeInto(seqExpts,union.seqExpts);
         mergeInto(motifs,union.motifs);
-        mergeInto(exprExperiments,union.exprExperiments);
         mergeInto(regionTracks,union.regionTracks);
         mergeInto(regexes, union.regexes);
     }
@@ -237,7 +234,6 @@ public class SeqViewOptions {
         differenceOf(otherannots,other.otherannots);
         differenceOf(seqExpts,other.seqExpts);
         differenceOf(motifs,other.motifs);
-        differenceOf(exprExperiments, other.exprExperiments);
         differenceOf(regionTracks,other.regionTracks);
         differenceOf(regexes,other.regexes);
     }
@@ -252,8 +248,7 @@ public class SeqViewOptions {
     }
 
     public SeqViewOptions clone() {
-        SeqViewOptions o = new SeqViewOptions();
-        o.genome = genome;
+        SeqViewOptions o = new SeqViewOptions(genome);
         o.chrom = chrom;
         o.gene = gene;
         o.position = position;
@@ -270,9 +265,8 @@ public class SeqViewOptions {
         o.genes = (ArrayList<String>) genes.clone();
         o.ncrnas = (ArrayList<String>) ncrnas.clone();
         o.otherannots = (ArrayList<String>) otherannots.clone();
-        o.seqExpts = (ArrayList<SeqLocatorMatchedExpt>)seqExpts.clone();
+        o.seqExpts = (ArrayList<SeqLocatorMatchedAligns>)seqExpts.clone();
         o.motifs = (ArrayList<WeightMatrix>)motifs.clone();
-        o.exprExperiments = (ArrayList<Experiment>)exprExperiments.clone();
         o.regionTracks = (HashMap<String,String>)regionTracks.clone();
         o.regexes = (HashMap<String,String>)regexes.clone();
         return o;
@@ -285,9 +279,8 @@ public class SeqViewOptions {
         
         //TODO: restore weight matrices
         //WeightMatrixLoader wmloader = new WeightMatrixLoader();
-        
-        SeqDataLoader seqloader = new SeqDataLoader();
 
+        //Genome defaults
         try {        
             ResourceBundle res = ResourceBundle.getBundle("defaultgenome");
             speciesStr = res.getString("species"); 
@@ -317,10 +310,10 @@ public class SeqViewOptions {
 
         }
         try {
-        	Organism organism = null;
+        	Species organism = null;
             if (speciesStr != null && genomeStr != null) {
-                organism = new Organism(speciesStr);
-                opts.genome = organism.getGenome(genomeStr);
+                organism = new Species(speciesStr);
+                opts.genome = Genome.findGenome(genomeStr);
             }
             for (int i = 0; i < args.length; i++) {
                 if (args[i].equals("--chrom") || args[i].equals("--region")) {
@@ -374,30 +367,20 @@ public class SeqViewOptions {
                 	//but hopefully loading from command-line is rare anyway
                     String pieces[] = args[++i].split(";");
                     SeqLocator loc=null;
-                    if (pieces.length == 2) {
-                        loc = new SeqLocator(pieces[0], pieces[1]);
-                    } else if (pieces.length >= 3) {
-                        Set<String> repnames = new HashSet<String>();
-                        for (int j = 1; j < pieces.length - 1; j++) {
-                            repnames.add(pieces[j]);
-                        }
-                        loc = new SeqLocator(pieces[0], repnames, pieces[pieces.length-1]);
-                    } else {
-                        System.err.println("Couldn't parse --seqexpt " + args[i]);
-                    }
-                    if(loc!=null){
-                    	SeqDataLoader loader = new SeqDataLoader();
-                    	Collection<SeqAlignment> aligns = loader.loadAlignments(loc, opts.genome);
-                    	SeqExpt expt = null;
-                    	for(SeqAlignment a : aligns){
-                    		if(expt==null)
-                    			expt = a.getExpt();
-                    		else if(!expt.equals(a.getExpt()))
-                    			System.err.println("SeqLocator "+loc.toString()+" returned multiple SeqExpts.\tUsing: "+expt.getDBID()+" but something needs to be fixed!");
-                    	}
-                    	List<SeqExpt> expts = new ArrayList<SeqExpt>();
-                    	expts.add(expt);
-                    	opts.seqExpts.add(new SeqLocatorMatchedExpt(expts, loc));
+                	Set<String> reps = new TreeSet<String>();
+	            	if (pieces.length == 2) {
+	            		loc = new SeqLocator(pieces[0], reps, pieces[1]);					
+		            } else if (pieces.length == 3) {
+		            	reps.add(pieces[1]);
+		            	loc = new SeqLocator(pieces[0], reps, pieces[2]);
+		            } else {
+		                throw new RuntimeException("Couldn't parse a SeqAlignmentsLocator from " + args[++i]);
+		            }
+	            	if(loc!=null){
+                        SeqDataLoader loader = new SeqDataLoader();
+                        Collection<SeqAlignment> aligns = loader.loadAlignments(loc, opts.genome);
+                        opts.seqExpts.add(new SeqLocatorMatchedAligns(aligns, loc)); 
+                        loader.close();
                     }
                 }
                                 
@@ -413,9 +396,9 @@ public class SeqViewOptions {
                 /*
                 if (args[i].equals("--wm")) {
                     String[] pieces = args[++i].split(";");
-                    Organism thisorg = organism;
+                    Species thisorg = organism;
                     if (pieces.length == 3) {
-                        thisorg = new Organism(pieces[2]);
+                        thisorg = new Species(pieces[2]);
                     }                
                     WeightMatrix matrix = wmloader.query(thisorg.getDBID(),pieces[0],pieces[1]);
                     opts.motifs.add(matrix);
@@ -440,11 +423,12 @@ public class SeqViewOptions {
 
 
             }
-        } finally {
+        } catch (SeqLMENotReplicatesException e) {
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+		} finally {
             //wmloader.close();
-            seqloader.close();
         }
-
         return opts;
     }
 

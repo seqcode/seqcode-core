@@ -2,14 +2,15 @@ package edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments;
 
 import java.util.*;
 
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.Sample;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
+import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 
 public class ExperimentFeature {
 	
 	protected int index;
-	protected Config config;
+	protected BayesmentsConfig config;
 	protected List<Sample> signalSamples = new ArrayList<Sample>();
 	protected List<Sample> controlSamples = new ArrayList<Sample>();
 	protected List<ControlledExperiment> replicates = new ArrayList<ControlledExperiment>();
@@ -19,7 +20,7 @@ public class ExperimentFeature {
 	protected String name;
 	
 	
-	public ExperimentFeature(Config config, int id, String name, List<ExperimentCondition> conditions) {
+	public ExperimentFeature(BayesmentsConfig config, int id, String name, List<ExperimentCondition> conditions) {
 		this.index = id;
 		this.config = config;
 		this.name = name;

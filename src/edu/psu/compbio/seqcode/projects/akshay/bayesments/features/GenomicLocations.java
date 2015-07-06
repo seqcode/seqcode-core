@@ -6,13 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.viz.metaprofile.EventMetaMaker;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentSet;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsEMan;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.CoutPlotter;
 
 /**
@@ -24,7 +25,8 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.CoutPlotter;
 public class GenomicLocations {
 	
 	protected Genome gen;
-	protected ExperimentSet experiments;
+	protected ExperimentManager exptMan;
+	protected BayesmentsEMan bayesMan;
 	// List of points, which are used to train the model
 	protected List<Point> locations = new ArrayList<Point>();
 	//2-d array of counts, rows as points and columns as chromatin condition
@@ -45,16 +47,17 @@ public class GenomicLocations {
 	 * @param manager
 	 * @param config
 	 */
-	public GenomicLocations(ExperimentManager manager, Config config) {
+	public GenomicLocations(ExperimentManager manager, GenomeConfig gcon, BayesmentsConfig config, BayesmentsEMan bayesManager) {
 		try{
-			this.gen = manager.getGenome();
+			this.gen = gcon.getGenome();
 			File peaksFile = config.getPeaksFile();
 			locations = EventMetaMaker.loadPoints(peaksFile, this.gen);
-			this.experiments = manager.getExperimentSet();
+			this.exptMan = manager;
+			this.bayesMan = bayesManager;
 			
-			
+		
 			//Filling chromatinRegions
-			List<ExperimentCondition> chromConds = manager.getChromatinConditionList();
+			List<ExperimentCondition> chromConds = bayesMan.getChromatinConditionList();
 			this.numChromCons = chromConds.size();
 			chromatinRegions = new Region[locations.size()][chromConds.size()];
 			chromatinCounts = new float[locations.size()][chromConds.size()];
@@ -63,7 +66,7 @@ public class GenomicLocations {
 				int conCount=0;
 				for(ExperimentCondition ec : chromConds){
 					chromatinRegions[pointCount][conCount] = new Region(this.gen,p.getChrom()
-							,p.getLocation()-ec.getWinSize(),p.getLocation()+ec.getWinSize());
+							,p.getLocation()-bayesMan.getConditionWinSize(ec.getName()),p.getLocation()+bayesMan.getConditionWinSize(ec.getName()));
 					conCount++;
 				}
 				pointCount++;
@@ -71,7 +74,7 @@ public class GenomicLocations {
 			
 			//Filling factorRegions
 			pointCount=0;
-			List<ExperimentCondition> facConds = manager.getFacConditionList();
+			List<ExperimentCondition> facConds = bayesMan.getFacConditionList();
 			this.numFacCons = facConds.size();
 			factorRegions = new Region[locations.size()][facConds.size()];
 			factorCounts = new float[locations.size()][facConds.size()];
@@ -79,12 +82,16 @@ public class GenomicLocations {
 				int conCount=0;
 				for(ExperimentCondition ec : facConds){
 					factorRegions[pointCount][conCount] = new Region(this.gen,p.getChrom()
-							, p.getLocation()-ec.getWinSize(), p.getLocation()+ec.getWinSize());
+							, p.getLocation()-bayesMan.getConditionWinSize(ec.getName()), p.getLocation()+bayesMan.getConditionWinSize(ec.getName()));
 					conCount++;
 				}
 				pointCount++;
 			}
-			
+
+/*I think there is a pre-existing error below: the method getTotalSignalCountInARegion is being given an integer as input instead of a Region
+ *Anyway, I've removed the getTotalSignalCountInARegion from ExperimentCondition now - I don't think it's appropriate to get tag counts from anything except Sample. 
+ *Therefore, when you fix this, get the per-Region hit counts from Sample instead of via ExperimentCondition.
+ *Shaun 
 			//Filling chromatinCounts
 			pointCount=0;
 			for(Point p : locations){
@@ -111,6 +118,7 @@ public class GenomicLocations {
 			if(config.doChipAshin()){
 				updataAsineTransformation();
 			}
+			*/
 		}
 		catch(IOException e){
 			e.printStackTrace();
@@ -149,13 +157,13 @@ public class GenomicLocations {
 	 * @param conf
 	 * @param manager
 	 */
-	public void plotData(Config conf,ExperimentManager manager){
+	public void plotData(BayesmentsConfig conf,ExperimentManager manager, BayesmentsEMan bm){
 		for(int c=0; c<numChromCons; c++){
 			float[] counts = new float[locations.size()];
 			for(int i=0; i<locations.size(); i++){
 				counts[i] = chromatinCounts[i][c];
 			}
-			String name_tag = manager.getChromatinConditionList().get(c).getName();
+			String name_tag = bm.getChromatinConditionList().get(c).getName();
 			CoutPlotter cp = new CoutPlotter(counts, conf, name_tag);
 			cp.plot();
 		}
@@ -164,7 +172,7 @@ public class GenomicLocations {
 			for(int i=0; i<locations.size(); i++){
 				counts[i] = factorCounts[i][f];
 			}
-			String name_tag = manager.getFacConditionList().get(f).getName();
+			String name_tag = bm.getFacConditionList().get(f).getName();
 			CoutPlotter cp = new CoutPlotter(counts, conf, name_tag);
 			cp.plot();
 		}

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.RepeatMaskedRegion;
@@ -55,8 +55,8 @@ public class RandomRegionsNoReps {
 	    String regFile = ap.hasKey("regout") ? ap.getKeyValue("regout") : null;
         
         try{
-        	Organism org = Organism.getOrganism(species);
-        	Genome g = org.getGenome(genome);
+        	Species org = Species.getSpecies(species);
+        	Genome g = new Genome(org, genome);
         	
         	RandomRegionsNoReps rrnr = new RandomRegionsNoReps(g);
         	rrnr.setLen(ap.hasKey("len") ? new Integer(ap.getKeyValue("len")).intValue() : 200);

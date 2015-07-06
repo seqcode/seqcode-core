@@ -68,7 +68,7 @@ public class SeqData {
 					
         			for (SeqExpt expt : expts) {
         				Collection<SeqAlignment> aligns;
-						aligns = chipSeqLoader.loadAllAlignments(expt);
+						aligns = chipSeqLoader.loadAlignmentsBySeqExpt(expt);
 						
                 		for (SeqAlignment currentAlign : aligns) {
                 			if (currentAlign.getGenome().equals(g)) { 
@@ -93,7 +93,7 @@ public class SeqData {
 					
         			SeqAlignment align = null;
             		Collection<SeqAlignment> aligns;
-					aligns = chipSeqLoader.loadAllAlignments(expt);
+					aligns = chipSeqLoader.loadAlignmentsBySeqExpt(expt);
 					
             		for (SeqAlignment currentAlign : aligns) {
             			if (currentAlign.getGenome().equals(g)) { 
@@ -147,78 +147,8 @@ public class SeqData {
 			loader = new SeqDataLoader();
 			
 	        alignments = new LinkedList<SeqAlignment>();
-	        if (locator.getAlignName() == null) {
-	            if(locator.getReplicates().isEmpty()) { //No alignment name, no replicate names
-	            	Collection<SeqExpt> expts = loader.loadExperiments(locator.getExptName());
-	        		List<SeqLocator> locs = new Vector<SeqLocator>();
-	        		for(SeqExpt expt : expts) { 
-	                	Collection<SeqAlignment> aligns;
-						aligns = loader.loadAllAlignments(expt);
-						for (SeqAlignment currentAlign : aligns) {
-	            			if (currentAlign.getGenome().equals(g)) { 
-	            				SeqLocator currentLoc = new SeqLocator(expt.getName(), 
-	                                    expt.getReplicate(), currentAlign.getName());
-	            				locs.add(currentLoc);
-	            				alignments.add(currentAlign);
-	    						break;
-	    					}
-	            		}
-	    			}
-	    			List<SeqLocator> collapsedLocs = new Vector<SeqLocator>(this.collapseLocatorsByName(locs));
-	    			if (collapsedLocs.size() != 1) {
-	    				System.err.println(collapsedLocs.size() + " collapsed locators");
-	    				System.exit(0);
-	    			}
-	    			locator = collapsedLocs.get(0);
-	            } else { //No alignment name, given replicate names
-	                for(String repName : locator.getReplicates()) { 
-	                    SeqExpt expt = loader.loadExperiment(locator.getExptName(), repName);
-	                    SeqAlignment alignment = 
-	                        loader.loadAlignment(expt, locator.getAlignName(), g);
-	                    if(alignment != null) { 
-	                        locator = new SeqLocator(locator.getExptName(),
-	                                                     locator.getReplicates(),
-	                                                     alignment.getName());
-	                        alignments.add(alignment);
-	                        break;
-	                    }
-	                }
-	            }
-	        } else {
-	        	if(locator.getReplicates().isEmpty()) {//Given alignment name, no replicate names
-	        		Collection<SeqExpt> expts = loader.loadExperiments(locator.getExptName());
-	        		List<SeqLocator> locs = new Vector<SeqLocator>();
-	        		for(SeqExpt expt : expts) { 
-	                	Collection<SeqAlignment> aligns;
-						aligns = loader.loadAllAlignments(expt);
-						for (SeqAlignment currentAlign : aligns) {
-	            			if (currentAlign.getGenome().equals(g) && currentAlign.getName().equals(locator.getAlignName())) { 
-	            				SeqLocator currentLoc = new SeqLocator(expt.getName(), 
-	                                    expt.getReplicate(), currentAlign.getName());
-	            				locs.add(currentLoc);
-	            				alignments.add(currentAlign);
-	    						break;
-	    					}
-	            		}
-	    			}
-	    			List<SeqLocator> collapsedLocs = new Vector<SeqLocator>(this.collapseLocatorsByName(locs));
-	    			if (collapsedLocs.size() != 1) {
-	    				System.err.println(collapsedLocs.size() + " collapsed locators");
-	    				System.exit(0);
-	    			}
-	    			locator = collapsedLocs.get(0);
-	
-	            }else{
-	            	for (String replicate : locator.getReplicates()) {//Given alignment name, given replicate names
-	        			alignments.add(loader.loadAlignment(loader.loadExperiment(locator.getExptName(),
-                                                                                  replicate), 
-                                                            locator.getAlignName(),
-                                                            g));
-	        		}
-	            }
-	        }
-
-
+	        alignments.addAll(loader.loadAlignments(locator, currentGen));
+	        
 	        expander = new SeqExpander(locator,false);
 	        loc = locator;
 	        countHits();

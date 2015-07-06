@@ -14,7 +14,7 @@ import java.util.Random;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
@@ -28,7 +28,7 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 public class JointBindingEventSimulator {
-	private Organism org=null;
+	private Species org=null;
 	private Genome gen =null;
 	private ArrayList<Point> peaks=null;
 	private boolean haveControl=false;
@@ -71,8 +71,8 @@ public class JointBindingEventSimulator {
             return;
         }
         try {
-        	Pair<Organism, Genome> pair = Args.parseGenome(args);
-        	Organism currorg = pair.car();
+        	Pair<Species, Genome> pair = Args.parseGenome(args);
+        	Species currorg = pair.car();
         	Genome currgen = pair.cdr();
 			
 	        String peaksFile = ap.hasKey("peaks") ? ap.getKeyValue("peaks") : null;
@@ -112,7 +112,7 @@ public class JointBindingEventSimulator {
 		}
 	}
 	
-	public JointBindingEventSimulator(Organism o, Genome g){
+	public JointBindingEventSimulator(Species o, Genome g){
 		org = o;
 		gen=g;
 	}

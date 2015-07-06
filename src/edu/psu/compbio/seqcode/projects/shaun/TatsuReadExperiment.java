@@ -12,7 +12,7 @@ import java.util.PropertyResourceBundle;
 import java.util.TreeMap;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
@@ -25,7 +25,7 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 public class TatsuReadExperiment {
 	private boolean needlefiltering=true;
-	public Pair<Organism,Genome> pair;
+	public Pair<Species,Genome> pair;
 	public List<SeqLocator> expts;
 	public ChipSeqCountReads counter;
 	public Genome gen;

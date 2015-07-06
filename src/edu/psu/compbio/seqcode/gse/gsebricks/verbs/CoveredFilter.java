@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
@@ -19,7 +18,7 @@ public class CoveredFilter<X extends Region> implements Filter<X, X> {
 	
 	public CoveredFilter(File file) {
 		try { 
-			genome = Organism.findGenome("mm8");
+			genome = Genome.findGenome("mm8");
 		} catch(NotFoundException nfe) { 
 			throw new IllegalStateException();
 		}

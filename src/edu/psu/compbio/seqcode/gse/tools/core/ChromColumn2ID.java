@@ -46,6 +46,5 @@ public class ChromColumn2ID {
             }
             System.out.println(out.toString());
         }
-        genome.close();
     }
 }

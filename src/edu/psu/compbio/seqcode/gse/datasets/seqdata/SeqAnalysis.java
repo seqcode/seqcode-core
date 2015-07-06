@@ -5,11 +5,10 @@ import java.io.*;
 import java.sql.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.Region;
-import edu.psu.compbio.seqcode.gse.datasets.core.*;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseConnectionManager;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 /**
  * A SeqAnalysis represents the results of running some binding-call or 
@@ -32,7 +31,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
     private boolean active;
 
     /* these methods (through store()) are primarily for constructing a 
-       ChipSeqAnalysis and saving it to the DB */
+       SeqAnalysis and saving it to the DB */
     public SeqAnalysis (String name, String version, String program) {
         this.name = name;
         this.version = version;
@@ -78,7 +77,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
     }
                              
     public void store() throws SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
         cxn.setAutoCommit(false);
         String q = "insert into chipseqanalysis (id, name, version, program, active) values (%s,?,?,?,?)";
         PreparedStatement ps = cxn.prepareStatement(String.format(q,edu.psu.compbio.seqcode.gse.utils.database.Sequence.getInsertSQL(cxn, "chipseqanalysis_id")));
@@ -173,7 +172,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
             ps.close();
         }
         cxn.commit();
-		DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
     }
     /* stores the active flag to the database.  Must be done
        on an object that has already been stored such that it has a DBID */
@@ -182,14 +181,14 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
             throw new RuntimeException("Must have a dbid");
         }
         String sql = "update chipseqanalysis set active = ? where id = ?";
-        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
         PreparedStatement ps = cxn.prepareStatement(sql);
         
         ps.setInt(1, active ? 1 : 0);
         ps.setInt(2, dbid);
         ps.execute();
         cxn.commit();
-        DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
         
     }
 
@@ -235,7 +234,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
     }
     /** fills in the parameters from the database */
     private void loadParams() throws SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
         PreparedStatement ps = cxn.prepareStatement("select name,value from analysisparameters where analysis = ?");
         ps.setInt(1,dbid);
         ResultSet rs = ps.executeQuery();
@@ -246,18 +245,18 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
         setParameters(params);
         rs.close();
         ps.close();        
-        DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
     }
     /** fills in the input experiment fields from the database */
     private void loadInputs() throws SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
         PreparedStatement ps = cxn.prepareStatement("select alignment, inputtype from analysisinputs where analysis = ?");
         ps.setInt(1,dbid);
         HashSet<SeqAlignment> fg = new HashSet<SeqAlignment>();
         HashSet<SeqAlignment> bg = new HashSet<SeqAlignment>();
         ResultSet rs = ps.executeQuery();
         try {
-            SeqDataLoader loader = new SeqDataLoader(false);
+            SeqDataLoader loader = new SeqDataLoader(false, true);
             while (rs.next()) {
                 if (rs.getString(2).equals("foreground")) {
                     fg.add(loader.loadAlignment(rs.getInt(1)));
@@ -283,7 +282,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
             */
             throw new DatabaseException(e.toString(),e);
         }
-        DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
     }
     public List<SeqAnalysisResult> getResults(Genome g) throws SQLException {
         return getResults(g,null);
@@ -309,7 +308,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
     }
     public List<SeqAnalysisResult> getResults(Genome genome, Region queryRegion) throws SQLException {
         
-        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
         String query = "select chromosome, startpos, stoppos, position, fgcount, bgcount, strength, peak_shape, pvalue, fold_enrichment " +
             " from analysisresults where analysis = ? ";
         if (queryRegion != null) {
@@ -344,32 +343,10 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
         }
         rs.close();
         ps.close();
-		DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
         return result;        
     }
-    public int countResults(Genome genome) throws SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
-        String chrstring = "";
-        Map<String,Integer> map = genome.getChromIDMap();
-        Iterator<Integer> iter = map.values().iterator();
-        if (iter.hasNext()) {
-            chrstring = Integer.toString(iter.next());
-        }
-        while (iter.hasNext()) {
-            chrstring = chrstring + "," + Integer.toString(iter.next());
-        }
-
-        String query = "select count(*) from analysisresults where analysis = ? and chromosome in (" +chrstring+")";
-        PreparedStatement ps = cxn.prepareStatement(query);
-        ps.setInt(1,dbid);
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        int count = rs.getInt(1);
-        rs.close();
-        ps.close();
-		DatabaseFactory.freeConnection(cxn);
-        return count;
-    }
+   
 
     /** retrieves all ChipSeqAnalysis objects from the database */
     public static Collection<SeqAnalysis> getAll() throws DatabaseException, SQLException {
@@ -377,7 +354,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
     }
     public static Collection<SeqAnalysis> getAll(Boolean active) throws DatabaseException, SQLException {
         ArrayList<SeqAnalysis> output = new ArrayList<SeqAnalysis>();
-        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
         String sql = "select id, name, version, program, active from chipseqanalysis";
         if (active != null) {
             sql = sql + " where active = " + (active ? 1 : 0);
@@ -395,7 +372,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
         }
         rs.close();
         ps.close();
-		DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
         return output;
         
     }
@@ -404,7 +381,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
         return get(loader,name,version,true);
     }
     public static SeqAnalysis get(SeqDataLoader loader, String name, String version, Boolean active) throws NotFoundException, DatabaseException, SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
         String sql = "select id, program, active from chipseqanalysis where name = ? and version = ?";
         if (active != null) {
             sql = sql + " and active = " + (active ? 1 : 0);
@@ -420,13 +397,13 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
         result.dbid = rs.getInt(1);
         rs.close();
         ps.close();
-		DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
         return result;
     }
     /** returns the collection of active analyses that have a result in the specified region
      */
     public static Collection<SeqAnalysis> withResultsIn(SeqDataLoader loader, Region r) throws SQLException {
-        java.sql.Connection cxn = DatabaseFactory.getConnection(SeqDataLoader.role);
+        java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
         String sql = "select id, name, version, program, active from chipseqanalysis where id in (select unique(analysis) from analysisresults where chromosome = ? and startpos >= ? and stoppos <= ?) and active = 1";
         ArrayList<SeqAnalysis> output = new ArrayList<SeqAnalysis>();
         PreparedStatement ps = cxn.prepareStatement(sql);
@@ -444,7 +421,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
         }
         rs.close();
         ps.close();
-		DatabaseFactory.freeConnection(cxn);
+        if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
         return output;
         
     }

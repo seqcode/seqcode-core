@@ -14,7 +14,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
 
 /**
  * Plots all the parameters in the Bayesian network over all rouds of traning iterations
@@ -49,7 +49,7 @@ public class EMplotter {
 	 * @param C
 	 * @param F
 	 */
-	public EMplotter(Config config, double[][][] trainMUc, double[][][] trainMUf, double[][][] trainSIGMAc, double[][][] trainSIGMAf, double[][] trainPIj, double[][][] trainBjk, int C, int F, int nChromStates, int nFacStates)  {
+	public EMplotter(BayesmentsConfig config, double[][][] trainMUc, double[][][] trainMUf, double[][][] trainSIGMAc, double[][][] trainSIGMAf, double[][] trainPIj, double[][][] trainBjk, int C, int F, int nChromStates, int nFacStates)  {
 		this.trainMUc = trainMUc;
 		this.trainMUf = trainMUf;
 		this.trainSIGMAc = trainSIGMAc;

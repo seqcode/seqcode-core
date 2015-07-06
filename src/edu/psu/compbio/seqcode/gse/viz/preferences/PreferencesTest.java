@@ -2,7 +2,7 @@ package edu.psu.compbio.seqcode.gse.viz.preferences;
 
 import java.io.File;
 
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 
 public class PreferencesTest implements PreferencesListener {
@@ -12,7 +12,7 @@ public class PreferencesTest implements PreferencesListener {
 		
 		PreferencesTest test = new PreferencesTest();
 		try {
-			test.model.setValue("Genome", Organism.findGenome("mm8"));
+			test.model.setValue("Genome", Genome.findGenome("mm8"));
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}

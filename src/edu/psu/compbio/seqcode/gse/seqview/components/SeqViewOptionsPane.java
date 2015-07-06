@@ -11,10 +11,10 @@ import java.util.HashMap;
 import java.io.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.NamedTypedRegion;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedExpt;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocatorMatchedAligns;
 import edu.psu.compbio.seqcode.gse.gsebricks.RegionExpanderFactoryLoader;
 import edu.psu.compbio.seqcode.gse.seqview.SeqViewOptions;
 import edu.psu.compbio.seqcode.gse.utils.Closeable;
@@ -23,6 +23,9 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 public class SeqViewOptionsPane 
 	extends JTabbedPane 
 	implements ItemListener, ActionListener, Closeable {
+	//Current genome settings
+	Genome currGen = null;
+	Species currSpecies = null;
     // regexes get special handling at the moment because there's no gui component for them,
     // so cache them if neccessary
     private HashMap<String,String> regexes;
@@ -45,7 +48,7 @@ public class SeqViewOptionsPane
     private JCheckBox hash, oldchipseq;
     
     // seqdata tab
-    private SeqLMESelectPanel seqSelect;
+    private SeqAlignmentSelectPanel seqSelect;
 
     // annotations tab
     private JList genes, ncrnas, otherfeats;
@@ -61,46 +64,21 @@ public class SeqViewOptionsPane
         gfLoader = new RegionExpanderFactoryLoader<Gene>("gene");
         annotLoader = new RegionExpanderFactoryLoader<NamedTypedRegion>("annots");
         handlingChange = true;
-        init();
+        init(null);
         handlingChange = false;
         closed = false;
         setSpeciesGenomeDefaults();
     }
 
-    public SeqViewOptionsPane(String species, String genome) throws NotFoundException {
-        super();
-        gfLoader = new RegionExpanderFactoryLoader<Gene>("gene");
-        annotLoader = new RegionExpanderFactoryLoader<NamedTypedRegion>("annots");
-        handlingChange = true;
-        init();
-        handlingChange = false;
-        closed = false;
-        if (genome != null && species != null) {
-            /* temporarily remove the item listener for species
-               so that we don't trigger two updates for experiment selection
-               and such.  Everything will be updated when we set the genome
-            */
-            this.genomeCBox.removeItemListener(this);
-            this.speciesCBox.removeItemListener(this);
-            this.speciesCBox.setSelectedItem(species);
-            updateGenomeSelection();
-            this.genomeCBox.setSelectedItem(genome);
-            updateExptSelection();
-            this.speciesCBox.addItemListener(this);
-            this.genomeCBox.addItemListener(this);
-        } else if (species != null) {
-            this.speciesCBox.setSelectedItem(species);
-        }
-
-        regexes = null;
-    }
-
+    
     public SeqViewOptionsPane(SeqViewOptions opts) throws NotFoundException {
         super();
         gfLoader = new RegionExpanderFactoryLoader<Gene>("gene");
         annotLoader = new RegionExpanderFactoryLoader<NamedTypedRegion>("annots");
         closed = false;
+        handlingChange=true;
         init(opts);
+        handlingChange=false;
         if (opts.getGenome() == null) {
             setSpeciesGenomeDefaults();
         }        
@@ -114,29 +92,30 @@ public class SeqViewOptionsPane
         closed = true; 
     }
     
-    private Genome loadGenome() { 
+    private void reloadGenome() { 
         String orgName = (String)speciesCBox.getSelectedItem();
         String genName = (String)genomeCBox.getSelectedItem();
-        if(orgName != null && genName != null) { 
-            Organism org;
+        if(orgName != null && genName != null && !orgName.equals(currSpecies.getName()) && !genName.equals(currGen.getVersion())) { 
+            Species org;
             try {
-                org = Organism.getOrganism(orgName);
-                Genome gen = org.getGenome(genName);
-                return gen;
+                org = Species.getSpecies(orgName);
+                currSpecies = org;
+                Genome gen = new Genome(org, genName);
+                currGen = gen;
             } catch (NotFoundException e) {
                 e.printStackTrace();
                 throw new IllegalArgumentException(orgName + ":" + genName);
             }
         }
-        return null;
     }
 
-    private void init() throws NotFoundException {
-        speciesLocationPanel = new JPanel();
+    public void init(SeqViewOptions opts) throws NotFoundException {
+    	speciesLocationPanel = new JPanel();
         annotationsPanel = new JPanel();
         seqPanel = new JPanel();
         optionsPanel = new JPanel();
-
+        createdFrom = opts;
+        
         // First tab lets the user select the species, genome version,
         // and the genomic coordinates they want to view
         specieslabel = new JLabel("Species");
@@ -145,33 +124,38 @@ public class SeqViewOptionsPane
         genelabel = new JLabel("Gene to view");
         speciesCBox = new JComboBox();
         genomeCBox = new JComboBox();
+        speciesCBox.addItemListener(this);
+        genomeCBox.addItemListener(this);                
         position = new JTextField();
         position.setText("1:100-200");
         gene = new JTextField();
 
         /* need to fill the species and genome boxes here */
-        Collection<String> organisms = Organism.getOrganismNames();
+        Collection<String> organisms = Species.getAllSpeciesNames(false);
         for (String o : organisms) {
             speciesCBox.addItem(o);
         }
-
-        speciesCBox.setSelectedIndex(0);
-        updateGenomeSelection();
-        Organism org = new Organism(speciesCBox.getSelectedItem().toString());
-        Collection<String> genomes = org.getGenomeNames();
-        genomeCBox.removeAllItems();
-        for (String o : genomes) {
-            genomeCBox.addItem(o);
-        }
-        Genome g = null;
-        if(genomeCBox.getModel().getSize() > 0) { 
-            genomeCBox.setSelectedIndex(0);
-            String gname = (String)genomeCBox.getSelectedItem();
-            g = Organism.findGenome(gname);
+        //Set selected species & genome
+        if (opts!=null && opts.getGenome() != null) {
+            speciesCBox.removeItemListener(this);
+            genomeCBox.removeItemListener(this);
+            speciesCBox.setSelectedItem(opts.getGenome().getSpeciesName());
+            Collection<String> genomes = opts.getGenome().getSpecies().getGenomeNames();
+            genomeCBox.removeAllItems();
+            for (String o : genomes) {
+            	genomeCBox.addItem(o);
+            }
+            genomeCBox.setSelectedItem(opts.getGenome().getVersion());            
+            currSpecies = opts.getGenome().getSpecies();
+            currGen = opts.getGenome();
+            genomeCBox.addItemListener(this);
+            speciesCBox.addItemListener(this);
         } else {
-            // umm, no genomes is bad and will break other stuff
-        }        
-
+            updateGenomeSelection();
+            setSpeciesGenomeDefaults();
+        }
+        
+        //Location panel
         speciesLocationPanel.setLayout(new GridLayout(4,2));
         speciesLocationPanel.add(specieslabel);
         speciesLocationPanel.add(speciesCBox);
@@ -181,11 +165,9 @@ public class SeqViewOptionsPane
         speciesLocationPanel.add(position);
         speciesLocationPanel.add(genelabel);
         speciesLocationPanel.add(gene);
-        speciesCBox.addItemListener(this);
-        genomeCBox.addItemListener(this);        
         
         // seqdata tab
-        seqSelect = new SeqLMESelectPanel();        
+        seqSelect = new SeqAlignmentSelectPanel();        
         seqPanel.setLayout(new BorderLayout());
         seqPanel.add(seqSelect, BorderLayout.CENTER);
 
@@ -265,69 +247,55 @@ public class SeqViewOptionsPane
         
         dummy = new JPanel();  dummy.add(optionsPanel); dummy.add(new JPanel());
         addTab("Display Options",new JScrollPane(dummy));
-    }
-
-    public void init(SeqViewOptions opts) throws NotFoundException {
-        handlingChange = true;
-        init();
-        createdFrom = opts;      
         
-        if (opts.getGenome() != null) {
-            this.speciesCBox.removeItemListener(this);
-            this.genomeCBox.removeItemListener(this);
-            this.speciesCBox.setSelectedItem(opts.getGenome().getSpecies());
-            updateGenomeSelection();
-            this.genomeCBox.setSelectedItem(opts.getGenome().getVersion());            
-            updateExptSelection();
-            this.genomeCBox.addItemListener(this);
-            this.speciesCBox.addItemListener(this);
-        } else {
-            this.speciesCBox.setSelectedIndex(0);
-            updateGenomeSelection();
-        }
-        handlingChange = false;        
-        if (opts.gene != null &&
-            !opts.gene.equals("")) {
-            gene.setText(opts.gene);
-        }
-        hash.setSelected(opts.hash);
-        gccontent.setSelected(opts.gccontent);        
-        pyrpurcontent.setSelected(opts.pyrpurcontent);
-        polyA.setSelected(opts.polya);
-        cpg.setSelected(opts.cpg);
-        regexmatcher.setSelected(opts.regexmatcher);
-        seqletters.setSelected(opts.seqletters);
-        oldchipseq.setSelected(!opts.seqHistogramPainter);
-        seqlimitlabel.setText("Sequence features (visible only below "+opts.maxSequenceQuery+"bp):");
-        int[] selected = new int[opts.genes.size()];
-        for (int i = 0; i < opts.genes.size(); i++) {
-            selected[i] = genesmodel.indexOf(opts.genes.get(i));            
-        }
-        genes.setSelectedIndices(selected);
-        selected = new int[opts.ncrnas.size()];
-        for (int i = 0; i < opts.ncrnas.size(); i++) {
-            selected[i] = ncrnasmodel.indexOf(opts.ncrnas.get(i));            
-        }
-        ncrnas.setSelectedIndices(selected);
-        selected = new int[opts.otherannots.size()];
-        for (int i = 0; i < opts.otherannots.size(); i++) {
-            selected[i] = otherfeatsmodel.indexOf(opts.otherannots.get(i));
-        }
-        otherfeats.setSelectedIndices(selected);
-        
-        if (opts.position != null &&
-            !opts.position.equals("")) {
-            position.setText(opts.position);
-        } else {
-            if (opts.chrom != null &&
-                !opts.chrom.equals("")) {
-                position.setText(opts.chrom + ":" + opts.start + "-" + opts.stop);
+        if(opts !=null){
+        	if (opts.gene != null &&
+                !opts.gene.equals("")) {
+                gene.setText(opts.gene);
             }
+            hash.setSelected(opts.hash);
+            gccontent.setSelected(opts.gccontent);        
+            pyrpurcontent.setSelected(opts.pyrpurcontent);
+            polyA.setSelected(opts.polya);
+            cpg.setSelected(opts.cpg);
+            regexmatcher.setSelected(opts.regexmatcher);
+            seqletters.setSelected(opts.seqletters);
+            oldchipseq.setSelected(!opts.seqHistogramPainter);
+            seqlimitlabel.setText("Sequence features (visible only below "+opts.maxSequenceQuery+"bp):");
+            int[] selected = new int[opts.genes.size()];
+            for (int i = 0; i < opts.genes.size(); i++) {
+                selected[i] = genesmodel.indexOf(opts.genes.get(i));            
+            }
+            genes.setSelectedIndices(selected);
+            selected = new int[opts.ncrnas.size()];
+            for (int i = 0; i < opts.ncrnas.size(); i++) {
+                selected[i] = ncrnasmodel.indexOf(opts.ncrnas.get(i));            
+            }
+            ncrnas.setSelectedIndices(selected);
+            selected = new int[opts.otherannots.size()];
+            for (int i = 0; i < opts.otherannots.size(); i++) {
+                selected[i] = otherfeatsmodel.indexOf(opts.otherannots.get(i));
+            }
+            otherfeats.setSelectedIndices(selected);
+            
+            if (opts.position != null &&
+                !opts.position.equals("")) {
+                position.setText(opts.position);
+            } else {
+                if (opts.chrom != null &&
+                    !opts.chrom.equals("")) {
+                    position.setText(opts.chrom + ":" + opts.start + "-" + opts.stop);
+                }
+            }
+            seqSelect.addToSelected(opts.seqExpts);
+            filetracks.fill(opts.regionTracks);
         }
-        seqSelect.addToSelected(opts.seqExpts);
-        filetracks.fill(opts.regionTracks);
+        
+        //Update the experiment list
+        updateExptSelection();
     }
 
+    
     public void setSpeciesGenomeDefaults() {
         String species = null, genome = null;
         try {
@@ -385,8 +353,8 @@ public class SeqViewOptionsPane
         String speciesStr = speciesCBox.getSelectedItem().toString();
         String genomeStr = genomeCBox.getSelectedItem().toString();
         try {
-        	Organism org = new Organism(speciesStr);
-        	these.setGenome(org.findGenome(genomeStr));
+        	Species org = new Species(speciesStr);
+        	these.setGenome(Genome.findGenome(genomeStr));
         } catch (NotFoundException e) {
             e.printStackTrace();
             throw new IllegalArgumentException(genomeStr);
@@ -420,18 +388,11 @@ public class SeqViewOptionsPane
         //these.exprExperiments.addAll(expts);
         
         //Parse sequencing experiments
-        for(SeqLocatorMatchedExpt lme : seqSelect.getSelected()) {
+        for(SeqLocatorMatchedAligns lme : seqSelect.getSelected()) {
         	these.seqExpts.add(lme);
         }
         
-        
-        /*// parse the ChIP-chip exptSelect panel selections.
-        for(ExptLocator loc : exptSelect.getSelected()) { 
-            if(loc instanceof ChipChipLocator) { 
-                ChipChipLocator aloc = (ChipChipLocator)loc;
-                these.agilentdata.add(aloc);
-            }
-        }*/
+       
         
         filetracks.parse(these.regionTracks);
         these.regexes = regexes;
@@ -454,23 +415,23 @@ public class SeqViewOptionsPane
     /* updates the choice of experiments based on the
        currently selected genome and species */
     private void updateExptSelection() {
-        Genome g = loadGenome();       
-        seqSelect.setGenome(g);
+        reloadGenome();       
+        seqSelect.setGenome(currGen);
 
         // update the set of Gene annotations
         genesmodel.clear();
         otherfeatsmodel.clear();
 
-        if(g != null) { 
-            for(String type : gfLoader.getTypes(g)) {
+        if(currGen != null) { 
+            for(String type : gfLoader.getTypes(currGen)) {
                 genesmodel.addElement(type);
             }
-            for(String type : annotLoader.getTypes(g)) {
+            for(String type : annotLoader.getTypes(currGen)) {
                 otherfeatsmodel.addElement(type);
             }
-            List<String> chroms = g.getChromList();
+            List<String> chroms = currGen.getChromList();
             if (chroms.size() == 0) {
-                throw new RuntimeException("Empty chromosome list for " + g);
+                throw new RuntimeException("Empty chromosome list for " + currGen);
             }
             java.util.Collections.sort(chroms);
 
@@ -480,7 +441,7 @@ public class SeqViewOptionsPane
 
     private void updateGenomeSelection () {
         try {
-            Organism org = new Organism(speciesCBox.getSelectedItem().toString());
+            Species org = new Species(speciesCBox.getSelectedItem().toString());
             Collection<String> genomes = org.getGenomeNames();
             genomeCBox.removeAllItems();
             for (String o : genomes) {

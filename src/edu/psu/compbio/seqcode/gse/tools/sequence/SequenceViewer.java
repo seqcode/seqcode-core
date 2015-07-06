@@ -18,7 +18,6 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
@@ -246,7 +245,7 @@ public class SequenceViewer extends JFrame implements CaretListener {
             int start = Integer.parseInt(m.group(3));
             int end = Integer.parseInt(m.group(4));
             try {
-                Genome genome = Organism.findGenome(genomeName);
+                Genome genome = Genome.findGenome(genomeName);
                 Region r = new Region(genome, chromName, start, end);
                 String seq = seqgen.execute(r);
                 seq = seq.toUpperCase();

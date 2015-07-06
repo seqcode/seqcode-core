@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -76,8 +77,6 @@ public class ProfileGeneNeighborhood {
 		String motiffile = ap.getKeyValue("motiffile");
 		String backfile = ap.getKeyValue("back");
 		
-		List<WeightMatrix> matrixList = MotifAnalysisSandbox.loadMotifFromFile(motiffile, backfile, gc.getGenome());
-		
 		String peaksFile = ap.getKeyValue("peaks");
 		List<Point> peaks = RegionFileUtilities.loadPeaksFromPeakFile(gc.getGenome(), ap.getKeyValue("peaks"), win);
 		String genefile = Args.parseString(args, "gtf", null);
@@ -91,7 +90,8 @@ public class ProfileGeneNeighborhood {
         List<String> geneList = new ArrayList<String>();
         while ((line = reader.readLine()) != null) {
         	line.trim();
-        	geneList.add(line);
+        	String[] words =line.split("\t");
+        	geneList.add(words[0]);
         }
 		reader.close();
 		
@@ -100,12 +100,18 @@ public class ProfileGeneNeighborhood {
 		profiler.setRadius(rad);
 		profiler.setPeaks(peaks);
 		profiler.setGenes(genefile, geneList);
-		profiler.setMotifs(matrixList);
 		
-		boolean clusterSyntax = ap.hasKey("ClusterSyntax");
-		if(clusterSyntax){profiler.printPeakClusterSyntax();}
-		boolean peakSyntax = ap.hasKey("PeakSyntax");
-		if(peakSyntax){profiler.printPeakSyntax();}
+		
+		
+		if(ap.hasKey("ClusterSyntax")){
+			List<WeightMatrix> matrixList = MotifAnalysisSandbox.loadMotifFromFile(motiffile, backfile, gc.getGenome());
+			profiler.setMotifs(matrixList);
+			profiler.printPeakClusterSyntax();}
+		else if(ap.hasKey("PeakSyntax")){
+			List<WeightMatrix> matrixList = MotifAnalysisSandbox.loadMotifFromFile(motiffile, backfile, gc.getGenome());
+			profiler.setMotifs(matrixList);
+			profiler.printPeakSyntax();}
+		else if(ap.hasKey("closePeaks")){profiler.printPeaksatGenes();}
 		
 		profiler.clear();
 		
@@ -124,6 +130,31 @@ public class ProfileGeneNeighborhood {
 	public void setGenes(String gfffile, List<String> geneList){loadGenes(gfffile,geneList);}
 	public void setMotifs(List<WeightMatrix> m){motifs = m;}
 	
+	
+	/**
+	 * Just Prints all the peaks near the input gene-list
+	 * 
+	 */
+	public void printPeaksatGenes(){
+		loadpeaksAtgenes();
+		
+		List<Point> closepeaks = new ArrayList<Point>();
+		
+		
+		for(String gn : peaksAtgenes.keySet()){
+			if(peaksAtgenes.get(gn).size() !=0){
+				StringBuilder sb = new StringBuilder();
+				sb.append(gn);sb.append("\t");
+				for(Point p: peaksAtgenes.get(gn)){
+					sb.append(p.getLocationString());sb.append("\t");
+					closepeaks.add(p);
+				}
+				sb.deleteCharAt(sb.length()-1);
+				System.out.println(sb.toString());
+			}
+		}		
+		
+	}
 	
 	
 	public void printPeakClusterSyntax(){

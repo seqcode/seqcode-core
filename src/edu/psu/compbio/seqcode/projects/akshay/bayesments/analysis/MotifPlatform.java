@@ -15,11 +15,11 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScoreProfi
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScorer;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
 
 
 public class MotifPlatform {
-	protected Config conf;
+	protected BayesmentsConfig conf;
 	protected List<Region> motif_search_locations = new ArrayList<Region>();
 	protected List<Region> randomRegions;
 	protected String[] randomSequences;
@@ -28,7 +28,7 @@ public class MotifPlatform {
 	protected List<WeightMatrix> enriched_motifs;
 	protected String outname;
 	
-	public MotifPlatform(Config c, List<Point> search_regions, String name){
+	public MotifPlatform(BayesmentsConfig c, List<Point> search_regions, String name){
 		this.conf = c;
 
 		for(Point p: search_regions){

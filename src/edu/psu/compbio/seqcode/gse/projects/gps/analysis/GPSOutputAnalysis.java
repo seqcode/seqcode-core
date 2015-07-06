@@ -17,7 +17,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -73,11 +73,11 @@ public class GPSOutputAnalysis {
   public static void main(String[] args) throws IOException {
     ArgParser ap = new ArgParser(args);
     Set<String> flags = Args.parseFlags(args);
-    Organism org=null;
+    Species org=null;
     Genome genome=null;
     
     try {
-      Pair<Organism, Genome> pair = Args.parseGenome(args);
+      Pair<Species, Genome> pair = Args.parseGenome(args);
       if(pair==null){
         //Make fake genome... chr lengths provided???
         if(ap.hasKey("geninfo")){

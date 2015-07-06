@@ -101,7 +101,7 @@ public class GetBindingInRegion {
         ArrayList<String> args = new ArrayList<String>();
         args.add("--noexit");
         args.add("--species");
-        args.add(String.format("%s;%s", genome.getSpecies(), genome.getVersion()));
+        args.add(String.format("%s;%s", genome.getSpeciesName(), genome.getVersion()));
         args.add("--picture");
         args.add(plotPrefix + (r.toString().replaceAll(":","_")) + ".png");
         args.add("--genes");

@@ -7,7 +7,7 @@ import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.NamedStrandedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.Expander;
-import edu.psu.compbio.seqcode.gse.utils.database.*;
+import edu.psu.compbio.seqcode.gse.utils.database.DatabaseException;
 
 /* Generator that returns NamedStrandedRegion objects from the specified table. 
    The table must have columns: chrom, chromStart, chromEnd, name, strand.
@@ -26,7 +26,7 @@ public class NamedStrandedGenerator<X extends Region> implements Expander<X,Name
     public Iterator<NamedStrandedRegion> execute(X region) {
         try {
             java.sql.Connection cxn =
-                genome.getUcscConnection();
+                genome.getAnnotationDBConnection();
             PreparedStatement ps = cxn.prepareStatement("select name, strand, chromStart, chromEnd from " + tablename + " where chrom = ? and " +
                                                         "((chromStart <= ? and chromEnd >= ?) or (chromStart >= ? and chromStart <= ?)) order by chromStart");
             String chr = region.getChrom();
@@ -51,7 +51,7 @@ public class NamedStrandedGenerator<X extends Region> implements Expander<X,Name
             }
             rs.close();
             ps.close();
-            DatabaseFactory.freeConnection(cxn);
+            cxn.close();
             return results.iterator();
         } catch (SQLException ex) {
             throw new DatabaseException("Couldn't get UCSC RefGenes",ex);

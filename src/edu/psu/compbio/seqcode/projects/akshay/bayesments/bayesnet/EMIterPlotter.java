@@ -11,7 +11,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
 
 public class EMIterPlotter {
 	
@@ -29,7 +29,7 @@ public class EMIterPlotter {
 	protected String parameter_name;
 	protected File image_file;
 	
-	public EMIterPlotter(Config config, double[][] Xaxes, double[][] Yaxes, String param_name) {
+	public EMIterPlotter(BayesmentsConfig config, double[][] Xaxes, double[][] Yaxes, String param_name) {
 		this.w = config.W;
 		this.h = config.H;
 		this.wmargin = config.W_MARGIN;

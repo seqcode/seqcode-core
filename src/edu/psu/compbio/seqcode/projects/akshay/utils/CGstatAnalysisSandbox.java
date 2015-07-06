@@ -5,7 +5,7 @@ import java.io.File;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
@@ -82,10 +82,10 @@ public class CGstatAnalysisSandbox {
 		int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():200;
 		int bins = ap.hasKey("bins") ? new Integer(ap.getKeyValue("bins")).intValue():10;
 		Genome currgen=null;
-		Organism currorg=null;
+		Species currorg=null;
 		//Load genome
 		if(ap.hasKey("species")){
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			Pair<Species, Genome> pair = Args.parseGenome(args);
 			if(pair != null){
 				currorg = pair.car();
 				currgen = pair.cdr();

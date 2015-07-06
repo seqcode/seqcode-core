@@ -10,6 +10,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Point;
@@ -191,18 +193,19 @@ public class FigureOptions {
                                 int numExptTokens = oName.equals("exptLoc") ? 1 : 2;
                                 for(int t=0; t<numExptTokens; t++){
                                      String[] pieces = tokens[2+t].split(";");
+                                     Set<String> replist = new TreeSet<String>();
+
                                      if(pieces.length == 2){
                                           if(t==0){
-                                               experiments.get(oVal).expt = new SeqLocator(pieces[0], pieces[1]);
-                                               exptNames.add(oVal);
+                                        	  experiments.get(oVal).expt = new SeqLocator(pieces[0], replist, pieces[1]);
+                                        	  exptNames.add(oVal);
                                           }else{
-                                               experiments.get(oVal).baseExpt = new SeqLocator(pieces[0], pieces[1]);
+                                               experiments.get(oVal).baseExpt = new SeqLocator(pieces[0], replist, pieces[1]);
                                           }
                                      }else if (pieces.length == 3){
                                           System.err.println(pieces[1]);
                                           String[] reps = pieces[1].split(",");
                                           if (reps.length > 1) {
-                                               List<String> replist = new ArrayList<String>();
                                                for (int i=0; i<reps.length; i++) {
                                                     replist.add(reps[i]);
                                                }
@@ -213,15 +216,16 @@ public class FigureOptions {
                                                     experiments.get(oVal).baseExpt = new SeqLocator(pieces[0],replist,pieces[2]);
                                                }
                                           } else {
+                                        	  replist.add(pieces[1]);
                                                if(t==0){
-                                                    experiments.get(oVal).expt = new SeqLocator(pieces[0], pieces[1], pieces[2]);
+                                                    experiments.get(oVal).expt = new SeqLocator(pieces[0], replist, pieces[2]);
                                                     exptNames.add(oVal);
                                                }else{
-                                                    experiments.get(oVal).baseExpt = new SeqLocator(pieces[0], pieces[1], pieces[2]);
+                                                    experiments.get(oVal).baseExpt = new SeqLocator(pieces[0], replist, pieces[2]);
                                                }
                                           }
                                      }else{
-                                          System.err.println("Couldn't parse a ChipSeqLocator from " + tokens[2]);
+                                          System.err.println("Couldn't parse a SeqLocator from " + tokens[2]);
                                      }
                                 }
                            }

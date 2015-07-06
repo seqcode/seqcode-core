@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrixImport;
 import edu.psu.compbio.seqcode.gse.projects.gps.discovery.kmer.KMAC;
@@ -34,7 +34,7 @@ public class MotifFormatter {
 		    Vector<float[]> arrays = new Vector<float[]>();
 
 		    // Read in Transfac format first
-		    Organism currentSpecies = null;
+		    Species currentSpecies = null;
 		    String name = null, id = null, accession = null;
 		    int lineCount = 0;
 		    while ((line = br.readLine()) != null) {

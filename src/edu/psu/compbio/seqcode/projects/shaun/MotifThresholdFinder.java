@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -81,15 +81,15 @@ public class MotifThresholdFinder {
         
         try {
 			//Load genome
-			Organism currorg = Organism.getOrganism(species);
-			Genome currgen = currorg.getGenome(genome);
+			Species currorg = Species.getSpecies(species);
+			Genome currgen =  new Genome(currorg, genome);
 
 	        //Load the background model
 	        MarkovBackgroundModel backMod;
 	        if(backFile == null){
-	          backMod = new MarkovBackgroundModel(CountsBackgroundModel.modelFromWholeGenome(Organism.findGenome(genome)));
+	          backMod = new MarkovBackgroundModel(CountsBackgroundModel.modelFromWholeGenome(Genome.findGenome(genome)));
 	        }else{
-	        	backMod = BackgroundModelIO.parseMarkovBackgroundModel(backFile, Organism.findGenome(genome));
+	        	backMod = BackgroundModelIO.parseMarkovBackgroundModel(backFile, Genome.findGenome(genome));
 	        }
 	        
 	        //Load datasets

@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.projects.gps.*;
 import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
@@ -32,7 +32,7 @@ public class GEM {
 			printHelp();
 			System.exit(1);
         }
-        Pair<Organism, Genome> pair = Args.parseGenome(args);
+        Pair<Species, Genome> pair = Args.parseGenome(args);
         if(pair != null) {
             genome = pair.cdr();
         } else {

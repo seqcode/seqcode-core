@@ -50,7 +50,7 @@ public class ReadDBReadLoader extends ReadLoader{
 		currID=new Random(System.currentTimeMillis()).nextInt();
 		try {
 			//Initialize
-			SeqDataLoader loader = new SeqDataLoader(false); 
+			SeqDataLoader loader = new SeqDataLoader(false, true); 
 			try{
 				for(SeqLocator locator : locs){
 					String exptName = locator.getExptName(); exptNames.add(exptName);
@@ -59,7 +59,7 @@ public class ReadDBReadLoader extends ReadLoader{
 							Collection<SeqExpt> expts = loader.loadExperiments(locator.getExptName());
 							for(SeqExpt expt : expts) { 
 								Collection<SeqAlignment> aligns;
-								aligns = loader.loadAllAlignments(expt);
+								aligns = loader.loadAlignmentsBySeqExpt(expt);
 								for (SeqAlignment currentAlign : aligns) {
 									if (currentAlign.getGenome().equals(g)) { 
 										aligns.add(currentAlign);
@@ -84,7 +84,7 @@ public class ReadDBReadLoader extends ReadLoader{
 							System.err.println("Have name but no replicates.  Got " + expts.size() + " experiments for " + locator.getExptName());
 							for(SeqExpt expt : expts) { 
 								Collection<SeqAlignment> alignments;
-								alignments = loader.loadAllAlignments(expt);
+								alignments = loader.loadAlignmentsBySeqExpt(expt);
 								for (SeqAlignment currentAlign : alignments) {
 									System.err.println("  " + currentAlign);
 									if (currentAlign.getGenome().equals(g) && currentAlign.getName().equals(locator.getAlignName())) { 

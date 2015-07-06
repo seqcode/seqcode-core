@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
@@ -32,7 +32,7 @@ public class GPS_ReadDistribution {
 	static final int MOTIF_DISTANCE = 50;	
 	
 	private Genome genome;
-	private Organism org;
+	private Species org;
 	
 	private ArrayList<Point> points = new ArrayList<Point>(); 
 	private String GPSfileName;
@@ -60,7 +60,7 @@ public class GPS_ReadDistribution {
 		ArgParser ap = new ArgParser(args);
 		
 		try {
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			Pair<Species, Genome> pair = Args.parseGenome(args);
 			if(pair==null){
 				//Make fake genome... chr lengths provided???
 				if(ap.hasKey("g")){

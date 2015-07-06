@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -141,7 +141,7 @@ public class AddBindingToExprTable {
             return;
         }
         try {
-			Pair<Organism, Genome> pair = Args.parseGenome(args);
+			Pair<Species, Genome> pair = Args.parseGenome(args);
 			Genome currgen = pair.cdr();
 			String gtfFile = ap.getKeyValue("gtf");			
 			String exprFile = ap.getKeyValue("exprtable");

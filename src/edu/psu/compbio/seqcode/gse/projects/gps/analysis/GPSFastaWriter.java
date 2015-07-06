@@ -6,12 +6,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSParser;
@@ -19,7 +19,6 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.chipseq.GPSPeak;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.projects.gps.DeepSeqExpt;
 import edu.psu.compbio.seqcode.gse.projects.gps.ReadHit;
-import edu.psu.compbio.seqcode.gse.projects.gps.features.Feature;
 import edu.psu.compbio.seqcode.gse.projects.gps.utilities.CommonUtils;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -34,7 +33,7 @@ public class GPSFastaWriter{
     Genome genome=null;
     
     try {
-      Pair<Organism, Genome> pair = Args.parseGenome(args);
+      Pair<Species, Genome> pair = Args.parseGenome(args);
       if(pair==null){
         //Make fake genome... chr lengths provided???
         if(ap.hasKey("geninfo")){
@@ -151,12 +150,14 @@ public class GPSFastaWriter{
 		    ArrayList<SeqLocator> locators = new ArrayList<SeqLocator>();
 	        for (String dbStr: readDbStrings) {
 	            String[] pieces = dbStr.split(";");
-	            if (pieces.length == 2) {
-	            	locators.add(new SeqLocator(pieces[0], pieces[1]));
+	            Set<String> reps = new TreeSet<String>();
+            	if (pieces.length == 2) {
+            		locators.add(new SeqLocator(pieces[0], reps, pieces[1]));					
 	            } else if (pieces.length == 3) {
-	            	locators.add(new SeqLocator(pieces[0], pieces[1], pieces[2]));
+	            	reps.add(pieces[1]);
+	            	locators.add(new SeqLocator(pieces[0], reps, pieces[2]));
 	            } else {
-	                throw new RuntimeException("Couldn't parse a ChipSeqLocator from " + dbStr);
+	                throw new RuntimeException("Couldn't parse a SeqLocator from " + dbStr);
 	            }
 	        }
 	        if (locators.isEmpty())

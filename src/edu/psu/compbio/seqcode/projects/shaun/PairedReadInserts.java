@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
+import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
@@ -41,7 +41,7 @@ public class PairedReadInserts {
     private int maxFrag=1000;
     
 	public static void main(String[] args) throws SQLException, NotFoundException {
-	    Pair<Organism,Genome> pair = Args.parseGenome(args);
+	    Pair<Species,Genome> pair = Args.parseGenome(args);
         List<SeqLocator> expts = Args.parseSeqExpt(args,"expt");
         String gtfFile = Args.parseString(args, "gtf", null);
         int minUTR = Args.parseInteger(args, "minutr", 5000);
@@ -69,7 +69,7 @@ public class PairedReadInserts {
 			this.alignments = new HashSet<SeqAlignment>();
 			SeqDataLoader loader = new SeqDataLoader(); 
 			for(SeqLocator csl : expts){
-				this.alignments.addAll(csl.loadAlignments(loader, gen));
+				this.alignments.addAll(loader.loadAlignments(csl, gen));
 			}
 			this.minUTR = utr_min;
 			this.maxFrag = max_frag;

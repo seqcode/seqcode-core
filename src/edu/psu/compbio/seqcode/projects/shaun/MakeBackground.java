@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
-import edu.psu.compbio.seqcode.genome.Organism;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -84,12 +83,12 @@ public class MakeBackground {
                
         if(usingRFile){
         	String rFile = ap.getKeyValue("regions");
-        	Genome gen = Organism.findGenome(genome);
+        	Genome gen = Genome.findGenome(genome);
         	cbm = CountsBackgroundModel.modelFromRegionList(gen, DatasetsGeneralIO.readRegionsFromFile(gen, rFile));
         }else if(usingGenes){
         	Genome g;
 			try {
-				g = Organism.findGenome(genome);
+				g = Genome.findGenome(genome);
 				RefGeneGenerator<NamedRegion> geneGen = new RefGeneGenerator<NamedRegion>(g, annotation);
 				cbm = CountsBackgroundModel.modelFromRegionList(g, MakeBackground.getTSSRegions(geneGen, tssup, tssdown));
 			} catch (NotFoundException e) {
@@ -105,7 +104,7 @@ public class MakeBackground {
 				e.printStackTrace();
 			}
         }else{
-          cbm = CountsBackgroundModel.modelFromWholeGenome(Organism.findGenome(genome));
+          cbm = CountsBackgroundModel.modelFromWholeGenome(Genome.findGenome(genome));
         }System.out.println("Counted");
         
         if (!stranded) {

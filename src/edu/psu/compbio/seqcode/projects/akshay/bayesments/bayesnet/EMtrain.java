@@ -1,17 +1,15 @@
 package edu.psu.compbio.seqcode.projects.akshay.bayesments.bayesnet;
 
-import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 import edu.psu.compbio.seqcode.gse.utils.probability.NormalDistribution;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.GenomicLocations;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Sequences;
-import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.Config;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.framework.BayesmentsEMan;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.Cubic;
 import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Simulate;
@@ -24,7 +22,7 @@ import edu.psu.compbio.seqcode.projects.akshay.bayesments.features.Simulate;
 
 public class EMtrain {
 
-	protected Config config;
+	protected BayesmentsConfig config;
 	protected boolean Simulate;
 	
 	//The following 4 lines are variables needed when the model is in seq state. The should be initiated using a setter method(setSeqMode)
@@ -97,7 +95,7 @@ public class EMtrain {
 	 * @param trainingData
 	 * @param manager
 	 */
-	public EMtrain(Config config, GenomicLocations trainingData, Sequences seqs, ExperimentManager manager, int nChromStates, int nFacStates, boolean Regularize, boolean printVals, boolean SeqState) {
+	public EMtrain(BayesmentsConfig config, GenomicLocations trainingData, Sequences seqs, ExperimentManager manager, BayesmentsEMan bmanager, int nChromStates, int nFacStates, boolean Regularize, boolean printVals, boolean SeqState) {
 		this.config = config;
 		//this.trainingData = trainingData;
 		this.regularize = Regularize;
@@ -119,7 +117,7 @@ public class EMtrain {
 		
 		this.condition_names = new String[C];
 		int c =0;
-		for(ExperimentCondition ec :manager.getChromatinConditionList()){
+		for(ExperimentCondition ec :bmanager.getChromatinConditionList()){
 			this.condition_names[c] = ec.getName();
 			c++;
 		}
@@ -137,7 +135,7 @@ public class EMtrain {
 		
 	}
 	
-	public EMtrain(Config config, int nChromStates, int nFacStates, boolean Regularize, boolean printVals) {
+	public EMtrain(BayesmentsConfig config, int nChromStates, int nFacStates, boolean Regularize, boolean printVals) {
 		this.config = config;
 		//this.trainingData = null;
 		this.regularize = Regularize;
