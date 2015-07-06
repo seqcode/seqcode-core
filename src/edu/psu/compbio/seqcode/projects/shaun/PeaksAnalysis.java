@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import cern.jet.random.Binomial;
 import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
@@ -296,6 +297,14 @@ public class PeaksAnalysis {
 	// Prints the kmer frequency counts
 	// Prints only those kmer-pairs that frequently occur in the given list of peaks. This is to maintain a manageble feature space
 	public void printPeakSeqKmerCoocurrence(int k, boolean useCache, String genPath, int s){
+		
+		// Claculate the probability of seeing a kmer-pair within a given window size
+		double p_k1_k2_not = 1-Math.pow(0.25, 2*k);
+		double p_k1_k2_w_s = 1-Math.pow(p_k1_k2_not, (double)s*window);
+		Binomial bt = new Binomial(100,0.5,new DRand());
+		bt.setNandP(posSet.size(), p_k1_k2_w_s);
+		
+		
 		SequenceGenerator seqgen = new SequenceGenerator();
 		seqgen.useCache(useCache);
 		if(useCache){
@@ -398,20 +407,38 @@ public class PeaksAnalysis {
 					sum++;
 				}
 			}
-			System.out.print(sum);
+			System.out.print("\t"+sum);
 		}
 		for(int i=0; i<numK; i++){
-			for(int j=0; j<numK; j++){
+			for(int j=i; j<numK; j++){
 				int sum=0;
 				for(int ri=0; ri<kmerCoOAvg.length; ri++){
 					if(kmerCoOAvg[ri][i][j] > 0){
 						sum++;
 					}
 				}
-				System.out.print(sum);
+				System.out.print("\t"+sum);
 			}
 		}
 		System.out.println("");
+		
+		System.out.print("Incidence_Pval");
+		for(int i=0; i<numK; i++){
+			System.out.print("\t0");
+		}
+		for(int i=0; i<numK; i++){
+			for(int j=i; j<numK; j++){
+				int sum=0;
+				for(int ri=0; ri<kmerCoOAvg.length; ri++){
+					if(kmerCoOAvg[ri][i][j] > 0){
+						sum++;
+					}
+				}
+				System.out.print("\t"+Double.toString(1-bt.cdf(sum)));
+			}
+		}
+		System.out.println("");
+		
 		
 	}
 	
