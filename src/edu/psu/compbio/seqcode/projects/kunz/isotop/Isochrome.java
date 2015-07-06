@@ -11,7 +11,7 @@ public class Isochrome
 	public double[][] delta;
 	public Isochrome()
 	{
-		epochs = 5000;
+		epochs = 1000;
 		neighborNumber = 6;
 		protos = new ArrayList<Prototype>();
 		simMat = new double[0][0];
@@ -27,6 +27,9 @@ public class Isochrome
 		System.out.println("training started");
 		train();
 		System.out.println(protos.size());
+		
+		//Add a file saver instead of returning protos
+		
 		return protos;
 	}
 	public void populateProtos()
@@ -230,15 +233,16 @@ public class Isochrome
 		double alpha = (1-(iter/epochs));
 		for(int i = 0; i<protos.size(); i++)
 		{
-			Prototype stimulator = protos.get(i);
+			Prototype stimulator = protos.get((int)(Math.random()*protos.size()));
 			double[] stimulus = new double[stimulator.m.length];
 			
 			//generates a stimulus
 			for(int j = 0; j<stimulus.length;j++)
 			{
 				Random randy = new Random();
-				stimulus[j] = randy.nextGaussian();//+stimulator.m[j]; //generate a stimulus distributed around each prototype
+				stimulus[j] = randy.nextGaussian();//-stimulator.m[j]; //generate a stimulus distributed around each prototype
 			}
+			//System.out.println(stimulus[0] + ", " + stimulus[1]);
 			//finds the best matched unit for the stimulus
 			Prototype BMU = protos.get(0); 
 			double bm = euclidean(BMU.m, stimulus);
@@ -280,7 +284,7 @@ public class Isochrome
 		
 		return Math.exp((-.5)*(d/(lambda*mu)));
 	}
-	//returns squared euclidean distance for comparing projection dimensionality similarity
+	//returns euclidean distance for comparing projection dimensionality similarity
 	public double euclidean(double[] a, double[] b)
 	{
 		if(a.length == b.length)

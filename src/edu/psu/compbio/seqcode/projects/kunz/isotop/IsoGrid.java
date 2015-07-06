@@ -36,9 +36,9 @@ public class IsoGrid extends JFrame
 		d.findGraphSpace();
 		add(d, BorderLayout.CENTER);
 		d.repaint();
-		d.requestFocus();
-		d.validate();
-		d.repaint();
+		requestFocus();
+		validate();
+		repaint();
 	 }
 	 public void isochrome()
 	 {
