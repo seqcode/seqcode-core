@@ -11,7 +11,7 @@ public class Isochrome
 	public double[][] delta;
 	public Isochrome()
 	{
-		epochs = 5000;//1000;
+		epochs = 5000;
 		neighborNumber = 6;
 		protos = new ArrayList<Prototype>();
 		simMat = new double[0][0];
@@ -22,9 +22,11 @@ public class Isochrome
 		vectorQuant();
 		pairWise();
 		neighborhood();
+		System.out.println("graphing");
 		graphDistances();
 		System.out.println("training started");
 		train();
+		System.out.println(protos.size());
 		return protos;
 	}
 	public void populateProtos()
@@ -228,12 +230,14 @@ public class Isochrome
 		double alpha = (1-(iter/epochs));
 		for(int i = 0; i<protos.size(); i++)
 		{
-			double[] stimulus = new double[protos.get(0).m.length];
+			Prototype stimulator = protos.get(i);
+			double[] stimulus = new double[stimulator.m.length];
+			
 			//generates a stimulus
 			for(int j = 0; j<stimulus.length;j++)
 			{
 				Random randy = new Random();
-				stimulus[j] = randy.nextGaussian();
+				stimulus[j] = randy.nextGaussian();//+stimulator.m[j]; //generate a stimulus distributed around each prototype
 			}
 			//finds the best matched unit for the stimulus
 			Prototype BMU = protos.get(0); 
@@ -292,7 +296,7 @@ public class Isochrome
 			return -1;
 	}
 	//Cosine similarity
-	public double cosineSim(Prototype nope, Prototype dope)							//Cosine Similarity = (A · B)/(||A||*||B||)
+	public double cosineSim(Prototype nope, Prototype dope)							//Cosine Similarity = (A  B)/(||A||*||B||)
 	{																			//Higher values indicate more similarity (ranges from [-1, 1])
 		double dot = 0;
 		double magN = nope.pmag;

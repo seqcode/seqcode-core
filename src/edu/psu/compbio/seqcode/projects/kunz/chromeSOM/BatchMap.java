@@ -114,7 +114,7 @@ public class BatchMap
 	}
 	
 	//Cosine similarity
-	public double cosineSim(Node nope, DataPoint dope)							//Cosine Similarity = (A · B)/(||A||*||B||)
+	public double cosineSim(Node nope, DataPoint dope)							//Cosine Similarity = (A  B)/(||A||*||B||)
 	{																			//Higher values indicate more similarity (ranges from [-1, 1])
 		double dot = 0;
 		double magN = nope.mag;
