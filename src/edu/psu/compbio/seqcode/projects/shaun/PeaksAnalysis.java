@@ -294,6 +294,7 @@ public class PeaksAnalysis {
 	// Print the number of times 2 kmers co-occurr in a given sliding window 
 	// 									and
 	// Prints the kmer frequency counts
+	// Prints only those kmer-pairs that frequently occur in the given list of peaks. This is to maintain a manageble feature space
 	public void printPeakSeqKmerCoocurrence(int k, boolean useCache, String genPath, int s){
 		SequenceGenerator seqgen = new SequenceGenerator();
 		seqgen.useCache(useCache);
@@ -317,6 +318,9 @@ public class PeaksAnalysis {
 		}
 		System.out.println("");
 		
+		double[][] kmerCountsAvg = new double[posSet.size()][numK];
+		double[][][] kmerCoOAvg = new double[posSet.size()][numK][numK];
+		int reg_index=0;
 		for(Region r: posSet){
 			// Initialize 
 			for(int i=0; i<numK; i++)
@@ -328,9 +332,18 @@ public class PeaksAnalysis {
 			}
 			
 			String seq = seqgen.execute(r).toUpperCase();
-			if(seq.contains("N"))
+			if(seq.contains("N")){
+				for(int i=0; i<numK; i++){
+					kmerCountsAvg[reg_index][i]=0;
+				}
+				for(int i=0;i<numK; i++){
+					for(int j=0; j<numK; j++){
+						kmerCoOAvg[reg_index][i][j]=0;
+					}
+				}
+				reg_index++;
 				continue;
-			
+			}
 			// Count kmer freqs
 			for(int i=0; i<(seq.length()-k+1); i++){
 				String currK = seq.substring(i, i+k);
@@ -339,6 +352,7 @@ public class PeaksAnalysis {
 				int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
 				int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
 				kmerCounts[kmer]++;
+				kmerCountsAvg[reg_index][kmer]++;
 			}
 			
 			// Count the co-occurrence
@@ -358,11 +372,13 @@ public class PeaksAnalysis {
 						int kmerP2 = currKP2Int>revCurrKP2Int? currKP2Int: revCurrKP2Int;
 						kmerCoO[kmerP1][kmerP2]=1;
 						kmerCoO[kmerP2][kmerP1]=1;
+						kmerCoOAvg[reg_index][kmerP1][kmerP2]=1;
+						kmerCoOAvg[reg_index][kmerP2][kmerP1]=1;
+						
 					}
 				}
 			}
 			System.out.print(r.getLocationString());
-			
 			for(int i=0; i<numK; i++)
 				System.out.print("\t"+kmerCounts[i]);
 			for(int i=0; i<numK; i++){
@@ -371,7 +387,32 @@ public class PeaksAnalysis {
 				}
 			}
 			System.out.println("");
+			reg_index++;
 		}
+		
+		System.out.print("Overall_incidence");
+		for(int i=0; i<numK; i++){
+			int sum=0;
+			for(int ri=0; ri<kmerCountsAvg.length; ri++){
+				if(kmerCountsAvg[ri][i]>0){
+					sum++;
+				}
+			}
+			System.out.print(sum);
+		}
+		for(int i=0; i<numK; i++){
+			for(int j=0; j<numK; j++){
+				int sum=0;
+				for(int ri=0; ri<kmerCoOAvg.length; ri++){
+					if(kmerCoOAvg[ri][i][j] > 0){
+						sum++;
+					}
+				}
+				System.out.print(sum);
+			}
+		}
+		System.out.println("");
+		
 	}
 	
 	
