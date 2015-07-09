@@ -98,14 +98,14 @@ public class KmerModelScanner {
 					
 					Iterator<Pair<Region,Double>> it = mountains.iterator();
 					boolean add=true;
-					while(it.hasNext()){
+					while(it.hasNext() && add){
 						Pair<Region,Double> pr = it.next();
 						Region currHill = pr.car();
 						Double currScore = pr.cdr();
-						if(currHill.contains(hill) && currScore<score){
+						if(currHill.overlaps(hill) && currScore<score){
 							it.remove();
 							add=true;
-						}else if(currHill.contains(hill) && currScore> score){
+						}else if(currHill.overlaps(hill) && currScore> score){
 							add=false;
 						}
 					}
