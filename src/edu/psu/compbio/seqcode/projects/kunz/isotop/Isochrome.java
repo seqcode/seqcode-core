@@ -1,6 +1,20 @@
 package edu.psu.compbio.seqcode.projects.kunz.isotop;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
+/*
+ * Figure out if unclustered (random) points will look different than clustered point
+ * 		-All prototypes seem to line up so even random points may end up looking clustered
+ * Need to add a relative scale to grid
+ * Vector quantization: not working (all vectors filled with zero maybe?)
+ *       -Need a way to tell what bins (names) are covered by each prototype
+ * 
+ */
+
+import edu.psu.compbio.seqcode.projects.kunz.chromeSOM.Node;
 
 public class Isochrome 
 {
@@ -9,23 +23,28 @@ public class Isochrome
 	public int neighborNumber;
 	public double[][] simMat;
 	public double[][] delta;
+	public int protoNum;
 	public Isochrome()
 	{
-		epochs = 5000;//1000;
+		protoNum = 30;
+		epochs = 1000;
 		neighborNumber = 6;
 		protos = new ArrayList<Prototype>();
 		simMat = new double[0][0];
 	}
-	public ArrayList<Prototype> go()
+	public void go()
 	{
 		populateProtos();
+		System.out.println("Quantizing");
 		vectorQuant();
 		pairWise();
 		neighborhood();
+		System.out.println("Graphing");
 		graphDistances();
-		System.out.println("training started");
+		System.out.println("Training Started");
 		train();
-		return protos;
+		writeFile();
+		System.out.println(protos.size());
 	}
 	public void populateProtos()
 	{
@@ -41,9 +60,63 @@ public class Isochrome
 		}
 		
 	}
-	public void vectorQuant()
+	public void vectorQuant() //k-means
 	{
+		ArrayList<Prototype> ks = new ArrayList<Prototype>();
+		//init
+		for(int i = 0; i < protoNum; i++)
+		{
+			Prototype pep = protos.get((int)(Math.random()*protos.size()));
+			ks.add(new Prototype(pep.P_hiDVec, pep.name));
+		}
+		for(double i = 100; i>0;i--)
+		{
+			//find closest node for each prototype
+			for(int j = 0 ; j < protos.size(); j++)
+			{
+				Prototype pop = protos.get(j);
+				Prototype closest = ks.get(0);
+				for(int k = 0; k< ks.size(); k++)
+				{
+					if(cosineSim(ks.get(k), pop)>cosineSim(pop,closest))
+						closest=ks.get(k);
+				}
+				closest.neighbors.add(closest);
+			}
+			//find average value among neighbors for each node
+			for(int j = 0; j< ks.size(); j++)
+			{
+				Prototype pop = ks.get(j);
+				double[] num = new double[pop.P_hiDVec.length];
+				double denom = 0;
+				for(Prototype neighb : pop.neighbors)
+				{
+					for(int k = 0; k<neighb.P_hiDVec.length; k++)
+					{
+						num[k] += (i/1000) * neighb.P_hiDVec[k];
+					}
+					denom+= i/1000;
+				}
+				for (int k = 0; k < num.length; k++)
+				{
+					num[k]=num[k]/denom;
+				}
+				pop.P_hiDVec = num;
+			}
+		}
+		for(int k = 0; k< ks.size(); k++)
+		{
+			ks.get(k).neighbors.removeAll(ks.get(k).neighbors);
+		}
+		protos.removeAll(protos);
+		protos.addAll(ks);
+
 		
+		/*
+		 * 
+		 * Need a way to tell what bins (names) are covered by each prototype
+		 * 
+		 */
 	}
 	public void pairWise()
 	{
@@ -228,13 +301,16 @@ public class Isochrome
 		double alpha = (1-(iter/epochs));
 		for(int i = 0; i<protos.size(); i++)
 		{
-			double[] stimulus = new double[protos.get(0).m.length];
+			Prototype stimulator = protos.get((int)(Math.random()*protos.size()));
+			double[] stimulus = new double[stimulator.m.length];
+			
 			//generates a stimulus
 			for(int j = 0; j<stimulus.length;j++)
 			{
 				Random randy = new Random();
-				stimulus[j] = randy.nextGaussian();
+				stimulus[j] = randy.nextGaussian();//-stimulator.m[j]; //generate a stimulus distributed around each prototype
 			}
+			//System.out.println(stimulus[0] + ", " + stimulus[1]);
 			//finds the best matched unit for the stimulus
 			Prototype BMU = protos.get(0); 
 			double bm = euclidean(BMU.m, stimulus);
@@ -276,7 +352,7 @@ public class Isochrome
 		
 		return Math.exp((-.5)*(d/(lambda*mu)));
 	}
-	//returns squared euclidean distance for comparing projection dimensionality similarity
+	//returns euclidean distance for comparing projection dimensionality similarity
 	public double euclidean(double[] a, double[] b)
 	{
 		if(a.length == b.length)
@@ -292,7 +368,7 @@ public class Isochrome
 			return -1;
 	}
 	//Cosine similarity
-	public double cosineSim(Prototype nope, Prototype dope)							//Cosine Similarity = (A · B)/(||A||*||B||)
+	public double cosineSim(Prototype nope, Prototype dope)							//Cosine Similarity = (A  B)/(||A||*||B||)
 	{																			//Higher values indicate more similarity (ranges from [-1, 1])
 		double dot = 0;
 		double magN = nope.pmag;
@@ -306,5 +382,32 @@ public class Isochrome
 		if (dot> 1&& dot<1.001)
 			dot=1;
 		return dot;
+	}
+
+	public void writeFile()
+	{
+		BufferedWriter b;
+		try 
+		{
+			String g = "ISO ("+epochs+", "+ neighborNumber+", " + protos.size() +").txt";
+			System.out.println(g);
+			
+			FileWriter ff = new FileWriter(g,true);
+			b = new BufferedWriter(ff);											//ff set in constructor = the file name of the SOMlander
+			PrintWriter printer = new PrintWriter(b);
+			printer.println("ISO");
+			for(int i = 0; i<protos.size(); i++)
+			{
+				printer.print(protos.get(i).name + " [" + protos.get(i).m[0] + "; "+protos.get(i).m[1] + "]");	
+				printer.print("\n");
+			}
+			printer.print("\n");
+			printer.close();
+		}
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+			System.out.print("no way");
+		}
 	}
 }

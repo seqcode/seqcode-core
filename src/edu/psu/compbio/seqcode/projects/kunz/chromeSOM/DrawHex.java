@@ -200,9 +200,9 @@ public class DrawHex extends JPanel// implements Grid2D
 	   for(int i = 0; i<nodeSystem.size(); i++)
 	   {	   
 		   MiniNode p = nodeSystem.get(i);
-		   if(p.counting.size() == 0)
+		   if(p.counting.size() <= .05*maxDataPoints)  //lowest 5% is grayed out
 		   {
-			   p.color = Color.GRAY;
+			   p.color = Color.LIGHT_GRAY;
 		   }
 		   else
 			   p.color = colors.get(((p.counting.size()-minDataPoints)*(colors.size()-1)/(maxDataPoints-minDataPoints)));

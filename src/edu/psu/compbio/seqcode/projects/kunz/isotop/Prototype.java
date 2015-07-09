@@ -4,6 +4,7 @@ import java.util.ArrayList;
 public class Prototype 
 {
 	public String name;
+	public String[] names;
 	public int myIndex;
 	public double pmag;
 	public double[] P_hiDVec;
@@ -21,7 +22,15 @@ public class Prototype
 		neighbors = new ArrayList<Prototype>();
 		updateMag();
 		if(pmag == 0)
-			pmag = .000001; //zero mag -> NaN for cosine similarity calculation
+			pmag = .00000001; //zero mag -> NaN for cosine similarity calculation
+	}
+	public Prototype(String s)
+	{
+		name = s.substring(0, s.indexOf("["));
+		m = new double[2];
+		m[0] = Double.parseDouble(s.substring(s.indexOf("[")+1,s.indexOf(";"))); 
+		m[1] = Double.parseDouble(s.substring(s.indexOf("; ")+2,s.indexOf("]")));
+				
 	}
 	public void updateMag()
 	{
