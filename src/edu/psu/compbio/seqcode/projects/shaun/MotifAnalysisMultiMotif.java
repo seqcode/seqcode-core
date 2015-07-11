@@ -114,7 +114,7 @@ public class MotifAnalysisMultiMotif {
         boolean peaksAndMotifs = ap.hasKey("peaksandmotifs");
         boolean peaksAndMotifsBest = ap.hasKey("peaksandmotifsbest");
         boolean peakWinMaxScores = ap.hasKey("peakwinmaxscores");
-        boolean hitStats = ap.hasKey("hitStats");
+        boolean hitStats = ap.hasKey("hitstats");
         boolean multiThres = ap.hasKey("multithres");
         boolean bitPattern = ap.hasKey("bitpattern");
         boolean countPattern = ap.hasKey("countpattern");
