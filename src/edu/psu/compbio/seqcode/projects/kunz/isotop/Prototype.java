@@ -14,22 +14,35 @@ public class Prototype
 	public double[] neighborDists;
 	public Prototype(double[] vect, String n)
 	{
-		name =n;
+		name = n;
 		P_hiDVec = vect;
 		m = new double[]{0,0};
 		neighborIndexes = null;
 		neighborDists = null;
 		neighbors = new ArrayList<Prototype>();
 		updateMag();
-		if(pmag == 0)
-			pmag = .00000001; //zero mag -> NaN for cosine similarity calculation
 	}
 	public Prototype(String s)
 	{
+		//System.out.println(s);
+		ArrayList<String> naming = new ArrayList<String>();
 		name = s.substring(0, s.indexOf("["));
+		while(s.contains("-- "))
+		{
+			naming.add(s.substring(0,s.indexOf("-- ")));
+			s = s.substring(s.indexOf("-- ")+3, s.length());
+		}
+
+		
 		m = new double[2];
 		m[0] = Double.parseDouble(s.substring(s.indexOf("[")+1,s.indexOf(";"))); 
 		m[1] = Double.parseDouble(s.substring(s.indexOf("; ")+2,s.indexOf("]")));
+		String[] namer = new String[naming.size()];
+		for(int i = 0; i< naming.size(); i++)
+		{
+			namer[i] = naming.get(i);
+		}
+		setNames(namer);
 				
 	}
 	public void updateMag()
@@ -41,9 +54,20 @@ public class Prototype
 		}
 		magD = Math.sqrt(magD);
 		pmag = magD;
+		if(pmag == 0)
+			pmag = .0000000001; //zero mag -> NaN for cosine similarity calculation
 	}
 	public void setName(String s)
 	{
 		name = s;
+	}
+	public void setNames(String[] s)
+	{
+		names = new String[s.length];
+		for(int i =0; i< s.length; i++)
+		{
+			names[i] = s[i];
+		}
+		
 	}
 }
