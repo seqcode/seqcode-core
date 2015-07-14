@@ -94,7 +94,7 @@ public class KmerModelScanner {
 						}
 					}
 					
-					Region hill = new Region(gcon.getGenome(),r.getChrom(),r.getStart()+i,r.getStart()+i+l);
+					Region hill = new Region(gcon.getGenome(),r.getChrom(),r.getStart()+i,r.getStart()+i+l-1);
 					
 					Iterator<Pair<Region,Double>> it = mountains.iterator();
 					boolean add=true;
@@ -109,7 +109,7 @@ public class KmerModelScanner {
 							add=false;
 						}
 					}
-					if(add){
+					if(add && score > oddsThresh){
 						mountains.add(new Pair(hill,score));
 					}
 					
@@ -117,7 +117,8 @@ public class KmerModelScanner {
 			}
 			
 			for(Pair<Region,Double> hillpair: mountains){
-				System.out.println(r.getLocationString()+"\t"+hillpair.car().getLocationString()+"\t"+hillpair.cdr());
+				String motseq = seqgen.execute(hillpair.car()).toUpperCase();
+				System.out.println(r.getLocationString()+"\t"+hillpair.car().getLocationString()+"\t"+hillpair.cdr()+"\t"+motseq+"\t"+SequenceUtils.reverseComplement(motseq));
 			}	
 		}
 	}
