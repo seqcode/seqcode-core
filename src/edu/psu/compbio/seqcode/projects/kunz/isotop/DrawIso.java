@@ -14,7 +14,7 @@ public class DrawIso extends JPanel
 {
 	public ArrayList<Prototype> protos; 
 	public ArrayList<Color> colors;
-	public double minX, maxX, minY, maxY, scalar;
+	public double minX, maxX, minY, maxY, scalarX,scalarY;
 	public boolean coded;
 	public Color look; public int coder;
 	public DrawIso(String file)
@@ -73,14 +73,14 @@ public class DrawIso extends JPanel
 				maxY = protos.get(i).m[1];
 			}	
 		}
-		if(-1*minX > scalar)
-			scalar = -1*minX;
-		if(-1*minY> scalar)
-			scalar = -1*minY;
-		if(maxY>scalar)
-			scalar = maxY;
-		if(maxX> scalar)
-			scalar = maxX;
+		if(-1*minX > scalarX)
+			scalarX = -1*minX;
+		if(-1*minY> scalarY)
+			scalarY = -1*minY;
+		if(maxY>scalarY)
+			scalarY = maxY;
+		if(maxX> scalarX)
+			scalarX = maxX;
 		//System.out.println(scalar);
 	}
 	public void colorCoder()
@@ -110,11 +110,11 @@ public class DrawIso extends JPanel
 	    for(int i = 0; i<protos.size(); i++)
 	    {
 	    	Prototype phunk = protos.get(i);
-	    	int centerX = ((int)((phunk.m[0]/scalar)*relativeX))+relativeX;
-	    	int centerY = ((int)((phunk.m[1]/scalar)*relativeY))+relativeY;
-	    	
-	    	int ip = (int)Integer.parseInt(protos.get(i).name.substring(protos.get(i).name.indexOf("r")+1, protos.get(i).name.indexOf(":")));
-    		g.setColor(colors.get((int)Integer.parseInt(protos.get(i).name.substring(protos.get(i).name.indexOf("r")+1, protos.get(i).name.indexOf(":")))-1));
+	    	int centerX = ((int)((phunk.m[0]/scalarX)*relativeX))+relativeX;
+	    	int centerY = ((int)((phunk.m[1]/scalarY)*relativeY))+relativeY;
+	    	//System.out.println(protos.get(i).name + "    Goo" + i);
+	    	int ip = (int)Integer.parseInt(protos.get(i).name.substring(protos.get(i).name.indexOf("r")+1, protos.get(i).name.indexOf(":")))-1;
+    		g.setColor(colors.get(ip));
     		g.fillOval(centerX-4, centerY-4, 8, 8);
 	    }
 	    if(coded)
@@ -122,10 +122,16 @@ public class DrawIso extends JPanel
 	    	for(int i = 0; i<protos.size(); i++)
 		    {
 		    	Prototype phunk = protos.get(i);
-		    	int centerX = ((int)((phunk.m[0]/scalar)*relativeX))+relativeX;
-		    	int centerY = ((int)((phunk.m[1]/scalar)*relativeY))+relativeY;
+		    	int centerX = ((int)((phunk.m[0]/scalarX)*relativeX))+relativeX;
+		    	int centerY = ((int)((phunk.m[1]/scalarY)*relativeY))+relativeY;
 		    	
-		    	int ip = (int)Integer.parseInt(protos.get(i).name.substring(protos.get(i).name.indexOf("r")+1, protos.get(i).name.indexOf(":")));
+		    	int ip = 0;
+		    	for(int j = 0; j < protos.get(i).names.length; j++)
+		    	{
+		    		ip = (int)Integer.parseInt(protos.get(i).names[j].substring(protos.get(i).names[j].indexOf("r")+1, protos.get(i).names[j].indexOf(":")));
+		    		if(ip == coder)
+			    		break;
+		    	}
 		    	if(ip == coder)
 		    	{
 		    		g.setColor(look);

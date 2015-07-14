@@ -9,8 +9,6 @@ import java.util.Random;
  * Figure out if unclustered (random) points will look different than clustered point
  * 		-All prototypes seem to line up so even random points may end up looking clustered
  * Need to add a relative scale to grid
- * Vector quantization: not working (all vectors filled with zero maybe?)
- *       -Need a way to tell what bins (names) are covered by each prototype
  * 
  */
 
@@ -26,8 +24,8 @@ public class Isochrome
 	public int protoNum;
 	public Isochrome()
 	{
-		protoNum = 30;
-		epochs = 1000;
+		protoNum = 256;
+		epochs = 5432;
 		neighborNumber = 6;
 		protos = new ArrayList<Prototype>();
 		simMat = new double[0][0];
@@ -55,6 +53,7 @@ public class Isochrome
 		{
 			Prototype p = protos.get(i);
 			p.myIndex=i;
+			
 			if(p.pmag == 0)
 				System.out.println(p.name);
 		}
@@ -63,63 +62,91 @@ public class Isochrome
 	public void vectorQuant() //k-means
 	{
 		ArrayList<Prototype> ks = new ArrayList<Prototype>();
-		//init
 		for(int i = 0; i < protoNum; i++)
 		{
-			Prototype pep = protos.get((int)(Math.random()*protos.size()));
-			ks.add(new Prototype(pep.P_hiDVec, pep.name));
+			Prototype goof = protos.get((int)(Math.random()*protos.size()));
+			//System.out.println(goof.name);
+			ks.add(new Prototype(goof.P_hiDVec, goof.name));
 		}
-		for(double i = 100; i>0;i--)
+		for(int iter = 0; iter <100; iter ++)
 		{
-			//find closest node for each prototype
-			for(int j = 0 ; j < protos.size(); j++)
+			//clear neighbors
+			for(int i = 0; i< ks.size(); i++)
 			{
-				Prototype pop = protos.get(j);
+				//System.out.println(ks.get(i).neighbors.size());
+				ks.get(i).neighbors.removeAll(ks.get(i).neighbors);	
+			}
+			for(int i = 0; i< protos.size(); i++)
+			{
 				Prototype closest = ks.get(0);
-				for(int k = 0; k< ks.size(); k++)
+				for(int j = 1; j< ks.size(); j++)
 				{
-					if(cosineSim(ks.get(k), pop)>cosineSim(pop,closest))
-						closest=ks.get(k);
+					if(cosineSim(ks.get(j),protos.get(i)) >= cosineSim(closest, protos.get(i)))
+						closest = ks.get(j);
 				}
-				closest.neighbors.add(closest);
+				closest.neighbors.add(protos.get(i));
 			}
-			//find average value among neighbors for each node
-			for(int j = 0; j< ks.size(); j++)
+			for(int i = 0; i< ks.size(); i++)
 			{
-				Prototype pop = ks.get(j);
-				double[] num = new double[pop.P_hiDVec.length];
-				double denom = 0;
-				for(Prototype neighb : pop.neighbors)
+				if(ks.get(i).neighbors.size()>0)
 				{
-					for(int k = 0; k<neighb.P_hiDVec.length; k++)
+					double[] averageVec = new double[ks.get(i).P_hiDVec.length];
+					for(int k = 0; k< ks.get(i).neighbors.size(); k ++)
 					{
-						num[k] += (i/1000) * neighb.P_hiDVec[k];
+						for(int j = 0; j < ks.get(i).P_hiDVec.length; j++)
+						{
+							averageVec[j] += ks.get(i).neighbors.get(k).P_hiDVec[j]/ks.get(i).neighbors.size();
+						}
 					}
-					denom+= i/1000;
+					ks.get(i).P_hiDVec = averageVec;
+					ks.get(i).updateMag();
 				}
-				for (int k = 0; k < num.length; k++)
-				{
-					num[k]=num[k]/denom;
-				}
-				pop.P_hiDVec = num;
 			}
+
 		}
-		for(int k = 0; k< ks.size(); k++)
+		//naming
+		for(int i = 0; i< ks.size(); i++)
 		{
-			ks.get(k).neighbors.removeAll(ks.get(k).neighbors);
+			Prototype closest = protos.get(0);
+			for(int j = 1; j< protos.size(); j++)
+			{
+				if(cosineSim(ks.get(i),protos.get(j)) >= cosineSim(closest, protos.get(j)))
+					closest = protos.get(j);
+			}
+			ks.get(i).setName(closest.name);
 		}
+		for(int i = 0; i< ks.size(); i++)
+		{
+			String[] names = new String[ks.get(i).neighbors.size()];
+			for(int j = 0; j< ks.get(i).neighbors.size(); j++)
+			{
+				names[j] = ks.get(i).neighbors.get(j).name;
+			}
+			ks.get(i).setNames(names);
+		}
+		
+		
+		//finishing
+		for(int i = 0; i< ks.size(); i++)
+		{
+			ks.get(i).neighbors.removeAll(ks.get(i).neighbors);	
+		}
+		
 		protos.removeAll(protos);
 		protos.addAll(ks);
-
+		for(int i = 0; i<protos.size(); i++)
+		{
+			protos.get(i).myIndex = i;
+		}
 		
-		/*
-		 * 
-		 * Need a way to tell what bins (names) are covered by each prototype
-		 * 
-		 */
 	}
 	public void pairWise()
 	{
+		for(int i = 0; i<protos.size(); i++)
+		{
+			Prototype p = protos.get(i);
+			p.updateMag();
+		}
 		simMat = new double[protos.size()][protos.size()];
 		for(int i = 0; i<protos.size(); i++)
 		{
@@ -141,7 +168,7 @@ public class Isochrome
 		{
 			for(int j = 0; j<protos.size(); j++)
 			{
-					System.out.print(simMat[i][j]+ "-");
+				System.out.print(simMat[i][j]+ "-");
 			}
 			System.out.println();
 		}*/
@@ -249,7 +276,7 @@ public class Isochrome
 							close = protos.get(j);
 						}
 					}
-					delta[i][find] = delta[i][close.myIndex] + simMat[close.myIndex][find]; //sets delta for previously unseen current
+					delta[i][find] = delta[i][close.myIndex] + simMat[close.myIndex][find]; //sets delta for previously unseen current + penalty
 				}
 			}
 		}
@@ -257,8 +284,9 @@ public class Isochrome
 		{
 			for(int j = 0; j < delta[i].length; j++)
 			{
-				delta[i][j] *= 100; //make it bigger
+				System.out.print(delta[i][j] + "\t");
 			}
+			System.out.println();
 		}*/
 	}
 	public int findMax(double[] u)
@@ -373,7 +401,6 @@ public class Isochrome
 		double dot = 0;
 		double magN = nope.pmag;
 		double magD = dope.pmag;
-		
 		for(int i = 0; i < nope.P_hiDVec.length; i++)
 		{
 			dot += (nope.P_hiDVec[i]) * (dope.P_hiDVec[i]);
@@ -381,6 +408,10 @@ public class Isochrome
 		dot = dot/(magN*magD);
 		if (dot> 1&& dot<1.001)
 			dot=1;
+		/*if(Double.isNaN(dot))
+			System.out.println("Cosine Sim returning NaN:  dot ="+dot +  "  magD =" +magD+ "  magN =" +magN);
+		if(dot == 0)
+			System.out.println(" dot ="+dot +  "  magD =" +magD+ "  magN =" +magN);*/
 		return dot;
 	}
 
@@ -398,7 +429,16 @@ public class Isochrome
 			printer.println("ISO");
 			for(int i = 0; i<protos.size(); i++)
 			{
-				printer.print(protos.get(i).name + " [" + protos.get(i).m[0] + "; "+protos.get(i).m[1] + "]");	
+				if(protos.get(i).names.length == 0)//make sure this isn't causing issues in the way it all looks in GUI
+					printer.print(protos.get(i).name+ "-- ");
+				else
+				{
+					for(int j = 0; j < protos.get(i).names.length; j++)
+					{
+						printer.print(protos.get(i).names[j] + "-- ");	
+					}
+				}
+				printer.print(" [" + protos.get(i).m[0] + "; "+protos.get(i).m[1] + "]");
 				printer.print("\n");
 			}
 			printer.print("\n");
