@@ -25,8 +25,8 @@ public class Isochrome
 	public Isochrome()
 	{
 		protoNum = 256;
-		epochs = 5432;
-		neighborNumber = 6;
+		epochs = 5000;
+		neighborNumber = 4;
 		protos = new ArrayList<Prototype>();
 		simMat = new double[0][0];
 	}
@@ -276,7 +276,7 @@ public class Isochrome
 							close = protos.get(j);
 						}
 					}
-					delta[i][find] = delta[i][close.myIndex] + simMat[close.myIndex][find]; //sets delta for previously unseen current + penalty
+					delta[i][find] = delta[i][close.myIndex] + simMat[close.myIndex][find]; //sets delta for previously unseen current + ?penalty?
 				}
 			}
 		}
@@ -336,7 +336,7 @@ public class Isochrome
 			for(int j = 0; j<stimulus.length;j++)
 			{
 				Random randy = new Random();
-				stimulus[j] = randy.nextGaussian();//-stimulator.m[j]; //generate a stimulus distributed around each prototype
+				stimulus[j] = randy.nextGaussian()-stimulator.m[j]; //generate a stimulus distributed around each prototype
 			}
 			//System.out.println(stimulus[0] + ", " + stimulus[1]);
 			//finds the best matched unit for the stimulus

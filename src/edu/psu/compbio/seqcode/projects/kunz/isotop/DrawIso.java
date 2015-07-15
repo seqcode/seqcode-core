@@ -115,7 +115,7 @@ public class DrawIso extends JPanel
 	    	//System.out.println(protos.get(i).name + "    Goo" + i);
 	    	int ip = (int)Integer.parseInt(protos.get(i).name.substring(protos.get(i).name.indexOf("r")+1, protos.get(i).name.indexOf(":")))-1;
     		g.setColor(colors.get(ip));
-    		g.fillOval(centerX-4, centerY-4, 8, 8);
+    		g.fillOval(centerX-6, centerY-6, 12, 12);
 	    }
 	    if(coded)
 	    {
@@ -135,7 +135,7 @@ public class DrawIso extends JPanel
 		    	if(ip == coder)
 		    	{
 		    		g.setColor(look);
-		    		g.fillOval(centerX-5, centerY-5, 10, 10);
+		    		g.fillOval(centerX-8, centerY-8, 16, 16);
 		    	}
 		    }
 	    }
