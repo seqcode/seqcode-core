@@ -36,7 +36,15 @@ public class DrawHex extends JPanel// implements Grid2D
 			mini.counting.clear();
 			for(int j =0; j<mini.dataPoints.size(); j++)
 			{
-				if (chr == 0)
+				if(chr <= -1)
+				{
+					if(Math.random()>(-1.0/((double)chr)))
+					{
+						mini.counting.add(mini.dataPoints.get(j));
+						System.out.println((-1.0/((double)chr)));
+					}
+				}
+				else if (chr == 0)
 					mini.counting.add(mini.dataPoints.get(j));
 				else if (mini.dataPoints.get(j).chrome == chr)
 					mini.counting.add(mini.dataPoints.get(j));
