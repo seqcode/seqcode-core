@@ -25,7 +25,7 @@ public class Isochrome
 	public Isochrome()
 	{
 		protoNum = 256;
-		epochs = 5000;
+		epochs = 2000;
 		neighborNumber = 4;
 		protos = new ArrayList<Prototype>();
 		simMat = new double[0][0];
@@ -276,7 +276,7 @@ public class Isochrome
 							close = protos.get(j);
 						}
 					}
-					delta[i][find] = delta[i][close.myIndex] + simMat[close.myIndex][find]; //sets delta for previously unseen current + ?penalty?
+					delta[i][find] = delta[i][close.myIndex] + simMat[close.myIndex][find]; //sets delta for previously unseen current( + penalty)
 				}
 			}
 		}

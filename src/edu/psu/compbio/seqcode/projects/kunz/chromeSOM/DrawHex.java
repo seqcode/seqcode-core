@@ -38,11 +38,8 @@ public class DrawHex extends JPanel// implements Grid2D
 			{
 				if(chr <= -1)
 				{
-					if(Math.random()>(-1.0/((double)chr)))
-					{
+					if(Math.random()>.9)
 						mini.counting.add(mini.dataPoints.get(j));
-						System.out.println((-1.0/((double)chr)));
-					}
 				}
 				else if (chr == 0)
 					mini.counting.add(mini.dataPoints.get(j));
