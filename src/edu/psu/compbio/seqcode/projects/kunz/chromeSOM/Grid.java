@@ -42,24 +42,47 @@ public class Grid extends JFrame
 	 //Finds and shows chromes
 	 public void setUpMenu(JMenuBar menubar)
 	 {
-		 JButton button = new JButton("Seach");
-	        menubar.add(button);
-	        final JTextField texter = new JTextField("Chrome...", 20);
-		    menubar.add(texter);
-		    menubar.add(Box.createHorizontalGlue());
-		    
-		    button.addActionListener(new ActionListener() {
-		    	 
-	            public void actionPerformed(ActionEvent e)
-	            {
-	                //Execute when button is pressed
-	                find = texter.getText();
-	                int chr = 0;
-	                try{chr = Integer.parseInt(find);
-	                }catch (NumberFormatException u){chr = 0;}
-	                d.countingDPS(chr);
-	            }
-	        });   
+		 JButton search = new JButton("Search");
+	     menubar.add(search);
+		 JButton button = new JButton("Chrome");
+	     menubar.add(button);
+     
+        final JTextField texter = new JTextField("Chrome...", 20);
+	    menubar.add(texter);
+	    menubar.add(Box.createHorizontalGlue());
+	    
+	    button.addActionListener(new ActionListener() {
+	    	 
+            public void actionPerformed(ActionEvent e)
+            {
+                //Execute when button is pressed
+                find = texter.getText();
+                int chr = 0;
+                try{chr = Integer.parseInt(find);
+                }catch (NumberFormatException u){chr = 0;}
+                d.countingDPS(chr);
+            }
+        });  
+	    search.addActionListener(new ActionListener() {
+	    	 
+            public void actionPerformed(ActionEvent e)
+            {
+                //Execute when search is pressed
+            	 String trained = "";
+ 	    		JFileChooser chooser = new JFileChooser();
+ 	    	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+ 	    	        "TXT files", "txt");
+ 	    	    chooser.setFileFilter(filter);
+ 	    	    chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+ 	    	    int returnVal = chooser.showOpenDialog(window2);
+ 	    	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+ 	    	    	trained = chooser.getSelectedFile().getName();
+ 	    	    	//System.out.println("You chose to open this file: " +chooser.getSelectedFile().getName());
+ 	    	    }
+ 	    	if(d != null)
+ 	    		d.search(trained);
+            }
+        }); 
 	 }
 	 public static void main(String[] args)
 	  {
@@ -120,7 +143,6 @@ public class Grid extends JFrame
 	    	}
 	    	if(args[0].equalsIgnoreCase("view"))
 	    	{
-
 	    	    String trained = "";
 	    		JFileChooser chooser = new JFileChooser();
 	    	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -130,8 +152,7 @@ public class Grid extends JFrame
 	    	    int returnVal = chooser.showOpenDialog(window2);
 	    	    if(returnVal == JFileChooser.APPROVE_OPTION) {
 	    	    	trained = chooser.getSelectedFile().getName();
-	    	    	System.out.println("You chose to open this file: " +
-	    	            chooser.getSelectedFile().getName());
+	    	    	//System.out.println("You chose to open this file: " +chooser.getSelectedFile().getName());
 	    	    }
 	    		window2 = new Grid(700,700, trained);
 	    	    JMenuBar menubar = new JMenuBar();

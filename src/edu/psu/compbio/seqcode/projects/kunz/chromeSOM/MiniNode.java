@@ -12,8 +12,10 @@ public class MiniNode
 	public ArrayList<String> fullDPs;
 	public ArrayList<DataPoint> counting;
 	public Color color;
+	public double weight;
 	MiniNode(String s)
 	{
+		weight = 0;
 		dataPoints = new ArrayList<DataPoint>();
 		counting = new ArrayList<DataPoint>();
 		xCoord = Integer.parseInt(s.substring(s.indexOf("[")+1,s.indexOf(",")));
