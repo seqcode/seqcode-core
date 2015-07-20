@@ -47,6 +47,37 @@ public class KmerModelScanner {
 	public void setModelType(boolean isPair){isPair = isPairModel;}
 	public void setKmerPairWeights(double[][] pw){kmerpairwights = pw;}
 	
+	public void printModelProfileMatrix(boolean useCache, String genpath,int slide){
+		@SuppressWarnings("rawtypes")
+		SequenceGenerator seqgen = new SequenceGenerator();
+		seqgen.useCache(useCache);
+		if(useCache){
+			seqgen.useLocalFiles(true);
+			seqgen.setGenomePath(genpath);
+		}
+		for(Region r : regions){
+			String seq = seqgen.execute(r).toUpperCase();
+			if(seq.contains("N"))
+				continue;
+			StringBuilder sb = new StringBuilder();
+			sb.append(r.getLocationString()+"\t");
+			for(int i=0; i<(seq.length()-slide+1); i++){
+				String subseq = seq.substring(i, i+slide);
+				double score=0.0;
+				for(int j=0; j<subseq.length()-k+1; j++){
+					String currK = subseq.substring(j,j+k);
+					String revCurrK = SequenceUtils.reverseComplement(currK);
+					int currKInt = RegionFileUtilities.seq2int(currK);
+					int revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
+					int kmer = currKInt < revCurrKInt ? currKInt : revCurrKInt;
+					score = score+kmerweights[kmer];
+				}			
+				sb.append(Double.toString(score)+"\t");
+			}
+			sb.deleteCharAt(sb.length()-1);
+			System.out.println(sb.toString());
+		}
+	}
 	
 	public void printKmerMountains(boolean useCache, String genpath, double oddsThresh){
 		@SuppressWarnings("rawtypes")
@@ -222,6 +253,10 @@ public class KmerModelScanner {
         if(ap.hasKey("printMountains")){
         	Double threshold = Double.parseDouble(ap.getKeyValue("oddsthresh"));
         	scanner.printKmerMountains(cache, genPath, threshold);
+        }
+        if(ap.hasKey("printProfileMatrix")){
+        	int slidewin = Integer.parseInt(ap.getKeyValue("slide"));
+        	scanner.printModelProfileMatrix(cache, genPath, slidewin);
         }
 	}
 	
