@@ -128,6 +128,7 @@ public class KmerModelScanner {
 				String motseq = seqgen.execute(hillpair.car()).toUpperCase();
 				int[] composition = new int[(int) Math.pow(4, (double)k)];
 				StringBuilder sb = new StringBuilder();
+				sb.append(hillpair.car().getLocationString()+"\t");
 				for(int i=0; i<(motseq.length()-k+1);i++){
 					String currK = motseq.substring(i, i+k);
 					String revCurrK = SequenceUtils.reverseComplement(currK);
