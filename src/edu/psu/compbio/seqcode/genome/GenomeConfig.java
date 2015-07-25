@@ -149,7 +149,7 @@ public class GenomeConfig {
 	 * Returns a string describing the arguments handled by this config parser. 
 	 * @return String
 	 */
-	public String getArgsList(){
+	public static String getArgsList(){
 		return(new String("" +
 				"Genome:" +
 				"\t--species <Species;Genome>\n" +

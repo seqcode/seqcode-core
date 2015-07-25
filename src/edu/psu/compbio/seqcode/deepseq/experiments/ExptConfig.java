@@ -339,7 +339,7 @@ public class ExptConfig {
 	 * returns a string describing the arguments handled by this config parser. 
 	 * @return String
 	 */
-	public String getArgsList(){
+	public static String getArgsList(){
 		return(new String("" +
 				"Experiments:\n" +
 				"\t--design <design file name>\n" +
