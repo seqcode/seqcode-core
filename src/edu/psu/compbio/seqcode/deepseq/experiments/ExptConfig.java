@@ -39,9 +39,10 @@ public class ExptConfig {
 	protected boolean perBaseReadFiltering = true;
 	protected double mappableGenome = 0.8;
 	protected boolean estimateScaling=true;
-	protected boolean scalingByRegression=false; //Default is to scale by median
-	protected boolean scalingBySES = false; //Default is to estimate scaling by median
-	protected float fixedScalingFactor = 1; //Default is to estimate scaling by median
+	protected boolean scalingByRegression=false; //Default is to scale by NCIS
+	protected boolean scalingBySES = false; //Default is to estimate scaling by NCIS
+	protected boolean scalingByMedian = false; //Default is to estimate scaling by NCIS
+	protected float fixedScalingFactor = 1; //Default is to estimate scaling by NCIS
 	protected int scalingSlidingWindow = 10000; 
 	protected boolean cacheAllHits=true; //Cache all hits
 	protected String fileCacheDir = "hitcache";
@@ -127,8 +128,9 @@ public class ExptConfig {
 					estimateScaling=false;
 					fixedScalingFactor = Args.parseFloat(args,"fixedscaling",1);
 				}
-				//Scale by median is default
-				//scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
+				//Scale by NCIS is default
+				//Scale by median 
+				scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
 				//Scale by SES
 				scalingBySES = Args.parseFlags(args).contains("sesscale") ? true : false;
 				//Scale by regression
@@ -291,7 +293,7 @@ public class ExptConfig {
 	public List<Integer> getLocalBackgroundWindows(){return localBackgroundWindows;}
 	public boolean getEstimateScaling(){return estimateScaling;}
 	public float getFixedScalingFactor(){return fixedScalingFactor;}
-	//public boolean getScalingByMedian(){return scalingByMedian;}
+	public boolean getScalingByMedian(){return scalingByMedian;}
 	public boolean getScalingByRegression(){return scalingByRegression;}
 	public boolean getScalingBySES(){return scalingBySES;}
 	public int getScalingSlidingWindow(){return scalingSlidingWindow;}
@@ -305,7 +307,7 @@ public class ExptConfig {
 	//Some accessors to allow modification of options after config .
 	public void setPrintLoadingProgress(boolean plp){printLoadingProgress = plp;}
 	public void setPerBaseReadFiltering(boolean pbrf){perBaseReadFiltering = pbrf;}
-	//public void setMedianScaling(boolean ms){scalingByMedian = ms;}
+	public void setMedianScaling(boolean ms){scalingByMedian = ms;}
 	public void setRegressionScaling(boolean rs){scalingByRegression = rs;}
 	public void setSESScaling(boolean ses){scalingBySES = ses;}
 	public void setScalingSlidingWindow(int ssw){scalingSlidingWindow = ssw;}
@@ -351,8 +353,9 @@ public class ExptConfig {
 				"\t\tdirectly in the argument. Here's an example: --exptConditionA-Rep1 somefile.bam\n" +
 				"Scaling control vs signal counts:\n" +
 				"\t--noscaling [flag to turn off auto estimation of signal vs control scaling factor]\n" +
-				"\t--regressionscale [flag to use scaling by regression (default = scaling by median)]\n" +
-				"\t--sesscale [flag to use scaling by SES (default = scaling by median)]\n" +
+				"\t--medianscale [flag to use scaling by median ratio (default = scaling by NCIS)]\n" +
+				"\t--regressionscale [flag to use scaling by regression (default = scaling by NCIS)]\n" +
+				"\t--sesscale [flag to use scaling by SES (default = scaling by NCIS)]\n" +
 				"\t--fixedscaling <multiply control counts by total tag count ratio and then by this factor if not estimating scaling>\n" +
 				"\t--scalewin <window size for scaling procedure (default=10000)>\n" +
 				"Miscellaneous Experiment Loading Args:\n" +

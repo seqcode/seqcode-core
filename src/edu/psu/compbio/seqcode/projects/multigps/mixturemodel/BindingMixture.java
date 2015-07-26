@@ -374,10 +374,7 @@ public class BindingMixture {
     				1 : (potRegCountsCtrlChannel/potRegLengthTotal)/(nonPotRegCountsCtrlChannel/nonPotRegLengthTotal);
 
     		
-    		if(econfig.getScalingBySES())
-    			noisePerBase[e] = cond.getTotalSignalCount()*(1-cond.getTotalSignalVsNoiseFrac())/ econfig.getMappableGenomeLength();
-    		else
-    			noisePerBase[e] = nonPotRegCountsSigChannel/nonPotRegLengthTotal;  //Signal channel noise per base
+    		noisePerBase[e] = nonPotRegCountsSigChannel/nonPotRegLengthTotal;  //Signal channel noise per base
     		System.err.println("Global noise per base initialization for "+cond.getName()+" = "+String.format("%.4f", noisePerBase[e]));
     	}
     }

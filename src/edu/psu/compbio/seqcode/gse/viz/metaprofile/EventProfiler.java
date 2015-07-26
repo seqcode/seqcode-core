@@ -65,8 +65,7 @@ public class EventProfiler implements PointProfiler<Point, Profile>{
 		List<Point> candidates = new ArrayList<Point>();
 		if(events.containsKey(a.getChrom())){
 			List<Point> chrEvents = events.get(a.getChrom());
-			int index = Collections.binarySearch(chrEvents, query.startPoint());
-			for(int i=index; i<chrEvents.size(); i++){
+			for(int i=0; i<chrEvents.size(); i++){
 				Point p = chrEvents.get(i);
 				if(query.contains(p))
 					candidates.add(p);

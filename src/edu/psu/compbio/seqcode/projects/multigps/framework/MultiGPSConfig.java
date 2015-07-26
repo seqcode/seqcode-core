@@ -31,7 +31,7 @@ import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
  * @version	%I%, %G%
  */
 public class MultiGPSConfig {
-	public static String version = "0.6";
+	public static String version = "0.7";
 	public boolean isGPS=true;
 	protected GenomeConfig gconfig;
 	protected Genome gen=null;
