@@ -87,10 +87,23 @@ public class KmerModelScanner {
 			seqgen.useLocalFiles(true);
 			seqgen.setGenomePath(genpath);
 		}
+		int[][] composition = new int[regions.size()][(int) Math.pow(4, (double)k)];
+		String[] colnames = new String[(int) Math.pow(4, (double)k)];
+		for(int c=0; c<colnames.length; c++){
+			colnames[c] = RegionFileUtilities.int2seq(c, k);
+		}
+		String[] rownames = new String[regions.size()];
+		int RegioinInd = 0;
 		for(Region r : regions){
 			String seq = seqgen.execute(r).toUpperCase();
-			if(seq.contains("N"))
+			if(seq.contains("N")){
+				rownames[RegioinInd] = r.getLocationString();
+				for(int c =0;c<colnames.length; c++)
+					composition[RegioinInd][c]=0;
+				RegioinInd++;
 				continue;
+			}
+			rownames[RegioinInd] = r.getLocationString();
 			List<Pair<Region,Double>> mountains = new ArrayList<Pair<Region,Double>>();
 			for(int l=minM; l<=maxM; l++){
 				for(int i=0; i<(seq.length()-l+1); i++){
@@ -122,27 +135,29 @@ public class KmerModelScanner {
 						mountains.add(new Pair(hill,score));
 					}
 				}
+				
 			}
 			
 			for(Pair<Region,Double> hillpair: mountains){
 				String motseq = seqgen.execute(hillpair.car()).toUpperCase();
-				int[] composition = new int[(int) Math.pow(4, (double)k)];
-				StringBuilder sb = new StringBuilder();
-				sb.append(hillpair.car().getLocationString()+"\t");
+				//int[] composition = new int[(int) Math.pow(4, (double)k)];
+				//StringBuilder sb = new StringBuilder();
+				//sb.append(hillpair.car().getLocationString()+"\t");
 				for(int i=0; i<(motseq.length()-k+1);i++){
 					String currK = motseq.substring(i, i+k);
 					String revCurrK = SequenceUtils.reverseComplement(currK);
 					int currKInt = RegionFileUtilities.seq2int(currK);
 					int revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
 					int kmer = currKInt < revCurrKInt? currKInt:revCurrKInt;
-					composition[kmer]++;
+					composition[RegioinInd][kmer]++;
 				}
-				for(int i=0; i<(int) Math.pow(4, (double)k);i++){
-					sb.append(composition[i]+"\t");
-				}
-				sb.deleteCharAt(sb.length()-1);
-				System.out.println(sb.toString());
+				//for(int i=0; i<(int) Math.pow(4, (double)k);i++){
+				//	sb.append(composition[i]+"\t");
+				//}
+				//sb.deleteCharAt(sb.length()-1);
+				//System.out.println(sb.toString());
 			}
+			RegioinInd++;
 		}
 	}
 	
@@ -329,6 +344,64 @@ public class KmerModelScanner {
         	Double threshold = Double.parseDouble(ap.getKeyValue("oddsthresh"));
         	scanner.printKmerMountainComposition(cache, genPath, threshold);
         }
+	}
+	
+	/**
+	 * Removes all the the columns and rows that have all "0's" and prints the matrix 
+	 * @param SparseMatrix
+	 * @param colnames
+	 * @param rownames
+	 */
+	public void printSimplifedMatrix(int[][] SparseMatrix, String[] colnames, String[] rownames){
+		boolean[] columnstoRemove = new boolean[SparseMatrix[0].length];
+		boolean[] rowstoRemove = new boolean[SparseMatrix.length];
+		for(int c=0; c<columnstoRemove.length;c++){
+			columnstoRemove[c] = true;
+		}
+		for(int r=0; r<rowstoRemove.length; r++){
+			rowstoRemove[r] = true;
+		}
+		for(int r=0; r<rowstoRemove.length; r++){
+			boolean RemoveThisRow=true;
+			for(int c=0; c<columnstoRemove.length; c++){
+				if(SparseMatrix[r][c] > 0){
+					RemoveThisRow=false;
+				}
+			}
+			rowstoRemove[r] = RemoveThisRow;
+		}
+		for(int c=0; c<columnstoRemove.length; c++){
+			boolean RemoveThisCol=true;
+			for(int r=0; r<rowstoRemove.length; r++){
+				if(SparseMatrix[r][c] > 0){
+					RemoveThisCol=false;
+				}
+			}
+			columnstoRemove[c] = RemoveThisCol;
+		}
+		
+		// Printing the header
+		StringBuilder header = new StringBuilder();
+		for(int c=0; c<columnstoRemove.length; c++){
+			if(!columnstoRemove[c])
+				header.append(colnames[c]+"\t");
+		}
+		header.deleteCharAt(header.length()-1);
+		System.out.println(header.toString());
+		StringBuilder matrix = new StringBuilder();
+		for(int r=0; r<rowstoRemove.length; r++){
+			if(rowstoRemove[r])
+				continue;
+			matrix.append(rownames[r]+"\t");
+			for(int c=0; c<columnstoRemove.length; c++){
+				if(!columnstoRemove[c]){
+					matrix.append(SparseMatrix[r][c]+"\t");
+				}
+			}
+			matrix.deleteCharAt(matrix.length()-1);
+			matrix.append("\n");
+		}
+		System.out.print(matrix.toString());
 	}
 	
 	
