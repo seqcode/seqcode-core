@@ -152,7 +152,7 @@ public class ReguDomainsToGenes {
 		// Now load motif names and markov thresholds..
 		String thresFile;
 		double thresLevel;
-		if(ap.hasKey("motiffile") && !ap.hasKey("motifThresh") ){System.err.println("Provide thresholdfile for the motifs");}; System.exit(1);
+		if(ap.hasKey("motiffile") && !ap.hasKey("motifThresh") ){System.err.println("Provide thresholdfile for the motifs"); System.exit(1);}
 		if(ap.hasKey("motiffile") && ap.hasKey("motifThresh")){
 			thresFile = ap.getKeyValue("motifThresh");
 			thresLevel = Args.parseDouble(args, "threshlvl", 0.1);
