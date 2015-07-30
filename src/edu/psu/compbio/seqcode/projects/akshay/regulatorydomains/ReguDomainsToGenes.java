@@ -93,6 +93,7 @@ public class ReguDomainsToGenes {
 		// Load misc arguments 
 		ArgParser ap = new ArgParser(args);
 		double topPerc = Args.parseDouble(args, "topPerc", 20);
+		runner.setTopPerc(topPerc);
 		
 		// Load peak related features
 		List<Point> peaks = new ArrayList<Point>();
@@ -200,7 +201,7 @@ public class ReguDomainsToGenes {
 		if(!genefile.isFile()){System.err.println("Invalid file name: "+genesfilename);System.exit(1);}
         BufferedReader greader = new BufferedReader(new FileReader(genefile));
      
-        while ((line = reader.readLine()) != null) {
+        while ((line = greader.readLine()) != null) {
             line = line.trim();
             String[] words = line.split("\t");
             if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
