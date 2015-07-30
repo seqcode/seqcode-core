@@ -4,7 +4,11 @@ import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
-
+/**
+ * 
+ * @author akshaykakumanu
+ *
+ */
 public class BDRegulatoryRegion extends RegulatoryRegion{
 
 	public BDRegulatoryRegion(Point p, double pStrength, double pDynamics,

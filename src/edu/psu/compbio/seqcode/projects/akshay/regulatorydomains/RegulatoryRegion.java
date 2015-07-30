@@ -9,11 +9,16 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScoreProfi
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScorer;
 import edu.psu.compbio.seqcode.projects.seed.features.Feature;
 
+/**
+ * 
+ * @author akshaykakumanu
+ *
+ */
 public abstract class RegulatoryRegion implements Comparable<RegulatoryRegion>{
 	private Point peak;
 	private List<Point> homotypic;
 	private GeneDomain targetGene;
-	private double[] motifsLogOdds;
+	private List<Double> motifsLogOdds;
 	// Binding dynamics index if any (Can be fold-change of ChIP intensity between two developmental time-points at the ChIP peak)
 	protected double bindingDynamicsIndex; 
 	protected double bindingStrength;
@@ -35,35 +40,39 @@ public abstract class RegulatoryRegion implements Comparable<RegulatoryRegion>{
 		 seq =s;
 		 scanMotifs(motifs,s);
 		 homotypic = new ArrayList<Point>();
-		 homotypic.add(p);
-		 homotypicIndex = homotypic.size()/win;
 		 
 	 }
 	
 	 private void scanMotifs(List<WeightMatrix> motifs, String seq){
-		 motifsLogOdds = new double[motifs.size()];
+		 motifsLogOdds = new ArrayList<Double>();
 		 for(int m=0; m<motifs.size(); m++){
 			 WeightMatrix motif = motifs.get(m);
 			 WeightMatrixScorer scorer = new WeightMatrixScorer(motif);
 			 WeightMatrixScoreProfile profiler = scorer.execute(seq);
-			 motifsLogOdds[m] = profiler.getMaxScore();
+			 motifsLogOdds.add(profiler.getMaxScore());
 		 }
 	 }
 	 
 	 public void setTargetGene(GeneDomain g){targetGene = g;}
 	 public void addHomotypicPeak(Point p){
 		 homotypic.add(p);
-		 homotypicIndex = homotypic.size()/win;
+		 homotypicIndex = homotypic.size();
+	}
+	 
+	public boolean coversPeak(Point p){
+		return peak.expand(win).contains(p);
 	}
 	 
 	//Gettors
 	public double getBindingIntensity(){return bindingStrength;}
+	public String getPeakLocation(){return peak.getLocationString();}
 	public double getBindingDynamicsIndex(){return bindingDynamicsIndex;}
 	public double getHomotypicIndex(){return homotypicIndex;}
 	public int getTargetGeneClusterIndex(){return targetGene.getClusterIndex();}
 	public double getTargetGeneFoldChange(){return targetGene.getFoldChange();}
-	public double getBestMotifScore(int motifIndex){return motifsLogOdds[motifIndex];}
+	public double getBestMotifScore(int motifIndex){return motifsLogOdds.get(motifIndex);}
 	public String getTargetGeneName(){return targetGene.getGeneName();}
+	public String getChrom(){return peak.getChrom();}
 	
 	
 	

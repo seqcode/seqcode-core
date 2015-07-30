@@ -1,5 +1,9 @@
 package edu.psu.compbio.seqcode.projects.akshay.regulatorydomains;
-
+/**
+ * 
+ * @author akshaykakumanu
+ *
+ */
 public class GeneDomain {
 	private String geneName;
 	private int clusterMembership =0;

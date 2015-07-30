@@ -3,6 +3,11 @@ package edu.psu.compbio.seqcode.projects.akshay.regulatorydomains;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 
+ * @author akshaykakumanu
+ *
+ */
 public class RegulatoryClass {
 	private List<RegulatoryRegion> regRegs;
 	private String className;
@@ -21,11 +26,19 @@ public class RegulatoryClass {
 		numRegs++;
 	}
 	
-	
-	
-	
 	// Gettors
 	public int getNumRegRegions(){return numRegs;}
+	public String getClassName(){return className;}
+	public List<RegulatoryRegion> getRegRegs(){return regRegs;}
+	public String getSummaryString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("#"+className);sb.append("\n");
+		sb.append("Avg-Binding-Intensity:"+"\t");sb.append(this.getAvgBindingIntensity());sb.append("\n");
+		sb.append("Average-binding-dynamics:"+"\t");sb.append(this.getAvgBindingDynamicsIndex());sb.append("\n");
+		sb.append("Perc-upregulated:"+"\t");sb.append(this.getPercUpRegGenes());sb.append("\n");
+		sb.append("Perc-down-regulated:"+"\t");sb.append(this.getPercDownRegGenes());sb.append("\n");
+		return sb.toString();
+	}
 
 	public double getAvgBindingIntensity(){
 		double avgBI=0;
@@ -76,6 +89,15 @@ public class RegulatoryClass {
 		}
 		clusPerc = clusPerc*100/numRegs;
 		return clusPerc;
+	}
+	
+	public double getAvgTrgetGeneFoldChange(){
+		double avgFC=0;
+		for(int rR=0; rR<regRegs.size(); rR++){
+			avgFC = avgFC+regRegs.get(rR).getTargetGeneFoldChange();
+		}
+		avgFC =avgFC/numRegs;
+		return avgFC;
 	}
 	
 	public double getMotifhitRate(int m, double[] motifThreshLvls){
