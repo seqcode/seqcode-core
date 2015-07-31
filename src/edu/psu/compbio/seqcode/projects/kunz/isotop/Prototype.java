@@ -6,12 +6,13 @@ public class Prototype
 	public String name;
 	public String[] names;
 	public int myIndex;
-	public double pmag;
+	public double pmag, weight, count;
 	public double[] P_hiDVec;
 	public double[] m;
 	public int[] neighborIndexes;
 	public ArrayList<Prototype> neighbors;
 	public double[] neighborDists;
+	double[][] loci;
 	public Prototype(double[] vect, String n)
 	{
 		name = n;
@@ -63,10 +64,19 @@ public class Prototype
 	}
 	public void setNames(String[] s)
 	{
+		int co = 0;
 		names = new String[s.length];
 		for(int i =0; i< s.length; i++)
 		{
+			co++;
 			names[i] = s[i];
+		}
+		loci = new double[co][3] ;
+		for(int i =0; i < co; i++)
+		{
+			loci[i][0] = Integer.parseInt(s[i].substring(s[i].indexOf("chr")+3, s[i].indexOf(":")));;
+			loci[i][1] = Integer.parseInt(s[i].substring(s[i].indexOf(":")+1, s[i].indexOf("-")));;
+			loci[i][2] = Integer.parseInt(s[i].substring(s[i].indexOf("-")+1, s[i].length()));;
 		}
 		
 	}

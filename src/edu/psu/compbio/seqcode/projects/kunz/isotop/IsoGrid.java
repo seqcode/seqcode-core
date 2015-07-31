@@ -21,6 +21,7 @@ public class IsoGrid extends JFrame
 {
     public int winW, winH;
     public Isochrome trainer;
+    public static IsoGrid window2;
     public DrawIso d;
 	private static final long serialVersionUID = 1L;
 	public ArrayList<String> s;
@@ -49,12 +50,36 @@ public class IsoGrid extends JFrame
 	 }
 	 public void setUpMenu(JMenuBar menubar)
 	 {
-		 JButton button = new JButton("Seach");
-	        menubar.add(button);
-	        final JTextField texter = new JTextField("Chrome...", 20);
+	        JButton search = new JButton("Search");
+		     menubar.add(search);
+
+			 JButton button = new JButton("Chrome");
+		        menubar.add(button);
+		     final JTextField texter = new JTextField("Chrome...", 20);
 		    menubar.add(texter);
 		    menubar.add(Box.createHorizontalGlue());
 		    
+		    
+		    search.addActionListener(new ActionListener() {
+		    	 
+	            public void actionPerformed(ActionEvent e)
+	            {
+	                //Execute when search is pressed
+	            	 String trained = "";
+	 	    		JFileChooser chooser = new JFileChooser();
+	 	    	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+	 	    	        "TXT files", "txt");
+	 	    	    chooser.setFileFilter(filter);
+	 	    	    chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+	 	    	    int returnVal = chooser.showOpenDialog(window2);
+	 	    	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+	 	    	    	trained = chooser.getSelectedFile().getName();
+	 	    	    	//System.out.println("You chose to open this file: " +chooser.getSelectedFile().getName());
+	 	    	    }
+	 	    	if(d != null)
+	 	    		d.search(trained);
+	            }
+	        }); 
 		    button.addActionListener(new ActionListener() {
 		    	 
 	            public void actionPerformed(ActionEvent e)
@@ -67,6 +92,26 @@ public class IsoGrid extends JFrame
 	                d.countingDPS(chr);
 	            }
 	        });   
+		   /* search.addActionListener(new ActionListener() {
+		    	 
+	            public void actionPerformed(ActionEvent e)
+	            {
+	                //Execute when search is pressed
+	            	 String trained = "";
+	 	    		JFileChooser chooser = new JFileChooser();
+	 	    	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+	 	    	        "TXT files", "txt");
+	 	    	    chooser.setFileFilter(filter);
+	 	    	    chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+	 	    	    int returnVal = chooser.showOpenDialog(window2);
+	 	    	    if(returnVal == JFileChooser.APPROVE_OPTION) {
+	 	    	    	trained = chooser.getSelectedFile().getName();
+	 	    	    	//System.out.println("You chose to open this file: " +chooser.getSelectedFile().getName());
+	 	    	    }
+	 	    	if(d != null)
+	 	    		d.search(trained);
+	            }
+	        }); */
 	 }
 	 public void isochrome()
 	 {
@@ -76,7 +121,7 @@ public class IsoGrid extends JFrame
 	 }
 	 public static void main(String[] args)
 	  {
-	    IsoGrid window2 = new IsoGrid(700,700);
+	    window2 = new IsoGrid(700,700);
 	    
 	    //window2.drawGrid();
 	    if (args.length > 0)

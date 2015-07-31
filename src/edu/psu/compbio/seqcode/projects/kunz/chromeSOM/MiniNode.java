@@ -11,6 +11,7 @@ public class MiniNode
 	public int xCoord, yCoord, xLoc, yLoc;
 	public ArrayList<String> fullDPs;
 	public ArrayList<DataPoint> counting;
+	public ArrayList<DataPoint> notCounting;
 	public Color color;
 	public double weight;
 	MiniNode(String s)
@@ -18,6 +19,7 @@ public class MiniNode
 		weight = 0;
 		dataPoints = new ArrayList<DataPoint>();
 		counting = new ArrayList<DataPoint>();
+		notCounting = new ArrayList<DataPoint>();
 		xCoord = Integer.parseInt(s.substring(s.indexOf("[")+1,s.indexOf(",")));
 		yCoord = Integer.parseInt(s.substring(s.indexOf(",")+1,s.indexOf("]")));
 		//System.out.println(xCoord +", "+yCoord);

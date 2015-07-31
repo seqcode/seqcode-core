@@ -16,7 +16,7 @@ public class Matrixer
 	
 	public Matrixer()
 	{
-		binsize = 20000;
+		binsize = 5000;
 		String ffs = System.getProperty("user.dir")+"/MatrixLanding.txt";
 		lander = ffs;
 		String ff = System.getProperty("user.dir")+"/YeastInteractions-intra.txt";

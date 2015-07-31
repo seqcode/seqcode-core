@@ -44,6 +44,8 @@ public class Grid extends JFrame
 	 {
 		 JButton search = new JButton("Search");
 	     menubar.add(search);
+	     JButton heat = new JButton("Heat");
+	     menubar.add(heat);
 		 JButton button = new JButton("Chrome");
 	     menubar.add(button);
      
@@ -61,6 +63,23 @@ public class Grid extends JFrame
                 try{chr = Integer.parseInt(find);
                 }catch (NumberFormatException u){chr = 0;}
                 d.countingDPS(chr);
+            }
+        });  
+	    heat.addActionListener(new ActionListener() {
+	    	 
+            public void actionPerformed(ActionEvent e)
+            {
+                //Execute when button is pressed
+            	if(d != null && d.heat == true)
+        		{
+        			d.heat = false;
+        			d.repaint();
+        		}
+            	if(d != null && d.heat == false)
+            	{
+            		d.heat = true;
+            		d.repaint();
+            	}
             }
         });  
 	    search.addActionListener(new ActionListener() {
