@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.ScoredStrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScoreProfile;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScorer;
+import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.seed.features.Feature;
 
 /**
@@ -19,6 +22,8 @@ public abstract class RegulatoryRegion implements Comparable<RegulatoryRegion>{
 	private List<Point> homotypic;
 	private GeneDomain targetGene;
 	private List<Double> motifsLogOdds;
+	private List<Integer> motifHitCounts;
+	//private List<Double> motifMarkovThresholds;
 	// Binding dynamics index if any (Can be fold-change of ChIP intensity between two developmental time-points at the ChIP peak)
 	protected double bindingDynamicsIndex; 
 	protected double bindingStrength;
@@ -28,17 +33,18 @@ public abstract class RegulatoryRegion implements Comparable<RegulatoryRegion>{
 	private int win;
 	private String seq;
 	
-	 public RegulatoryRegion(Point p, double pStrength, double pDynamics, int w, List<WeightMatrix> motifs, String seq) {
-		 this(p, pStrength, w, motifs, seq);
+	 public RegulatoryRegion(Point p, double pStrength, double pDynamics, int w, List<WeightMatrix> motifs,List<Double> motifMarkovThresholds, String seq) {
+		 this(p, pStrength, w, motifs,motifMarkovThresholds, seq);
 		 bindingDynamicsIndex = pDynamics;
 	}
 	
-	 public RegulatoryRegion(Point p, double pStrength, int w, List<WeightMatrix> motifs, String s){
+	 public RegulatoryRegion(Point p, double pStrength, int w, List<WeightMatrix> motifs, List<Double> motifMarkovThresholds, String s){
 		 peak = p;
 		 bindingStrength = pStrength;
 		 win = w;
 		 seq =s;
 		 scanMotifs(motifs,s);
+		 countMotifs(motifs,motifMarkovThresholds,s);
 		 homotypic = new ArrayList<Point>();
 		 
 	 }
@@ -50,6 +56,24 @@ public abstract class RegulatoryRegion implements Comparable<RegulatoryRegion>{
 			 WeightMatrixScorer scorer = new WeightMatrixScorer(motif);
 			 WeightMatrixScoreProfile profiler = scorer.execute(seq);
 			 motifsLogOdds.add(profiler.getMaxScore());
+			 
+		 }
+	 }
+	 
+	 private void countMotifs(List<WeightMatrix> motifs, List<Double> motifMarkovThresholds, String seq){
+		 motifHitCounts = new ArrayList<Integer>();
+		 for(int m=0; m<motifs.size(); m++){
+			 WeightMatrix motif = motifs.get(m);
+			 WeightMatrixScorer scorer = new WeightMatrixScorer(motif);
+			 WeightMatrixScoreProfile profiler = scorer.execute(seq);
+			 int numHits=0;
+			 for(int z=0; z<seq.length()-motifs.get(m).length()+1; z++){
+				 double currScore= profiler.getMaxScore(z);
+				 if(currScore>=motifMarkovThresholds.get(m)){
+					 numHits++;
+				 }
+			 }
+			 motifHitCounts.add(numHits); 
 		 }
 	 }
 	 
@@ -71,6 +95,7 @@ public abstract class RegulatoryRegion implements Comparable<RegulatoryRegion>{
 	public int getTargetGeneClusterIndex(){return targetGene.getClusterIndex();}
 	public double getTargetGeneFoldChange(){return targetGene.getFoldChange();}
 	public double getBestMotifScore(int motifIndex){return motifsLogOdds.get(motifIndex);}
+	public int getMotifHitCount(int motifIndex){return motifHitCounts.get(motifIndex);}
 	public String getTargetGeneName(){return targetGene.getGeneName();}
 	public String getChrom(){return peak.getChrom();}
 	

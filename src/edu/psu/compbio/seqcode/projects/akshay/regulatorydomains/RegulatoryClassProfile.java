@@ -16,7 +16,13 @@ public class RegulatoryClassProfile {
 	
 	// Percentage of top binding events based on specified criteria to consider
 	private double topPerc;
+	
+	// The following two lists should contain the following
+	// The motif indices that you want the regulatory regions to have
+	// The no.pf motif instances that they should have (same indexing as above)
 	private List<Integer> motifindexes=new ArrayList<Integer>();
+	private List<Integer> minMotifHit = new ArrayList<Integer>();
+	
 	private List<Double> motifLogOddThrehs = new ArrayList<Double>(); // This list contains all the motifs
 	private double homotypicCutoff;
 	// SUMMARY; PEAKLISTS; UPPERC; DOWNPERC; CLUSPERC; AVGFC; Each of the options explained below
@@ -39,13 +45,15 @@ public class RegulatoryClassProfile {
 	 * @param Output
 	 * @param ClassName
 	 */
-	public RegulatoryClassProfile(List<RegulatoryRegion> regRs, double topPC, String sType, List<Integer> motifsInds, List<Double> motifThres, double homoCutoff, int nC, String Output, String ClassName) {
+	public RegulatoryClassProfile(List<RegulatoryRegion> regRs, double topPC, String sType, List<Integer> motifsInds, List<Integer> MinMotifHits, List<Double> motifThres, double homoCutoff, int nC, String Output, String ClassName) {
 		bindingEvents = regRs;
 		topPerc = topPC;
 		if(motifsInds != null)
 			motifindexes = motifsInds;
 		if(motifThres != null)
 			motifLogOddThrehs = motifThres;
+		if(MinMotifHits != null)
+			minMotifHit = MinMotifHits;
 		homotypicCutoff = homoCutoff;
 		numClusters=nC;
 		outputFormat=Output;
@@ -66,6 +74,9 @@ public class RegulatoryClassProfile {
 			//now check for motifs
 			for(int m=0; m<motifindexes.size(); m++){
 				if(currRr.getBestMotifScore(motifindexes.get(m)) < motifLogOddThrehs.get(motifindexes.get(m))){
+					addBE=false;
+				}
+				if(currRr.getMotifHitCount(motifindexes.get(m)) < minMotifHit.get(m)){
 					addBE=false;
 				}
 			}

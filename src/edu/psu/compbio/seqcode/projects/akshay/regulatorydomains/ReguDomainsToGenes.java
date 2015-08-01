@@ -60,24 +60,56 @@ public class ReguDomainsToGenes {
 	
 	// Creates different RegulatoryClassProfiles and print them
 	public void execute(){
+		// Fist deal with any inf
 		// No filers just usign all the regRegions
-		RegulatoryClassProfile currProfile = new RegulatoryClassProfile(rRegs, 100, sortType,  null, null, 1, numClus, OutputFormat,"Base");
+		RegulatoryClassProfile currProfile = new RegulatoryClassProfile(rRegs, 100, sortType,  null, null, null, 1, numClus, OutputFormat,"Base");
 		// Now use only top-scoreing regions
-		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, null, null, 1, numClus, OutputFormat,"Base+topPerc");
+		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, null, null, null, 1, numClus, OutputFormat,"Base+topPerc");
+		
+		// That have the primary motif (ASSUMING THE PRIMARY MOTIF HAS INDEX 0 ALWAYS!!!)
+		if(motiflist.size()>0){ // at leas the primary motif was provided
+			List<Integer> primaryMotifInd = new ArrayList<Integer>();
+			primaryMotifInd.add(0);
+			List<Integer> minMotifHitCount = new ArrayList<Integer>();
+			minMotifHitCount.add(1);
+			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, primaryMotifInd, minMotifHitCount, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(1)");
+			
+			// That have atleast two instance of the primary motif
+			minMotifHitCount = new ArrayList<Integer>();
+			minMotifHitCount.add(2);
+			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, primaryMotifInd, minMotifHitCount, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(2)");
+			
+		}
+		
 		// Now add one motif at a time
-		for(int m=0; m<motiflist.size(); m++){
+		for(int m=1; m<motiflist.size(); m++){
 			List<Integer> seclectedMotifInds = new ArrayList<Integer>();
+			seclectedMotifInds.add(0);
 			seclectedMotifInds.add(m);
-			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,  seclectedMotifInds, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc"+motifnames.get(m));
+			List<Integer> seclectedMotifMinHitCounts = new ArrayList<Integer>();
+			seclectedMotifMinHitCounts.add(1);
+			seclectedMotifMinHitCounts.add(1);
+			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,  seclectedMotifInds, seclectedMotifMinHitCounts, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(1)+"+motifnames.get(m));
 		}
 		// Now add all motifs
 		List<Integer> allmotifInds = new ArrayList<Integer>();
+		List<Integer> allmotifMinHitCounts = new ArrayList<Integer>();
 		for(int m=0; m <motiflist.size(); m++){
 			allmotifInds.add(m);
+			allmotifMinHitCounts.add(1);
 		}
-		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,allmotifInds, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+Allmotifs");
+		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,allmotifInds, allmotifMinHitCounts, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(1)+AllOtherMotifs");
+		
+		// Now all motifs plus atleast 2 instance of the primany motif
+		allmotifMinHitCounts = new ArrayList<Integer>();
+		allmotifMinHitCounts.add(2);
+		for(int m=1; m <motiflist.size(); m++){
+			allmotifMinHitCounts.add(1);
+		}
+		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,allmotifInds, allmotifMinHitCounts, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(2)+AllOtherMotifs");
+		
 		// Now add homotypic also
-		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, allmotifInds, motifMarkovThreshs, 2, numClus, OutputFormat,"Base+topPerc+Allmotifs+Homotypics");
+		//currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, allmotifInds, motifMarkovThreshs, 2, numClus, OutputFormat,"Base+topPerc+Allmotifs+Homotypics");
 		
 	}
 	
@@ -127,10 +159,25 @@ public class ReguDomainsToGenes {
             	}else{
             		System.err.println("Invalid binding events file format");System.exit(1);
             	}
-            }
-            bindingstrength.add(Double.parseDouble(words[1]));
-            if(words.length>2){
-            	bindingdynamics.add(Double.parseDouble(words[2]));
+            	// A very inefficient way to deal with infinities; but can't think of a better way to deal with them at then moment
+            	// -Infinities are hard-coded to change to -100
+            	// Infinitiy are hard-coded to chan ge to 20
+            	if(words[1].equals("-Infinity") || words[1].equals("-Inf") || words[1].equals("-infinity") || words[1].equals("-inf")){
+            		words[1] = "-100";
+            	}
+            	if(words[1].equals("Infinity") || words[1].equals("-Inf") || words[1].equals("-infinity") || words[1].equals("-inf")){
+            		words[1] = "20";
+            	}
+            	bindingstrength.add(Double.parseDouble(words[1]));
+            	if(words.length>2){
+            		if(words[2].equals("-Infinity") || words[2].equals("-Inf") || words[2].equals("-infinity") || words[2].equals("-inf")){
+                		words[2] = "-100";
+                	}
+                	if(words[2].equals("Infinity") || words[2].equals("-Inf") || words[2].equals("-infinity") || words[2].equals("-inf")){
+                		words[2] = "20";
+                	}
+            		bindingdynamics.add(Double.parseDouble(words[2]));
+            	}
             }
         }reader.close();
         
