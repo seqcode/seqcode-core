@@ -19,8 +19,8 @@ public class BSRegulatoryRegion extends RegulatoryRegion{
 	 * @param s
 	 */
 	public BSRegulatoryRegion(Point p, double pStrength, int w,
-			List<WeightMatrix> motifs, String s) {
-		super(p, pStrength, w, motifs, s);
+			List<WeightMatrix> motifs,  List<Double> motifMarkovThresholds, String s) {
+		super(p, pStrength, w, motifs, motifMarkovThresholds, s);
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -34,8 +34,8 @@ public class BSRegulatoryRegion extends RegulatoryRegion{
 	 * @param s
 	 */
 	public BSRegulatoryRegion(Point p, double pStrength, double pDynamics, int w,
-			List<WeightMatrix> motifs, String s) {
-		super(p, pStrength, pStrength,w, motifs, s);
+			List<WeightMatrix> motifs,  List<Double> motifMarkovThresholds, String s) {
+		super(p, pStrength, pStrength,w, motifs, motifMarkovThresholds, s);
 		// TODO Auto-generated constructor stub
 	}
 

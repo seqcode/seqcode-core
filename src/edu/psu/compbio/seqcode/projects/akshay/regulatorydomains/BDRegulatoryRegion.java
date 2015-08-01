@@ -12,8 +12,8 @@ import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 public class BDRegulatoryRegion extends RegulatoryRegion{
 
 	public BDRegulatoryRegion(Point p, double pStrength, double pDynamics,
-			int w, List<WeightMatrix> motifs, String seq) {
-		super(p, pStrength, pDynamics, w, motifs, seq);
+			int w, List<WeightMatrix> motifs, List<Double> motifMarkovThresholds,String seq) {
+		super(p, pStrength, pDynamics, w, motifs,motifMarkovThresholds, seq);
 		// TODO Auto-generated constructor stub
 	}
 

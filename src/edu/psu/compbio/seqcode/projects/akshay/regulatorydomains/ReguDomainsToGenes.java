@@ -208,12 +208,13 @@ public class ReguDomainsToGenes {
 		String thresFile;
 		double thresLevel;
 		if(ap.hasKey("motiffile") && !ap.hasKey("motifThresh") ){System.err.println("Provide thresholdfile for the motifs"); System.exit(1);}
+		List<Double> motifthreshs = new ArrayList<Double>();
 		if(ap.hasKey("motiffile") && ap.hasKey("motifThresh")){
 			thresFile = ap.getKeyValue("motifThresh");
 			thresLevel = Args.parseDouble(args, "threshlvl", 0.1);
 			HashMap<String,Double> thres = MotifAnalysisSandbox.loadThresholdsFromFile(thresFile, thresLevel);
 			List<String> motifnames = new ArrayList<String>();
-			List<Double> motifthreshs = new ArrayList<Double>();
+			
 			for(WeightMatrix wm : matrixList){
 				motifnames.add(wm.getName());
 				motifthreshs.add(thres.get(wm.getName()));
@@ -284,12 +285,12 @@ public class ReguDomainsToGenes {
 		for(int p=0; p<peaks.size(); p++){
 			if(sortBY.equals("BS")){
 				if(bindingdynamics != null){
-					regRs.add(new BSRegulatoryRegion(peaks.get(p), bindingstrength.get(p) ,bindingdynamics.get(p) ,win, matrixList, Seqs.get(p)));
+					regRs.add(new BSRegulatoryRegion(peaks.get(p), bindingstrength.get(p) ,bindingdynamics.get(p) ,win, matrixList,motifthreshs, Seqs.get(p)));
 				}else{
-					regRs.add(new BSRegulatoryRegion(peaks.get(p), bindingstrength.get(p) ,win, matrixList, Seqs.get(p)));
+					regRs.add(new BSRegulatoryRegion(peaks.get(p), bindingstrength.get(p) ,win, matrixList,motifthreshs, Seqs.get(p)));
 				}
 			}else{
-				regRs.add(new BDRegulatoryRegion(peaks.get(p), bindingstrength.get(p) ,bindingdynamics.get(p) ,win, matrixList, Seqs.get(p)));
+				regRs.add(new BDRegulatoryRegion(peaks.get(p), bindingstrength.get(p) ,bindingdynamics.get(p) ,win, matrixList,motifthreshs, Seqs.get(p)));
 			}
 		}
 		
