@@ -39,6 +39,8 @@ public class ReguDomainsToGenes {
 	private int numClus = 0;
 	private int win;
 	private double topPerc;
+	// is the sorting criteria fold-change or -1*log(p/q) value
+	private String sortType = "foldchange";
 	
 	public ReguDomainsToGenes(Genome g, int w) {
 		gen=g;
@@ -53,28 +55,29 @@ public class ReguDomainsToGenes {
 	public void setNumClus(int nC){numClus = nC;}
 	public void setTopPerc(double tpc){topPerc = tpc;}
 	public void serMotifList(List<WeightMatrix> mList){motiflist =mList; }
+	public void setSortType(String st){sortType = st;}
 	
 	
 	// Creates different RegulatoryClassProfiles and print them
 	public void execute(){
 		// No filers just usign all the regRegions
-		RegulatoryClassProfile currProfile = new RegulatoryClassProfile(rRegs, 100,  null, null, 1, numClus, OutputFormat,"Base");
+		RegulatoryClassProfile currProfile = new RegulatoryClassProfile(rRegs, 100, sortType,  null, null, 1, numClus, OutputFormat,"Base");
 		// Now use only top-scoreing regions
-		currProfile = new RegulatoryClassProfile(rRegs, topPerc,  null, null, 1, numClus, OutputFormat,"Base+topPerc");
+		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, null, null, 1, numClus, OutputFormat,"Base+topPerc");
 		// Now add one motif at a time
 		for(int m=0; m<motiflist.size(); m++){
 			List<Integer> seclectedMotifInds = new ArrayList<Integer>();
 			seclectedMotifInds.add(m);
-			currProfile = new RegulatoryClassProfile(rRegs, topPerc,  seclectedMotifInds, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc"+motifnames.get(m));
+			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,  seclectedMotifInds, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc"+motifnames.get(m));
 		}
 		// Now add all motifs
 		List<Integer> allmotifInds = new ArrayList<Integer>();
 		for(int m=0; m <motiflist.size(); m++){
 			allmotifInds.add(m);
 		}
-		currProfile = new RegulatoryClassProfile(rRegs, topPerc, allmotifInds, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+Allmotifs");
+		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,allmotifInds, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+Allmotifs");
 		// Now add homotypic also
-		currProfile = new RegulatoryClassProfile(rRegs, topPerc, allmotifInds, motifMarkovThreshs, 2, numClus, OutputFormat,"Base+topPerc+Allmotifs+Homotypics");
+		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, allmotifInds, motifMarkovThreshs, 2, numClus, OutputFormat,"Base+topPerc+Allmotifs+Homotypics");
 		
 	}
 	
@@ -137,6 +140,10 @@ public class ReguDomainsToGenes {
         if(!sortBY.equals("BS") && !sortBY.equals("BD")){
         	System.err.println("Invalid sort option: Has to be either 'BS' or 'BD'");System.exit(1);
         }
+        
+        String sortType = Args.parseString(args, "sortType", "foldcahnge");
+        runner.setSortType(sortType);
+        
         
         
         // Now load motif PWMs

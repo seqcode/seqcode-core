@@ -37,6 +37,7 @@ public class RegulatoryClass {
 		sb.append("Average-binding-dynamics:"+"\t");sb.append(this.getAvgBindingDynamicsIndex());sb.append("\n");
 		sb.append("Perc-upregulated:"+"\t");sb.append(this.getPercUpRegGenes());sb.append("\n");
 		sb.append("Perc-down-regulated:"+"\t");sb.append(this.getPercDownRegGenes());sb.append("\n");
+		sb.append("Class-Size"+"\t");sb.append(numRegs);sb.append("\n");
 		return sb.toString();
 	}
 

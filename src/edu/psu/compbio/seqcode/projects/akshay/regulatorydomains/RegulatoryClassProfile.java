@@ -25,8 +25,21 @@ public class RegulatoryClassProfile {
 	private RegulatoryClass regClass;
 	private String regClassName;
 	private int numClusters=0; // number of clusters of genes
+	private String sortType = "foldchange";
 	
-	public RegulatoryClassProfile(List<RegulatoryRegion> regRs, double topPC, List<Integer> motifsInds, List<Double> motifThres, double homoCutoff, int nC, String Output, String ClassName) {
+	/**
+	 * 
+	 * @param regRs
+	 * @param topPC
+	 * @param sType
+	 * @param motifsInds
+	 * @param motifThres
+	 * @param homoCutoff
+	 * @param nC
+	 * @param Output
+	 * @param ClassName
+	 */
+	public RegulatoryClassProfile(List<RegulatoryRegion> regRs, double topPC, String sType, List<Integer> motifsInds, List<Double> motifThres, double homoCutoff, int nC, String Output, String ClassName) {
 		bindingEvents = regRs;
 		topPerc = topPC;
 		if(motifsInds != null)
@@ -37,12 +50,13 @@ public class RegulatoryClassProfile {
 		numClusters=nC;
 		outputFormat=Output;
 		regClassName =ClassName;
-		
+		sortType = sType;
 		// The following code will generate the regulatory class
 		
 		// Sort the regulatory regions
 		Collections.sort(bindingEvents);
-		Collections.reverse(bindingEvents);
+		if(sortType.equals("foldchange"))
+			Collections.reverse(bindingEvents);
 		
 		//Create a regulatory class
 		int indexCutoff = (int) topPerc*bindingEvents.size()/100;
