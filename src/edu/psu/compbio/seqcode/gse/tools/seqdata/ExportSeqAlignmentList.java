@@ -146,7 +146,7 @@ public class ExportSeqAlignmentList {
     		
 	        //Now load what is actually in the database, filling in missing entries with the old file
     		int count=0;
-	        fw.write("#ReadDBID\tExptType\tLab\tExptCondition\tExptTarget\tCellLine\tReplicate\tAligner\tGenome\tPermissions\tPubSource\tPublicDBID\tCollabExptID\tCollabAlignID\tReadType\tAlignType\tReadLength\tTotalReads\tAlignedHits\tUniquelyAlignedHits\tDBLoadedHits\tDBLoadedWeight\tDBLoadedType2Hits\tDBLoadedType2WeightDBLoadedPairs\tDBLoadedPairWeight\tReadsFile\tAlignDir\tAlignFile\tIDXFile\tAlignParamFile\tExptNotes\tLoadDate\tExptName\n");
+	        fw.write("#ReadDBID\tExptType\tLab\tExptCondition\tExptTarget\tCellLine\tReplicate\tAligner\tGenome\tPermissions\tPubSource\tPublicDBID\tCollabExptID\tCollabAlignID\tReadType\tAlignType\tReadLength\tTotalReads\tAlignedHits\tUniquelyAlignedHits\tDBLoadedHits\tDBLoadedWeight\tDBLoadedType2Hits\tDBLoadedType2Weight\tDBLoadedPairs\tDBLoadedPairWeight\tReadsFile\tAlignDir\tAlignFile\tIDXFile\tAlignParamFile\tExptNotes\tLoadDate\tExptName\n");
     		for(SeqAlignment align : loader.loadAllAlignments()){
     			SeqExpt expt =align.getExpt(); 
         		String permissions ="";
