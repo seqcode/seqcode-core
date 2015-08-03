@@ -134,6 +134,7 @@ public class ReguDomainsToGenes {
 		List<Point> peaks = new ArrayList<Point>();
 		List<Double> bindingstrength = new ArrayList<Double>();
 		List<Double> bindingdynamics = new ArrayList<Double>();
+		List<Double> homotopyicIndexes = new ArrayList<Double>();
 		List<String> Seqs = new ArrayList<String>();
 		// The bindingevents or the peaks file can have 3 columns
 		// 1st column:- peak, or region,
@@ -177,6 +178,9 @@ public class ReguDomainsToGenes {
                 		words[2] = "20";
                 	}
             		bindingdynamics.add(Double.parseDouble(words[2]));
+            	}
+            	if(words.length>3){
+            		homotopyicIndexes.add(Double.parseDouble(words[3]));
             	}
             }
         }reader.close();
@@ -323,6 +327,16 @@ public class ReguDomainsToGenes {
 			}
 		}
 		
+		
+		// If the homotypic indexes were provided in the binding events file override the current indexes with those values
+		if(homotopyicIndexes.size() > 0){
+			for(int rR=0; rR<regRs.size(); rR++){
+				regRs.get(rR).setHomotypicIndex(homotopyicIndexes.get(rR));
+			}
+		}
+		
+		
+		// Now set the regulatory regions
 		runner.setRegRs(regRs);
 		
 		// Finally, Get the type of the oputput format 

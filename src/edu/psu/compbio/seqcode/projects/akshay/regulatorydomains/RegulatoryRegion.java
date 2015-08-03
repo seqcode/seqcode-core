@@ -77,6 +77,9 @@ public abstract class RegulatoryRegion implements Comparable<RegulatoryRegion>{
 		 }
 	 }
 	 
+	
+	 // Settors
+	 public void setHomotypicIndex(Double hIndex){homotypicIndex = hIndex; }
 	 public void setTargetGene(GeneDomain g){targetGene = g;}
 	 public void addHomotypicPeak(Point p){
 		 homotypic.add(p);
@@ -87,6 +90,9 @@ public abstract class RegulatoryRegion implements Comparable<RegulatoryRegion>{
 		return peak.expand(win).contains(p);
 	}
 	 
+	
+	
+	
 	//Gettors
 	public double getBindingIntensity(){return bindingStrength;}
 	public String getPeakLocation(){return peak.getLocationString();}
