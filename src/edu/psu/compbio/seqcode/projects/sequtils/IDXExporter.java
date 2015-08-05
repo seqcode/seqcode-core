@@ -128,6 +128,8 @@ public class IDXExporter {
 	}
 	
 	public void close(){
+		if(manager!=null)
+			manager.close();
 	}
 	
 	protected double[] make5PrimeLandscape(List<StrandedBaseCount> hits, Region currReg, char strand){

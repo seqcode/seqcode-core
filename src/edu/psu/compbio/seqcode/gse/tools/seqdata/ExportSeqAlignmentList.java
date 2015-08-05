@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Map;
-
-import edu.psu.compbio.seqcode.gse.datasets.core.MetadataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
@@ -50,16 +47,18 @@ import edu.psu.compbio.seqcode.gse.utils.ArgParser;
  *19) UniquelyAlignedHits
  *20) DBLoadedHits
  *21) DBLoadedWeight
- *22) DBLoadedPairs
- *23) DBLoadedPairWeight
- *24) ReadsFile
- *25) AlignDir
- *26) AlignFile
- *27) IDXFile
- *28) AlignParamFile
- *29) ExptNote
- *30) LoadDate
- *31) ExptName
+ *22) DBLoadedType2Hits
+ *23) DBLoadedType2Weight
+ *24) DBLoadedPairs
+ *25) DBLoadedPairWeight
+ *26) ReadsFile
+ *27) AlignDir
+ *28) AlignFile
+ *29) IDXFile
+ *30) AlignParamFile
+ *31) ExptNote
+ *32) LoadDate
+ *33) ExptName
  * 
  */
 public class ExportSeqAlignmentList {
@@ -147,7 +146,7 @@ public class ExportSeqAlignmentList {
     		
 	        //Now load what is actually in the database, filling in missing entries with the old file
     		int count=0;
-	        fw.write("#ReadDBID\tExptType\tLab\tExptCondition\tExptTarget\tCellLine\tReplicate\tAligner\tGenome\tPermissions\tPubSource\tPublicDBID\tCollabExptID\tCollabAlignID\tReadType\tAlignType\tReadLength\tTotalReads\tAlignedHits\tUniquelyAlignedHits\tDBLoadedHits\tDBLoadedWeight\tDBLoadedPairs\tDBLoadedPairWeight\tReadsFile\tAlignDir\tAlignFile\tIDXFile\tAlignParamFile\tExptNotes\tLoadDate\tExptName\n");
+	        fw.write("#ReadDBID\tExptType\tLab\tExptCondition\tExptTarget\tCellLine\tReplicate\tAligner\tGenome\tPermissions\tPubSource\tPublicDBID\tCollabExptID\tCollabAlignID\tReadType\tAlignType\tReadLength\tTotalReads\tAlignedHits\tUniquelyAlignedHits\tDBLoadedHits\tDBLoadedWeight\tDBLoadedType2Hits\tDBLoadedType2Weight\tDBLoadedPairs\tDBLoadedPairWeight\tReadsFile\tAlignDir\tAlignFile\tIDXFile\tAlignParamFile\tExptNotes\tLoadDate\tExptName\n");
     		for(SeqAlignment align : loader.loadAllAlignments()){
     			SeqExpt expt =align.getExpt(); 
         		String permissions ="";
@@ -178,6 +177,8 @@ public class ExportSeqAlignmentList {
         				oldList.get(align.getDBID()).uniqalignedhitsStr+"\t"+
         				align.getNumHits()+"\t"+
         				align.getTotalWeight()+"\t"+
+        				align.getNumType2Hits()+"\t"+
+        				align.getTotalType2Weight()+"\t"+
         				align.getNumPairs()+"\t"+
         				align.getTotalPairWeight()+"\t"+
         				(expt.getFQFile().equals("") ? oldList.get(align.getDBID()).fqfile : expt.getFQFile())+"\t"+
