@@ -80,7 +80,7 @@ public class ReguDomainsToGenesSandbox {
 	public static  HashMap<String, List<Region>> hashRegionsByChr(List<Region> rs){
 		HashMap<String, List<Region>> byChr = new HashMap<String, List<Region>>();
 		for(Region r : rs){
-			if(byChr.containsKey(r.getChrom()))
+			if(!byChr.containsKey(r.getChrom()))
 				byChr.put(r.getChrom(), new ArrayList<Region>());
 			byChr.get(r.getChrom()).add(r);
 		}
@@ -101,13 +101,17 @@ public class ReguDomainsToGenesSandbox {
 		runner.setPeaks(peaks);
 		
 		String locationsString = ap.getKeyValue("locations");
-		List<Point> locations = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), locationsString, win);
+		List<Point> locations = new ArrayList<Point>();
+		if(ap.hasKey("locations"))
+			locations = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), locationsString, win);
 		
 		String regionsString = ap.getKeyValue("regions");
-		List<Region> regs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), regionsString, win);
+		List<Region> regs = new ArrayList<Region>();
+		if(ap.hasKey("regions")){
+			regs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), regionsString, win);}
 		
-		if(ap.hasKey("printNoOfClosePeaks") && ap.hasKey("locations"))
-			ReguDomainsToGenesSandbox.printNoOfClosePeaks(locations, win);
+		if(ap.hasKey("printNoOfClosePeaks") && ap.hasKey("locations")){
+			ReguDomainsToGenesSandbox.printNoOfClosePeaks(locations, win);}
 		
 		if(ap.hasKey("printOverlapWithRegions") && ap.hasKey("regions"))
 			ReguDomainsToGenesSandbox.printOverlapWithRegions(regs);
