@@ -80,7 +80,7 @@ public class ReguDomainsToGenesSandbox {
 	public static  HashMap<String, List<Region>> hashRegionsByChr(List<Region> rs){
 		HashMap<String, List<Region>> byChr = new HashMap<String, List<Region>>();
 		for(Region r : rs){
-			if(byChr.containsKey(r.getChrom()))
+			if(!byChr.containsKey(r.getChrom()))
 				byChr.put(r.getChrom(), new ArrayList<Region>());
 			byChr.get(r.getChrom()).add(r);
 		}
