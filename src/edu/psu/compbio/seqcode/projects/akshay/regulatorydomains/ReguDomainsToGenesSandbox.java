@@ -110,6 +110,7 @@ public class ReguDomainsToGenesSandbox {
 			ReguDomainsToGenesSandbox.printNoOfClosePeaks(locations, win);
 		
 		if(ap.hasKey("printOverlapWithRegions") && ap.hasKey("regions"))
+			ReguDomainsToGenesSandbox.printOverlapWithRegions(regs);
 			
 		
 	}
