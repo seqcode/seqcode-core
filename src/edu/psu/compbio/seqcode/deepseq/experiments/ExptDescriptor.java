@@ -6,7 +6,7 @@ import java.util.List;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 
 /**
- * BayesmentsExptDescriptor: simple class for describing an experiment to be loaded
+ * ExptDescriptor: simple class for describing an experiment to be loaded
  * @author Shaun Mahony
  * @version	%I%, %G%
  */
@@ -21,7 +21,7 @@ public class ExptDescriptor {
 	public float perBaseMaxReads = -1;
 	
 	/**
-	 * BayesmentsExptDescriptor constructor
+	 * ExptDescriptor constructor
 	 * @param type : (optional) Experiment type (CHIPSEQ/CHIPEXO/INPUT/DNASESEQ/RNASEQ/etc) [String]
 	 * @param targ : (optional) Target of the assay; e.g. protein name for ChIP experiments [String]
 	 * @param cond : Experiment condition name [String]
@@ -41,7 +41,7 @@ public class ExptDescriptor {
 	}
 	
 	/**
-	 * BayesmentsExptDescriptor constructor
+	 * ExptDescriptor constructor
 	 * @param type : (optional) Experiment type (CHIPSEQ/CHIPEXO/INPUT/DNASESEQ/RNASEQ/etc) [String]
 	 * @param targ : (optional) Target of the assay; e.g. protein name for ChIP experiments [String]
 	 * @param cond : Experiment condition name [String]
@@ -50,7 +50,7 @@ public class ExptDescriptor {
 	 * @param src : Data source and type/format pair [Pair<String, String>]
 	 * @param perBPMax : Per base hit count maximum (-1 = no limit; >0 = fixed limit; P = poisson determined limit)
 	 */
-	public ExptDescriptor(String targ, String type, String cond, String rep, boolean sig, Pair<String, String> src, float perBPMax) {
+	public ExptDescriptor(String type, String targ, String cond, String rep, boolean sig, Pair<String, String> src, float perBPMax) {
 		expttype = type.equals("") ? "SEQEXPT" : type;
 		target = targ.equals("") ? "NA" : targ;
 		condition = cond;

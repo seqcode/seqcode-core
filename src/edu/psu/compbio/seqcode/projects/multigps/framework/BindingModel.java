@@ -36,9 +36,11 @@ public class BindingModel {
 	protected double[] logProbs;
 	protected double bgProb, logBgProb;
 	protected int influenceRange; //95% probability range (over both strands)
-	private String fileName;
+	protected String fileName;
 
 	protected List<Pair<Integer, Double>> empiricalDistribution;
+	
+	protected BindingModel(){};
 	
 	public BindingModel(File f, int minDist, int maxDist){
 		min=0; max=0;
@@ -101,7 +103,7 @@ public class BindingModel {
 	}	
 	//Return a pair of distances corresponding to the central probability interval provided
 	//Can be used to provide hit extension lengths
-	public Pair<Integer,Integer> probIntervalDistances(double prob){
+	protected Pair<Integer,Integer> probIntervalDistances(double prob){
 		double ends=(1-prob)/2;
 		double probSum=0;
 		boolean firstFound=false, secondFound=false;
@@ -121,13 +123,13 @@ public class BindingModel {
 	}
 
 	//Update the influence range
-	public void updateInfluenceRange(){
+	protected void updateInfluenceRange(){
 		Pair<Integer,Integer> intervals = probIntervalDistances(0.95);
 		int longest = Math.max(Math.abs(intervals.car()), Math.abs(intervals.cdr()));
 		influenceRange = longest*2;
 	}
 	//Load data
-	private void loadData(List<Pair<Integer, Double>> bindingDist){
+	protected void loadData(List<Pair<Integer, Double>> bindingDist){
 		//Assumes the list is sorted//
 		
 		//Find max, min values first
@@ -170,7 +172,7 @@ public class BindingModel {
 	}
 	
 	//Set a probability landscape according to the data. 
-	public void makeProbabilities(){
+	protected void makeProbabilities(){
 		double totalVal=0, minProb=Double.MAX_VALUE;
 		for(int i=min; i<=max; i++){
 			totalVal+=dataVal(i);
@@ -196,12 +198,12 @@ public class BindingModel {
 		updateInfluenceRange();
 	}
 	
-	public void smooth(int splineStepSize, int avgStepSize){
+	protected void smooth(int splineStepSize, int avgStepSize){
 		probs=StatUtil.cubicSpline(probs, splineStepSize, avgStepSize);
 		Pair<Double, TreeSet<Integer>> sorted = StatUtil.findMax(probs);
 		summit = sorted.cdr().first()+min;
 	}
-	public void smoothGaussian (int kernelWidth){
+	protected void smoothGaussian (int kernelWidth){
 		probs=StatUtil.gaussianSmoother(probs, kernelWidth);
 		Pair<Double, TreeSet<Integer>> sorted = StatUtil.findMax(probs);
 		summit = sorted.cdr().first()+min;
@@ -225,7 +227,7 @@ public class BindingModel {
 	}
 	
 	//Look up the data corresponding to a distance
-	public double dataVal(int distance){
+	protected double dataVal(int distance){
 		if(distance<min || distance>max){
 			return(0.0);
 		}else{

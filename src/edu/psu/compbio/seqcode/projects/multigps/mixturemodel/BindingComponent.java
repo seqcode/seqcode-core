@@ -35,17 +35,6 @@ public class BindingComponent implements Comparable<BindingComponent>{
 	}
 	
 	//Accessors
-	public double scoreHit(ReadHit h, BindingModel model){
-		int dist = h.getStrand()=='+' ? h.getFivePrime()-coord.getLocation():coord.getLocation()-h.getFivePrime();
-		return model.probability(dist);
-	}
-	public double scoreBase(StrandedBaseCount b, BindingModel model){
-		int dist = b.getStrand()=='+' ? b.getCoordinate()-coord.getLocation():coord.getLocation()-b.getCoordinate();
-		return model.probability(dist);
-	}
-	public double score(int dist,  BindingModel model){
-		return model.probability(dist);
-	}
 	public double getPi(){return pi;}
 	public Point getCoord(){return coord;}
 	public int getPosition(){return position;}

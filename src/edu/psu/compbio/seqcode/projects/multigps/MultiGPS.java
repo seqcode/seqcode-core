@@ -14,6 +14,7 @@ import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModelPerBase;
 import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.framework.EnrichmentSignificance;
 import edu.psu.compbio.seqcode.projects.multigps.framework.OutputFormatter;
@@ -56,6 +57,8 @@ public class MultiGPS {
 				bindingManager.setBindingModel(rep, mgpsconfig.getDefaultBindingModel());
 			else if(rep.getExptType()!=null && rep.getExptType().getName().toLowerCase().equals("chipexo"))
 				bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipExoEmpiricalDistribution));
+			//else if(rep.getExptType()!=null && rep.getExptType().getName().toLowerCase().equals("permchipseq"))
+			//	bindingManager.setBindingModel(rep, new BindingModelPerBase(BindingModelPerBase.defaultPermChipSeqEmpiricalDistribution));
 			else
 				bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipSeqEmpiricalDistribution));
 			repBindingModels.put(rep, new ArrayList<BindingModel>());
