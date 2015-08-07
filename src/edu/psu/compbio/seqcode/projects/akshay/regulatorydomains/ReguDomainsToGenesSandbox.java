@@ -33,8 +33,8 @@ public class ReguDomainsToGenesSandbox {
 	
 	
 	
-	public static void printNoOverlapWith(List<Point> locations, int win){
-		HashMap<String, List<Point>> byChr = ReguDomainsToGenesSandbox.hashByChr(locations);
+	public static void printNoOfClosePeaks(List<Point> locations, int win){
+		HashMap<String, List<Point>> byChr = ReguDomainsToGenesSandbox.hashPointsByChr(locations);
 		for(Point p: peaks){
 			Region extPeak = p.expand(win/2);
 			int noOverlap = 0;
@@ -48,8 +48,26 @@ public class ReguDomainsToGenesSandbox {
 		}
 	}
 	
+	public static void printOverlapWithRegions(List<Region> regs){
+		HashMap<String, List<Region>> byChr = ReguDomainsToGenesSandbox.hashRegionsByChr(regs);
+		for(Point p: peaks){
+			boolean contains=false;
+			if(byChr.containsKey(p.getChrom())){
+				for(Region r: byChr.get(p.getChrom())){
+					if(r.contains(p)){
+						contains=true;
+					}
+				}
+			}
+			if(contains)
+				System.out.println(p.getLocationString());
+		}
+		
+	}
 	
-	public static  HashMap<String, List<Point>> hashByChr(List<Point> ps){
+	
+	
+	public static  HashMap<String, List<Point>> hashPointsByChr(List<Point> ps){
 		HashMap<String, List<Point>> byChr = new HashMap<String, List<Point>>();
 		for(Point p : ps){
 			if(!byChr.containsKey(p.getChrom()))
@@ -59,10 +77,20 @@ public class ReguDomainsToGenesSandbox {
 		return byChr;
 	}
 	
+	public static  HashMap<String, List<Region>> hashRegionsByChr(List<Region> rs){
+		HashMap<String, List<Region>> byChr = new HashMap<String, List<Region>>();
+		for(Region r : rs){
+			if(byChr.containsKey(r.getChrom()))
+				byChr.put(r.getChrom(), new ArrayList<Region>());
+			byChr.get(r.getChrom()).add(r);
+		}
+		return byChr;
+	}
+	
 	
 	public static void main(String[] args){
 		GenomeConfig gcon = new GenomeConfig(args);
-		int win = Args.parseInteger(args, "win", 150);
+		int win = Args.parseInteger(args, "win", -1);
 		ArgParser ap = new ArgParser(args);
 		
 		ReguDomainsToGenesSandbox runner = new ReguDomainsToGenesSandbox();
@@ -75,9 +103,14 @@ public class ReguDomainsToGenesSandbox {
 		String locationsString = ap.getKeyValue("locations");
 		List<Point> locations = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), locationsString, win);
 		
-		if(ap.hasKey("printNoOverlap"))
-			ReguDomainsToGenesSandbox.printNoOverlapWith(locations, win);
+		String regionsString = ap.getKeyValue("regions");
+		List<Region> regs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), regionsString, win);
 		
+		if(ap.hasKey("printNoOfClosePeaks") && ap.hasKey("locations"))
+			ReguDomainsToGenesSandbox.printNoOfClosePeaks(locations, win);
+		
+		if(ap.hasKey("printOverlapWithRegions") && ap.hasKey("regions"))
+			
 		
 	}
 }

@@ -342,7 +342,7 @@ public class ReguDomainsToGenes {
 		// Finally, Get the type of the oputput format 
 		String Output = ap.getKeyValue("OutFormat");
 		if(!Output.equals("SUMMARY") && !Output.equals("PEAKLISTS") && !Output.equals("UPPERC") && !Output.equals("DOWNPERC") && !Output.equals("CLUSPERC") && !Output.equals("AVGFC")){
-			System.err.println("Invalid output format type: Provide either SUMMARY; PEAKLISTS; UPPERC; DOWNPERC; CLUSPERC; AVGFC");System.exit(1);
+			System.err.println("Invalid output format type: Provide either SUMMARY; UPPERC; DOWNPERC; CLUSPERC; AVGFC");System.exit(1);
 		}
 		runner.setOutFormat(Output);
 		
