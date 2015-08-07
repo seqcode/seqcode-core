@@ -64,7 +64,7 @@ public class ReguDomainsToGenes {
 		// No filers just usign all the regRegions
 		RegulatoryClassProfile currProfile = new RegulatoryClassProfile(rRegs, 100, sortType,  null, null, null, 1, numClus, OutputFormat,"Base");
 		// Now use only top-scoreing regions
-		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, null, null, null, 1, numClus, OutputFormat,"Base+topPerc");
+		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, null, null, null, 2, numClus, OutputFormat,"Base+topPerc");
 		
 		// That have the primary motif (ASSUMING THE PRIMARY MOTIF HAS INDEX 0 ALWAYS!!!)
 		if(motiflist.size()>0){ // at leas the primary motif was provided
@@ -72,12 +72,12 @@ public class ReguDomainsToGenes {
 			primaryMotifInd.add(0);
 			List<Integer> minMotifHitCount = new ArrayList<Integer>();
 			minMotifHitCount.add(1);
-			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, primaryMotifInd, minMotifHitCount, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(1)");
+			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, primaryMotifInd, minMotifHitCount, motifMarkovThreshs, 2, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(1)");
 			
 			// That have atleast two instance of the primary motif
 			minMotifHitCount = new ArrayList<Integer>();
 			minMotifHitCount.add(2);
-			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, primaryMotifInd, minMotifHitCount, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(2)");
+			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, primaryMotifInd, minMotifHitCount, motifMarkovThreshs, 2, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(2)");
 			
 		}
 		
@@ -89,7 +89,7 @@ public class ReguDomainsToGenes {
 			List<Integer> seclectedMotifMinHitCounts = new ArrayList<Integer>();
 			seclectedMotifMinHitCounts.add(1);
 			seclectedMotifMinHitCounts.add(1);
-			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,  seclectedMotifInds, seclectedMotifMinHitCounts, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(1)+"+motifnames.get(m));
+			currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,  seclectedMotifInds, seclectedMotifMinHitCounts, motifMarkovThreshs, 2, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(1)+"+motifnames.get(m));
 		}
 		// Now add all motifs
 		List<Integer> allmotifInds = new ArrayList<Integer>();
@@ -98,7 +98,7 @@ public class ReguDomainsToGenes {
 			allmotifInds.add(m);
 			allmotifMinHitCounts.add(1);
 		}
-		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,allmotifInds, allmotifMinHitCounts, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(1)+AllOtherMotifs");
+		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,allmotifInds, allmotifMinHitCounts, motifMarkovThreshs, 2, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(1)+AllOtherMotifs");
 		
 		// Now all motifs plus atleast 2 instance of the primany motif
 		allmotifMinHitCounts = new ArrayList<Integer>();
@@ -106,7 +106,7 @@ public class ReguDomainsToGenes {
 		for(int m=1; m <motiflist.size(); m++){
 			allmotifMinHitCounts.add(1);
 		}
-		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,allmotifInds, allmotifMinHitCounts, motifMarkovThreshs, 1, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(2)+AllOtherMotifs");
+		currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType,allmotifInds, allmotifMinHitCounts, motifMarkovThreshs, 2, numClus, OutputFormat,"Base+topPerc+PrimaryMotif(2)+AllOtherMotifs");
 		
 		// Now add homotypic also
 		//currProfile = new RegulatoryClassProfile(rRegs, topPerc, sortType, allmotifInds, motifMarkovThreshs, 2, numClus, OutputFormat,"Base+topPerc+Allmotifs+Homotypics");
