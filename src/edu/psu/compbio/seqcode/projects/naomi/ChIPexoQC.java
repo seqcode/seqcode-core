@@ -29,7 +29,7 @@ public class ChIPexoQC {
 				signalHits = rep.getSignal().getHitCount();
 				controlHits = rep.getControl().getHitCount();
 				IPstrength = 1-(ncis/(signalHits/controlHits));
-				System.out.println("Condition: "+rep.getCondName()+"Signal: "+signalHits+"Control: "+controlHits+"ScalingFactor: "+ncis+"IPstrength: "+IPstrength);
+				System.out.println("Condition: "+rep.getCondName()+"\tSignal: "+signalHits+"\tControl: "+controlHits+"\tScalingFactor: "+ncis+"\tIPstrength: "+IPstrength);
 			}
 		}
 	}
