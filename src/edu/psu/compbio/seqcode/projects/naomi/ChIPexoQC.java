@@ -7,7 +7,6 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 
-
 public class ChIPexoQC {
 	
 	protected GenomeConfig gconfig;
@@ -20,7 +19,7 @@ public class ChIPexoQC {
 	
 	public void printQCMetrics(){
 		
-		double ncis, signalHits, noiseHits, IPstrength;
+		double ncis, signalHits, controlHits, IPstrength;
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
 				
@@ -28,14 +27,9 @@ public class ChIPexoQC {
 			for(ControlledExperiment rep : exptCond.getReplicates()){
 				ncis = rep.getControlScaling();
 				signalHits = rep.getSignal().getHitCount();
-				noiseHits = rep.getControl().getHitCount();
-				IPstrength = 1-(ncis/(signalHits/noiseHits));
-				System.out.println("signal name is: "+rep.getCondName());
-				System.out.println("scaling ratio is: "+ncis);
-				System.out.println("signalHits is: "+signalHits);
-				System.out.println("noiseHits is: "+noiseHits);
-				System.out.println("IP strength is: "+IPstrength);
-				System.out.println("testing signvscontrol: "+rep.getSignalVsNoiseFraction());
+				controlHits = rep.getControl().getHitCount();
+				IPstrength = 1-(ncis/(signalHits/controlHits));
+				System.out.println("Condition: "+rep.getCondName()+"Signal: "+signalHits+"Control: "+controlHits+"ScalingFactor: "+ncis+"IPstrength: "+IPstrength);
 			}
 		}
 	}
