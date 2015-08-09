@@ -26,13 +26,16 @@ public class ChIPexoQC {
 				
 		for(ExperimentCondition exptCond: manager.getConditions()){
 			for(ControlledExperiment rep : exptCond.getReplicates()){
-				ncis = rep.getSignalVsNoiseFraction();
+				ncis = rep.getControlScaling();
 				signalHits = rep.getSignal().getHitCount();
 				noiseHits = rep.getControl().getHitCount();
 				IPstrength = 1-(ncis/(signalHits/noiseHits));
-				System.out.println("signal name is: "+rep.getSignal());
-				System.out.println("control name is: "+rep.getControl());
+				System.out.println("signal name is: "+rep.getCondName());
+				System.out.println("scaling ratio is: "+ncis);
+				System.out.println("signalHits is: "+signalHits);
+				System.out.println("noiseHits is: "+noiseHits);
 				System.out.println("IP strength is: "+IPstrength);
+				System.out.println("testing signvscontrol: "+rep.getSignalVsNoiseFraction());
 			}
 		}
 	}
