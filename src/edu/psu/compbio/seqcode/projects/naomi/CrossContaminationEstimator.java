@@ -26,8 +26,8 @@ public class CrossContaminationEstimator {
 	protected ExptConfig econfig;
 	protected float[][] xyPairs;
 
-	public final float CONST1 = 200000;
-	//public final float CONST1 = 2000000;
+
+	public final float CONST1 = 2000000;
 	
 	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ){	
 		gconfig = gcon;
@@ -128,15 +128,14 @@ public class CrossContaminationEstimator {
 //		}
 		
 		//only copying datapoints which go over some upper limits
-		int sampleSize = 0;
+
 		int SumAllCounts = 0;
 		for (Sample sample: manager.getSamples()){
 			SumAllCounts+= sample.getHitCount();
-			sampleSize++;
 		}		
 		double upperLimit = 0;
-		upperLimit = SumAllCounts/(sampleSize*CONST1);
-		float CONST=20;
+		upperLimit = SumAllCounts/CONST1;
+		float CONST=10;
 		
 		System.out.println("upperLimit is: "+upperLimit);
 		
