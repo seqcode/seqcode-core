@@ -405,8 +405,8 @@ public class ExperimentScaler {
 		private void saveXYplot(Matrix datapoints, String xName, String yName, String outFilename, boolean rasterImage){
 			this.setWidth(800);
 			this.setHeight(800);
-			this.setXLogScale(false);
-			this.setYLogScale(false);
+			this.setXLogScale(true);
+			this.setYLogScale(true);
 			this.addDataset("other", datapoints, new Color(75,75,75,80), 3);
 			this.setXAxisLabel(xName);
 			this.setYAxisLabel(yName);
