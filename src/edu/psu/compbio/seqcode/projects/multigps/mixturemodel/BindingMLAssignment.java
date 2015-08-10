@@ -12,11 +12,12 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.deepseq.stats.BackgroundCollection;
 import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModelPerBase;
 import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
-import edu.psu.compbio.seqcode.projects.multigps.utilities.EMStepPlotter;
 
 /**
  * BindingMLAssignment: Maximum likelihood assignment of reads to a configuration of binding components.
@@ -101,7 +102,8 @@ public class BindingMLAssignment {
     								  Region w, 
     								  List<NoiseComponent> noise,
     								  List<BindingComponent> comps, 
-    								  int numComp){
+    								  int numComp,
+    								  char[] currRegionSeq){
     	components = comps;
         this.noise = noise;
         numComponents = numComp;
@@ -140,6 +142,12 @@ public class BindingMLAssignment {
     	tmp_piNoise = new double[numConditions]; 	// piNoise used in ML calc
     	tmp_h= new double[numConditions][][]; 			// H function used in ML calc
         
+    	//Sequence is required if one of the experiments is permanganate ChIP-seq
+        char[] currRegionSeqRC=null; 
+        if(currRegionSeq!=null){
+	        currRegionSeqRC = currRegionSeq.clone();
+			SequenceUtils.reverseComplement(currRegionSeqRC);
+        }
         
         //Initializing data structures
         for(ExperimentCondition cond : manager.getConditions()){
@@ -226,8 +234,22 @@ public class BindingMLAssignment {
             for(int i=0;i<sigHitNum[c];i++){
             	for(int j=0;j<numComp;j++){
             		int dist = sigHitPlusStr[c][i] ? sigHitPos[c][i]-mu[c][j]: mu[c][j]-sigHitPos[c][i];
-                    hc[j][i] = bindingModels[sigRepIndices[c][i]].probability(dist);
-                    thc[j][i] = bindingModels[sigRepIndices[c][i]].probability(dist);
+            		
+            		//Permanganate ChIP-seq special case
+                    if(bindingModels[sigRepIndices[c][i]] instanceof BindingModelPerBase && currRegionSeq!=null && currRegionSeqRC!=null){
+                    	int wantedPos =  sigHitPlusStr[c][i] ? mu[c][j]-1 : mu[c][j]+1;
+            			if(wantedPos>=w.getStart() && wantedPos<w.getEnd()){
+            				char base = sigHitPlusStr[c][i] ? currRegionSeq[wantedPos-w.getStart()] : currRegionSeqRC[w.getEnd()-wantedPos];
+            				hc[j][i] = ((BindingModelPerBase)(bindingModels[sigRepIndices[c][i]])).probability(dist, base);
+            				thc[j][i] = ((BindingModelPerBase)(bindingModels[sigRepIndices[c][i]])).probability(dist, base);
+            			}else{
+            				hc[j][i] = bindingModels[sigRepIndices[c][i]].probability(dist);
+                        	thc[j][i] = bindingModels[sigRepIndices[c][i]].probability(dist);
+            			}
+                    }else{//Standard ChIP-seq / ChIP-exo
+                    	hc[j][i] = bindingModels[sigRepIndices[c][i]].probability(dist);
+                    	thc[j][i] = bindingModels[sigRepIndices[c][i]].probability(dist);
+                    }
                 }
             	nc[i] = noise.get(c).scorePosition(sigHitPos[c][i],sigRepIndices[c][i]);
             }
@@ -246,7 +268,7 @@ public class BindingMLAssignment {
         //////////
         // Run ML steps
         //////////
-        ML(w);
+        ML(w, currRegionSeq, currRegionSeqRC);
         
         
         //////////
@@ -316,7 +338,7 @@ public class BindingMLAssignment {
      * Core EM iterations with sparse prior (component elimination) & multi-condition positional priors.
      * Assumes H function, pi, and responsibilities have all been initialized
      */
-    private void ML (Region currRegion) {
+    private void ML (Region currRegion, char[] currRegionSeq, char[] currRegionSeqRC) {
         int numComp = numComponents;
         double [][] totalRespSig = new double[numConditions][];
         double [][] totalRespCtrl = new double[numConditions][];
@@ -348,7 +370,18 @@ public class BindingMLAssignment {
         		for(int i=0;i<numBases;i++)
                 	for(int j=0;j<numComp;j++){ if(pi[c][j]>0){
                     	int dist = sigHitPlusStr[c][i] ? sigHitPos[c][i]-mu[c][j]: mu[c][j]-sigHitPos[c][i];
-                    	h[c][j][i] = bindingModels[sigRepIndices[c][i]].probability(dist);
+                    	//Permanganate ChIP-seq special case
+                        if(bindingModels[sigRepIndices[c][i]] instanceof BindingModelPerBase && currRegionSeq!=null && currRegionSeqRC!=null){
+                        	int wantedPos =  sigHitPlusStr[c][i] ? sigHitPos[c][i]-1 : sigHitPos[c][i]+1;
+                			if(wantedPos>=currRegion.getStart() && wantedPos<currRegion.getEnd()){
+                				char base = sigHitPlusStr[c][i] ? currRegionSeq[wantedPos-currRegion.getStart()] : currRegionSeqRC[currRegion.getEnd()-wantedPos];
+                				h[c][j][i] = ((BindingModelPerBase)(bindingModels[sigRepIndices[c][i]])).probability(dist, base);
+                			}else{
+                				h[c][j][i] = bindingModels[sigRepIndices[c][i]].probability(dist);
+                			}
+                        }else{//Standard ChIP-seq / ChIP-exo
+                        	h[c][j][i] = bindingModels[sigRepIndices[c][i]].probability(dist);
+                        }
                 	}}
         		//Compute responsibilities
     			for(int i=0;i<numBases;i++)
@@ -441,7 +474,18 @@ public class BindingMLAssignment {
 			for(int i=0;i<numBases;i++){
 	        	for(int j=0;j<numComp;j++){ if(pi[c][j]>0){
 	            	int dist = ctrlHitPlusStr[c][i] ? ctrlHitPos[c][i]-mu[c][j]: mu[c][j]-ctrlHitPos[c][i];
-	            	hCtrl[j][i] = bindingModels[ctrlRepIndices[c][i]].probability(dist);
+	            	//Permanganate ChIP-seq special case
+                    if(bindingModels[ctrlRepIndices[c][i]] instanceof BindingModelPerBase && currRegionSeq!=null && currRegionSeqRC!=null){
+                    	int wantedPos =  ctrlHitPlusStr[c][i] ? ctrlHitPos[c][i]-1 : ctrlHitPos[c][i]+1;
+            			if(wantedPos>=currRegion.getStart() && wantedPos<currRegion.getEnd()){
+            				char base = ctrlHitPlusStr[c][i] ? currRegionSeq[wantedPos-currRegion.getStart()] : currRegionSeqRC[currRegion.getEnd()-wantedPos];
+            				hCtrl[j][i] = ((BindingModelPerBase)(bindingModels[ctrlRepIndices[c][i]])).probability(dist, base);
+            			}else{
+            				hCtrl[j][i] = bindingModels[ctrlRepIndices[c][i]].probability(dist);
+            			}
+                    }else{//Standard ChIP-seq / ChIP-exo
+                    	hCtrl[j][i] = bindingModels[ctrlRepIndices[c][i]].probability(dist);
+                    }
 	        	}}
 	        	nCtrl[i] = noise.get(c).scorePosition(ctrlHitPos[c][i], ctrlRepIndices[c][i]);
 			}
