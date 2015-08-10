@@ -166,8 +166,8 @@ public class ExperimentScaler {
 	        		break;
 	        	}
         	}
-        	if(cumulA>0 && cumulB>0){
-        		Double ratio  = (cumulA/cumulB); 
+        	if(pc.x>0 && pc.y>0){
+        		Double ratio  = (pc.x/pc.y); 
         		totalCounts.add(pc.x+pc.y);
         		ratios.add(ratio);
         	}
