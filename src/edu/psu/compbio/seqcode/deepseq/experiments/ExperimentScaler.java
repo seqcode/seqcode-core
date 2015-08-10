@@ -151,8 +151,6 @@ public class ExperimentScaler {
         //NCIS procedure
         double cumulA=0, cumulB=0, currRatio=0, lastRatio=-1;
         float i=0;
-        List<Double> totalCounts=new ArrayList<Double>();
-        List<Double> ratios=new ArrayList<Double>();
         for(PairedCounts pc : counts){
         	cumulA+=pc.x;
         	cumulB+=pc.y;
@@ -166,16 +164,23 @@ public class ExperimentScaler {
 	        		break;
 	        	}
         	}
-        	if(pc.x>0 && pc.y>0){
-        		Double ratio  = (pc.x/pc.y); 
-        		totalCounts.add(pc.x+pc.y);
-        		ratios.add(ratio);
-        	}
         }
         scalingRatio = currRatio;
         
-        /*Scatter plot generation*/
+        /*Scaling plot generation*/
         if(outputFile!=null){
+        	List<Double> totalCounts=new ArrayList<Double>();
+            List<Double> ratios=new ArrayList<Double>();
+            cumulA=0; cumulB=0;
+        	for(PairedCounts pc : counts){
+            	cumulA+=pc.x;
+            	cumulB+=pc.y;
+            	if(cumulA>0 && cumulB>0){
+            		Double ratio  = (cumulA / cumulB); 
+            		totalCounts.add(pc.x+pc.y);
+            		ratios.add(ratio);
+            	}
+        	}
 	        Matrix dataToPlot = new Matrix(totalCounts.size(),2);
 	        int count=0;
 			for(int d=0; d<totalCounts.size(); d++){
@@ -185,7 +190,7 @@ public class ExperimentScaler {
 			}
 			//Generate image
 			ScalingPlotter plotter = new ScalingPlotter(outputFile+" NCIS plot");
-			plotter.saveXYplot(dataToPlot, "totalTagCount", "Signal/Control", outputFile+".NCIS_scaling.png", true);
+			plotter.saveXYplot(dataToPlot, "Total Tag Count", "Estimated Scaling Ratio", outputFile+".NCIS_scaling.png", true);
         }
         
 		return(scalingRatio);
