@@ -10,8 +10,10 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.stats.BackgroundCollection;
 import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
+import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModelPerBase;
 import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.EMStepPlotter;
 
@@ -106,7 +108,8 @@ public class BindingEM {
     											  int numComp,
     											  double[][] motifPrior,
     											  int trainingRound,
-    											  Region plotSubRegion){
+    											  Region plotSubRegion,
+    											  char[] currRegionSeq){
     	components = comps;
         this.noise = noise;
         numComponents = numComp;
@@ -135,6 +138,14 @@ public class BindingEM {
         lastPi = new double[numConditions][numComponents];
         lastMu = new int[numConditions][numComponents];
         
+        //Sequence is required if one of the experiments is permanganate ChIP-seq
+        char[] currRegionSeqRC=null; 
+        if(currRegionSeq!=null){
+	        currRegionSeqRC = currRegionSeq.clone();
+			SequenceUtils.reverseComplement(currRegionSeqRC);
+        }
+        
+		
         //Initializing data structures
         for(ExperimentCondition cond : manager.getConditions()){
         	int c = cond.getIndex();
@@ -194,7 +205,16 @@ public class BindingEM {
             	for(int b=0;b<w.getWidth();b++){
             		int pos = b+w.getStart();
                     int dist = hitPlusStr[c][i] ? hitPos[c][i]-pos: pos-hitPos[c][i];
-                    hAllc[b][i] = bindingModels[repIndices[c][i]].probability(dist);
+                    //Permanganate ChIP-seq special case
+                    if(bindingModels[repIndices[c][i]] instanceof BindingModelPerBase && currRegionSeq!=null && currRegionSeqRC!=null){
+                    	int wantedPos =  hitPlusStr[c][i] ? pos-1 : pos+1;
+            			if(wantedPos>=w.getStart() && wantedPos<w.getEnd()){
+            				char base = hitPlusStr[c][i] ? currRegionSeq[wantedPos-w.getStart()] : currRegionSeqRC[w.getEnd()-wantedPos];
+            				hAllc[b][i] = ((BindingModelPerBase)(bindingModels[repIndices[c][i]])).probability(dist, base);
+            			}else
+            				hAllc[b][i] = bindingModels[repIndices[c][i]].probability(dist);
+                    }else//Standard ChIP-seq / ChIP-exo
+                    	hAllc[b][i] = bindingModels[repIndices[c][i]].probability(dist);
             	}
     		hAll[c] = hAllc;
     		

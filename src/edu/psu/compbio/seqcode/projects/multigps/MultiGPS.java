@@ -57,8 +57,8 @@ public class MultiGPS {
 				bindingManager.setBindingModel(rep, mgpsconfig.getDefaultBindingModel());
 			else if(rep.getExptType()!=null && rep.getExptType().getName().toLowerCase().equals("chipexo"))
 				bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipExoEmpiricalDistribution));
-			//else if(rep.getExptType()!=null && rep.getExptType().getName().toLowerCase().equals("permchipseq"))
-			//	bindingManager.setBindingModel(rep, new BindingModelPerBase(BindingModelPerBase.defaultPermChipSeqEmpiricalDistribution));
+//			else if(rep.getExptType()!=null && rep.getExptType().getName().toLowerCase().equals("permchipseq"))
+//				bindingManager.setBindingModel(rep, new BindingModelPerBase(BindingModelPerBase.defaultPermChipSeqEmpiricalDistribution));
 			else
 				bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipSeqEmpiricalDistribution));
 			repBindingModels.put(rep, new ArrayList<BindingModel>());

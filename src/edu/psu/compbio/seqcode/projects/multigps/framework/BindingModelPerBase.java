@@ -11,10 +11,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 import edu.psu.compbio.seqcode.gse.utils.Pair;
-import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 public class BindingModelPerBase extends BindingModel{
 	protected double[][] data_pb;

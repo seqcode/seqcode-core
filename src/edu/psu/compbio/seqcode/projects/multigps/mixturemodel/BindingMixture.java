@@ -14,6 +14,7 @@ import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentType;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.deepseq.stats.BackgroundCollection;
@@ -23,7 +24,9 @@ import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
+import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
@@ -56,6 +59,8 @@ public class BindingMixture {
 	protected double relativeCtrlNoise[]; //Defines global noise
 	protected HashMap<Region, Double[]> noiseResp = new HashMap<Region, Double[]>(); //noise responsibilities after a round of execute(). Hashed by Region, indexed by condition
 	protected MotifPlatform motifFinder;
+	protected boolean hasPermChipSeq=false; //one of the experiments is a permanganate ChIP-seq experiment - requires sequence information in the training methods.
+	protected SequenceGenerator<Region> seqgen=null; //sequence generator for cases where a permanganate ChIP-seq experiment is present. 
 	
 	public BindingMixture(GenomeConfig gcon, ExptConfig econ, MultiGPSConfig c, ExperimentManager eMan, BindingManager bMan, PotentialRegionFilter filter){
 		gconfig = gcon;
@@ -95,6 +100,13 @@ public class BindingMixture {
 	        double infoProbAgivenNOTB =  Math.log((N-S)/(L-N))/Math.log(2);
 			System.err.println("Multi-condition positional priors:\tA given B:"+String.format("%.4f", infoProbAgivenB)+"\tA given notB:"+String.format("%.4f", infoProbAgivenNOTB));
 		}
+		
+		//Check for permanganate ChIP-seq 
+		for(ExperimentType type : manager.getExptTypes())
+			if(type.getName().toLowerCase().equals("permchipseq"))
+				hasPermChipSeq=true;
+		if(hasPermChipSeq)
+			seqgen = gconfig.getSequenceGenerator();
 	}
 	
 	
@@ -535,6 +547,11 @@ public class BindingMixture {
 			for(Region p : regionsToPlot)
 				if(w.overlaps(p))
 					plotSubReg = p;
+			//Sequence is required if one of the experiments is permanganate ChIP-seq
+			char[] currRegionSeq=null;
+			if(hasPermChipSeq && seqgen!=null)
+				currRegionSeq = seqgen.execute(w).toCharArray();
+				
 			
 			//Load signal data
 			List<List<StrandedBaseCount>> signals = loadSignalData(w);
@@ -557,7 +574,7 @@ public class BindingMixture {
             double[][] motifPrior = config.getFindingMotifs() ? motifFinder.scanRegionWithMotifs(w, seq) : null;
             
             //EM learning: resulting binding components list will only contain non-zero components
-            nonZeroComponents = EM.train(signals, w, noiseComponents, bindingComponents, numBindingComponents, motifPrior, trainingRound, plotSubReg);
+            nonZeroComponents = EM.train(signals, w, noiseComponents, bindingComponents, numBindingComponents, motifPrior, trainingRound, plotSubReg, currRegionSeq);
            
             return new Pair<List<NoiseComponent>, List<List<BindingComponent>>>(noiseComponents, nonZeroComponents);
         }//end of analyzeWindowEM method
@@ -573,6 +590,11 @@ public class BindingMixture {
 			List<BindingComponent> bindingComponents=null;
 			List<NoiseComponent> noiseComponents=null;
 			List<BindingEvent> currEvents = new ArrayList<BindingEvent>(); 
+			
+			//Sequence is required if one of the experiments is permanganate ChIP-seq
+			char[] currRegionSeq=null;
+			if(hasPermChipSeq && seqgen!=null)
+				currRegionSeq = seqgen.execute(w).toCharArray();
 			
 			//Load signal data
 			List<List<StrandedBaseCount>> signals = loadSignalData(w);
@@ -620,7 +642,7 @@ public class BindingMixture {
     				seenConfigs.add(currCC);
     				
     				//ML assignment
-    				List<BindingEvent> condEvents = ML.assign(signals, controls, w, noiseComponents, bindingComponents, numComp);
+    				List<BindingEvent> condEvents = ML.assign(signals, controls, w, noiseComponents, bindingComponents, numComp, currRegionSeq);
     				for(BindingEvent be : condEvents)
     					if(config.getMLSharedComponentConfiguration())
     						setFoundInConditions(be, w);
