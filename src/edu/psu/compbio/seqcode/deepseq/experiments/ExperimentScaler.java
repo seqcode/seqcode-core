@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.axis.NumberAxis;
+
 import Jama.Matrix;
 
 import edu.psu.compbio.seqcode.genome.Genome;
@@ -421,9 +424,13 @@ public class ExperimentScaler {
 			//Set the tick units according to the range
 			double xUpper = daxis.getRange().getUpperBound();
 			double xLower = daxis.getRange().getLowerBound();
+			if(daxis instanceof org.jfree.chart.axis.NumberAxis)
+	    		((NumberAxis)daxis).setTickUnit(new NumberTickUnit(5));
 	    	double yUpper = raxis.getRange().getUpperBound();
 			double yLower = raxis.getRange().getLowerBound();
-			
+	    	if(raxis instanceof org.jfree.chart.axis.NumberAxis)
+	    		((NumberAxis)raxis).setTickUnit(new NumberTickUnit(5));
+	    	
 			try {
 				this.saveImage(new File(outFilename), width, height, rasterImage);
 			} catch (IOException e) {
