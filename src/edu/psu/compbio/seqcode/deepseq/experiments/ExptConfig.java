@@ -44,6 +44,7 @@ public class ExptConfig {
 	protected boolean scalingByMedian = false; //Default is to estimate scaling by NCIS
 	protected float fixedScalingFactor = 1; //Default is to estimate scaling by NCIS
 	protected int scalingSlidingWindow = 10000; 
+	protected boolean plotScaling = false; //Make a scaling method plot
 	protected boolean cacheAllHits=true; //Cache all hits
 	protected String fileCacheDir = "hitcache";
 	protected List<Region> initialCachedRegions=null;
@@ -137,6 +138,8 @@ public class ExptConfig {
 				scalingByRegression = Args.parseFlags(args).contains("regressionscale") ? true : false;
 				//Scaling window
 				scalingSlidingWindow = Args.parseInteger(args,"scalewin",scalingSlidingWindow);
+				//Make a scaling method plot
+				plotScaling = Args.parseFlags(args).contains("plotscaling") ? true : false;
 				////////////////////////
 				//Misc parameters
 				////////////////////////
@@ -297,6 +300,7 @@ public class ExptConfig {
 	public boolean getScalingByRegression(){return scalingByRegression;}
 	public boolean getScalingBySES(){return scalingBySES;}
 	public int getScalingSlidingWindow(){return scalingSlidingWindow;}
+	public boolean getPlotScaling(){return plotScaling;}
 	public boolean getCacheAllData(){return cacheAllHits;}
 	public String getFileCacheDirName(){return fileCacheDir;}
 	public List<Region> getInitialCachedRegions(){return initialCachedRegions;}
@@ -358,6 +362,7 @@ public class ExptConfig {
 				"\t--sesscale [flag to use scaling by SES (default = scaling by NCIS)]\n" +
 				"\t--fixedscaling <multiply control counts by total tag count ratio and then by this factor if not estimating scaling>\n" +
 				"\t--scalewin <window size for scaling procedure (default=10000)>\n" +
+				"\t--plotscaling [flag to plot diagnostic information for the chosen scaling method]\n" +
 				"Miscellaneous Experiment Loading Args:\n" +
 				"\t--fixedpb <fixed per base limit>\n" +
 				"\t--poissongausspb <filter per base using a Poisson threshold parameterized by a local Gaussian sliding window>\n" +

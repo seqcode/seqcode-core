@@ -153,6 +153,10 @@ public class ExperimentCondition {
 			//Calculate scaling factors for each replicate's signal vs control
 			for(ControlledExperiment expt : getReplicates()){
 				if(expt.hasControl()){
+					String scalingPlotFilename =null;
+					if(econfig.getPlotScaling())
+						scalingPlotFilename = expt.getName();
+					
 					if(econfig.getScalingBySES())
 						expt.setScaling(scaler.scalingRatioBySES(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl())));
 					else if(econfig.getScalingByRegression())
@@ -160,7 +164,7 @@ public class ExperimentCondition {
 					else if(econfig.getScalingByMedian())
 						expt.setScaling(scaler.scalingRatioByMedian(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl())));
 					else
-						expt.setScaling(scaler.scalingRatioByNCIS(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl())));
+						expt.setScaling(scaler.scalingRatioByNCIS(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl()), scalingPlotFilename));
 				}
 			}
 				

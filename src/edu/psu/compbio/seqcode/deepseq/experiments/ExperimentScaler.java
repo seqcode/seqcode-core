@@ -1,5 +1,8 @@
 package edu.psu.compbio.seqcode.deepseq.experiments;
 
+import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -7,12 +10,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import Jama.Matrix;
+
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.utils.models.Model;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataFrame;
 import edu.psu.compbio.seqcode.gse.utils.models.data.DataRegression;
+import edu.psu.compbio.seqcode.gse.viz.scatter.ScatterPlot;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingManager;
 import edu.psu.compbio.seqcode.projects.multigps.framework.BindingModel;
 import edu.psu.compbio.seqcode.projects.multigps.framework.MultiGPSConfig;
@@ -120,22 +126,22 @@ public class ExperimentScaler {
 	 * Also sets a background proportion estimate for the signal channel.  
 	 * Should be run using *all* genomic windows in the Lists. 
 	 * Uses ratios that are based on at least 75% of genomic regions by default. 
+	 * @param setA : signal list
+	 * @param setB : control list
+	 * @param outputFile : optional file that will contain the data 
 	 * @return
 	 */
-	public double scalingRatioByNCIS(List<Float> setA, List<Float> setB){
+	public double scalingRatioByNCIS(List<Float> setA, List<Float> setB, String outputFile){
 		double scalingRatio=1;
 		if(setA.size()!=setB.size()){
 			System.err.println("ExperimentScaler is trying to scale lists of two different lengths");
 			System.exit(1);
 		}
 		
-		float totalA=0, totalB=0; float numPairs = (float)setA.size();
+		float numPairs = (float)setA.size();
 		List<PairedCounts> counts = new ArrayList<PairedCounts>();
-		for(int x=0; x<setA.size(); x++){
-			totalA += setA.get(x);
-			totalB += setB.get(x);
-			counts.add(new PairedCounts(setA.get(x), setB.get(x)));                
-		}
+		for(int x=0; x<setA.size(); x++)
+			counts.add(new PairedCounts(setA.get(x), setB.get(x))); 
 		
 		//NCIS uses increasing total tag counts versus enrichment ratio
 		Collections.sort(counts, new Comparator<PairedCounts>(){
@@ -145,6 +151,8 @@ public class ExperimentScaler {
         //NCIS procedure
         double cumulA=0, cumulB=0, currRatio=0, lastRatio=-1;
         float i=0;
+        List<Double> totalCounts=new ArrayList<Double>();
+        List<Double> ratios=new ArrayList<Double>();
         for(PairedCounts pc : counts){
         	cumulA+=pc.x;
         	cumulB+=pc.y;
@@ -158,8 +166,28 @@ public class ExperimentScaler {
 	        		break;
 	        	}
         	}
+        	if(cumulA>0 && cumulB>0){
+        		Double ratio  = (cumulA/cumulB); 
+        		totalCounts.add(pc.x+pc.y);
+        		ratios.add(ratio);
+        	}
         }
         scalingRatio = currRatio;
+        
+        /*Scatter plot generation*/
+        if(outputFile!=null){
+	        Matrix dataToPlot = new Matrix(totalCounts.size(),2);
+	        int count=0;
+			for(int d=0; d<totalCounts.size(); d++){
+				dataToPlot.set(count, 0, totalCounts.get(d));
+				dataToPlot.set(count, 1, ratios.get(d));
+				count++;
+			}
+			//Generate image
+			ScalingPlotter plotter = new ScalingPlotter(outputFile+" NCIS plot");
+			plotter.saveXYplot(dataToPlot, "totalTagCount", "Signal/Control", outputFile+".NCIS_scaling.png", true);
+        }
+        
 		return(scalingRatio);
 	}
 	
@@ -176,6 +204,8 @@ public class ExperimentScaler {
 		double ctrlCount = expt.getControl()==null ? expt.getSignal().getHitCount() : expt.getControl().getHitCount();
 		return(expt.getControlScaling() / (expt.getSignal().getHitCount()/ctrlCount));
 	}
+	
+	
 	
 	/**
 	 * Main for testing
@@ -306,7 +336,7 @@ public class ExperimentScaler {
 				if(sampA.isSignal()){
 					for(Sample sampB : exptMan.getSamples())
 						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
-							System.out.println("NCIS\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByNCIS(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB)));
+							System.out.println("NCIS\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByNCIS(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB), null));
 				}
 			}
 			
@@ -356,5 +386,44 @@ public class ExperimentScaler {
 			return 0;
 		}
 		
+	}
+	
+	public class ScalingPlotter extends ScatterPlot{
+		public ScalingPlotter(String title) {
+			super(title);
+		}
+		/**
+		 * Make an XY scatter plot from a 2-D dataset and save image.
+		 * This configuration is used by deepseq.stats.Normalization classes
+		 *  
+		 * @param datapoints - 2D dataset (colored grey)
+		 * @param datapoints_highlight - 2D dataset (colored blue), can be null
+		 * @param yLine Double - data coordinates of line to be drawn parallel to x axis (used to show scaling line) 
+		 * @param outFilename - String
+		 * @param rasterImage - boolean
+		 */
+		private void saveXYplot(Matrix datapoints, String xName, String yName, String outFilename, boolean rasterImage){
+			this.setWidth(800);
+			this.setHeight(800);
+			this.setXLogScale(false);
+			this.setYLogScale(false);
+			this.addDataset("other", datapoints, new Color(75,75,75,80), 3);
+			this.setXAxisLabel(xName);
+			this.setYAxisLabel(yName);
+			this.setXRangeFromData();
+			this.setYRangeFromData();
+			
+			//Set the tick units according to the range
+			double xUpper = daxis.getRange().getUpperBound();
+			double xLower = daxis.getRange().getLowerBound();
+	    	double yUpper = raxis.getRange().getUpperBound();
+			double yLower = raxis.getRange().getLowerBound();
+			
+			try {
+				this.saveImage(new File(outFilename), width, height, rasterImage);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
