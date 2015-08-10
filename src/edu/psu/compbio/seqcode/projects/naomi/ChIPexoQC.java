@@ -16,7 +16,7 @@ public class ChIPexoQC {
 		gconfig = gcon;
 		econfig = econ;
 	}
-	
+	 
 	public void printQCMetrics(){
 		
 		double ncis, signalHits, controlHits, IPstrength;
