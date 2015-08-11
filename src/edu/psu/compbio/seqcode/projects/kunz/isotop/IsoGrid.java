@@ -76,8 +76,6 @@ public class IsoGrid extends JFrame
 	 	    	    	trained = chooser.getSelectedFile().getName();
 	 	    	    	//System.out.println("You chose to open this file: " +chooser.getSelectedFile().getName());
 	 	    	    }
-	 	    	if(d != null)
-	 	    		d.search(trained);
 	            }
 	        }); 
 		    button.addActionListener(new ActionListener() {

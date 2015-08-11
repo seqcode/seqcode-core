@@ -9,19 +9,16 @@ import java.util.Scanner;
 
 import javax.swing.JPanel;
 
-//fix heat mapping?
-//make heat mapping option between overall point distribution & normal vs expected (heated true vs false)
 public class DrawHex extends JPanel// implements Grid2D
 {
 	private static final long serialVersionUID = 1L;
-	public int nodes,xs,ys,xNodes,yNodes, colorNum, winW, winH;
-	public double maxDataPoints, minDataPoints, totalWeight, counter;
+	public int nodes,xs,ys,xNodes,yNodes, maxDataPoints, minDataPoints, colorNum, winW, winH;
 	public ArrayList<Node> coords;
 	public ArrayList<DataPoint> dataPoints;
 	public ArrayList<MiniNode> nodeList;
 	public ArrayList<Color> colors;
 	MiniSystem nodeSystem;
-	public boolean weighting, heat;
+	public boolean weighting;
 	public DrawHex(String s)
 	{
 		weighting = false;
@@ -30,15 +27,12 @@ public class DrawHex extends JPanel// implements Grid2D
 		xNodes=0;
 		reader(ffs);
 		nodes = yNodes*xNodes;
-		heat = true;
 		
     	colors = new ArrayList<Color>();
     	colorNum=100;
 	}
 	public void search(String file)
 	{
-
-		totalWeight = 0;
 		for(int i = 0; i < nodeSystem.size(); i++)
 		{
 			MiniNode mini = nodeSystem.get(i);
@@ -48,11 +42,9 @@ public class DrawHex extends JPanel// implements Grid2D
 		ArrayList<String> strings = inputRead(file);
 		for(String whole: strings)
 		{
-			
 			int chr = 0;
 			int locus1 = 0; int locus2 = 0;
 			double weight = 0;
-			counter = 0;
 			//System.out.println(whole);
 			if(whole.contains("\t") && whole.contains(":")&&whole.contains("chr")&&whole.contains("-"))
 			{
@@ -64,12 +56,10 @@ public class DrawHex extends JPanel// implements Grid2D
 				weight = Double.parseDouble(whole.substring(whole.indexOf("\t")+1,whole.length()));
 				for(int i = 0; i< dataPoints.size(); i++)
 				{
-					if(dataPoints.get(i).chrome == chr && dataPoints.get(i).minLocus <= locus && dataPoints.get(i).maxLocus>=locus)// && weight > 14)
+					if(dataPoints.get(i).chrome == chr && dataPoints.get(i).minLocus <= locus && dataPoints.get(i).maxLocus>=locus)
 					{
-						//System.out.println(dataPoints.get(i).name + " = " + chr + ":" + locus +  "     " + weight);
 						dataPoints.get(i).myMini.counting.add(dataPoints.get(i));
 						dataPoints.get(i).myMini.weight += weight;
-						totalWeight += weight;
 					}
 				}
 			}
@@ -84,18 +74,11 @@ public class DrawHex extends JPanel// implements Grid2D
 				{
 					if(dataPoints.get(i).chrome == chr && dataPoints.get(i).minLocus <= locus && dataPoints.get(i).maxLocus>=locus)
 					{
-						counter ++;
 						dataPoints.get(i).myMini.counting.add(dataPoints.get(i));
 					}
 				}
 			}
 			
-		}
-		for(int i = 0; i < nodeSystem.size(); i++)
-		{
-			MiniNode mini = nodeSystem.get(i);
-			mini.notCounting.addAll(mini.dataPoints);
-			mini.notCounting.removeAll(mini.counting);
 		}
 		heatMapping();
 		repaint();
@@ -120,7 +103,6 @@ public class DrawHex extends JPanel// implements Grid2D
 	}
 	public void countingDPS(int chr)
 	{
-		counter = 0;
 		weighting = false;
 		for(int i =0; i<nodeSystem.size();i++)
 		{
@@ -131,21 +113,12 @@ public class DrawHex extends JPanel// implements Grid2D
 				if(chr <= -1)
 				{
 					if(Math.random()>.9)
-					{
 						mini.counting.add(mini.dataPoints.get(j));
-						counter++;
-					}
 				}
 				else if (chr == 0)
-				{
 					mini.counting.add(mini.dataPoints.get(j));
-					counter++;
-				}
 				else if (mini.dataPoints.get(j).chrome == chr)
-				{
 					mini.counting.add(mini.dataPoints.get(j));
-					counter++;
-				}
 			}
 			//System.out.println(mini.counting.size());
 		}
@@ -189,7 +162,6 @@ public class DrawHex extends JPanel// implements Grid2D
 			else
 				current.addDP(whole);
 		}
-		//Data point management
 		for(int i = 0; i<nodeList.size(); i++)
 		{
 			for(int j = 0; j < nodeList.get(i).dataPoints.size(); j++)
@@ -197,7 +169,6 @@ public class DrawHex extends JPanel// implements Grid2D
 				dataPoints.add(nodeList.get(i).dataPoints.get(j));
 			}
 		}
-		
 		//System.out.println(dataPoints.size());
 		nodeSystem = new MiniSystem(nodeList,xNodes,yNodes);
 	}
@@ -210,10 +181,10 @@ public class DrawHex extends JPanel// implements Grid2D
 	    {
 	    	g.setColor(nodeList.get(i).color);
 	    	g.fillPolygon(nodeList.get(i).p);
-	    	g.setColor(Color.BLACK);
+	    	/*g.setColor(Color.BLACK);
 	    	g.setFont(new Font("Serif", 5, 9));
 	    	g.drawString(""+nodeList.get(i).counting.size(),nodeList.get(i).xLoc, nodeList.get(i).yLoc);
-	    	g.drawPolygon(nodeList.get(i).p);
+	    	g.drawPolygon(nodeList.get(i).p);*/
 	    }
 	}
 	public void nodeBuild(int winW, int winH)
@@ -278,26 +249,9 @@ public class DrawHex extends JPanel// implements Grid2D
 	{
 		for(int k = 0; k<colorNum;k++)
 		{
-			int blue;
-			int red;
-			if(k<colorNum/2)
-			{
-				red= (int)(k*255/colorNum)*2; 
-				if(red >255) 
-					red = 255-(red-255);
-			}
-			else
-				red = 255;
-			if(k<colorNum/2)
-				blue = 255;
-			else
-			{
-				blue = (int)(255-(k*255/colorNum))*2;
-				if(blue >255)
-					blue = 255-(blue-255);
-			}
-			int green = (int)(255-(k*255/colorNum))*2;if(green >255) green = 255-(green-255);
-			
+			int red = 255;//(int)(k*255/colorNum);
+			int blue = (int)(255-(k*255/colorNum));
+			int green = (int)(255-(k*255/colorNum));
 			Color c = new Color(red, green, blue);
 			colors.add(c);
 		}
@@ -310,26 +264,9 @@ public class DrawHex extends JPanel// implements Grid2D
 		g.drawString(""+maxDataPoints, (int)(getWidth()*.2+(int)(getWidth()*.55)),(int)(getHeight()*.95));
 		for(int k = 0; k<colorNum;k++)
 		{
-			int blue;
-			int red;
-			if(k<colorNum/2)
-			{
-				red= (int)(k*255/colorNum)*2; 
-				if(red >255) 
-					red = 255-(red-255);
-			}
-			else
-				red = 255;
-			if(k<colorNum/2)
-				blue = 255;
-			else
-			{
-				blue = (int)(255-(k*255/colorNum))*2;
-				if(blue >255)
-					blue = 255-(blue-255);
-			}
-			int green = (int)(255-(k*255/colorNum))*2;if(green >255) green = 255-(green-255);
-			
+			int red = 255;//(int)(k*255/colorNum);
+			int blue = (int)(255-(k*255/colorNum));
+			int green = (int)(255-(k*255/colorNum));
 			Color c = new Color(red, green, blue);
 			g.setColor(c);
 			g.fillRect((int)(getWidth()*.2+((k*getWidth()*.55)/colorNum)),(int)(getHeight()*.96),(int)(getWidth()*.55/colorNum)+3,(int)(getHeight()*.02));
@@ -338,61 +275,40 @@ public class DrawHex extends JPanel// implements Grid2D
 	}
 	public void heatMapping()
 	{
-		
-		//Is this coloring scheme by ratio a good idea? Does this properly compare actual to expected?
-		//Switch dataPoints.size() to nonCounted.size() & dataPoints.size()-counter
 		if(weighting == true)
 		{
-			
-			minDataPoints = 0;
-			maxDataPoints = 0;
+			minDataPoints = (int) (nodeList.get(0).counting.size() * nodeList.get(0).weight);
+			maxDataPoints = (int) (nodeList.get(0).counting.size() * nodeList.get(0).weight);
 			for(int i = 0; i<nodeList.size(); i++)
 			{
-				
-				double scalar = ((double)nodeList.get(i).dataPoints.size())/((double)dataPoints.size()); //compares ratios
-				double w = nodeList.get(i).weight/totalWeight;
-				w = w - scalar;
-				if(w>maxDataPoints)
-					maxDataPoints = w;
-				if(w<minDataPoints)
-					minDataPoints =  w;
+				if(nodeList.get(i).counting.size()* nodeList.get(i).weight>maxDataPoints)
+					maxDataPoints = (int) (nodeList.get(i).counting.size() * nodeList.get(i).weight);
+				if(nodeList.get(i).counting.size()* nodeList.get(0).weight<minDataPoints)
+					minDataPoints = (int) (nodeList.get(i).counting.size()* nodeList.get(i).weight);
 			}
-			if(maxDataPoints <= minDataPoints) maxDataPoints = minDataPoints + 1;
+			if(maxDataPoints == minDataPoints) maxDataPoints++;
 			for(int i = 0; i<nodeSystem.size(); i++)
 			{	   
 				MiniNode p = nodeSystem.get(i);
-				double scalar = ((double)p.dataPoints.size())/((double)dataPoints.size()); //compares ratios
-				double w = p.weight/totalWeight;
-				if(scalar == 0) 
-					scalar = .000001;
-				w = w - scalar;
-				p.color = colors.get((int) ((w-minDataPoints)*(colors.size()-1)/(maxDataPoints-minDataPoints)));
+				p.color = colors.get((int) ((p.counting.size()*p.weight-minDataPoints)*(colors.size()-1)/(maxDataPoints-minDataPoints)));
 			}
 		}
 		else
 		{
-			minDataPoints = 0;
-			maxDataPoints = 0;
-
+			minDataPoints = (int) (nodeList.get(0).counting.size());
+			maxDataPoints = (int) (nodeList.get(0).counting.size());
 			for(int i = 0; i<nodeList.size(); i++)
 			{
-				double scalar = ((double)nodeList.get(i).dataPoints.size())/((double)dataPoints.size()); //compares ratios
-				double w = nodeList.get(i).counting.size()/counter;
-				w = w - scalar;
-				if(w>maxDataPoints)
-					maxDataPoints = w;
-				if(w<minDataPoints)
-					minDataPoints = w;
+				if(nodeList.get(i).counting.size()>maxDataPoints)
+					maxDataPoints = (int) (nodeList.get(i).counting.size());
+				if(nodeList.get(i).counting.size()<minDataPoints)
+					minDataPoints = (int) (nodeList.get(i).counting.size());
 			}
 			if(maxDataPoints == minDataPoints) maxDataPoints++;
 			for(int i = 0; i<nodeSystem.size(); i++)
-			{	
-
+			{	   
 				MiniNode p = nodeSystem.get(i);
-				double scalar = ((double)p.dataPoints.size())/((double)dataPoints.size()); if(scalar == 0 ) scalar =.000001; //compares ratios
-				double w = p.counting.size()/counter;
-				w = w - scalar;
-				p.color = colors.get((int) ((w-minDataPoints)*(colors.size()-1)/(maxDataPoints-minDataPoints)));
+				p.color = colors.get((int) ((p.counting.size()-minDataPoints)*(colors.size()-1)/(maxDataPoints-minDataPoints)));
 			}
 		}
 	}
