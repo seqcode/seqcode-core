@@ -78,7 +78,7 @@ public class PotentialRegionFilter {
     		conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getPRLogConf(), cond.getTotalSignalCount(), config.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), binWidth, '.', 1, true));
     		//local windows won't work since we are testing per condition and we don't have a way to scale signal vs controls at the condition level (at least at this stage of execution)
     		
-    		double thres = config.getFixedAlpha()>0 ? config.getFixedAlpha() : conditionBackgrounds.get(cond).getGenomicModelThreshold();
+    		double thres = conditionBackgrounds.get(cond).getGenomicModelThreshold();
     		System.err.println("PotentialRegionFilter: genomic threshold for "+cond.getName()+" with bin width "+binWidth+" = "+thres);
     			
     		//Initialize counts
@@ -124,7 +124,7 @@ public class PotentialRegionFilter {
         int i = 0;
         for (i = 0 ; i < threads.length; i++) {
             threadRegions[i] = new ArrayList<Region>();
-        }
+        }i=0;
         while(testRegions.hasNext()){
         	Region r = testRegions.next(); 
             threadRegions[(i++) % numThreads].add(r);
