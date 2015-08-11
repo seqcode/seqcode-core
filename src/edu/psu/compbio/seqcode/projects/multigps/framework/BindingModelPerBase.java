@@ -122,7 +122,9 @@ public class BindingModelPerBase extends BindingModel{
 		probs_pb = new double[(max-min)+1][4];
 		logProbs_pb = new double[(max-min)+1][4];
 		for(int i=0; i<=(max-min); i++){
-			data[i]=0; probs[i]=0; logProbs[i] = Double.NEGATIVE_INFINITY;
+			for(int j=0; j<4; j++){
+				data_pb[i][j]=0; probs_pb[i][j]=0; logProbs_pb[i][j] = Double.NEGATIVE_INFINITY;
+			}
 		}
 		
 		//Populate the data array (assumes sorted)
