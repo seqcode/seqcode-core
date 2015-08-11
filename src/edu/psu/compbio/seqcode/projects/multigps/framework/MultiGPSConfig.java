@@ -46,6 +46,7 @@ public class MultiGPSConfig {
 	protected int maxModelUpdateRounds=3;
 	protected int maxThreads=1;				//Number of threads to use. Default is 1 for single processor machines. 
 	protected double alphaScalingFactor = 1.0; //Scale the condition-specific alpha value by this factor
+	protected double fixedAlpha = 0.0; //Fixed alpha value if above 0
 	protected boolean multicondition_posprior=true; //Multiple condition positional prior
 	protected double prob_shared_binding=0.9; //Prior probability that binding sites are shared between conditions (Constant used to build positional priors between conditions)
 	protected int bmAnalysisWindowMax=10000;
@@ -218,6 +219,8 @@ public class MultiGPSConfig {
 				maxThreads = Math.min(maxThreads, java.lang.Runtime.getRuntime().availableProcessors());
 				//Alpha scaling factor
 				alphaScalingFactor = Args.parseDouble(args,"alphascale",alphaScalingFactor);
+				//Fixed alpha value
+				fixedAlpha = Args.parseDouble(args,"fixedalpha",fixedAlpha);
 				//Event Fold-change minimum
 				minEventFoldChange = Args.parseDouble(args,"minfold",minEventFoldChange);
 				//Regions to print during EM training
@@ -305,6 +308,7 @@ public class MultiGPSConfig {
 	public double getPRLogConf(){return prLogConf;}
 	public int getMaxThreads(){return maxThreads;}
 	public double getAlphaScalingFactor(){return alphaScalingFactor;}
+	public double getFixedAlpha(){return fixedAlpha;}
 	public boolean useMultiConditionPosPrior(){return multicondition_posprior;}
 	public double getProbSharedBinding(){return prob_shared_binding;}
 	public int getBMAnalysisWindowMax(){return bmAnalysisWindowMax;}
@@ -407,6 +411,7 @@ public class MultiGPSConfig {
 				"\t--minfold <min event fold-change (default="+minEventFoldChange+")>\n" +
 				"\t--prlogconf <Poisson log threshold for potential region scanning(default="+prLogConf+")>\n" +
 				"\t--alphascale <alpha scaling factor(default="+alphaScalingFactor+">\n" +
+				"\t--fixedalpha <impose this alpha (default: set automatically)>\n" +
 				"\t--nomodelupdate [flag to turn off binding model updates]\n" +
 				"\t--minmodelupdateevents <minimum number of events to support an update(default="+minComponentsForBMUpdate+")>\n" +
 				"\t--nomodelsmoothing [flag to turn off binding model smoothing]\n" +

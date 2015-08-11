@@ -155,7 +155,8 @@ public class BindingEM {
         		bindingModels[rep.getIndex()] = bindingManager.getBindingModel(rep);
         	
         	//Set maximum alphas
-        	alphaMax[c] =  config.getAlphaScalingFactor() * (double)conditionBackgrounds.get(cond).getMaxThreshold('.');
+        	alphaMax[c] =  config.getFixedAlpha()>0 ? config.getFixedAlpha() : 
+        			config.getAlphaScalingFactor() * (double)conditionBackgrounds.get(cond).getMaxThreshold('.');
         	
         	//Load Reads (merge from all replicates)
         	List<StrandedBaseCount> bases = new ArrayList<StrandedBaseCount>();
