@@ -77,8 +77,9 @@ public class PotentialRegionFilter {
     		//global threshold
     		conditionBackgrounds.get(cond).addBackgroundModel(new PoissonBackgroundModel(-1, config.getPRLogConf(), cond.getTotalSignalCount(), config.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), binWidth, '.', 1, true));
     		//local windows won't work since we are testing per condition and we don't have a way to scale signal vs controls at the condition level (at least at this stage of execution)
-    			
-    		System.err.println("PotentialRegionFilter: genomic threshold for "+cond.getName()+" with bin width "+binWidth+" = "+conditionBackgrounds.get(cond).getGenomicModelThreshold());
+    		
+    		double thres = config.getFixedAlpha()>0 ? config.getFixedAlpha() : conditionBackgrounds.get(cond).getGenomicModelThreshold();
+    		System.err.println("PotentialRegionFilter: genomic threshold for "+cond.getName()+" with bin width "+binWidth+" = "+thres);
     			
     		//Initialize counts
     		potRegCountsSigChannel.put(cond, 0.0);
@@ -244,8 +245,14 @@ public class PotentialRegionFilter {
                         	boolean regionPasses=false;
                         	for(ExperimentCondition cond : manager.getConditions()){
                         		double ipWinHits=ipHitCounts[cond.getIndex()][currBin];
-                        		//First Test: is the read count above the genome-wide thresholds? 
-                        		if(conditionBackgrounds.get(cond).passesGenomicThreshold((int)ipWinHits, str)){
+                        		//First Test: is the read count above the genome-wide thresholds?
+                        		//If there is a fixed alpha, we should use that as the only threshold
+                        		if(config.getFixedAlpha()>0){
+                        			if(ipWinHits>config.getFixedAlpha()){
+                        				regionPasses=true;
+                        				break;
+                        			}
+                        		}else if(conditionBackgrounds.get(cond).passesGenomicThreshold((int)ipWinHits, str)){
                         			//Second Test: refresh all thresholds & test again
                         			conditionBackgrounds.get(cond).updateModels(currSubRegion, i-x, ipBinnedStarts[cond.getIndex()], backBinnedStarts==null ? null : backBinnedStarts[cond.getIndex()], binStep);
                         			if(conditionBackgrounds.get(cond).passesAllThresholds((int)ipWinHits, str)){
