@@ -242,7 +242,7 @@ public class BindingEM {
         //////////
         // Run EM steps
         //////////
-        EM_MAP(w);
+        EM_MAP(w, currRegionSeq, currRegionSeqRC);
 	
         //////////
         // re-assign EM result back to component objects
@@ -282,7 +282,7 @@ public class BindingEM {
      * Core EM iterations with sparse prior (component elimination) & multi-condition positional priors.
      * Assumes H function, pi, and responsibilities have all been initialized
      */
-    private void EM_MAP (Region currRegion) {
+    private void EM_MAP (Region currRegion, char[] currRegionSeq, char[] currRegionSeqRC) {
         int numComp = numComponents;
         double [][] totalResp = new double[numConditions][];
         int regStart = currRegion.getStart();
@@ -388,7 +388,16 @@ public class BindingEM {
         				currScore=0;
         				for(int i=0;i<numBases;i++){
         					int dist = hitPlusStr[c][i] ? hitPos[c][i]-x: x-hitPos[c][i];
-        					currScore+=(rBind[c][j][i]*hitCounts[c][i]) * bindingModels[repIndices[c][i]].logProbability(dist);
+        					//Permanganate ChIP-seq special case
+                            if(bindingModels[repIndices[c][i]] instanceof BindingModelPerBase && currRegionSeq!=null && currRegionSeqRC!=null){
+                            	int wantedPos =  hitPlusStr[c][i] ? hitPos[c][i]-1 : hitPos[c][i]+1;
+                    			if(wantedPos>=currRegion.getStart() && wantedPos<currRegion.getEnd()){
+                    				char base = hitPlusStr[c][i] ? currRegionSeq[wantedPos-currRegion.getStart()] : currRegionSeqRC[currRegion.getEnd()-wantedPos];
+                    				currScore+= ((BindingModelPerBase)(bindingModels[repIndices[c][i]])).logProbability(dist, base);
+                    			}else
+                    				currScore+=(rBind[c][j][i]*hitCounts[c][i]) * bindingModels[repIndices[c][i]].logProbability(dist);
+                            }else//Standard ChIP-seq / ChIP-exo
+                            	currScore+=(rBind[c][j][i]*hitCounts[c][i]) * bindingModels[repIndices[c][i]].logProbability(dist);
         				}
         				if(motifPrior!=null && config.useMotifPrior())
         					currScore += motifPrior[c][x-regStart];
