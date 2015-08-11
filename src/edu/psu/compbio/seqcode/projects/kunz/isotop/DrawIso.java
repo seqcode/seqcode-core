@@ -9,25 +9,20 @@ import java.util.Scanner;
 
 import javax.swing.JPanel;
 
-import edu.psu.compbio.seqcode.projects.kunz.chromeSOM.MiniNode;
-
 
 public class DrawIso extends JPanel
 {
 	public ArrayList<Prototype> protos; 
 	public ArrayList<Color> colors;
-	public int colorNum, minDataPoints, maxDataPoints;
-	public double minX, maxX, minY, maxY, scalarX, scalarY;
+	public double minX, maxX, minY, maxY, scalarX,scalarY;
 	public boolean coded;
 	public Color look; public int coder;
-	public boolean weighting;
 	public DrawIso(String file)
 	{
 		protos = new ArrayList<Prototype>();
 		protos = read(file);
 		minX = 0; maxX =0; minY = 0; maxY = 0; 
 		coded = false;
-		colorNum = 100;
 		look = Color.BLUE;
 	    colorCoder();
 	}
@@ -53,81 +48,6 @@ public class DrawIso extends JPanel
 			}
 		}
 		return protos;
-	}
-	public void search(String file)
-	{
-		for(int i = 0; i < protos.size(); i++)
-		{
-			Prototype mini = protos.get(i);
-			mini.count = 0;
-			mini.weight = 0;
-		}
-		ArrayList<String> strings = inputRead(file);
-		for(String whole: strings)
-		{
-			int chr = 0;
-			int locus1 = 0; int locus2 = 0;
-			double weight = 0;
-			//System.out.println(whole);
-			if(whole.contains("\t") && whole.contains(":")&&whole.contains("chr")&&whole.contains("-"))
-			{
-				weighting = true;
-				chr  = Integer.parseInt(whole.substring(whole.indexOf("chr")+3,whole.indexOf(":")));
-				locus1 = Integer.parseInt(whole.substring(whole.indexOf(":")+1,whole.indexOf("-")));
-				locus2 = Integer.parseInt(whole.substring(whole.indexOf("-")+1,whole.indexOf("\t")));
-				int locus = (locus1 +locus2)/2;
-				weight = Double.parseDouble(whole.substring(whole.indexOf("\t")+1,whole.length()));
-				for(int i = 0; i< protos.size(); i++)
-				{
-					for(int j = 0; j< protos.get(i).loci.length; j++)
-					{
-						if(protos.get(i).loci[j][0] == chr && protos.get(i).loci[j][1] <= locus && protos.get(i).loci[j][2]>=locus)
-						{
-							protos.get(i).weight += weight;
-						}
-					}
-				}
-			}
-			else if (whole.contains(":")&&whole.contains("chr")&&whole.contains("-"))
-			{
-				weighting = false;
-				chr  = Integer.parseInt(whole.substring(whole.indexOf("chr")+3,whole.indexOf(":")));
-				locus1 = Integer.parseInt(whole.substring(whole.indexOf(":")+1,whole.indexOf("-")));
-				locus2 = Integer.parseInt(whole.substring(whole.indexOf("-")+1,whole.length()));
-				int locus = (locus1 +locus2)/2;
-				for(int i = 0; i< protos.size(); i++)
-				{
-					for(int j = 0; j< protos.get(i).loci.length; j++)
-					{
-						if(protos.get(i).loci[j][0] == chr && protos.get(i).loci[j][1] <= locus && protos.get(i).loci[j][2]>=locus)
-						{
-							protos.get(i).count ++;
-						}
-					}
-				}
-			}
-			
-		}
-		heatMapping();
-		repaint();
-		///needs a heat mapping method + colorbar;
-	}
-	public ArrayList<String> inputRead(String file)
-	{
-		ArrayList<String> StringMat = new ArrayList<String>();
-		try 
-		{
-			Scanner in = new Scanner(new FileReader(file));
-			String sizer = in.next();
-			//System.out.println(xo + "  x  "+ yo);
-			in.next();
-			while(in.hasNextLine())
-			{
-				StringMat.add(in.nextLine());
-			}
-		} catch (FileNotFoundException e) {e.printStackTrace();}
-		return StringMat;
-
 	}
 	public void findGraphSpace()
 	{
@@ -177,8 +97,7 @@ public class DrawIso extends JPanel
 	public void paintComponent(Graphics g)
 	 {
 	    super.paintComponent(g);
-	    colorBar(g);
-	    setBackground(Color.BLACK);
+	    setBackground(Color.WHITE);
 	    int relativeX = getWidth()/2;
 	    int relativeY = getHeight()/2;
 	    for(int i = 1; i<=16; i++)
@@ -221,7 +140,6 @@ public class DrawIso extends JPanel
 		    }
 	    }
 	}
-	
 	public void countingDPS(int chr) 
 	{
 		if(chr == 0)
@@ -249,42 +167,5 @@ public class DrawIso extends JPanel
 			}
 		}
 		repaint();
-	}
-	public void heatMapping()
-	{
-		
-	}
-	private void colorBar(Graphics g) 
-	{
-		g.drawRect((int)(getWidth()*.2), (int)(getHeight()*.96), (int)(getWidth()*.55), (int)(getHeight()*.02));
-		g.setColor(Color.BLACK);
-		g.drawString(""+minDataPoints, (int)(getWidth()*.17),(int)(getHeight()*.95));
-		g.drawString(""+maxDataPoints, (int)(getWidth()*.2+(int)(getWidth()*.55)),(int)(getHeight()*.95));
-		for(int k = 0; k<colorNum;k++)
-		{
-			int blue;
-			int red;
-			if(k<colorNum/2)
-			{
-				red= (int)(k*255/colorNum)*2; 
-				if(red >255) 
-					red = 255-(red-255);
-			}
-			else
-				red = 255;
-			if(k<colorNum/2)
-				blue = 255;
-			else
-			{
-				blue = (int)(255-(k*255/colorNum))*2;
-				if(blue >255)
-					blue = 255-(blue-255);
-			}
-			int green = (int)(255-(k*255/colorNum))*2;if(green >255) green = 255-(green-255);
-			
-			Color c = new Color(red, green, blue);
-			g.setColor(c);
-			g.fillRect((int)(getWidth()*.2+((k*getWidth()*.55)/colorNum)),(int)(getHeight()*.96),(int)(getWidth()*.55/colorNum)+3,(int)(getHeight()*.02));
-		}
 	}
 }

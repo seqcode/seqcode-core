@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-
+//Rotate Z does not work at all
 public class ViewWindow extends JFrame
 {
     static ViewWindow window2;
@@ -20,7 +20,7 @@ public class ViewWindow extends JFrame
 	{
 		 
 		//title the window
-	    super("Trippy Visuals");
+	    super("Fun 3d");
 	    
 	    BorderLayout gui = new BorderLayout();
 	    setLayout(gui);
@@ -46,6 +46,7 @@ public class ViewWindow extends JFrame
 	 	    	{
 	 	    		v.rotating = true;
 	 	    		v.dir = 0;
+	 	    		v.count = 0;
 	            }
         }}); 
 	    JButton y = new JButton("Rotate Y");
@@ -57,6 +58,7 @@ public class ViewWindow extends JFrame
 	 	    	{
 	 	    		v.rotating = true;
 	 	    		v.dir = 1;
+	 	    		v.count = 0;
 	            }
        }}); 
 	    JButton z = new JButton("Rotate Z");
@@ -68,6 +70,7 @@ public class ViewWindow extends JFrame
 	 	    	{
 	 	    		v.rotating = true;
 	 	    		v.dir = 2;
+	 	    		v.count = 0;
 	            }
        }});
 	    JButton stop = new JButton("Stop");

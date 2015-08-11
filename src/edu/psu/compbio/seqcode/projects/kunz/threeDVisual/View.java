@@ -14,68 +14,77 @@ import javax.swing.Timer;
 
 public class View extends JPanel implements ActionListener
 {
-	public double[][] coords;
+	public double[][] coords, cool;
+	public String file;
 	public Timer timer;
-	public int dir;
-	public double minX, maxX, minY, maxY, minZ, maxZ, scalarX, scalarY, scalarZ;
+	public int dir, count;
+	public double minX, maxX, minY, maxY, minZ, maxZ, scalarX, scalarY, scalarZ, scalar;
 	public boolean rotating;
 	public View(String s)
 	{
+		file = s;
 		dir = 0;
-		minX = 0; maxX =0; minY = 0; maxY = 0; minZ = 0; maxZ = 0; scalarX = 0; scalarY = 0; scalarZ = 0; 
+		minX = 0; maxX =0; minY = 0; maxY = 0; minZ = 0; maxZ = 0; scalarX = 0; scalarY = 0; scalarZ = 0; scalar = 0; 
 		coords = reader(s);
+		cool = coords;
 		findGraphSpace();
+		count = 0;
 		rotating = false;
 		timer = new Timer(100,this);
 		timer.start();
 	}
 	public void findGraphSpace()
 	{
-		minX = 0; maxX =0; minY = 0; maxY = 0; minZ = 0; maxZ = 0; scalarX = 0; scalarY = 0; scalarZ = 0; 
+		minX = 0; maxX =0; minY = 0; maxY = 0; minZ = 0; maxZ = 0; scalarX = 0; scalarY = 0; scalarZ = 0;
 		for(int i = 0; i<coords.length; i++)
 		{
 			//System.out.println(protos.get(i).name.substring(protos.get(i).name.indexOf("r")+1, protos.get(i).name.indexOf(":")) + "("+protos.get(i).m[0]+ ","+protos.get(i).m[1]+ ")");
 			//x
 			if(coords[i][0]<minX)
 			{
-				minX = coords[i][0];
+				minX = cool[i][0];
 			}
-			if(coords[i][0]>maxX)
+			if(cool[i][0]>maxX)
 			{
-				maxX = coords[i][0];
+				maxX = cool[i][0];
 			}
 			//y
-			if(coords[i][1]<minY)
+			if(cool[i][1]<minY)
 			{
-				minY = coords[i][1];
+				minY = cool[i][1];
 			}
-			if(coords[i][1]>maxY)
+			if(cool[i][1]>maxY)
 			{
-				maxY = coords[i][1];
+				maxY = cool[i][1];
 			}	
 			//z
-			if(coords[i][2]<minZ)
+			if(cool[i][2]<minZ)
 			{
-				minZ = coords[i][2];
+				minZ = cool[i][2];
 			}
-			if(coords[i][2]>maxZ)
+			if(cool[i][2]>maxZ)
 			{
-				maxZ = coords[i][2];
+				maxZ = cool[i][2];
 			}	
 		}
-		if(-1*minX > scalarX)
-			scalarX = -1*minX;
-		if(-1*minY> scalarY)
-			scalarY = -1*minY;
-		if(maxY>scalarY)
-			scalarY = maxY;
+		if(Math.abs(minX) > scalarX)
+			scalarX = Math.abs(minX);
 		if(maxX> scalarX)
 			scalarX = maxX;
+		if(Math.abs(minY)> scalarY)
+			scalarY = Math.abs(minY);
+		if(maxY>scalarY)
+			scalarY = maxY;
 		if(maxZ>scalarZ)
 			scalarZ = maxZ;
-		if(-1*minZ> scalarZ)
-			scalarZ = -1*minZ;
-		//System.out.println(scalar);
+		if(Math.abs(minZ)> scalarZ)
+			scalarZ = Math.abs(minZ);
+		
+		scalar = scalarX;
+		if(scalar < scalarZ)
+			scalar = scalarZ;
+		if(scalar < scalarY)
+			scalar = scalarY;
 	}
 	public double[][] reader(String s)
 	{
@@ -109,40 +118,38 @@ public class View extends JPanel implements ActionListener
 	public void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
-		rotate(5,dir);
 		findGraphSpace();
 	    setBackground(Color.GRAY);
 	    g.setColor(Color.WHITE);
-	    //set a constant scale to maintain "size"
-    	
-	    for(int i = 0; i < coords.length; i++)
+	    for(int i = 0; i < cool.length; i++)
 	    {
-	    	double shifter = .20 - (.15 * coords[i][2]/scalarZ);
+	    	double shifter = .20 - (.15 * cool[i][2]/scalar);
 	 	    double yScale = ((1.0-(2*shifter)) * getHeight())/2;
 	     	double xScale = ((1.0-(2*shifter)) * getWidth())/2;
 	     	double xShifter = shifter * getWidth();  
 	     	double yShifter = shifter * getHeight();
-	    	double c = (coords[i][2]/scalarZ);
+	    	double c = (cool[i][2]/scalar);
 	    	int col = (int) (127 + (c*127));
-	    	
 	    	g.setColor(new Color(0,col,0));
-	    	int x = (int) (((coords[i][0]/scalarX) * xScale) + xScale+xShifter);
-	    	int y = (int) (((coords[i][1]/scalarY) * yScale) + yScale+yShifter);
-	    	g.fillOval(x-6, y-6, 12, 12);
-	    	if(i<coords.length-1)
+	    	int x = (int) (((cool[i][0]/scalar) * xScale) + xScale+xShifter);
+	    	int y = (int) (((cool[i][1]/scalar) * yScale) + yScale+yShifter);
+	    	int size = 6 + ((int) (2 * (cool[i][2]/scalar)));
+	    	g.fillOval(x-size, y-size, size*2, size*2);
+	    	if(i<cool.length-1)
 	    	{
-	    		double shifter2 = .20 - (.15 * coords[i+1][2]/scalarZ);
+	    		double shifter2 = .20 - (.15 * cool[i+1][2]/scalar);
 	    		double yScale2 = ((1.0-(2*shifter2)) * getHeight())/2;
 		     	double xScale2 = ((1.0-(2*shifter2)) * getWidth())/2;
 		     	double xShifter2 = shifter2 * getWidth();  
 		     	double yShifter2 = shifter2 * getHeight();
-	    		int x1 = (int) (((coords[i][0]/scalarX) * xScale) + xScale+xShifter);
-		    	int y1 = (int) (((coords[i][1]/scalarY) * yScale) + yScale+yShifter);
-		    	int x2 = (int) (((coords[i+1][0]/scalarX) * xScale2) + xScale2+xShifter2);
-		    	int y2 = (int) (((coords[i+1][1]/scalarY) * yScale2) + yScale2+yShifter2);
+	    		int x1 = (int) (((cool[i][0]/scalar) * xScale) + xScale+xShifter);
+		    	int y1 = (int) (((cool[i][1]/scalar) * yScale) + yScale+yShifter);
+		    	int x2 = (int) (((cool[i+1][0]/scalar) * xScale2) + xScale2+xShifter2);
+		    	int y2 = (int) (((cool[i+1][1]/scalar) * yScale2) + yScale2+yShifter2);
 		    	g.drawLine(x1, y1, x2, y2);
 	    	}
 	    }
+	    cool = reader(file);
 	}
 	public void rotate(double degree, int way)
 	{
@@ -154,11 +161,11 @@ public class View extends JPanel implements ActionListener
 		 */
 		if(way == 0)
 		{
-			for(int i = 0; i < coords.length; i++)
+			for(int i = 0; i < cool.length; i++)
 		    {
-				coords[i][0] *= 1;
-				coords[i][1] = (coords[i][1]* Math.cos(rads)) - (coords[i][2] * Math.sin(rads));
-				coords[i][2] = (coords[i][1]* Math.sin(rads)) + (coords[i][2] * Math.cos(rads));
+				//cool[i][0] *= 1;
+				cool[i][1] = (cool[i][1]* Math.cos(rads)) - (cool[i][2] * Math.sin(rads));
+				cool[i][2] = (cool[i][1]* Math.sin(rads)) + (cool[i][2] * Math.cos(rads));
 		    }
 		}
 		/* for rotating around Y
@@ -168,11 +175,11 @@ public class View extends JPanel implements ActionListener
 		 */
 		if(way == 1)
 		{
-			for(int i = 0; i < coords.length; i++)
+			for(int i = 0; i < cool.length; i++)
 		    {
-				coords[i][0] = (coords[i][0]* Math.cos(rads)) + (coords[i][2] * Math.sin(rads));;
-				coords[i][1] *= 1;
-				coords[i][2] = (-1*coords[i][0]* Math.sin(rads)) + (coords[i][2] * Math.cos(rads));
+				cool[i][0] = (cool[i][0]* Math.cos(rads)) + (cool[i][2] * Math.sin(rads));
+				//cool[i][1] *= 1;
+				cool[i][2] = (-1*cool[i][0]* Math.sin(rads)) + (cool[i][2] * Math.cos(rads));
 		    }
 		}
 		/* for rotating around Z
@@ -182,11 +189,11 @@ public class View extends JPanel implements ActionListener
 		 */
 		if(way == 2)
 		{
-			for(int i = 0; i < coords.length; i++)
+			for(int i = 0; i < cool.length; i++)
 		    {
-				coords[i][0] = (coords[i][0]* Math.cos(rads)) - (coords[i][1] * Math.sin(rads));
-				coords[i][1] = (coords[i][0]* Math.sin(rads)) + (coords[i][1] * Math.cos(rads));
-				coords[i][2] *=1;
+				cool[i][0] = (cool[i][0]* Math.cos(rads)) - (cool[i][1] * Math.sin(rads));
+				cool[i][1] = (cool[i][0]* Math.sin(rads)) + (cool[i][1] * Math.cos(rads));
+				//cool[i][2] *=1;
 		    }
 		}
 	}
@@ -196,7 +203,13 @@ public class View extends JPanel implements ActionListener
 		{
 			if(rotating)
 			{
+				count++;
+				double degree = 5;
+				rotate(count * degree,dir);
+
 				repaint();
+				if(count*degree>=360)
+					count = 0;
 			}
 		}
 	}		
