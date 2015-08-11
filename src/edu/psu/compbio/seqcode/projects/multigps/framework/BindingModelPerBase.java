@@ -44,15 +44,14 @@ public class BindingModelPerBase extends BindingModel{
 	                for(int w=1; w<=4; w++){
 	                	Double val = new Double(words[w]); 
 	                	curr[w-1] = val;
-	                
-	                	//empiricalDistribution sums over all 4 bases
-	                	Pair<Integer,Double> p = new Pair<Integer,Double>(dist, val);
-		                if (p.cdr().doubleValue()>=0)	// should be non-negative value
-		                	empiricalDistribution.add(p);
-		                else {
-		                	System.err.println("\nRead distribution file contains negative probability(count) value!"); 
-		                	System.exit(1);
-		                }
+	                }
+	                //empiricalDistribution sums over all 4 bases
+	                Pair<Integer,Double> p = new Pair<Integer,Double>(dist, curr[0]+curr[1]+curr[2]+curr[3]);
+	                if (p.cdr().doubleValue()>=0)	// should be non-negative value
+	                	empiricalDistribution.add(p);
+		            else {
+		            	System.err.println("\nRead distribution file contains negative probability(count) value!"); 
+		            	System.exit(1);
 	                }
 	                empiricalDistributionPerBase.add(new Pair<Integer, Double[]>(dist, curr));
 	              }
@@ -207,7 +206,7 @@ public class BindingModelPerBase extends BindingModel{
 	//Look up the data corresponding to a distance
 	public double[] dataPBVals(int distance){
 		if(distance<min || distance>max){
-			double[] zeroArray = {0.0,0.0, 0.0, 0.0};
+			double[] zeroArray = {0.0, 0.0, 0.0, 0.0};
 			return(zeroArray);
 		}else{
 			return(data_pb[distance-min]);
