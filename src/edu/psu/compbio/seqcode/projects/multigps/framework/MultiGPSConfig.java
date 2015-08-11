@@ -91,7 +91,7 @@ public class MultiGPSConfig {
     public final int ML_ML_ITER=100;     				//Run ML up until <tt>ML_ITER</tt> without using sparse prior
     public final int ALPHA_ANNEALING_ITER=100;     //Run EM up until <tt>ALPHA_ANNEALING_ITER</tt> with smaller alpha based on the current iteration
     public final int POSPRIOR_ITER=150;     //Run EM up until <tt>ALPHA_ANNEALING_ITER</tt> with uniform positional prior and then up until at least <tt>POSPRIOR_ANNEALING_ITER</tt> with activated positional prior
-    public final int EM_MU_UPDATE_WIN=100; //Half the window size in which to look for mu maximization (i.e. component position) during EM.
+    public final int EM_MU_UPDATE_WIN=50; //Half the window size in which to look for mu maximization (i.e. component position) during EM.
     public final double EM_CONVERGENCE = 1e-10; //EM convergence between the likelihood of the current and the previous step
     public final double EM_STATE_EQUIV_THRES = 1e-10; //EM state equivalence threshold 
     public final int EM_STATE_EQUIV_ROUNDS = 3; //Number of training rounds where the EM states have to be equivalent
