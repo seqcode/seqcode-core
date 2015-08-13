@@ -237,7 +237,7 @@ public class BindingMLAssignment {
             		
             		//Permanganate ChIP-seq special case
                     if(bindingModels[sigRepIndices[c][i]] instanceof BindingModelPerBase && currRegionSeq!=null && currRegionSeqRC!=null){
-                    	int wantedPos =  sigHitPlusStr[c][i] ? mu[c][j]-1 : mu[c][j]+1;
+                    	int wantedPos =  sigHitPlusStr[c][i] ? sigHitPos[c][j]-1 : sigHitPos[c][j]+1;
             			if(wantedPos>=w.getStart() && wantedPos<w.getEnd()){
             				char base = sigHitPlusStr[c][i] ? currRegionSeq[wantedPos-w.getStart()] : currRegionSeqRC[w.getEnd()-wantedPos];
             				hc[j][i] = ((BindingModelPerBase)(bindingModels[sigRepIndices[c][i]])).probability(dist, base);
@@ -317,6 +317,47 @@ public class BindingMLAssignment {
 	            event.setCondCtrlHits(cond, condCtrlResp);
 	            if(config.CALC_COMP_LL)
 	            	event.setLLd(cond, compLL[c][j]);
+	            
+	            ///Special base-composition counting hacked in only if we have a permanganate ChIP-seq experiment
+	            if(config.getCalcEventBaseCompositions()){
+		            for(ControlledExperiment rep : cond.getReplicates()){
+	    				int r = rep.getIndex();
+	    				float [] eventWinTags = {0,0,0,0}; float [] bubbleTags =  {0,0,0,0}; 
+    					float [] eventWinBases = {0,0,0,0}; float [] bubbleBases =  {0,0,0,0}; 
+    					if(pi[c][j]>0){
+    						//Calculate tag counts by base
+    			            for(int i=0;i<sigHitNum[c];i++)
+    			            	if(sigRepIndices[c][i]==r){
+    			            		if(sigHitCounts[c][i]>0 && rBindSig[c][j][i]>0){
+    			            			int dist = Math.abs(sigHitPos[c][i]-mu[c][j]);
+    			            			int wantedPos =  sigHitPlusStr[c][i] ? sigHitPos[c][j]-1 : sigHitPos[c][j]+1;
+    			            			if(wantedPos>=w.getStart() && wantedPos<w.getEnd()){
+    			            				char base = sigHitPlusStr[c][i] ? currRegionSeq[wantedPos-w.getStart()] : currRegionSeqRC[w.getEnd()-wantedPos];
+    			            				eventWinTags[SequenceUtils.char2int(base)]+=sigHitCounts[c][i]*rBindSig[c][j][i];
+    			            				if(dist<config.PCSBUBBLESIZE/2)
+    			            					bubbleTags[SequenceUtils.char2int(base)]+=sigHitCounts[c][i]*rBindSig[c][j][i];
+    			            			}
+    			            		}
+    			            	}
+    			            
+    			            //Calculate base composition (yes, it is redundant to do this for each replicate, but this will be a rarely used option)
+    			            int lim = bindingModels[r].getInfluenceRange()/2;
+    			            for(int z=mu[c][j]-lim; z<mu[c][j]+lim; z++){
+    			            	if(z>=0 && z<=w.getWidth()){
+    								eventWinBases[SequenceUtils.char2int(currRegionSeq[z])]++;
+    								eventWinBases[SequenceUtils.char2int(SequenceUtils.complementChar(currRegionSeq[z]))]++;
+    			            	}
+    			            }lim = config.PCSBUBBLESIZE/2;
+    			            for(int z=mu[c][j]-lim; z<mu[c][j]+lim; z++){
+    			            	if(z>=0 && z<=w.getWidth()){
+    								bubbleBases[SequenceUtils.char2int(currRegionSeq[z])]++;
+    								bubbleBases[SequenceUtils.char2int(SequenceUtils.complementChar(currRegionSeq[z]))]++;
+    			            	}
+    			            }
+    			            event.setRepPCScounts(rep, eventWinTags, eventWinBases, bubbleTags, bubbleBases);
+    					}
+    				}
+	            }
 	    	}
     		if(nonZeroInAny(event))
     			events.add(event);

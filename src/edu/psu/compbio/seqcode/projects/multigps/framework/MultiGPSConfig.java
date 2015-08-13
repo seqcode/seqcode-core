@@ -65,6 +65,7 @@ public class MultiGPSConfig {
 	protected List<AnnotationLoader> geneAnnotations = new ArrayList<AnnotationLoader>();
 	protected int maxAnnotDistance=50000;
 	protected boolean annotOverlapOnly=false;
+	protected boolean calcEventBaseCompositions=false; //Calculate base compositions around events and tags belonging to events. Useful for analyzing permanganate ChIP-seq
 	protected List<Region> regionsToPlot = new ArrayList<Region>(); //List of regions that will be printed during EM training (for debugging/demonstration)
 	protected List<Region> regionsToIgnore = new ArrayList<Region>(); //List of regions that will be ignored during EM training (i.e. known towers, etc)
 	protected boolean fixedModelRange = false;
@@ -106,7 +107,8 @@ public class MultiGPSConfig {
     public final double MOTIF_MIN_ROC = 0.7; //Motif prior is used only if the ROC is greater than this .
     public final double LOG_FC_LIMIT = 10; //Maximum absolute log fold-change reported
 	public final boolean CALC_LL=false; //Calculate the log-likelihood during EM.
-	public final boolean CALC_COMP_LL=false; //Calculate component-wise log-likelihoods during ML 
+	public final boolean CALC_COMP_LL=false; //Calculate component-wise log-likelihoods during ML
+	public final int PCSBUBBLESIZE = 30; //Bubble size for permanganate ChIP-seq
     
 	protected String[] args;
 	public String getArgs(){
@@ -223,6 +225,8 @@ public class MultiGPSConfig {
 				fixedAlpha = Args.parseDouble(args,"fixedalpha",fixedAlpha);
 				//Event Fold-change minimum
 				minEventFoldChange = Args.parseDouble(args,"minfold",minEventFoldChange);
+				//Record event base compositions
+				calcEventBaseCompositions = Args.parseFlags(args).contains("eventbasecomp") ? true : false;
 				//Regions to print during EM training
 				if(ap.hasKey("plotregions"))
 					regionsToPlot = Utils.loadRegionsFromFile(Args.parseString(args, "plotregions", null), gen, -1);
@@ -332,6 +336,7 @@ public class MultiGPSConfig {
 	public int getMaxModelUpdateRounds(){return maxModelUpdateRounds;}
 	public boolean getFixedModelRange(){return fixedModelRange;}
 	public boolean getMLSharedComponentConfiguration(){return MLSharedComponentConfiguration;}
+	public boolean getCalcEventBaseCompositions(){return calcEventBaseCompositions;}
 	public boolean getFindingMotifs(){return findMotifs;}
 	public boolean useMotifPrior(){return motif_posprior;}
 	public String getMEMEpath(){return MEMEpath;}
@@ -424,6 +429,7 @@ public class MultiGPSConfig {
 				"\t--mlconfignotshared [flag to not share component configs in the ML step]\n" +
 				"\t--exclude <file of regions to ignore>\n" +
 				"\t--plotregions <regions to print during EM training>\n" +
+				"\t--eventbasecomp [flag to record event base compositions]\n"+
 				"\t--noposprior [flag to turn off multi-cond pos prior]\n" +
 				"\t--probshared <probability that events are shared across conditions, i.e. pos prior(default="+prob_shared_binding+")>\n" +
 				"\t--nomotifs [flag to turn off motif-finding & motif priors]\n" +

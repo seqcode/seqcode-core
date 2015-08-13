@@ -49,6 +49,10 @@ public class BindingEvent implements Comparable<BindingEvent>{
 	protected double []   LLd; 			//Log-likelihood loss test statistic resulting from eliminating component [indexed by condition]
 	protected double []   LLp;			//P-value for LL [indexed by condition]
 	protected double [] motifScores;	//LL score for motif match at binding event
+	protected float [][] repEventTagBases=null; //Tag counts per base by replicate (only used in permanganate ChIP-seq)
+	protected float [][] repBubbleTagBases=null; //Bubble tag counts per base by replicate (only used in permanganate ChIP-seq)
+	protected float [] eventBases=null; //Base composition by replicate (only used in permanganate ChIP-seq)
+	protected float [] bubbleBases=null; //Bubble base composition by replicate (only used in permanganate ChIP-seq)
 	protected String sequences[];   //Sequences at binding event	
 	protected Gene nearestGene=null;
 	protected int distToGene=0;
@@ -483,4 +487,44 @@ public class BindingEvent implements Comparable<BindingEvent>{
 	public static void setConfig(MultiGPSConfig c){config = c;}
 	public static void setSortingCond(ExperimentCondition c){sortingCondition = c;}
 	public static void setSortingCondB(ExperimentCondition c){sortingConditionB = c;}
+	
+	/**
+	 * Only used if performing analysis on permanganate ChIP-seq experiments
+	 * @param rep
+	 * @param eventTags
+	 * @param bubbleTags
+	 */
+	public void setRepPCScounts(ControlledExperiment rep, float[] eventTags, float[] eventB, float[] bubbleTags, float[] bubbleB){
+		//Initialize
+		if(repEventTagBases==null){
+			int numR = experiments.getReplicates().size();
+			repEventTagBases = new float[numR][4];
+			repBubbleTagBases = new float[numR][4];
+			eventBases = new float[4];
+			bubbleBases = new float[4];
+		}
+		repEventTagBases[rep.getIndex()]=eventTags;
+		repBubbleTagBases[rep.getIndex()]=bubbleTags;
+		eventBases=eventB;
+		bubbleBases=bubbleB;
+		//Force normalized:
+		float totET=0, totBT=0, totEB=0, totBB=0;
+		for(int b=0; b<4; b++){
+			totET+=repEventTagBases[rep.getIndex()][b];
+			totBT+=repBubbleTagBases[rep.getIndex()][b];
+			totEB+=eventBases[b];
+			totBB+=bubbleBases[b];
+		}
+		for(int b=0; b<4; b++){
+			if(totET>0){repEventTagBases[rep.getIndex()][b]/=totET;}
+			if(totBT>0){repBubbleTagBases[rep.getIndex()][b]/=totBT;}
+			if(totEB>0){eventBases[b]/=totEB;}
+			if(totBB>0){bubbleBases[b]/=totBB;}
+		}
+	}
+	//More accessors
+	public float[] getRepEventTagBases(ControlledExperiment rep){return repEventTagBases[rep.getIndex()];}
+	public float[] getRepBubbleTagBases(ControlledExperiment rep){return repBubbleTagBases[rep.getIndex()];}
+	public float[] getEventBases(){ return eventBases;}
+	public float[] getBubbleBases(){ return bubbleBases;}
 }

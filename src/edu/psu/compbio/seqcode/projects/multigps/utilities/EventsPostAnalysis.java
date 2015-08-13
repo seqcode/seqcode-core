@@ -67,6 +67,7 @@ public class EventsPostAnalysis {
 			}
 		}
 		
+		
 		//1) Histograms of peak-closestMotif distances
 		try {
 			if(config.getFindingMotifs()){
@@ -350,6 +351,8 @@ public class EventsPostAnalysis {
 	    	
 	    	fout.write("\t</body>\n</html>\n");
 	    	fout.close();
+
+	    	
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

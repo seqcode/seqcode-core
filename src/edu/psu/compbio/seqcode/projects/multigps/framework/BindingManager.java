@@ -26,6 +26,7 @@ import edu.psu.compbio.seqcode.projects.multigps.features.BindingEvent;
  */
 public class BindingManager {
 
+	protected MultiGPSConfig config;
 	protected ExperimentManager manager;
 	protected List<BindingEvent> events;
 	protected Map<ExperimentCondition, List <BindingEvent>> conditionEvents;
@@ -36,7 +37,8 @@ public class BindingManager {
 	protected Map<ExperimentCondition, Integer> maxInfluenceRange;
 	
 	
-	public BindingManager(ExperimentManager exptman){
+	public BindingManager(MultiGPSConfig con, ExperimentManager exptman){
+		config = con;
 		manager = exptman;
 		events  = new ArrayList<BindingEvent>();
 		conditionEvents = new HashMap<ExperimentCondition, List <BindingEvent>>();
@@ -228,6 +230,49 @@ public class BindingManager {
 		    				}
 		    			}
 		    		}
+	    		}
+	    		
+	    		//If necessary, print per-replicate event base composition files
+	    		if(config.getCalcEventBaseCompositions()){
+	    			for(ExperimentCondition cond : manager.getConditions()){
+	    				for(ControlledExperiment rep : cond.getReplicates()){
+		    				//Print events
+			    			String repName = rep.getName(); 
+			    			repName = repName.replaceAll("/", "-");
+			    			repName = repName.replaceAll(":", "-");
+			    			filename = filePrefix+"_"+repName+".eventsbasecomps.txt";
+							fout = new FileWriter(filename);
+							fout.write("#Position\tEventRegA\tEventRegC\tEventRegG\tEventRegT\tEventTagA\tEventTagC\tEventTagG\tEventTagT\tBubbleRegA\tBubbleRegC\tBubbleRegG\tBubbleRegT\tBubbleTagA\tBubbleTagC\tBubbleTagG\tBubbleTagT\tBubbleIndex\n");
+					    	for(BindingEvent e : events){
+					    		double Q = e.getCondSigVCtrlP(cond);
+					    		if(e.isFoundInCondition(cond) && Q <=qMinThres){
+					    			float[] eventTagBases = e.getRepEventTagBases(rep);
+					    			float[] bubbleTagBases = e.getRepBubbleTagBases(rep);
+					    			float[] eventBases = e.getEventBases();
+					    			float[] bubbleBases = e.getBubbleBases();
+					    			float bubbleIndex = -1;
+					    			float expectedT=0, expectedACG=0;
+					    			if(bubbleBases[3]>0){
+					    				expectedT = bubbleTagBases[3] / bubbleBases[3];
+					    				float baseACG = bubbleBases[0]+bubbleBases[1]+bubbleBases[2];
+					    				if(baseACG>0)
+					    					expectedACG = (bubbleTagBases[0]+bubbleTagBases[1]+bubbleTagBases[2])/baseACG;
+					    				if(expectedACG>0)
+					    					bubbleIndex = expectedT/expectedACG;
+					    			}
+					    			fout.write(e.getPoint()+"\t"+
+					    					eventBases[0]+"\t"+eventBases[1]+"\t"+eventBases[2]+"\t"+eventBases[3]+"\t"+
+					    					eventTagBases[0]+"\t"+eventTagBases[1]+"\t"+eventTagBases[2]+"\t"+eventTagBases[3]+"\t"+
+					    					bubbleBases[0]+"\t"+bubbleBases[1]+"\t"+bubbleBases[2]+"\t"+bubbleBases[3]+"\t"+
+					    					bubbleTagBases[0]+"\t"+bubbleTagBases[1]+"\t"+bubbleTagBases[2]+"\t"+bubbleTagBases[3]+"\t"+
+					    					bubbleIndex+
+					    					"\n");
+					    			
+					    		}
+					    	}
+							fout.close();
+	    				}
+	    			}
 	    		}
 			} catch (IOException e) {
 				e.printStackTrace();

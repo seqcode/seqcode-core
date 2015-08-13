@@ -48,7 +48,7 @@ public class MultiGPS {
 		mgpsconfig = c;
 		mgpsconfig.makeGPSOutputDirs(true);
 		outFormatter = new OutputFormatter(mgpsconfig);
-		bindingManager = new BindingManager(manager);
+		bindingManager = new BindingManager(mgpsconfig, manager);
 		
 		//Initialize binding models & binding model record
 		repBindingModels = new HashMap<ControlledExperiment, List<BindingModel>>();
