@@ -501,6 +501,8 @@ public class KmerModelScanner {
 	
 	
 	
+	
+	
 	public int compareKmerModels(int[][] a, int[][] b) throws IncorrectComparision{
 		int score=0;
 		if(a.length != b.length){
