@@ -212,7 +212,7 @@ public class SignificanceTester {
 			printHelp();	
 		}else{
 			ExperimentManager manager = new ExperimentManager(econ);
-			BindingManager bman = new BindingManager(manager);
+			BindingManager bman = new BindingManager(config, manager);
 
 			//Just a test to see if we've loaded all conditions
 			System.err.println("Conditions:\t"+manager.getConditions().size());

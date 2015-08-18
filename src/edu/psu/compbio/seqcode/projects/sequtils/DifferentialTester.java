@@ -132,7 +132,7 @@ public class DifferentialTester {
 			printHelp();	
 		}else{
 			ExperimentManager manager = new ExperimentManager(econ);
-			BindingManager bindMan = new BindingManager(manager);
+			BindingManager bindMan = new BindingManager(config, manager);
 			//Just a test to see if we've loaded all conditions
 			System.err.println("Conditions:\t"+manager.getConditions().size());
 			for(ExperimentCondition c : manager.getConditions()){

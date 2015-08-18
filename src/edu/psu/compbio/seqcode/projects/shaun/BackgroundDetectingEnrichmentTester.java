@@ -42,7 +42,7 @@ public class BackgroundDetectingEnrichmentTester {
 		this.gconfig = gcon;
 		this.econfig = econ;
 		this.mgpsconfig = mgpscon;
-		bindingManager = new BindingManager(manager);
+		bindingManager = new BindingManager(mgpsconfig, manager);
 		manager=man;
 		BindingEvent.setExperimentManager(manager);
 		BindingEvent.setConfig(mgpsconfig);

@@ -231,7 +231,7 @@ public class ExperimentScaler {
 			System.err.println(gconfig.getArgsList()+"\n"+econfig.getArgsList());
 		}else{
 			ExperimentManager exptMan = new ExperimentManager(econfig);
-			BindingManager bindingManager = new BindingManager(exptMan);
+			BindingManager bindingManager = new BindingManager(mgpsconfig, exptMan);
 			//Initialize binding models & binding model record
 			Map<ControlledExperiment, List<BindingModel>>  repBindingModels = new HashMap<ControlledExperiment, List<BindingModel>>();
 			for(ControlledExperiment rep : exptMan.getReplicates()){
