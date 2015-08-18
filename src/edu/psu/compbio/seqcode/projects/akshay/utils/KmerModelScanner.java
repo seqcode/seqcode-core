@@ -436,7 +436,7 @@ public class KmerModelScanner {
         }
         if(ap.hasKey("printMountainsComposition")){
         	Double threshold = Double.parseDouble(ap.getKeyValue("oddsthresh"));
-        	scanner.printKmerMountainComposition(cache, genPath, threshold);
+        	scanner.printMountainComposition(cache, genPath, threshold);
         }
 	}
 	
