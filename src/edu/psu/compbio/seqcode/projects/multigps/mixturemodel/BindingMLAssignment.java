@@ -333,9 +333,11 @@ public class BindingMLAssignment {
     			            			int wantedPos =  sigHitPlusStr[c][i] ? sigHitPos[c][j]-1 : sigHitPos[c][j]+1;
     			            			if(wantedPos>=w.getStart() && wantedPos<w.getEnd()){
     			            				char base = sigHitPlusStr[c][i] ? currRegionSeq[wantedPos-w.getStart()] : currRegionSeqRC[w.getEnd()-wantedPos];
-    			            				eventWinTags[SequenceUtils.char2int(base)]+=sigHitCounts[c][i]*rBindSig[c][j][i];
-    			            				if(dist<config.PCSBUBBLESIZE/2)
-    			            					bubbleTags[SequenceUtils.char2int(base)]+=sigHitCounts[c][i]*rBindSig[c][j][i];
+    			            				if(SequenceUtils.char2int(base)!=-1){
+	    			            				eventWinTags[SequenceUtils.char2int(base)]+=sigHitCounts[c][i]*rBindSig[c][j][i];
+	    			            				if(dist<config.PCSBUBBLESIZE/2)
+	    			            					bubbleTags[SequenceUtils.char2int(base)]+=sigHitCounts[c][i]*rBindSig[c][j][i];
+    			            				}
     			            			}
     			            		}
     			            	}
@@ -344,14 +346,18 @@ public class BindingMLAssignment {
     			            int lim = bindingModels[r].getInfluenceRange()/2;
     			            for(int z=mu[c][j]-lim; z<mu[c][j]+lim; z++){
     			            	if(z>=0 && z<=w.getWidth()){
-    								eventWinBases[SequenceUtils.char2int(currRegionSeq[z])]++;
-    								eventWinBases[SequenceUtils.char2int(SequenceUtils.complementChar(currRegionSeq[z]))]++;
+    			            		if(SequenceUtils.char2int(currRegionSeq[z])!=-1){
+	    								eventWinBases[SequenceUtils.char2int(currRegionSeq[z])]++;
+	    								eventWinBases[SequenceUtils.char2int(SequenceUtils.complementChar(currRegionSeq[z]))]++;
+    			            		}
     			            	}
     			            }lim = config.PCSBUBBLESIZE/2;
     			            for(int z=mu[c][j]-lim; z<mu[c][j]+lim; z++){
     			            	if(z>=0 && z<=w.getWidth()){
-    								bubbleBases[SequenceUtils.char2int(currRegionSeq[z])]++;
-    								bubbleBases[SequenceUtils.char2int(SequenceUtils.complementChar(currRegionSeq[z]))]++;
+    			            		if(SequenceUtils.char2int(currRegionSeq[z])!=-1){
+    			            			bubbleBases[SequenceUtils.char2int(currRegionSeq[z])]++;
+    			            			bubbleBases[SequenceUtils.char2int(SequenceUtils.complementChar(currRegionSeq[z]))]++;
+    			            		}
     			            	}
     			            }
     			            event.setRepPCScounts(rep, eventWinTags, eventWinBases, bubbleTags, bubbleBases);
