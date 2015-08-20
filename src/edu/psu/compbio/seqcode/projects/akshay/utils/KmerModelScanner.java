@@ -83,7 +83,7 @@ public class KmerModelScanner {
 	
 	
 	//Fillers
-	public void fillMountains(boolean useCache, String genpath, double oddsThresh){
+	private void fillMountains(boolean useCache, String genpath, double oddsThresh){
 		List<Pair<Region,Double>> posMounts = findMountains(useCache,genpath,oddsThresh,posRegions);
 		int index=0;
 		for(Pair<Region,Double> pr : posMounts){
@@ -112,6 +112,7 @@ public class KmerModelScanner {
 	 * @param oddsThresh
 	 */
 	public void clusterKmerProfilesAtMountains(boolean useCache, String genpath, double oddsThresh) throws IOException{
+		fillMountains(useCache,genpath,oddsThresh);
 		ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,posProfiles,posMountainsToIndex,k,posMountainsScores,outbase,outdir);
 		clusterManager.execute("pos");
 		
@@ -120,7 +121,7 @@ public class KmerModelScanner {
 	}
 	
 	
-	public ArrayList<int[]> getProfilesAtPeaks(List<Region> rs, boolean useCache, String genpath){
+	private ArrayList<int[]> getProfilesAtPeaks(List<Region> rs, boolean useCache, String genpath){
 		ArrayList<int[]> ret = new ArrayList<int[]>();
 		
 		SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
@@ -139,7 +140,7 @@ public class KmerModelScanner {
 				int currKInt = RegionFileUtilities.seq2int(currk);
 				int revcurrKInt = RegionFileUtilities.seq2int(revcurrk);
 				int kmer = currKInt<revcurrKInt ? currKInt : revcurrKInt;
-				pfl[i]++;
+				pfl[kmer]++;
 			}
 			ret.add(pfl);
 		}
@@ -155,7 +156,7 @@ public class KmerModelScanner {
 	 * @param genpath
 	 * @param oddsThresh
 	 */
-	public List<Pair<Region,Double>> findMountains(boolean useCache, String genpath, double oddsThresh, List<Region> rs ){
+	private List<Pair<Region,Double>> findMountains(boolean useCache, String genpath, double oddsThresh, List<Region> rs ){
 		
 		// Detects if scanning is done for the positive or neg set from the sign of oddsThresh
 		int classDetector = oddsThresh>0 ? 1:-1;
