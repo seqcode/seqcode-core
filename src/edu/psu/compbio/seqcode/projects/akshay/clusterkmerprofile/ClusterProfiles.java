@@ -62,7 +62,7 @@ public class ClusterProfiles {
 	 * The method that should be executed after initiating the class object
 	 * @throws IOException 
 	 */
-	public void execute() throws IOException{
+	public void execute() throws ;{
 		Collection<Cluster<int[]>> clusters = method.clusterElements(profiles);
 		Vector<int[]> clustermeans = ((KMeansClustering)method).getClusterMeans();
 		
@@ -83,7 +83,7 @@ public class ClusterProfiles {
 		BufferedWriter bw = new BufferedWriter(ow);
 		for(int p=0; p<profiles.size(); p++){
 			int memebership = getClusterAssignment(profiles.get(p),clusMeans);
-			bw.write(indToLocation.get(p)+"\t"+Integer.toString(memebership)+"\n");
+			bw.write(indToLocation.get(p)+"\t"+Integer.toString(memebership)+"\t"+Double.toString(intToLogitScore.get(p))+"\n");
 		}
 		bw.close();
 	}

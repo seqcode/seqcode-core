@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.io.*;
 
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
@@ -16,6 +18,8 @@ import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
+import edu.psu.compbio.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
+import edu.psu.compbio.seqcode.projects.akshay.clusterkmerprofile.ClusterProfiles;
 import edu.psu.compbio.seqcode.projects.seed.features.SuperEnrichedFeature;
 
 public class KmerModelScanner {
@@ -24,13 +28,37 @@ public class KmerModelScanner {
 	protected double[] kmerweights;
 	protected double[][] kmerpairwights;
 	protected boolean isPairModel = false;
-	protected List<Point> peaks;
-	protected List<Region> regions;
+	protected List<Point> posPeaks;
+	protected List<Region> posRegions;
+	protected List<Point> negPeaks;
+	protected List<Region> negRegions;
 	protected int k; // kmer length of the model
 	protected int minM; // Minimum length to consider for motif finding
 	protected int maxM; //Maximum length to consider for motif finding
 	//protected int n; // Number of motifs to look at each 
+	protected String outbase;
+	protected File outdir;
 	
+	protected List<Region> posMountains;
+	protected ArrayList<int[]> posProfiles;
+	protected HashMap<Integer,String> posMountainsToIndex;
+	protected HashMap<Integer,Double> posMountainsScores;
+	
+	protected List<Region> negMountains;
+	protected ArrayList<int[]> negProfiles;
+	protected HashMap<Integer,String> negMountainsToIndex;
+	protected HashMap<Integer,Double> negMountainsScores;
+	
+	// All clustering parameters
+	protected int its_CLUS=100;
+	protected int numClus_CLUS=3;
+	
+	
+	
+	/** 
+	 * Constructor
+	 * @param gc
+	 */
 	public KmerModelScanner(GenomeConfig gc) {
 		gcon=gc;
 	}
@@ -39,138 +67,43 @@ public class KmerModelScanner {
 	
 	// Settors
 	public void setKmerWeights(double[] w){kmerweights=w;}
-	public void setPeaks(List<Point>ps){peaks=ps;}
-	public void setRegions(List<Region>rs){regions=rs;}
+	public void setPosPeaks(List<Point>ps){posPeaks=ps;}
+	public void setPosRegions(List<Region>rs){posRegions=rs;}
+	public void setNegPeaks(List<Point>ps){negPeaks=ps;}
+	public void setNegRegions(List<Region>rs){negRegions=rs;}
 	public void setK(int K){k=K;}
 	public void setminM(int m){minM=m;}
 	public void setmaxM(int m){maxM=m;}
 	public void setModelType(boolean isPair){isPair = isPairModel;}
 	public void setKmerPairWeights(double[][] pw){kmerpairwights = pw;}
+	public void setOutbase(String o){outbase=o;}
+	public void setOutDir(File odir){outdir=odir;}
+	public void setClusterItrs(int numItrs){its_CLUS=numItrs;}
+	public void setNumClusters(int numClus){numClus_CLUS = numClus;}
 	
-	/**
-	 * Prints the model-profile matrix for all the regions for a given slide windown.
-	 * @param useCache
-	 * @param genpath
-	 * @param slide
-	 */
-	public void printModelProfileMatrix(boolean useCache, String genpath,int slide){
-		@SuppressWarnings("rawtypes")
-		SequenceGenerator seqgen = new SequenceGenerator();
-		seqgen.useCache(useCache);
-		if(useCache){
-			seqgen.useLocalFiles(true);
-			seqgen.setGenomePath(genpath);
+	
+	//Fillers
+	public void fillMountains(boolean useCache, String genpath, double oddsThresh){
+		List<Pair<Region,Double>> posMounts = findMountains(useCache,genpath,oddsThresh,posRegions);
+		int index=0;
+		for(Pair<Region,Double> pr : posMounts){
+			posMountains.add(pr.car());
+			posMountainsToIndex.put(index,pr.car().getLocationString() );
+			posMountainsScores.put(index++, pr.cdr());
 		}
-		for(Region r : regions){
-			String seq = seqgen.execute(r).toUpperCase();
-			if(seq.contains("N"))
-				continue;
-			StringBuilder sb = new StringBuilder();
-			sb.append(r.getLocationString()+"\t");
-			for(int i=0; i<(seq.length()-slide+1); i++){
-				String subseq = seq.substring(i, i+slide);
-				double score=0.0;
-				for(int j=0; j<subseq.length()-k+1; j++){
-					String currK = subseq.substring(j,j+k);
-					String revCurrK = SequenceUtils.reverseComplement(currK);
-					int currKInt = RegionFileUtilities.seq2int(currK);
-					int revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
-					int kmer = currKInt < revCurrKInt ? currKInt : revCurrKInt;
-					score = score+kmerweights[kmer];
-				}			
-				sb.append(Double.toString(score)+"\t");
-			}
-			sb.deleteCharAt(sb.length()-1);
-			System.out.println(sb.toString());
+		posProfiles = getProfilesAtPeaks(posMountains, useCache,genpath);
+		index=0;
+		List<Pair<Region,Double>> negMounts = findMountains(useCache,genpath,-1*oddsThresh,negRegions);
+		for(Pair<Region,Double> pr : negMounts){
+			negMountains.add(pr.car());
+			negMountainsToIndex.put(index,pr.car().getLocationString());
+			negMountainsScores.put(index++, pr.cdr());
 		}
+		negProfiles =getProfilesAtPeaks(negMountains, useCache,genpath);
+		
 	}
-	/**
-	 * Prints all the mountain composition for each peak
-	 * @param useCache
-	 * @param genpath
-	 * @param oddsThresh
-	 */
-	public void printKmerMountainComposition(boolean useCache, String genpath, double oddsThresh){
-		@SuppressWarnings("rawtypes")
-		SequenceGenerator seqgen = new SequenceGenerator();
-		seqgen.useCache(useCache);
-		if(useCache){
-			seqgen.useLocalFiles(true);
-			seqgen.setGenomePath(genpath);
-		}
-		int[][] composition = new int[regions.size()][(int) Math.pow(4, (double)k)];
-		String[] colnames = new String[(int) Math.pow(4, (double)k)];
-		for(int c=0; c<colnames.length; c++){
-			colnames[c] = RegionFileUtilities.int2seq(c, k);
-		}
-		String[] rownames = new String[regions.size()];
-		int RegioinInd = 0;
-		for(Region r : regions){
-			String seq = seqgen.execute(r).toUpperCase();
-			if(seq.contains("N")){
-				rownames[RegioinInd] = r.getLocationString();
-				for(int c =0;c<colnames.length; c++)
-					composition[RegioinInd][c]=0;
-				RegioinInd++;
-				continue;
-			}
-			rownames[RegioinInd] = r.getLocationString();
-			List<Pair<Region,Double>> mountains = new ArrayList<Pair<Region,Double>>();
-			for(int l=minM; l<=maxM; l++){
-				for(int i=0; i<(seq.length()-l+1); i++){
-					String motif = seq.substring(i, i+l);
-					double score=0.0;
-					for(int j=0; j<motif.length()-k+1; j++){
-						String currk = motif.substring(j, j+k);
-						String revcurrk = SequenceUtils.reverseComplement(currk);
-						int  currKInt = RegionFileUtilities.seq2int(currk);
-						int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
-						int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
-						score = score+kmerweights[kmer];
-					}
-					Region hill = new Region(gcon.getGenome(),r.getChrom(),r.getStart()+i,r.getStart()+i+l-1);
-					Iterator<Pair<Region,Double>> it = mountains.iterator();
-					boolean add=true;
-					while(it.hasNext() && add){
-						Pair<Region,Double> pr = it.next();
-						Region currHill = pr.car();
-						Double currScore = pr.cdr();
-						if(currHill.overlaps(hill) && currScore<score){
-							it.remove();
-							add=true;
-						}else if(currHill.overlaps(hill) && currScore> score){
-							add=false;
-						}
-					}
-					if(add && score > oddsThresh){
-						mountains.add(new Pair(hill,score));
-					}
-				}
-				
-			}
-			
-			for(Pair<Region,Double> hillpair: mountains){
-				String motseq = seqgen.execute(hillpair.car()).toUpperCase();
-				//int[] composition = new int[(int) Math.pow(4, (double)k)];
-				//StringBuilder sb = new StringBuilder();
-				//sb.append(hillpair.car().getLocationString()+"\t");
-				for(int i=0; i<(motseq.length()-k+1);i++){
-					String currK = motseq.substring(i, i+k);
-					String revCurrK = SequenceUtils.reverseComplement(currK);
-					int currKInt = RegionFileUtilities.seq2int(currK);
-					int revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
-					int kmer = currKInt < revCurrKInt? currKInt:revCurrKInt;
-					composition[RegioinInd][kmer]++;
-				}
-				//for(int i=0; i<(int) Math.pow(4, (double)k);i++){
-				//	sb.append(composition[i]+"\t");
-				//}
-				//sb.deleteCharAt(sb.length()-1);
-				//System.out.println(sb.toString());
-			}
-			RegioinInd++;
-		}
-	}
+	
+	
 	
 	/**
 	 * Prints the mountain composition
@@ -178,92 +111,66 @@ public class KmerModelScanner {
 	 * @param genpath
 	 * @param oddsThresh
 	 */
-	public void printMountainComposition(boolean useCache, String genpath, double oddsThresh){
-		@SuppressWarnings("rawtypes")
-		SequenceGenerator seqgen = new SequenceGenerator();
+	public void clusterKmerProfilesAtMountains(boolean useCache, String genpath, double oddsThresh) throws IOException{
+		ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,posProfiles,posMountainsToIndex,k,posMountainsScores,outbase,outdir);
+		clusterManager.execute();
+		
+		clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,negProfiles,negMountainsToIndex,k,negMountainsScores,outbase,outdir);
+		clusterManager.execute();
+	}
+	
+	
+	public ArrayList<int[]> getProfilesAtPeaks(List<Region> rs, boolean useCache, String genpath){
+		ArrayList<int[]> ret = new ArrayList<int[]>();
+		
+		SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
 		seqgen.useCache(useCache);
 		if(useCache){
 			seqgen.useLocalFiles(true);
 			seqgen.setGenomePath(genpath);
 		}
-		for(Region r : regions){
-			String seq = seqgen.execute(r).toUpperCase();
-			if(seq.contains("N"))
-				continue;
-			List<Pair<Region,Double>> mountains = new ArrayList<Pair<Region,Double>>();
-			for(int l=minM; l<=maxM; l++){
-				for(int i=0; i<(seq.length()-l+1); i++){
-					String motif = seq.substring(i, i+l);
-					double score=0.0;
-					for(int j=0; j<motif.length()-k+1; j++){
-						String currk = motif.substring(j, j+k);
-						String revcurrk = SequenceUtils.reverseComplement(currk);
-						int  currKInt = RegionFileUtilities.seq2int(currk);
-						int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
-						int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
-						score = score+kmerweights[kmer];
-					}
-					Region hill = new Region(gcon.getGenome(),r.getChrom(),r.getStart()+i,r.getStart()+i+l-1);
-					
-					Iterator<Pair<Region,Double>> it = mountains.iterator();
-					boolean add=true;
-					while(it.hasNext() && add){
-						Pair<Region,Double> pr = it.next();
-						Region currHill = pr.car();
-						Double currScore = pr.cdr();
-						if(currHill.overlaps(hill) && currScore<score){
-							it.remove();
-							add=true;
-						}else if(currHill.overlaps(hill) && currScore> score){
-							add=false;
-						}
-					}
-					if(add && score > oddsThresh){
-						mountains.add(new Pair(hill,score));
-					}
-				}
-			}
-			for(Pair<Region,Double> mount : mountains){
-				String mountseq = seqgen.execute(mount.car()).toUpperCase();
-				int[] mountComp = new int[(int) Math.pow(4, (double)k)];
-				for(int i=0; i<(mountseq.length()-k+1);i++){
-					String currK = mountseq.substring(i, i+k);
-					String revCurrK = SequenceUtils.reverseComplement(currK);
-					int currKInt = RegionFileUtilities.seq2int(currK);
-					int revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
-					int kmer = currKInt < revCurrKInt? currKInt:revCurrKInt;
-					mountComp[kmer]++;
-				}
-				StringBuilder sb = new StringBuilder(mount.car().getLocationString());
-				sb.append("\t");
-				for(int i=0; i<(int) Math.pow(4, (double)k); i++){
-					sb.append(mountComp[i]);
-					sb.append("\t");
-				}
-				sb.deleteCharAt(sb.length()-1);
-				System.out.println(sb.toString());
-			}
-		}
-			
 		
+		for(Region r: rs){
+			int[] pfl = new int[(int) Math.pow(4, k)];
+			String seq = seqgen.execute(r).toUpperCase();
+			for(int i=0; i<(seq.length()-k+1); i++){
+				String currk = seq.substring(i, i+k);
+				String revcurrk = SequenceUtils.reverseComplement(currk);
+				int currKInt = RegionFileUtilities.seq2int(currk);
+				int revcurrKInt = RegionFileUtilities.seq2int(revcurrk);
+				int kmer = currKInt<revcurrKInt ? currKInt : revcurrKInt;
+				pfl[i]++;
+			}
+			ret.add(pfl);
+		}
+		
+		return ret;
 	}
 	
 	/**
-	 * Prints mountains for either kmer or kmer-pair models that are above oddsthreshold 
-	 * and that are between mimM and maxM size 
+	 * Finds mountains for a given list of regions and given scoring threshold
+	 * Odds threshold can be -ve when scanning the model at negPeaks. +ve when scanning the model at posPeaks
+	 * Also populates the 
 	 * @param useCache
 	 * @param genpath
 	 * @param oddsThresh
 	 */
-	public void printKmerMountains(boolean useCache, String genpath, double oddsThresh){
-		@SuppressWarnings("rawtypes")
-		SequenceGenerator seqgen = new SequenceGenerator();
+	public List<Pair<Region,Double>> findMountains(boolean useCache, String genpath, double oddsThresh, List<Region> rs ){
+		
+		// Detects if scanning is done for the positive or neg set from the sign of oddsThresh
+		int classDetector = oddsThresh>0 ? 1:-1;
+		
+		
+		SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
 		seqgen.useCache(useCache);
 		if(useCache){
 			seqgen.useLocalFiles(true);
 			seqgen.setGenomePath(genpath);
 		}
-		for(Region r : regions){
+		
+		List<Pair<Region,Double>> ret = new ArrayList<Pair<Region,Double>>();
+		
+		for(Region r : rs){
 			String seq = seqgen.execute(r).toUpperCase();
 			if(seq.contains("N"))
 				continue;
@@ -309,65 +216,22 @@ public class KmerModelScanner {
 						Pair<Region,Double> pr = it.next();
 						Region currHill = pr.car();
 						Double currScore = pr.cdr();
-						if(currHill.overlaps(hill) && currScore<score){
+						if(currHill.overlaps(hill) && currScore*classDetector<score*classDetector){
 							it.remove();
 							add=true;
-						}else if(currHill.overlaps(hill) && currScore> score){
+						}else if(currHill.overlaps(hill) && currScore*classDetector> score*classDetector){
 							add=false;
 						}
 					}
-					if(add && score > oddsThresh){
-						mountains.add(new Pair(hill,score));
+					if(add && score*classDetector > oddsThresh*classDetector){
+						mountains.add(new Pair<Region,Double>(hill,score));
 					}
 					
 				}
 			}
-			
-			for(Pair<Region,Double> hillpair: mountains){
-				String motseq = seqgen.execute(hillpair.car()).toUpperCase();
-				System.out.println(r.getLocationString()+"\t"+hillpair.car().getLocationString()+"\t"+hillpair.cdr()+"\t"+motseq+"\t"+SequenceUtils.reverseComplement(motseq));
-			}	
+			ret.addAll(mountains);	
 		}
-	}
-	
-	public void scanPeaks(boolean useCache, String genpath){
-		@SuppressWarnings("rawtypes")
-		SequenceGenerator seqgen = new SequenceGenerator();
-		seqgen.useCache(useCache);
-		if(useCache){
-			seqgen.useLocalFiles(true);
-			seqgen.setGenomePath(genpath);
-		}
-		
-		for(Region r: regions){
-			String seq = seqgen.execute(r).toUpperCase();
-			if(seq.contains("N"))
-				continue;
-			double maxScore = Double.MIN_VALUE;
-			String bestMotif = "";
-			for(int l=minM; l<=maxM; l++){
-				for(int i=0; i<(seq.length()-l+1);i++){
-					String motif = seq.substring(i, i+l);
-					double score =0.0;
-					for(int j=0;j<motif.length()-k+1; j++){
-						String currk =motif.substring(j, j+k);
-						String revcurrk = SequenceUtils.reverseComplement(currk);
-						int  currKInt = RegionFileUtilities.seq2int(currk);
-						int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
-						int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
-						score = score+kmerweights[kmer];
-					}
-					if(score>maxScore){
-						maxScore = score;
-						bestMotif = motif;
-					}
-				}
-			}
-			System.out.println(r.getLocationString()+"\t"+bestMotif+"\t"+SequenceUtils.reverseComplement(bestMotif)+Double.toString(maxScore));
-		}
-		
-		seqgen.clearCache();
-		
+		return ret;
 	}
 	
 	
@@ -378,10 +242,15 @@ public class KmerModelScanner {
 		int k = Args.parseInteger(args, "k", 4);
 		int m = Args.parseInteger(args, "m", 5);
 		int M = Args.parseInteger(args, "M", 10);
-		String peaksFile = ap.getKeyValue("peaks");
+		String posPeaksFile = ap.getKeyValue("posPeaks");
 		int win = Args.parseInteger(args, "win", 150);
-		List<Point> ps = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), peaksFile, win);
-		List<Region> rs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), peaksFile, win);
+		List<Point> posPs = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), posPeaksFile, win);
+		List<Region> posRs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), posPeaksFile, win);
+		
+		String negPeaksFile = ap.getKeyValue("negPeaks");
+		List<Point> negPs = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), negPeaksFile, win);
+		List<Region> negRs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), negPeaksFile, win);
+		
 		String weightsFile = Args.parseString(args, "weights", "");
 		double[] ws = new double[(int) Math.pow(4, k)];
 		double[][] pws=null;
@@ -421,109 +290,31 @@ public class KmerModelScanner {
         scanner.setModelType(isPair);
         scanner.setmaxM(M);
         scanner.setminM(m);
-        scanner.setPeaks(ps);
-        scanner.setRegions(rs);
-        if(ap.hasKey("scan")){
-        	scanner.scanPeaks(cache, genPath);
-        }
-        if(ap.hasKey("printMountains")){
-        	Double threshold = Double.parseDouble(ap.getKeyValue("oddsthresh"));
-        	scanner.printKmerMountains(cache, genPath, threshold);
-        }
-        if(ap.hasKey("printProfileMatrix")){
-        	int slidewin = Integer.parseInt(ap.getKeyValue("slide"));
-        	scanner.printModelProfileMatrix(cache, genPath, slidewin);
-        }
-        if(ap.hasKey("printMountainsComposition")){
-        	Double threshold = Double.parseDouble(ap.getKeyValue("oddsthresh"));
-        	scanner.printMountainComposition(cache, genPath, threshold);
-        }
+        scanner.setPosPeaks(posPs);
+        scanner.setPosRegions(posRs);
+        scanner.setNegPeaks(negPs);
+        scanner.setNegRegions(negRs);
+        
+        int numClus = Args.parseInteger(args, "numClusters", 3);
+        scanner.setNumClusters(numClus);
+        
+        int kmeansItrs =  Args.parseInteger(args, "kmeansItrs", 100);
+        scanner.setClusterItrs(kmeansItrs);
+        
+        String outbase = Args.parseString(args, "out", "out");
+        String wDir = System.getProperty("user.dir");
+		String odir = wDir+"/"+outbase;
+        File outdir = new File(odir);
+        if(outdir.exists())
+        	BayesmentsSandbox.deleteDirectory(outdir);
+        
+        scanner.setOutbase(outbase);
+        scanner.setOutDir(outdir);
+        Double threshold = Double.parseDouble(ap.getKeyValue("oddsthresh"));
+        
+        scanner.clusterKmerProfilesAtMountains(cache, genPath, threshold);
 	}
 	
-	/**
-	 * Removes all the the columns and rows that have all "0's" and prints the matrix 
-	 * @param SparseMatrix
-	 * @param colnames
-	 * @param rownames
-	 */
-	public void printSimplifedMatrix(int[][] SparseMatrix, String[] colnames, String[] rownames){
-		boolean[] columnstoRemove = new boolean[SparseMatrix[0].length];
-		boolean[] rowstoRemove = new boolean[SparseMatrix.length];
-		for(int c=0; c<columnstoRemove.length;c++){
-			columnstoRemove[c] = true;
-		}
-		for(int r=0; r<rowstoRemove.length; r++){
-			rowstoRemove[r] = true;
-		}
-		for(int r=0; r<rowstoRemove.length; r++){
-			boolean RemoveThisRow=true;
-			for(int c=0; c<columnstoRemove.length; c++){
-				if(SparseMatrix[r][c] > 0){
-					RemoveThisRow=false;
-				}
-			}
-			rowstoRemove[r] = RemoveThisRow;
-		}
-		for(int c=0; c<columnstoRemove.length; c++){
-			boolean RemoveThisCol=true;
-			for(int r=0; r<rowstoRemove.length; r++){
-				if(SparseMatrix[r][c] > 0){
-					RemoveThisCol=false;
-				}
-			}
-			columnstoRemove[c] = RemoveThisCol;
-		}
-		
-		// Printing the header
-		StringBuilder header = new StringBuilder();
-		for(int c=0; c<columnstoRemove.length; c++){
-			if(!columnstoRemove[c])
-				header.append(colnames[c]+"\t");
-		}
-		header.deleteCharAt(header.length()-1);
-		System.out.println(header.toString());
-		StringBuilder matrix = new StringBuilder();
-		for(int r=0; r<rowstoRemove.length; r++){
-			if(rowstoRemove[r])
-				continue;
-			matrix.append(rownames[r]+"\t");
-			for(int c=0; c<columnstoRemove.length; c++){
-				if(!columnstoRemove[c]){
-					matrix.append(SparseMatrix[r][c]+"\t");
-				}
-			}
-			matrix.deleteCharAt(matrix.length()-1);
-			matrix.append("\n");
-		}
-		System.out.print(matrix.toString());
-	}
-	
-	
-	
-	
-	
-	
-	public int compareKmerModels(int[][] a, int[][] b) throws IncorrectComparision{
-		int score=0;
-		if(a.length != b.length){
-			throw new IncorrectComparision("Unequal model lenghts");
-		}else{
-			for(int r=0; r<a.length; r++){
-				for(int c=0; c<=a.length; c++){
-					if(a[r][c] != b[r][c])
-					score = score++;
-				}
-			}
-		}		
-		return score;
-		
-	}
-	
-	public class IncorrectComparision extends Exception{
-		IncorrectComparision(String s){
-			super(s);
-		}
-	}
 	
 	
 }
