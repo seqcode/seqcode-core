@@ -308,6 +308,7 @@ public class KmerModelScanner {
         File outdir = new File(odir);
         if(outdir.exists())
         	BayesmentsSandbox.deleteDirectory(outdir);
+        outdir.mkdir();
         
         scanner.setOutbase(outbase);
         scanner.setOutDir(outdir);
