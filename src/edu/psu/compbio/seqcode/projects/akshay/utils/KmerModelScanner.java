@@ -113,10 +113,10 @@ public class KmerModelScanner {
 	 */
 	public void clusterKmerProfilesAtMountains(boolean useCache, String genpath, double oddsThresh) throws IOException{
 		ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,posProfiles,posMountainsToIndex,k,posMountainsScores,outbase,outdir);
-		clusterManager.execute();
+		clusterManager.execute("pos");
 		
 		clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,negProfiles,negMountainsToIndex,k,negMountainsScores,outbase,outdir);
-		clusterManager.execute();
+		clusterManager.execute("neg");
 	}
 	
 	

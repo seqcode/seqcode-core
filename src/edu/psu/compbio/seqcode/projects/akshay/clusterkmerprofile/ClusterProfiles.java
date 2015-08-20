@@ -62,23 +62,23 @@ public class ClusterProfiles {
 	 * The method that should be executed after initiating the class object
 	 * @throws IOException 
 	 */
-	public void execute() throws IOException{
+	public void execute(String tag) throws IOException{
 		Collection<Cluster<int[]>> clusters = method.clusterElements(profiles);
 		Vector<int[]> clustermeans = ((KMeansClustering)method).getClusterMeans();
 		
 		//Print the clusters
-		writeClusters(clustermeans);
+		writeClusters(clustermeans,tag);
 		
 		//Plot the clusters
 		Mappable orderedClusters = reorderKmerProfileMaps(clusters);
-		drawClusterHeatmap(orderedClusters);
+		drawClusterHeatmap(orderedClusters, tag);
 	}
 	
 	
 	
 	// Slave methods
-	private void writeClusters(Vector<int[]> clusMeans) throws IOException{
-		File clusout = new File(outbase.getAbsolutePath()+File.separator+outtag+"_clusterAssignment.list");
+	private void writeClusters(Vector<int[]> clusMeans, String tag) throws IOException{
+		File clusout = new File(outbase.getAbsolutePath()+File.separator+outtag+"_"+tag+"_clusterAssignment.list");
 		FileWriter ow = new FileWriter(clusout);
 		BufferedWriter bw = new BufferedWriter(ow);
 		for(int p=0; p<profiles.size(); p++){
@@ -177,7 +177,7 @@ public class ClusterProfiles {
 	
 	
 	
-	public void drawClusterHeatmap(Mappable plotMat) throws IOException{
+	public void drawClusterHeatmap(Mappable plotMat, String tag) throws IOException{
 		double[][] matrix = plotMat.matrix;
 		HeatChart map = new HeatChart(matrix);
 		map.setHighValueColour(new Color(10));
@@ -186,7 +186,7 @@ public class ClusterProfiles {
 		map.setAxisLabelsFont(new Font("Ariel",Font.PLAIN,55));
 		map.setXValues(plotMat.rownmanes);
 		map.setYValues(plotMat.colnames);
-		File f = new File(outbase.getAbsolutePath()+File.separator+outtag+"_clusters.png");
+		File f = new File(outbase.getAbsolutePath()+File.separator+outtag+"_"+tag+"_clusters.png");
 		map.saveToFile(f);
 	}
 	
