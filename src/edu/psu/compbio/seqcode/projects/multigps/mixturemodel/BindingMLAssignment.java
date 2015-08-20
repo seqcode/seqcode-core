@@ -237,7 +237,7 @@ public class BindingMLAssignment {
             		
             		//Permanganate ChIP-seq special case
                     if(bindingModels[sigRepIndices[c][i]] instanceof BindingModelPerBase && currRegionSeq!=null && currRegionSeqRC!=null){
-                    	int wantedPos =  sigHitPlusStr[c][i] ? sigHitPos[c][j]-1 : sigHitPos[c][j]+1;
+                    	int wantedPos =  sigHitPlusStr[c][i] ? sigHitPos[c][i]-1 : sigHitPos[c][i]+1;
             			if(wantedPos>=w.getStart() && wantedPos<w.getEnd()){
             				char base = sigHitPlusStr[c][i] ? currRegionSeq[wantedPos-w.getStart()] : currRegionSeqRC[w.getEnd()-wantedPos];
             				hc[j][i] = ((BindingModelPerBase)(bindingModels[sigRepIndices[c][i]])).probability(dist, base);
@@ -330,7 +330,7 @@ public class BindingMLAssignment {
     			            	if(sigRepIndices[c][i]==r){
     			            		if(sigHitCounts[c][i]>0 && rBindSig[c][j][i]>0){
     			            			int dist = Math.abs(sigHitPos[c][i]-mu[c][j]);
-    			            			int wantedPos =  sigHitPlusStr[c][i] ? sigHitPos[c][j]-1 : sigHitPos[c][j]+1;
+    			            			int wantedPos =  sigHitPlusStr[c][i] ? sigHitPos[c][i]-1 : sigHitPos[c][i]+1;
     			            			if(wantedPos>=w.getStart() && wantedPos<w.getEnd()){
     			            				char base = sigHitPlusStr[c][i] ? currRegionSeq[wantedPos-w.getStart()] : currRegionSeqRC[w.getEnd()-wantedPos];
     			            				if(SequenceUtils.char2int(base)!=-1){
