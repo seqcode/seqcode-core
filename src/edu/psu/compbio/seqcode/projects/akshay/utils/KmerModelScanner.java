@@ -28,10 +28,10 @@ public class KmerModelScanner {
 	protected double[] kmerweights;
 	protected double[][] kmerpairwights;
 	protected boolean isPairModel = false;
-	protected List<Point> posPeaks;
-	protected List<Region> posRegions;
-	protected List<Point> negPeaks;
-	protected List<Region> negRegions;
+	protected List<Point> posPeaks = new ArrayList<Point>();
+	protected List<Region> posRegions = new ArrayList<Region>();
+	protected List<Point> negPeaks = new ArrayList<Point>();
+	protected List<Region> negRegions = new ArrayList<Region>();
 	protected int k; // kmer length of the model
 	protected int minM; // Minimum length to consider for motif finding
 	protected int maxM; //Maximum length to consider for motif finding
@@ -39,15 +39,15 @@ public class KmerModelScanner {
 	protected String outbase;
 	protected File outdir;
 	
-	protected List<Region> posMountains;
-	protected ArrayList<int[]> posProfiles;
-	protected HashMap<Integer,String> posMountainsToIndex;
-	protected HashMap<Integer,Double> posMountainsScores;
+	protected List<Region> posMountains = new ArrayList<Region>();
+	protected ArrayList<int[]> posProfiles = new ArrayList<int[]>();;
+	protected HashMap<Integer,String> posMountainsToIndex =new HashMap<Integer,String>();
+	protected HashMap<Integer,Double> posMountainsScores =new HashMap<Integer,Double>();
 	
-	protected List<Region> negMountains;
-	protected ArrayList<int[]> negProfiles;
-	protected HashMap<Integer,String> negMountainsToIndex;
-	protected HashMap<Integer,Double> negMountainsScores;
+	protected List<Region> negMountains = new ArrayList<Region>();
+	protected ArrayList<int[]> negProfiles =new ArrayList<int[]>();
+	protected HashMap<Integer,String> negMountainsToIndex = new HashMap<Integer,String>();
+	protected HashMap<Integer,Double> negMountainsScores = new HashMap<Integer,Double>();
 	
 	// All clustering parameters
 	protected int its_CLUS=100;
