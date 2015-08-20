@@ -62,7 +62,7 @@ public class ClusterProfiles {
 	 * The method that should be executed after initiating the class object
 	 * @throws IOException 
 	 */
-	public void execute() throws ;{
+	public void execute() throws IOException{
 		Collection<Cluster<int[]>> clusters = method.clusterElements(profiles);
 		Vector<int[]> clustermeans = ((KMeansClustering)method).getClusterMeans();
 		
