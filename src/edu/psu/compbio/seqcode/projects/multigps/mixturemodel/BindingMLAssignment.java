@@ -344,16 +344,16 @@ public class BindingMLAssignment {
     			            
     			            //Calculate base composition (yes, it is redundant to do this for each replicate, but this will be a rarely used option)
     			            int lim = bindingModels[r].getInfluenceRange()/2;
-    			            for(int z=mu[c][j]-lim; z<mu[c][j]+lim; z++){
-    			            	if(z>=0 && z<=w.getWidth()){
+    			            for(int z=(mu[c][j]-lim-w.getStart()); z<(mu[c][j]+lim-w.getStart()); z++){
+    			            	if(z>=0 && z<w.getWidth()){
     			            		if(SequenceUtils.char2int(currRegionSeq[z])!=-1){
 	    								eventWinBases[SequenceUtils.char2int(currRegionSeq[z])]++;
 	    								eventWinBases[SequenceUtils.char2int(SequenceUtils.complementChar(currRegionSeq[z]))]++;
     			            		}
     			            	}
     			            }lim = config.PCSBUBBLESIZE/2;
-    			            for(int z=mu[c][j]-lim; z<mu[c][j]+lim; z++){
-    			            	if(z>=0 && z<=w.getWidth()){
+    			            for(int z=(mu[c][j]-lim-w.getStart()); z<(mu[c][j]+lim-w.getStart()); z++){
+    			            	if(z>=0 && z<w.getWidth()){
     			            		if(SequenceUtils.char2int(currRegionSeq[z])!=-1){
     			            			bubbleBases[SequenceUtils.char2int(currRegionSeq[z])]++;
     			            			bubbleBases[SequenceUtils.char2int(SequenceUtils.complementChar(currRegionSeq[z]))]++;
