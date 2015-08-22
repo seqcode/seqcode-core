@@ -63,8 +63,8 @@ public class ClusterProfiles {
 	 * @throws IOException 
 	 */
 	public void execute(String tag) throws IOException{
-		Collection<Cluster<int[]>> clusters = ((KMeansClustering)method).clusterElements(profiles,0.01);
-		Vector<int[]> clustermeans = ((KMeansClustering)method).getClusterMeans();
+		Collection<Cluster<int[]>> clusters = ((KMeansClustering<int[]>)method).clusterElements(profiles,0.01);
+		Vector<int[]> clustermeans = ((KMeansClustering<int[]>)method).getClusterMeans();
 		
 		//Print the clusters
 		writeClusters(clustermeans,tag);
@@ -72,6 +72,7 @@ public class ClusterProfiles {
 		//Plot the clusters
 		Mappable orderedClusters = reorderKmerProfileMaps(clusters);
 		drawClusterHeatmap(orderedClusters, tag);
+		printMatrix(orderedClusters,tag);
 	}
 	
 	
@@ -145,7 +146,7 @@ public class ClusterProfiles {
 		
 		int sparseLenght = 0;
 		for(int i=0;i<indexes.length; i++){
-			if(keepCol[i])
+			if(keepCol[indexes[i]])
 				sparseLenght++;
 			else
 				break;
@@ -175,7 +176,29 @@ public class ClusterProfiles {
 		return ret;
 	}
 	
-	
+	private void printMatrix(Mappable mat, String tag) throws IOException{
+		StringBuilder sb = new StringBuilder();
+		sb.append("Region"+"\t");
+		for(int c=0; c<mat.colnames.length; c++){
+			sb.append(mat.colnames[c]+"\t");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		for(int r=0; r<mat.rownmanes.length; r++){
+			sb.append(mat.rownmanes[r]+"\t");
+			for(int c=0; c<mat.colnames.length;c++){
+				sb.append(mat.matrix[r][c]);sb.append("\t");
+			}
+			sb.deleteCharAt(sb.length()-1);
+		}
+		
+		File matout = new File(outbase.getAbsolutePath()+File.separator+outtag+"_"+tag+"_kmer.mat");
+		FileWriter ow = new FileWriter(matout);
+		BufferedWriter bw = new BufferedWriter(ow);
+		bw.write(sb.toString());
+		bw.close();
+		
+		
+	}
 	
 	public void drawClusterHeatmap(Mappable plotMat, String tag) throws IOException{
 		double[][] matrix = plotMat.matrix;
