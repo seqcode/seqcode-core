@@ -182,13 +182,13 @@ public class ClusterProfiles {
 		for(int c=0; c<mat.colnames.length; c++){
 			sb.append(mat.colnames[c]+"\t");
 		}
-		sb.deleteCharAt(sb.length()-1);
+		sb.deleteCharAt(sb.length()-1);sb.append("\n");
 		for(int r=0; r<mat.rownmanes.length; r++){
 			sb.append(mat.rownmanes[r]+"\t");
 			for(int c=0; c<mat.colnames.length;c++){
 				sb.append(mat.matrix[r][c]);sb.append("\t");
 			}
-			sb.deleteCharAt(sb.length()-1);
+			sb.deleteCharAt(sb.length()-1);sb.append("\n");
 		}
 		
 		File matout = new File(outbase.getAbsolutePath()+File.separator+outtag+"_"+tag+"_kmer.mat");
