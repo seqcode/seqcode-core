@@ -63,7 +63,7 @@ public class ClusterProfiles {
 	 * @throws IOException 
 	 */
 	public void execute(String tag) throws IOException{
-		Collection<Cluster<int[]>> clusters = method.clusterElements(profiles);
+		Collection<Cluster<int[]>> clusters = ((KMeansClustering)method).clusterElements(profiles,0.01);
 		Vector<int[]> clustermeans = ((KMeansClustering)method).getClusterMeans();
 		
 		//Print the clusters
@@ -118,7 +118,7 @@ public class ClusterProfiles {
 		
 		//Which clusters to these columns belong to...
 		ArrayList<Integer> colCluster = new ArrayList<Integer>();
-		for(int i=0; i<colCluster.size(); i++){
+		for(int i=0; i<keepCol.length; i++){
 			colCluster.add(K+1);
 		}
 		
@@ -204,6 +204,7 @@ public class ClusterProfiles {
 		setNumClusters(k);
 		setOuttag(otag);
 		setOutDir(odir);
+		setProfileInds(pflsIndsMap);
 		setProfileScores(pflscores);
 		setKmerModLen(kmerL);
 		
@@ -217,8 +218,9 @@ public class ClusterProfiles {
 			starts.add(profiles.get(r));
 		}
 		
+		
 		method = new KMeansClustering<int[]>(comparator,rep,starts);
-		((KMeansClustering)method).setIterations(itrs);
+		((KMeansClustering<int[]>)method).setIterations(itrs);
 	}
 	
 	public class Mappable{
