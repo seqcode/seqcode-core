@@ -40,6 +40,10 @@ public class ClusterProfiles {
 	private HashMap<Integer,Double> intToLogitScore;
 	private int kmerLen=4;
 	
+	// Minimum penetrance of a kmer in a cluster to be considered
+	public final double minKmerProp = 0.2;
+	
+	
 	// Heatmap options
 	public final int W_MARGIN=80;
 	public final int H_MARGIN=60;
@@ -127,12 +131,17 @@ public class ClusterProfiles {
 		int clusID=1;
 		for(Cluster<int[]> c : clus){
 			for(int i=0; i<keepCol.length; i++){
+				double colPerc=0;
 				for(int[] elems : c.getElements()){
 					if(elems[i] > 0){
-						keepCol[i] = true;
-						if(clusID < colCluster.get(i)){
-							colCluster.set(i, clusID);
-						}
+						colPerc++;
+					}
+				}
+				colPerc = colPerc/c.getElements().size();
+				if(colPerc > minKmerProp){
+					keepCol[i] = true;
+					if(clusID < colCluster.get(i)){
+						colCluster.set(i, clusID);
 					}
 				}
 			}
