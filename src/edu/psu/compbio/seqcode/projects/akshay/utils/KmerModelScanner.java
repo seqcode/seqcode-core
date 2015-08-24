@@ -148,6 +148,11 @@ public class KmerModelScanner {
 		return ret;
 	}
 	
+	//private List<Pair<Region,Double>> findMountains(boolean useCache, String genpath, double oddsThresh,int mountain_lenght, List<Region> rs){
+	//	
+		
+	//}
+	
 	/**
 	 * Finds mountains for a given list of regions and given scoring threshold
 	 * Odds threshold can be -ve when scanning the model at negPeaks. +ve when scanning the model at posPeaks
