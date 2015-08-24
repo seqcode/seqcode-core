@@ -236,12 +236,16 @@ public class KmerModelScanner {
 					Double score = scoreRegion(mount,seqgen);
 					Pair<Region,Double> currMount = new Pair<Region,Double>(mount,score);
 					if(currMountains.size()>0){
-						if(currMountains.get(currMountains.size()-1).car().overlaps(currMount.car()) && currMount.cdr() > currMountains.get(currMountains.size()-1).cdr()){
-							currMountains.remove(currMountains.size()-1);
-							currMountains.add(currMount);
+						if(currMountains.get(currMountains.size()-1).car().overlaps(mount)){
+							if(score > currMountains.get(currMountains.size()-1).cdr()){
+								currMountains.remove(currMountains.size()-1);
+								currMountains.add(currMount);
+							}	
 						}else{
 							currMountains.add(currMount);
 						}
+					}else{
+						currMountains.add(currMount);
 					}
 				}
 			}
