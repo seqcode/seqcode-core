@@ -209,7 +209,7 @@ public class KmerModelScanner {
 			double[] scorelanscape = new double[r.getWidth()];
 			for(int i=0; i<scorelanscape.length; i++){
 				int spanStart = i-k+1 >=0 ?  i-k+1 : 0;
-				int spanEnd = i+k-1 <scorelanscape.length ?  i+k-1 : scorelanscape.length-k;
+				int spanEnd = i+k-1 <scorelanscape.length ?  i : scorelanscape.length-k;
 				double spanScore=0;
 				int spanLenght = spanEnd-spanStart+1;
 				for(int j=spanStart; j<=spanEnd; j++){
@@ -356,7 +356,7 @@ public class KmerModelScanner {
 	
 	
 	public double scoreRegion(Region r, SequenceGenerator<Region> seqgen){
-		String seq = seqgen.execute(r);
+		String seq = seqgen.execute(r).toUpperCase();
 		if(seq.contains("N"))
 			return 0.0;
 		double score=0.0;
