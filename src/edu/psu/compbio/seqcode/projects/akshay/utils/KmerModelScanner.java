@@ -229,7 +229,7 @@ public class KmerModelScanner {
 			List<Pair<Region,Double>> currMountains = new ArrayList<Pair<Region,Double>>();
 			
 			for(int i=3; i<scorelanscape.length; i++){
-				if(scorelanscape[i] > oddsThresh){
+				if(scorelanscape[i]*classDetector > oddsThresh*classDetector){
 					int mountainStart = r.getStart()+i-(int)(mountain_lenght/2) >=0 ? r.getStart()+i-(int)(mountain_lenght/2) : 0;
 					int mountainEnd = mountainStart+mountain_lenght<gcon.getGenome().getChromLength(r.getChrom())?mountainStart+mountain_lenght :gcon.getGenome().getChromLength(r.getChrom());
 					Region mount = new Region(gcon.getGenome(),r.getChrom(),mountainStart,mountainEnd);
@@ -237,7 +237,7 @@ public class KmerModelScanner {
 					Pair<Region,Double> currMount = new Pair<Region,Double>(mount,score);
 					if(currMountains.size()>0){
 						if(currMountains.get(currMountains.size()-1).car().overlaps(mount)){
-							if(score > currMountains.get(currMountains.size()-1).cdr()){
+							if(score*classDetector > classDetector*currMountains.get(currMountains.size()-1).cdr()){
 								currMountains.remove(currMountains.size()-1);
 								currMountains.add(currMount);
 							}	
