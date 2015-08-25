@@ -177,7 +177,7 @@ public class KmerModelScanner {
 	}
 	
 	/**
-	 * Assigns every base a score based on the kmers that span that base (at the moment I take the average of all the kmers that span a base)
+	 * Assigns every base a score based on the kmers scores in a fixed windown around the base(at the moment I take the average of all the kmers scores)
 	 * Then find maximum points that pass a certain given threshold
 	 * Then take a <Code>mountain_lenght/2</Code> regions around the maximum points.
 	 * Remove overlaping mountains by taking maximum scoring mountains
@@ -192,6 +192,9 @@ public class KmerModelScanner {
 	private List<Pair<Region,Double>> findMountains(boolean useCache, String genpath, double oddsThresh,int mountain_lenght, List<Region> rs) throws IOException{
 		// Detects if scanning is done for the positive or neg set from the sign of oddsThresh
 		int classDetector = oddsThresh>0 ? 1:-1;
+		
+		int mountainRadius = (int)(mountain_lenght/2);
+		
 		SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
 		seqgen.useCache(useCache);
 		if(useCache){
@@ -208,8 +211,8 @@ public class KmerModelScanner {
 				continue;
 			double[] scorelanscape = new double[r.getWidth()];
 			for(int i=0; i<scorelanscape.length; i++){
-				int spanStart = i-k+1 >=0 ?  i-k+1 : 0;
-				int spanEnd = i+k-1 <scorelanscape.length ?  i : scorelanscape.length-k;
+				int spanStart = i-mountainRadius+1 >=0 ?  i-mountainRadius+1 : 0;
+				int spanEnd = i+mountainRadius-1 <scorelanscape.length ?  i : scorelanscape.length-mountainRadius;
 				double spanScore=0;
 				int spanLenght = spanEnd-spanStart+1;
 				for(int j=spanStart; j<=spanEnd; j++){
@@ -230,7 +233,7 @@ public class KmerModelScanner {
 			
 			for(int i=3; i<scorelanscape.length; i++){
 				if(scorelanscape[i]*classDetector > oddsThresh*classDetector){
-					int mountainStart = r.getStart()+i-(int)(mountain_lenght/2) >=0 ? r.getStart()+i-(int)(mountain_lenght/2) : 0;
+					int mountainStart = r.getStart()+i-mountainRadius >=0 ? r.getStart()+i-mountainRadius : 0;
 					int mountainEnd = mountainStart+mountain_lenght<gcon.getGenome().getChromLength(r.getChrom())?mountainStart+mountain_lenght :gcon.getGenome().getChromLength(r.getChrom());
 					Region mount = new Region(gcon.getGenome(),r.getChrom(),mountainStart,mountainEnd);
 					Double score = scoreRegion(mount,seqgen);
