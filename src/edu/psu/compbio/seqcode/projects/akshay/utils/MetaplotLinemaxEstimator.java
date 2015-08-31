@@ -16,6 +16,7 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
+import edu.psu.compbio.seqcode.gse.viz.metaprofile.BinningParameters;
 
 public class MetaplotLinemaxEstimator {
 	
@@ -24,6 +25,7 @@ public class MetaplotLinemaxEstimator {
 	
 	protected List<Point> locations;
 	protected int win;
+	protected int nbins;
 	
 	
 	public MetaplotLinemaxEstimator(ExptConfig ef, GenomeConfig gf) {
@@ -35,9 +37,11 @@ public class MetaplotLinemaxEstimator {
 	//Settors
 	public void setPeaks(List<Point> ps){locations = ps;}
 	public void setWin(int w){win=w;}
+	public void setNBins(int nb){nbins=nb;}
 	
 	
 	public void execute(){
+		BinningParameters params = new BinningParameters(win, nbins);
 		List<Integer> perbaseHits = new ArrayList<Integer>();
 		List<Region> rs = new ArrayList<Region>();
 		for(Point p : locations){
@@ -47,16 +51,13 @@ public class MetaplotLinemaxEstimator {
 		List<Sample> sam = manager.getSamples();
 		for(Sample s : sam){
 			for(Region r : rs){
-				HashMap<Integer,Integer> pbMaxs = new HashMap<Integer,Integer>();
-				List<StrandedBaseCount> counts = s.getBases(r);
-				for(StrandedBaseCount sbc : counts){
-					if(pbMaxs.containsKey(sbc.getCoordinate())){
-						pbMaxs.put(sbc.getCoordinate(), (int)(pbMaxs.get(sbc.getCoordinate())+sbc.getCount()));
-					}else{
-						pbMaxs.put(sbc.getCoordinate(), (int)(sbc.getCount()));
-					}
+				for(int b=0; b<params.getNumBins(); b++){
+					int start = r.getStart()+b*params.getBinSize();
+					int end = r.getStart()+(b+1)*params.getBinSize() < r.getGenome().getChromLength(r.getChrom()) ? r.getStart()+(b+1)*params.getBinSize() : r.getGenome().getChromLength(r.getChrom());  
+					Region currBin = new Region(r.getGenome(),r.getChrom(),start,end);
+					int counts = (int)s.countHits(currBin);
+					perbaseHits.add(counts);
 				}
-				perbaseHits.addAll(pbMaxs.values());
 			}
 		}
 		
@@ -75,12 +76,15 @@ public class MetaplotLinemaxEstimator {
 		ExptConfig ec = new ExptConfig(gc.getGenome(),args);
 		ArgParser ap = new ArgParser(args);
 		
-		int w = Args.parseInteger(args, "win", 150);
+		int w = Args.parseInteger(args, "win", 1000);
+		int nb = Args.parseInteger(args, "bins", 100);
+				
 		List<Point> locs = RegionFileUtilities.loadPeaksFromPeakFile(gc.getGenome(), ap.getKeyValue("peaks"), w);
 		
 		MetaplotLinemaxEstimator runner = new MetaplotLinemaxEstimator(ec,gc);
 		runner.setPeaks(locs);
 		runner.setWin(w);
+		runner.setNBins(nb);
 		runner.execute();
 		
 		
