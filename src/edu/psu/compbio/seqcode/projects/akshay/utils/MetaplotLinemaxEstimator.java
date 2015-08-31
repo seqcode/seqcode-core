@@ -64,9 +64,9 @@ public class MetaplotLinemaxEstimator {
 		int seventyFiveInd = (int)(perbaseHits.size()*0.75);
 		int ninghtyFiveInd = (int)(perbaseHits.size()*0.95);
 		System.out.println("75 Percentile PerBaseHits: -");
-		System.out.println(seventyFiveInd);
+		System.out.println(perbaseHits.get(seventyFiveInd));
 		System.out.println("95 Percentile PerBaseHits: -");
-		System.out.println(ninghtyFiveInd);
+		System.out.println(perbaseHits.get(ninghtyFiveInd));
 	}
 	
 	
