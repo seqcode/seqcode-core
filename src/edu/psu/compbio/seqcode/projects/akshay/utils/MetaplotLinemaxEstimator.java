@@ -97,6 +97,8 @@ public class MetaplotLinemaxEstimator {
 		System.out.println(perBinCounts.get(ninghtyFiveInd));
 		System.out.println("99 Percentile PerBinHits:-");
 		System.out.println(perBinCounts.get(ninghtyNineInd));
+		
+		manager.close();
 	}
 		
 		
