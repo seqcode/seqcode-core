@@ -13,6 +13,7 @@ import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqHit;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
@@ -26,6 +27,7 @@ public class MetaplotLinemaxEstimator {
 	protected List<Point> locations;
 	protected int win;
 	protected int nbins;
+	protected int readExt=200;
 	
 	
 	public MetaplotLinemaxEstimator(ExptConfig ef, GenomeConfig gf) {
@@ -38,40 +40,79 @@ public class MetaplotLinemaxEstimator {
 	public void setPeaks(List<Point> ps){locations = ps;}
 	public void setWin(int w){win=w;}
 	public void setNBins(int nb){nbins=nb;}
+	public void setReadExt(int ext){readExt=ext;}
 	
 	
 	public void execute(){
 		BinningParameters params = new BinningParameters(win, nbins);
-		List<Integer> perbaseHits = new ArrayList<Integer>();
-		List<Region> rs = new ArrayList<Region>();
-		for(Point p : locations){
-			rs.add(p.expand(win/2));
-		}
 		ExperimentManager manager = new ExperimentManager(econf);
 		List<Sample> sam = manager.getSamples();
-		for(Sample s : sam){
-			for(Region r : rs){
-				for(int b=0; b<params.getNumBins(); b++){
-					int start = r.getStart()+b*params.getBinSize();
-					int end = r.getStart()+(b+1)*params.getBinSize() < r.getGenome().getChromLength(r.getChrom()) ? r.getStart()+(b+1)*params.getBinSize() : r.getGenome().getChromLength(r.getChrom());  
-					Region currBin = new Region(r.getGenome(),r.getChrom(),start,end);
-					int counts = (int)s.countHits(currBin);
-					perbaseHits.add(counts);
+		
+		List<Double> perBinCounts = new ArrayList<Double>();
+		
+		for(Point p : locations){
+			int left = win/2;
+			int right = win-left-1;
+			int start  = Math.max(1, p.getLocation()-left);
+			int end = Math.min(p.getLocation()+right, p.getGenome().getChromLength(p.getChrom()));
+			
+			Region query = new Region(p.getGenome(),p.getChrom(),start,end);
+			Region extQuery = new Region(p.getGenome(),p.getChrom(),start-readExt >0?start-readExt : 1, end+readExt < p.getGenome().getChromLength(p.getChrom()) ? end+readExt : p.getGenome().getChromLength(p.getChrom()));
+			
+			double[] array  = new double[params.getNumBins()];
+			for(Sample s : sam){
+				List<StrandedBaseCount> sbcs = s.getBases(extQuery);
+				for(StrandedBaseCount sbc : sbcs){
+					SeqHit hit = new SeqHit(p.getGenome(),p.getChrom(),sbc);
+					if(readExt>0)
+						hit = hit.extendHit(readExt);
+					if(hit.overlaps(query)){
+						int startOffset = Math.max(0, hit.getStart()-start);
+						int endOffset = Math.max(0, Math.min(end, hit.getEnd()-start));
+						int tmpEnd = win-startOffset;
+						int tmpStart = win-endOffset;
+						startOffset = tmpStart;
+						endOffset = tmpEnd;
+						
+						int startbin = params.findBin(startOffset);
+						int endbin = params.findBin(endOffset);
+						
+						addToArray(startbin,endbin,array,1.0);
+					}
 				}
+			}
+			for(int i=0; i<array.length; i++){
+				perBinCounts.add(array[i]);
 			}
 		}
 		
-		Collections.sort(perbaseHits);
-		int seventyFiveInd = (int)(perbaseHits.size()*0.75);
-		int ninghtyFiveInd = (int)(perbaseHits.size()*0.995);
-		System.out.println("75 Percentile PerBaseHits: -");
-		System.out.println(perbaseHits.get(seventyFiveInd));
-		System.out.println("99.5 Percentile PerBaseHits: -");
-		System.out.println(perbaseHits.get(ninghtyFiveInd));
-		System.out.println("Highest value: -");
-		System.out.println(perbaseHits.get(perbaseHits.size()-1));
-		manager.close();
+		Collections.sort(perBinCounts);
+		int seventyFiveInd = (int)(perBinCounts.size()*0.75);
+		int ninghtyFiveInd = (int)(perBinCounts.size()*0.95);
+		int ninghtyNineInd = (int)(perBinCounts.size()*0.99);
+		
+		System.out.println("75 Percentile PerBinHits:-");
+		System.out.println(perBinCounts.get(seventyFiveInd));
+		System.out.println("95 Percentile PerBinHits:-");
+		System.out.println(perBinCounts.get(ninghtyFiveInd));
+		System.out.println("99 Percentile PerBinHits:-");
+		System.out.println(perBinCounts.get(ninghtyNineInd));
 	}
+		
+		
+		
+		
+		
+		
+	
+		
+	private void addToArray(int i, int j, double[] array, double value) { 
+		for(int k = i; k <= j; k++) { 
+			array[k] += value;
+		}
+	}
+		
+
 	
 	
 	public static void main(String[] args){
@@ -81,6 +122,7 @@ public class MetaplotLinemaxEstimator {
 		
 		int w = Args.parseInteger(args, "win", 1000);
 		int nb = Args.parseInteger(args, "bins", 100);
+		int ext = Args.parseInteger(args, "ext", 200);
 				
 		List<Point> locs = RegionFileUtilities.loadPeaksFromPeakFile(gc.getGenome(), ap.getKeyValue("peaks"), w);
 		
@@ -88,6 +130,7 @@ public class MetaplotLinemaxEstimator {
 		runner.setPeaks(locs);
 		runner.setWin(w);
 		runner.setNBins(nb);
+		runner.setReadExt(ext);
 		runner.execute();
 		
 		
