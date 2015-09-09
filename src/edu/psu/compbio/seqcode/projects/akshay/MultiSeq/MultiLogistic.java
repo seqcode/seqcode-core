@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -25,11 +26,16 @@ import weka.filters.unsupervised.attribute.NominalToBinary;
 import weka.filters.unsupervised.attribute.RemoveUseless;
 import weka.filters.unsupervised.attribute.ReplaceMissingValues;
 
-@SuppressWarnings("serial")
+
 public class MultiLogistic extends AbstractClassifier implements OptionHandler, WeightedInstancesHandler, PMMLProducer{
 
 	// Model parameters compatible with a normal Multinomial logit model
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6260376163872744102L;
+
 	/** The coefficients of the optimized Structured Multinomial logit model. However, this only stores the leaf node parameters*/
 	protected double[][] m_Par; // [NumPredictors+Intercept][NumClasses]
 	
@@ -763,8 +769,12 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	}
 	
 	
-	protected class ClassRelationStructure{
+	protected class ClassRelationStructure implements Serializable{
 		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -4392515471314248045L;
 		protected List<Node> leafs = new ArrayList<Node>();
 		protected Node root;
 		protected List<List<Node>> layers = new ArrayList<List<Node>>();
@@ -790,7 +800,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	        		Node currNode = new Node(Integer.parseInt(pieces[0]), pieces[1],Integer.parseInt(pieces[2]) == 1? true : false);
 	        		// Add parents indexes
 	        		if(!currNode.nodeName.contains("Root")){
-	        			String[] pInds = pieces[3].split("\t");
+	        			String[] pInds = pieces[3].split(",");
 	        			for(String s : pInds){
 	        				currNode.addParent(Integer.parseInt(s));
 	        			}
@@ -799,7 +809,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	        		}
 	        		// Add children indexes
 	        		if(!currNode.isLeaf){
-	        			String[] cInds = pieces[4].split("\t");
+	        			String[] cInds = pieces[4].split(",");
 	        			for(String s : cInds){
 	        				currNode.addChild(Integer.parseInt(s));
 	        			}
