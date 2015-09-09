@@ -828,8 +828,12 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 		
 		
 		
-		protected class Node implements Comparable<Node>{
+		protected class Node implements Serializable,Comparable<Node>{
 			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 9057711985309713653L;
 			protected int nodeIndex;
 			protected String nodeName;
 			protected boolean isLeaf=false;
