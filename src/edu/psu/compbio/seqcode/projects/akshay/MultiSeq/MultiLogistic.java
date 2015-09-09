@@ -88,6 +88,8 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	/** Class Structure relationships */
 	public ClassRelationStructure sm_ClassStructure;
 	
+	protected boolean sm_Debug;
+	
 	
 	// Setters
 	/**
@@ -111,6 +113,10 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	 */
 	public void setMaxIts(int newMaxIts){
 		m_MaxIts = newMaxIts;
+	}
+	
+	public void setDebug(boolean d){
+		sm_Debug = d;
 	}
 	
 	
@@ -139,6 +145,9 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	 */
 	public int getMaxIts(){
 		return m_MaxIts;
+	}
+	public boolean getDebug(){
+		return sm_Debug;
 	}
 	
 	/**
@@ -338,7 +347,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	    // Initialize
 	    for (int p = 0; p < nK; p++) {
 	    	int offset = p * (nR + 1);
-	    	x[offset] = Math.log(sY[p] + 1.0) - Math.log(sY[nK] + 1.0); // Null model
+	    	x[offset] = Math.log(sY[p] + 1.0) - Math.log(sY[nK-1] + 1.0); // Null model
 	        b[0][offset] = Double.NaN;
 	        b[1][offset] = Double.NaN;
 	        for (int q = 1; q <= nR; q++) {
@@ -465,7 +474,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	    		if (Utils.doubleToString(sm_Par[j][n.nodeIndex], 12, 4).trim().length() > colWidth) {
 	    			colWidth = Utils.doubleToString(sm_Par[j][n.nodeIndex], 12, 4).trim().length();
 	    		}
-	    		double ORc = Math.exp(m_Par[j][n.nodeIndex]);
+	    		double ORc = Math.exp(sm_Par[j][n.nodeIndex]);
 	    		String t = " "
 	    				+ ((ORc > 1e10) ? "" + ORc : Utils.doubleToString(ORc, 12, 4));
 	    		if (t.trim().length() > colWidth) {
@@ -709,7 +718,22 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 					}
 				}
 			}
+			
+			 if(getDebug()){
+		    	  StringBuilder sb = new StringBuilder();
+		    	  for(int w = 0; w<dim; w++){
+		    		  for(Node n : sm_ClassStructure.leafs){
+		    			  sb.append(x[n.nodeIndex+w]);sb.append("\t");
+		    		  }
+		    		  sb.deleteCharAt(sb.length()-1);
+		    		  sb.append("\n");
+		    	  }
+		    	  System.out.println(sb.toString());
+		      }
+			
+			
 			return grad;
+			
 		}
 		
 		
@@ -761,7 +785,11 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 				secondpart = secondpart +exp;
 			}
 			nll = firstpart+secondpart;
-				
+			
+			if(getDebug()){
+				System.out.println("Objective :"+nll);
+			}
+			
 			return nll;
 		}
 		
@@ -868,7 +896,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 
 	@Override
 	public Enumeration<Option> listOptions() {
-		Vector<Option> newVector = new Vector<Option>(6);
+		Vector<Option> newVector = new Vector<Option>(7);
 
 	    newVector.addElement(new Option(
 	      "\tUse conjugate gradient descent rather than BFGS updates.", "C", 0,
@@ -879,6 +907,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	      + " (default -1, until convergence).", "M", 1, "-M <number>"));
 	    newVector.addElement(new Option("\tProvide the class structure file for the multiclasses","CLS",0,"-CLS <File name>"));
 	    newVector.addElement(new Option("\tProvide the number of layers in the class structur","NL",0,"-NL <Num of Layers>"));
+	    newVector.addElement(new Option("\tFlag to run in debug mode","DEBUG",0,"-DEBUG"));
 	    newVector.addAll(Collections.list(super.listOptions()));
 
 	    return newVector.elements();
@@ -889,6 +918,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	@Override
 	public void setOptions(String[] options) throws Exception {
 		setUseConjugateGradientDescent(Utils.getFlag('C', options));
+		setDebug(Utils.getFlag("DEBUG", options));
 
 	    String ridgeString = Utils.getOption('R', options);
 	    if (ridgeString.length() != 0) {
@@ -943,6 +973,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	    options.add("" + m_MaxIts);
 	    options.add("-CLS");
 	    options.add("-NL");
+	    options.add("-DEBUG");
 
 	    Collections.addAll(options, super.getOptions());
 
