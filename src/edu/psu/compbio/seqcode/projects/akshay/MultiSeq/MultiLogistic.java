@@ -699,7 +699,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 				double denom = num+Math.exp(exp[cls[c]]-max);
 				
 				for(int w=0; w<dim; w++){
-					grad[cls[c]*dim+w] -= (num/denom)*m_Data[c][w];
+					grad[cls[c]*dim+w] -= weights[cls[c]]*(num/denom)*m_Data[c][w];
 				}
 				
 			}
