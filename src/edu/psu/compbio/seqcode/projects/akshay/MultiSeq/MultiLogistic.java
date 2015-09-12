@@ -215,24 +215,25 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	}
 	  
 	private double[] evaluateProbability(double[] data) {
-		double[] prob = new double[m_NumClasses];
-		for(int i=0; i<m_NumClasses; i++){
-			double exp = 0.0;
-			for(int k=0; k<=m_NumPredictors; k++){
-				exp = exp+m_Par[k][i]*data[k];
-			}
-			exp = 1/(1+Math.exp(-1*exp));
-			prob[i] = exp;
-		}
-		// Now normalize (Not sure this is a good idea at the moment)
-		double sum=0.0;
-		for(int p=0; p<prob.length; p++){
-			sum=sum+prob[p];
-		}
-		for(int p=0; p<prob.length;p++){
-			prob[p] = prob[p]/sum;
-		}
-		return prob;	
+		double[] prob = new double[m_NumClasses], v = new double[m_NumClasses];
+
+	    // Log-posterior before normalizing
+	    for (int j = 0; j < m_NumClasses ; j++) {
+	      for (int k = 0; k <= m_NumPredictors; k++) {
+	        v[j] += m_Par[k][j] * data[k];
+	      }
+	    }
+
+	    // Do so to avoid scaling problems
+	    for (int m = 0; m < m_NumClasses; m++) {
+	      double sum = 0;
+	      for (int n = 0; n < m_NumClasses; n++) {
+	        sum += Math.exp(v[n] - v[m]);
+	      }
+	      prob[m] = 1 / (sum);
+	    }
+
+	    return prob;
 	}
 	
 	
@@ -679,34 +680,50 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 		public double[] evaluateGradient(double[] x){
 			// Update the internal nodes first
 			updateInternalNodes(x);
-			
-			
 			double[] grad = new double[x.length];
-			int dim = m_NumPredictors+1;
-			
-			for(int c=0; c<cls.length; c++){
-				
-				double[] exp=new double[sm_ClassStructure.leafs.size()];
-				
-				for(Node n: sm_ClassStructure.leafs){
-					int offset = n.nodeIndex*dim;
-					for(int i=0; i<dim; i++){
-						exp[n.nodeIndex] += sm_x[offset+i]*m_Data[c][i];
-					}
-				}
-				double max = exp[Utils.maxIndex(exp)];
-				double num = Math.exp(-max);
-				double denom = num+Math.exp(exp[cls[c]]-max);
-				
-				for(int w=0; w<dim; w++){
-					grad[cls[c]*dim+w] -= weights[cls[c]]*(num/denom)*m_Data[c][w];
-				}
-				
+			int dim = m_NumPredictors + 1; // Number of variables per class
+
+			for (int i = 0; i < cls.length; i++) { // ith instance
+				double[] num = new double[m_NumClasses]; // numerator of
+		                                                     // [-log(1+sum(exp))]'
+		        int index;
+		        for (int offset = 0; offset < m_NumClasses; offset++) { // Which
+		                                                                    // part of 
+		        	double exp = 0.0;
+		        	index = offset * dim;
+		        	for (int j = 0; j < dim; j++) {
+		        		exp += m_Data[i][j]*sm_x[index + j];
+		        	}
+		        	num[offset] = exp;
+		        }
+
+		        double max = num[Utils.maxIndex(num)];
+		       
+		        double denom=0.0;
+		        for (int offset = 0; offset < m_NumClasses; offset++) {
+		        	num[offset] = Math.exp(num[offset] - max);
+		        	denom += num[offset];
+		        }
+		        Utils.normalize(num, denom);
+
+		        // Update denominator of the gradient of -log(Posterior)
+		        double firstTerm;
+		        for (int offset = 0; offset < m_NumClasses; offset++) { // Which
+		                                                                    // part of x
+		        	index = offset * dim;
+		        	firstTerm = weights[i] * num[offset];
+		        	for (int q = 0; q < dim; q++) {
+		        		grad[index + q] += firstTerm * m_Data[i][q];
+		        	}
+		        }
+
+		        for (int p = 0; p < dim; p++) {
+		            grad[cls[i] * dim + p] -= weights[i] * m_Data[i][p];
+		        }
+		        
 			}
-			
-			
-			// Now add the regularization part
-			
+		      
+
 			for(Node n : sm_ClassStructure.leafs){
 				int nOffset = n.nodeIndex*dim;
 				for(int pid : n.parents){
@@ -715,49 +732,78 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 						grad[nOffset+w] += m_Ridge*(sm_x[nOffset+w]-sm_x[pOffset+w]);
 					}
 				}
-			}
+			}	
+		      
+			return grad;
+			/////////////////////////////////
 			
-			return grad;		
+			//double[] grad = new double[x.length];
+			//int dim = m_NumPredictors+1;
 			
+		//	for(int c=0; c<cls.length; c++){
+				
+			//	double[] exp=new double[sm_ClassStructure.leafs.size()];
+				
+		//		for(Node n: sm_ClassStructure.leafs){
+			//		int offset = n.nodeIndex*dim;
+				//	for(int i=0; i<dim; i++){
+					//	exp[n.nodeIndex] += sm_x[offset+i]*m_Data[c][i];
+					//}
+				//}
+				//double max = exp[Utils.maxIndex(exp)];
+				//double num = Math.exp(-max);
+				//double denom = num+Math.exp(exp[cls[c]]-max);
+				
+				//for(int w=0; w<dim; w++){
+				//	grad[cls[c]*dim+w] -= weights[c]*(num/denom)*m_Data[c][w];
+				//}
+				
+			//}
+			
+			
+			// Now add the regularization part
+			
+			
+					
 		}
 		
 		
 		public double objectiveFunction(double[] x){
 			double nll=0.0;
 			int dim = m_NumPredictors+1;
-			
 			// update all the internal nodes again
 			updateInternalNodes(x);
-			
-			//Calculate the second part
-			for(int c=0; c<cls.length;c++){ // Overall all training instances
-				double[] exp=new double[sm_ClassStructure.leafs.size()];
-				for(Node n: sm_ClassStructure.leafs){
-					int offset = n.nodeIndex*dim;
-					for(int w=0; w<dim; w++){
-						exp[n.nodeIndex] += sm_x[offset+w]*m_Data[c][w];
+
+			for (int i = 0; i < cls.length; i++) { // ith instance
+				double[] exp = new double[m_NumClasses];
+				int index;
+				for (int offset = 0; offset < m_NumClasses; offset++) {
+					index = offset * dim;
+					for (int j = 0; j < dim; j++) {
+						exp[offset] += m_Data[i][j] * sm_x[index + j];
 					}
 				}
-				
 				double max = exp[Utils.maxIndex(exp)];
-				double num = exp[cls[c]]-max;
-				
-				double denom = Math.log(Math.exp(num)+Math.exp(-max));
-				
-				nll -= weights[cls[c]]*(num - denom);
+		        double denom = 0;
+		        double num = exp[cls[i]] - max;
+		        
+		        for (int offset = 0; offset < m_NumClasses; offset++) {
+		        	denom += Math.exp(exp[offset] - max);
+		        }
+
+		        nll -= weights[i] * (num - Math.log(denom)); // Weighted NLL
 			}
 			
-			// Calculate the regularization part of the loss function
 			for(Node n : sm_ClassStructure.leafs){
-				int nOffser = n.nodeIndex*dim;
+				int nOffset = n.nodeIndex*dim;
 				for(int pid : n.parents){
 					int pOffset = pid*dim;
 					for(int w=0; w<dim; w++){
-						nll += (m_Ridge/2)*(sm_x[nOffser+w]-sm_x[pOffset+w])*(sm_x[nOffser+w]-sm_x[pOffset+w]);
+						nll += (m_Ridge/2)*(sm_x[nOffset+w]-sm_x[pOffset+w])*(sm_x[nOffset+w]-sm_x[pOffset+w]);
 					}
 				}
 			}
-			
+		
 			if(getSmDebug()){
 				System.out.println("Objective:"+nll);
 			}
