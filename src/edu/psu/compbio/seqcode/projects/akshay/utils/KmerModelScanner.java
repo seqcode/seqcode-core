@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -390,19 +391,27 @@ public class KmerModelScanner {
 		int k = Args.parseInteger(args, "k", 4);
 		int m = Args.parseInteger(args, "m", 5);
 		int M = Args.parseInteger(args, "M", 10);
-		String posPeaksFile = ap.getKeyValue("posPeaks");
 		int win = Args.parseInteger(args, "win", 150);
-		List<Point> posPs = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), posPeaksFile, win);
-		List<Region> posRs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), posPeaksFile, win);
 		
-		boolean hasNeg = false;
+		//String posPeaksFile = ap.getKeyValue("posPeaks");
+		
+		// Check the string arguments for all posPeaks (THERE CAN BE MULTIPLE posPeaks options)....
+		Collection<String> posPeaksFiles = Args.parseStrings(args, "posPeaks");
+		List<Point> posPs = new ArrayList<Point>();
+		List<Region> posRs = new ArrayList<Region>();
+		
+		for(String posPeaksFile : posPeaksFiles){
+			posPs.addAll(RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), posPeaksFile, win));
+			posRs.addAll(RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), posPeaksFile, win));
+		}
+		
+		
 		if(ap.hasKey("negPeaks")){
 			String negPeaksFile = ap.getKeyValue("negPeaks");
 			List<Point> negPs = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), negPeaksFile, win);
 			List<Region> negRs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), negPeaksFile, win);
 			scanner.setNegPeaks(negPs);
 		    scanner.setNegRegions(negRs);
-			hasNeg = true;
 		}
 			
 		String weightsFile = Args.parseString(args, "weights", "");
