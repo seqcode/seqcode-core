@@ -112,22 +112,25 @@ public class KmerModelScanner {
 		
 		index=0;
 		addedMountains = new HashMap<String,Integer>();
-		List<Pair<Region,Double>> negMounts = new ArrayList<Pair<Region,Double>>();
 		
-		if(SCAN_TYPE.equals("fixedwin"))
-			negMounts = findMountains(useCache,genpath,-1*oddsThresh,maxM,negRegions);
-		else
-			negMounts= findMountains(useCache,genpath,-1*oddsThresh,negRegions);
+		if(negPeaks.size() !=0 && negRegions.size() !=0){
+			List<Pair<Region,Double>> negMounts = new ArrayList<Pair<Region,Double>>();
 		
-		for(Pair<Region,Double> pr : negMounts){
-			if(!addedMountains.containsKey(pr.car().getLocationString())){
-				negMountains.add(pr.car());
-				negMountainsToIndex.put(index,pr.car().getLocationString());
-				negMountainsScores.put(index++, pr.cdr());
-				addedMountains.put(pr.car().getLocationString(), 1);
+			if(SCAN_TYPE.equals("fixedwin"))
+				negMounts = findMountains(useCache,genpath,-1*oddsThresh,maxM,negRegions);
+			else
+				negMounts= findMountains(useCache,genpath,-1*oddsThresh,negRegions);
+		
+			for(Pair<Region,Double> pr : negMounts){
+				if(!addedMountains.containsKey(pr.car().getLocationString())){
+					negMountains.add(pr.car());
+					negMountainsToIndex.put(index,pr.car().getLocationString());
+					negMountainsScores.put(index++, pr.cdr());
+					addedMountains.put(pr.car().getLocationString(), 1);
+				}
 			}
+			negProfiles =getProfilesAtPeaks(negMountains, useCache,genpath);
 		}
-		negProfiles =getProfilesAtPeaks(negMountains, useCache,genpath);
 		
 	}
 	
@@ -143,9 +146,10 @@ public class KmerModelScanner {
 		fillMountains(useCache,genpath,oddsThresh);
 		ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,posProfiles,posMountainsToIndex,k,posMountainsScores,outbase,outdir);
 		clusterManager.execute("pos");
-		
-		clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,negProfiles,negMountainsToIndex,k,negMountainsScores,outbase,outdir);
-		clusterManager.execute("neg");
+		if(negPeaks.size() !=0 && negRegions.size() !=0){
+			clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,negProfiles,negMountainsToIndex,k,negMountainsScores,outbase,outdir);
+			clusterManager.execute("neg");
+		}
 	}
 	
 	
@@ -380,6 +384,7 @@ public class KmerModelScanner {
 	
 	public static void main(String[] args) throws IOException{
 		GenomeConfig gcon = new GenomeConfig(args);
+		KmerModelScanner scanner = new KmerModelScanner(gcon);
 		ArgParser ap = new ArgParser(args);
 		
 		int k = Args.parseInteger(args, "k", 4);
@@ -390,10 +395,16 @@ public class KmerModelScanner {
 		List<Point> posPs = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), posPeaksFile, win);
 		List<Region> posRs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), posPeaksFile, win);
 		
-		String negPeaksFile = ap.getKeyValue("negPeaks");
-		List<Point> negPs = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), negPeaksFile, win);
-		List<Region> negRs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), negPeaksFile, win);
-		
+		boolean hasNeg = false;
+		if(ap.hasKey("negPeaks")){
+			String negPeaksFile = ap.getKeyValue("negPeaks");
+			List<Point> negPs = RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), negPeaksFile, win);
+			List<Region> negRs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), negPeaksFile, win);
+			scanner.setNegPeaks(negPs);
+		    scanner.setNegRegions(negRs);
+			hasNeg = true;
+		}
+			
 		String weightsFile = Args.parseString(args, "weights", "");
 		double[] ws = new double[(int) Math.pow(4, k)];
 		double[][] pws=null;
@@ -426,7 +437,7 @@ public class KmerModelScanner {
         	genPath = ap.getKeyValue("seq");
         }
         
-        KmerModelScanner scanner = new KmerModelScanner(gcon);
+        
         scanner.setK(k);
         scanner.setKmerWeights(ws);
         if(isPair)
@@ -445,8 +456,7 @@ public class KmerModelScanner {
         scanner.setminM(m);
         scanner.setPosPeaks(posPs);
         scanner.setPosRegions(posRs);
-        scanner.setNegPeaks(negPs);
-        scanner.setNegRegions(negRs);
+       
         scanner.setScanType(scanType);
         
         int numClus = Args.parseInteger(args, "numClusters", 3);
