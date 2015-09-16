@@ -805,7 +805,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 			}
 		
 			if(getSmDebug()){
-				System.out.println("Objective:"+nll);
+				System.err.println("Objective:"+nll);
 			}
 			
 			return nll;
@@ -826,6 +826,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 		protected List<List<Node>> layers = new ArrayList<List<Node>>();
 		protected Map<Integer,Node> allNodes = new HashMap<Integer,Node>();
 		protected int numLayers;
+
 		
 		
 		
@@ -834,6 +835,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 			BufferedReader br = new BufferedReader(new FileReader(structureFile));
 			String line;
 			numLayers=nLayers;
+			
 			
 			for(int i=0; i<numLayers; i++){
 				layers.add(new ArrayList<Node>());
@@ -868,6 +870,21 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	        		layers.get(Integer.parseInt(pieces[5])).add(currNode);	
 	        	}
 	        }br.close();
+	        
+	        // Print the loaded class structure
+	        if(getSmDebug()){
+	        	StringBuilder structure = new StringBuilder();
+	        	for(int l=0; l<layers.size(); l++){
+	        		
+	        		for(Node n : layers.get(l)){
+	        			structure.append(n.nodeIndex); structure.append("\t");
+	        		}
+	        		structure.deleteCharAt(structure.length()-1);
+	        		structure.append("\n");
+	        	}
+	        	
+	        	System.err.println(structure.toString());
+	        }
 		}
 		
 		
