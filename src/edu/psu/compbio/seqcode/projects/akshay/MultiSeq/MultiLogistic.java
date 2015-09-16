@@ -877,7 +877,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	        	for(int l=0; l<layers.size(); l++){
 	        		
 	        		for(Node n : layers.get(l)){
-	        			structure.append(n.nodeIndex); structure.append("\t");
+	        			structure.append(n.nodeName); structure.append("\t");
 	        		}
 	        		structure.deleteCharAt(structure.length()-1);
 	        		structure.append("\n");
