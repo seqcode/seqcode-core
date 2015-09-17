@@ -668,7 +668,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 						for(int pind : n.parents){
 							num=num+sm_x[pind*dim+w];
 						}
-						for(int cind : n.parents){
+						for(int cind : n.children){
 							num=num+sm_x[cind*dim+w];
 						}
 						sm_x[offset+w] = num/den;
