@@ -794,7 +794,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 		        nll -= weights[i] * (num - Math.log(denom)); // Weighted NLL
 			}
 			
-			for(Node n : sm_ClassStructure.leafs){
+			for(Node n : sm_ClassStructure.allNodes.values()){
 				int nOffset = n.nodeIndex*dim;
 				for(int pid : n.parents){
 					int pOffset = pid*dim;
