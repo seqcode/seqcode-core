@@ -726,10 +726,16 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 
 			for(Node n : sm_ClassStructure.leafs){
 				int nOffset = n.nodeIndex*dim;
-				for(int pid : n.parents){
-					int pOffset = pid*dim;
+				if(n.parents.size() > 0){
+					for(int pid : n.parents){
+						int pOffset = pid*dim;
+						for(int w=0; w<dim; w++){
+							grad[nOffset+w] += m_Ridge*(sm_x[nOffset+w]-sm_x[pOffset+w]);
+						}
+					}
+				}else{
 					for(int w=0; w<dim; w++){
-						grad[nOffset+w] += m_Ridge*(sm_x[nOffset+w]-sm_x[pOffset+w]);
+						grad[nOffset+w] += m_Ridge*(sm_x[nOffset+w]);
 					}
 				}
 			}	
@@ -796,10 +802,16 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 			
 			for(Node n : sm_ClassStructure.allNodes.values()){
 				int nOffset = n.nodeIndex*dim;
-				for(int pid : n.parents){
-					int pOffset = pid*dim;
+				if(n.parents.size() >0){
+					for(int pid : n.parents){
+						int pOffset = pid*dim;
+						for(int w=0; w<dim; w++){
+							nll += (m_Ridge/2)*(sm_x[nOffset+w]-sm_x[pOffset+w])*(sm_x[nOffset+w]-sm_x[pOffset+w]);
+						}
+					}
+				}else{
 					for(int w=0; w<dim; w++){
-						nll += (m_Ridge/2)*(sm_x[nOffset+w]-sm_x[pOffset+w])*(sm_x[nOffset+w]-sm_x[pOffset+w]);
+						nll += (m_Ridge/2)*(sm_x[nOffset+w]*sm_x[nOffset+w]);
 					}
 				}
 			}
