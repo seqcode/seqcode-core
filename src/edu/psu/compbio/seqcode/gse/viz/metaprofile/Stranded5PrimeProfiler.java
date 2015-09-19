@@ -30,14 +30,16 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 	private char base='.'; //Only plot tags that have this base at baseRelPosition
 	private int baseRelPosition=0;  //Only plot tags that have this base at baseRelPosition
 	private SequenceGenerator seqgen=null;
+	private int fivePrimeShift = 0;
 	
-	public Stranded5PrimeProfiler(GenomeConfig genConfig, BinningParameters ps, ExperimentManager man, char strand, char base, int baseRelPosition) {
+	public Stranded5PrimeProfiler(GenomeConfig genConfig, BinningParameters ps, ExperimentManager man, char strand, int fivePrimeShift, char base, int baseRelPosition) {
 		genome = genConfig.getGenome();
 		manager = man;
 		params = ps;
 		this.strand = strand;
 		this.base = base;
 		this.baseRelPosition = baseRelPosition;
+		this.fivePrimeShift=fivePrimeShift;
 		
 		if(base != '.'){
 			seqgen = genConfig.getSequenceGenerator();
@@ -82,9 +84,10 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 					SeqHit hit = new SeqHit(genome, a.getChrom(), sbc);
 					if (this.strand=='.' || hit.getStrand()==wantedStrand){  //only count one strand
 						if (start<=hit.getFivePrime() && end>=hit.getFivePrime()){
-							int hit5Prime = hit.getFivePrime()-start;
+							int hitPos = hit.getStrand()=='+' ? hit.getFivePrime()+fivePrimeShift : hit.getFivePrime()-fivePrimeShift; 
+							int hit5Prime = hitPos-start;
 							if(pointStrand=='-')
-								hit5Prime = end-hit.getFivePrime();
+								hit5Prime = end-hitPos;
 							array[params.findBin(hit5Prime)]+=hit.getWeight();
 						}				
 					}

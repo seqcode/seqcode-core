@@ -29,6 +29,7 @@ public class MetaConfig {
 	public Color color = Color.blue;
 	public char baseLimit='.'; //Only draw meta-plots for tags with this character at baseLimitRelPosition relative to 5' end (. = draw all tags)
 	public int baseLimitRelPosition=0;
+	public int fivePrimeShift=0;
 	
 	public MetaConfig(String [] args){
 		if(args.length < 2){
@@ -37,6 +38,7 @@ public class MetaConfig {
 			winLen = Args.parseInteger(args,"win", 10000);
 			bins = Args.parseInteger(args,"bins", 100);
 			readExt = Args.parseInteger(args,"readext", 0);
+			fivePrimeShift = Args.parseInteger(args,"readshift", 0);
 			lineMin = Args.parseDouble(args,"linemin", 0);
 			lineMax = Args.parseDouble(args,"linemax", 100);
 			lineThick = Args.parseInteger(args,"linethick", 1);
@@ -85,6 +87,7 @@ public class MetaConfig {
 				"\t--win <profile width> --bins <num bins> \n" +
 				"\t--linemin <min>  --linemax <max> \n" +
 				"\t--readext <extension>\n" +
+				"\t--readshift <5' shift>\n" +
 				"\t--peaks <peaks file name>\n" +
 				"\t--out <output root name> \n" +
 				"\t--color <red/green/blue> or --color4 <R G B A>\n" +
