@@ -111,32 +111,32 @@ public class DifferentialMSR {
 			//StrandedBasedCount object contains positive and negative strand separately
 			//store all base counts indexed by positions at column[1]
 			//extend reads to 3' end and bin according to bin size			
-//			for (Sample sample : manager.getSamples()){		
-//				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
-//				for (StrandedBaseCount hits: currentCounts){
-//					for (int i = 0; i<threePrimReadExt; i++)
-//						if (hits.getStrand()=='+')
-//							GaussianBlur[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)][1]+=hits.getCount();
-//						else
-//							GaussianBlur[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)][1]+=hits.getCount();
-//				}
-//			}
-			
 			for (Sample sample : manager.getSamples()){		
 				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
-				for (StrandedBaseCount hits: currentCounts)
-					GaussianBlur[(int) Math.ceil((hits.getCoordinate())/binWidth)][1]+=hits.getCount();				
+				for (StrandedBaseCount hits: currentCounts){
+					for (int i = 0; i<threePrimReadExt+1; i++)
+						if (hits.getStrand()=='+')
+							GaussianBlur[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)][1]+=hits.getCount();
+						else
+							GaussianBlur[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)][1]+=hits.getCount();
+				}
 			}
+			
+//			for (Sample sample : manager.getSamples()){		
+//				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
+//				for (StrandedBaseCount hits: currentCounts)
+//					GaussianBlur[(int) Math.ceil((hits.getCoordinate())/binWidth)][1]+=hits.getCount();				
+//			}
 			
 			//lets check up to here
 			System.out.println("current Chrom is: "+currChrom.getChrom());
 			
-			if (currChrom.getChrom()=="1")
+			if (currChrom.getChrom()=="Un_gl000241")
 				for (int i = 0; i< 50;i++)
 					System.out.println(GaussianBlur[92943501+i][1]);
 			
-			for (int i = 0; i< 50;i++)
-				System.out.println(GaussianBlur[i][1]);
+//			for (int i = 0; i< 50;i++)
+//				System.out.println(GaussianBlur[i][1]);
 			
 			/*********************
 			 * Starting nodes
