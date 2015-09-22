@@ -304,7 +304,8 @@ public class DifferentialMSR {
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		SEEDConfig sconf = new SEEDConfig(gconf, args);
-		DifferentialMSR diffMSR = new DifferentialMSR (gconf, econf, sconf);	
+		DifferentialMSR profile = new DifferentialMSR (gconf, econf, sconf);	
+		profile.buildMSR();
 	}
 	
 }
