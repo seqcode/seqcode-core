@@ -124,8 +124,13 @@ public class DifferentialMSR {
 			
 			//lets check up to here
 			System.out.println("current Chrom is: "+currChrom.getChrom());
+			
+			if (currChrom.getChrom()=="1")
+				for (int i = 0; i< 200;i++)
+					System.out.println(GaussianBlur[92943501+i]+"\t");
+			
 			for (int i = 0; i< 200;i++)
-				System.out.println(GaussianBlur[92943501+i]+"\t");
+				System.out.println(GaussianBlur[i]+"\t");
 			
 			/*********************
 			 * Starting nodes
