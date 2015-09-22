@@ -133,7 +133,7 @@ public class DifferentialMSR {
 			
 			if (currChrom.getChrom()=="Un_gl000241")
 				for (int i = 0; i< 50;i++)
-					System.out.println(GaussianBlur[92943501+i][1]);
+					System.out.println(GaussianBlur[i][1]);
 			
 //			for (int i = 0; i< 50;i++)
 //				System.out.println(GaussianBlur[i][1]);
