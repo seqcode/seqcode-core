@@ -84,11 +84,17 @@ public class DifferentialMSR {
 		ExperimentManager manager = new ExperimentManager(econfig);
 		Genome genome = gconfig.getGenome();
 		
-		//test
+		//test to print whole chromosomes
 		System.out.println(genome.getChromList());
+		
+		System.out.println("before: "+binWidth+"\t"+threePrimReadExt);
 		
 		binWidth = sconfig.getBinWidth();
 		threePrimReadExt = sconfig.getTag3PrimeExtension();
+		
+		//test to print binWidth and threePrimReadExt
+		System.out.println("binWidth is: "+binWidth);
+		System.out.println("threePrimReadExt is: "+threePrimReadExt);
 		
 		Iterator<Region> chroms = new ChromosomeGenerator<Genome>().execute(genome);
 		//iterating each chromosome (each chromosome is a region).
@@ -120,9 +126,11 @@ public class DifferentialMSR {
 				for (StrandedBaseCount hits: currentCounts){
 					for (int i = 0; i<threePrimReadExt+1; i++)
 						if (hits.getStrand()=='+')
-							GaussianBlur[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)][1]+=hits.getCount();
+							while (hits.getCoordinate()+i<currchromSize)
+								GaussianBlur[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)][1]+=hits.getCount();
 						else
-							GaussianBlur[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)][1]+=hits.getCount();
+							while (hits.getCoordinate()-i >= 0)
+								GaussianBlur[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)][1]+=hits.getCount();
 				}
 				currentCounts = null;
 			}
