@@ -130,14 +130,11 @@ public class DifferentialMSR {
 			
 			//lets check up to here
 			System.out.println("current Chrom is: "+currChrom.getChrom());
-			
-			if (currchromSize > 93000000)
-				for (int i = 92943501; i< 100;i++)
+
+			if (currchromSize > 1000){
+				for (int i = 0; i< 100;i++)
 					System.out.println(GaussianBlur[i][1]);
-			
-			manager.close();
-//			for (int i = 0; i< 50;i++)
-//				System.out.println(GaussianBlur[i][1]);
+			}
 			
 			/*********************
 			 * Starting nodes
@@ -301,6 +298,7 @@ public class DifferentialMSR {
 			
 			*/
 		}// end of chromosome iteration		
+		manager.close();
 	}
 	
 		
