@@ -146,7 +146,7 @@ public class DifferentialMSR {
 
 			if (currchromSize > 90000000){
 				for (int i = 0; i< 100;i++)
-					System.out.println(GaussianBlur[92943501+i][1]);
+					System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
 			}
 			
 			GaussianBlur = null;
