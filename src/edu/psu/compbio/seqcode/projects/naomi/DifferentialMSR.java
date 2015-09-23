@@ -125,11 +125,9 @@ public class DifferentialMSR {
 				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
 				for (StrandedBaseCount hits: currentCounts){
 					for (int i = 0; i<threePrimReadExt+1; i++)
-						if (hits.getStrand()=='+')
-							while (hits.getCoordinate()+i<currchromSize)
+						if (hits.getStrand()=='+' && hits.getCoordinate()+i<currchromSize)
 								GaussianBlur[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)][1]+=hits.getCount();
-						else
-							while (hits.getCoordinate()-i >= 0)
+						else if (hits.getStrand()=='+' && hits.getCoordinate()-i >=0)
 								GaussianBlur[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)][1]+=hits.getCount();
 				}
 				currentCounts = null;
