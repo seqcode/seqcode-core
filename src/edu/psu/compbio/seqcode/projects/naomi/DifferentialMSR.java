@@ -83,6 +83,10 @@ public class DifferentialMSR {
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
 		Genome genome = gconfig.getGenome();
+		
+		//test
+		System.out.println(genome.getChromList());
+		
 		binWidth = sconfig.getBinWidth();
 		threePrimReadExt = sconfig.getTag3PrimeExtension();
 		
@@ -120,6 +124,7 @@ public class DifferentialMSR {
 						else
 							GaussianBlur[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)][1]+=hits.getCount();
 				}
+				currentCounts = null;
 			}
 			
 //			for (Sample sample : manager.getSamples()){		
@@ -135,6 +140,9 @@ public class DifferentialMSR {
 				for (int i = 0; i< 100;i++)
 					System.out.println(GaussianBlur[92943501+i][1]);
 			}
+			
+			GaussianBlur = null;
+			
 			
 			/*********************
 			 * Starting nodes
