@@ -131,10 +131,11 @@ public class DifferentialMSR {
 			//lets check up to here
 			System.out.println("current Chrom is: "+currChrom.getChrom());
 			
-			if (currchromSize > 930000 && currChrom.getChrom()=="Un_gl000241")
+			if (currchromSize > 93000000)
 				for (int i = 92943501; i< 100;i++)
 					System.out.println(GaussianBlur[i][1]);
 			
+			manager.close();
 //			for (int i = 0; i< 50;i++)
 //				System.out.println(GaussianBlur[i][1]);
 			
