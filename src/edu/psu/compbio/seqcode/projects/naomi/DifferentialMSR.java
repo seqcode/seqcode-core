@@ -273,7 +273,7 @@ public class DifferentialMSR {
 				for (int i = 0; i<DCPsize;i++){
 					dcp[i] = (int) -Math.round(radius[n])+i;
 					// applying equation 7 in Vincken(1997)
-					affectionDistance=Math.exp(dcp[i]/denom)/Math.exp(Math.pow(0.5*sigma[n],2)/denom);
+					affectionDistance=Math.exp(Math.pow(dcp[i], 2)/denom)/Math.exp(Math.pow(0.5*sigma[n],2)/denom);
 					
 					//applying equation 8 in Vincken (1997) 
 					if (Math.abs(dcp[i]) > 0.5*sigma[n]){distanceFactor[i]= affectionDistance;}
@@ -285,7 +285,7 @@ public class DifferentialMSR {
 				//test
 				System.out.println("DCP size is: "+DCPsize);
 				for (int i = 0; i<DCPsize;i++){
-					System.out.println(dcp[i]);
+					System.out.println(distanceFactor[i]);
 				}
 				
 				/***************
