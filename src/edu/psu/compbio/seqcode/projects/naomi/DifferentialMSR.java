@@ -104,12 +104,13 @@ public class DifferentialMSR {
 			Region currChrom = chroms.next();	
 			//previously it was below. but I don't think I need +1 here
 			//int currchromSize= currChrom.getWidth()+1
-			int currchromSize= currChrom.getWidth();
+			int currchromSize = currChrom.getWidth();
+			int currchromBinSize = (int) Math.ceil(currchromSize/binWidth);
 			
 			//primitive matrix to store signal and the subsequent convolved signals
 			//its index correspond to the coordinates
-			float[][] GaussianBlur = new float[(int) Math.ceil(currchromSize/binWidth)][2];
-			for (int i = 0;i<(int) Math.ceil(currchromSize/binWidth);i++){
+			float[][] GaussianBlur = new float[currchromBinSize][2];
+			for (int i = 0;i<currchromBinSize;i++){
 				for (int j = 0; j<2;j++)
 					GaussianBlur[i][j] = 0;
 			}
@@ -170,10 +171,6 @@ public class DifferentialMSR {
 			
 			//copy to segmentation tree
 			
-			//this is working
-//			for (Integer element :linkageMap.keySet())
-//				System.out.println(element+" : "+ linkageMap.get(element));
-			
 			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
 			currScale.put(1, linkageMap.keySet());
 			
@@ -186,19 +183,22 @@ public class DifferentialMSR {
 				trailingZero = Collections.min(nonzeroList)-1;
 				zeroEnd = Collections.max(nonzeroList)+1;
 			}
+			if (trailingZero == -1)
+				trailingZero = 0;
 			
 			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
 					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);		
 
-	//		for (int n = 2;n < numScale+1; n++){
+			for (int n = 2;n < numScale+1; n++){
 				
 				/*********************
-				 * Gaussian scale space 	
+				 * Gaussian scale space 
+				 */	
 				 
-				double polyCoeffi[] = new double [currchromSize];
+				double polyCoeffi[] = new double [currchromBinSize];
 				//first copy from column[1] to column[0];this procedure need to be repeated for each iteration of scale
 				//also copy from column[1] to array to store polynomial coefficient
-				for (int i = 0 ; i<currchromSize; i++){
+				for (int i = 0 ; i<currchromBinSize; i++){
 					GaussianBlur[i][0]=GaussianBlur[i][1];
 					polyCoeffi[i]=GaussianBlur[i][1];
 				}
@@ -231,12 +231,19 @@ public class DifferentialMSR {
 				
 				//copy Gaussian blur results to the column[1]
 				// I should check to make sure that it's not off by 1
-				for (int i = 0; i<currchromSize;i++){
-					if (currchromSize % 2 ==0 && coefficients.length/2 == 1)
-						GaussianBlur[i][1]=(float) coefficients[polyMid-currchromSize/2+i+1];
+				for (int i = 0; i<currchromBinSize;i++){
+					if (currchromBinSize % 2 ==0 && coefficients.length/2 == 1)
+						GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i+1];
 					else
-						GaussianBlur[i][1]=(float) coefficients[polyMid-currchromSize/2+i];
+						GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i];
 				}	
+				
+				//testing
+				if (currchromSize > 200000000){			
+					System.out.println("current Chrom is: "+currChrom.getChrom());
+					for (int i = 0; i< 100;i++)
+						System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
+				}
 				
 				/***************
 				 * Search Volume	
@@ -313,12 +320,11 @@ public class DifferentialMSR {
 				}
 				
 				//for each scaleNum, add the parents to the segmentationTree
-				currScale.put(n, GvParents.keySet());			
+				currScale.put(n, GvParents.keySet());		
+				*/	
 			}//end of scale space iteration
 			
 			segmentationTree.put(currChrom, currScale);
-			
-			*/
 			
 			GaussianBlur = null;
 			
