@@ -57,7 +57,7 @@ public class DifferentialMSR {
 		 * Gaussian scale space and window parameters	
 		 */
 		// arbitrary number of scale
-		int numScale= 10;
+		int numScale= 5;
 		double DELTA_TAU = 0.5*Math.log(2);	
 		// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
 		double P_MIN = Math.pow(10,-3);
@@ -209,34 +209,33 @@ public class DifferentialMSR {
 				double inverseCDF = normDistribution.inverseCumulativeProbability(P_MIN);				
 				int windowSize = (int) (-Math.round(inverseCDF)*2+1);						
 				//window calculation based on Gaussian(normal) distribution with sigma, mean=zero,x=X[i]			
-//				double window[] = new double[windowSize];
-//				double windowSum = 0;
-//				for (int i = 0;i<windowSize;i++){
-//					window[i] = normDistribution.density(Math.round(inverseCDF)+i);
-//					windowSum = windowSum+window[i];
-//				}
-//				double normalizedWindow[]=new double[windowSize];
-//				for (int i = 0;i<windowSize;i++)
-//					normalizedWindow[i] = window[i]/windowSum;	
+				double window[] = new double[windowSize];
+				double windowSum = 0;
+				for (int i = 0;i<windowSize;i++){
+					window[i] = normDistribution.density(Math.round(inverseCDF)+i);
+					windowSum = windowSum+window[i];
+				}
+				double normalizedWindow[]=new double[windowSize];
+				for (int i = 0;i<windowSize;i++)
+					normalizedWindow[i] = window[i]/windowSum;	
 				
+				//test
 				System.out.println("delta_tau is: "+DELTA_TAU+"\t"+"sigma is: "+sigma+"\t"+"inverseCDF is: "+inverseCDF+"windowSize is: "+windowSize);
+				System.out.println("normalized window is: ");
 				
-				
-//				System.out.println("normalized window is: ");
-				
-//				for (int i = 0; i<windowSize; i++)
-//					System.out.println(normalizedWindow[i]);
+				for (int i = 0; i<windowSize; i++)
+					System.out.println(normalizedWindow[i]);
 				
 				//multiplying by polynomial ; I have to test to see how this works
-//				PolynomialFunction poly1 = new PolynomialFunction(polyCoeffi);
-//				PolynomialFunction poly2 = new PolynomialFunction(normalizedWindow);
-//				PolynomialFunction polyMultiplication=poly1.multiply(poly2);
-//				double coefficients[]= polyMultiplication.getCoefficients();
+				PolynomialFunction poly1 = new PolynomialFunction(polyCoeffi);
+				PolynomialFunction poly2 = new PolynomialFunction(normalizedWindow);
+				PolynomialFunction polyMultiplication=poly1.multiply(poly2);
+				double coefficients[]= polyMultiplication.getCoefficients();
 				
 				//taking mid point of polynomial coefficients			
-//				int polyMid = (int) Math.floor(coefficients.length/2);
+				int polyMid = (int) Math.floor(coefficients.length/2);
 				
-//				System.out.println("polyMid is: "+polyMid);
+				System.out.println("coefficients length is: "+coefficients.length+"polyMid is: "+polyMid);
 				
 				//copy Gaussian blur results to the column[1]
 				// I should check to make sure that it's not off by 1
@@ -333,7 +332,7 @@ public class DifferentialMSR {
 				*/	
 			}//end of scale space iteration
 			
-			segmentationTree.put(currChrom, currScale);
+//			segmentationTree.put(currChrom, currScale);
 			
 			GaussianBlur = null;
 			
