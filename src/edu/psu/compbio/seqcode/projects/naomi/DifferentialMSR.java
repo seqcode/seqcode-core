@@ -199,7 +199,11 @@ public class DifferentialMSR {
 				//also copy from column[1] to array to store polynomial coefficient
 				for (int i = 0 ; i<currchromBinSize; i++){
 					GaussianBlur[i][0]=GaussianBlur[i][1];
-					polyCoeffi[i]=GaussianBlur[i][1];
+					if (GaussianBlur[i][1] != 0){
+						polyCoeffi[i]=GaussianBlur[i][1];
+					}else{
+						polyCoeffi[i]=Double.MIN_VALUE;
+					}
 				}
 				//sigma calculation
 				sigma = Math.exp((n-1)*DELTA_TAU);
@@ -231,25 +235,25 @@ public class DifferentialMSR {
 				//taking mid point of polynomial coefficients			
 				int polyMid = (int) Math.floor(coefficients.length/2);
 				
-//				System.out.println("coefficients length is: "+coefficients.length+"polyMid is: "+polyMid);
+				System.out.println("currchromBin Size is : "+currchromBinSize+ "windowSize is: "+windowSize+"coefficients length is: "+coefficients.length+"polyMid is: "+polyMid);
 				
 				//testing testing
-				double c[] = poly2.getCoefficients();
-				System.out.println("coefficients of normalizedWindow");
-				for (int i = 0; i<c.length;i++)
-					System.out.println(c[i]);
-				double testArray[] = new double[10];
-				for (int i=0; i<10; i++)
-					testArray[i] = 9-i;
-				PolynomialFunction polyTest = new PolynomialFunction(testArray);
-				double ctest[] = polyTest.getCoefficients();
-				for (int i = 0; i<ctest.length;i++)
-					System.out.println(ctest[i]);
-				PolynomialFunction testMultiply = poly2.multiply(polyTest);
-				double testcoef [] = testMultiply.getCoefficients();
-				System.out.println("after multipying");
-				for (int i = 0; i<testcoef.length;i++)
-					System.out.println(testcoef[i]);
+//				double c[] = poly2.getCoefficients();
+//				System.out.println("coefficients of normalizedWindow");
+//				for (int i = 0; i<c.length;i++)
+//					System.out.println(c[i]);
+//				double testArray[] = new double[10];
+//				for (int i=0; i<10; i++)
+//					testArray[i] = 9-i;
+//				PolynomialFunction polyTest = new PolynomialFunction(testArray);
+//				double ctest[] = polyTest.getCoefficients();
+//				for (int i = 0; i<ctest.length;i++)
+//					System.out.println(ctest[i]);
+//				PolynomialFunction testMultiply = poly2.multiply(polyTest);
+//				double testcoef [] = testMultiply.getCoefficients();
+//				System.out.println("after multipying");
+//				for (int i = 0; i<testcoef.length;i++)
+//					System.out.println(testcoef[i]);
 				
 				
 				
