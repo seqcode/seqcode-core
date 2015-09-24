@@ -233,10 +233,19 @@ public class DifferentialMSR {
 				
 //				System.out.println("coefficients length is: "+coefficients.length+"polyMid is: "+polyMid);
 				
+				//testing testing
 				double c[] = poly2.getCoefficients();
 				System.out.println("coefficients of normalizedWindow");
 				for (int i = 0; i<c.length;i++)
 					System.out.println(c[i]);
+				double testArray[] = new double[10];
+				for (int i=0; i<10; i++)
+					testArray[i] = 0+i;
+				PolynomialFunction polyTest = new PolynomialFunction(testArray);
+				double ctest[] = polyTest.getCoefficients();
+				for (int i = 0; i<ctest.length;i++)
+					System.out.println(ctest[i]);
+				
 				
 				//copy Gaussian blur results to the column[1]
 				// I should check to make sure that it's not off by 1
