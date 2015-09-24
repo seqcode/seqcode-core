@@ -176,7 +176,7 @@ public class DifferentialMSR {
 			
 			//determine the first nonzero and last nonzero from signal
 			
-			//check here 
+			//check here ; sometimes it produces zero for DImax, DImin, trailingZero, zeroEnd
 			int trailingZero = 0;
 			int zeroEnd = 0;		
 			if (!nonzeroList.isEmpty()){
@@ -236,43 +236,23 @@ public class DifferentialMSR {
 				//taking mid point of polynomial coefficients			
 				int polyMid = (int) Math.floor(coefficients.length/2);
 				
-				System.out.println("currchromBin Size is : "+currchromBinSize+ "windowSize is: "+windowSize+"coefficients length is: "+coefficients.length+"polyMid is: "+polyMid);
-				
-				//testing testing
-//				double c[] = poly2.getCoefficients();
-//				System.out.println("coefficients of normalizedWindow");
-//				for (int i = 0; i<c.length;i++)
-//					System.out.println(c[i]);
-//				double testArray[] = new double[10];
-//				for (int i=0; i<10; i++)
-//					testArray[i] = 9-i;
-//				PolynomialFunction polyTest = new PolynomialFunction(testArray);
-//				double ctest[] = polyTest.getCoefficients();
-//				for (int i = 0; i<ctest.length;i++)
-//					System.out.println(ctest[i]);
-//				PolynomialFunction testMultiply = poly2.multiply(polyTest);
-//				double testcoef [] = testMultiply.getCoefficients();
-//				System.out.println("after multipying");
-//				for (int i = 0; i<testcoef.length;i++)
-//					System.out.println(testcoef[i]);
-				
-				
-				
+				System.out.println("currchromBin Size is : "+currchromBinSize+"\t"+ "windowSize is: "+windowSize+"\t"+"coefficients length is: "+coefficients.length+"polyMid is: "+polyMid);
+		
 				//copy Gaussian blur results to the column[1]
 				// I should check to make sure that it's not off by 1
-			//	for (int i = 0; i<currchromBinSize;i++){
-			//		if (currchromBinSize % 2 ==0 && coefficients.length/2 == 1)
-			//			GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i+1];
-			//		else
-			//			GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i];
-			//	}	
+				for (int i = 0; i<currchromBinSize;i++){
+					if (currchromBinSize % 2 ==0 && coefficients.length/2 == 1)
+						GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i+1];
+					else
+						GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i];
+				}	
 				
 				//testing
-			//	if (currchromSize > 200000000){			
-			//		System.out.println("current Chrom is: "+currChrom.getChrom());
-			//		for (int i = 0; i< 100;i++)
-			//			System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
-			//	}
+				if (currchromSize > 200000000){			
+					System.out.println("current Chrom is: "+currChrom.getChrom());
+					for (int i = 0; i< 100;i++)
+						System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
+				}
 				
 				/***************
 				 * Search Volume	
