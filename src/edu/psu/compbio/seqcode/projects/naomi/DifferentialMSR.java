@@ -283,7 +283,7 @@ public class DifferentialMSR {
 				//test
 				System.out.println("DCP size is: "+DCPsize);
 				for (int i = 0; i<DCPsize;i++){
-					System.out.println(distanceFactor[i]);
+					System.out.println(dcp[i]);
 				}
 				
 				/***************
