@@ -167,11 +167,12 @@ public class DifferentialMSR {
 					nonzeroList.add(i);
 			}
 			linkageMap.put(GaussianBlur.length-1,0);
+			
 			//copy to segmentation tree
 			
 			//this is working
-			for (Integer element :linkageMap.keySet())
-				System.out.println(element+" : "+ linkageMap.get(element));
+//			for (Integer element :linkageMap.keySet())
+//				System.out.println(element+" : "+ linkageMap.get(element));
 			
 			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
 			currScale.put(1, linkageMap.keySet());
