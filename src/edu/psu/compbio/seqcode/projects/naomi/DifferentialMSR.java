@@ -240,11 +240,17 @@ public class DifferentialMSR {
 					System.out.println(c[i]);
 				double testArray[] = new double[10];
 				for (int i=0; i<10; i++)
-					testArray[i] = 0+i;
+					testArray[i] = 9-i;
 				PolynomialFunction polyTest = new PolynomialFunction(testArray);
 				double ctest[] = polyTest.getCoefficients();
 				for (int i = 0; i<ctest.length;i++)
 					System.out.println(ctest[i]);
+				PolynomialFunction testMultiply = poly2.multiply(polyTest);
+				double testcoef [] = testMultiply.getCoefficients();
+				System.out.println("after multipying");
+				for (int i = 0; i<testcoef.length;i++)
+					System.out.println(testcoef[i]);
+				
 				
 				
 				//copy Gaussian blur results to the column[1]
