@@ -278,23 +278,23 @@ public class DifferentialMSR {
 					//applying equation 8 in Vincken (1997) 
 					if (Math.abs(dcp[i]) > 0.5*sigma[n]){distanceFactor[i]= affectionDistance;}
 					else{distanceFactor[i] = 1.0000;}
-					//test
-					System.out.println("Affection distance is "+affectionDistance);
 				}
 				
 				//test
-				System.out.println("DCP size is: "+DCPsize);
-				for (int i = 0; i<DCPsize;i++){
-					System.out.println(distanceFactor[i]);
-				}
+//				System.out.println("DCP size is: "+DCPsize);
+//				for (int i = 0; i<DCPsize;i++){
+//					System.out.println(distanceFactor[i]);
+//				}
 				
 				/***************
 				 * Linkage Loop	
+				 */
 				 
 				TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();
 				if (DCPsize < 50){				
 					/***********
 					 * Over window
+					 */
 					 
 					//build segmentTree 
 					//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
@@ -326,21 +326,30 @@ public class DifferentialMSR {
 							lastParent = parent;
 						}
 						GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
-						GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);								
+						GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
+						
+						//test
+						for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
+							System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+						}
+						
 					}
-				}else{
+	//			}else{
 					/***********
 					 * Over kids
 					 
 					//I haven't understood this part from the matlab code
+					 * 
+					 */
 				}
+				
 				
 				//for each scaleNum, add the parents to the segmentationTree
 				currScale.put(n, GvParents.keySet());		
-				*/	
+	
 			}//end of scale space iteration
 			
-//			segmentationTree.put(currChrom, currScale);
+			segmentationTree.put(currChrom, currScale);
 			
 			GaussianBlur = null;
 			
