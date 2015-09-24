@@ -168,18 +168,26 @@ public class DifferentialMSR {
 			}
 			linkageMap.put(GaussianBlur.length-1,0);
 			//copy to segmentation tree
-	
+			
+			//this is working
 			for (Integer element :linkageMap.keySet())
 				System.out.println(element+" : "+ linkageMap.get(element));
 			
-//			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
-//			currScale.put(1, linkageMap.keySet());
-//			//determine the first nonzero and last nonzero from signal
-//			int trailingZero = Collections.min(nonzeroList)-1;
-//			int zeroEnd = Collections.max(nonzeroList)+1;
+			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
+			currScale.put(1, linkageMap.keySet());
 			
-//			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
-//					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);		
+			//determine the first nonzero and last nonzero from signal
+			
+			//check here 
+			int trailingZero = 0;
+			int zeroEnd = 0;		
+			if (!nonzeroList.isEmpty()){
+				trailingZero = Collections.min(nonzeroList)-1;
+				zeroEnd = Collections.max(nonzeroList)+1;
+			}
+			
+			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
+					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);		
 
 	//		for (int n = 2;n < numScale+1; n++){
 				
