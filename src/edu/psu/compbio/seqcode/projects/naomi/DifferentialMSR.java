@@ -229,21 +229,23 @@ public class DifferentialMSR {
 				//taking mid point of polynomial coefficients			
 				int polyMid = (int) Math.floor(coefficients.length/2);
 				
+				System.out.println("polyMid is: "+polyMid);
+				
 				//copy Gaussian blur results to the column[1]
 				// I should check to make sure that it's not off by 1
-				for (int i = 0; i<currchromBinSize;i++){
-					if (currchromBinSize % 2 ==0 && coefficients.length/2 == 1)
-						GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i+1];
-					else
-						GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i];
-				}	
+			//	for (int i = 0; i<currchromBinSize;i++){
+			//		if (currchromBinSize % 2 ==0 && coefficients.length/2 == 1)
+			//			GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i+1];
+			//		else
+			//			GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i];
+			//	}	
 				
 				//testing
-				if (currchromSize > 200000000){			
-					System.out.println("current Chrom is: "+currChrom.getChrom());
-					for (int i = 0; i< 100;i++)
-						System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
-				}
+			//	if (currchromSize > 200000000){			
+			//		System.out.println("current Chrom is: "+currChrom.getChrom());
+			//		for (int i = 0; i< 100;i++)
+			//			System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
+			//	}
 				
 				/***************
 				 * Search Volume	
