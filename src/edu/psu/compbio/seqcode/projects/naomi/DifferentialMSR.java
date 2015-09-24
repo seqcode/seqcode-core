@@ -190,7 +190,7 @@ public class DifferentialMSR {
 			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
 					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);		
 
-			for (int n = 2;n < numScale+1; n++){
+			for (int n = 1;n < numScale; n++){
 				
 				/*********************
 				 * Gaussian scale space 
@@ -208,7 +208,7 @@ public class DifferentialMSR {
 					}
 				}
 				//sigma calculation
-				sigma[n] = Math.exp((n-1)*DELTA_TAU);
+				sigma[n] = Math.exp(n*DELTA_TAU);
 				// create normal distribution with mean zero and sigma[n]
 				NormalDistribution normDistribution = new NormalDistribution(0.00,sigma[n]);
 				//take inverse CDF based on the normal distribution using probability
@@ -257,7 +257,7 @@ public class DifferentialMSR {
 				 */ 	
 				 
 				double tempRadius;
-				if (n==2){
+				if (n==1){
 					tempRadius = sigma[n];
 				}else{
 					tempRadius = Math.sqrt(Math.pow(sigma[n],2)-Math.pow(sigma[n-1], 2));
@@ -281,6 +281,7 @@ public class DifferentialMSR {
 				}
 				
 				//test
+				System.out.println("DCP size is: "+DCPsize);
 				for (int i = 0; i<DCPsize;i++){
 					System.out.println(distanceFactor[i]);
 				}
