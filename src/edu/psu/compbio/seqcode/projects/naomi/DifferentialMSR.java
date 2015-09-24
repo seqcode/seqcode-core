@@ -218,18 +218,25 @@ public class DifferentialMSR {
 				}
 				double normalizedWindow[]=new double[windowSize];
 				for (int i = 0;i<windowSize;i++)
-					normalizedWindow[i] = window[i]/windowSum;			
+					normalizedWindow[i] = window[i]/windowSum;	
+				
+				
+				
+				System.out.println("normalized window is: ");
+				
+				for (int i = 0; i<windowSize; i++)
+					System.out.println(normalizedWindow[i]);
 				
 				//multiplying by polynomial ; I have to test to see how this works
-				PolynomialFunction poly1 = new PolynomialFunction(polyCoeffi);
-				PolynomialFunction poly2 = new PolynomialFunction(normalizedWindow);
-				PolynomialFunction polyMultiplication=poly1.multiply(poly2);
-				double coefficients[]= polyMultiplication.getCoefficients();
+//				PolynomialFunction poly1 = new PolynomialFunction(polyCoeffi);
+//				PolynomialFunction poly2 = new PolynomialFunction(normalizedWindow);
+//				PolynomialFunction polyMultiplication=poly1.multiply(poly2);
+//				double coefficients[]= polyMultiplication.getCoefficients();
 				
 				//taking mid point of polynomial coefficients			
-				int polyMid = (int) Math.floor(coefficients.length/2);
+//				int polyMid = (int) Math.floor(coefficients.length/2);
 				
-				System.out.println("polyMid is: "+polyMid);
+//				System.out.println("polyMid is: "+polyMid);
 				
 				//copy Gaussian blur results to the column[1]
 				// I should check to make sure that it's not off by 1
