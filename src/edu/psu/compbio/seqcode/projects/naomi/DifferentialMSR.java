@@ -73,11 +73,10 @@ public class DifferentialMSR {
 		
 		/*********************
 		 * Matrices parameters
-		 */
-		double sigma[] = new double[numScale];
+		 */	
+		double sigma = 1;
 		double radius[] = new double[numScale];
 		for (int i = 0; i<numScale;i++){
-			sigma[i] = 1;
 			radius[i] = 1;
 		}
 		
@@ -203,29 +202,30 @@ public class DifferentialMSR {
 					polyCoeffi[i]=GaussianBlur[i][1];
 				}
 				//sigma calculation
-				sigma[n] = Math.exp((n-1)*DELTA_TAU);
+				sigma = Math.exp((n-1)*DELTA_TAU);
 				// create normal distribution with mean zero and sigma[n]
-				NormalDistribution normDistribution = new NormalDistribution(0.00,sigma[n]);
+				NormalDistribution normDistribution = new NormalDistribution(0.00,sigma);
 				//take inverse CDF based on the normal distribution using probability
 				double inverseCDF = normDistribution.inverseCumulativeProbability(P_MIN);				
 				int windowSize = (int) (-Math.round(inverseCDF)*2+1);						
 				//window calculation based on Gaussian(normal) distribution with sigma, mean=zero,x=X[i]			
-				double window[] = new double[windowSize];
-				double windowSum = 0;
-				for (int i = 0;i<windowSize;i++){
-					window[i] = normDistribution.density(Math.round(inverseCDF)+i);
-					windowSum = windowSum+window[i];
-				}
-				double normalizedWindow[]=new double[windowSize];
-				for (int i = 0;i<windowSize;i++)
-					normalizedWindow[i] = window[i]/windowSum;	
+//				double window[] = new double[windowSize];
+//				double windowSum = 0;
+//				for (int i = 0;i<windowSize;i++){
+//					window[i] = normDistribution.density(Math.round(inverseCDF)+i);
+//					windowSum = windowSum+window[i];
+//				}
+//				double normalizedWindow[]=new double[windowSize];
+//				for (int i = 0;i<windowSize;i++)
+//					normalizedWindow[i] = window[i]/windowSum;	
+				
+				System.out.println("delta_tau is: "+DELTA_TAU+"\t"+"sigma is: "+sigma+"\t"+"inverseCDF is: "+inverseCDF+"windowSize is: "+windowSize);
 				
 				
+//				System.out.println("normalized window is: ");
 				
-				System.out.println("normalized window is: ");
-				
-				for (int i = 0; i<windowSize; i++)
-					System.out.println(normalizedWindow[i]);
+//				for (int i = 0; i<windowSize; i++)
+//					System.out.println(normalizedWindow[i]);
 				
 				//multiplying by polynomial ; I have to test to see how this works
 //				PolynomialFunction poly1 = new PolynomialFunction(polyCoeffi);
