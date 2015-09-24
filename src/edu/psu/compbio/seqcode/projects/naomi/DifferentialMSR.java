@@ -134,27 +134,17 @@ public class DifferentialMSR {
 				}
 				currentCounts = null;
 			}
-			
-//			for (Sample sample : manager.getSamples()){		
-//				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
-//				for (StrandedBaseCount hits: currentCounts)
-//					GaussianBlur[(int) Math.ceil((hits.getCoordinate())/binWidth)][1]+=hits.getCount();				
-//			}
-			
-			//lets check up to here
-			System.out.println("current Chrom is: "+currChrom.getChrom());
 
-			if (currchromSize > 200000000){
+			if (currchromSize > 200000000){			
+				//testing
+				System.out.println("current Chrom is: "+currChrom.getChrom());
 				for (int i = 0; i< 100;i++)
 					System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
 			}
 			
-			GaussianBlur = null;
-			
-			
 			/*********************
 			 * Starting nodes
-			 
+			 */
 					
 			//linkageMap contains index of kids and parents
 			HashMap <Integer, Integer> linkageMap = new HashMap<Integer, Integer>();
@@ -183,8 +173,11 @@ public class DifferentialMSR {
 			//determine the first nonzero and last nonzero from signal
 			int trailingZero = Collections.min(nonzeroList)-1;
 			int zeroEnd = Collections.max(nonzeroList)+1;
+			
+			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
+					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);		
 
-			for (int n = 2;n < numScale+1; n++){
+	//		for (int n = 2;n < numScale+1; n++){
 				
 				/*********************
 				 * Gaussian scale space 	
@@ -313,6 +306,9 @@ public class DifferentialMSR {
 			segmentationTree.put(currChrom, currScale);
 			
 			*/
+			
+			GaussianBlur = null;
+			
 		}// end of chromosome iteration		
 		manager.close();
 	}
