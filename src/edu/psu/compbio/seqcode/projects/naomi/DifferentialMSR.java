@@ -59,8 +59,8 @@ public class DifferentialMSR {
 		// arbitrary number of scale
 		int numScale= 5;
 		double DELTA_TAU = 0.5*Math.log(2);	
-		// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
 		double MINIMUM_VALUE = Math.pow(10, -100); //arbitrary minimum value; I cannot use Double.MIN_VALUE because it can become zero
+		// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
 		double P_MIN = Math.pow(10,-3);
 		double K_MIN = 1/Math.sqrt(1-Math.exp(-2*DELTA_TAU));	
 		double K_N = Math.ceil(K_MIN);
@@ -75,9 +75,10 @@ public class DifferentialMSR {
 		/*********************
 		 * Matrices parameters
 		 */	
-		double sigma = 1;
+		double sigma[] = new double[numScale];
 		double radius[] = new double[numScale];
 		for (int i = 0; i<numScale;i++){
+			sigma[i] = 1;
 			radius[i] = 1;
 		}
 		
@@ -207,9 +208,9 @@ public class DifferentialMSR {
 					}
 				}
 				//sigma calculation
-				sigma = Math.exp((n-1)*DELTA_TAU);
+				sigma[n] = Math.exp((n-1)*DELTA_TAU);
 				// create normal distribution with mean zero and sigma[n]
-				NormalDistribution normDistribution = new NormalDistribution(0.00,sigma);
+				NormalDistribution normDistribution = new NormalDistribution(0.00,sigma[n]);
 				//take inverse CDF based on the normal distribution using probability
 				double inverseCDF = normDistribution.inverseCumulativeProbability(P_MIN);				
 				int windowSize = (int) (-Math.round(inverseCDF)*2+1);						
@@ -223,9 +224,6 @@ public class DifferentialMSR {
 				double normalizedWindow[]=new double[windowSize];
 				for (int i = 0;i<windowSize;i++)
 					normalizedWindow[i] = window[i]/windowSum;	
-				
-				//test
-				System.out.println("delta_tau is: "+DELTA_TAU+"\t"+"sigma is: "+sigma+"\t"+"inverseCDF is: "+inverseCDF+"windowSize is: "+windowSize);
 	
 				//multiplying by polynomial ; I have to test to see how this works
 				PolynomialFunction poly1 = new PolynomialFunction(polyCoeffi);
@@ -255,7 +253,8 @@ public class DifferentialMSR {
 				}
 				
 				/***************
-				 * Search Volume	
+				 * Search Volume
+				 */ 	
 				 
 				double tempRadius;
 				if (n==2){
@@ -279,6 +278,11 @@ public class DifferentialMSR {
 					//applying equation 8 in Vincken (1997) 
 					if (Math.abs(dcp[i]) > 0.5*sigma[n]){distanceFactor[i]= affectionDistance;}
 					else{distanceFactor[i] = 1.0000;}
+				}
+				
+				//test
+				for (int i = 0; i<DCPsize;i++){
+					System.out.println(distanceFactor[i]);
 				}
 				
 				/***************
