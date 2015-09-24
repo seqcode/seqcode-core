@@ -89,6 +89,7 @@ public class DifferentialMSR {
 		
 		System.out.println("before: "+binWidth+"\t"+threePrimReadExt);
 		
+		//fix here to get parameters only if they are specified
 		binWidth = sconfig.getBinWidth();
 		threePrimReadExt = sconfig.getTag3PrimeExtension();
 		
@@ -134,9 +135,9 @@ public class DifferentialMSR {
 				}
 				currentCounts = null;
 			}
-
+			
+			//testing
 			if (currchromSize > 200000000){			
-				//testing
 				System.out.println("current Chrom is: "+currChrom.getChrom());
 				for (int i = 0; i< 100;i++)
 					System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
@@ -155,7 +156,7 @@ public class DifferentialMSR {
 			float DImin = (float) Integer.MAX_VALUE;
 			List <Integer> nonzeroList = new ArrayList<Integer>();
 			linkageMap.put(0,0);
-			for (int i = 1 ; i< GaussianBlur.length-1; i++){
+			for (int i = 0 ; i< GaussianBlur.length-1; i++){ //should I start
 				if (GaussianBlur[i][1] != GaussianBlur[i+1][1])
 					linkageMap.put(i,0);
 				if (GaussianBlur[i][1] > DImax)
@@ -167,15 +168,18 @@ public class DifferentialMSR {
 			}
 			linkageMap.put(GaussianBlur.length-1,0);
 			//copy to segmentation tree
+	
+			for (Integer element :linkageMap.keySet())
+				System.out.println(element+" : "+ linkageMap.get(element));
 			
-			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
-			currScale.put(1, linkageMap.keySet());
-			//determine the first nonzero and last nonzero from signal
-			int trailingZero = Collections.min(nonzeroList)-1;
-			int zeroEnd = Collections.max(nonzeroList)+1;
+//			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
+//			currScale.put(1, linkageMap.keySet());
+//			//determine the first nonzero and last nonzero from signal
+//			int trailingZero = Collections.min(nonzeroList)-1;
+//			int zeroEnd = Collections.max(nonzeroList)+1;
 			
-			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
-					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);		
+//			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
+//					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);		
 
 	//		for (int n = 2;n < numScale+1; n++){
 				
