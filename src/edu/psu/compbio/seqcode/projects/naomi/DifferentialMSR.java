@@ -233,10 +233,9 @@ public class DifferentialMSR {
 				
 //				System.out.println("coefficients length is: "+coefficients.length+"polyMid is: "+polyMid);
 				
-				//testing the library
 				double c[] = poly2.getCoefficients();
 				System.out.println("coefficients of normalizedWindow");
-				for (int i = 0; c.length<9;i++)
+				for (int i = 0; i<c.length;i++)
 					System.out.println(c[i]);
 				
 				//copy Gaussian blur results to the column[1]
