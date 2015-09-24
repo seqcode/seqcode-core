@@ -60,6 +60,7 @@ public class DifferentialMSR {
 		int numScale= 5;
 		double DELTA_TAU = 0.5*Math.log(2);	
 		// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
+		double MINIMUM_VALUE = Math.pow(10, -100); //arbitrary minimum value; I cannot use Double.MIN_VALUE because it can become zero
 		double P_MIN = Math.pow(10,-3);
 		double K_MIN = 1/Math.sqrt(1-Math.exp(-2*DELTA_TAU));	
 		double K_N = Math.ceil(K_MIN);
@@ -202,7 +203,7 @@ public class DifferentialMSR {
 					if (GaussianBlur[i][1] != 0){
 						polyCoeffi[i]=GaussianBlur[i][1];
 					}else{
-						polyCoeffi[i]=Double.MIN_VALUE;
+						polyCoeffi[i]=MINIMUM_VALUE;
 					}
 				}
 				//sigma calculation
