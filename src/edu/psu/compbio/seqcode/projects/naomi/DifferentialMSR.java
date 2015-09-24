@@ -345,11 +345,11 @@ public class DifferentialMSR {
 				
 				
 				//for each scaleNum, add the parents to the segmentationTree
-				currScale.put(n, GvParents.keySet());		
+//				currScale.put(n, GvParents.keySet());		
 	
 			}//end of scale space iteration
 			
-			segmentationTree.put(currChrom, currScale);
+//			segmentationTree.put(currChrom, currScale);
 			
 			GaussianBlur = null;
 			
