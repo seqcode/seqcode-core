@@ -280,12 +280,6 @@ public class DifferentialMSR {
 					else{distanceFactor[i] = 1.0000;}
 				}
 				
-				//test
-//				System.out.println("DCP size is: "+DCPsize);
-//				for (int i = 0; i<DCPsize;i++){
-//					System.out.println(distanceFactor[i]);
-//				}
-				
 				/***************
 				 * Linkage Loop	
 				 */
@@ -305,16 +299,20 @@ public class DifferentialMSR {
 					double intensityDiffScore = 0;
 					double groundVC = 0; 
 					double groundVPmax = 0;
+					if (!GvParents.isEmpty()){
+						for (Map.Entry<Integer,Integer> parent : GvParents.entrySet()){
+							if (parent.getValue()>groundVPmax)
+								groundVPmax = parent.getValue();
+						}						
+					}										
 					//updating ground volume and iterating to encourage convergence
 					for (int counter = 0; counter<1; counter++){					
 						for (Integer kid : linkageMap.keySet()){
 							for (int i = 0; i<DCPsize; i++){
 								if (kid + dcp[i] >=1 && kid+dcp[i] <currchromBinSize){
-									if (counter ==0){
-										groundVC = 0.00;
-									}else if (groundVPmax != 0){ //ground volume is always zero... I need to fix this
-										groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;
-										}	//this is where the problem is!							
+									if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
+									//ground volume is always zero... I need to fix this	//this is where the problem is!	
+									else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;} 						
 									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 									if (tempScore > intensityDiffScore){										
 										intensityDiffScore = tempScore;
@@ -325,23 +323,24 @@ public class DifferentialMSR {
 						}
 						
 						//test
+						System.out.println("printing linkangeMap content");
 						for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
 							System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
 						}
-						
-						
-	//					Integer lastParent = 0;
-	//					for (Integer parent : linkageMap.values()){
-	//						GvParents.put(parent, parent-lastParent);
-	//						lastParent = parent;
-	//					}
-	//					GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
-	//					GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
+												
+						Integer lastParent = 0;
+						for (Integer parent : linkageMap.values()){
+							GvParents.put(parent, parent-lastParent);
+							lastParent = parent;
+						}
+						GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
+						GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
 						//test
-	//					for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
-	//						System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-	//					}
+						System.out.println("printing GvParents content");
+						for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
+							System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+						}
 						
 					}
 	//			}else{
