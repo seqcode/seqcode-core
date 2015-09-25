@@ -323,9 +323,12 @@ public class DifferentialMSR {
 						}
 						
 						//test
-						System.out.println("printing linkangeMap content");
-						for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
-							System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+						if (currchromSize > 200000000){			
+							System.out.println("current Chrom is: "+currChrom.getChrom());
+							System.out.println("printing linkangeMap content");
+							for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
+								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+							}
 						}
 												
 						Integer lastParent = 0;
@@ -337,9 +340,12 @@ public class DifferentialMSR {
 						GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
 						//test
-						System.out.println("printing GvParents content");
-						for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
-							System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+						if (currchromSize > 200000000){			
+							System.out.println("current Chrom is: "+currChrom.getChrom());
+							System.out.println("printing GvParents content");
+							for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
+								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+							}
 						}
 						
 					}
