@@ -308,6 +308,9 @@ public class DifferentialMSR {
 					//updating ground volume and iterating to encourage convergence
 					for (int counter = 0; counter<1; counter++){					
 						for (Integer kid : linkageMap.keySet()){
+							
+							//there is something wrong with iteration of DCPsize and updating parents
+							
 							for (int i = 0; i<DCPsize; i++){
 								if (kid + dcp[i] >=1 && kid+dcp[i] <currchromBinSize){
 									if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
@@ -317,8 +320,8 @@ public class DifferentialMSR {
 									if (tempScore > intensityDiffScore){
 										System.out.println("tempscore is: "+tempScore+"intensityDiffScore is: "+intensityDiffScore+"DImax is "+DImax);
 										intensityDiffScore = tempScore;
-										linkageMap.put(kid,kid+dcp[i]);
-										System.out.println("kid is: "+kid+" value is "+kid+dcp[i]);
+										linkageMap.put(kid,(kid+dcp[i]));
+										System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
 									}
 								}							
 							}				
