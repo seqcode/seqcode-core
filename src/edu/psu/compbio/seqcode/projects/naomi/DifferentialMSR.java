@@ -373,7 +373,7 @@ public class DifferentialMSR {
 	
 			}//end of scale space iteration
 			
-			segmentationTree.put(currChrom, currScale);
+	//		segmentationTree.put(currChrom, currScale);
 
 			
 			
