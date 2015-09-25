@@ -320,18 +320,25 @@ public class DifferentialMSR {
 								}							
 							}				
 						}
-						Integer lastParent = 0;
-						for (Integer parent : linkageMap.values()){
-							GvParents.put(parent, parent-lastParent);
-							lastParent = parent;
-						}
-						GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
-						GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
 						//test
-						for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
+						for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
 							System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
 						}
+						
+						
+	//					Integer lastParent = 0;
+	//					for (Integer parent : linkageMap.values()){
+	//						GvParents.put(parent, parent-lastParent);
+	//						lastParent = parent;
+	//					}
+	//					GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
+	//					GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
+						
+						//test
+	//					for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
+	//						System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+	//					}
 						
 					}
 	//			}else{
@@ -351,7 +358,7 @@ public class DifferentialMSR {
 			
 //			segmentationTree.put(currChrom, currScale);
 			
-			GaussianBlur = null;
+	//		GaussianBlur = null;
 			
 		}// end of chromosome iteration		
 		manager.close();
