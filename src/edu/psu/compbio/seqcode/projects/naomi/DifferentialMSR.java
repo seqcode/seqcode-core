@@ -88,8 +88,6 @@ public class DifferentialMSR {
 		//test to print whole chromosomes
 		System.out.println(genome.getChromList());
 		
-		System.out.println("before: "+binWidth+"\t"+threePrimReadExt);
-		
 		//fix here to get parameters only if they are specified
 		binWidth = sconfig.getBinWidth();
 		threePrimReadExt = sconfig.getTag3PrimeExtension();
@@ -103,8 +101,6 @@ public class DifferentialMSR {
 		while (chroms.hasNext()) {
 			
 			Region currChrom = chroms.next();	
-			//previously it was below. but I don't think I need +1 here
-			//int currchromSize= currChrom.getWidth()+1
 			int currchromSize = currChrom.getWidth();
 			int currchromBinSize = (int) Math.ceil(currchromSize/binWidth);
 			
@@ -299,7 +295,7 @@ public class DifferentialMSR {
 					double groundVC = 0; 
 					double groundVPmax = 0;									
 					//updating ground volume and iterating to encourage convergence
-					for (int counter = 0; counter<1; counter++){
+					for (int counter = 0; counter<3; counter++){
 						if (!GvParents.isEmpty()){
 							for (Map.Entry<Integer,Integer> parent : GvParents.entrySet()){
 								if (parent.getValue()>groundVPmax)
@@ -309,6 +305,7 @@ public class DifferentialMSR {
 						for (Integer kid : linkageMap.keySet()){
 							
 							//there is something wrong with iteration of DCPsize and updating parents
+							//iteration is always off by 2. is it important to ajust for that?
 							
 							for (int i = 0; i<DCPsize; i++){
 								if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
@@ -326,13 +323,13 @@ public class DifferentialMSR {
 						}
 						
 						//test
-						if (currchromSize > 200000000){			
-							System.out.println("current Chrom is: "+currChrom.getChrom());
-							System.out.println("printing linkangeMap content");
-							for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
-								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-							}
-						}
+				//		if (currchromSize > 200000000){			
+				//			System.out.println("current Chrom is: "+currChrom.getChrom());
+				//			System.out.println("printing linkangeMap content");
+				//			for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
+				//				System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+				//			}
+				//		}
 												
 						Integer lastParent = 0;
 						for (Integer parent : linkageMap.values()){
@@ -343,13 +340,13 @@ public class DifferentialMSR {
 						GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
 						//test
-		//				if (currchromSize > 200000000){			
-		//					System.out.println("current Chrom is: "+currChrom.getChrom());
-		//					System.out.println("printing GvParents content");
-		//					for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
-		//						System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-		//					}
-		//				}
+						if (currchromSize > 200000000){			
+							System.out.println("current Chrom is: "+currChrom.getChrom());
+							System.out.println("printing GvParents content");
+							for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
+								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+							}
+						}
 						
 					}
 	//			}else{
@@ -360,14 +357,24 @@ public class DifferentialMSR {
 					 * 
 					 */
 				}
-				
-				
+								
 				//for each scaleNum, add the parents to the segmentationTree
-//				currScale.put(n, GvParents.keySet());		
+				currScale.put(n, GvParents.keySet());
+							
+				//fix here!
+				for (Integer scale : currScale.keySet()){
+					System.out.println("current scale is: "+scale);
+					Set<Integer> nodesSet = currScale.get(scale);
+					for (Integer node : nodesSet)
+						System.out.println(node);
+				}
+
 	
 			}//end of scale space iteration
 			
 //			segmentationTree.put(currChrom, currScale);
+
+			
 			
 	//		GaussianBlur = null;
 			
