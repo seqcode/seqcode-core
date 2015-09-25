@@ -306,7 +306,7 @@ public class DifferentialMSR {
 					double groundVC = 0; 
 					double groundVPmax = 0;
 					//updating ground volume and iterating to encourage convergence
-					for (int counter = 0; counter<5; counter++){					
+					for (int counter = 0; counter<1; counter++){					
 						for (Integer kid : linkageMap.keySet()){
 							for (int i = 0; i<DCPsize; i++){
 								if (kid + dcp[i] >=1 && kid+dcp[i] <= numScale && kid+dcp[i] <currchromBinSize){
