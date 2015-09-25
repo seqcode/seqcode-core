@@ -295,7 +295,7 @@ public class DifferentialMSR {
 					double groundVC = 0; 
 					double groundVPmax = 0;									
 					//updating ground volume and iterating to encourage convergence
-					for (int counter = 0; counter<3; counter++){
+					for (int counter = 0; counter<1; counter++){
 						if (!GvParents.isEmpty()){
 							for (Map.Entry<Integer,Integer> parent : GvParents.entrySet()){
 								if (parent.getValue()>groundVPmax)
@@ -305,7 +305,7 @@ public class DifferentialMSR {
 						for (Integer kid : linkageMap.keySet()){
 							
 							//there is something wrong with iteration of DCPsize and updating parents
-							//iteration is always off by 2. is it important to ajust for that?
+							//iteration is always off by 2. is it important to adjust for that?
 							
 							for (int i = 0; i<DCPsize; i++){
 								if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
@@ -359,20 +359,20 @@ public class DifferentialMSR {
 				}
 								
 				//for each scaleNum, add the parents to the segmentationTree
-	//			currScale.put(n, GvParents.keySet());
+				currScale.put(n, GvParents.keySet());
 							
 				//fix here!
-	//			for (Integer scale : currScale.keySet()){
-	//				System.out.println("current scale is: "+scale);
-	//				Set<Integer> nodesSet = currScale.get(scale);
-	//				for (Integer node : nodesSet)
-	//					System.out.println(node);
-	//			}
+				for (Integer scale : currScale.keySet()){
+					System.out.println("current scale is: "+scale);
+					Set<Integer> nodesSet = currScale.get(scale);
+					for (Integer node : nodesSet)
+						System.out.println(node);
+				}
 
 	
 			}//end of scale space iteration
 			
-//			segmentationTree.put(currChrom, currScale);
+			segmentationTree.put(currChrom, currScale);
 
 			
 			
