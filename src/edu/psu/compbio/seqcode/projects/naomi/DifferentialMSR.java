@@ -313,6 +313,8 @@ public class DifferentialMSR {
 								if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
 									if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
 									//ground volume is always zero... I need to fix this	//this is where the problem is!	
+									//do linkageMap.get(kid) and GvParents keys always match? i don't think so ; where are we modifying parents?
+									// I can make linkageMap <kids<parent,groundVolume> or maybe parents are updated everytime?
 									else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;} 						
 									intensityDiffScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 									if (intensityDiffScore > linkageMap.get(kid)){
