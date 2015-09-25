@@ -295,7 +295,7 @@ public class DifferentialMSR {
 					double groundVC = 0; 
 					double groundVPmax = 0;									
 					//updating ground volume and iterating to encourage convergence
-					for (int counter = 0; counter<1; counter++){
+					for (int counter = 0; counter<5; counter++){
 						if (counter != 0){
 							for (Map.Entry<Integer,Integer> parent : GvParents.entrySet()){
 								if (parent.getValue()>groundVPmax)
@@ -361,17 +361,15 @@ public class DifferentialMSR {
 								
 				//for each scaleNum, add the parents to the segmentationTree
 				currScale.put(n, GvParents.keySet());
-							
-				//fix here!
-				for (Integer scale : currScale.keySet()){
-					System.out.println("current scale is: "+scale);
-					Set<Integer> nodesSet = currScale.get(scale);
-					for (Integer node : nodesSet)
-						System.out.println(node);
-				}
-
 	
 			}//end of scale space iteration
+			
+			for (Integer scale : currScale.keySet()){
+				System.out.println("current scale is: "+scale);
+				Set<Integer> nodesSet = currScale.get(scale);
+				for (Integer node : nodesSet)
+					System.out.println(node);
+			}
 			
 	//		segmentationTree.put(currChrom, currScale);
 
