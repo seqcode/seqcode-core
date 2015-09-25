@@ -297,12 +297,13 @@ public class DifferentialMSR {
 					//updating ground volume and iterating to encourage convergence
 					for (int counter = 0; counter<5; counter++){
 						if (counter != 0){
-							for (Map.Entry<Integer,Integer> parent : GvParents.entrySet()){
-								if (parent.getValue()>groundVPmax)
-									groundVPmax = parent.getValue();
-									System.out.println("parent is : "+parent+"value is: "+parent.getValue());
-							}						
-						}						
+							for (Integer parent : GvParents.keySet()){
+								if ( GvParents.get(parent) > groundVPmax)
+									groundVPmax = GvParents.get(parent);
+									System.out.println("parent is; "+parent+" value is "+GvParents.get(parent));
+							}				
+						}	
+						System.out.println("groundVPmax is "+groundVPmax);
 						for (Integer kid : linkageMap.keySet()){
 							
 							//there is something wrong with iteration of DCPsize and updating parents
