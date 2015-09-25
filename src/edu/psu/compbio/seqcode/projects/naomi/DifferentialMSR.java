@@ -295,7 +295,6 @@ public class DifferentialMSR {
 					//From the second iteration, we consider ground volume = number of nodes that parents are linked to the kids
 					//From third iteration, we increase the weight of the ground volume by 1e-7.
 					//Vincken paper said after 3-4 iteration, there would be no significant difference.
-					double tempScore = 0; 
 					double intensityDiffScore = 0;
 					double groundVC = 0; 
 					double groundVPmax = 0;									
@@ -319,8 +318,8 @@ public class DifferentialMSR {
 									intensityDiffScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 									if (intensityDiffScore > linkageMap.get(kid)){
 										linkageMap.put(kid,(kid+dcp[i]));								
-										System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
-										System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
+				//						System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
+				//						System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
 									}
 								}							
 							}				
