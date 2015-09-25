@@ -314,6 +314,7 @@ public class DifferentialMSR {
 									//ground volume is always zero... I need to fix this	//this is where the problem is!	
 									else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;} 						
 									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
+									System.out.println("tempscore is: "+tempScore+"intensityDiffScore is: "+intensityDiffScore+"DImax is "+DImax);
 									if (tempScore > intensityDiffScore){										
 										intensityDiffScore = tempScore;
 										linkageMap.put(kid,kid+dcp[i]);
@@ -323,13 +324,13 @@ public class DifferentialMSR {
 						}
 						
 						//test
-						if (currchromSize > 200000000){			
-							System.out.println("current Chrom is: "+currChrom.getChrom());
-							System.out.println("printing linkangeMap content");
-							for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
-								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-							}
-						}
+		//				if (currchromSize > 200000000){			
+		//					System.out.println("current Chrom is: "+currChrom.getChrom());
+		//					System.out.println("printing linkangeMap content");
+		//					for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
+		//						System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+		//					}
+		//				}
 												
 						Integer lastParent = 0;
 						for (Integer parent : linkageMap.values()){
@@ -340,13 +341,13 @@ public class DifferentialMSR {
 						GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
 						//test
-						if (currchromSize > 200000000){			
-							System.out.println("current Chrom is: "+currChrom.getChrom());
-							System.out.println("printing GvParents content");
-							for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
-								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-							}
-						}
+		//				if (currchromSize > 200000000){			
+		//					System.out.println("current Chrom is: "+currChrom.getChrom());
+		//					System.out.println("printing GvParents content");
+		//					for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
+		//						System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+		//					}
+		//				}
 						
 					}
 	//			}else{
