@@ -234,7 +234,7 @@ public class DifferentialMSR {
 				//taking mid point of polynomial coefficients			
 				int polyMid = (int) Math.floor(coefficients.length/2);
 				
-				System.out.println("currchromBin Size is : "+currchromBinSize+"\t"+ "windowSize is: "+windowSize+"\t"+"coefficients length is: "+coefficients.length+"polyMid is: "+polyMid);
+				System.out.println("currchromBin Size is : "+currchromBinSize+"\t"+ "windowSize is: "+windowSize+"\t"+"coefficients length is: "+coefficients.length);
 		
 				//copy Gaussian blur results to the column[1]
 				// I should check to make sure that it's not off by 1
@@ -309,9 +309,12 @@ public class DifferentialMSR {
 					for (int counter = 0; counter<1; counter++){					
 						for (Integer kid : linkageMap.keySet()){
 							for (int i = 0; i<DCPsize; i++){
-								if (kid + dcp[i] >=1 && kid+dcp[i] <= numScale && kid+dcp[i] <currchromBinSize){
-									if (counter ==0){groundVC = 0.00;}
-									else{groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}								
+								if (kid + dcp[i] >=1 && kid+dcp[i] <currchromBinSize){
+									if (counter ==0){
+										groundVC = 0.00;
+									}else if (groundVPmax != 0){ //ground volume is always zero... I need to fix this
+										groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;
+										}	//this is where the problem is!							
 									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 									if (tempScore > intensityDiffScore){										
 										intensityDiffScore = tempScore;
