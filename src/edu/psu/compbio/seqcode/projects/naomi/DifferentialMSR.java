@@ -298,29 +298,28 @@ public class DifferentialMSR {
 					double tempScore = 0; 
 					double intensityDiffScore = 0;
 					double groundVC = 0; 
-					double groundVPmax = 0;
-					if (!GvParents.isEmpty()){
-						for (Map.Entry<Integer,Integer> parent : GvParents.entrySet()){
-							if (parent.getValue()>groundVPmax)
-								groundVPmax = parent.getValue();
-						}						
-					}										
+					double groundVPmax = 0;									
 					//updating ground volume and iterating to encourage convergence
-					for (int counter = 0; counter<1; counter++){					
+					for (int counter = 0; counter<1; counter++){
+						if (!GvParents.isEmpty()){
+							for (Map.Entry<Integer,Integer> parent : GvParents.entrySet()){
+								if (parent.getValue()>groundVPmax)
+									groundVPmax = parent.getValue();
+							}						
+						}						
 						for (Integer kid : linkageMap.keySet()){
 							
 							//there is something wrong with iteration of DCPsize and updating parents
 							
 							for (int i = 0; i<DCPsize; i++){
-								if (kid + dcp[i] >=1 && kid+dcp[i] <currchromBinSize){
+								if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
 									if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
 									//ground volume is always zero... I need to fix this	//this is where the problem is!	
 									else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;} 						
-									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
-									if (tempScore > intensityDiffScore){
-										System.out.println("tempscore is: "+tempScore+"intensityDiffScore is: "+intensityDiffScore+"DImax is "+DImax);
-										intensityDiffScore = tempScore;
-										linkageMap.put(kid,(kid+dcp[i]));
+									intensityDiffScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
+									if (intensityDiffScore > linkageMap.get(kid)){
+										linkageMap.put(kid,(kid+dcp[i]));								
+										System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
 										System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
 									}
 								}							
@@ -328,13 +327,13 @@ public class DifferentialMSR {
 						}
 						
 						//test
-		//				if (currchromSize > 200000000){			
-		//					System.out.println("current Chrom is: "+currChrom.getChrom());
-		//					System.out.println("printing linkangeMap content");
-		//					for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
-		//						System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-		//					}
-		//				}
+						if (currchromSize > 200000000){			
+							System.out.println("current Chrom is: "+currChrom.getChrom());
+							System.out.println("printing linkangeMap content");
+							for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
+								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+							}
+						}
 												
 						Integer lastParent = 0;
 						for (Integer parent : linkageMap.values()){
