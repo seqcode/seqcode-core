@@ -314,10 +314,11 @@ public class DifferentialMSR {
 									//ground volume is always zero... I need to fix this	//this is where the problem is!	
 									else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;} 						
 									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
-									System.out.println("tempscore is: "+tempScore+"intensityDiffScore is: "+intensityDiffScore+"DImax is "+DImax);
-									if (tempScore > intensityDiffScore){										
+									if (tempScore > intensityDiffScore){
+										System.out.println("tempscore is: "+tempScore+"intensityDiffScore is: "+intensityDiffScore+"DImax is "+DImax);
 										intensityDiffScore = tempScore;
 										linkageMap.put(kid,kid+dcp[i]);
+										System.out.println("kid is: "+kid+" value is "+kid+dcp[i]);
 									}
 								}							
 							}				
