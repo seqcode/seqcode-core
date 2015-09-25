@@ -309,7 +309,7 @@ public class DifferentialMSR {
 					for (int counter = 0; counter<5; counter++){					
 						for (Integer kid : linkageMap.keySet()){
 							for (int i = 0; i<DCPsize; i++){
-								if (kid + dcp[i] >=1 & kid+dcp[i] <= numScale & kid+dcp[i] <currchromBinSize){
+								if (kid + dcp[i] >=1 && kid+dcp[i] <= numScale && kid+dcp[i] <currchromBinSize){
 									if (counter ==0){groundVC = 0.00;}
 									else{groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}								
 									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
