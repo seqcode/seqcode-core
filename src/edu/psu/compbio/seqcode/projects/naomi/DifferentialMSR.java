@@ -359,15 +359,15 @@ public class DifferentialMSR {
 				}
 								
 				//for each scaleNum, add the parents to the segmentationTree
-				currScale.put(n, GvParents.keySet());
+	//			currScale.put(n, GvParents.keySet());
 							
 				//fix here!
-				for (Integer scale : currScale.keySet()){
-					System.out.println("current scale is: "+scale);
-					Set<Integer> nodesSet = currScale.get(scale);
-					for (Integer node : nodesSet)
-						System.out.println(node);
-				}
+	//			for (Integer scale : currScale.keySet()){
+	//				System.out.println("current scale is: "+scale);
+	//				Set<Integer> nodesSet = currScale.get(scale);
+	//				for (Integer node : nodesSet)
+	//					System.out.println(node);
+	//			}
 
 	
 			}//end of scale space iteration
