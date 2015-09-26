@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +14,7 @@ import java.util.TreeMap;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
+import pal.util.Comparator;
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
@@ -336,8 +339,9 @@ public class DifferentialMSR {
 				//		}
 												
 						Integer lastParent = 0;
-						for (Integer parent : linkageMap.values()){
-							GvParents.put(parent, parent-lastParent);
+						Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
+						for (Integer parent : sortedLinkageMap.values()){
+							GvParents.put(parent, (parent-lastParent));
 							lastParent = parent;
 						}
 						GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
@@ -383,7 +387,7 @@ public class DifferentialMSR {
 		}// end of chromosome iteration		
 		manager.close();
 	}
-	
+
 		
 	public static void main(String[] args) {
 		
