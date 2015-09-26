@@ -341,7 +341,7 @@ public class DifferentialMSR {
 							lastParent = parent;
 						}
 						GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
-						GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
+	//					GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
 						//test
 						if (currchromSize > 200000000){			
