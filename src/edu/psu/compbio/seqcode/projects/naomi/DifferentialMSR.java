@@ -318,25 +318,7 @@ public class DifferentialMSR {
 									//ground volume is always zero... I need to fix this	//this is where the problem is!	
 									//do linkageMap.get(kid) and GvParents keys always match? i don't think so ; where are we modifying parents?
 									// I can make linkageMap <kids<parent,groundVolume> or maybe parents are updated everytime?
-									}else{ 
-										
-										System.out.println("printing linkageMap content");
-										for (Integer key : linkageMap.keySet()){
-											System.out.println("key is: "+key+" value is: "+linkageMap.get(key));
-										}
-										System.out.println("printing GvParents content");
-										for (Integer parent : GvParents.keySet()){
-											System.out.println("parent is "+parent+" value is "+GvParents.get(parent));
-										}
-										
-										System.out.println("weight is: "+(WEIGHT_I+WEIGHT_G*counter)+"ground volume max is "+groundVPmax);
-										System.out.println("current kid is :"+ kid);
-										System.out.println("linkage map contain key "+linkageMap.containsKey(kid));
-										System.out.println("GvParents contain key "+GvParents.containsKey(linkageMap.get(kid)));
-										
-										System.out.println("linkage map parent is : "+linkageMap.get(kid));
-										System.out.println("ground volume is "+GvParents.get(linkageMap.get(kid)));
-										
+									}else{ 								
 										groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;
 									}
 									
