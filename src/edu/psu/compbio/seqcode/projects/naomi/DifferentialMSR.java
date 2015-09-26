@@ -303,7 +303,6 @@ public class DifferentialMSR {
 							for (Integer parent : GvParents.keySet()){
 								if ( GvParents.get(parent) > groundVPmax)
 									groundVPmax = GvParents.get(parent);
-									System.out.println("parent is; "+parent+" value is "+GvParents.get(parent));
 							}				
 						}	
 						System.out.println("groundVPmax is "+groundVPmax);
@@ -314,11 +313,26 @@ public class DifferentialMSR {
 							
 							for (int i = 0; i<DCPsize; i++){
 								if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
-									if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
+									if (counter ==0 || groundVPmax == 0){
+										groundVC = 0.00;
 									//ground volume is always zero... I need to fix this	//this is where the problem is!	
 									//do linkageMap.get(kid) and GvParents keys always match? i don't think so ; where are we modifying parents?
 									// I can make linkageMap <kids<parent,groundVolume> or maybe parents are updated everytime?
-									else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;} 						
+									}else{ 
+										
+										System.out.println("printing linkageMap content");
+										for (Integer key : linkageMap.keySet()){
+											System.out.println("key is: "+key+" value is: "+linkageMap.get(key));
+										}
+										System.out.println("printing GvParents content");
+										for (Integer parent : GvParents.keySet()){
+											System.out.println("parent is "+parent+" value is "+GvParents.get(parent));
+										}
+										
+										
+										groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;
+									}
+									
 									intensityDiffScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 									if (intensityDiffScore > linkageMap.get(kid)){
 										linkageMap.put(kid,(kid+dcp[i]));								
