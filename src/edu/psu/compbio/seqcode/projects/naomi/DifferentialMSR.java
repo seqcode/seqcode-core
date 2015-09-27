@@ -138,11 +138,11 @@ public class DifferentialMSR {
 			}
 			
 			//testing
-			if (currchromSize > 200000000){			
-				System.out.println("current Chrom is: "+currChrom.getChrom());
-				for (int i = 0; i< 100;i++)
-					System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
-			}
+//			if (currchromSize > 200000000){			
+//				System.out.println("current Chrom is: "+currChrom.getChrom());
+//				for (int i = 0; i< 100;i++)
+//					System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
+//			}
 			
 			/*********************
 			 * Starting nodes
@@ -245,11 +245,11 @@ public class DifferentialMSR {
 				}	
 				
 				//testing
-				if (currchromSize > 200000000){			
-					System.out.println("current Chrom is: "+currChrom.getChrom());
-					for (int i = 0; i< 100;i++)
-						System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
-				}
+//				if (currchromSize > 200000000){			
+//					System.out.println("current Chrom is: "+currChrom.getChrom());
+//					for (int i = 0; i< 100;i++)
+//						System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
+//				}
 				
 				/***************
 				 * Search Volume
@@ -354,13 +354,13 @@ public class DifferentialMSR {
 	//					GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
 						//test
-						if (currchromSize > 200000000){			
-							System.out.println("current Chrom is: "+currChrom.getChrom());
-							System.out.println("printing GvParents content");
-							for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
-								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-							}
-						}
+//						if (currchromSize > 200000000){			
+//							System.out.println("current Chrom is: "+currChrom.getChrom());
+//							System.out.println("printing GvParents content");
+//							for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
+//								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+//							}
+//						}
 						
 					}
 	//			}else{
@@ -380,9 +380,11 @@ public class DifferentialMSR {
 			for (Integer scale : currScale.keySet()){
 				System.out.println("current scale is: "+scale);
 				Set<Integer> nodesSet = currScale.get(scale);
-				for (Integer node : nodesSet)
-					System.out.println(node);
+//				for (Integer node : nodesSet)
+//					System.out.println(node);
+				System.out.println("current size is: "+nodesSet.size());
 			}
+
 			
 	//		segmentationTree.put(currChrom, currScale);
 
