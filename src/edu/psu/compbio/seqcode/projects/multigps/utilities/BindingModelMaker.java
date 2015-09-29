@@ -47,23 +47,23 @@ public class BindingModelMaker {
 						for(StrandedBaseCount sbc : wReads){
 							int sdist = sbc.getCoordinate()-pt.getLocation()+(win/2);
 							if(sdist>=0 && sdist<win)
-								watson[sdist]++;
+								watson[sdist]+=sbc.getCount();
 						}
 						for(StrandedBaseCount sbc : cReads){
 							int sdist = pt.getLocation()-sbc.getCoordinate()+(win/2);
 							if(sdist>=0 && sdist<win)
-								crick[sdist]++;
+								crick[sdist]+=sbc.getCount();
 						}
 					}else{
 						for(StrandedBaseCount sbc : wReads){
 							int sdist = pt.getLocation()-sbc.getCoordinate()+(win/2);
 							if(sdist>=0 && sdist<win)
-								watson[sdist]++;
+								watson[sdist]+=sbc.getCount();
 						}
 						for(StrandedBaseCount sbc : cReads){
 							int sdist = sbc.getCoordinate()-pt.getLocation()+(win/2);
 							if(sdist>=0 && sdist<win)
-								crick[sdist]++;
+								crick[sdist]+=sbc.getCount();
 						}
 					}
 				}

@@ -88,7 +88,6 @@ public class BindingEM {
 		double L = (double)config.getGenome().getGenomeLength();
 		probAgivenB = Math.log(config.getProbSharedBinding())/Math.log(2);
         probAgivenNOTB =  Math.log((N-S)/(L-N))/Math.log(2);
-        //System.err.println("EM initialized.\nPositonal prior constants:\tA given B="+probAgivenB+"\tA given notB="+probAgivenNOTB);
 	}
 	
 	//Accessor
