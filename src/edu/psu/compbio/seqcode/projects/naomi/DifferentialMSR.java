@@ -300,19 +300,19 @@ public class DifferentialMSR {
 				for (int counter = 0; counter<5; counter++){
 					if (counter != 0){
 						for (Integer parent : GvParents.keySet()){
-//							System.out.println("parent is: "+parent+" Gv is: "+GvParents.get(parent) );
+							System.out.println("parent is: "+parent+" Gv is: "+GvParents.get(parent) );
 							//307 is a problem because all parents are zero
 							if ( GvParents.get(parent) > groundVPmax)
 								groundVPmax = GvParents.get(parent);
 						}				
 					}	
 						
-//					for (Integer key : linkageMap.keySet()){
-//						System.out.println("child is : "+key+" parents is: "+linkageMap.get(key));
-//					}
-//					for (Integer key : GvParents.keySet()){
-//						System.out.println("parents is : "+key);
-//					}
+					for (Integer key : linkageMap.keySet()){
+						System.out.println("child is : "+key+" parents is: "+linkageMap.get(key));
+					}
+					for (Integer key : GvParents.keySet()){
+						System.out.println("parents is : "+key);
+					}
 						
 //					System.out.println("groundVPmax is "+groundVPmax);
 					for (Integer kid : linkageMap.keySet()){
