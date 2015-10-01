@@ -285,9 +285,10 @@ public class DifferentialMSR {
 				 */
 				 
 				TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();
-				if (DCPsize < 50){				
+//				if (DCPsize < 50){				
 					/***********
 					 * Over window
+					 */
 					 
 					 
 					//build segmentTree 
@@ -364,11 +365,11 @@ public class DifferentialMSR {
 //						}
 						
 					}
-					*/
-				}else{
+					
+	//			}else{
 					/***********
 					 * Over kids
-					 */
+					
 					int px1 = 0;
 					int px2 = 0;
 					int x1 = 0;
@@ -381,8 +382,9 @@ public class DifferentialMSR {
 						System.out.println("lenght of px is "+(px2-px1)+" length of x is "+(x2-x1));
 						double maxScore = 0;
 						int maxIndex = 0;
-					}
-				}
+						*/
+	//				}
+	//			}
 								
 				//for each scaleNum, add the parents to the segmentationTree
 				currScale.put(n, GvParents.keySet());
@@ -392,9 +394,9 @@ public class DifferentialMSR {
 			for (Integer scale : currScale.keySet()){
 				System.out.println("current scale is: "+scale);
 				Set<Integer> nodesSet = currScale.get(scale);
-//				for (Integer node : nodesSet)
-//					System.out.println(node);
-				System.out.println("current size is: "+nodesSet.size());
+				System.out.println("current nodeset size is: "+nodesSet.size());
+				for (Integer node : nodesSet)
+					System.out.println(node);
 			}
 
 			
