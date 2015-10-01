@@ -341,7 +341,7 @@ public class DifferentialMSR {
 //									GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); //add parents in GvParents
 										
 //									GvParents.remove(linkageMap.get(kid)); //remove previous parents
-									if (GvParents.containsKey(kid+dcp[i])){
+									if (linkageMap.containsValue(kid+dcp[i])){
 										linkageMap.put(kid,(kid+dcp[i]));
 									}
 //									linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
