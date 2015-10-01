@@ -284,74 +284,73 @@ public class DifferentialMSR {
 				 * Linkage Loop	
 				 */
 				 
-				TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();
-//				if (DCPsize < 50){				
+				TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();			
 					/***********
 					 * Over window
-					 */
-					 
-					 
-					//build segmentTree 
-					//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
-					//From the second iteration, we consider ground volume = number of nodes that parents are linked to the kids
-					//From third iteration, we increase the weight of the ground volume by 1e-7.
-					//Vincken paper said after 3-4 iteration, there would be no significant difference.
-					double groundVC = 0; 
-					double groundVPmax = 0;		
-					double tempScore = 0;
-					//updating ground volume and iterating to encourage convergence
-					for (int counter = 0; counter<5; counter++){
-						if (counter != 0){
-							for (Integer parent : GvParents.keySet()){
+					 */					 
+				//build segmentTree 
+				//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
+				//From the second iteration, we consider ground volume = number of nodes that parents are linked to the kids
+				//From third iteration, we increase the weight of the ground volume by 1e-7.
+				//Vincken paper said after 3-4 iteration, there would be no significant difference.
+				double groundVC = 0; 
+				double groundVPmax = 0;		
+				double tempScore = 0;
+				//updating ground volume and iterating to encourage convergence
+				for (int counter = 0; counter<5; counter++){
+					if (counter != 0){
+						for (Integer parent : GvParents.keySet()){
+							//307 is a problem because all parents are zero
+							if (GvParents.containsValue(GvParents.get(parent))){
 								if ( GvParents.get(parent) > groundVPmax)
 									groundVPmax = GvParents.get(parent);
-							}				
-						}	
-						
-						for (Integer key : linkageMap.keySet()){
-							System.out.println("child is : "+key+" parents is: "+linkageMap.get(key));
-						}
-						for (Integer key : GvParents.keySet()){
-							System.out.println("parents is : "+key);
-						}
-						//maintain two copy of GvParents
-						TreeMap<Integer, Integer> tempGvParents = new TreeMap<Integer,Integer>();
-						
-						System.out.println("groundVPmax is "+groundVPmax);
-						for (Integer kid : linkageMap.keySet()){
-							double intensityDiffScore = 0;
-							
-							//there is something wrong with iteration of DCPsize and updating parents
-							//iteration is always off by 2. is it important to adjust for that?
-							
-							for (int i = 0; i<DCPsize; i++){
-								if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
-									if (counter ==0 || groundVPmax == 0){
-										groundVC = 0.00;
-									//do linkageMap.get(kid) and GvParents keys always match? i don't think so ; where are we modifying parents?
-									// I can make linkageMap <kids<parent,groundVolume> or maybe parents are updated everytime?
-									}else{ 		
-//										Integer Gv;
-//										if (GvParents.containsKey(linkageMap.get(kid))){Gv = GvParents.get(linkageMap.get(kid));}
-//									else if(tempGvParents.containsKey(linkageMap.get(kid))){Gv = tempGvParents.get(linkageMap.get(kid));}
-//										else {System.out.println("parents are missing !");
-										groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;
-									}
-									
-									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
-									if (tempScore > intensityDiffScore){
-										intensityDiffScore = tempScore;
-										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); //add parents in GvParents
-										
-//										GvParents.remove(linkageMap.get(kid)); //remove previous parents
-										linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
-										System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
-										System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
-									}
-									//updating GvParents
-								}							
 							}
+							else {System.out.println("no value was found! ");}
+						}				
+					}	
+						
+					for (Integer key : linkageMap.keySet()){
+						System.out.println("child is : "+key+" parents is: "+linkageMap.get(key));
+					}
+					for (Integer key : GvParents.keySet()){
+						System.out.println("parents is : "+key);
+					}
+						
+					System.out.println("groundVPmax is "+groundVPmax);
+					for (Integer kid : linkageMap.keySet()){
+						double intensityDiffScore = 0;
+							
+						//there is something wrong with iteration of DCPsize and updating parents
+						//iteration is always off by 2. is it important to adjust for that?
+							
+						for (int i = 0; i<DCPsize; i++){
+							if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
+								if (counter ==0 || groundVPmax == 0){
+									groundVC = 0.00;
+								//do linkageMap.get(kid) and GvParents keys always match? i don't think so ; where are we modifying parents?
+								// I can make linkageMap <kids<parent,groundVolume> or maybe parents are updated everytime?
+								}else{ 		
+//									Integer Gv;
+//									if (GvParents.containsKey(linkageMap.get(kid))){Gv = GvParents.get(linkageMap.get(kid));}
+//									else if(tempGvParents.containsKey(linkageMap.get(kid))){Gv = tempGvParents.get(linkageMap.get(kid));}
+//									else {System.out.println("parents are missing !");
+									groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;
+								}
+									
+								tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
+								if (tempScore > intensityDiffScore){
+									intensityDiffScore = tempScore;
+									GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); //add parents in GvParents
+										
+//									GvParents.remove(linkageMap.get(kid)); //remove previous parents
+									linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
+//									System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
+//									System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
+								}
+								//updating GvParents
+							}							
 						}
+					}
 						
 						//test
 				//		if (currchromSize > 200000000){			
@@ -362,14 +361,14 @@ public class DifferentialMSR {
 				//			}
 				//		}
 												
-						Integer lastParent = 0;
-						Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
-						for (Integer parent : sortedLinkageMap.values()){
-							GvParents.put(parent, (parent-lastParent));
-							lastParent = parent;
-						}
-						GvParents.put(0, trailingZero);
-						GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
+					Integer lastParent = 0;
+					Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
+					for (Integer parent : sortedLinkageMap.values()){
+						GvParents.put(parent, (parent-lastParent));
+						lastParent = parent;
+					}
+					GvParents.put(0, trailingZero);
+					GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
 	//					GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
 						//test
@@ -381,7 +380,7 @@ public class DifferentialMSR {
 //							}
 //						}
 						
-					}
+//					}
 					
 	//			}else{
 					/***********
@@ -401,7 +400,7 @@ public class DifferentialMSR {
 						int maxIndex = 0;
 						*/
 	//				}
-	//			}
+				}
 								
 				//for each scaleNum, add the parents to the segmentationTree
 				currScale.put(n, GvParents.keySet());
