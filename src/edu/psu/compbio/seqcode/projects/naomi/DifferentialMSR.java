@@ -60,7 +60,7 @@ public class DifferentialMSR {
 		 * Gaussian scale space and window parameters	
 		 */
 		// arbitrary number of scale
-		int numScale= 10;
+		int numScale= 20;
 		double DELTA_TAU = 0.5*Math.log(2);	
 		double MINIMUM_VALUE = Math.pow(10, -100); //arbitrary minimum value; I cannot use Double.MIN_VALUE because it can become zero
 		// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
@@ -72,10 +72,7 @@ public class DifferentialMSR {
 		 * Linkage parameters
 		 */
 		double WEIGHT_I = 1.00;
-		// testing with bigger weights to see if functions are conversing 
-		double WEIGHT_G = 0.1;
-		// this is original
-//		double WEIGHT_G = 0.0000001;
+		double WEIGHT_G = 0.0000001;
 		double WEIGHT_M = 1000;
 		
 		/*********************
@@ -291,7 +288,7 @@ public class DifferentialMSR {
 				if (DCPsize < 50){				
 					/***********
 					 * Over window
-					 */
+					 
 					 
 					//build segmentTree 
 					//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
@@ -367,6 +364,7 @@ public class DifferentialMSR {
 //						}
 						
 					}
+					*/
 				}else{
 					/***********
 					 * Over kids
