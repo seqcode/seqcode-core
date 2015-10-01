@@ -296,7 +296,6 @@ public class DifferentialMSR {
 					//From the second iteration, we consider ground volume = number of nodes that parents are linked to the kids
 					//From third iteration, we increase the weight of the ground volume by 1e-7.
 					//Vincken paper said after 3-4 iteration, there would be no significant difference.
-					double intensityDiffScore = 0;
 					double groundVC = 0; 
 					double groundVPmax = 0;		
 					double tempScore = 0;
@@ -320,6 +319,7 @@ public class DifferentialMSR {
 						
 						System.out.println("groundVPmax is "+groundVPmax);
 						for (Integer kid : linkageMap.keySet()){
+							double intensityDiffScore = 0;
 							
 							//there is something wrong with iteration of DCPsize and updating parents
 							//iteration is always off by 2. is it important to adjust for that?
@@ -328,7 +328,6 @@ public class DifferentialMSR {
 								if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
 									if (counter ==0 || groundVPmax == 0){
 										groundVC = 0.00;
-									//ground volume is always zero... I need to fix this	//this is where the problem is!	
 									//do linkageMap.get(kid) and GvParents keys always match? i don't think so ; where are we modifying parents?
 									// I can make linkageMap <kids<parent,groundVolume> or maybe parents are updated everytime?
 									}else{ 		
@@ -341,7 +340,8 @@ public class DifferentialMSR {
 									
 									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 									if (tempScore > intensityDiffScore){
-										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); //update parents in GvParents
+										intensityDiffScore = tempScore;
+										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); //add parents in GvParents
 										
 //										GvParents.remove(linkageMap.get(kid)); //remove previous parents
 										linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
@@ -350,7 +350,7 @@ public class DifferentialMSR {
 									}
 									//updating GvParents
 								}							
-							}				
+							}
 						}
 						
 						//test
