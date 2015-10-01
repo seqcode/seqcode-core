@@ -338,10 +338,13 @@ public class DifferentialMSR {
 								tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 								if (tempScore > intensityDiffScore){
 									intensityDiffScore = tempScore;
-									GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); //add parents in GvParents
+//									GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); //add parents in GvParents
 										
 //									GvParents.remove(linkageMap.get(kid)); //remove previous parents
-									linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
+									if (GvParents.containsKey(kid+dcp[i])){
+										linkageMap.put(kid,(kid+dcp[i]));
+									}
+//									linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
 //									System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
 //									System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
 								}
@@ -369,14 +372,14 @@ public class DifferentialMSR {
 	//				GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
 	//					GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
-						//test
-						if (currchromSize > 200000000){			
-							System.out.println("current Chrom is: "+currChrom.getChrom());
-							System.out.println("printing GvParents content");
-							for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
-								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-							}
+					//test
+					if (currchromSize > 200000000){			
+						System.out.println("current Chrom is: "+currChrom.getChrom());
+						System.out.println("printing GvParents content");
+						for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
+							System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
 						}
+					}
 						
 //					}
 					
