@@ -22,7 +22,7 @@ public class UpdateHitCounts {
 		ArgParser ap = new ArgParser(args);
         if(ap.hasKey("id")) { 
 	        java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
-	        cxn.setAutoCommit(false);
+	        cxn.setAutoCommit(true);
 	        Integer id = Args.parseInteger(args,"id", -1);
 	        
 	        SeqDataLoader loader = new SeqDataLoader();

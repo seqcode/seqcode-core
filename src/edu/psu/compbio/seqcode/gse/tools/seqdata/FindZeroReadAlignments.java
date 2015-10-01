@@ -16,7 +16,7 @@ public class FindZeroReadAlignments {
     public static void main(String args[]) throws SQLException, NotFoundException, IOException {
         
         java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
-        cxn.setAutoCommit(false);
+        cxn.setAutoCommit(true);
         
         SeqDataLoader loader = new SeqDataLoader();
                 

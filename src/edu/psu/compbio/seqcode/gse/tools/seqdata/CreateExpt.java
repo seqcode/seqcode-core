@@ -57,7 +57,7 @@ public class CreateExpt {
 	        
     		try{
 		    	cxn = DatabaseConnectionManager.getConnection("seqdata");
-		        cxn.setAutoCommit(false);
+		        cxn.setAutoCommit(true);
 		        Genome genome = Args.parseGenome(args).cdr();
 		        String alignname = Args.parseString(args,"align",null);
 		        String alignpieces[] = alignname.split(";");
@@ -110,7 +110,7 @@ public class CreateExpt {
 		                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
 		            } catch (NotFoundException e2) {
 		                /* failed again means the insert failed.  you lose */
-		                cxn.rollback();
+		                //cxn.rollback(); //Can't use rollback with autocommit=true?
 		                throw new DatabaseException("Couldn't create " + alignpieces[0] + "," + alignpieces[1]);
 		            }
 		        }
@@ -155,18 +155,17 @@ public class CreateExpt {
 			                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
 			            } catch (NotFoundException e2) {
 			                /* failed again means the insert failed.  you lose */
-			                cxn.rollback();
+			            	//cxn.rollback(); //Can't use rollback with autocommit=true?
 			                throw new DatabaseException("Something went wrong when updating " + alignpieces[0] + "," + alignpieces[1]);
 			            }
 		        	}
 		        }
 		        
 		        if (expt == null) {
-		            cxn.rollback();
+		            //cxn.rollback(); //Can't use rollback with autocommit=true?
 		            throw new DatabaseException("Couldn't create/update seqexpt " + alignpieces[2] + " for " + alignpieces[0]);
 		        }
 		        System.out.println(expt.getDBID());
-		        cxn.commit();
     		} catch (UnknownRoleException e) {
                 throw new IllegalArgumentException("Unknown role: seqdata" + e);
             } finally {

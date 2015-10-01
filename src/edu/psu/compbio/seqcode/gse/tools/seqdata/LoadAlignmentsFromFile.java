@@ -84,7 +84,7 @@ public class LoadAlignmentsFromFile {
     	PreparedStatement insert = null;
     	try{
     		cxn = DatabaseConnectionManager.getConnection("seqdata");
-    		cxn.setAutoCommit(false);
+    		cxn.setAutoCommit(true);
 	        
 	        //Iterate through the file
 	        String line = null;
@@ -158,7 +158,7 @@ public class LoadAlignmentsFromFile {
 			                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
 			            } catch (NotFoundException e2) {
 			                /* failed again means the insert failed.  you lose */
-			                cxn.rollback();
+			                //cxn.rollback();
 			                throw new DatabaseException("Couldn't create " + alignpieces[0] + "," + alignpieces[1]);
 			            }
 			        }
@@ -187,7 +187,6 @@ public class LoadAlignmentsFromFile {
 			                insert.setString(16, collabalignid);
 			                insert.execute();
 			                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
-			                cxn.commit();
 			                File f = null;
 			                if (paramsfname != null) {
 			                    f = new File(paramsfname);
@@ -198,18 +197,17 @@ public class LoadAlignmentsFromFile {
 	
 			                }
 						} catch (IOException e) {
-			                cxn.rollback();
+			                //cxn.rollback();
 			                System.err.println("Couldn't add alignment parameters");
 			                e.printStackTrace();
 			            }
 	
 			        }
 			        if (alignment == null) {
-			            cxn.rollback();
+			            //cxn.rollback();
 			            throw new DatabaseException("Couldn't create alignment " + alignpieces[2] + " for " + alignpieces[0]);
 			        }
 			        System.out.println(alignment.getDBID());
-			        cxn.commit();
 				}
 			}
     	} catch (UnknownRoleException e) {

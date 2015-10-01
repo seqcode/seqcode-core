@@ -69,7 +69,7 @@ public class CreateAlignment {
 	        
     		try{
 		    	cxn = DatabaseConnectionManager.getConnection("seqdata");
-		        cxn.setAutoCommit(false);
+		        cxn.setAutoCommit(true);
 		        Genome genome = Args.parseGenome(args).cdr();
 		        String alignname = Args.parseString(args,"align",null);
 		        String alignpieces[] = alignname.split(";");
@@ -128,7 +128,6 @@ public class CreateAlignment {
 		                insert.execute();
 		                insert.close();
 		                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
-		                cxn.commit();
 		                File f = null;
 		                if (paramsfname != null) {
 		                    f = new File(paramsfname);
@@ -139,7 +138,7 @@ public class CreateAlignment {
 		
 		                }
 					} catch (IOException e) {
-		                cxn.rollback();
+		                //cxn.rollback();
 		                System.err.println("Couldn't add alignment parameters");
 		                e.printStackTrace();
 		            }
@@ -174,7 +173,6 @@ public class CreateAlignment {
 			                update.execute();
 			                update.close();
 			                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
-			                cxn.commit();
 			                File f = null;
 			                if (paramsfname != null) {
 			                    f = new File(paramsfname);
@@ -185,18 +183,17 @@ public class CreateAlignment {
 			
 			                }
 						} catch (IOException e) {
-			                cxn.rollback();
+			                //cxn.rollback();
 			                System.err.println("Couldn't add alignment parameters");
 			                e.printStackTrace();
 			            }
 		        	}
 		        }
 		        if (alignment == null) {
-		            cxn.rollback();
+		            //cxn.rollback();
 		            throw new DatabaseException("Couldn't create/update alignment " + alignpieces[2] + " for " + alignpieces[0]);
 		        }
 		        System.out.println(alignment.getDBID());
-		        cxn.commit();
     		} catch (UnknownRoleException e) {
                 throw new IllegalArgumentException("Unknown role: seqdata" + e);
             } finally {

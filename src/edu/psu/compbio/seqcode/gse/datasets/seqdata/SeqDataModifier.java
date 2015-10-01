@@ -65,10 +65,10 @@ public class SeqDataModifier {
 		PreparedStatement ps = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
+            cxn.setAutoCommit(true);
             ps = SeqAlignment.createDeleteByIDStatement(cxn);
 	        ps.setInt(1, align.getDBID());
 	        ps.execute();
-	        cxn.commit();
 		} catch (SQLException e) {
             throw new DatabaseException(e.toString(),e);
         } finally {
@@ -82,6 +82,7 @@ public class SeqDataModifier {
 		PreparedStatement ps = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
+            cxn.setAutoCommit(true);
             Lab lab = expt.getLab();
 			ExptCondition cond = expt.getExptCondition();
 			ExptTarget target = expt.getExptTarget();
@@ -90,9 +91,7 @@ public class SeqDataModifier {
 			ps = SeqExpt.createDeleteByDBID(cxn);
 	    	ps.setInt(1, expt.getDBID());
 	    	ps.execute();
-	    	
-	    	cxn.commit();
-	    	
+	    		    	
 	    	//Delete core.lab if no SeqExpts depend
 	    	if(seqLoader.loadExperiments(lab).size()==0)
 	    		deleteLab(lab);
@@ -203,6 +202,7 @@ public class SeqDataModifier {
 		PreparedStatement update = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
+            cxn.setAutoCommit(true);
             int id = align.getDBID();
 			update = SeqAlignment.createUpdateHitsAndWeights(cxn);
 	        System.err.println("Updating counts for alignment: "+id+" ("+align.getName()+")");
@@ -220,7 +220,6 @@ public class SeqDataModifier {
 	        update.setFloat(6, pairweight);
 	        update.setInt(7, id);
 	        update.execute();
-	        cxn.commit();
 		} catch (SQLException e) {
             throw new DatabaseException(e.toString(),e);
         } finally {

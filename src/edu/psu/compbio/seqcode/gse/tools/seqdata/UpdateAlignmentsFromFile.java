@@ -84,7 +84,7 @@ public class UpdateAlignmentsFromFile {
         PreparedStatement update = null;
         try{
         	cxn = DatabaseConnectionManager.getConnection("seqdata");
-            cxn.setAutoCommit(false);
+            cxn.setAutoCommit(true);
             
 	        //Iterate through the file
 	        String line = null;
@@ -133,7 +133,7 @@ public class UpdateAlignmentsFromFile {
 					SeqExpt expt = null;
 			        SeqAlignment alignment = loader.loadAlignment(dbid);
 			        if (alignment == null) {
-			        	cxn.rollback();
+			        	//cxn.rollback();
 			            throw new DatabaseException("Can't find alignment "+dbid+" for " + alignpieces[2] + " for " + alignpieces[0]);
 			        }else{
 			        	//Update experiment
@@ -143,7 +143,7 @@ public class UpdateAlignmentsFromFile {
 				            expt = loader.loadExperiment(exptID);
 				            exptExists=true;
 				        } catch (NotFoundException e) {
-				        	cxn.rollback();
+				        	//cxn.rollback();
 				            System.err.println("No experiment found for " + alignpieces[0] + ";" + alignpieces[1] + ";" + alignpieces[2]);
 				            System.exit(1);
 				        }
@@ -171,8 +171,8 @@ public class UpdateAlignmentsFromFile {
 				            try {
 				                expt = loader.loadExperiment(alignpieces[0], alignpieces[1]);
 				            } catch (NotFoundException e2) {
-				                /* failed again means the insert failed.  you lose */
-				                cxn.rollback();
+				                /* failed again means the update failed.  you lose */
+				                //cxn.rollback();
 				                throw new DatabaseException("Couldn't update experiment for " + alignpieces[0] + "," + alignpieces[1]);
 				            }
 				        }
@@ -200,7 +200,6 @@ public class UpdateAlignmentsFromFile {
 			                update.setInt(16, dbid);
 			                update.execute();
 			                alignment = loader.loadAlignment(expt, alignpieces[2], genome);
-			                cxn.commit();
 			                File f = null;
 			                if (paramsfname != null) {
 			                    f = new File(paramsfname);
@@ -211,14 +210,13 @@ public class UpdateAlignmentsFromFile {
 	
 			                }
 						} catch (IOException e) {
-			                cxn.rollback();
+			                //cxn.rollback();
 			                System.err.println("Couldn't add alignment parameters");
 			                e.printStackTrace();
 			            }
 	
 			        }
 			        System.out.println(alignment.getDBID());
-			        cxn.commit();
 				}
 			}
         } catch (UnknownRoleException e) {

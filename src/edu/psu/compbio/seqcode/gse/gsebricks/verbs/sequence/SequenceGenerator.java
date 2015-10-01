@@ -145,7 +145,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
 	            if (result == null) {
 	                java.sql.Connection cxn =
 	                DatabaseConnectionManager.getConnection("core");
-	                cxn.setAutoCommit(false);
+	                cxn.setAutoCommit(true);
 	                PreparedStatement ps;
 	                //1-based version (mysql substr is 1-based)
 	                int start = Math.max(region.getStart(), 0);
@@ -159,7 +159,6 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
 	                } 
 	                rs.close();
 	                ps.close();
-	                cxn.commit();
 	                if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
 	            }
 	        } catch (SQLException ex) {
