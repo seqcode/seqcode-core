@@ -358,7 +358,7 @@ public class DifferentialMSR {
 				//				System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
 				//			}
 				//		}
-												
+					GvParents.clear();							
 					Integer lastParent = 0;
 					Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
 					for (Integer parent : sortedLinkageMap.values()){
@@ -366,7 +366,7 @@ public class DifferentialMSR {
 						lastParent = parent;
 					}
 					GvParents.put(0, trailingZero);
-					GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
+	//				GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
 	//					GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
 						//test
