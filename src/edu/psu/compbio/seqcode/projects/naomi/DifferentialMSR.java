@@ -72,7 +72,7 @@ public class DifferentialMSR {
 		 * Linkage parameters
 		 */
 		double WEIGHT_I = 1.00;
-		double WEIGHT_G = 0.0000001;
+		double WEIGHT_G = 0.000001;
 		double WEIGHT_M = 1000;
 		
 		/*********************
@@ -297,7 +297,7 @@ public class DifferentialMSR {
 				double groundVPmax = 0;		
 				double tempScore = 0;
 				//updating ground volume and iterating to encourage convergence
-				for (int counter = 0; counter<2; counter++){
+				for (int counter = 0; counter<5; counter++){
 					if (counter != 0){
 						for (Integer parent : GvParents.keySet()){
 //							System.out.println("parent is: "+parent+" Gv is: "+GvParents.get(parent) );
