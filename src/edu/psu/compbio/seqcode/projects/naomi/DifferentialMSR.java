@@ -72,7 +72,7 @@ public class DifferentialMSR {
 		 * Linkage parameters
 		 */
 		double WEIGHT_I = 1.00;
-		double WEIGHT_G = 0.000001;
+		double WEIGHT_G = 0.0000001;
 		double WEIGHT_M = 1000;
 		
 		/*********************
@@ -344,7 +344,7 @@ public class DifferentialMSR {
 									if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
 									else{
 	//									if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
-										if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
+										if(linkageMap.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
 									}
 //									linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
 //									System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
@@ -403,6 +403,11 @@ public class DifferentialMSR {
 						int maxIndex = 0;
 						*/
 	//				}
+				}
+				Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
+				linkageMap.clear();
+				for (Integer parent : sortedLinkageMap.values()){
+					linkageMap.put(parent, 0);
 				}
 								
 				//for each scaleNum, add the parents to the segmentationTree
