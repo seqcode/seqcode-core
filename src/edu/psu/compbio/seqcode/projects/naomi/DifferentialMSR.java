@@ -300,12 +300,10 @@ public class DifferentialMSR {
 				for (int counter = 0; counter<5; counter++){
 					if (counter != 0){
 						for (Integer parent : GvParents.keySet()){
+							System.out.println("parent is: "+parent+" Gv is: "+GvParents.get(parent) );
 							//307 is a problem because all parents are zero
-							if (GvParents.containsValue(GvParents.get(parent))){
-								if ( GvParents.get(parent) > groundVPmax)
-									groundVPmax = GvParents.get(parent);
-							}
-							else {System.out.println("no value was found! ");}
+							if ( GvParents.get(parent) > groundVPmax)
+								groundVPmax = GvParents.get(parent);
 						}				
 					}	
 						
