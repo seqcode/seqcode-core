@@ -327,10 +327,10 @@ public class DifferentialMSR {
 									
 									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 									if (tempScore > intensityDiffScore){
-										//update parents in GvParents
-										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); 
 										//remove previous parents
 										GvParents.remove(linkageMap.get(kid));
+										//update parents in GvParents
+										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); 
 										//update parents in linkageMap
 										linkageMap.put(kid,(kid+dcp[i]));		
 				//						System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
