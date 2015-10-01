@@ -345,8 +345,8 @@ public class DifferentialMSR {
 										
 //										GvParents.remove(linkageMap.get(kid)); //remove previous parents
 										linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
-				//						System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
-				//						System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
+										System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
+										System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
 									}
 									//updating GvParents
 								}							
