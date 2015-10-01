@@ -378,7 +378,7 @@ public class DifferentialMSR {
 						px2 = Math.min(currchromBinSize, kid+dcp[DCPsize-1]);
 						x1 = (int) (1+(radius[n]-(kid-px1)));
 						x2 = (int) (DCPsize-1 -(radius[n]-px2-kid));
-						System.out.println("lenght of px is "+(px2-px2)+" length of x is "+(x2-x1));
+						System.out.println("lenght of px is "+(px2-px1)+" length of x is "+(x2-x1));
 						double maxScore = 0;
 						int maxIndex = 0;
 					}
