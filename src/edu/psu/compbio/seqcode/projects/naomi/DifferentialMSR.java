@@ -308,6 +308,15 @@ public class DifferentialMSR {
 									groundVPmax = GvParents.get(parent);
 							}				
 						}	
+						
+						for (Integer key : linkageMap.keySet()){
+							System.out.println("child is : "+key+" parents is "+linkageMap.get(key));
+						}
+						for (Integer key : GvParents.keySet()){
+							System.out.println("parents is : "+key);
+						}
+						
+						
 						System.out.println("groundVPmax is "+groundVPmax);
 						for (Integer kid : linkageMap.keySet()){
 							
@@ -327,12 +336,9 @@ public class DifferentialMSR {
 									
 									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 									if (tempScore > intensityDiffScore){
-										//remove previous parents
-										GvParents.remove(linkageMap.get(kid));
-										//update parents in GvParents
-										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); 
-										//update parents in linkageMap
-										linkageMap.put(kid,(kid+dcp[i]));		
+										GvParents.remove(linkageMap.get(kid)); //remove previous parents
+										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); //update parents in GvParents
+										linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
 				//						System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
 				//						System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
 									}
