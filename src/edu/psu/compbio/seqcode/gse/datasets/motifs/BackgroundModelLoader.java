@@ -2072,7 +2072,7 @@ public class BackgroundModelLoader {
     java.sql.Connection cxn = null;
     try {
       cxn = DatabaseConnectionManager.getConnection("annotations");
-      cxn.setAutoCommit(true);
+      cxn.setAutoCommit(false);
 
       //insert into the background model and background
       Pair<Integer, Integer> ids = BackgroundModelLoader.insertBackgroundModelAndMap(model.getName(), model.getMaxKmerLen(), 
@@ -2082,6 +2082,9 @@ public class BackgroundModelLoader {
       //Finally, insert all the "columns" of the background model
       BackgroundModelLoader.insertMarkovModelColumns(model, mapID, cxn);
       
+      //If everything has worked then commit
+      cxn.commit();
+
       //update the model with its new ID
       model.setMapID(mapID);
 
@@ -2090,6 +2093,7 @@ public class BackgroundModelLoader {
     catch (SQLException sqlex) {
       //If any runtime exceptions come up rollback the transaction and then
       //rethrow the exception
+      cxn.rollback();
       throw sqlex;      
     }
     catch (Exception cgsex) {
@@ -2118,7 +2122,7 @@ public class BackgroundModelLoader {
     java.sql.Connection cxn = null;
     try {
       cxn = DatabaseConnectionManager.getConnection("annotations");
-      cxn.setAutoCommit(true);
+      cxn.setAutoCommit(false);
 
       //insert into the background model and background
       Pair<Integer, Integer> ids = BackgroundModelLoader.insertBackgroundModelAndMap(model.getName(), model.getMaxKmerLen(), 
@@ -2126,6 +2130,9 @@ public class BackgroundModelLoader {
       int mapID = ids.car();
       //insert all the "columns" of the background model
       BackgroundModelLoader.insertFrequencyModelColumns(model, mapID, cxn);
+
+      //If everything has worked then commit
+      cxn.commit();
 
       //update the model with its new ID
       model.setMapID(mapID);
@@ -2135,6 +2142,7 @@ public class BackgroundModelLoader {
     catch (RuntimeException ex) {
       //If any runtime exceptions come up rollback the transaction and then
       //rethrow the exception
+      cxn.rollback();
       throw ex;
     }
     finally {
@@ -2159,7 +2167,7 @@ public class BackgroundModelLoader {
     java.sql.Connection cxn = null;
     try {
       cxn = DatabaseConnectionManager.getConnection("annotations");
-      cxn.setAutoCommit(true);
+      cxn.setAutoCommit(false);
 
       String modelType;
       if (insertAsMarkov) {
@@ -2177,6 +2185,9 @@ public class BackgroundModelLoader {
       //insert all the "columns" of the background model
       BackgroundModelLoader.insertCountsModelColumns(model, mapID, insertAsMarkov, cxn);
 
+      //If everything has worked then commit
+      cxn.commit();
+
       //update the model with its new ID
       model.setMapID(mapID);
 
@@ -2185,6 +2196,7 @@ public class BackgroundModelLoader {
     catch (RuntimeException ex) {
       //If any runtime exceptions come up rollback the transaction and then
       //rethrow the exception
+      cxn.rollback();
       throw ex;
     }
     finally {
@@ -2207,7 +2219,7 @@ public class BackgroundModelLoader {
     java.sql.Connection cxn = null;
     try {
       cxn = DatabaseConnectionManager.getConnection("annotations");
-      cxn.setAutoCommit(true);
+      cxn.setAutoCommit(false);
 
       int mapID = model.getMapID();
       //remove from the database all the existing entries for the model columns
@@ -2215,11 +2227,14 @@ public class BackgroundModelLoader {
       
       //Insert all the "columns" of the background model
       BackgroundModelLoader.insertMarkovModelColumns(model, mapID, cxn);
-
+      
+      //If everything has worked then commit
+      cxn.commit();
     }
     catch (RuntimeException ex) {
       //If any runtime exceptions come up rollback the transaction and then
       //rethrow the exception
+      cxn.rollback();
       throw ex;
     }
     finally {
@@ -2242,7 +2257,7 @@ public class BackgroundModelLoader {
     java.sql.Connection cxn = null;
     try {
       cxn = DatabaseConnectionManager.getConnection("annotations");
-      cxn.setAutoCommit(true);
+      cxn.setAutoCommit(false);
 
       int mapID = model.getMapID();
       //remove from the database all the existing entries for the model columns
@@ -2251,6 +2266,8 @@ public class BackgroundModelLoader {
       //Insert all the "columns" of the background model
       BackgroundModelLoader.insertFrequencyModelColumns(model, mapID, cxn);
       
+      //If everything has worked then commit
+      cxn.commit();
     }
     catch (RuntimeException ex) {
       //If any runtime exceptions come up rollback the transaction and then
@@ -2280,7 +2297,7 @@ public class BackgroundModelLoader {
     ResultSet rs = null;
     try {
       cxn = DatabaseConnectionManager.getConnection("annotations");
-      cxn.setAutoCommit(true);      
+      cxn.setAutoCommit(false);      
       
       int mapID = model.getMapID();
       
@@ -2304,10 +2321,13 @@ public class BackgroundModelLoader {
       //Insert all the "columns" of the background model
       BackgroundModelLoader.insertCountsModelColumns(model, mapID, isMarkov, cxn);
       
+      //If everything has worked then commit
+      cxn.commit();
     }
     catch (RuntimeException ex) {
       //If any runtime exceptions come up rollback the transaction and then
       //rethrow the exception
+      cxn.rollback();
       throw ex;
     }
     finally {

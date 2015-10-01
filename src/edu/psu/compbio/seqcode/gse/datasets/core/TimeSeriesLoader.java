@@ -44,10 +44,12 @@ public class TimeSeriesLoader implements Closeable {
     }
 
 	public void beginTransaction() throws SQLException { 
-		cxn.setAutoCommit(true);
+		cxn.setAutoCommit(false);
 	}
 
 	public void commitTransaction() throws SQLException { 
+		cxn.commit();
+		cxn.setAutoCommit(true);
 	}
     
     public void close() {

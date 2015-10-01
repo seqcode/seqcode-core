@@ -78,7 +78,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
                              
     public void store() throws SQLException {
         java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
-        cxn.setAutoCommit(true);
+        cxn.setAutoCommit(false);
         String q = "insert into chipseqanalysis (id, name, version, program, active) values (%s,?,?,?,?)";
         PreparedStatement ps = cxn.prepareStatement(String.format(q,edu.psu.compbio.seqcode.gse.utils.database.Sequence.getInsertSQL(cxn, "chipseqanalysis_id")));
         ps.setString(1, name);
@@ -171,6 +171,7 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
             }
             ps.close();
         }
+        cxn.commit();
         if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
     }
     /* stores the active flag to the database.  Must be done
@@ -181,12 +182,13 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
         }
         String sql = "update chipseqanalysis set active = ? where id = ?";
         java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
-        cxn.setAutoCommit(true);
+        cxn.setAutoCommit(false);
         PreparedStatement ps = cxn.prepareStatement(sql);
         
         ps.setInt(1, active ? 1 : 0);
         ps.setInt(2, dbid);
         ps.execute();
+        cxn.commit();
         if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role "+SeqDataLoader.role, ex); }
         
     }

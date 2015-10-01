@@ -50,9 +50,12 @@ public class SeqDataModifier {
 		Statement del = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
+            cxn.setAutoCommit(false);
             del = cxn.createStatement();
             del.execute("delete from alignmentparameters where alignment = " + align.getDBID());
+            cxn.commit();
 		} catch (SQLException e) {
+			cxn.rollback();
             throw new DatabaseException(e.toString(),e);
         } finally {
         	if (del != null) { try {del.close();} catch (SQLException ex) { } }
@@ -65,11 +68,13 @@ public class SeqDataModifier {
 		PreparedStatement ps = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
-            cxn.setAutoCommit(true);
+            cxn.setAutoCommit(false);
             ps = SeqAlignment.createDeleteByIDStatement(cxn);
 	        ps.setInt(1, align.getDBID());
 	        ps.execute();
+	        cxn.commit();
 		} catch (SQLException e) {
+			cxn.rollback();
             throw new DatabaseException(e.toString(),e);
         } finally {
         	if (ps != null) { try {ps.close();} catch (SQLException ex) { } }
@@ -82,7 +87,7 @@ public class SeqDataModifier {
 		PreparedStatement ps = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
-            cxn.setAutoCommit(true);
+            cxn.setAutoCommit(false);
             Lab lab = expt.getLab();
 			ExptCondition cond = expt.getExptCondition();
 			ExptTarget target = expt.getExptTarget();
@@ -104,7 +109,9 @@ public class SeqDataModifier {
 	    	//Delete core.cellline if no SeqExpts depend
 	    	if(seqLoader.loadExperiments(cells).size()==0)
 	    		deleteCellLine(cells);
+	    	cxn.commit();
 		} catch (SQLException e) {
+			cxn.rollback();
             throw new DatabaseException(e.toString(),e);
         } finally {
         	if (ps != null) { try {ps.close();} catch (SQLException ex) { } }
@@ -160,6 +167,7 @@ public class SeqDataModifier {
 		PreparedStatement update = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
+            cxn.setAutoCommit(false);
             String updateName = updateLab+" "+updateCond+" "+updateTarget+" "+updateCell;
 			
 			SeqExpt testExpt  = seqLoader.findExperiment(updateName, updateRep);
@@ -188,8 +196,10 @@ public class SeqDataModifier {
 		        	cxn.rollback();
 		            throw new DatabaseException("Couldn't update experiment for " + updateName + "," + updateRep);
 		        }
+		        cxn.commit();
 			}
 		} catch (SQLException e) {
+			cxn.rollback();
             throw new DatabaseException(e.toString(),e);
         } finally {
         	if (update != null) { try {update.close();} catch (SQLException ex) { } }
@@ -202,7 +212,7 @@ public class SeqDataModifier {
 		PreparedStatement update = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
-            cxn.setAutoCommit(true);
+            cxn.setAutoCommit(false);
             int id = align.getDBID();
 			update = SeqAlignment.createUpdateHitsAndWeights(cxn);
 	        System.err.println("Updating counts for alignment: "+id+" ("+align.getName()+")");
@@ -220,7 +230,9 @@ public class SeqDataModifier {
 	        update.setFloat(6, pairweight);
 	        update.setInt(7, id);
 	        update.execute();
+	        cxn.commit();
 		} catch (SQLException e) {
+			cxn.rollback();
             throw new DatabaseException(e.toString(),e);
         } finally {
         	if (update != null) { try {update.close();} catch (SQLException ex) { } }
@@ -233,12 +245,15 @@ public class SeqDataModifier {
 		PreparedStatement permUpdate = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
+            cxn.setAutoCommit(false);
             permUpdate = SeqAlignment.createUpdatePermissions(cxn);
 	    	permUpdate.setString(1, permissions);
 	    	permUpdate.setInt(2, align.getDBID());
 	    	permUpdate.execute();
 	    	permUpdate.close();
+	    	cxn.commit();
 		} catch (SQLException e) {
+			cxn.rollback();
             throw new DatabaseException(e.toString(),e);
         } finally {
         	if (permUpdate != null) { try {permUpdate.close();} catch (SQLException ex) { } }
