@@ -367,13 +367,21 @@ public class DifferentialMSR {
 //						}
 						
 					}
-	//			}else{
+				}else{
 					/***********
 					 * Over kids
-					 
-					//I haven't understood this part from the matlab code
-					 * 
 					 */
+					int px1 = 0;
+					int px2 = 0;
+					int x1 = 0;
+					int x2 = 0;
+					for (Integer kid : linkageMap.keySet()){
+						px1 = Math.max(0, kid+dcp[0]);
+						px2 = Math.min(currchromBinSize, kid+dcp[DCPsize]);
+						x1 = (int) (1+(radius[n]-(kid-px1)));
+						x2 = (int) (DCPsize -(radius[n]-px2-kid));
+						System.out.println("lenght of px is "+(px2-px2)+" length of x is "+(x2-x1));
+					}
 				}
 								
 				//for each scaleNum, add the parents to the segmentationTree
