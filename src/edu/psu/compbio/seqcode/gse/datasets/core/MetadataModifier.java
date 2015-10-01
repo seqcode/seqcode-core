@@ -19,11 +19,11 @@ public class MetadataModifier{
     	Connection cxn = null;
     	try {
             cxn = DatabaseConnectionManager.getConnection(role);
+            cxn.setAutoCommit(true);
             PreparedStatement deleteLabs = cxn.prepareStatement("delete from lab where id=?");
     		deleteLabs.setInt(1, dbid);
             deleteLabs.execute();
             deleteLabs.close();
-            cxn.commit();
         } catch (UnknownRoleException e) {
             throw new IllegalArgumentException("Unknown role: " + role, e);
         } finally {
@@ -35,11 +35,11 @@ public class MetadataModifier{
     	Connection cxn = null;
     	try {
             cxn = DatabaseConnectionManager.getConnection(role);
+            cxn.setAutoCommit(true);
             PreparedStatement deleteCells = cxn.prepareStatement("delete from cellline where id=?");
     		deleteCells.setInt(1, dbid);
             deleteCells.execute();
             deleteCells.close();
-            cxn.commit();
         } catch (UnknownRoleException e) {
             throw new IllegalArgumentException("Unknown role: " + role, e);
         } finally {
@@ -51,11 +51,11 @@ public class MetadataModifier{
     	Connection cxn = null;
     	try {
             cxn = DatabaseConnectionManager.getConnection(role);
+            cxn.setAutoCommit(true);
             PreparedStatement deleteCond = cxn.prepareStatement("delete from exptcondition where id=?");
             deleteCond.setInt(1, dbid);
             deleteCond.execute();
             deleteCond.close();
-            cxn.commit();
         } catch (UnknownRoleException e) {
             throw new IllegalArgumentException("Unknown role: " + role, e);
         } finally {
@@ -67,11 +67,11 @@ public class MetadataModifier{
     	Connection cxn = null;
     	try {
             cxn = DatabaseConnectionManager.getConnection(role);
+            cxn.setAutoCommit(true);
             PreparedStatement deleteTargets = cxn.prepareStatement("delete from expttarget where id=?");
             deleteTargets.setInt(1, dbid);
             deleteTargets.execute();
             deleteTargets.close();
-            cxn.commit();
         } catch (UnknownRoleException e) {
             throw new IllegalArgumentException("Unknown role: " + role, e);
         } finally {

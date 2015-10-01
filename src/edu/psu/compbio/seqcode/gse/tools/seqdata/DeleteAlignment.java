@@ -23,7 +23,7 @@ public class DeleteAlignment {
     public static void main(String args[]) throws SQLException, NotFoundException, IOException {
         
     	java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
-        cxn.setAutoCommit(false);
+        cxn.setAutoCommit(true);
         Integer id = Args.parseInteger(args,"id", -1);
         
         SeqDataLoader loader = new SeqDataLoader();

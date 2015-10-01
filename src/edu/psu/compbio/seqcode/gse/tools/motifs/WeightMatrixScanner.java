@@ -131,7 +131,7 @@ public class WeightMatrixScanner {
         } else {
             scanMatrices();
         }
-        cxn.commit();
+        //cxn.commit();
     }
     public void loadFile() {
         try {
@@ -139,11 +139,11 @@ public class WeightMatrixScanner {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        try {
+        /*try {
             cxn.commit();
         } catch (SQLException ex) {
             ex.printStackTrace();
-        }
+        }*/
     } 
     public void scanMatrices() throws SQLException, FileNotFoundException {
     	DateFormat dfm = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -226,7 +226,7 @@ public class WeightMatrixScanner {
         getScanned = cxn.prepareStatement("select count(*) from wms_scanned_regions where scan = ? and chromosome = ? and startpos = ? and stoppos = ?");
         getScannedGenome = cxn.prepareStatement("select count(*) from wms_scanned_genomes where scan = ? and genome = ?");
         insertScannedGenome = cxn.prepareStatement("insert into wms_scanned_genomes (scan,genome) values (?,?)");
-        cxn.setAutoCommit(false);
+        cxn.setAutoCommit(true);
     }
 
     /* retrieves the DBID of the scan with the specified name and cutoff for a weight matrix */
@@ -277,7 +277,7 @@ public class WeightMatrixScanner {
         }           
         rs.close();
         if (inserted++ % 1000 == 0) {
-            cxn.commit();
+            //cxn.commit();
         }
         return newregion;
     }
@@ -691,7 +691,7 @@ class StoreConsumer extends WMConsumer {
             insertHit.setFloat(5,hit.score);
             insertHit.execute();
             if (done++ % 1000 == 0) {
-                cxn.commit();
+                //cxn.commit();
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -704,11 +704,11 @@ class StoreConsumer extends WMConsumer {
     }
 
     public void finish() {
-        try {
-            cxn.commit();
+       /* try {
+            //cxn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     public void init() {

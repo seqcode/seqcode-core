@@ -60,9 +60,7 @@ public class AddChromosomes {
             reader = new BufferedReader(new FileReader(new File(fastaname)));
         }
         Connection cxn = DatabaseConnectionManager.getConnection("core");        
-
-        boolean ac = cxn.getAutoCommit();
-        cxn.setAutoCommit(false);
+        cxn.setAutoCommit(true);
         
         PreparedStatement insertChrom = 
         	cxn.prepareStatement("insert into chromosome(id, genome, name) values (" +
@@ -146,8 +144,6 @@ public class AddChromosomes {
         System.out.println("\n-> Finished.");
         System.out.println("-> Committing to DB.");
 
-        cxn.commit();
-        cxn.setAutoCommit(ac);
         insertChrom.close();
         getChromID.close();
         insertEmptySequence.close();
@@ -167,9 +163,7 @@ public class AddChromosomes {
             fasta = new FASTAStream(new File(fastaname));
         }
         Connection cxn = DatabaseConnectionManager.getConnection("core");       
-
-        boolean ac = cxn.getAutoCommit();
-        cxn.setAutoCommit(false);
+        cxn.setAutoCommit(true);
         
         PreparedStatement insertChrom = cxn.prepareStatement("insert into chromosome(id, genome, name) values (" +
                                                     Sequence.getInsertSQL(cxn, "chromosome_id") + "," +
@@ -199,8 +193,6 @@ public class AddChromosomes {
             ClobHandler.setClob(cxn, insertSequence, 3, seq);
             insertSequence.execute();
         }                
-        cxn.commit();
-        cxn.setAutoCommit(ac);
         insertChrom.close();
         getChromID.close();
         insertSequence.close();
