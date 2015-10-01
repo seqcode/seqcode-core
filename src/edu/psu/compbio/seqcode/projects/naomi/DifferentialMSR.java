@@ -310,13 +310,13 @@ public class DifferentialMSR {
 						}	
 						
 						for (Integer key : linkageMap.keySet()){
-							System.out.println("child is : "+key+" parents is "+linkageMap.get(key));
+							System.out.println("child is : "+key+" parents is: "+linkageMap.get(key));
 						}
 						for (Integer key : GvParents.keySet()){
 							System.out.println("parents is : "+key);
 						}
-						//maintain two copy of 
-						
+						//maintain two copy of GvParents
+						TreeMap<Integer, Integer> tempGvParents = new TreeMap<Integer,Integer>();
 						
 						System.out.println("groundVPmax is "+groundVPmax);
 						for (Integer kid : linkageMap.keySet()){
@@ -331,14 +331,19 @@ public class DifferentialMSR {
 									//ground volume is always zero... I need to fix this	//this is where the problem is!	
 									//do linkageMap.get(kid) and GvParents keys always match? i don't think so ; where are we modifying parents?
 									// I can make linkageMap <kids<parent,groundVolume> or maybe parents are updated everytime?
-									}else{ 								
+									}else{ 		
+//										Integer Gv;
+//										if (GvParents.containsKey(linkageMap.get(kid))){Gv = GvParents.get(linkageMap.get(kid));}
+//									else if(tempGvParents.containsKey(linkageMap.get(kid))){Gv = tempGvParents.get(linkageMap.get(kid));}
+//										else {System.out.println("parents are missing !");
 										groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;
 									}
 									
 									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 									if (tempScore > intensityDiffScore){
 										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); //update parents in GvParents
-										GvParents.remove(linkageMap.get(kid)); //remove previous parents
+										
+//										GvParents.remove(linkageMap.get(kid)); //remove previous parents
 										linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
 				//						System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
 				//						System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
