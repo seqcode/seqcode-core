@@ -343,7 +343,8 @@ public class DifferentialMSR {
 //									GvParents.remove(linkageMap.get(kid)); //remove previous parents
 									if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
 									else{
-										if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
+	//									if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
+										if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
 									}
 //									linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
 //									System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
