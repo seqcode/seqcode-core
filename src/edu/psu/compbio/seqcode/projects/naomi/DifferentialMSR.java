@@ -298,7 +298,8 @@ public class DifferentialMSR {
 					//Vincken paper said after 3-4 iteration, there would be no significant difference.
 					double intensityDiffScore = 0;
 					double groundVC = 0; 
-					double groundVPmax = 0;									
+					double groundVPmax = 0;		
+					double tempScore = 0;
 					//updating ground volume and iterating to encourage convergence
 					for (int counter = 0; counter<5; counter++){
 						if (counter != 0){
@@ -324,10 +325,13 @@ public class DifferentialMSR {
 										groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;
 									}
 									
-									intensityDiffScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
-									if (intensityDiffScore > linkageMap.get(kid)){
-										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid)));
+									tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
+									if (tempScore > intensityDiffScore){
+										//update parents in GvParents
+										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); 
+										//remove previous parents
 										GvParents.remove(linkageMap.get(kid));
+										//update parents in linkageMap
 										linkageMap.put(kid,(kid+dcp[i]));		
 				//						System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
 				//						System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
