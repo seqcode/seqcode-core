@@ -297,7 +297,7 @@ public class DifferentialMSR {
 				double groundVPmax = 0;		
 				double tempScore = 0;
 				//updating ground volume and iterating to encourage convergence
-				for (int counter = 0; counter<5; counter++){
+				for (int counter = 0; counter<2; counter++){
 					if (counter != 0){
 						for (Integer parent : GvParents.keySet()){
 //							System.out.println("parent is: "+parent+" Gv is: "+GvParents.get(parent) );
