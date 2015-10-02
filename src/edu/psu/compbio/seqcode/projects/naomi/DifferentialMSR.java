@@ -407,7 +407,7 @@ public class DifferentialMSR {
 				Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
 				linkageMap.clear();
 				for (Integer parent : sortedLinkageMap.values()){
-					linkageMap.put(parent, 0);
+					linkageMap.put(parent, parent);
 				}
 								
 				//for each scaleNum, add the parents to the segmentationTree
