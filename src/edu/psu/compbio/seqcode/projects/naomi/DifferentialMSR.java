@@ -45,7 +45,7 @@ public class DifferentialMSR {
 	protected int threePrimReadExt = 200;
 	protected int binWidth = 1;
 	
-	protected Map<Region, Map<Integer,Set<Integer>>> segmentationTree;
+	protected Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
 
 	public DifferentialMSR(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon){	
 		gconfig = gcon;
@@ -369,14 +369,11 @@ public class DifferentialMSR {
 				for (Integer node : nodesSet)
 					System.out.println(node);
 			}	
-			if (!currScale.isEmpty()){
-				segmentationTree.put(currChrom, currScale);
-			}
+			segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) currScale);
 			
 		}// end of chromosome iteration		
 		manager.close();
 	}
-
 		
 	public static void main(String[] args) {
 		
