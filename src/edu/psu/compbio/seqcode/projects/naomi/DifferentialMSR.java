@@ -172,8 +172,8 @@ public class DifferentialMSR {
 			//copy to segmentation tree
 			
 			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
-			currScale.put(1, linkageMap.keySet());
-			System.out.println("curr Scale 1 size: "+linkageMap.keySet().size());
+			currScale.put(0, linkageMap.keySet());
+			System.out.println("curr Scale 0 size: "+linkageMap.keySet().size());
 			
 			//determine the first nonzero and last nonzero from signal
 			int trailingZero = 0;
@@ -318,9 +318,6 @@ public class DifferentialMSR {
 	//									if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
 										if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
 									}
-//									linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
-//									System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
-//									System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
 								}
 							}							
 						}
@@ -341,8 +338,10 @@ public class DifferentialMSR {
 						lastParent = parent;
 					}
 					GvParents.put(0, trailingZero);
+					
+					//I'm not sure if the below is necessary
 	//				GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
-	//					GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
+	//				GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
 					//test
 					if (currchromSize > 200000000){			
@@ -352,27 +351,6 @@ public class DifferentialMSR {
 							System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
 						}
 					}
-						
-//					}
-					
-	//			}else{
-					/***********
-					 * Over kids
-					
-					int px1 = 0;
-					int px2 = 0;
-					int x1 = 0;
-					int x2 = 0;
-					for (Integer kid : linkageMap.keySet()){
-						px1 = Math.max(0, kid+dcp[0]);
-						px2 = Math.min(currchromBinSize, kid+dcp[DCPsize-1]);
-						x1 = (int) (1+(radius[n]-(kid-px1)));
-						x2 = (int) (DCPsize-1 -(radius[n]-px2-kid));
-						System.out.println("lenght of px is "+(px2-px1)+" length of x is "+(x2-x1));
-						double maxScore = 0;
-						int maxIndex = 0;
-						*/
-	//				}
 				}
 				Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
 				linkageMap.clear();
@@ -392,13 +370,8 @@ public class DifferentialMSR {
 				for (Integer node : nodesSet)
 					System.out.println(node);
 			}
-
 			
-	//		segmentationTree.put(currChrom, currScale);
-
-			
-			
-	//		GaussianBlur = null;
+			segmentationTree.put(currChrom, currScale);
 			
 		}// end of chromosome iteration		
 		manager.close();
