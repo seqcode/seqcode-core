@@ -45,7 +45,6 @@ public class DifferentialMSR {
 	protected int threePrimReadExt = 200;
 	protected int binWidth = 1;
 	
-	//Map<chrm, Map<scale space, Set<segmentation>>>
 	protected Map<Region, Map<Integer,Set<Integer>>> segmentationTree;
 
 	public DifferentialMSR(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon){	
@@ -339,7 +338,7 @@ public class DifferentialMSR {
 					}
 					GvParents.put(0, trailingZero);
 					
-					//I'm not sure if the below is necessary
+					// I probably need to fix this later
 	//				GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
 	//				GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
 						
@@ -369,9 +368,10 @@ public class DifferentialMSR {
 				System.out.println("current nodeset size is: "+nodesSet.size());
 				for (Integer node : nodesSet)
 					System.out.println(node);
+			}	
+			if (!currScale.isEmpty()){
+				segmentationTree.put(currChrom, currScale);
 			}
-			
-			segmentationTree.put(currChrom, currScale);
 			
 		}// end of chromosome iteration		
 		manager.close();
