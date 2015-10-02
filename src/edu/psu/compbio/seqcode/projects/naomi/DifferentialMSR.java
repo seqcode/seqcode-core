@@ -176,8 +176,6 @@ public class DifferentialMSR {
 			System.out.println("curr Scale 1 size: "+linkageMap.keySet().size());
 			
 			//determine the first nonzero and last nonzero from signal
-			
-			//check here ; sometimes it produces zero for DImax, DImin, trailingZero, zeroEnd
 			int trailingZero = 0;
 			int zeroEnd = 0;		
 			if (!nonzeroList.isEmpty()){
@@ -225,7 +223,6 @@ public class DifferentialMSR {
 				for (int i = 0;i<windowSize;i++)
 					normalizedWindow[i] = window[i]/windowSum;	
 	
-				//multiplying by polynomial ; I have to test to see how this works
 				PolynomialFunction poly1 = new PolynomialFunction(polyCoeffi);
 				PolynomialFunction poly2 = new PolynomialFunction(normalizedWindow);
 				PolynomialFunction polyMultiplication=poly1.multiply(poly2);
@@ -245,7 +242,7 @@ public class DifferentialMSR {
 						GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i];
 				}	
 				
-				//testing
+				//testing; I can identify the region that I want to print using peak calling
 //				if (currchromSize > 200000000){			
 //					System.out.println("current Chrom is: "+currChrom.getChrom());
 //					for (int i = 0; i< 100;i++)
@@ -300,61 +297,34 @@ public class DifferentialMSR {
 				for (int counter = 0; counter<5; counter++){
 					if (counter != 0){
 						for (Integer parent : GvParents.keySet()){
-//							System.out.println("parent is: "+parent+" Gv is: "+GvParents.get(parent) );
-							//307 is a problem because all parents are zero
 							if ( GvParents.get(parent) > groundVPmax)
 								groundVPmax = GvParents.get(parent);
 						}				
 					}	
-						
-//					for (Integer key : linkageMap.keySet()){
-//						System.out.println("child is : "+key+" parents is: "+linkageMap.get(key));
-//					}
-//					for (Integer key : GvParents.keySet()){
-//						System.out.println("parents is : "+key);
-//					}
-						
-//					System.out.println("groundVPmax is "+groundVPmax);
+
 					for (Integer kid : linkageMap.keySet()){
-						double intensityDiffScore = 0;
-							
-						//there is something wrong with iteration of DCPsize and updating parents
-						//iteration is always off by 2. is it important to adjust for that?
-							
+						
+						double intensityDiffScore = 0;							
 						for (int i = 0; i<DCPsize; i++){
 							if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
-								if (counter ==0 || groundVPmax == 0){
-									groundVC = 0.00;
-								//do linkageMap.get(kid) and GvParents keys always match? i don't think so ; where are we modifying parents?
-								// I can make linkageMap <kids<parent,groundVolume> or maybe parents are updated everytime?
-								}else{ 		
-//									Integer Gv;
-//									if (GvParents.containsKey(linkageMap.get(kid))){Gv = GvParents.get(linkageMap.get(kid));}
-//									else if(tempGvParents.containsKey(linkageMap.get(kid))){Gv = tempGvParents.get(linkageMap.get(kid));}
-//									else {System.out.println("parents are missing !");
-									groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;
-								}
-									
+								if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
+								else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
+
 								tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 								if (tempScore > intensityDiffScore){
 									intensityDiffScore = tempScore;
-//									GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid))); //add parents in GvParents
-										
-//									GvParents.remove(linkageMap.get(kid)); //remove previous parents
 									if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
 									else{
-										if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
-	//									if(linkageMap.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
+	//									if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
+										if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
 									}
 //									linkageMap.put(kid,(kid+dcp[i]));	//update parents in linkageMap	
 //									System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
 //									System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
 								}
-								//updating GvParents
 							}							
 						}
-					}
-						
+					}						
 						//test
 				//		if (currchromSize > 200000000){			
 				//			System.out.println("current Chrom is: "+currChrom.getChrom());
