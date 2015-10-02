@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.naomi;
+package edu.psu.compbio.seqcode.projects.naomi.multiscalesignal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +24,7 @@ import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
+import edu.psu.compbio.seqcode.projects.naomi.utilities.MapUtility;
 import edu.psu.compbio.seqcode.projects.seed.SEEDConfig;
 
 /**
