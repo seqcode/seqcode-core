@@ -150,7 +150,7 @@ public class MultiScaleSignalRepresentation {
 			 */
 					
 			//linkageMap contains index of kids and parents
-			HashMap <Integer, Integer> linkageMap = new HashMap<Integer, Integer>();
+			Map <Integer, Integer> linkageMap = new HashMap<Integer, Integer>();
 			//adding starting nodes; to qualify for the starting nodes the signal intensity needs to be different from the subsequent signal intensity
 			//adding the starting and end positions in the kids at start and end positions  
 			//setting max & min signal intensity  
@@ -201,7 +201,7 @@ public class MultiScaleSignalRepresentation {
 	/*********************
 	* Gaussian scale space 
 	*/	
-	protected void buildSegmenationTree(int numScale, Region currChrom, int currchromBinSize, float[][] GaussianBlur, HashMap <Integer, Integer> linkageMap, Map<Integer,Set<Integer>> currScale){
+	protected void buildSegmenationTree(int numScale, Region currChrom, int currchromBinSize, float[][] GaussianBlur, Map <Integer, Integer> linkageMap, Map<Integer,Set<Integer>> currScale){
 		
 		for (int n = 1; n<numScale; n++){
 		
