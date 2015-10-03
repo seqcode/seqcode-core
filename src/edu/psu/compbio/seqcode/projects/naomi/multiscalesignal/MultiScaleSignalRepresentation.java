@@ -81,7 +81,7 @@ public class MultiScaleSignalRepresentation {
 		sconfig = scon;
 	}
 	 
-	public void buildMSR(int numScale){
+	public void runMSR(int numScale){
 		
 		/*********************
 		 * Matrices parameters
@@ -186,25 +186,9 @@ public class MultiScaleSignalRepresentation {
 			
 			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
 					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);	
-
 			
-			buildLinkageMap(numScale, currChrom, currchromBinSize, GaussianBlur, linkageMap, currScale);	
-				
-			//end of scale space iteration
-			
-			for (Integer scale : currScale.keySet()){
-				System.out.println("current scale is: "+scale);
-				Set<Integer> nodesSet = currScale.get(scale);
-				System.out.println("current nodeset size is: "+nodesSet.size());
-				for (Integer node : nodesSet)
-					System.out.println(node);
-			}	
-			
-			segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) currScale);
-			currchromBinSize = 0;
-			GaussianBlur = null;
-			linkageMap = null;
-			currScale = null;
+			//build segmentationTree
+			buildSegmenationTree(numScale, currChrom, currchromBinSize, GaussianBlur, linkageMap, currScale);	
 			
 		}// end of chromosome iteration		
 		manager.close();
@@ -214,7 +198,7 @@ public class MultiScaleSignalRepresentation {
 	/*********************
 	* Gaussian scale space 
 	*/	
-	protected void buildLinkageMap(int numScale, Region currChrom, int currchromBinSize, float[][] GaussianBlur, HashMap <Integer, Integer> linkageMap, Map<Integer,Set<Integer>> currScale){
+	protected void buildSegmenationTree(int numScale, Region currChrom, int currchromBinSize, float[][] GaussianBlur, HashMap <Integer, Integer> linkageMap, Map<Integer,Set<Integer>> currScale){
 		
 		for (int n = 1; n<numScale; n++){
 		
@@ -382,7 +366,7 @@ public class MultiScaleSignalRepresentation {
 //		linkageMap = null;
 //		currScale = null;
 		
-	}// end of chromosome iteration
+	}
 		
 		
 	public static void main(String[] args) {
@@ -399,7 +383,7 @@ public class MultiScaleSignalRepresentation {
 		
 		if (ap.hasKey("scale")){
 			int numScale = Args.parseInteger(args,"scale",20);
-			msr.buildMSR(numScale);
+			msr.runMSR(numScale);
 		}
 	}
 	
