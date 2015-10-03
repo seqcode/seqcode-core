@@ -47,25 +47,25 @@ public class MultiScaleSignalRepresentation {
 	/*********************
 	 * Gaussian scale space and window parameters	
 	 */
+	//external parameters
 	protected int threePrimReadExt = 200;
 	protected int binWidth = 1;
-	double DELTA_TAU = 0.5*Math.log(2);
-	double MINIMUM_VALUE = Math.pow(10, -100); //arbitrary minimum value; I cannot use Double.MIN_VALUE because it can become zero
+	//static members
+	final static double DELTA_TAU = 0.5*Math.log(2);
+	final static double MINIMUM_VALUE = Math.pow(10, -100); //arbitrary minimum value; I cannot use Double.MIN_VALUE because it can become zero
 	// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
-	double P_MIN = Math.pow(10,-3);
-	double K_MIN = 1/Math.sqrt(1-Math.exp(-2*DELTA_TAU));	
-	double K_N = Math.ceil(K_MIN);
-	float DImax = 0;
-	float DImin = (float) Integer.MAX_VALUE;
-	int trailingZero = 0;
-	int zeroEnd = 0;
-	
+	final static double P_MIN = Math.pow(10,-3);
+	final static double K_MIN = 1/Math.sqrt(1-Math.exp(-2*DELTA_TAU));	
+	final static double K_N = Math.ceil(K_MIN);
+	float DImax, DImin;
+	int trailingZero, zeroEnd;
+
 	/*********************
 	 * Linkage parameters
 	 */
-	double WEIGHT_I = 1.00;
-	double WEIGHT_G = 0.0000001;
-	double WEIGHT_M = 1000;
+	final static double WEIGHT_I = 1.00;
+	final static double WEIGHT_G = 0.0000001;
+	final static double WEIGHT_M = 1000;
 	
 	/*********************
 	 * Matrices parameters
@@ -146,7 +146,7 @@ public class MultiScaleSignalRepresentation {
 			}
 			
 			//testing
-//			if (currchromSize > 200000000){			
+//			if (currchromBinSize > 20000000){			
 //				System.out.println("current Chrom is: "+currChrom.getChrom());
 //				for (int i = 0; i< 100;i++)
 //					System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
@@ -163,6 +163,8 @@ public class MultiScaleSignalRepresentation {
 			//setting max & min signal intensity  
 			List <Integer> nonzeroList = new ArrayList<Integer>();
 			linkageMap.put(0,0);
+			DImax = 0;
+			DImin = (float) Integer.MAX_VALUE;
 			for (int i = 0 ; i< GaussianBlur.length-1; i++){ //should I start
 				if (GaussianBlur[i][1] != GaussianBlur[i+1][1])
 					linkageMap.put(i,0);
@@ -179,7 +181,9 @@ public class MultiScaleSignalRepresentation {
 			currScale.put(0, linkageMap.keySet());
 			System.out.println("curr Scale 0 size: "+linkageMap.keySet().size());
 			
-			//determine the first nonzero and last nonzero from signal		
+			//determine the first nonzero and last nonzero from signal	
+			trailingZero = 0;
+			zeroEnd = 0;
 			if (!nonzeroList.isEmpty()){
 				trailingZero = Collections.min(nonzeroList)-1;
 				zeroEnd = Collections.max(nonzeroList)+1;
@@ -197,6 +201,10 @@ public class MultiScaleSignalRepresentation {
 			}//end of scale space iteration
 			
 			segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) currScale);
+			currchromBinSize = 0;
+			GaussianBlur = null;
+			linkageMap = null;
+			currScale = null;
 			
 		}// end of chromosome iteration		
 		manager.close();
@@ -256,7 +264,7 @@ public class MultiScaleSignalRepresentation {
 		}	
 		
 		//testing; I can identify the region that I want to print using peak calling
-//		if (currchromSize > 200000000){			
+//		if (currchromBinSize > 20000000){			
 //			System.out.println("current Chrom is: "+currChrom.getChrom());
 //			for (int i = 0; i< 100;i++)
 //				System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
@@ -331,7 +339,7 @@ public class MultiScaleSignalRepresentation {
 				}
 			}						
 				//test
-		//		if (currchromSize > 200000000){			
+		//		if (currchromBinSize > 20000000){			
 		//			System.out.println("current Chrom is: "+currChrom.getChrom());
 		//			System.out.println("printing linkangeMap content");
 		//			for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
