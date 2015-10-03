@@ -29,7 +29,7 @@ import edu.psu.compbio.seqcode.projects.naomi.utilities.MapUtility;
 import edu.psu.compbio.seqcode.projects.seed.SEEDConfig;
 
 /**
- * SingleMSR: 
+ * MultiScaleSignalRepresentation
  *
  * Methods refer to two papers
  * Probabilistic Multiscale Image Segmentation, Vincken et al. IEEE (1997)
@@ -171,8 +171,11 @@ public class MultiScaleSignalRepresentation {
 			linkageMap.put(GaussianBlur.length-1,0);
 			
 			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
-			currScale.put(0, linkageMap.keySet());
-			System.out.println("curr Scale 0 size: "+linkageMap.keySet().size());
+			currScale.put(-1, linkageMap.keySet());
+			System.out.println("curr Scale -1 size: "+linkageMap.keySet().size());
+			for (Integer key : linkageMap.keySet()){
+				System.out.println(linkageMap.get(key));
+			}
 			
 			//determine the first nonzero and last nonzero from signal	
 			trailingZero = 0;
