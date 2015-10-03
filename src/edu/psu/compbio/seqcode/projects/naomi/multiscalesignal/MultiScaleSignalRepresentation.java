@@ -172,9 +172,15 @@ public class MultiScaleSignalRepresentation {
 			
 			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
 			currScale.put(-1, linkageMap.keySet());
-			System.out.println("curr Scale -1 size: "+linkageMap.keySet().size());
+			System.out.println("curr Scale -1 size, printing from linkageMap "+linkageMap.keySet().size());
 			for (Integer key : linkageMap.keySet()){
 				System.out.println(key);
+			}
+			System.out.println("printing from currScale ");
+			for (Set<Integer> values : currScale.values()){
+				for (Integer indVal : values){
+					System.out.println(indVal);
+				}
 			}
 			
 			//determine the first nonzero and last nonzero from signal	
