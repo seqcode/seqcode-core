@@ -174,7 +174,7 @@ public class MultiScaleSignalRepresentation {
 			currScale.put(-1, linkageMap.keySet());
 			System.out.println("curr Scale -1 size: "+linkageMap.keySet().size());
 			for (Integer key : linkageMap.keySet()){
-				System.out.println(linkageMap.get(key));
+				System.out.println(key);
 			}
 			
 			//determine the first nonzero and last nonzero from signal	
@@ -351,6 +351,8 @@ public class MultiScaleSignalRepresentation {
 				linkageMap.put(parent, parent);
 			}						
 			//for each scaleNum, add the parents to the segmentationTree
+			
+			System.out.println("putting N in currScale :"+n);
 			currScale.put(n, GvParents.keySet());
 		
 		}//end of scale space iteration
