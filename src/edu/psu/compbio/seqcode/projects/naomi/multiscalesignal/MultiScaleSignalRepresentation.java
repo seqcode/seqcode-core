@@ -200,6 +200,14 @@ public class MultiScaleSignalRepresentation {
 				
 			}//end of scale space iteration
 			
+			for (Integer scale : currScale.keySet()){
+				System.out.println("current scale is: "+scale);
+				Set<Integer> nodesSet = currScale.get(scale);
+				System.out.println("current nodeset size is: "+nodesSet.size());
+				for (Integer node : nodesSet)
+					System.out.println(node);
+			}	
+			
 			segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) currScale);
 			currchromBinSize = 0;
 			GaussianBlur = null;
@@ -362,15 +370,8 @@ public class MultiScaleSignalRepresentation {
 		}						
 		//for each scaleNum, add the parents to the segmentationTree
 		currScale.put(n, GvParents.keySet());
-	
-		for (Integer scale : currScale.keySet()){
-			System.out.println("current scale is: "+scale);
-			Set<Integer> nodesSet = currScale.get(scale);
-			System.out.println("current nodeset size is: "+nodesSet.size());
-			for (Integer node : nodesSet)
-				System.out.println(node);
-		}	
-	}
+		
+	}//end of scale space iteration
 		
 	public static void main(String[] args) {
 		
