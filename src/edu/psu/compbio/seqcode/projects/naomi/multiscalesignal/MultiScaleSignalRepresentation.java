@@ -160,7 +160,7 @@ public class MultiScaleSignalRepresentation {
 			DImin = (float) Integer.MAX_VALUE;
 			for (int i = 0 ; i< GaussianBlur.length-1; i++){ //should I start
 				if (GaussianBlur[i][1] != GaussianBlur[i+1][1])
-					linkageMap.put(i,0);
+					linkageMap.put(i,i);
 				if (GaussianBlur[i][1] > DImax)
 					DImax = GaussianBlur[i][1];
 				if (GaussianBlur[i][1] < DImin)
@@ -168,7 +168,7 @@ public class MultiScaleSignalRepresentation {
 				if (GaussianBlur[i][1]!=0)
 					nonzeroList.add(i);
 			}
-			linkageMap.put(GaussianBlur.length-1,0);
+			linkageMap.put(GaussianBlur.length-1,GaussianBlur.length-1);
 			
 			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
 			currScale.put(0, linkageMap.keySet());
@@ -348,7 +348,7 @@ public class MultiScaleSignalRepresentation {
 			Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
 			linkageMap.clear();
 			for (Integer parent : sortedLinkageMap.values()){
-				linkageMap.put(parent, 0);
+				linkageMap.put(parent, parent);
 			}						
 			//for each scaleNum, add the parents to the segmentationTree
 			
