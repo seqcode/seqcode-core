@@ -37,7 +37,7 @@ import edu.psu.compbio.seqcode.projects.seed.SEEDConfig;
  *
  **/
 
-public class DifferentialMSR {
+public class MSR {
 
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
@@ -48,7 +48,7 @@ public class DifferentialMSR {
 	
 	protected Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
 
-	public DifferentialMSR(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon){	
+	public MSR(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon){	
 		gconfig = gcon;
 		econfig = econ;
 		sconfig = scon;
@@ -385,7 +385,7 @@ public class DifferentialMSR {
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		SEEDConfig sconf = new SEEDConfig(gconf, args);
-		DifferentialMSR profile = new DifferentialMSR (gconf, econf, sconf);	
+		MSR profile = new MSR (gconf, econf, sconf);	
 		profile.buildMSR();
 	}
 	

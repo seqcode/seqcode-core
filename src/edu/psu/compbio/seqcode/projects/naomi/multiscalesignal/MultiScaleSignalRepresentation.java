@@ -4,18 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.distribution.NormalDistribution;
-
-import pal.util.Comparator;
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
@@ -25,7 +20,6 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.projects.naomi.utilities.MapUtility;
 import edu.psu.compbio.seqcode.projects.seed.SEEDConfig;
 
 /**
@@ -43,61 +37,25 @@ public class MultiScaleSignalRepresentation {
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
 	protected SEEDConfig sconfig;
-	
-	/*********************
-	 * Gaussian scale space and window parameters	
-	 */
+	protected int numScale;
+
 	//external parameters
 	protected int threePrimReadExt = 200;
 	protected int binWidth = 1;
-	//static members
-	final static double DELTA_TAU = 0.5*Math.log(2);
-	final static double MINIMUM_VALUE = Math.pow(10, -100); //arbitrary minimum value; I cannot use Double.MIN_VALUE because it can become zero
-	// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
-	final static double P_MIN = Math.pow(10,-3);
-	final static double K_MIN = 1/Math.sqrt(1-Math.exp(-2*DELTA_TAU));	
-	final static double K_N = Math.ceil(K_MIN);
-	float DImax, DImin;
-	int trailingZero, zeroEnd;
-
-	/*********************
-	 * Linkage parameters
-	 */
-	final static double WEIGHT_I = 1.00;
-	final static double WEIGHT_G = 0.0000001;
-	final static double WEIGHT_M = 1000;
-	
-	/*********************
-	 * Matrices parameters
-	 */	
-	double sigma[];
-	double radius[];
 	
 	protected Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
 
-	public MultiScaleSignalRepresentation(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon){	
+	public MultiScaleSignalRepresentation(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon, int scale){	
 		gconfig = gcon;
 		econfig = econ;
 		sconfig = scon;
+		numScale = scale;
 	}
 	 
-	public void runMSR(int numScale){
-		
-		/*********************
-		 * Matrices parameters
-		 */	
-		sigma = new double[numScale];
-		radius = new double[numScale];
-		for (int i = 0; i<numScale;i++){
-			sigma[i] = 1;
-			radius[i] = 1;
-		}
+	public void runMSR(){
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
 		Genome genome = gconfig.getGenome();
-		
-		//test to print whole chromosomes
-		System.out.println(genome.getChromList());
 		
 		//fix here to get parameters only if they are specified
 		binWidth = sconfig.getBinWidth();
@@ -107,6 +65,15 @@ public class MultiScaleSignalRepresentation {
 		System.out.println("binWidth is: "+binWidth);
 		System.out.println("threePrimReadExt is: "+threePrimReadExt);
 		
+		//get scaling ratio
+		double scaling = 1;				
+		for(ExperimentCondition exptCond: manager.getConditions()){
+			for(ControlledExperiment rep : exptCond.getReplicates()){
+				scaling = rep.getControlScaling();
+				System.out.println("Condition: "+rep.getCondName()+"\tScalingFactor: "+scaling);
+			}
+		}
+		
 		Iterator<Region> chroms = new ChromosomeGenerator<Genome>().execute(genome);
 		//iterating each chromosome (each chromosome is a region).
 		while (chroms.hasNext()) {
@@ -115,40 +82,66 @@ public class MultiScaleSignalRepresentation {
 			int currchromSize = currChrom.getWidth();
 			int currchromBinSize = (int) Math.ceil(currchromSize/binWidth);
 			
-			//primitive matrix to store signal and the subsequent convolved signals
+			Map<Sample,float[]> condiGaussianBlur = new HashMap<Sample,float[]>();
+			float[] sampleCounts = new float[currchromBinSize];
+			//primitive array to store signal and the subsequent convolved signals
 			//its index correspond to the coordinates
-			float[][] GaussianBlur = new float[currchromBinSize][2];
-			for (int i = 0;i<currchromBinSize;i++){
-				for (int j = 0; j<2;j++)
-					GaussianBlur[i][j] = 0;
+			float[][] gaussianBlur = new float[currchromBinSize][2];
+			for (int i = 0; i<currchromBinSize; i++){
+				for (int j = 0; j<2; j++)
+					gaussianBlur[i][j] = 0;
 			}
 			
-			//get StrandedBaseCount list for each chromosome
-			Map<Sample, List<StrandedBaseCount>> sampleCountsMap = new HashMap<Sample, List<StrandedBaseCount>>();
-			for (Sample sample : manager.getSamples())
-				sampleCountsMap.put(sample,sample.getBases(currChrom)); 
+			//get StrandedBaseCount list for signal and control
+			Map<Sample, List<StrandedBaseCount>> condiCountsMap = new HashMap<Sample, List<StrandedBaseCount>>();
+			
+			for (ExperimentCondition conditions : manager.getConditions()){
+				for (Sample signal : conditions.getSignalSamples())
+					condiCountsMap.put(signal, signal.getBases(currChrom));			
+				for (Sample control : conditions.getControlSamples())
+					condiCountsMap.put(control, control.getBases(currChrom));				
+			}
 			
 			//StrandedBasedCount object contains positive and negative strand separately
 			//store all base counts indexed by positions at column[1]
 			//extend reads to 3' end and bin according to bin size			
-			for (Sample sample : manager.getSamples()){		
-				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
+			for (Sample sample : manager.getSamples()){	
+				for (int i = 0;i<currchromBinSize;i++)
+						sampleCounts[i] = 0;
+				
+				List<StrandedBaseCount> currentCounts = condiCountsMap.get(sample);
 				for (StrandedBaseCount hits: currentCounts){
 					for (int i = 0; i<threePrimReadExt+1; i++){
 						if (hits.getStrand()=='+' && hits.getCoordinate()+i<currchromSize){
-								GaussianBlur[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)][1]+=hits.getCount();
+							sampleCounts[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)]+=hits.getCount();
 						}else if (hits.getStrand()=='+' && hits.getCoordinate()-i >=0){
-								GaussianBlur[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)][1]+=hits.getCount();
+							sampleCounts[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)]+=hits.getCount();
 						}
 					}
 				}
+				condiGaussianBlur.put(sample, sampleCounts);
 				currentCounts = null;
+			}
+			
+			//if it is a single sample, build SegmentaionTree using single sample
+			if (manager.getNumConditions() == 1){
+				for (Sample sample : manager.getSamples()){
+					float[] counts = condiGaussianBlur.get(sample);
+					for (int i = 0; i<currchromBinSize; i++)
+						gaussianBlur[i][1] = counts[i];					
+				}
+			}else{ //for control and signal; construct a gaussianBlur by taking signal*scaling-control
+				for(ExperimentCondition exptCond: manager.getConditions()){
+					float[] signalCounts = condiGaussianBlur.get(exptCond.getSignalSamples());
+					float[] controlCounts = condiGaussianBlur.get(exptCond.getControlSamples());
+					for (int i = 0; i<currchromBinSize; i++)
+						gaussianBlur[i][1] = (float) (signalCounts[i]*scaling)-controlCounts[i];
+				}
 			}
 			
 			/*********************
 			 * Starting nodes
-			 */
-					
+			 */					
 			//linkageMap contains index of kids and parents
 			Map <Integer, Integer> linkageMap = new HashMap<Integer, Integer>();
 			//adding starting nodes; to qualify for the starting nodes the signal intensity needs to be different from the subsequent signal intensity
@@ -156,19 +149,19 @@ public class MultiScaleSignalRepresentation {
 			//setting max & min signal intensity  
 			List <Integer> nonzeroList = new ArrayList<Integer>();
 			linkageMap.put(0,0);
-			DImax = 0;
-			DImin = (float) Integer.MAX_VALUE;
-			for (int i = 0 ; i< GaussianBlur.length-1; i++){ //should I start
-				if (GaussianBlur[i][1] != GaussianBlur[i+1][1])
+			float DImax = 0;
+			float DImin = (float) Integer.MAX_VALUE;
+			for (int i = 0 ; i< gaussianBlur.length-1; i++){ 
+				if (gaussianBlur[i][1] != gaussianBlur[i+1][1])
 					linkageMap.put(i,i);
-				if (GaussianBlur[i][1] > DImax)
-					DImax = GaussianBlur[i][1];
-				if (GaussianBlur[i][1] < DImin)
-					DImin = GaussianBlur[i][1];		
-				if (GaussianBlur[i][1]!=0)
+				if (gaussianBlur[i][1] > DImax)
+					DImax = gaussianBlur[i][1];
+				if (gaussianBlur[i][1] < DImin)
+					DImin = gaussianBlur[i][1];		
+				if (gaussianBlur[i][1]!=0)
 					nonzeroList.add(i);
 			}
-			linkageMap.put(GaussianBlur.length-1,GaussianBlur.length-1);
+			linkageMap.put(gaussianBlur.length-1,gaussianBlur.length-1);
 			
 			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
 			currScale.put(0, linkageMap.keySet());
@@ -178,8 +171,8 @@ public class MultiScaleSignalRepresentation {
 			}
 			
 			//determine the first nonzero and last nonzero from signal	
-			trailingZero = 0;
-			zeroEnd = 0;
+			int trailingZero = 0;
+			int zeroEnd = 0;
 			if (!nonzeroList.isEmpty()){
 				trailingZero = Collections.min(nonzeroList)-1;
 				zeroEnd = Collections.max(nonzeroList)+1;
@@ -191,188 +184,27 @@ public class MultiScaleSignalRepresentation {
 					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);	
 			
 			//build segmentationTree
-			buildSegmenationTree(numScale, currChrom, currchromBinSize, GaussianBlur, linkageMap, currScale);	
+			SegmentationTree segtree = new SegmentationTree(gconfig, econfig, sconfig, numScale);	
+
+			Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = segtree.buildTree(currChrom, currchromBinSize, gaussianBlur, linkageMap, currScale, DImax, DImin, trailingZero, zeroEnd);
+			
+			System.out.println("from returned values from segmentationTree");
+			
+			for (Region chrom : segmentationTree.keySet()){
+				System.out.println("current chrom is: "+chrom);
+				HashMap<Integer,Set<Integer>> chromTree = segmentationTree.get(chrom);
+				for (Integer scale : chromTree.keySet()){
+					System.out.println("current scale is:"+scale);
+					Set<Integer> segmentation = chromTree.get(scale);
+					for (Integer coord : segmentation){
+						System.out.println(coord);
+					}
+				}
+			}
 			
 		}// end of chromosome iteration		
 		manager.close();
 	}
-		
-	
-	/*********************
-	* Gaussian scale space 
-	*/	
-	protected void buildSegmenationTree(int numScale, Region currChrom, int currchromBinSize, float[][] GaussianBlur, Map <Integer, Integer> linkageMap, Map<Integer,Set<Integer>> currScale){
-		
-		for (int n = 1; n<numScale; n++){
-		
-			double polyCoeffi[] = new double [currchromBinSize];
-			//first copy from column[1] to column[0];this procedure need to be repeated for each iteration of scale
-			//also copy from column[1] to array to store polynomial coefficient
-			for (int i = 0 ; i<currchromBinSize; i++){
-				GaussianBlur[i][0]=GaussianBlur[i][1];
-				if (GaussianBlur[i][1] != 0){
-					polyCoeffi[i]=GaussianBlur[i][1];
-				}else{
-					polyCoeffi[i]=MINIMUM_VALUE;
-				}
-			}
-			//sigma calculation
-			sigma[n] = Math.exp(n*DELTA_TAU);
-			// create normal distribution with mean zero and sigma[n]
-			NormalDistribution normDistribution = new NormalDistribution(0.00,sigma[n]);
-			//take inverse CDF based on the normal distribution using probability
-			double inverseCDF = normDistribution.inverseCumulativeProbability(P_MIN);				
-			int windowSize = (int) (-Math.round(inverseCDF)*2+1);						
-			//window calculation based on Gaussian(normal) distribution with sigma, mean=zero,x=X[i]			
-			double window[] = new double[windowSize];
-			double windowSum = 0;
-			for (int i = 0;i<windowSize;i++){
-				window[i] = normDistribution.density(Math.round(inverseCDF)+i);
-				windowSum = windowSum+window[i];
-			}
-			double normalizedWindow[]=new double[windowSize];
-			for (int i = 0;i<windowSize;i++)
-				normalizedWindow[i] = window[i]/windowSum;	
-
-			PolynomialFunction poly1 = new PolynomialFunction(polyCoeffi);
-			PolynomialFunction poly2 = new PolynomialFunction(normalizedWindow);
-			PolynomialFunction polyMultiplication=poly1.multiply(poly2);
-			double coefficients[]= polyMultiplication.getCoefficients();
-		
-			//taking mid point of polynomial coefficients			
-			int polyMid = (int) Math.floor(coefficients.length/2);
-		
-			System.out.println("currchromBin Size is : "+currchromBinSize+"\t"+ "windowSize is: "+windowSize+"\t"+"coefficients length is: "+coefficients.length);
-
-			//copy Gaussian blur results to the column[1]
-			// I should check to make sure that it's not off by 1
-			for (int i = 0; i<currchromBinSize;i++){
-				if (currchromBinSize % 2 ==0 && coefficients.length/2 == 1)
-					GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i+1];
-				else
-					GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i];
-			}	
-		
-			//testing; I can identify the region that I want to print using peak calling
-			//		if (currchromBinSize > 20000000){			
-			//			System.out.println("current Chrom is: "+currChrom.getChrom());
-			//			for (int i = 0; i< 100;i++)
-			//				System.out.println(GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+GaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
-			//		}
-		
-			/***************
-			 * Search Volume
-			 */ 	
-		 
-			double tempRadius;
-			if (n==1){
-				tempRadius = sigma[n];
-			}else{
-				tempRadius = Math.sqrt(Math.pow(sigma[n],2)-Math.pow(sigma[n-1], 2));
-			}
-			radius[n] = Math.ceil(K_MIN*tempRadius);
-			
-			int DCPsize = (int) (Math.round(radius[n])*2+1);
-			int dcp[] = new int[DCPsize];
-			double distanceFactor[] = new double[DCPsize];
-			double affectionDistance;
-			double denom = -2*(Math.pow(sigma[n], 2)-Math.pow(sigma[n-1],2));
-		
-			for (int i = 0; i<DCPsize;i++){
-				dcp[i] = (int) -Math.round(radius[n])+i;
-				// applying equation 7 in Vincken(1997)
-				affectionDistance=Math.exp(Math.pow(dcp[i], 2)/denom)/Math.exp(Math.pow(0.5*sigma[n],2)/denom);
-			
-				//applying equation 8 in Vincken (1997) 
-				if (Math.abs(dcp[i]) > 0.5*sigma[n]){distanceFactor[i]= affectionDistance;}
-				else{distanceFactor[i] = 1.0000;}
-			}
-		
-			/***************
-			 * Linkage Loop	
-			 */		 
-			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();				 
-			//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
-			//From the second iteration, we consider ground volume = number of nodes that parents are linked to the kids
-			//From third iteration, we increase the weight of the ground volume by 1e-7.
-			//Vincken paper said after 3-4 iteration, there would be no significant difference.
-			double groundVC = 0; 
-			double groundVPmax = 0;		
-			double tempScore = 0;
-			//updating ground volume and iterating to encourage convergence
-			for (int counter = 0; counter<5; counter++){
-				if (counter != 0){
-					for (Integer parent : GvParents.keySet()){
-						if ( GvParents.get(parent) > groundVPmax)
-							groundVPmax = GvParents.get(parent);
-					}				
-				}	
-
-				for (Integer kid : linkageMap.keySet()){
-				
-					double intensityDiffScore = 0;							
-					for (int i = 0; i<DCPsize; i++){
-						if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
-							if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
-							else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
-
-							tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
-							if (tempScore > intensityDiffScore){
-								intensityDiffScore = tempScore;
-								if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
-								else{
-//									if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
-									if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
-								}
-							}
-						}							
-					}
-				}						
-				//test
-				//		if (currchromBinSize > 20000000){			
-				//			System.out.println("current Chrom is: "+currChrom.getChrom());
-				//			System.out.println("printing linkangeMap content");
-				//			for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
-				//				System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-				//			}
-				//		}
-				GvParents.clear();							
-				Integer lastParent = 0;
-				Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
-				for (Integer parent : sortedLinkageMap.values()){
-					GvParents.put(parent, (parent-lastParent));
-					lastParent = parent;
-				}
-				GvParents.put(0, trailingZero);
-			}
-			Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
-			linkageMap.clear();
-			for (Integer parent : sortedLinkageMap.values()){
-				linkageMap.put(parent, parent);
-			}						
-			//for each scaleNum, add the parents to the segmentationTree
-			
-			System.out.println("putting N in currScale :"+n);
-			currScale.put(n, GvParents.keySet());
-		
-		}//end of scale space iteration
-		
-		for (Integer scale : currScale.keySet()){
-			System.out.println("current scale is: "+scale);
-			Set<Integer> nodesSet = currScale.get(scale);
-			System.out.println("current nodeset size is: "+nodesSet.size());
-			for (Integer node : nodesSet)
-				System.out.println(node);
-		}	
-		
-		segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) currScale);
-		currchromBinSize = 0;
-		GaussianBlur = null;
-		linkageMap = null;
-		currScale = null;
-		
-	}
-		
 		
 	public static void main(String[] args) {
 		
@@ -383,13 +215,12 @@ public class MultiScaleSignalRepresentation {
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		SEEDConfig sconf = new SEEDConfig(gconf, args);
-		MultiScaleSignalRepresentation msr = new MultiScaleSignalRepresentation (gconf, econf, sconf);	
 		ArgParser ap = new ArgParser(args);
-		
+		int numScale = 20;
 		if (ap.hasKey("scale")){
-			int numScale = Args.parseInteger(args,"scale",20);
-			msr.runMSR(numScale);
-		}
-	}
-	
+			numScale = Args.parseInteger(args,"scale",3);
+		}		
+		MultiScaleSignalRepresentation msr = new MultiScaleSignalRepresentation (gconf, econf, sconf,numScale);	
+		msr.runMSR();		
+	}	
 }
