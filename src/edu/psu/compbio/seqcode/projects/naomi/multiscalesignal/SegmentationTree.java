@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -229,9 +230,12 @@ public class SegmentationTree {
 		
 		for (Integer scale : currScale.keySet()){
 			System.out.println("current scale is: "+scale);
-			SortedSet<Integer> nodesSet = (SortedSet<Integer>) currScale.get(scale);
-			System.out.println("current nodeset size is: "+nodesSet.size());
-			for (Integer node : nodesSet)
+			SortedSet<Integer> sortedNodeSet = new TreeSet<Integer>();
+			for (Integer node : currScale.get(scale)){
+				sortedNodeSet.add(node);
+			}
+			System.out.println("current nodeset size is: "+sortedNodeSet.size());
+			for (Integer node : sortedNodeSet)
 				System.out.println(node);
 		}	
 		
