@@ -155,7 +155,7 @@ public class MultiScaleSignalRepresentation {
 			//setting max & min signal intensity  
 			List <Integer> nonzeroList = new ArrayList<Integer>();
 			linkageMap.put(0,0);
-			float DImax = 0;
+			float DImax = (float) Integer.MIN_VALUE;
 			float DImin = (float) Integer.MAX_VALUE;
 			for (int i = 0 ; i< gaussianBlur.length-1; i++){ 
 				if (gaussianBlur[i][1] != gaussianBlur[i+1][1])
@@ -181,11 +181,13 @@ public class MultiScaleSignalRepresentation {
 			
 			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
 					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);	
+			float maxInt = DImax-DImin;
+			System.out.println("max intensity is: "+maxInt);
 			
 			//build segmentationTree
 			SegmentationTree segtree = new SegmentationTree(gconfig, econfig, sconfig, numScale);	
 
-			Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = segtree.buildTree(currChrom, currchromBinSize, gaussianBlur, linkageMap, DImax, DImin, trailingZero, zeroEnd);
+			Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = segtree.buildTree(currChrom, currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 			
 			System.out.println("from returned values from segmentationTree");
 			

@@ -60,7 +60,7 @@ public class SegmentationTree {
 	}	
 
 	protected Map<Region, HashMap <Integer, Set<Integer>>> buildTree (Region currChrom, int currchromBinSize, float[][] gaussianBlur, 
-			Map <Integer, Integer> linkageMap, float DImax, float DImin, int trailingZero, int zeroEnd){
+			Map <Integer, Integer> linkageMap, float DImax, int trailingZero, int zeroEnd){
 		
 		Map<Integer,Set<Integer>> scaleLevel =new HashMap<Integer,Set<Integer>>();
 		scaleLevel.put(0, linkageMap.keySet());
