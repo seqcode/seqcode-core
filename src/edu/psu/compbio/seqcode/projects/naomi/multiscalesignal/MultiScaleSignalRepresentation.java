@@ -141,11 +141,11 @@ public class MultiScaleSignalRepresentation {
 				}
 			}
 			
-			if (currchromBinSize > 20000000){			
-				System.out.println("current Chrom is: "+currChrom.getChrom());
-				for (int i = 0; i< 100;i++)
-					System.out.println(gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
-			}	
+//			if (currchromBinSize > 20000000){			
+//				System.out.println("current Chrom is: "+currChrom.getChrom());
+//				for (int i = 0; i< 100;i++)
+//					System.out.println(gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
+//			}	
 			
 			/*********************
 			 * Starting nodes
@@ -188,8 +188,14 @@ public class MultiScaleSignalRepresentation {
 			
 			//build segmentationTree
 			SegmentationTree segtree = new SegmentationTree(gconfig, econfig, sconfig, numScale);	
+			
+			// I'm testing with small regions
+			Map<Integer,Set<Integer>> segmentationTree = null;		
+			if (currchromBinSize < 2000000){			
+				segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
+			}	 
 
-			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
+//			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 			
 			//printing segmenationTree for test
 			System.out.println("from returned values from segmentationTree");
