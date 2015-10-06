@@ -60,7 +60,14 @@ public class SegmentationTree {
 	}	
 
 	protected Map<Region, HashMap <Integer, Set<Integer>>> buildTree (Region currChrom, int currchromBinSize, float[][] gaussianBlur, 
-			Map <Integer, Integer> linkageMap, Map<Integer,Set<Integer>> scaleLevel, float DImax, float DImin, int trailingZero, int zeroEnd){
+			Map <Integer, Integer> linkageMap, float DImax, float DImin, int trailingZero, int zeroEnd){
+		
+		Map<Integer,Set<Integer>> scaleLevel =new HashMap<Integer,Set<Integer>>();
+		scaleLevel.put(0, linkageMap.keySet());
+		System.out.println("curr Scale 0 size, printing from linkageMap "+linkageMap.keySet().size());
+		for (Integer key : linkageMap.keySet()){
+			System.out.println(key);
+		}
 		
 		Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
 		
@@ -208,7 +215,7 @@ public class SegmentationTree {
 				//				System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
 				//			}
 				//		}
-				GvParents.clear();							
+				GvParents.clear();	
 				Integer lastParent = 0;
 				Map<Integer, Integer> sortedLinkageMap = new HashMap<Integer,Integer> (MapUtility.sortByValue(linkageMap));
 				for (Integer parent : sortedLinkageMap.values()){

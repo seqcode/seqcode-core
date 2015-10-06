@@ -163,13 +163,6 @@ public class MultiScaleSignalRepresentation {
 			}
 			linkageMap.put(gaussianBlur.length-1,gaussianBlur.length-1);
 			
-			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
-			currScale.put(0, linkageMap.keySet());
-			System.out.println("curr Scale 0 size, printing from linkageMap "+linkageMap.keySet().size());
-			for (Integer key : linkageMap.keySet()){
-				System.out.println(key);
-			}
-			
 			//determine the first nonzero and last nonzero from signal	
 			int trailingZero = 0;
 			int zeroEnd = 0;
@@ -186,7 +179,7 @@ public class MultiScaleSignalRepresentation {
 			//build segmentationTree
 			SegmentationTree segtree = new SegmentationTree(gconfig, econfig, sconfig, numScale);	
 
-			Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = segtree.buildTree(currChrom, currchromBinSize, gaussianBlur, linkageMap, currScale, DImax, DImin, trailingZero, zeroEnd);
+			Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = segtree.buildTree(currChrom, currchromBinSize, gaussianBlur, linkageMap, DImax, DImin, trailingZero, zeroEnd);
 			
 			System.out.println("from returned values from segmentationTree");
 			
