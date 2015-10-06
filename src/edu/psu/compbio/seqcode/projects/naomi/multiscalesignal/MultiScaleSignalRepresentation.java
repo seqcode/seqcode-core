@@ -114,9 +114,15 @@ public class MultiScaleSignalRepresentation {
 				List<StrandedBaseCount> currentCounts = condiCountsMap.get(sample);
 				for (StrandedBaseCount hits: currentCounts){
 					for (int i = 0; i<threePrimReadExt+1; i++){
-						if (hits.getStrand()=='+' && hits.getCoordinate()+i<currchromSize){
+	//					if (hits.getStrand()=='+' && hits.getCoordinate()+i<currchromSize){
+						
+						if (hits.getStrand()=='+' && (int) Math.ceil((hits.getCoordinate()+i)/binWidth)<currchromBinSize){
+
 							sampleCounts[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)]+=hits.getCount();
-						}else if (hits.getStrand()=='+' && hits.getCoordinate()-i >=0){
+							
+	//					}else if (hits.getStrand()=='-' && hits.getCoordinate()-i >=0){
+						}else if (hits.getStrand()=='-' && (int) Math.ceil((hits.getCoordinate()-i)/binWidth) >=0){
+							
 							sampleCounts[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)]+=hits.getCount();
 						}
 					}

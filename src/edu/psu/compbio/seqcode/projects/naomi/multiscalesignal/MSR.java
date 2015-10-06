@@ -129,7 +129,7 @@ public class MSR {
 					for (int i = 0; i<threePrimReadExt+1; i++){
 						if (hits.getStrand()=='+' && hits.getCoordinate()+i<currchromSize){
 								GaussianBlur[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)][1]+=hits.getCount();
-						}else if (hits.getStrand()=='+' && hits.getCoordinate()-i >=0){
+						}else if (hits.getStrand()=='-' && hits.getCoordinate()-i >=0){
 								GaussianBlur[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)][1]+=hits.getCount();
 						}
 					}
