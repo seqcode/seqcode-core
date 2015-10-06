@@ -66,12 +66,10 @@ public class MultiScaleSignalRepresentation {
 		System.out.println("threePrimReadExt is: "+threePrimReadExt);
 		
 		//get scaling ratio
-		double scaling = 1;				
-		for(ExperimentCondition exptCond: manager.getConditions()){
-			for(ControlledExperiment rep : exptCond.getReplicates()){
-				scaling = rep.getControlScaling();
-				System.out.println("Condition: "+rep.getCondName()+"\tScalingFactor: "+scaling);
-			}
+		double scaling = 1;		
+		for (ControlledExperiment rep: manager.getReplicates()){
+			scaling = rep.getControlScaling();
+			System.out.println("Condition: "+rep.getCondName()+"\tScalingFactor: "+scaling);
 		}
 		
 		Iterator<Region> chroms = new ChromosomeGenerator<Genome>().execute(genome);
@@ -95,11 +93,9 @@ public class MultiScaleSignalRepresentation {
 			//get StrandedBaseCount list for signal and control
 			Map<Sample, List<StrandedBaseCount>> condiCountsMap = new HashMap<Sample, List<StrandedBaseCount>>();
 			
-			for (ExperimentCondition conditions : manager.getConditions()){
-				for (Sample signal : conditions.getSignalSamples())
-					condiCountsMap.put(signal, signal.getBases(currChrom));			
-				for (Sample control : conditions.getControlSamples())
-					condiCountsMap.put(control, control.getBases(currChrom));				
+			for (ControlledExperiment rep: manager.getReplicates()){
+				condiCountsMap.put(rep.getSignal(), rep.getSignal().getBases(currChrom));
+				condiCountsMap.put(rep.getControl(), rep.getControl().getBases(currChrom));			
 			}
 			
 			//StrandedBasedCount object contains positive and negative strand separately
@@ -132,14 +128,13 @@ public class MultiScaleSignalRepresentation {
 							gaussianBlur[i][1] = counts[i];					
 					}
 				}else{ //for control and signal; construct a gaussianBlur by taking signal*scaling-control
-					for(ExperimentCondition exptCond: manager.getConditions()){
-						float[] signalCounts = condiGaussianBlur.get(exptCond.getSignalSamples());
-						float[] controlCounts = condiGaussianBlur.get(exptCond.getControlSamples());
-						for (int i = 0; i<currchromBinSize; i++)
-							gaussianBlur[i][1] = (float) (signalCounts[i]*scaling)-controlCounts[i];
-					}
+					float[] signalCounts = condiGaussianBlur.get(rep.getSignal());
+					float[] controlCounts = condiGaussianBlur.get(rep.getControl());
+					for (int i = 0; i<currchromBinSize; i++)
+						gaussianBlur[i][1] = (float) (signalCounts[i]*scaling)-controlCounts[i];
 				}
 			}
+			
 			
 			/*********************
 			 * Starting nodes
@@ -196,8 +191,7 @@ public class MultiScaleSignalRepresentation {
 						System.out.println(coord);
 					}
 				}
-			}
-			
+			}			
 		}// end of chromosome iteration		
 		manager.close();
 	}
