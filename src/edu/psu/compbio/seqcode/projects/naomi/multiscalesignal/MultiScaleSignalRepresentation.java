@@ -54,7 +54,6 @@ public class MultiScaleSignalRepresentation {
 		numScale = scale;
 	}
 	 
-	@SuppressWarnings("unchecked")
 	public void runMSR(){
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
@@ -221,7 +220,9 @@ public class MultiScaleSignalRepresentation {
 						if (segRegionTree.containsKey(scale)){
 							segRegionTree.get(scale).add(segRegion);	
 						}else{
-							segRegionTree.put(scale, (List<Region>) segRegion);
+							List<Region> regionList = new ArrayList<Region>();
+							regionList.add(segRegion);
+							segRegionTree.put(scale, regionList);
 						}					
 						prevCoord = coord;
 					}
