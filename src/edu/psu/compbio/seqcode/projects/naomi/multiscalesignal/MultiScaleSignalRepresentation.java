@@ -132,11 +132,10 @@ public class MultiScaleSignalRepresentation {
 					float[] signalCounts = condiGaussianBlur.get(rep.getSignal());
 					float[] controlCounts = condiGaussianBlur.get(rep.getControl());
 					for (int i = 0; i<currchromBinSize; i++)
-						gaussianBlur[i][1] = (float) (signalCounts[i]*scaling)-controlCounts[i];
+						gaussianBlur[i][1] = (float) (signalCounts[i]-scaling*controlCounts[i]);
 				}
 			}
-			
-			System.out.println("current scaling is "+scaling);
+
 			
 			if (currchromBinSize > 20000000){			
 				System.out.println("current Chrom is: "+currChrom.getChrom());
