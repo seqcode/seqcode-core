@@ -119,10 +119,11 @@ public class MultiScaleSignalRepresentation {
 						if (hits.getStrand()=='+' && (int) Math.ceil((hits.getCoordinate()+i)/binWidth)<currchromBinSize){
 
 							sampleCounts[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)]+=hits.getCount();
-							
+						
+							// Fix this part later!!!!
 	//					}else if (hits.getStrand()=='-' && hits.getCoordinate()-i >=0){
-						}else if (hits.getStrand()=='-' && (int) Math.ceil((hits.getCoordinate()-i)/binWidth) >=0){
-							
+	//					}else if (hits.getStrand()=='-' && (int) Math.ceil((hits.getCoordinate()-i)/binWidth) >=0){
+								
 							sampleCounts[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)]+=hits.getCount();
 						}
 					}
