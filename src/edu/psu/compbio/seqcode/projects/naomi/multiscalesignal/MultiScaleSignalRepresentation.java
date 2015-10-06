@@ -10,7 +10,6 @@ import java.util.Set;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
@@ -21,6 +20,7 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.projects.seed.SEEDConfig;
+import edu.psu.compbio.seqcode.projects.seed.stats.FeatureStatistics;
 
 /**
  * MultiScaleSignalRepresentation
@@ -43,8 +43,10 @@ public class MultiScaleSignalRepresentation {
 	protected int threePrimReadExt = 200;
 	protected int binWidth = 1;
 	
-	protected Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
-
+	protected double scaling = 1;	
+	
+	protected Map<Integer,List<Region>> segRegionTree = new HashMap<Integer, List<Region>>();
+	
 	public MultiScaleSignalRepresentation(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon, int scale){	
 		gconfig = gcon;
 		econfig = econ;
@@ -53,6 +55,10 @@ public class MultiScaleSignalRepresentation {
 	}
 	 
 	public void runMSR(){
+		
+		//initialize segRegionTree
+		for (int i = 0; i<numScale; i++)
+			segRegionTree.put(i,null);
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
 		Genome genome = gconfig.getGenome();
@@ -65,8 +71,7 @@ public class MultiScaleSignalRepresentation {
 		System.out.println("binWidth is: "+binWidth);
 		System.out.println("threePrimReadExt is: "+threePrimReadExt);
 		
-		//get scaling ratio
-		double scaling = 1;		
+		//get scaling ratio	
 		for (ControlledExperiment rep: manager.getReplicates()){
 			scaling = rep.getControlScaling();
 			System.out.println("Condition: "+rep.getCondName()+"\tScalingFactor: "+scaling);
@@ -135,14 +140,12 @@ public class MultiScaleSignalRepresentation {
 						gaussianBlur[i][1] = (float) (signalCounts[i]-scaling*controlCounts[i]);
 				}
 			}
-
 			
 			if (currchromBinSize > 20000000){			
 				System.out.println("current Chrom is: "+currChrom.getChrom());
 				for (int i = 0; i< 100;i++)
 					System.out.println(gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
-			}
-			
+			}	
 			
 			/*********************
 			 * Starting nodes
@@ -186,24 +189,75 @@ public class MultiScaleSignalRepresentation {
 			//build segmentationTree
 			SegmentationTree segtree = new SegmentationTree(gconfig, econfig, sconfig, numScale);	
 
-			Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = segtree.buildTree(currChrom, currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
+			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 			
+			//printing segmenationTree for test
 			System.out.println("from returned values from segmentationTree");
-			
-			for (Region chrom : segmentationTree.keySet()){
-				System.out.println("current chrom is: "+chrom);
-				HashMap<Integer,Set<Integer>> chromTree = segmentationTree.get(chrom);
-				for (Integer scale : chromTree.keySet()){
+			for (Integer scale : segmentationTree.keySet()){
 					System.out.println("current scale is:"+scale);
-					Set<Integer> segmentation = chromTree.get(scale);
+					Set<Integer> segmentation = segmentationTree.get(scale);
 					System.out.println("current size is : "+segmentation.size());
-					for (Integer coord : segmentation){
-						System.out.println(coord);
+					for (Integer coord : segmentation)
+						System.out.println(coord);			
+			}	
+			
+			//converting coordinates to regions
+			for (Integer scale : segmentationTree.keySet()){
+				Integer prevCoord = 0;
+				for (Integer coord : segmentationTree.get(scale)){
+					if (prevCoord>0){
+						Region segRegion = new Region(genome,currChrom.getChrom(),coord,prevCoord);
+						List<Region> reg = segRegionTree.get(scale);
+						reg.add(segRegion);						
+						prevCoord = coord;
 					}
 				}
 			}			
-		}// end of chromosome iteration		
+		}// end of chromosome iteration					
 		manager.close();
+	}
+	
+	// for now I am performing binomial test; later change to edgeR
+	public void computeSFC(){
+		
+		Map<Integer,List<Region>> segSFC = new HashMap<Integer, List<Region>>();
+		
+		ExperimentManager manager = new ExperimentManager(econfig);
+		
+		Sample signal = null;
+		Sample control = null;
+		for (ControlledExperiment rep: manager.getReplicates()){
+			signal = rep.getSignal();
+			control = rep.getControl();
+		}
+		
+		double signalCounts = 0;
+		double controlCounts = 0;
+		double pval = 1;
+		
+		for (Integer scale : segRegionTree.keySet()){
+			List<Region> rSFC = new ArrayList<Region>();
+			List<Region> regList = segRegionTree.get(scale);
+			for (Region reg : regList){
+				signalCounts = signal.countHits(reg);
+				controlCounts = control.countHits(reg)*scaling;
+				FeatureStatistics stat = new FeatureStatistics();
+				if (signalCounts>controlCounts){
+					pval = stat.binomialPValue(controlCounts, signalCounts+controlCounts, 1.5);
+				}else{
+					pval = stat.binomialPValue(signalCounts, signalCounts+controlCounts, 1.5);
+				}
+				if (pval<0.0001){rSFC.add(reg);}
+				
+			}
+			segSFC.put(scale,rSFC);
+		}
+		
+		for (Integer scale : segRegionTree.keySet()){
+			System.out.println("scale: "+scale+"size of original region "+segRegionTree.get(scale).size());
+			System.out.println("size  of SFC region"+segSFC.get(scale).size());
+		}
+		
 	}
 		
 	public static void main(String[] args) {
@@ -221,6 +275,8 @@ public class MultiScaleSignalRepresentation {
 			numScale = Args.parseInteger(args,"scale",3);
 		}		
 		MultiScaleSignalRepresentation msr = new MultiScaleSignalRepresentation (gconf, econf, sconf,numScale);	
-		msr.runMSR();		
+		msr.runMSR();	
+		
+		
 	}	
 }

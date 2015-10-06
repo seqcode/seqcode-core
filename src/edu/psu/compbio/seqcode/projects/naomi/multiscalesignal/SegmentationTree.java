@@ -49,9 +49,7 @@ public class SegmentationTree {
 	final static double WEIGHT_I = 1.00;
 	final static double WEIGHT_G = 0.0000001;
 	final static double WEIGHT_M = 1000;
-	
-//	protected Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
-	
+		
 	public SegmentationTree(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon, int scale){	
 		gconfig = gcon;
 		econfig = econ;
@@ -59,15 +57,14 @@ public class SegmentationTree {
 		numScale = scale; 
 	}	
 
-	protected Map<Region, HashMap <Integer, Set<Integer>>> buildTree (Region currChrom, int currchromBinSize, float[][] gaussianBlur, 
-			Map <Integer, Integer> linkageMap, float DImax, int trailingZero, int zeroEnd){
+	protected Map <Integer, Set<Integer>> buildTree (int currchromBinSize, float[][] gaussianBlur, Map <Integer, Integer> linkageMap, float DImax, int trailingZero, int zeroEnd){
 		
-		Map<Integer,Set<Integer>> scaleLevel =new HashMap<Integer,Set<Integer>>();
-		scaleLevel.put(0, linkageMap.keySet());
-		System.out.println("curr Scale 0 size, printing from scaleLevel "+scaleLevel.get(0).size());
-		Set<Integer> startingNodes = new TreeSet<Integer>(scaleLevel.get(0));
+		Map<Integer,Set<Integer>> segmentationTree =new HashMap<Integer,Set<Integer>>();
+		segmentationTree.put(0, linkageMap.keySet());
+		System.out.println("curr Scale 0 size, printing from segmentationTree "+segmentationTree.get(0).size());
+		Set<Integer> startingNodes = new TreeSet<Integer>(segmentationTree.get(0));
 		
-		Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
+//		Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
 		
 		/*********************
 		 * Matrices parameters
@@ -222,6 +219,7 @@ public class SegmentationTree {
 					lastParent = parent;
 				}
 				GvParents.put(0, trailingZero);
+				GvParents.put(gaussianBlur.length-1,gaussianBlur.length-zeroEnd-1);
 			}
 			Map<Integer, Integer> sortedLinkageMap = new HashMap<Integer,Integer> (MapUtility.sortByValue(linkageMap));
 			
@@ -231,24 +229,23 @@ public class SegmentationTree {
 			}						
 			//for each scaleNum, add the parents to the segmentationTree
 
-			scaleLevel.put(n, GvParents.keySet());
+			segmentationTree.put(n, GvParents.keySet());
 			
 		}//end of scale space iteration
 		
-		// scale zero is getting overwrittend with the parents of the last scale; I'm overwiritng the scale zero with initial nodesest for quick fix
-		scaleLevel.put(0, startingNodes);
+		// scale zero is getting overwriting with the parents of the last scale; I'm overwriting the scale zero with initial nodesest for quick fix
+		segmentationTree.put(0, startingNodes);
 		
-//		for (Integer scale : scaleLevel.keySet()){
+//		for (Integer scale : segmentationTree.keySet()){
 //			System.out.println("current scale is: "+scale);
-//			Set<Integer> sortedNodeSet = new TreeSet<Integer>(scaleLevel.get(scale));
+//			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
 //			System.out.println("current nodeset size is: "+sortedNodeSet.size());
 //			for (Integer node : sortedNodeSet)
 //				System.out.println(node);
 //		}	
 		
-		segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) scaleLevel);
-		
 		return segmentationTree;
+		
 	}
 }
 
