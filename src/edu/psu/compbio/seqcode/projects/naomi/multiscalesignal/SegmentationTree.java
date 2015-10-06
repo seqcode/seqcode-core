@@ -64,8 +64,9 @@ public class SegmentationTree {
 		
 		Map<Integer,Set<Integer>> scaleLevel =new HashMap<Integer,Set<Integer>>();
 		scaleLevel.put(0, linkageMap.keySet());
-		System.out.println("curr Scale 0 size, printing from linkageMap "+linkageMap.keySet().size());
-		for (Integer key : linkageMap.keySet()){
+		System.out.println("curr Scale 0 size, printing from scaleLevel "+scaleLevel.get(0));
+		Set<Integer> startingNodes = new TreeSet<Integer>(scaleLevel.get(0));
+		for (Integer key : startingNodes){
 			System.out.println(key);
 		}
 		
@@ -244,6 +245,8 @@ public class SegmentationTree {
 			for (Integer node : sortedNodeSet)
 				System.out.println(node);
 		}	
+		
+		scaleLevel.put(0, startingNodes);
 		
 		segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) scaleLevel);
 		
