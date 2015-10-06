@@ -60,7 +60,7 @@ public class SegmentationTree {
 	}	
 
 	protected Map<Region, HashMap <Integer, Set<Integer>>> buildTree (Region currChrom, int currchromBinSize, float[][] gaussianBlur, 
-			Map <Integer, Integer> linkageMap, Map<Integer,Set<Integer>> currScale, float DImax, float DImin, int trailingZero, int zeroEnd){
+			Map <Integer, Integer> linkageMap, Map<Integer,Set<Integer>> scaleLevel, float DImax, float DImin, int trailingZero, int zeroEnd){
 		
 		Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
 		
@@ -210,28 +210,29 @@ public class SegmentationTree {
 				//		}
 				GvParents.clear();							
 				Integer lastParent = 0;
-				Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
+				Map<Integer, Integer> sortedLinkageMap = new HashMap<Integer,Integer> (MapUtility.sortByValue(linkageMap));
 				for (Integer parent : sortedLinkageMap.values()){
 					GvParents.put(parent, (parent-lastParent));
 					lastParent = parent;
 				}
 				GvParents.put(0, trailingZero);
 			}
-			Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
+			Map<Integer, Integer> sortedLinkageMap = new HashMap<Integer,Integer> (MapUtility.sortByValue(linkageMap));
+			
 			linkageMap.clear();
 			for (Integer parent : sortedLinkageMap.values()){
 				linkageMap.put(parent, parent);
 			}						
 			//for each scaleNum, add the parents to the segmentationTree
 
-			currScale.put(n, GvParents.keySet());
+			scaleLevel.put(n, GvParents.keySet());
 			
 		}//end of scale space iteration
 		
-		for (Integer scale : currScale.keySet()){
+		for (Integer scale : scaleLevel.keySet()){
 			System.out.println("current scale is: "+scale);
 			SortedSet<Integer> sortedNodeSet = new TreeSet<Integer>();
-			for (Integer node : currScale.get(scale)){
+			for (Integer node : scaleLevel.get(scale)){
 				sortedNodeSet.add(node);
 			}
 			System.out.println("current nodeset size is: "+sortedNodeSet.size());
@@ -239,7 +240,7 @@ public class SegmentationTree {
 				System.out.println(node);
 		}	
 		
-		segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) currScale);
+		segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) scaleLevel);
 		
 		return segmentationTree;
 	}

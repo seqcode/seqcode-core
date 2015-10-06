@@ -196,6 +196,7 @@ public class MultiScaleSignalRepresentation {
 				for (Integer scale : chromTree.keySet()){
 					System.out.println("current scale is:"+scale);
 					Set<Integer> segmentation = chromTree.get(scale);
+					System.out.println("current size is : "+segmentation.size());
 					for (Integer coord : segmentation){
 						System.out.println(coord);
 					}
