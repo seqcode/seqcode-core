@@ -95,7 +95,8 @@ public class MultiScaleSignalRepresentation {
 			
 			for (ControlledExperiment rep: manager.getReplicates()){
 				condiCountsMap.put(rep.getSignal(), rep.getSignal().getBases(currChrom));
-				condiCountsMap.put(rep.getControl(), rep.getControl().getBases(currChrom));			
+				if (rep.hasControl())
+					condiCountsMap.put(rep.getControl(), rep.getControl().getBases(currChrom));			
 			}
 			
 			//StrandedBasedCount object contains positive and negative strand separately
@@ -119,7 +120,7 @@ public class MultiScaleSignalRepresentation {
 				currentCounts = null;
 			}
 			
-			//if it is a single sample, build SegmentaionTree using single sample
+			//if there is a single sample, build SegmentaionTree using single sample
 			for (ControlledExperiment rep : manager.getReplicates()){
 				if (!rep.hasControl()){
 					for (Sample sample : manager.getSamples()){
