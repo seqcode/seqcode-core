@@ -234,7 +234,8 @@ public class SegmentationTree {
 			//for each scaleNum, add the parents to the segmentationTree
 
 	//		scaleLevel.put(n, GvParents.keySet());
-			scaleLevel.put(n, (Set<Integer>) sortedLinkageMap.values());
+	//		scaleLevel.put(n, (Set<Integer>) sortedLinkageMap.values());
+			scaleLevel.put(n, linkageMap.keySet());
 			
 		}//end of scale space iteration
 		
