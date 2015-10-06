@@ -124,18 +124,20 @@ public class MultiScaleSignalRepresentation {
 			}
 			
 			//if it is a single sample, build SegmentaionTree using single sample
-			if (manager.getNumConditions() == 1){
-				for (Sample sample : manager.getSamples()){
-					float[] counts = condiGaussianBlur.get(sample);
-					for (int i = 0; i<currchromBinSize; i++)
-						gaussianBlur[i][1] = counts[i];					
-				}
-			}else{ //for control and signal; construct a gaussianBlur by taking signal*scaling-control
-				for(ExperimentCondition exptCond: manager.getConditions()){
-					float[] signalCounts = condiGaussianBlur.get(exptCond.getSignalSamples());
-					float[] controlCounts = condiGaussianBlur.get(exptCond.getControlSamples());
-					for (int i = 0; i<currchromBinSize; i++)
-						gaussianBlur[i][1] = (float) (signalCounts[i]*scaling)-controlCounts[i];
+			for (ControlledExperiment rep : manager.getReplicates()){
+				if (!rep.hasControl()){
+					for (Sample sample : manager.getSamples()){
+						float[] counts = condiGaussianBlur.get(sample);
+						for (int i = 0; i<currchromBinSize; i++)
+							gaussianBlur[i][1] = counts[i];					
+					}
+				}else{ //for control and signal; construct a gaussianBlur by taking signal*scaling-control
+					for(ExperimentCondition exptCond: manager.getConditions()){
+						float[] signalCounts = condiGaussianBlur.get(exptCond.getSignalSamples());
+						float[] controlCounts = condiGaussianBlur.get(exptCond.getControlSamples());
+						for (int i = 0; i<currchromBinSize; i++)
+							gaussianBlur[i][1] = (float) (signalCounts[i]*scaling)-controlCounts[i];
+					}
 				}
 			}
 			
@@ -183,18 +185,18 @@ public class MultiScaleSignalRepresentation {
 			
 			System.out.println("from returned values from segmentationTree");
 			
-//			for (Region chrom : segmentationTree.keySet()){
-//				System.out.println("current chrom is: "+chrom);
-//				HashMap<Integer,Set<Integer>> chromTree = segmentationTree.get(chrom);
-//				for (Integer scale : chromTree.keySet()){
-//					System.out.println("current scale is:"+scale);
-//					Set<Integer> segmentation = chromTree.get(scale);
-//					System.out.println("current size is : "+segmentation.size());
-//					for (Integer coord : segmentation){
-//						System.out.println(coord);
-//					}
-//				}
-//			}
+			for (Region chrom : segmentationTree.keySet()){
+				System.out.println("current chrom is: "+chrom);
+				HashMap<Integer,Set<Integer>> chromTree = segmentationTree.get(chrom);
+				for (Integer scale : chromTree.keySet()){
+					System.out.println("current scale is:"+scale);
+					Set<Integer> segmentation = chromTree.get(scale);
+					System.out.println("current size is : "+segmentation.size());
+					for (Integer coord : segmentation){
+						System.out.println(coord);
+					}
+				}
+			}
 			
 		}// end of chromosome iteration		
 		manager.close();

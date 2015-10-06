@@ -64,11 +64,8 @@ public class SegmentationTree {
 		
 		Map<Integer,Set<Integer>> scaleLevel =new HashMap<Integer,Set<Integer>>();
 		scaleLevel.put(0, linkageMap.keySet());
-		System.out.println("curr Scale 0 size, printing from scaleLevel "+scaleLevel.get(0));
+		System.out.println("curr Scale 0 size, printing from scaleLevel "+scaleLevel.get(0).size());
 		Set<Integer> startingNodes = new TreeSet<Integer>(scaleLevel.get(0));
-		for (Integer key : startingNodes){
-			System.out.println(key);
-		}
 		
 		Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
 		
@@ -238,15 +235,16 @@ public class SegmentationTree {
 			
 		}//end of scale space iteration
 		
+		// scale zero is getting overwrittend with the parents of the last scale; I'm overwiritng the scale zero with initial nodesest for quick fix
 		scaleLevel.put(0, startingNodes);
 		
-		for (Integer scale : scaleLevel.keySet()){
-			System.out.println("current scale is: "+scale);
-			Set<Integer> sortedNodeSet = new TreeSet<Integer>(scaleLevel.get(scale));
-			System.out.println("current nodeset size is: "+sortedNodeSet.size());
-			for (Integer node : sortedNodeSet)
-				System.out.println(node);
-		}	
+//		for (Integer scale : scaleLevel.keySet()){
+//			System.out.println("current scale is: "+scale);
+//			Set<Integer> sortedNodeSet = new TreeSet<Integer>(scaleLevel.get(scale));
+//			System.out.println("current nodeset size is: "+sortedNodeSet.size());
+//			for (Integer node : sortedNodeSet)
+//				System.out.println(node);
+//		}	
 		
 		segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) scaleLevel);
 		
