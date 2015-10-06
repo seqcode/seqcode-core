@@ -238,6 +238,8 @@ public class SegmentationTree {
 			
 		}//end of scale space iteration
 		
+		scaleLevel.put(0, startingNodes);
+		
 		for (Integer scale : scaleLevel.keySet()){
 			System.out.println("current scale is: "+scale);
 			Set<Integer> sortedNodeSet = new TreeSet<Integer>(scaleLevel.get(scale));
@@ -245,8 +247,6 @@ public class SegmentationTree {
 			for (Integer node : sortedNodeSet)
 				System.out.println(node);
 		}	
-		
-		scaleLevel.put(0, startingNodes);
 		
 		segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) scaleLevel);
 		
