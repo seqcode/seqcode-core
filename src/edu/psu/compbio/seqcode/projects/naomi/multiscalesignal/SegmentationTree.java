@@ -180,6 +180,7 @@ public class SegmentationTree {
 			double tempScore = 0;
 			//updating ground volume and iterating to encourage convergence
 			for (int counter = 0; counter<5; counter++){
+				
 				if (counter != 0){
 					for (Integer parent : GvParents.keySet()){
 						if ( GvParents.get(parent) > groundVPmax)
@@ -232,16 +233,14 @@ public class SegmentationTree {
 			}						
 			//for each scaleNum, add the parents to the segmentationTree
 
-			scaleLevel.put(n, GvParents.keySet());
+	//		scaleLevel.put(n, GvParents.keySet());
+			scaleLevel.put(n, (Set<Integer>) sortedLinkageMap.values());
 			
 		}//end of scale space iteration
 		
 		for (Integer scale : scaleLevel.keySet()){
 			System.out.println("current scale is: "+scale);
-			SortedSet<Integer> sortedNodeSet = new TreeSet<Integer>();
-			for (Integer node : scaleLevel.get(scale)){
-				sortedNodeSet.add(node);
-			}
+			Set<Integer> sortedNodeSet = new TreeSet<Integer>(scaleLevel.get(scale));
 			System.out.println("current nodeset size is: "+sortedNodeSet.size());
 			for (Integer node : sortedNodeSet)
 				System.out.println(node);
