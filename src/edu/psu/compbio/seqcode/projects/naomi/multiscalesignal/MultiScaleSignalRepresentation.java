@@ -219,8 +219,8 @@ public class MultiScaleSignalRepresentation {
 			for (Integer scale : segmentationTree.keySet()){
 				Integer prevCoord = 0;
 				for (Integer coord : segmentationTree.get(scale)){
-					if (prevCoord>0){
-						Region segRegion = new Region(genome,currChrom.getChrom(),coord,prevCoord);
+					if (coord>0){
+						Region segRegion = new Region(genome,currChrom.getChrom(),prevCoord,coord);
 						List<Region> reg = segRegionTree.get(scale);
 						reg.add(segRegion);						
 						prevCoord = coord;
@@ -238,6 +238,10 @@ public class MultiScaleSignalRepresentation {
 	public void computeSFC(){
 		
 		System.out.println("inside computSFC ");
+		
+		for (Integer scale : segRegionTree.keySet()){
+			System.out.println("segreiontree "+segRegionTree.get(scale));
+		}
 		
 		Map<Integer,List<Region>> segSFC = new HashMap<Integer, List<Region>>();
 		
