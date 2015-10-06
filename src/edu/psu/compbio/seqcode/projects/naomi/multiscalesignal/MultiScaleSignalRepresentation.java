@@ -54,11 +54,8 @@ public class MultiScaleSignalRepresentation {
 		numScale = scale;
 	}
 	 
+	@SuppressWarnings("unchecked")
 	public void runMSR(){
-		
-		//initialize segRegionTree
-		for (int i = 0; i<numScale; i++)
-			segRegionTree.put(i,null);
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
 		Genome genome = gconfig.getGenome();
@@ -221,8 +218,11 @@ public class MultiScaleSignalRepresentation {
 				for (Integer coord : segmentationTree.get(scale)){
 					if (coord>0){
 						Region segRegion = new Region(genome,currChrom.getChrom(),prevCoord,coord);
-						List<Region> reg = segRegionTree.get(scale);
-						reg.add(segRegion);						
+						if (segRegionTree.containsKey(scale)){
+							segRegionTree.get(scale).add(segRegion);	
+						}else{
+							segRegionTree.put(scale, (List<Region>) segRegion);
+						}					
 						prevCoord = coord;
 					}
 				}
