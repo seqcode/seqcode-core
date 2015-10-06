@@ -136,6 +136,14 @@ public class MultiScaleSignalRepresentation {
 				}
 			}
 			
+			System.out.println("current scaling is "+scaling);
+			
+			if (currchromBinSize > 20000000){			
+				System.out.println("current Chrom is: "+currChrom.getChrom());
+				for (int i = 0; i< 100;i++)
+					System.out.println(gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
+			}
+			
 			
 			/*********************
 			 * Starting nodes
