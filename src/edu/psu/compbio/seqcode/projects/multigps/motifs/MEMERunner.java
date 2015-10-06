@@ -71,7 +71,7 @@ public class MEMERunner {
 			
 			//Call MEME
 			String MEMEcmd = MEMEpath+"meme ";
-			Process proc = Runtime.getRuntime().exec(MEMEcmd+" "+seqFilename+" "+MEMEargs +" -o "+memeOutDir);
+			Process proc = Runtime.getRuntime().exec(MEMEcmd+" "+seqFilename+" "+MEMEargs +" -p "+config.getMaxThreads()+" -o "+memeOutDir);
 			// any error message? 
 			StreamGobbler errorGobbler = new 
 			StreamGobbler(proc.getErrorStream(), "MEME_ERR", true);

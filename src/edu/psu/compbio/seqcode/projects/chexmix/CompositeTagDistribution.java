@@ -58,12 +58,20 @@ public class CompositeTagDistribution {
 							crick[sdist]+=sbc.getCount();
 					}
 				}
-			}
-			
-			//Print
-			for(int w=0; w<win; w++){
-				System.out.println(w-(win/2)+"\t"+watson[w]+"\t"+crick[w]);
-			}
+			}						
+		}
+		
+		/*//Normalize
+		double wsum=0, csum=0;
+		for(int w=0; w<win; w++){
+			wsum+=watson[w]; csum+=crick[w];
+		}for(int w=0; w<win; w++){
+			watson[w]/=wsum; crick[w]/=csum;
+		}*/
+		
+		//Print
+		for(int w=0; w<win; w++){
+			System.out.println(w-(win/2)+"\t"+watson[w]+"\t"+crick[w]);
 		}
 	}
 	
