@@ -205,8 +205,7 @@ public class MultiScaleSignalRepresentation {
 					System.out.println("current scale is:"+scale);
 					Set<Integer> segmentation = segmentationTree.get(scale);
 					System.out.println("current size is : "+segmentation.size());
-					for (Integer coord : segmentation)
-						System.out.println(coord);			
+					System.out.println("current size is : "+segmentation);	
 			}	
 			
 			//converting coordinates to regions
@@ -230,6 +229,8 @@ public class MultiScaleSignalRepresentation {
 	
 	// for now I am performing binomial test; later change to edgeR
 	public void computeSFC(){
+		
+		System.out.println("inside computSFC ");
 		
 		Map<Integer,List<Region>> segSFC = new HashMap<Integer, List<Region>>();
 		
