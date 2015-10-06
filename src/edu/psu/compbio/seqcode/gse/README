@@ -2,5 +2,9 @@ This package (edu.psu.compbio.seqcode.gse) is based on GSE, the "Genomic Spatial
 GSE is outlined in this publication: http://www.ncbi.nlm.nih.gov/pubmed/18229714
 The core classes of GSE were built by Tim Danford and Alex Rolfe. Later additions were also contributed by Bob Altshuler, Shaun Mahony, Yuchun Guo, Chris Reeder, and Giorgos Papachristoudis.
 
-This version of GSE was branched from the main MIT code base on 24th Oct 2012. Initial refactoring deleted a number of outdated subpackages, updated the naming spaces for compatibility with the Mahony lab servers at PSU, and aimed to remove any interactions with Oracle databases in favor of mysql.
-Substantial reorganization was carried out during May-Aug 2014, resulting in the deletion of many outdated subpackages and classes, and the separating out of genome/region loading functionality and deep-sequencing experiment functionality into edu.psu.compbio.seqcode.genome and edu.psu.compbio.seqcode.deepseq, respectively.  
+Major History:
+--------------
+Jun 25th 2015: Overhauled database communications; Tomcat JDBC now used to handle connection pooling, connections now mainly opened and closed in same methods. 
+May-Aug 2014: Substantial reorganization was carried out, resulting in the deletion of many outdated subpackages and classes, and the separating out of genome/region loading functionality and deep-sequencing experiment functionality into edu.psu.compbio.seqcode.genome and edu.psu.compbio.seqcode.deepseq, respectively.
+Oct 24th 2012: This version of GSE was branched from the main MIT code. Initial refactoring deleted a number of outdated subpackages, updated the naming spaces for compatibility with the Mahony lab servers at PSU, and aimed to remove any interactions with Oracle databases in favor of mysql.
+  
