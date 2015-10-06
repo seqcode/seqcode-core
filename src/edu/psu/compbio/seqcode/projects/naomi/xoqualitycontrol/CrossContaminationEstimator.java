@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.naomi;
+package edu.psu.compbio.seqcode.projects.naomi.xoqualitycontrol;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;

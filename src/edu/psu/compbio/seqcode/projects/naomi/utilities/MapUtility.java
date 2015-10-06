@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.naomi;
+package edu.psu.compbio.seqcode.projects.naomi.utilities;
 
 import java.util.*;
 

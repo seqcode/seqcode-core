@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.naomi;
+package edu.psu.compbio.seqcode.projects.naomi.multiscalesignal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +24,7 @@ import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
+import edu.psu.compbio.seqcode.projects.naomi.utilities.MapUtility;
 import edu.psu.compbio.seqcode.projects.seed.SEEDConfig;
 
 /**
@@ -36,7 +37,7 @@ import edu.psu.compbio.seqcode.projects.seed.SEEDConfig;
  *
  **/
 
-public class DifferentialMSR {
+public class MSR {
 
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
@@ -45,10 +46,9 @@ public class DifferentialMSR {
 	protected int threePrimReadExt = 200;
 	protected int binWidth = 1;
 	
-	//Map<chrm, Map<scale space, Set<segmentation>>>
-	protected Map<Region, Map<Integer,Set<Integer>>> segmentationTree;
+	protected Map<Region, HashMap<Integer,Set<Integer>>> segmentationTree = new HashMap<Region, HashMap<Integer, Set<Integer>>>();
 
-	public DifferentialMSR(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon){	
+	public MSR(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon){	
 		gconfig = gcon;
 		econfig = econ;
 		sconfig = scon;
@@ -60,7 +60,7 @@ public class DifferentialMSR {
 		 * Gaussian scale space and window parameters	
 		 */
 		// arbitrary number of scale
-		int numScale= 10;
+		int numScale= 20;
 		double DELTA_TAU = 0.5*Math.log(2);	
 		double MINIMUM_VALUE = Math.pow(10, -100); //arbitrary minimum value; I cannot use Double.MIN_VALUE because it can become zero
 		// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
@@ -72,10 +72,7 @@ public class DifferentialMSR {
 		 * Linkage parameters
 		 */
 		double WEIGHT_I = 1.00;
-		// testing with bigger weights to see if functions are conversing 
-		double WEIGHT_G = 0.1;
-		// this is original
-//		double WEIGHT_G = 0.0000001;
+		double WEIGHT_G = 0.0000001;
 		double WEIGHT_M = 1000;
 		
 		/*********************
@@ -175,12 +172,10 @@ public class DifferentialMSR {
 			//copy to segmentation tree
 			
 			Map<Integer,Set<Integer>> currScale =new HashMap<Integer,Set<Integer>>();
-			currScale.put(1, linkageMap.keySet());
-			System.out.println("curr Scale 1 size: "+linkageMap.keySet().size());
+			currScale.put(0, linkageMap.keySet());
+			System.out.println("curr Scale 0 size: "+linkageMap.keySet().size());
 			
 			//determine the first nonzero and last nonzero from signal
-			
-			//check here ; sometimes it produces zero for DImax, DImin, trailingZero, zeroEnd
 			int trailingZero = 0;
 			int zeroEnd = 0;		
 			if (!nonzeroList.isEmpty()){
@@ -228,7 +223,6 @@ public class DifferentialMSR {
 				for (int i = 0;i<windowSize;i++)
 					normalizedWindow[i] = window[i]/windowSum;	
 	
-				//multiplying by polynomial ; I have to test to see how this works
 				PolynomialFunction poly1 = new PolynomialFunction(polyCoeffi);
 				PolynomialFunction poly2 = new PolynomialFunction(normalizedWindow);
 				PolynomialFunction polyMultiplication=poly1.multiply(poly2);
@@ -248,7 +242,7 @@ public class DifferentialMSR {
 						GaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i];
 				}	
 				
-				//testing
+				//testing; I can identify the region that I want to print using peak calling
 //				if (currchromSize > 200000000){			
 //					System.out.println("current Chrom is: "+currChrom.getChrom());
 //					for (int i = 0; i< 100;i++)
@@ -287,57 +281,47 @@ public class DifferentialMSR {
 				 * Linkage Loop	
 				 */
 				 
-				TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();
-				if (DCPsize < 50){				
+				TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();			
 					/***********
 					 * Over window
-					 */
-					 
-					//build segmentTree 
-					//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
-					//From the second iteration, we consider ground volume = number of nodes that parents are linked to the kids
-					//From third iteration, we increase the weight of the ground volume by 1e-7.
-					//Vincken paper said after 3-4 iteration, there would be no significant difference.
-					double intensityDiffScore = 0;
-					double groundVC = 0; 
-					double groundVPmax = 0;									
-					//updating ground volume and iterating to encourage convergence
-					for (int counter = 0; counter<5; counter++){
-						if (counter != 0){
-							for (Integer parent : GvParents.keySet()){
-								if ( GvParents.get(parent) > groundVPmax)
-									groundVPmax = GvParents.get(parent);
-							}				
-						}	
-						System.out.println("groundVPmax is "+groundVPmax);
-						for (Integer kid : linkageMap.keySet()){
-							
-							//there is something wrong with iteration of DCPsize and updating parents
-							//iteration is always off by 2. is it important to adjust for that?
-							
-							for (int i = 0; i<DCPsize; i++){
-								if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
-									if (counter ==0 || groundVPmax == 0){
-										groundVC = 0.00;
-									//ground volume is always zero... I need to fix this	//this is where the problem is!	
-									//do linkageMap.get(kid) and GvParents keys always match? i don't think so ; where are we modifying parents?
-									// I can make linkageMap <kids<parent,groundVolume> or maybe parents are updated everytime?
-									}else{ 								
-										groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;
-									}
-									
-									intensityDiffScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
-									if (intensityDiffScore > linkageMap.get(kid)){
-										GvParents.put((kid+dcp[i]),GvParents.get(linkageMap.get(kid)));
-										GvParents.remove(linkageMap.get(kid));
-										linkageMap.put(kid,(kid+dcp[i]));		
-				//						System.out.println("intensityDiffScore is: "+intensityDiffScore+" DImax is "+DImax);
-				//						System.out.println("kid is: "+kid+" value is "+(kid+dcp[i]));
-									}
-								}							
-							}				
-						}
+					 */					 
+				//build segmentTree 
+				//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
+				//From the second iteration, we consider ground volume = number of nodes that parents are linked to the kids
+				//From third iteration, we increase the weight of the ground volume by 1e-7.
+				//Vincken paper said after 3-4 iteration, there would be no significant difference.
+				double groundVC = 0; 
+				double groundVPmax = 0;		
+				double tempScore = 0;
+				//updating ground volume and iterating to encourage convergence
+				for (int counter = 0; counter<5; counter++){
+					if (counter != 0){
+						for (Integer parent : GvParents.keySet()){
+							if ( GvParents.get(parent) > groundVPmax)
+								groundVPmax = GvParents.get(parent);
+						}				
+					}	
+
+					for (Integer kid : linkageMap.keySet()){
 						
+						double intensityDiffScore = 0;							
+						for (int i = 0; i<DCPsize; i++){
+							if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
+								if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
+								else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
+
+								tempScore = distanceFactor[i]*((1- Math.abs(GaussianBlur[kid][0] - GaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
+								if (tempScore > intensityDiffScore){
+									intensityDiffScore = tempScore;
+									if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
+									else{
+	//									if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
+										if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
+									}
+								}
+							}							
+						}
+					}						
 						//test
 				//		if (currchromSize > 200000000){			
 				//			System.out.println("current Chrom is: "+currChrom.getChrom());
@@ -346,42 +330,32 @@ public class DifferentialMSR {
 				//				System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
 				//			}
 				//		}
-												
-						Integer lastParent = 0;
-						Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
-						for (Integer parent : sortedLinkageMap.values()){
-							GvParents.put(parent, (parent-lastParent));
-							lastParent = parent;
+					GvParents.clear();							
+					Integer lastParent = 0;
+					Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
+					for (Integer parent : sortedLinkageMap.values()){
+						GvParents.put(parent, (parent-lastParent));
+						lastParent = parent;
+					}
+					GvParents.put(0, trailingZero);
+					
+					// I probably need to fix this later
+	//				GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
+	//				GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
+						
+					//test
+					if (currchromSize > 200000000){			
+						System.out.println("current Chrom is: "+currChrom.getChrom());
+						System.out.println("printing GvParents content");
+						for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
+							System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
 						}
-	//					GvParents.put(0, trailingZero);
-						GvParents.put(GvParents.firstKey(), trailingZero-GvParents.firstKey());
-	//					GvParents.put(GaussianBlur.length,GaussianBlur.length-zeroEnd);			
-						
-						//test
-//						if (currchromSize > 200000000){			
-//							System.out.println("current Chrom is: "+currChrom.getChrom());
-//							System.out.println("printing GvParents content");
-//							for (Map.Entry<Integer, Integer> entry : GvParents.entrySet()){
-//								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-//							}
-//						}
-						
 					}
-				}else{
-					/***********
-					 * Over kids
-					 */
-					int px1 = 0;
-					int px2 = 0;
-					int x1 = 0;
-					int x2 = 0;
-					for (Integer kid : linkageMap.keySet()){
-						px1 = Math.max(0, kid+dcp[0]);
-						px2 = Math.min(currchromBinSize, kid+dcp[DCPsize]);
-						x1 = (int) (1+(radius[n]-(kid-px1)));
-						x2 = (int) (DCPsize -(radius[n]-px2-kid));
-						System.out.println("lenght of px is "+(px2-px2)+" length of x is "+(x2-x1));
-					}
+				}
+				Map<Integer, Integer> sortedLinkageMap = MapUtility.sortByValue(linkageMap);
+				linkageMap.clear();
+				for (Integer parent : sortedLinkageMap.values()){
+					linkageMap.put(parent, parent);
 				}
 								
 				//for each scaleNum, add the parents to the segmentationTree
@@ -392,22 +366,15 @@ public class DifferentialMSR {
 			for (Integer scale : currScale.keySet()){
 				System.out.println("current scale is: "+scale);
 				Set<Integer> nodesSet = currScale.get(scale);
-//				for (Integer node : nodesSet)
-//					System.out.println(node);
-				System.out.println("current size is: "+nodesSet.size());
-			}
-
-			
-	//		segmentationTree.put(currChrom, currScale);
-
-			
-			
-	//		GaussianBlur = null;
+				System.out.println("current nodeset size is: "+nodesSet.size());
+				for (Integer node : nodesSet)
+					System.out.println(node);
+			}	
+			segmentationTree.put(currChrom, (HashMap<Integer, Set<Integer>>) currScale);
 			
 		}// end of chromosome iteration		
 		manager.close();
 	}
-
 		
 	public static void main(String[] args) {
 		
@@ -418,7 +385,7 @@ public class DifferentialMSR {
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		SEEDConfig sconf = new SEEDConfig(gconf, args);
-		DifferentialMSR profile = new DifferentialMSR (gconf, econf, sconf);	
+		MSR profile = new MSR (gconf, econf, sconf);	
 		profile.buildMSR();
 	}
 	

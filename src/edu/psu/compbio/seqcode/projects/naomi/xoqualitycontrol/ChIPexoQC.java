@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.naomi;
+package edu.psu.compbio.seqcode.projects.naomi.xoqualitycontrol;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
