@@ -194,7 +194,7 @@ public class MultiScaleSignalRepresentation {
 			
 			// I'm testing with small regions ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;		
-			if (currchromBinSize < 2000000){			
+			if (currchromBinSize < 20000){			
 				segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 				 
 
@@ -268,6 +268,8 @@ public class MultiScaleSignalRepresentation {
 			System.out.println("scale: "+scale+"size of original region "+segRegionTree.get(scale).size());
 			System.out.println("size  of SFC region"+segSFC.get(scale).size());
 		}
+		
+		manager.close();
 		
 	}
 		
