@@ -83,6 +83,8 @@ public class MultiScaleSignalRepresentation {
 			int currchromSize = currChrom.getWidth();
 			int currchromBinSize = (int) Math.ceil(currchromSize/binWidth);
 			
+			System.out.println("current chrom is "+currChrom.getChrom());
+			
 			Map<Sample,float[]> condiGaussianBlur = new HashMap<Sample,float[]>();
 			float[] sampleCounts = new float[currchromBinSize];
 			//primitive array to store signal and the subsequent convolved signals
@@ -119,8 +121,9 @@ public class MultiScaleSignalRepresentation {
 							sampleCounts[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)]+=hits.getCount();
 						
 							// Fix this part later!!!!
-	//					}else if (hits.getStrand()=='-' && hits.getCoordinate()-i >=0){
-	//					}else if (hits.getStrand()=='-' && (int) Math.ceil((hits.getCoordinate()-i)/binWidth) >=0){
+	//					}else if (hits.getStrand()=='-' && hits.getCoordinate()-i >1 ){
+						}else if (hits.getStrand()=='-' && (int) Math.ceil((hits.getCoordinate()-i)/binWidth) >=0 
+								&& (int) Math.ceil((hits.getCoordinate())/binWidth)<currchromBinSize){
 								
 							sampleCounts[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)]+=hits.getCount();
 						}
@@ -210,7 +213,7 @@ public class MultiScaleSignalRepresentation {
 					System.out.println("current scale is:"+scale);
 					Set<Integer> segmentation = segmentationTree.get(scale);
 					System.out.println("current size is : "+segmentation.size());
-					System.out.println("current size is : "+segmentation);	
+					System.out.println("current nodes are is : "+segmentation);	
 			}	
 			
 			//converting coordinates to regions
@@ -240,8 +243,6 @@ public class MultiScaleSignalRepresentation {
 	// for now I am performing binomial test; later change to edgeR
 	public void computeSFC(){
 		
-		System.out.println("inside computSFC ");
-		
 		for (Integer scale : segRegionTree.keySet()){
 			System.out.println("scale is: "+scale+"size is "+segRegionTree.get(scale).size());
 		}
@@ -265,7 +266,13 @@ public class MultiScaleSignalRepresentation {
 		double pval = 1;
 		
 //		for (Integer scale : segRegionTree.keySet()){
-		Integer scale = numScale-1;
+		List<Integer> scaleList = new ArrayList<Integer>();
+		scaleList.add(4);
+		scaleList.add(9);
+		scaleList.add(14);
+		scaleList.add(19);
+		
+		for (Integer scale : scaleList){
 			List<Region> rSFC = new ArrayList<Region>();
 			List<Region> regList = segRegionTree.get(scale);
 			System.out.println("size of region "+regList.size());
@@ -293,12 +300,12 @@ public class MultiScaleSignalRepresentation {
 				
 			}
 			segSFC.put(scale,rSFC);
-//		}
+		}
 		
-//		for (Integer scale : segRegionTree.keySet()){
+		for (Integer scale : segRegionTree.keySet()){
 			System.out.println("scale: "+scale+"size of original region "+segRegionTree.get(scale).size());
 			System.out.println("size  of SFC region "+segSFC.get(scale).size());
-//		}
+		}
 		
 		manager.close();
 		
