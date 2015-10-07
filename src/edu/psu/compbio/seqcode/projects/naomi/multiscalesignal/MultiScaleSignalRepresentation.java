@@ -45,6 +45,8 @@ public class MultiScaleSignalRepresentation {
 	
 	protected double scaling = 1;	
 	
+	
+	
 	protected Map<Integer,List<Region>> segRegionTree = new HashMap<Integer, List<Region>>();
 	
 	public MultiScaleSignalRepresentation(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon, int scale){	
@@ -268,13 +270,14 @@ public class MultiScaleSignalRepresentation {
 			List<Region> regList = segRegionTree.get(scale);
 			System.out.println("size of region "+regList.size());
 			for (Region reg : regList){
-				System.out.println("region is: "+reg);
+
 				signalCounts = signal.countHits(reg);
 				controlCounts = control.countHits(reg)*scaling;
 				
 				FeatureStatistics stat = new FeatureStatistics();
 				if (signalCounts+controlCounts>0){
 					
+					System.out.println("region is: "+reg);
 					System.out.println("signal counts is: "+signalCounts);
 					System.out.println("control counts is: "+controlCounts);
 					System.out.println("min sig ctrl fold diff "+sconfig.getMinSigCtrlFoldDifference());
@@ -294,7 +297,7 @@ public class MultiScaleSignalRepresentation {
 		
 //		for (Integer scale : segRegionTree.keySet()){
 			System.out.println("scale: "+scale+"size of original region "+segRegionTree.get(scale).size());
-			System.out.println("size  of SFC region"+segSFC.get(scale).size());
+			System.out.println("size  of SFC region "+segSFC.get(scale).size());
 //		}
 		
 		manager.close();
