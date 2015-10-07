@@ -265,7 +265,13 @@ public class MultiScaleSignalRepresentation {
 		double pval = 1;
 		
 //		for (Integer scale : segRegionTree.keySet()){
-		Integer scale = numScale-1;
+		List<Integer> scaleList = new ArrayList<Integer>();
+		scaleList.add(4);
+		scaleList.add(9);
+		scaleList.add(14);
+		scaleList.add(19);
+		
+		for (Integer scale : scaleList){
 			List<Region> rSFC = new ArrayList<Region>();
 			List<Region> regList = segRegionTree.get(scale);
 			System.out.println("size of region "+regList.size());
@@ -293,12 +299,12 @@ public class MultiScaleSignalRepresentation {
 				
 			}
 			segSFC.put(scale,rSFC);
-//		}
+		}
 		
-//		for (Integer scale : segRegionTree.keySet()){
+		for (Integer scale : segRegionTree.keySet()){
 			System.out.println("scale: "+scale+"size of original region "+segRegionTree.get(scale).size());
 			System.out.println("size  of SFC region "+segSFC.get(scale).size());
-//		}
+		}
 		
 		manager.close();
 		
