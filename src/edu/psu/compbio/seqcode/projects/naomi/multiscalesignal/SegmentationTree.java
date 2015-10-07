@@ -128,11 +128,10 @@ public class SegmentationTree {
 			}	
 		
 			//testing; I can identify the region that I want to print using peak calling
-			//		if (currchromBinSize > 20000000){			
-			//			System.out.println("current Chrom is: "+currChrom.getChrom());
-			//			for (int i = 0; i< 100;i++)
-			//				System.out.println(gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
-			//		}
+			if (currchromBinSize < 200000 && currchromBinSize >300){			
+				for (int i = 0; i< 200;i++)
+				System.out.println(gaussianBlur[100][0]+" : "+gaussianBlur[100][1]);
+			}
 		
 			/***************
 			 * Search Volume

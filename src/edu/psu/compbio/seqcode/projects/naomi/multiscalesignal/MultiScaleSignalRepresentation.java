@@ -142,12 +142,6 @@ public class MultiScaleSignalRepresentation {
 				}
 			}
 			
-			if (currchromSize > 50000000 & currchromSize<70000000){			
-				System.out.println("gaussian chrom is: "+currChrom.getChrom());
-				for (int i = 0; i< 100;i++)
-					System.out.println(gaussianBlur[(int) Math.ceil((33197060)/binWidth)+i][0]+" : "+gaussianBlur[(int) Math.ceil((33279375)/binWidth)+i][1]);
-			}	
-			
 			/*********************
 			 * Starting nodes
 			 */					
@@ -182,10 +176,10 @@ public class MultiScaleSignalRepresentation {
 			if (trailingZero == -1)
 				trailingZero = 0;
 			
-			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
-					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);	
+//			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
+//					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);	
 			float maxInt = DImax-DImin;
-			System.out.println("max intensity is: "+maxInt);
+//			System.out.println("max intensity is: "+maxInt);
 			
 			//build segmentationTree
 			SegmentationTree segtree = new SegmentationTree(gconfig, econfig, sconfig, numScale);	
@@ -195,7 +189,7 @@ public class MultiScaleSignalRepresentation {
 			
 			// I'm testing with small regions ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;		
-			if (currchromSize > 50000000 & currchromSize<70000000){			
+			if (currchromSize < 2000000){			
 			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 				 
 
