@@ -83,6 +83,8 @@ public class MultiScaleSignalRepresentation {
 			int currchromSize = currChrom.getWidth();
 			int currchromBinSize = (int) Math.ceil(currchromSize/binWidth);
 			
+			System.out.println("current chrom is "+currChrom.getChrom());
+			
 			Map<Sample,float[]> condiGaussianBlur = new HashMap<Sample,float[]>();
 			float[] sampleCounts = new float[currchromBinSize];
 			//primitive array to store signal and the subsequent convolved signals
@@ -210,7 +212,7 @@ public class MultiScaleSignalRepresentation {
 					System.out.println("current scale is:"+scale);
 					Set<Integer> segmentation = segmentationTree.get(scale);
 					System.out.println("current size is : "+segmentation.size());
-					System.out.println("current size is : "+segmentation);	
+					System.out.println("current nodes are is : "+segmentation);	
 			}	
 			
 			//converting coordinates to regions
@@ -239,8 +241,6 @@ public class MultiScaleSignalRepresentation {
 	
 	// for now I am performing binomial test; later change to edgeR
 	public void computeSFC(){
-		
-		System.out.println("inside computSFC ");
 		
 		for (Integer scale : segRegionTree.keySet()){
 			System.out.println("scale is: "+scale+"size is "+segRegionTree.get(scale).size());
