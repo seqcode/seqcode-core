@@ -287,6 +287,7 @@ public class MultiScaleSignalRepresentation {
 		for (Integer scale : segRegionTree.keySet()){
 			System.out.println("scale: "+scale+"size of original region "+segRegionTree.get(scale).size());
 			System.out.println("size  of SFC region "+segSFC.get(scale).size());
+			System.out.println("content "+segSFC.get(scale));
 		}
 		
 		manager.close();
