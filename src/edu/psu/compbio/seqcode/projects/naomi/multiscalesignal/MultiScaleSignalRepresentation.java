@@ -241,7 +241,7 @@ public class MultiScaleSignalRepresentation {
 		System.out.println("inside computSFC ");
 		
 		for (Integer scale : segRegionTree.keySet()){
-			System.out.println("segreiontree "+segRegionTree.get(scale));
+			System.out.println("scale is: "+scale+"size is "+segRegionTree.get(scale).size());
 		}
 		
 		Map<Integer,List<Region>> segSFC = new HashMap<Integer, List<Region>>();
@@ -265,11 +265,15 @@ public class MultiScaleSignalRepresentation {
 			for (Region reg : regList){
 				signalCounts = signal.countHits(reg);
 				controlCounts = control.countHits(reg)*scaling;
+				System.out.println("signal counts is: "+signalCounts);
+				System.out.println("control counts is: "+controlCounts);
+				System.out.println("min sig ctrl fold diff "+sconfig.getMinSigCtrlFoldDifference());
+				
 				FeatureStatistics stat = new FeatureStatistics();
 				if (signalCounts>controlCounts){
-					pval = stat.binomialPValue(controlCounts, signalCounts+controlCounts, 1.5);
+					pval = stat.binomialPValue(controlCounts, signalCounts+controlCounts, sconfig.getMinSigCtrlFoldDifference());
 				}else{
-					pval = stat.binomialPValue(signalCounts, signalCounts+controlCounts, 1.5);
+					pval = stat.binomialPValue(signalCounts, signalCounts+controlCounts, sconfig.getMinSigCtrlFoldDifference());
 				}
 				if (pval<0.0001){rSFC.add(reg);}
 				
