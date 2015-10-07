@@ -197,7 +197,7 @@ public class MultiScaleSignalRepresentation {
 			
 			// I'm testing with small regions ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;		
-			if (currchromBinSize < 20000){			
+			if (currchromBinSize < 200000){			
 				segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 				 
 
@@ -255,40 +255,47 @@ public class MultiScaleSignalRepresentation {
 			control = rep.getControl();
 		}
 		
+		System.out.println("signal is :"+signal.getName());
+		System.out.println("controi is: "+control.getName());
+		
 		double signalCounts = 0;
 		double controlCounts = 0;
 		double pval = 1;
 		
-		for (Integer scale : segRegionTree.keySet()){
+//		for (Integer scale : segRegionTree.keySet()){
+		Integer scale = numScale-1;
 			List<Region> rSFC = new ArrayList<Region>();
 			List<Region> regList = segRegionTree.get(scale);
 			System.out.println("size of region "+regList.size());
 			for (Region reg : regList){
+				System.out.println("region is: "+reg);
 				signalCounts = signal.countHits(reg);
 				controlCounts = control.countHits(reg)*scaling;
-				System.out.println("signal counts is: "+signalCounts);
-				System.out.println("control counts is: "+controlCounts);
-				System.out.println("min sig ctrl fold diff "+sconfig.getMinSigCtrlFoldDifference());
 				
 				FeatureStatistics stat = new FeatureStatistics();
 				if (signalCounts+controlCounts>0){
+					
+					System.out.println("signal counts is: "+signalCounts);
+					System.out.println("control counts is: "+controlCounts);
+					System.out.println("min sig ctrl fold diff "+sconfig.getMinSigCtrlFoldDifference());
+					
 					if (signalCounts>controlCounts){
 						pval = stat.binomialPValue(controlCounts, signalCounts+controlCounts, sconfig.getMinSigCtrlFoldDifference());
 					}else{
 						pval = stat.binomialPValue(signalCounts, signalCounts+controlCounts, sconfig.getMinSigCtrlFoldDifference());
 					}	
 				}
-				if (pval<0.0001){rSFC.add(reg);}
+				if (pval<0.01){rSFC.add(reg);}
 				pval =1;
 				
 			}
 			segSFC.put(scale,rSFC);
-		}
+//		}
 		
-		for (Integer scale : segRegionTree.keySet()){
+//		for (Integer scale : segRegionTree.keySet()){
 			System.out.println("scale: "+scale+"size of original region "+segRegionTree.get(scale).size());
 			System.out.println("size  of SFC region"+segSFC.get(scale).size());
-		}
+//		}
 		
 		manager.close();
 		
