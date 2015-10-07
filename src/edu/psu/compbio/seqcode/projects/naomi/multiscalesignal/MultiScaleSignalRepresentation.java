@@ -189,7 +189,7 @@ public class MultiScaleSignalRepresentation {
 			
 			// I'm testing with small regions ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;		
-			if (currchromBinSize < 200000 && currchromBinSize >150000){			
+			if (currchromBinSize < 200000 && currchromBinSize >15000){			
 			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 				 
 
