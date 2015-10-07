@@ -130,7 +130,7 @@ public class SegmentationTree {
 			//testing; I can identify the region that I want to print using peak calling
 			if (currchromBinSize < 200000 && currchromBinSize >300){			
 				for (int i = 0; i< 200;i++)
-				System.out.println(gaussianBlur[100+i][0]+" : "+gaussianBlur[100+i][1]);
+				System.out.println(gaussianBlur[9650+i][0]+" : "+gaussianBlur[9650+i][1]);
 			}
 		
 			/***************
