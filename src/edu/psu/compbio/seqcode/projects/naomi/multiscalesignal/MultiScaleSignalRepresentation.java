@@ -114,17 +114,10 @@ public class MultiScaleSignalRepresentation {
 				List<StrandedBaseCount> currentCounts = condiCountsMap.get(sample);
 				for (StrandedBaseCount hits: currentCounts){
 					for (int i = 0; i<threePrimReadExt+1; i++){
-	//					if (hits.getStrand()=='+' && hits.getCoordinate()+i<currchromSize){
-						
 						if (hits.getStrand()=='+' && (int) Math.ceil((hits.getCoordinate()+i)/binWidth)<currchromBinSize){
-
 							sampleCounts[(int) Math.ceil((hits.getCoordinate()+i)/binWidth)]+=hits.getCount();
-						
-							// Fix this part later!!!!
-	//					}else if (hits.getStrand()=='-' && hits.getCoordinate()-i >1 ){
 						}else if (hits.getStrand()=='-' && (int) Math.ceil((hits.getCoordinate()-i)/binWidth) >=0 
-								&& (int) Math.ceil((hits.getCoordinate())/binWidth)<currchromBinSize){
-								
+								&& (int) Math.ceil((hits.getCoordinate())/binWidth)<currchromBinSize){								
 							sampleCounts[(int) Math.ceil((hits.getCoordinate()-i)/binWidth)]+=hits.getCount();
 						}
 					}
@@ -149,11 +142,11 @@ public class MultiScaleSignalRepresentation {
 				}
 			}
 			
-//			if (currchromBinSize > 20000000){			
-//				System.out.println("current Chrom is: "+currChrom.getChrom());
-//				for (int i = 0; i< 100;i++)
-//					System.out.println(gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][0]+" : "+gaussianBlur[(int) Math.ceil((92943501)/binWidth)+i][1]);
-//			}	
+			if (currchromSize > 50000000 & currchromSize<70000000){			
+				System.out.println("gaussian chrom is: "+currChrom.getChrom());
+				for (int i = 0; i< 100;i++)
+					System.out.println(gaussianBlur[(int) Math.ceil((33197060)/binWidth)+i][0]+" : "+gaussianBlur[(int) Math.ceil((33279375)/binWidth)+i][1]);
+			}	
 			
 			/*********************
 			 * Starting nodes
@@ -201,9 +194,9 @@ public class MultiScaleSignalRepresentation {
 
 			
 			// I'm testing with small regions ; beginning of test
-//			Map<Integer,Set<Integer>> segmentationTree = null;		
-//			if (currchromBinSize < 200000){			
-			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
+			Map<Integer,Set<Integer>> segmentationTree = null;		
+			if (currchromSize > 50000000 & currchromSize<70000000){			
+			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 				 
 
 			
@@ -232,7 +225,7 @@ public class MultiScaleSignalRepresentation {
 						prevCoord = coord;
 					}
 				}
-//			}
+			}
 			
 			}//end of test with small chromosome
 			
