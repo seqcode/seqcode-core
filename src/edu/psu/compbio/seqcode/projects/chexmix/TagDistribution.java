@@ -133,35 +133,34 @@ public class TagDistribution {
 				last = p.car();
 			}
 		}
-		//makeProbabilities();
+		makeProbabilities();
 	}
-	/*
+	
 	//Set a probability landscape according to the data. 
 	protected void makeProbabilities(){
-		double totalVal=0, minProb=Double.MAX_VALUE;
+		double totalW=0, totalC=0, minProb=Double.MAX_VALUE;
 		for(int i=left; i<=right; i++){
-			totalVal+=dataVal(i);
+			totalW+=dataVal(i, true);
+			totalC+=dataVal(i, false);
 		}
 		for(int i=left; i<=right; i++){
-			probs[i-left] = dataVal(i)/totalVal; 
-			logProbs[i-min] = Math.log(probs[i-min])/LOG2;
-			if(probs[i-min]<minProb)
-				minProb = probs[i-min];
+			watsonProbs[i-left] = dataVal(i, true)/totalW;
+			crickProbs[i-left] = dataVal(i, false)/totalC;
+			watsonLogProbs[i-left] = Math.log(watsonProbs[i-left])/LOG2;
+			crickLogProbs[i-left] = Math.log(crickProbs[i-left])/LOG2;
+			if(watsonProbs[i-left]<minProb){minProb = watsonProbs[i-left];}
+			if(crickProbs[i-left]<minProb){minProb = crickProbs[i-left];}
 		}
-		Pair<Double, TreeSet<Integer>> sorted = StatUtil.findMax(probs);
-		summit = sorted.cdr().first()+min;
+		Pair<Double, TreeSet<Integer>> wSorted = StatUtil.findMax(watsonProbs);
+		Pair<Double, TreeSet<Integer>> cSorted = StatUtil.findMax(crickProbs);
+		watsonSummit = wSorted.cdr().first()+left;
+		crickSummit = cSorted.cdr().first()+left;
 		
-		// update empiricalDistribution with normalized probability
-		List<Pair<Integer, Double>> newDist = new ArrayList<Pair<Integer, Double>> ();
-		for(int i=min; i<=max; i++){
-			newDist.add(new Pair<Integer, Double>(i, probability(i)));
-		}
-		empiricalDistribution=newDist;
 		bgProb = minProb/1000;
 		logBgProb = Math.log(bgProb)/LOG2;
 
 		updateInfluenceRange();
-	}*/
+	}
 	
 	//Initialize the data structures
 	protected void init(int left, int right){
@@ -188,7 +187,7 @@ public class TagDistribution {
 		boolean firstFound=false, secondFound=false;
 		int first=left, second=right;
 		for(int i=left; i<=right; i++){
-			probSum+=probability(i, true)+probability(i, false);;
+			probSum+=probability(i, true)+probability(i, false);
 			if(!firstFound && probSum>ends){
 				firstFound=true;
 				first=i;
