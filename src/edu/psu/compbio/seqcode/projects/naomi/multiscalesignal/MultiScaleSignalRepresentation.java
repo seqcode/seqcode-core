@@ -201,9 +201,9 @@ public class MultiScaleSignalRepresentation {
 
 			
 			// I'm testing with small regions ; beginning of test
-			Map<Integer,Set<Integer>> segmentationTree = null;		
-			if (currchromBinSize < 200000){			
-				segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
+//			Map<Integer,Set<Integer>> segmentationTree = null;		
+//			if (currchromBinSize < 200000){			
+			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 				 
 
 			
@@ -232,7 +232,7 @@ public class MultiScaleSignalRepresentation {
 						prevCoord = coord;
 					}
 				}
-			}
+//			}
 			
 			}//end of test with small chromosome
 			
