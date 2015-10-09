@@ -115,7 +115,7 @@ public class PeaksVsPeaks {
 		analyzer.setPeaksA(peaksA);
 		analyzer.setRegsA(regionsA);
 		
-		if(!ap.hasKey("peaksB") && !ap.hasKey("peaksSetB")){
+		if(!ap.hasKey("peaksB") && !ap.hasKey("peaksBset")){
 			System.err.println("Provide ChIP-Seq peaks file to compare with the A list!!");
 			return;
 		}
