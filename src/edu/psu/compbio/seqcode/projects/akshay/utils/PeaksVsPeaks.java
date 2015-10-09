@@ -90,7 +90,7 @@ public class PeaksVsPeaks {
 				if(nearestDis[i]<=overlapD){
 					sb.append(nearestPeaks[i].getLocationString());sb.append("\t");
 				}else{
-					sb.append(nearestPeaks[i].getLocationString());sb.append("\t");
+					sb.append("-");sb.append("\t");
 				}
 			}
 			sb.deleteCharAt(sb.length()-1);
