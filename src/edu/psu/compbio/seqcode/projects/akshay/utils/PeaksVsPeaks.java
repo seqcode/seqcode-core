@@ -2,6 +2,7 @@ package edu.psu.compbio.seqcode.projects.akshay.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
@@ -76,9 +77,11 @@ public class PeaksVsPeaks {
 			int setId=0;
 			for(List<Point> bset: peaksBSet){
 				for(Point pb : bset){
-					if(pa.distance(pb) < nearestDis[setId]){
-						nearestDis[setId] = pa.distance(pb);
-						nearestPeaks[setId] =pb;
+					if(pb.getChrom().equals(pa.getChrom())){
+						if(pa.distance(pb) < nearestDis[setId]){
+							nearestDis[setId] = pa.distance(pb);
+							nearestPeaks[setId] =pb;
+						}
 					}
 				}
 				setId++;
@@ -129,15 +132,15 @@ public class PeaksVsPeaks {
 			analyzer.setRegsB(regionsB);
 		}
 		
-		String[] peaksBfileList = null;
+		Collection<String> peaksBfileList = null;
 		if(ap.hasKey("peaksBset")){
-			peaksBfileList =  ap.getKeyValue("peaksBset").split(";");
+			peaksBfileList =  Args.parseStrings(args, "peaksBset");
 			List<List<Point>> bPeaksSet = new ArrayList<List<Point>>();
 			List<List<Region>> bRegionSet = new ArrayList<List<Region>>();
-			for(int s=0; s<peaksBfileList.length; s++){
-				List<Point> currPoints = RegionFileUtilities.loadPeaksFromPeakFile(gconfig.getGenome(), peaksBfileList[s], win);
+			for(String s : peaksBfileList){
+				List<Point> currPoints = RegionFileUtilities.loadPeaksFromPeakFile(gconfig.getGenome(), s, win);
 				bPeaksSet.add(currPoints);
-				List<Region> currRegions = RegionFileUtilities.loadRegionsFromPeakFile(gconfig.getGenome(), peaksBfileList[s], win);
+				List<Region> currRegions = RegionFileUtilities.loadRegionsFromPeakFile(gconfig.getGenome(), s, win);
 				bRegionSet.add(currRegions);
 			}
 			analyzer.setPeaksBSet(bPeaksSet);
