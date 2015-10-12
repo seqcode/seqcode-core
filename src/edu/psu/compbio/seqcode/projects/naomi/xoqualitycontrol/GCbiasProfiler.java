@@ -123,7 +123,7 @@ public class GCbiasProfiler {
 				//calculate Rate (lambda gc)
 				for (int i = 0; i<l+1;i++){
 					gcSinglePositionModel[i][2] = (double) gcSinglePositionModel[i][1]/ (double) gcSinglePositionModel[i][0];
-					System.out.println(gcSinglePositionModel[i][2]+ gcSinglePositionModel[i][1]+ gcSinglePositionModel[i][0]);
+					System.out.println(gcSinglePositionModel[i][2]+" : "+ gcSinglePositionModel[i][1]+" : "+ gcSinglePositionModel[i][0]);
 				}				
 			}//end of sample hits iteration
 			System.out.println("GCvsFragmentRat");
