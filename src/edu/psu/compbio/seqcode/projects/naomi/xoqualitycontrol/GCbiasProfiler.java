@@ -25,7 +25,7 @@ public class GCbiasProfiler {
 	protected ExptConfig econfig;
 	protected SequenceGenerator<Region> seqgen;
 	
-	protected float[][] GCvsFragmentRate; 
+	protected double[][] GCvsFragmentRate; 
 	
 	public GCbiasProfiler (GenomeConfig gcon, ExptConfig econ, SequenceGenerator<Region> seqgenerator){	
 		gconfig = gcon;
@@ -42,7 +42,7 @@ public class GCbiasProfiler {
 		Iterator<Region> chroms = new ChromosomeGenerator<Genome>().execute(genome);
 		int chromNum = genome.getChromList().size();
 		
-		GCvsFragmentRate = new float [l+1][2];
+		GCvsFragmentRate = new double [l+1][2];
 		for (int i =0; i<l+1; i++){
 			GCvsFragmentRate[i][0] = i/l;
 			GCvsFragmentRate[i][1] = 0;
@@ -66,11 +66,11 @@ public class GCbiasProfiler {
 			}
 			
 			//first dimention contains hit counts, second dimention contains strand
-			Map<Sample, float[][]> strandedSampleCounts = new HashMap<Sample, float[][]>();
+			Map<Sample, double[][]> strandedSampleCounts = new HashMap<Sample, double[][]>();
 			
 			for (ControlledExperiment rep: manager.getReplicates()){
 				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(rep.getSignal());
-				float [][] strandedCounts = new float [currchromSize][2];
+				double [][] strandedCounts = new double [currchromSize][2];
 				for (StrandedBaseCount hits :currentCounts){
 					if (hits.getStrand()=='+')
 						strandedCounts[hits.getCoordinate()][0]+=hits.getCount();
@@ -81,14 +81,14 @@ public class GCbiasProfiler {
 				currentCounts=null;
 			}			
 			
-			float [][] gcSinglePositionModel = new float [l+1][3];
+			double [][] gcSinglePositionModel = new double [l+1][3];
 			
 			System.out.println("current chrom is "+currChrom.getChrom());
 			
 			for (ControlledExperiment rep: manager.getReplicates()){
 				
 				List<StrandedBaseCount> controlCounts = rep.getControl().getBases(currChrom);
-				float[][] strandedCounts = strandedSampleCounts.get(rep.getSignal());
+				double[][] strandedCounts = strandedSampleCounts.get(rep.getSignal());
 				
 				// sampling 1/10 of hits in controlCounts
 				//I'm doing 1/100 for test
