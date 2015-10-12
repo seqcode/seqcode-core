@@ -44,9 +44,15 @@ public class GCbiasProfiler {
 		
 		GCvsFragmentRate = new float [l+1][2];
 		for (int i =0; i<l+1; i++){
-			GCvsFragmentRate[i][0] = i/(l+1);
+			GCvsFragmentRate[i][0] = i/l;
 			GCvsFragmentRate[i][1] = 0;
 		}
+		
+		//test
+		for (int i =0; i<l+1; i++){
+			System.out.println(GCvsFragmentRate[i][0]+" : "+GCvsFragmentRate[i][1]);
+		}
+		System.out.println("chrom num is "+chromNum);
 		
 		while (chroms.hasNext()) {
 	
@@ -111,9 +117,12 @@ public class GCbiasProfiler {
 						else
 							gcSinglePositionModel[gcScore][1]+=strandedCounts[randomBase.getCoordinate()][1];
 					}
+					System.out.println("printing lambda");
 					//caltulate Rate(lambda gc)
 					for (int i = 0; i<l+1;i++){
 						gcSinglePositionModel[i][2] = gcSinglePositionModel[i][1]/gcSinglePositionModel[i][0];
+						System.out.println(gcSinglePositionModel[i][2]+" : "+gcSinglePositionModel[i][1]+" : "+gcSinglePositionModel[i][0]);
+						
 					}
 				}//end of random iteration from controlCounts
 			}
