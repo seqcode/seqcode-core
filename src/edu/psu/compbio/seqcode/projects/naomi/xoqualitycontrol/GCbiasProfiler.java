@@ -44,7 +44,7 @@ public class GCbiasProfiler {
 		
 		GCvsFragmentRate = new double[l+1][2];
 		for (int i =0; i<l+1; i++){
-			GCvsFragmentRate[i][0] = (double) (i/l);
+			GCvsFragmentRate[i][0] = (double) i/(double) l;
 			GCvsFragmentRate[i][1] = 0;
 		}
 		
