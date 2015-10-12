@@ -77,13 +77,16 @@ public class GCbiasProfiler {
 			
 			float [][] gcSinglePositionModel = new float [l+1][3];
 			
+			System.out.println("current chrom is "+currChrom.getChrom());
+			
 			for (ControlledExperiment rep: manager.getReplicates()){
 				
 				List<StrandedBaseCount> controlCounts = rep.getControl().getBases(currChrom);
 				float[][] strandedCounts = strandedSampleCounts.get(rep.getSignal());
 				
 				// sampling 1/10 of hits in controlCounts
-				for (int randomIteration = 0; randomIteration < controlCounts.size()/10; randomIteration ++){
+				//I'm doing 1/100 for test
+				for (int randomIteration = 0; randomIteration < controlCounts.size()/100; randomIteration ++){
 					Random randomizer = new Random();
 					StrandedBaseCount randomBase = controlCounts.get(randomizer.nextInt(controlCounts.size()));
 					Region reg = null;
@@ -116,7 +119,9 @@ public class GCbiasProfiler {
 			}
 			for (int i = 0; i<l+1;i++)
 				GCvsFragmentRate[i][1] =+ gcSinglePositionModel[i][2]/chromNum;
+			System.out.println("end of chrom iteration");
 		}// end of chromosome iteration
+		manager.close();
 	}
 	
 	public void printGCvsFragmentRate(){
