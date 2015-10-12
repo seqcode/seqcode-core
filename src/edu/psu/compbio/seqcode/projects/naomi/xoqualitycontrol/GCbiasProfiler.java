@@ -40,7 +40,7 @@ public class GCbiasProfiler {
 		seqgen = new SequenceGenerator<Region>(genome);
 		
 		Iterator<Region> chroms = new ChromosomeGenerator<Genome>().execute(genome);
-		int chromNum = genome.getChromList().size();
+		double chromNum = (double) genome.getChromList().size();
 		
 		GCvsFragmentRate = new double[l+1][2];
 		for (int i =0; i<l+1; i++){
@@ -82,6 +82,10 @@ public class GCbiasProfiler {
 			}			
 			
 			double[][] gcSinglePositionModel = new double[l+1][3];
+			for (int i = 0; i <l+1; i++){
+				for (int j = 0 ; j< 3; j++)
+					gcSinglePositionModel[i][j] = 0;
+			}
 			
 			System.out.println("current chrom is "+currChrom.getChrom());
 			
@@ -113,16 +117,14 @@ public class GCbiasProfiler {
 					
 						//calculate Frag(F gc)
 						if (randomBase.getStrand()=='+')
-							gcSinglePositionModel[gcScore][1]+=strandedCounts[randomBase.getCoordinate()][0];
+							gcSinglePositionModel[gcScore][1] += strandedCounts[randomBase.getCoordinate()][0];
 						else
-							gcSinglePositionModel[gcScore][1]+=strandedCounts[randomBase.getCoordinate()][1];
+							gcSinglePositionModel[gcScore][1] += strandedCounts[randomBase.getCoordinate()][1];
 					}
 					System.out.println("printing lambda");
 					//caltulate Rate(lambda gc)
 					for (int i = 0; i<l+1;i++){
-						gcSinglePositionModel[i][2] = gcSinglePositionModel[i][1]/gcSinglePositionModel[i][0];
-						System.out.println(gcSinglePositionModel[i][2]+" : "+gcSinglePositionModel[i][1]+" : "+gcSinglePositionModel[i][0]);
-						
+						gcSinglePositionModel[i][2] = (double) gcSinglePositionModel[i][1]/ (double) gcSinglePositionModel[i][0];					
 					}
 				}//end of random iteration from controlCounts
 			}
