@@ -51,7 +51,7 @@ public class GCbiasProfiler {
 		while (chroms.hasNext()) {
 	
 			Region currChrom = chroms.next();
-			int currchromSize = currChrom.getWidth();
+			int currchromSize = currChrom.getWidth()+1;
 			
 			Map<Sample, List<StrandedBaseCount>> sampleCountsMap = new HashMap<Sample, List<StrandedBaseCount>>();			
 			for (ControlledExperiment rep: manager.getReplicates()){
@@ -107,9 +107,9 @@ public class GCbiasProfiler {
 					
 						//calculate Frag(F gc)
 						if (randomBase.getStrand()=='+')
-							gcSinglePositionModel[gcScore][1]=+strandedCounts[randomBase.getCoordinate()][0];
+							gcSinglePositionModel[gcScore][1]+=strandedCounts[randomBase.getCoordinate()][0];
 						else
-							gcSinglePositionModel[gcScore][1]=+strandedCounts[randomBase.getCoordinate()][1];
+							gcSinglePositionModel[gcScore][1]+=strandedCounts[randomBase.getCoordinate()][1];
 					}
 					//caltulate Rate(lambda gc)
 					for (int i = 0; i<l+1;i++){
@@ -118,7 +118,7 @@ public class GCbiasProfiler {
 				}//end of random iteration from controlCounts
 			}
 			for (int i = 0; i<l+1;i++)
-				GCvsFragmentRate[i][1] =+ gcSinglePositionModel[i][2]/chromNum;
+				GCvsFragmentRate[i][1] += gcSinglePositionModel[i][2]/chromNum;
 			System.out.println("end of chrom iteration");
 		}// end of chromosome iteration
 		manager.close();

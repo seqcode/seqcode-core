@@ -59,7 +59,7 @@ public class CrossContaminationEstimator {
 			for (Sample sample : manager.getSamples())
 				sampleCountsMap.put(sample,sample.getBases(currChrom)); 			
 			
-			int currchromSize= currChrom.getWidth();
+			int currchromSize= currChrom.getWidth()+1;
 			
 			float[][] bpCounts = new float [currchromSize][sampleCountsMap.size()];
 			for (int i = 0; i<currchromSize;i++){
