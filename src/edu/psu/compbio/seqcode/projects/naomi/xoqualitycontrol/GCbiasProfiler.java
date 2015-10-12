@@ -48,10 +48,6 @@ public class GCbiasProfiler {
 			GCvsFragmentRate[i][1] = 0;
 		}
 		
-		//test
-		for (int i =0; i<l+1; i++){
-			System.out.println(GCvsFragmentRate[i][0]+" : "+GCvsFragmentRate[i][1]);
-		}
 		System.out.println("chrom num is "+chromNum);
 		
 		while (chroms.hasNext()) {
@@ -121,15 +117,20 @@ public class GCbiasProfiler {
 						else
 							gcSinglePositionModel[gcScore][1] += strandedCounts[randomBase.getCoordinate()][1];
 					}
-					System.out.println("printing lambda");
-					//caltulate Rate(lambda gc)
-					for (int i = 0; i<l+1;i++){
-						gcSinglePositionModel[i][2] = (double) gcSinglePositionModel[i][1]/ (double) gcSinglePositionModel[i][0];					
-					}
 				}//end of random iteration from controlCounts
-			}
-			for (int i = 0; i<l+1;i++)
+				
+				System.out.println("printing lambda");
+				//calculate Rate (lambda gc)
+				for (int i = 0; i<l+1;i++){
+					gcSinglePositionModel[i][2] = (double) gcSinglePositionModel[i][1]/ (double) gcSinglePositionModel[i][0];
+					System.out.println(gcSinglePositionModel[i][2]+ gcSinglePositionModel[i][1]+ gcSinglePositionModel[i][0]);
+				}				
+			}//end of sample hits iteration
+			System.out.println("GCvsFragmentRat");
+			for (int i = 0; i<l+1;i++){
 				GCvsFragmentRate[i][1] += gcSinglePositionModel[i][2]/chromNum;
+				System.out.println(GCvsFragmentRate[i][1]);
+			}
 			System.out.println("end of chrom iteration");
 		}// end of chromosome iteration
 		manager.close();
