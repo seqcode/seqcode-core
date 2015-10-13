@@ -93,6 +93,7 @@ public class GCbiasProfiler {
 				// sampling 1/10 of hits in controlCounts
 				//I'm doing 1/100 for test
 				for (int randomIteration = 0; randomIteration < controlCounts.size()/100; randomIteration ++){
+					System.out.println("control count size/100 is "+controlCounts.size()/100);
 					Random randomizer = new Random();
 					StrandedBaseCount randomBase = controlCounts.get(randomizer.nextInt(controlCounts.size()));
 					Region reg = null;
@@ -108,6 +109,8 @@ public class GCbiasProfiler {
 							if (seq.contains("C")|| seq.contains("G"))
 								gcScore++;
 						}
+						System.out.println("GC score for current frag is "+gcScore);
+						
 						//calculate Posi(N gc)
 						gcSinglePositionModel[gcScore][0]++;
 					
