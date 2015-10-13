@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.lang3.StringUtils;
+
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
@@ -90,10 +92,12 @@ public class GCbiasProfiler {
 				List<StrandedBaseCount> controlCounts = rep.getControl().getBases(currChrom);
 				double[][] strandedCounts = strandedSampleCounts.get(rep.getSignal());
 				
+				System.out.println("control count size/100 is "+controlCounts.size()/100);
+				
 				// sampling 1/10 of hits in controlCounts
 				//I'm doing 1/100 for test
 				for (int randomIteration = 0; randomIteration < controlCounts.size()/100; randomIteration ++){
-					System.out.println("control count size/100 is "+controlCounts.size()/100);
+				
 					Random randomizer = new Random();
 					StrandedBaseCount randomBase = controlCounts.get(randomizer.nextInt(controlCounts.size()));
 					Region reg = null;
@@ -106,7 +110,7 @@ public class GCbiasProfiler {
 						seq =seq.toUpperCase();
 						int gcScore = 0;
 						for(int i=0; i<seq.length()-1; i++){
-							if (seq.contains("C")|| seq.contains("G"))
+							if (seq.charAt(i) == 'C'|| seq.charAt(i) == 'G')
 								gcScore++;
 						}
 						System.out.println("GC score for current frag is "+gcScore);
