@@ -92,8 +92,6 @@ public class GCbiasProfiler {
 				List<StrandedBaseCount> controlCounts = rep.getControl().getBases(currChrom);
 				double[][] strandedCounts = strandedSampleCounts.get(rep.getSignal());
 				
-				System.out.println("control count size/100 is "+controlCounts.size()/100);
-				
 				// sampling 1/10 of hits in controlCounts
 				//I'm doing 1/100 for test
 				for (int randomIteration = 0; randomIteration < controlCounts.size()/100; randomIteration ++){
@@ -113,7 +111,6 @@ public class GCbiasProfiler {
 							if (seq.charAt(i) == 'C'|| seq.charAt(i) == 'G')
 								gcScore++;
 						}
-						System.out.println("GC score for current frag is "+gcScore);
 						
 						//calculate Posi(N gc)
 						gcSinglePositionModel[gcScore][0]++;
