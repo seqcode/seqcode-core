@@ -47,9 +47,7 @@ public class GCbiasProfiler {
 			GCvsFragmentRate[i][0] = (double) i/(double) l;
 			GCvsFragmentRate[i][1] = 0;
 		}
-		
-		System.out.println("chrom num is "+chromNum);
-		
+				
 		while (chroms.hasNext()) {
 	
 			Region currChrom = chroms.next();
@@ -82,17 +80,15 @@ public class GCbiasProfiler {
 				for (int j = 0 ; j< 3; j++)
 					gcSinglePositionModel[i][j] = 0;
 			}
-			
-			System.out.println("current chrom is "+currChrom.getChrom());
-			
+						
 			for (ControlledExperiment rep: manager.getReplicates()){
 				
 				List<StrandedBaseCount> controlCounts = rep.getControl().getBases(currChrom);
 				double[][] strandedCounts = strandedSampleCounts.get(rep.getSignal());
 				
 				// sampling 1/10 of hits in controlCounts
-				//I'm doing 1/100 for test
-				for (int randomIteration = 0; randomIteration < controlCounts.size()/100; randomIteration ++){
+				for (int randomIteration = 0; randomIteration < controlCounts.size()/10; randomIteration ++){
+				
 					Random randomizer = new Random();
 					StrandedBaseCount randomBase = controlCounts.get(randomizer.nextInt(controlCounts.size()));
 					Region reg = null;
@@ -105,9 +101,10 @@ public class GCbiasProfiler {
 						seq =seq.toUpperCase();
 						int gcScore = 0;
 						for(int i=0; i<seq.length()-1; i++){
-							if (seq.contains("C")|| seq.contains("G"))
+							if (seq.charAt(i) == 'C'|| seq.charAt(i) == 'G')
 								gcScore++;
 						}
+						
 						//calculate Posi(N gc)
 						gcSinglePositionModel[gcScore][0]++;
 					
@@ -118,20 +115,16 @@ public class GCbiasProfiler {
 							gcSinglePositionModel[gcScore][1] += strandedCounts[randomBase.getCoordinate()][1];
 					}
 				}//end of random iteration from controlCounts
-				
-				System.out.println("printing lambda");
+
 				//calculate Rate (lambda gc)
 				for (int i = 0; i<l+1;i++){
-					gcSinglePositionModel[i][2] = (double) gcSinglePositionModel[i][1]/ (double) gcSinglePositionModel[i][0];
-					System.out.println(gcSinglePositionModel[i][2]+" : "+ gcSinglePositionModel[i][1]+" : "+ gcSinglePositionModel[i][0]);
+					if (gcSinglePositionModel[i][1] != 0)
+						gcSinglePositionModel[i][2] = (double) gcSinglePositionModel[i][1]/ (double) gcSinglePositionModel[i][0];
 				}				
 			}//end of sample hits iteration
-			System.out.println("GCvsFragmentRat");
 			for (int i = 0; i<l+1;i++){
 				GCvsFragmentRate[i][1] += gcSinglePositionModel[i][2]/chromNum;
-				System.out.println(GCvsFragmentRate[i][1]);
 			}
-			System.out.println("end of chrom iteration");
 		}// end of chromosome iteration
 		manager.close();
 	}
