@@ -217,7 +217,7 @@ public class SeqLibrarySize {
 			if(verbose){
 				String name = expt.getSignal().getName().startsWith("experiment") ? expt.getSignal().getSourceName() : expt.getSignal().getName();
 				if(usingPairs && expt.getSignal().getPairCount()>0)
-					System.out.println("Experiment: "+name+" = "+String.format("%d mapped fragments at %d unique pair-positions", expt.getSignal().getPairCount(),expt.getSignal().getUniquePairCount()));
+					System.out.println("Experiment: "+name+" = "+String.format("%.1f mapped fragments at %.0f unique pair-positions", expt.getSignal().getPairCount(),expt.getSignal().getUniquePairCount()));
 				else
 					System.out.println("Experiment: "+name+" = "+String.format("%.1f mapped tags at %.0f unique positions", expt.getSignal().getHitCount(),expt.getSignal().getHitPositionCount()));
 				
