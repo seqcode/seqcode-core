@@ -45,7 +45,7 @@ public class ChExMixConfig {
 	public int XLComponentSpacing = 8; //Inital number of bp between XL Components
 	protected int maxModelUpdateRounds=3;
 	protected int maxThreads=1;				//Number of threads to use. Default is 1 for single processor machines. 
-	protected double alphaScalingFactor = 1.0; //Scale the alpha value by this factor relative to the noise component per-base
+	protected double alphaScalingFactor = 10.0; //Scale the alpha value by this factor relative to the noise component per-base
 	protected double fixedAlpha = 0.0; //Fixed alpha value if above 0
 	protected boolean smoothingBMDuringUpdate=true;
 	protected boolean gaussianSmoothingBMDuringUpdate=false;
@@ -53,6 +53,7 @@ public class ChExMixConfig {
 	protected double bindingmodel_spline_smooth = 30; //Smoothing step for cubic spline in binding model reestimation
     protected double bindingmodel_gauss_smooth = 2; //Variance for Gaussian smoothing in binding model reestimation
 	protected boolean plotCompositeEM=false; //Plot the EM process for the composite plots
+	protected boolean printCompositeResponsibilities = true; //Print the responsibilities for each composite position
     protected List<Region> regionsToPlotML = new ArrayList<Region>(); //List of regions that will be printed during ML training (for debugging/demonstration)
 	
 	//Constants
@@ -66,8 +67,8 @@ public class ChExMixConfig {
     public final double EM_CONVERGENCE = 1e-10; //EM convergence between the likelihood of the current and the previous step
     public final double EM_STATE_EQUIV_THRES = 1e-10; //EM state equivalence threshold 
     public final int EM_STATE_EQUIV_ROUNDS = 3; //Number of training rounds where the EM states have to be equivalent
-    public final double NOISE_EMISSION_MIN = 0.01; //Arbitrary floor on the emission probability of noise (must be non-zero to mop up noise reads)
-    public final double NOISE_EMISSION_MAX = 0.95; //Arbitrary ceiling on the emission probability of noise
+    public final double NOISE_EMISSION_MIN = 0.05; //Arbitrary floor on the emission probability of noise (must be non-zero to mop up noise reads)
+    public final double NOISE_EMISSION_MAX = 0.75; //Arbitrary ceiling on the emission probability of noise
     public final int NOISE_DISTRIB_SMOOTHING_WIN = 50; //Smoothing window for the noise distribution used in the BindingMixture
     public final int MAX_BINDINGMODEL_WIDTH=1000; //Maximum width for binding models (affects how large the read profiles are for binding components    
 	public final boolean CALC_LL=false; //Calculate the log-likelihood during EM.
@@ -219,6 +220,7 @@ public class ChExMixConfig {
 	public int getMaxModelUpdateRounds(){return maxModelUpdateRounds;}
 	public int getXLDistribOffset(){return XLDistribOffset;}
 	public double getXLDistribSigma(){return XLDistribSigma;}
+	public boolean getPrintCompositeResponsibilities(){return printCompositeResponsibilities;}
 	
 	/**
 	 * Make some output directories used by ChExMix

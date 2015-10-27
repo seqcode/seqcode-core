@@ -29,6 +29,7 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 public class TagDistribution {
 	
 	protected final double LOG2 = Math.log(2);
+	protected final double TAGDISTRIB_MIN_PROB = 1e-100; //Minimum probabilitiy allowed in any tag distribution
 	protected int winSize;
 	protected int left, right; //relative left & right positions
 	protected double[] watsonData, crickData; //Data lanscape should be based on (typically tag counts)
@@ -270,12 +271,12 @@ public class TagDistribution {
 	protected void makeProbabilities(){
 		double totalW=0, totalC=0, minProb=Double.MAX_VALUE;
 		for(int i=left; i<=right; i++){
-			totalW+=dataVal(i, true);
-			totalC+=dataVal(i, false);
+			totalW+=Math.max(TAGDISTRIB_MIN_PROB,dataVal(i, true));
+			totalC+=Math.max(TAGDISTRIB_MIN_PROB,dataVal(i, false));
 		}
 		for(int i=left; i<=right; i++){
-			watsonProbs[i-left] = dataVal(i, true)/totalW;
-			crickProbs[i-left] = dataVal(i, false)/totalC;
+			watsonProbs[i-left] = Math.max(TAGDISTRIB_MIN_PROB,dataVal(i, true))/totalW;
+			crickProbs[i-left] = Math.max(TAGDISTRIB_MIN_PROB,dataVal(i, false))/totalC;
 			watsonLogProbs[i-left] = Math.log(watsonProbs[i-left])/LOG2;
 			crickLogProbs[i-left] = Math.log(crickProbs[i-left])/LOG2;
 			if(watsonProbs[i-left]<minProb){minProb = watsonProbs[i-left];}
@@ -286,7 +287,7 @@ public class TagDistribution {
 		watsonSummit = wSorted.cdr().first()+left;
 		crickSummit = cSorted.cdr().first()+left;
 		
-		bgProb = minProb/1000;
+		bgProb = Math.max(TAGDISTRIB_MIN_PROB, minProb/100);
 		logBgProb = Math.log(bgProb)/LOG2;
 
 		updateInfluenceRange();
@@ -365,6 +366,15 @@ public class TagDistribution {
 		}
 	}
 	
+	public String toString(){
+		String out="";
+		for(int w=0; w<winSize; w++){
+			int pos = w+left;
+			out = out + pos+"\t"+watsonProbs[w]+"\t"+crickProbs[w]+"\n";
+		}
+		return out;
+	}
+	
 	//Main
 	public static void main(String[] args){
 		int win = 200;
@@ -374,7 +384,8 @@ public class TagDistribution {
 		double[] watson = td.getWatsonProbabilities();
 		double[] crick = td.getCrickProbabilities();
 		for(int w=0; w<win; w++){
-			System.out.println(w-(win/2)+"\t"+watson[w]+"\t"+crick[w]);
+			int pos = (w+td.getLeft());
+			System.out.println(pos+"\t"+watson[w]+"\t"+crick[w]);
 		}
 	}
 	

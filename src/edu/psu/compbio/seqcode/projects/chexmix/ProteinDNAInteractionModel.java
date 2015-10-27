@@ -31,7 +31,7 @@ public class ProteinDNAInteractionModel {
 		
 		//Background component
 		backTagDist = initBackDistrib;
-		backgroundComponent = new CompositeModelComponent(backTagDist, centerOffset, 0, false, false);
+		backgroundComponent = new CompositeModelComponent(backTagDist, centerOffset, 0, false, true);
 
 		//ChIP-seq component
 		CSTagDist = initCSdistrib;
@@ -40,7 +40,7 @@ public class ProteinDNAInteractionModel {
 		//XL components
 		XLTagDist = initXLdistrib;
 		XLComponents = new ArrayList<CompositeModelComponent>();
-		numXLComponents = (initCSdistrib.getInfluenceRange()/2)/cmConfig.XLComponentSpacing;
+		numXLComponents = (initCSdistrib.getInfluenceRange()/4)/cmConfig.XLComponentSpacing;
 		int xlPos = centerOffset-(numXLComponents*cmConfig.XLComponentSpacing)/2;
 		for(int i=0; i<numXLComponents; i++){
 			XLComponents.add(new CompositeModelComponent(XLTagDist, xlPos, i+2, true, true));
@@ -91,10 +91,10 @@ public class ProteinDNAInteractionModel {
 		String out = "ProteinDNAInteractionModel:\n";
 		for(CompositeModelComponent xl : XLComponents){
 			if(xl.isNonZero())
-				out = out+"\tXL:\t"+xl.toString(centerOffset)+"\n";
+				out = out+"\t"+xl.getIndex()+"\tXL:\t"+xl.toString(centerOffset)+"\n";
 		}
-		out = out+"\tCS:\t"+CSComponent.toString(centerOffset)+"\n";
-		out = out+"\tBack:\t"+backgroundComponent.toString(centerOffset)+"\n";
+		out = out+"\t"+CSComponent.getIndex()+"\tCS:\t"+CSComponent.toString(centerOffset)+"\n";
+		out = out+"\t"+backgroundComponent.getIndex()+"\tBack:\t"+backgroundComponent.toString(centerOffset)+"\n";
 		return out;
 	}
 }

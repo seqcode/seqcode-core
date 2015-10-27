@@ -1,5 +1,7 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -146,15 +148,29 @@ public class CompositeTagDistribution {
 		return sums;
 	}
 	
-	public String toString(){
+	public String toString(ExperimentCondition cond){
 		String out="";
-		for(ExperimentCondition cond : exptMan.getConditions()){
-			for(int w=0; w<win; w++){
-				out = out + (w-centerOffset)+"\t"+watson[cond.getIndex()][w]+"\t"+crick[cond.getIndex()][w]+"\n";
-			}
+		for(int w=0; w<win; w++){
+			int pos = (w-centerOffset);
+			out = out + pos+"\t"+watson[cond.getIndex()][w]+"\t"+crick[cond.getIndex()][w]+"\n";
 		}
 		return out;
 	}
+	
+	//Print probs to a file
+	public void printToFile(ExperimentCondition cond, String filename){
+		try {
+			FileWriter fout = new FileWriter(filename);
+			for(int w=0; w<win; w++){
+				int pos = (w-centerOffset);
+				fout.write(pos+"\t"+watson[cond.getIndex()][w]+"\t"+crick[cond.getIndex()][w]+"\n");
+			}
+			fout.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	
 	//Main method to make new composite distributions
 	public static void main(String[] args){

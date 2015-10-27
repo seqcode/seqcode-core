@@ -31,6 +31,7 @@ public class CompositeModelComponent  implements Comparable<CompositeModelCompon
 	
 	
 	//Accessors
+	public int getIndex(){return index;}
 	public double getPi(){return pi;}
 	public int getPosition(){return position;}
 	public double getSumResponsibility(){return sumRespW+sumRespC;}
@@ -64,6 +65,6 @@ public class CompositeModelComponent  implements Comparable<CompositeModelCompon
 	}
 	
 	public String toString(int offset){
-		return String.format("%d\t%.5f", offset-position, pi);
+		return String.format("%d\t%.5f", position-offset, pi);
 	}
 }

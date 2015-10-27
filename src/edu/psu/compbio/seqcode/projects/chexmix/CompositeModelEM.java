@@ -1,6 +1,8 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
@@ -94,10 +96,6 @@ public class CompositeModelEM {
         lastPi = new double[numComponents];
         lastMu = new int[numComponents];
         
-        double[] compSums = composite.getCompositeSums();
-        double compSum =0;
-        for(int c=0; c<numConditions; c++)
-        	compSum+=compSums[c];
         
         //Initializing data structures
         for(int j=0;j<numComponents;j++){
@@ -107,10 +105,14 @@ public class CompositeModelEM {
             //Load binding component positions
         	mu[j] = model.getAllComponents().get(j).getPosition();
         }
+        
+        for(int j=0;j<numComponents;j++)
+        	System.out.println("\tT="+trainingRound+",-1\t"+j+"\t"+pi[j]+"\t"+mu[j]);
     	
 		//Set maximum alpha
-    	alphaMax =  config.getFixedAlpha()>0 ? config.getFixedAlpha() : 
-    			config.getAlphaScalingFactor() * model.getBackgroundComponent().getPi() * compSum; 
+    	alphaMax =  config.getFixedAlpha()>0 ? config.getFixedAlpha() :
+    			(config.getAlphaScalingFactor() * model.getBackgroundComponent().getPi())/composite.getWinSize(); 
+    	System.out.println("\tT="+trainingRound+", Alpha= "+alphaMax);
 
     	//Condition-specific stuff
         for(ExperimentCondition cond : manager.getConditions()){
@@ -180,6 +182,14 @@ public class CompositeModelEM {
     	}
     	//Responsibility profiles
         setComponentResponsibilityProfiles(r);
+        
+        //Print the responsibilities to files
+        if(config.getPrintCompositeResponsibilities()){
+        	for(ExperimentCondition cond : manager.getConditions()){
+        		String filename = "responsibilities."+cond.getName()+"T"+trainingRound+".txt";
+        		printResponsibilitiesToFile(cond, filename);
+        	}
+        }
 
         return model;
     }//end of EMTrain method
@@ -192,9 +202,6 @@ public class CompositeModelEM {
     private void EM_MAP () {
         int numComp = numComponents;
         double [][] totalResp = new double[numConditions][];
-        
-        //Variables for tracking mu maximization. Defined early to avoid memory assignment during main EM loop. 
-        double[][] muSums = new double[numComp][]; //Results of mu maximization summations for individual components across genome
         int[] newMu = new int[numComponents];// mu update
         
         //Initialize responsibilities
@@ -258,18 +265,14 @@ public class CompositeModelEM {
         			}}
         		}
     		}
+    		for(int j=0;j<numComponents;j++)
+            	System.out.println("\tT="+trainingRound+","+t+"\t"+j+"\t"+pi[j]+"\t"+mu[j]);
+    		System.out.println("");
     		
-        		
     		/////////////////////
     		//M-step: maximize mu (positions)
     		/////////////////////
-    		//Set up variable arrays if necessary (assign memory only once to non-zero components)
-			if(numConditions>1 && t==config.ALPHA_ANNEALING_ITER)
-				for(int c=0; c<numConditions; c++)
-					for(int j=0;j<numComp;j++)
-						if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePosition())
-							muSums[j] = new double[config.EM_MU_UPDATE_WIN*2];
-    		//Maximize mu: calculate maximization sums assuming no events shared across conditions
+			//Maximize mu: calculate maximization sums assuming no events shared across conditions
     		for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePosition()){
 				//Define window to look for new component position
 				int start=Math.max(mu[j]-config.EM_MU_UPDATE_WIN, 0);
@@ -288,23 +291,19 @@ public class CompositeModelEM {
         				}
     				}
     				
-    				if(numConditions>1 && t>config.ALPHA_ANNEALING_ITER)   //Save the score
-        				muSums[j][x-start] = currScore;
-    				 
     				if(currScore>maxScore){
     					maxPos=x;
     					maxScore=currScore;
     				}
     			}
-    			newMu[j] = maxPos; 
+    			newMu[j] = maxPos;
     		}}
 			
     		//Update mu values
-    		for(int c=0; c<numConditions; c++){
-    			for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePosition()){
-    				mu[j] = newMu[j];
-    			}}
-    		}
+			for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePosition()){
+				mu[j] = newMu[j];
+			}}
+
     		//Maximize mu follow-up: Resolve duplicate positions (combine & delete one copy)
     		HashMap<Integer, Integer> pos2index = new HashMap<Integer, Integer>(); //Position to array index map 
     		for(int j=0;j<numComp;j++){ if(pi[j]>0){
@@ -377,8 +376,11 @@ public class CompositeModelEM {
         			pi[j]*=1-totalNonUpdateablePi;
         		}
         	}}
+            
+            //for(int j=0;j<numComponents;j++)
+            //	System.out.println("\tT="+trainingRound+","+t+"\t"+j+"\t"+pi[j]+"\t"+mu[j]+"\t"+sumR[j]);
+    		//System.out.println("");
         	
-    		
         	/////////////
         	//Anneal alpha
         	//////////////
@@ -479,21 +481,21 @@ public class CompositeModelEM {
      */
     private void setComponentResponsibilityProfiles(double[][][] responsibilities) {
 		for(int j=0;j<numComponents;j++){
-        	//Load pi for binding components
         	CompositeModelComponent comp = model.getAllComponents().get(j);
-		
+        	int width = comp.getTagDistribution().getWinSize();
+        	int center = -1*comp.getTagDistribution().getLeft();
+        	
         	for(ExperimentCondition cond : manager.getConditions()){
             	int c = cond.getIndex();
 		    	double[][] rc = responsibilities[c];
 		   
-		    	int center = config.MAX_BINDINGMODEL_WIDTH/2;
 		   		// store binding profile (read responsibilities in c condition) of this component
-				double[] profile_plus = new double[config.MAX_BINDINGMODEL_WIDTH];
-				double[] profile_minus = new double[config.MAX_BINDINGMODEL_WIDTH];
+				double[] profile_plus = new double[width];
+				double[] profile_minus = new double[width];
 				
 				for(int i=0;i<hitNum[c];i++){
 					int offset = hitPos[c][i]-comp.getPosition()+center;
-					if(offset>=0 && offset<config.MAX_BINDINGMODEL_WIDTH)
+					if(offset>=0 && offset<width)
 						if (hitPlusStr[c][i])
 							profile_plus[offset]=rc[j][i]*hitCounts[c][i];
 						else
@@ -559,4 +561,34 @@ public class CompositeModelEM {
 		}}
 		return numCompEqual && compPosEqual && piBindEquivalent && rBindEquivalent;
     }
+    
+	/**
+	 * Print responsibilities for each base in the composite to the file
+	 * @param cond
+	 * @param filename
+	 */
+	private void printResponsibilitiesToFile(ExperimentCondition cond, String filename){
+		try {
+			FileWriter fout = new FileWriter(filename);
+			int c = cond.getIndex();
+			fout.write("#Pos\tTotal");
+			for(int j=0;j<numComponents;j++){ if(pi[j]>0){
+				fout.write("\t"+j);
+			}}fout.write("\n");
+			
+			for(int i=0;i<hitNum[c];i++){
+				fout.write(hitPos[c][i]+"\t"+hitCounts[c][i]);
+    			for(int j=0;j<numComponents;j++){ if(pi[j]>0){
+    				double resp = hitPlusStr[c][i] ? r[c][j][i]*hitCounts[c][i] : -r[c][j][i]*hitCounts[c][i]; 
+    				fout.write("\t"+resp);
+    			}}
+    			fout.write("\n");
+    		}
+			fout.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
 }

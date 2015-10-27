@@ -2,6 +2,7 @@ package edu.psu.compbio.seqcode.projects.chexmix;
 
 import java.util.List;
 
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
@@ -43,7 +44,7 @@ public class CompositeXLFinder {
 		
 		//Train EM
 		//TODO: check for convergence properly
-		int maxT=1;
+		int maxT=5;
 		for(int t=0; t<maxT; t++){
 			
 			mixtureModel.execute(true);
@@ -54,6 +55,10 @@ public class CompositeXLFinder {
 		//ML assignment
 		
 		//Report
+		for(ExperimentCondition cond : manager.getConditions()){
+			String compositeFileName = "composite."+cond.getName()+".txt";
+			signalComposite.printToFile(cond, compositeFileName);
+		}
 	}
 	
 	//Main
