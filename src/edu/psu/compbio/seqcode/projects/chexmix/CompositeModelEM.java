@@ -64,8 +64,6 @@ public class CompositeModelEM {
 	/**
      * EM training
      *
-     * Returns lists of binding components indexed by condition 
-     *
      * Almost purely matrix/array operations.
      * 
      * Returns an updated protein-DNA interaction model
@@ -112,7 +110,7 @@ public class CompositeModelEM {
 		//Set maximum alpha
     	alphaMax =  config.getFixedAlpha()>0 ? config.getFixedAlpha() :
     			(config.getAlphaScalingFactor() * model.getBackgroundComponent().getPi())/composite.getWinSize(); 
-    	System.out.println("\tT="+trainingRound+", Alpha= "+alphaMax);
+    	System.out.println("\n\tT="+trainingRound+", Alpha= "+alphaMax);
 
     	//Condition-specific stuff
         for(ExperimentCondition cond : manager.getConditions()){
@@ -266,7 +264,8 @@ public class CompositeModelEM {
         		}
     		}
     		for(int j=0;j<numComponents;j++)
-            	System.out.println("\tT="+trainingRound+","+t+"\t"+j+"\t"+pi[j]+"\t"+mu[j]);
+    			if(pi[j]>0)
+    				System.out.println("\tT="+trainingRound+","+t+"\t"+j+"\t"+pi[j]+"\t"+mu[j]);
     		System.out.println("");
     		
     		/////////////////////

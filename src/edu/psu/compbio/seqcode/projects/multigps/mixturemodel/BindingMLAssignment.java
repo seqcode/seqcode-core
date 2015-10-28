@@ -664,7 +664,7 @@ public class BindingMLAssignment {
 	        	}
 	        }
         }        
-    }//end of EM_MAP method
+    }//end of ML method
  
     /**
      * Copy current variables to last variables (lastRBind, lastPi, lastMu).

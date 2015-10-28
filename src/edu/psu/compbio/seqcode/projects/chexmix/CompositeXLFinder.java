@@ -40,19 +40,13 @@ public class CompositeXLFinder {
 		//Initialize the mixture model 
 		mixtureModel = new CompositeModelMixture(signalComposite, controlComposite, gconfig, econfig, cconfig, manager);
 		
-		System.out.println("TrainingRound: -1:\n"+mixtureModel.getModel().toString());
 		
 		//Train EM
-		//TODO: check for convergence properly
-		int maxT=5;
-		for(int t=0; t<maxT; t++){
-			
-			mixtureModel.execute(true);
-			
-			System.out.println("TrainingRound: "+t+":\n"+mixtureModel.getModel().toString());
-		}
+		mixtureModel.execute(true);
+		
 		
 		//ML assignment
+		mixtureModel.execute(false);
 		
 		//Report
 		for(ExperimentCondition cond : manager.getConditions()){

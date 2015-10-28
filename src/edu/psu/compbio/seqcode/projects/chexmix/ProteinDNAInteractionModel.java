@@ -70,6 +70,18 @@ public class ProteinDNAInteractionModel {
 	public CompositeModelComponent getBackgroundComponent(){return backgroundComponent;}
 	
 	/**
+	 * Return the non-zero components
+	 * @return
+	 */
+	public List<CompositeModelComponent> getNonZeroComponents(){
+		List<CompositeModelComponent> comps = new ArrayList<CompositeModelComponent>();
+		for(CompositeModelComponent c : allComponents)
+			if(c.isNonZero())
+				comps.add(c);
+		return comps;
+	}
+	
+	/**
 	 * Set the initial pi values for all components. 
 	 * Assumes model is initialized. 
 	 */

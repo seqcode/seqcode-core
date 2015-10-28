@@ -43,7 +43,8 @@ public class ChExMixConfig {
 	protected int XLDistribOffset=6; //exonuclease head-space
 	protected double XLDistribSigma=1.5; //gaussian distrib sigma
 	public int XLComponentSpacing = 8; //Inital number of bp between XL Components
-	protected int maxModelUpdateRounds=3;
+	protected int maxModelUpdateRounds=5; //Maximum number of outer EM training rounds
+	protected double modelConvergenceKL=-15; //KL-divergence threshold for convergence 
 	protected int maxThreads=1;				//Number of threads to use. Default is 1 for single processor machines. 
 	protected double alphaScalingFactor = 10.0; //Scale the alpha value by this factor relative to the noise component per-base
 	protected double fixedAlpha = 0.0; //Fixed alpha value if above 0
@@ -218,6 +219,7 @@ public class ChExMixConfig {
 	public boolean getGaussBMSmooth(){return gaussianSmoothingBMDuringUpdate;}
 	public double getBindingModelGaussSmoothParam(){return bindingmodel_gauss_smooth;}
 	public int getMaxModelUpdateRounds(){return maxModelUpdateRounds;}
+	public double getModelConvergenceKL(){return modelConvergenceKL;}
 	public int getXLDistribOffset(){return XLDistribOffset;}
 	public double getXLDistribSigma(){return XLDistribSigma;}
 	public boolean getPrintCompositeResponsibilities(){return printCompositeResponsibilities;}

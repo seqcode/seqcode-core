@@ -1,12 +1,10 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.fitting.GaussianFitter;
-import org.apache.commons.math3.fitting.WeightedObservedPoint;
 import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
@@ -35,6 +33,7 @@ public class CompositeModelMixture {
 	protected CompositeTagDistribution compositeDistrib; //The composite tag distribution under investigation
 	protected CompositeTagDistribution controlCompositeDistrib; //Optional composite tag distribution from matching control
 	protected ProteinDNAInteractionModel model; //The model to train
+	protected List<CompositeModelSiteAssignment> siteAssignments;
 	protected CompositeModelEM EMtrainer; //Training method
 	
 	protected TagDistribution initBackDistrib, initCSDistrib, initXODistrib;
@@ -56,6 +55,7 @@ public class CompositeModelMixture {
 		initializeTagDistributions();
 		
 		model = new ProteinDNAInteractionModel(config, compositeDistrib.getWinSize(), initXODistrib, initCSDistrib, initBackDistrib, initNoisePi);
+		siteAssignments = new ArrayList<CompositeModelSiteAssignment>();
 	}
 	
 	//Accessors
@@ -68,12 +68,39 @@ public class CompositeModelMixture {
 	 */
 	public void execute(boolean EM){
 		trainingRound++;
-		try{ 
+		
+		try{
 			if(EM){
-				model = EMtrainer.train(model, trainingRound);
-				updateTagDistributions();
+				//Run EM outer loops
+				boolean converged=false;
+				double[] kl = new double[config.getMaxModelUpdateRounds()];
+				for(trainingRound=0; trainingRound<config.getMaxModelUpdateRounds() && !converged; trainingRound++){
+					//Run EM inner loops
+					model = EMtrainer.train(model, trainingRound);
+					kl[trainingRound]=updateTagDistributions();
+				
+					System.out.println("TrainingRound: "+trainingRound+":\n"+model.toString()+"\n\tModelKL="+kl[trainingRound]);
+					
+					//Check for convergence
+					if(kl[trainingRound]<config.getModelConvergenceKL())
+						converged=true;
+				}
 			}else{
-				//runML();
+				//TODO: multithreading
+				
+				//List all site indexes (looks dumb now, but this will enable multithreading later)
+				List<Integer> allSites = new ArrayList<Integer>();
+				for(int s=0; s<compositeDistrib.getPoints().size(); s++)
+					allSites.add(s);
+				
+				//Run ML
+				CompositeModelMLAssign MLassigner = new CompositeModelMLAssign(compositeDistrib, allSites, config, manager);
+				List<CompositeModelSiteAssignment> currAssignments = MLassigner.assign(model);
+				
+				synchronized(siteAssignments){
+					siteAssignments.addAll(currAssignments);
+					Collections.sort(siteAssignments);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -142,7 +169,7 @@ public class CompositeModelMixture {
      * 
      * @return log KL values
      */
-    private Double updateTagDistributions(){
+    public Double updateTagDistributions(){
     	double logKL = 0;
     	TagDistribution CSdistrib = model.getCSTagDistribution();
     	TagDistribution XLdistrib = model.getXLTagDistribution();

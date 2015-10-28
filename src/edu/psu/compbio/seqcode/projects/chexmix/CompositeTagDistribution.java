@@ -131,6 +131,8 @@ public class CompositeTagDistribution {
 	public double[] getCompositeCrick(ExperimentCondition c){return crick[c.getIndex()];}
 	public double[] getPointWatson(StrandedPoint p, ExperimentCondition c){return perPointWatson[pointIndex.get(p)][c.getIndex()];}
 	public double[] getPointCrick(StrandedPoint p, ExperimentCondition c){return perPointCrick[pointIndex.get(p)][c.getIndex()];}
+	public List<StrandedPoint> getPoints(){return points;}
+	public StrandedPoint getPoint(int i){return points.get(i);}
 	
 	/**
 	 * Per-condition sum of tags in composites
