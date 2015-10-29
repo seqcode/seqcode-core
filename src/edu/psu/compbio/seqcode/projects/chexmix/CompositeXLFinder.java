@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
+import java.io.File;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
@@ -24,6 +25,7 @@ public class CompositeXLFinder {
 		gconfig = gcon;
 		econfig = econ;
 		cconfig = ccon;
+		cconfig.makeChExMixOutputDirs(true);
 		manager = new ExperimentManager(econfig);
 	}
 	
@@ -52,10 +54,12 @@ public class CompositeXLFinder {
 		
 		//Report
 		for(ExperimentCondition cond : manager.getConditions()){
-			String compositeFileName = "composite."+cond.getName()+".txt";
+			String compositeFileName = cconfig.getOutputParentDir()+File.separator+cconfig.getOutBase()
+					+"_composite."+cond.getName()+".txt";
 			signalComposite.printToFile(cond, compositeFileName);
 			
-			String perSiteRespFileName = "site-component-ML."+cond.getName()+".txt";
+			String perSiteRespFileName = cconfig.getOutputParentDir()+File.separator+cconfig.getOutBase()
+					+"_site-component-ML."+cond.getName()+".txt";
 			mixtureModel.printPerSiteComponentResponsibilitiesToFile(cond, perSiteRespFileName);
 		}
 		

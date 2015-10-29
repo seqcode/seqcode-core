@@ -3,7 +3,6 @@ package edu.psu.compbio.seqcode.projects.chexmix;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.fitting.GaussianFitter;

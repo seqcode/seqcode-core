@@ -1,6 +1,7 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ public class CompositeModelEM {
 	protected int[]      lastMu;		//Last positions (monitor convergence)
 	protected double lastLAP, LAP; 		//log-likelihood monitoring
 	protected boolean plotEM=false;		//Plot the current region components
+	protected TrainingStepPlotter plotter = null;
 	protected int stateEquivCount=0;
 	
 	/**
@@ -94,7 +96,10 @@ public class CompositeModelEM {
         lastPi = new double[numComponents];
         lastMu = new int[numComponents];
         
-        
+        //Plotter?
+        if(plotEM)
+        	plotter = new TrainingStepPlotter();
+        	
         //Initializing data structures
         for(int j=0;j<numComponents;j++){
         	//Load pi for binding components
@@ -184,7 +189,8 @@ public class CompositeModelEM {
         //Print the responsibilities to files
         if(config.getPrintCompositeResponsibilities()){
         	for(ExperimentCondition cond : manager.getConditions()){
-        		String filename = "responsibilities."+cond.getName()+"T"+trainingRound+".txt";
+        		String filename = config.getOutputIntermediateDir()+File.separator+config.getOutBase()
+        				+"_responsibilities."+cond.getName()+"T"+trainingRound+".txt";
         		printResponsibilitiesToFile(cond, filename);
         	}
         }
@@ -216,17 +222,13 @@ public class CompositeModelEM {
     	////////////
         //Plot the initial pi & priors if plotting
     	////////////
-        if(plotEM){
-        	/*String regStr = currRegion.getLocationString().replaceAll(":", "-");
-        	String outName = "EM_"+regStr+"_r"+trainingRound+"_t0";
-        	int trimLeft = Math.max(0, plotSubRegion.getStart()-regStart);
-        	int trimRight = Math.max(0, currRegion.getEnd()-plotSubRegion.getEnd());
-        	
-        	if(config.useMotifPrior())
-       			EMStepPlotter.execute(outName, currRegion, mu, pi, motifPrior, numConditions, numComponents, 0, trimLeft, trimRight);
-       		else
-       			EMStepPlotter.execute(outName, currRegion, mu, pi, null, numConditions, numComponents, 0, trimLeft, trimRight);
-       		*/
+        if(plotEM && plotter!=null){
+        	String outName = config.getOutputImagesDir()+File.separator+"EM_r"+trainingRound+"_t0";
+        	String outNameZoom = config.getOutputImagesDir()+File.separator+"EMzoom_r"+trainingRound+"_t0";
+        	int trimLeft = (model.getWidth()/2)-50;
+        	int trimRight = (model.getWidth()/2)-50;
+        	plotter.plotCompositeEM(outName, composite, model, mu, pi, trainingRound, 0, 0,0);
+        	plotter.plotCompositeEM(outNameZoom, composite, model, mu, pi, trainingRound, 0, trimLeft, trimRight);
         }
         
     	
@@ -431,17 +433,13 @@ public class CompositeModelEM {
         	////////////
             //Plot the current pi & priors if plotting
         	////////////
-            if(plotEM){
-            	/*String regStr = currRegion.getLocationString().replaceAll(":", "-");
-            	String outName = "EM_"+regStr+"_r"+trainingRound+"_t"+(t+1)+"_i"+(iter+1);
-            	int trimLeft = Math.max(0, plotSubRegion.getStart()-regStart);
-            	int trimRight = Math.max(0, currRegion.getEnd()-plotSubRegion.getEnd());
-
-           		if(config.useMotifPrior())
-           			EMStepPlotter.execute(outName, currRegion, mu, pi, motifPrior, numConditions, numComponents, t+1, trimLeft, trimRight);
-           		else
-           			EMStepPlotter.execute(outName, currRegion, mu, pi, null, numConditions, numComponents, t+1, trimLeft, trimRight);
-           		*/
+        	if(plotEM && plotter!=null){
+            	String outName = config.getOutputImagesDir()+File.separator+"EM_r"+trainingRound+"_t"+(t+1);
+            	String outNameZoom = config.getOutputImagesDir()+File.separator+"EMzoom_r"+trainingRound+"_t"+(t+1);
+            	int trimLeft = (model.getWidth()/2)-50;
+            	int trimRight = (model.getWidth()/2)-50;
+            	plotter.plotCompositeEM(outName, composite, model, mu, pi, trainingRound, 0, 0,0);
+            	plotter.plotCompositeEM(outNameZoom, composite, model, mu, pi, trainingRound, 0, trimLeft, trimRight);
             }
 
             //Is current state equivalent to the last?
