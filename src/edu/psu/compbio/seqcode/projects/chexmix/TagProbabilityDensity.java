@@ -16,9 +16,9 @@ import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 
 /**
- * TagDistribution defines a (probabilistic) model of sequenced tag occurrences around a binding event.
+ * TagProbabilityDensity defines a (probabilistic) model of sequenced tag occurrences around a binding event.
  * The probability is directional (i.e. stranded). The probability distributions can be asymmetric on Watson & Crick strands. 
- * Given a signed distance from the event, the TagDistribution should return 
+ * Given a signed distance from the event, the TagProbabilityDensity should return 
  * a relative probability of seeing a read at that distance (given that the tag is on Watson or Crick).
  * 
  * TODO: support multi-rep TagDistributions
@@ -26,7 +26,7 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
  * @author shaunmahony
  *
  */
-public class TagDistribution {
+public class TagProbabilityDensity {
 	
 	protected final double LOG2 = Math.log(2);
 	protected final double TAGDISTRIB_MIN_PROB = 1e-100; //Minimum probabilitiy allowed in any tag distribution
@@ -39,12 +39,12 @@ public class TagDistribution {
 	protected int influenceRange; //95% probability range (over both strands)
 	protected double bgProb, logBgProb;
 	
-	public TagDistribution(int size){
+	public TagProbabilityDensity(int size){
 		winSize=size;
 		init(-(winSize/2), winSize-(winSize/2));
 	}
 	
-	public TagDistribution(File distFile){
+	public TagProbabilityDensity(File distFile){
 		int min=Integer.MAX_VALUE, max=Integer.MIN_VALUE;
 		try {
 			List<Pair<Integer,Double>> empiricalDistribution = new LinkedList<Pair<Integer,Double>>(); 
@@ -86,7 +86,7 @@ public class TagDistribution {
 		}
 	}
 	
-	public TagDistribution(List<Pair<Integer,Double>> empiricalWatson, List<Pair<Integer,Double>> empiricalCrick){
+	public TagProbabilityDensity(List<Pair<Integer,Double>> empiricalWatson, List<Pair<Integer,Double>> empiricalCrick){
 		int min=Integer.MAX_VALUE, max=Integer.MIN_VALUE;
 		try{
 			for(Pair<Integer,Double> p : empiricalWatson){
@@ -228,7 +228,7 @@ public class TagDistribution {
 	 */
 	public void loadData(double[] w, double[] c) throws Exception{
 		if(w.length!=winSize || c.length!=winSize){
-			throw new Exception("TagDistribution: trying to load data of unmatched size");
+			throw new Exception("TagProbabilityDensity: trying to load data of unmatched size");
 		}
 		for(int i=0; i<=w.length; i++){
 			watsonData[i] = w[i];
@@ -378,7 +378,7 @@ public class TagDistribution {
 	//Main
 	public static void main(String[] args){
 		int win = 200;
-		TagDistribution td = new TagDistribution(win);
+		TagProbabilityDensity td = new TagProbabilityDensity(win);
 		td.loadGaussianDistrib(6, 1);
 		
 		double[] watson = td.getWatsonProbabilities();

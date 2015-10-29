@@ -10,21 +10,23 @@ package edu.psu.compbio.seqcode.projects.chexmix;
 public class CompositeModelComponent  implements Comparable<CompositeModelComponent>{
 	
 	protected int index; //Index of the component
+	protected String label; //Label is only used in reporting - has no other consequence in algorithm
 	protected int position; //Positions wrt the left edge of the composite
 	protected double pi; //Emission probability
 	protected double sumRespW=0, sumRespC=0; //Sum of read responsibilities, per strand
-	protected TagDistribution distrib; //Tag distribution associated with this model component
+	protected TagProbabilityDensity distrib; //Tag distribution associated with this model component
 	protected boolean updatablePosition = true;
 	protected boolean updatablePi = true;
 	protected double[] tagProfileWatson=null;  //Read profiles are left uninitialized, as they are only used to store read distributions at the end of training. 
 	protected double[] tagProfileCrick=null; //The read distributions stored in readProfiles are centered on the binding position. 
 	
 	
-	public CompositeModelComponent(TagDistribution d, int pos, int index, boolean updatablePosition, boolean updatablePi){
+	public CompositeModelComponent(TagProbabilityDensity d, int pos, int index, String label, boolean updatablePosition, boolean updatablePi){
 		distrib = d;
 		pi=1;
 		position = pos;
 		this.index = index;
+		this.label = label;
 		this.updatablePosition=updatablePosition;
 		this.updatablePi=updatablePi;
 	}
@@ -32,10 +34,11 @@ public class CompositeModelComponent  implements Comparable<CompositeModelCompon
 	
 	//Accessors
 	public int getIndex(){return index;}
+	public String getLabel(){return label;}
 	public double getPi(){return pi;}
 	public int getPosition(){return position;}
 	public double getSumResponsibility(){return sumRespW+sumRespC;}
-	public TagDistribution getTagDistribution(){return distrib;}
+	public TagProbabilityDensity getTagDistribution(){return distrib;}
 	public boolean isNonZero(){return pi>0;}
 	public boolean hasUpdatablePosition(){return updatablePosition;}
 	public boolean hasUpdatablePi(){return updatablePi;}

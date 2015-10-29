@@ -1,10 +1,6 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
-
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
@@ -17,6 +13,7 @@ import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
  * 
  * This method assumes that the same protein-DNA interaction model is valid (i.e. constant) across all examined conditions. 
  * 
+ * TODO: this class should be made threadable. Be careful to instantiate one of these objects in/as each thread (i.e. don't do multithreaded calls to assign()
  * @author Shaun Mahony
  * @version	%I%, %G%
  */
@@ -25,7 +22,6 @@ public class CompositeModelMLAssign {
 	protected ExperimentManager manager;
 	protected ChExMixConfig config;
 	protected CompositeTagDistribution composite;
-	protected List<Integer> pointIndicies; //Run ML on these points in the composite list
 	protected ProteinDNAInteractionModel model;
 	protected int numComponents;  //The count of all components (active +inactive) in the model
 	protected int numConditions;
@@ -34,7 +30,6 @@ public class CompositeModelMLAssign {
     // once the component positions change (i.e. we can't do the trick where we restrict to reads within 
     // range of the components).
 	protected double[][]   hitCounts;	// Hit weights
-	protected double[]   hitCountTotals;	// Hit weight totals
 	protected int[][]      hitPos;		// Hit positions
 	protected boolean[][]  hitPlusStr;	// Hit positive strand boolean
 	protected int[]		   hitNum;		// Number of hits in each condition 
@@ -58,36 +53,17 @@ public class CompositeModelMLAssign {
 	 * @param eMan: ExperimentManager
 	 * @throws Exception 
 	 */
-	public CompositeModelMLAssign(CompositeTagDistribution composite, List<Integer> pointIndicies, ChExMixConfig c, ExperimentManager eMan){
+	public CompositeModelMLAssign(CompositeTagDistribution composite, ProteinDNAInteractionModel model, ChExMixConfig config, ExperimentManager eMan){
 		this.composite=composite;
-		this.pointIndicies = pointIndicies;
-		config=c;
+		this.model=model;
+		this.config=config;
 		manager = eMan;
-		numConditions = manager.getNumConditions();		
-	}
-	
-	
-	/**
-     * ML assignment
-     *
-     * Almost purely matrix/array operations.
-     * 
-     * Returns an updated protein-DNA interaction model
-     */
-    public List<CompositeModelSiteAssignment>  assign(ProteinDNAInteractionModel model
-    											  ) throws Exception{
-    	List<CompositeModelSiteAssignment> siteAssignments = new ArrayList<CompositeModelSiteAssignment>();
-    	this.model=model;
-    	//Need to ensure that the composite and model have the same center offsets, or the coordinate system will not be consistent
-    	if(composite.getWinSize()!=model.getWidth() || composite.getCenterOffset()!=model.getCenterOffset())
-   			throw new Exception("CompositeModelMLAssign: Composite distribution coordinate system not consistent with protein-DNA interaction model");
-    			
-    	List<CompositeModelComponent> nonZeroComponents = model.getNonZeroComponents();
-    	numComponents = model.getNumComponents();
-        //Matrix initializations
+		numConditions = manager.getNumConditions();
+		
+		//Initialize data structures
+		numComponents = model.getNumComponents();
         hitCounts= new double[numConditions][];	// Hit weights
-        hitCountTotals= new double[numConditions];	// Hit weight totals
-    	hitPos= new int[numConditions][];			// Hit positions
+        hitPos= new int[numConditions][];			// Hit positions
     	hitPlusStr= new boolean[numConditions][];	// Hit positive strand boolean
     	hitNum = new int[numConditions];			// Number of hits in each condition
     	h= new double[numConditions][][]; 			// H function (binding component probability per read)
@@ -96,102 +72,130 @@ public class CompositeModelMLAssign {
     	mu = new int[numComponents]; // mu : positions of the binding components (fixed across conditions)
     	plotRegions = config.getRegionsToPlot().size()>0;
     	regionsToPlot = config.getRegionsToPlot();
-        //Monitor state convergence using the following last variables
         lastRBind = new double[numConditions][][];
         lastPi = new double[numComponents];
         lastMu = new int[numComponents];
         
-        //Iterate over each requested Point
-        for(Integer pointIndex : pointIndicies){
-        	StrandedPoint currPoint = composite.getPoint(pointIndex);
-        
-        	//Initializing data structures
-	        for(int j=0;j<numComponents;j++){
-	        	//Load pi for binding components
-	        	CompositeModelComponent comp = model.getAllComponents().get(j);
-	            pi[j]= comp.getPi();
-	            //Load binding component positions
-	        	mu[j] = model.getAllComponents().get(j).getPosition();
-	        }
-	    	//Condition-specific stuff
-	        for(ExperimentCondition cond : manager.getConditions()){
-	        	int c = cond.getIndex();
-	        	
-	        	//Number of unique positions in the composite distribution (watson + crick)
-	        	hitNum[c]=composite.getWinSize()*2;
-	
-	            //Load read info
-	            double[] countc= new double[hitNum[c]];
-	            double countctot = 0.0;
-	            int[] posc= new int[hitNum[c]];
-	            boolean[] plusc= new boolean[hitNum[c]];
-	            double[] compptW = composite.getPointWatson(currPoint, cond);
-	            double[] compptC = composite.getPointCrick(currPoint, cond);
-	            for(int i=0;i<composite.getWinSize();i++){ //Watson
-	            	posc[i] = i;
-	            	plusc[i] = true;
-	                countc[i]=compptW[i];
-	                countctot+=countc[i];
-	            }
-	            for(int i=0;i<composite.getWinSize();i++){ //Crick
-	            	posc[i+composite.getWinSize()] = i;
-	            	plusc[i+composite.getWinSize()] = false;
-	                countc[i+composite.getWinSize()]=compptC[i];
-	                countctot+=countc[i+composite.getWinSize()];
-	            }
-	            hitPos[c] = posc;
-	            hitCounts[c]=countc;
-	            hitCountTotals[c] = countctot;
-	            hitPlusStr[c] = plusc;
-	        	
-	            //Initialize responsibility functions
-	            double[][] hc= new double[numComponents][hitNum[c]];
-	            for(int i=0;i<hitNum[c];i++){
-	            	for(int j=0;j<numComponents;j++){
-	            		int dist = hitPos[c][i]-mu[j];
-	                    hc[j][i] = model.getAllComponents().get(j).getTagDistribution().probability(dist, hitPlusStr[c][i]);
-	                }
-	            }
-	            h[c] = hc;
-	            
-	            r[c] = new double[numComponents][hitNum[c]];
-	    		lastRBind[c] = new double[numComponents][hitNum[c]];
-	    		        	
-	        }
-	        //End of data structure initialization
-	        
-	        
-	        //////////
-	        // Run EM steps
-	        //////////
-	        ML(currPoint);
-		
-	        //////////
-	        // Define the results of ML for this point
-	        //////////
-	    	int[] compIndices = new int[nonZeroComponents.size()];
-	    	double[][] compResp = new double[numConditions][nonZeroComponents.size()];
-	    	int x=0;
-	    	for(CompositeModelComponent comp : nonZeroComponents){ 
-	    		int j = comp.getIndex();
-	    		compIndices[x]=j;
-	    		
-	            for(int c=0; c<numConditions;c++){
-	            	double sumRespW=0.0, sumRespC=0.0;
-	            	for(int i=0;i<hitNum[c];i++){
-	            		if(hitPlusStr[c][i])
-	            			sumRespW += hitCounts[c][i]*r[c][j][i];
-	            		else
-	            			sumRespC += hitCounts[c][i]*r[c][j][i];
-	            	}
-	            	compResp[c][x] = sumRespW+sumRespC;
-	            }
-	    	}
-	    	CompositeModelSiteAssignment currSiteAssign = new CompositeModelSiteAssignment(currPoint, pointIndex, hitCountTotals, compIndices, compResp);
-	    	siteAssignments.add(currSiteAssign);
+        //All calls to this ML assigner will necessarily have:
+        // - same number of positions (hitNum)
+        // - same relative positions (hitPos), due to model size staying constant
+        // - same split of plus/minus coordinates (hitPlusStr)
+        // - same responsibility function relationships to positions (h)
+        for(ExperimentCondition cond : manager.getConditions()){
+        	int c = cond.getIndex();
+        	hitNum[c]=composite.getWinSize()*2;
+        	int[] posc= new int[hitNum[c]];
+            boolean[] plusc= new boolean[hitNum[c]];
+            for(int i=0;i<composite.getWinSize();i++){ //Watson
+            	posc[i] = i;
+            	plusc[i] = true;
+            }
+            for(int i=0;i<composite.getWinSize();i++){ //Crick
+            	posc[i+composite.getWinSize()] = i;
+            	plusc[i+composite.getWinSize()] = false;
+            }
+            hitPos[c] = posc;
+            hitPlusStr[c] = plusc;
+        	
+            //Initialize responsibility functions
+            double[][] hc= new double[numComponents][hitNum[c]];
+            for(int i=0;i<hitNum[c];i++){
+            	for(int j=0;j<numComponents;j++){
+            		int dist = hitPos[c][i]-mu[j];
+                    hc[j][i] = model.getAllComponents().get(j).getTagDistribution().probability(dist, hitPlusStr[c][i]);
+                }
+            }
+            h[c] = hc;
+            r[c] = new double[numComponents][hitNum[c]];
+    		lastRBind[c] = new double[numComponents][hitNum[c]];
         }
         
-        return siteAssignments;
+	}
+	
+	
+	/**
+     * ML assignment
+     *
+     * Almost purely matrix/array operations.
+     * 
+     * Input are a pair of watson & crick tag profiles corresponding to a genomic locus. 
+     * Dimensions of tag profiles are: number of conditions x width of profile.
+     * Width of profiles needs to be equal to the model width.
+     * 
+     * UpdatePi: flag to update the component probabilities (true ML) versus straight assignment using trained weights. 
+     *  
+     * Returns an updated protein-DNA interaction model
+     */
+    public CompositeModelSiteAssignment  assignToPointFromComposite(int pointIndex, boolean updatePi
+    											  ) throws Exception{
+    	
+    	//Need to ensure that the composite and model have the same center offsets, or the coordinate system will not be consistent
+    	if(composite.getWinSize()!=model.getWidth() || composite.getCenterOffset()!=model.getCenterOffset())
+   			throw new Exception("CompositeModelMLAssign: Composite distribution coordinate system not consistent with protein-DNA interaction model");
+    			
+    	List<CompositeModelComponent> nonZeroComponents = model.getNonZeroComponents();
+    	
+    	//Reset data structures
+        for(int j=0;j<numComponents;j++){
+        	//Load pi for binding components
+        	CompositeModelComponent comp = model.getAllComponents().get(j);
+            pi[j]= comp.getPi();
+            //Load binding component positions
+        	mu[j] = model.getAllComponents().get(j).getPosition();
+        }
+    	//Condition-specific tag info
+        double[] hitCountTotals= new double[numConditions];	// Hit weight totals
+        for(ExperimentCondition cond : manager.getConditions()){
+        	int c = cond.getIndex();
+            double[] countc= new double[hitNum[c]];
+            double[][] pointWatson = composite.getPointWatsons(pointIndex);
+            double[][] pointCrick = composite.getPointCricks(pointIndex);
+            double countctot = 0.0;
+            for(int i=0;i<composite.getWinSize();i++){ //Watson
+                countc[i]=pointWatson[c][i];
+                countctot+=countc[i];
+            }
+            for(int i=0;i<composite.getWinSize();i++){ //Crick
+                countc[i+composite.getWinSize()]=pointCrick[c][i];
+                countctot+=countc[i+composite.getWinSize()];
+            }
+            hitCounts[c]=countc;
+            hitCountTotals[c] = countctot;
+            
+        }
+        //End of data structure initialization
+        
+        
+        //////////
+        // Run EM steps
+        //////////
+        ML(composite.getPoint(pointIndex), updatePi);
+	
+        //////////
+        // Define the results of ML for this point
+        //////////
+    	int[] compIndices = new int[nonZeroComponents.size()];
+    	double[][] compResp = new double[numConditions][nonZeroComponents.size()];
+    	int x=0;
+    	for(CompositeModelComponent comp : nonZeroComponents){ 
+    		int j = comp.getIndex();
+    		compIndices[x]=j;
+    		
+            for(int c=0; c<numConditions;c++){
+            	double sumRespW=0.0, sumRespC=0.0;
+            	for(int i=0;i<hitNum[c];i++){
+            		if(hitPlusStr[c][i])
+            			sumRespW += hitCounts[c][i]*r[c][j][i];
+            		else
+            			sumRespC += hitCounts[c][i]*r[c][j][i];
+            	}
+            	compResp[c][x] = sumRespW+sumRespC;
+            }
+            x++;
+    	}
+    	CompositeModelSiteAssignment currSiteAssign = new CompositeModelSiteAssignment(composite.getPoint(pointIndex), hitCountTotals, compIndices, compResp);
+    	
+        return currSiteAssign;
     }//end of EMTrain method
 
 
@@ -199,7 +203,7 @@ public class CompositeModelMLAssign {
      * Core EM iterations with sparse prior (component elimination) & multi-condition positional priors.
      * Assumes H function, pi, and responsibilities have all been initialized
      */
-    private void ML (StrandedPoint currPoint) {
+    private void ML (StrandedPoint currPoint, boolean updatePi) {
         int numComp = numComponents;
         double [][] totalResp = new double[numConditions][];
         boolean plotThisPoint=false;
@@ -216,7 +220,7 @@ public class CompositeModelMLAssign {
     	////////////
         //Plot the initial pi & priors if plotting
     	////////////
-        if(plotRegions){
+        if(plotRegions && currPoint!=null){
         	//Check if current Point is in the list of regions to print
         	for(Region preg : regionsToPlot)
         		if(preg.contains(currPoint))
@@ -240,7 +244,7 @@ public class CompositeModelMLAssign {
         //Run ML while not converged
         // Note: iterations during which we eliminate a binding component don't count towards "t"
     	//////////////////////////////////////////////////////////////////////////////////////////
-        int t=0, iter=0;
+        int t=0;
         while(t<config.ML_ML_ITER){  
         	
     		////////
@@ -274,33 +278,34 @@ public class CompositeModelMLAssign {
     		/////////////////////
     		//M-step: maximize pi
     		/////////////////////
-    		boolean componentEliminated=false;
-    		double[] sumR=new double[numComponents];
-    		for(int j=0;j<numComp;j++){ if(pi[j]>0){
-    			for(int c=0; c<numConditions; c++)
-    				for(int i=0;i<hitNum[c];i++)
-    					sumR[j] += r[c][j][i]*hitCounts[c][i];
-            }}
-
-    		//Update pi(j)
-            for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePi()){
-            	pi[j]=Math.max(0, sumR[j]); 
-            }}
-            
-            //Normalize pi
-            double totalRPi=0, totalNonUpdateablePi=0;
-            for(int j=0;j<numComp;j++){ if(pi[j]>0 && !model.getAllComponents().get(j).hasUpdatablePi()){
-        		totalNonUpdateablePi+=pi[j];
-        	}}
-            for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePi()){
-        		totalRPi+=pi[j];
-        	}}
-            for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePi()){
-        		if(totalRPi>0){
-        			pi[j]/=totalRPi;
-        			pi[j]*=1-totalNonUpdateablePi;
-        		}
-        	}}
+    		if(updatePi){
+	    		double[] sumR=new double[numComponents];
+	    		for(int j=0;j<numComp;j++){ if(pi[j]>0){
+	    			for(int c=0; c<numConditions; c++)
+	    				for(int i=0;i<hitNum[c];i++)
+	    					sumR[j] += r[c][j][i]*hitCounts[c][i];
+	            }}
+	
+	    		//Update pi(j)
+	            for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePi()){
+	            	pi[j]=Math.max(0, sumR[j]); 
+	            }}
+	            
+	            //Normalize pi
+	            double totalRPi=0, totalNonUpdateablePi=0;
+	            for(int j=0;j<numComp;j++){ if(pi[j]>0 && !model.getAllComponents().get(j).hasUpdatablePi()){
+	        		totalNonUpdateablePi+=pi[j];
+	        	}}
+	            for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePi()){
+	        		totalRPi+=pi[j];
+	        	}}
+	            for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePi()){
+	        		if(totalRPi>0){
+	        			pi[j]/=totalRPi;
+	        			pi[j]*=1-totalNonUpdateablePi;
+	        		}
+	        	}}
+    		}
             
             
         	//Non-zero components count
@@ -366,14 +371,12 @@ public class CompositeModelMLAssign {
                         
 
     		//Tick the clock forward
-    		if(!componentEliminated)
-    			t++;
-    		iter++;
+    		t++;
     		
             ////////////
           	//Check Stopping condition
           	////////////
-    		if (nonZeroComps>0 && (t==0 || !lastEquivToCurr())){
+    		if (updatePi || (nonZeroComps>0 && (t==0 || !lastEquivToCurr()))){
                 copyStateToLast();
                 lastLAP = LAP;
                 continue;

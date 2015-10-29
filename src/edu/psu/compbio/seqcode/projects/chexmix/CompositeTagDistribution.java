@@ -29,10 +29,10 @@ public class CompositeTagDistribution {
 	protected int centerOffset;
 	protected int numConditions;
 	protected int numPoints;
-	protected double[][] watson; //per-condition watson tags
-	protected double[][] crick;  //per-condition crick tags
-	protected double[][][] perPointWatson; //per-point, per-condition watson tags
-	protected double[][][] perPointCrick;  //per-point, per-condition crick tags
+	protected double[][] watson; //per-condition watson tags {condition, location}
+	protected double[][] crick;  //per-condition crick tags  {condition, location}
+	protected double[][][] perPointWatson; //per-point, per-condition watson tags  {point, condition, location}
+	protected double[][][] perPointCrick;  //per-point, per-condition crick tags   {point, condition, location}
 	protected HashMap<StrandedPoint,Integer> pointIndex = new HashMap<StrandedPoint,Integer>();
 	protected boolean isSignal;
 	
@@ -131,6 +131,8 @@ public class CompositeTagDistribution {
 	public double[] getCompositeCrick(ExperimentCondition c){return crick[c.getIndex()];}
 	public double[] getPointWatson(StrandedPoint p, ExperimentCondition c){return perPointWatson[pointIndex.get(p)][c.getIndex()];}
 	public double[] getPointCrick(StrandedPoint p, ExperimentCondition c){return perPointCrick[pointIndex.get(p)][c.getIndex()];}
+	public double[][] getPointWatsons(int index){return perPointWatson[index];}
+	public double[][] getPointCricks(int index){return perPointCrick[index];}
 	public List<StrandedPoint> getPoints(){return points;}
 	public StrandedPoint getPoint(int i){return points.get(i);}
 	

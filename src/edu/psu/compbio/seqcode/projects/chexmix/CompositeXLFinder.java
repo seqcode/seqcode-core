@@ -42,17 +42,23 @@ public class CompositeXLFinder {
 		
 		
 		//Train EM
-		mixtureModel.execute(true);
+		System.out.println("EM training");
+		mixtureModel.trainEM();
 		
 		
 		//ML assignment
-		mixtureModel.execute(false);
+		System.out.println("ML assignment");
+		mixtureModel.assignML(true);
 		
 		//Report
 		for(ExperimentCondition cond : manager.getConditions()){
 			String compositeFileName = "composite."+cond.getName()+".txt";
 			signalComposite.printToFile(cond, compositeFileName);
+			
+			String perSiteRespFileName = "site-component-ML."+cond.getName()+".txt";
+			mixtureModel.printPerSiteComponentResponsibilitiesToFile(cond, perSiteRespFileName);
 		}
+		
 	}
 	
 	//Main

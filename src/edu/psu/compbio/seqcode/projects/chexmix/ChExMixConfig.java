@@ -37,7 +37,7 @@ public class ChExMixConfig {
 	protected String outName="chexmix", outBase="chexmix";
 	protected File outDir=null, interDir=null, imagesDir=null;
 	protected boolean printHelp=false;
-	protected TagDistribution defaultCSModel=null;
+	protected TagProbabilityDensity defaultCSModel=null;
 	protected List<StrandedPoint> compositePoints = new ArrayList<StrandedPoint>(); //Centers of the composite plots
 	protected int compositeWinSize=1000; //Width of the composite plot
 	protected int XLDistribOffset=6; //exonuclease head-space
@@ -133,7 +133,7 @@ public class ChExMixConfig {
 						System.err.println("\nCannot find read distribution file: "+modelFile);
 						System.exit(1);
 					}
-					defaultCSModel = new TagDistribution(pFile); 
+					defaultCSModel = new TagProbabilityDensity(pFile); 
 				}
 				
 				
@@ -212,7 +212,7 @@ public class ChExMixConfig {
 	public double getFixedAlpha(){return fixedAlpha;}
 	public boolean getPlotEM(){return plotCompositeEM;}
 	public List<Region> getRegionsToPlot(){return regionsToPlotML;}
-	public TagDistribution getDefaultCSModel(){return defaultCSModel;}
+	public TagProbabilityDensity getDefaultCSModel(){return defaultCSModel;}
 	public boolean doBMUpdate(){return updateBM;}
 	public boolean getSmoothingBMDuringUpdate(){return smoothingBMDuringUpdate;}
 	public double getBindingModelSplineSmoothParam(){return bindingmodel_spline_smooth;}

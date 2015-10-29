@@ -1,5 +1,7 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,10 +38,11 @@ public class CompositeModelMixture {
 	protected List<CompositeModelSiteAssignment> siteAssignments;
 	protected CompositeModelEM EMtrainer; //Training method
 	
-	protected TagDistribution initBackDistrib, initCSDistrib, initXODistrib;
+	protected TagProbabilityDensity initBackDistrib, initCSDistrib, initXODistrib;
 	protected double initNoisePi;
 	protected List<Region> regionsToPlot;
 	protected int trainingRound=0;
+	protected boolean trainedModel=false;
 	
 	public CompositeModelMixture(CompositeTagDistribution tagDist, CompositeTagDistribution ctrlDist, GenomeConfig gcon, ExptConfig econ, ChExMixConfig ccon, ExperimentManager eMan){
 		gconfig = gcon;
@@ -62,47 +65,52 @@ public class CompositeModelMixture {
 	public ProteinDNAInteractionModel getModel(){return model;}
 	
 	/**
-	 * Run the mixture model  
+	 * Train the mixture model with EM  
 	 * 
-	 * EM: if true, run EM on composite, otherwise run ML assignment on component points
 	 */
-	public void execute(boolean EM){
-		trainingRound++;
-		
+	public void trainEM(){		
 		try{
-			if(EM){
-				//Run EM outer loops
-				boolean converged=false;
-				double[] kl = new double[config.getMaxModelUpdateRounds()];
-				for(trainingRound=0; trainingRound<config.getMaxModelUpdateRounds() && !converged; trainingRound++){
-					//Run EM inner loops
-					model = EMtrainer.train(model, trainingRound);
-					kl[trainingRound]=updateTagDistributions();
+			//Run EM outer loops
+			boolean converged=false;
+			double[] kl = new double[config.getMaxModelUpdateRounds()];
+			for(trainingRound=0; trainingRound<config.getMaxModelUpdateRounds() && !converged; trainingRound++){
+				//Run EM inner loops
+				model = EMtrainer.train(model, trainingRound);
+				kl[trainingRound]=updateTagDistributions();
+			
+				System.out.println("TrainingRound: "+trainingRound+":\n"+model.toString()+"\n\tModelKL="+kl[trainingRound]);
 				
-					System.out.println("TrainingRound: "+trainingRound+":\n"+model.toString()+"\n\tModelKL="+kl[trainingRound]);
-					
-					//Check for convergence
-					if(kl[trainingRound]<config.getModelConvergenceKL())
-						converged=true;
-				}
-			}else{
+				//Check for convergence
+				if(kl[trainingRound]<config.getModelConvergenceKL())
+					converged=true;
+			}
+			trainedModel = true;
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Assign component responsibilities to site tag distributions using a trained model. 
+	 */
+	public void assignML(boolean updatePi){
+		try{
+			if(trainedModel){
 				//TODO: multithreading
 				
-				//List all site indexes (looks dumb now, but this will enable multithreading later)
-				List<Integer> allSites = new ArrayList<Integer>();
-				for(int s=0; s<compositeDistrib.getPoints().size(); s++)
-					allSites.add(s);
-				
 				//Run ML
-				CompositeModelMLAssign MLassigner = new CompositeModelMLAssign(compositeDistrib, allSites, config, manager);
-				List<CompositeModelSiteAssignment> currAssignments = MLassigner.assign(model);
-				
-				synchronized(siteAssignments){
-					siteAssignments.addAll(currAssignments);
-					Collections.sort(siteAssignments);
+				CompositeModelMLAssign MLassigner = new CompositeModelMLAssign(compositeDistrib, model, config, manager);
+				for(int s=0; s<compositeDistrib.getPoints().size(); s++){
+					
+					CompositeModelSiteAssignment currAssignment = MLassigner.assignToPointFromComposite(s, updatePi);
+					siteAssignments.add(currAssignment);
 				}
+				
+			}else{
+				System.err.println("CompositeModelMixture Error: trying to use assignML with an untrained model...");
+				System.exit(1);
 			}
-		} catch (Exception e) {
+		}catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -116,18 +124,18 @@ public class CompositeModelMixture {
 		/*if(config.getDefaultCSModel()!=null)
 			initCSDistrib = config.getDefaultCSModel();
 		else
-			initCSDistrib = new TagDistribution(TagDistribution.defaultChipSeqEmpiricalDistribution, null);
+			initCSDistrib = new TagProbabilityDensity(TagProbabilityDensity.defaultChipSeqEmpiricalDistribution, null);
 		*/
-		initCSDistrib = new TagDistribution(compositeDistrib.getWinSize());
+		initCSDistrib = new TagProbabilityDensity(compositeDistrib.getWinSize());
 		initCSDistrib.loadGaussianDistrib(150, 100);
 		
 		//XO
-		initXODistrib = new TagDistribution(200);
+		initXODistrib = new TagProbabilityDensity(200);
 		initXODistrib.loadGaussianDistrib(config.getXLDistribOffset(), config.getXLDistribSigma());
 		
 		//Background
 		if(controlCompositeDistrib==null){
-			initBackDistrib = new TagDistribution(compositeDistrib.getWinSize());
+			initBackDistrib = new TagProbabilityDensity(compositeDistrib.getWinSize());
 			initBackDistrib.loadFlatDistrib();
 			//estimate noise rate from the tails of the composite distribution
 			double sum=0, count=0;
@@ -154,7 +162,7 @@ public class CompositeModelMixture {
 					sum+=wtmp[x]+ctmp[x];
 				}
 			}
-			initBackDistrib = new TagDistribution(compositeDistrib.getWinSize());
+			initBackDistrib = new TagProbabilityDensity(compositeDistrib.getWinSize());
 			try {
 				initBackDistrib.loadData(wcounts, ccounts);
 			} catch (Exception e) {
@@ -171,8 +179,8 @@ public class CompositeModelMixture {
      */
     public Double updateTagDistributions(){
     	double logKL = 0;
-    	TagDistribution CSdistrib = model.getCSTagDistribution();
-    	TagDistribution XLdistrib = model.getXLTagDistribution();
+    	TagProbabilityDensity CSdistrib = model.getCSTagDistribution();
+    	TagProbabilityDensity XLdistrib = model.getXLTagDistribution();
     	
     	//CS component (empirical or gaussian fit) 
     	double[] oldCSModelW = CSdistrib.getWatsonProbabilities();
@@ -250,6 +258,31 @@ public class CompositeModelMixture {
     	logKL += StatUtil.log_KL_Divergence(oldXLModelC, newXLModelC);
     	
 		return logKL;
+	}
+    
+    /**
+	 * Print per-site component responsibilities to a file
+	 * @param cond
+	 * @param filename
+	 */
+	public void printPerSiteComponentResponsibilitiesToFile(ExperimentCondition cond, String filename){
+		try {
+			FileWriter fout = new FileWriter(filename);
+			fout.write("#Point\tTotalTags");
+			for(CompositeModelComponent nz : model.getNonZeroComponents()){
+				int pos = nz.getPosition() - model.getCenterOffset();
+				String compLabel = nz.getLabel()+","+pos;
+				fout.write("\t"+compLabel);
+			}fout.write("\n");
+			
+			for(CompositeModelSiteAssignment cmsa : siteAssignments){
+				fout.write(cmsa.toString(cond));
+    			fout.write("\n");
+    		}
+			fout.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
     
 }

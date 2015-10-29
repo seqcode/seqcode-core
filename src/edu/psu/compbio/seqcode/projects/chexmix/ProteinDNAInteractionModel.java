@@ -21,21 +21,21 @@ public class ProteinDNAInteractionModel {
 	protected CompositeModelComponent CSComponent;
 	protected CompositeModelComponent backgroundComponent;
 	protected int numXLComponents;
-	protected TagDistribution XLTagDist, CSTagDist, backTagDist; //TODO: Convert these to condition/replicate specific?
+	protected TagProbabilityDensity XLTagDist, CSTagDist, backTagDist; //TODO: Convert these to condition/replicate specific?
 	
-	public ProteinDNAInteractionModel(ChExMixConfig config, int width, TagDistribution initXLdistrib, TagDistribution initCSdistrib, 
-			TagDistribution initBackDistrib, double noisePi){
+	public ProteinDNAInteractionModel(ChExMixConfig config, int width, TagProbabilityDensity initXLdistrib, TagProbabilityDensity initCSdistrib, 
+			TagProbabilityDensity initBackDistrib, double noisePi){
 		modelWidth = width;
 		centerOffset = modelWidth/2;
 		cmConfig = config;
 		
 		//Background component
 		backTagDist = initBackDistrib;
-		backgroundComponent = new CompositeModelComponent(backTagDist, centerOffset, 0, false, true);
+		backgroundComponent = new CompositeModelComponent(backTagDist, centerOffset, 0, "Back",  false, true);
 
 		//ChIP-seq component
 		CSTagDist = initCSdistrib;
-		CSComponent = new CompositeModelComponent(CSTagDist, centerOffset, 1, false, true);
+		CSComponent = new CompositeModelComponent(CSTagDist, centerOffset, 1, "CS", false, true);
 				
 		//XL components
 		XLTagDist = initXLdistrib;
@@ -43,7 +43,7 @@ public class ProteinDNAInteractionModel {
 		numXLComponents = (initCSdistrib.getInfluenceRange()/4)/cmConfig.XLComponentSpacing;
 		int xlPos = centerOffset-(numXLComponents*cmConfig.XLComponentSpacing)/2;
 		for(int i=0; i<numXLComponents; i++){
-			XLComponents.add(new CompositeModelComponent(XLTagDist, xlPos, i+2, true, true));
+			XLComponents.add(new CompositeModelComponent(XLTagDist, xlPos, i+2, "XL", true, true));
 			xlPos += cmConfig.XLComponentSpacing; 
 		}
 		
@@ -60,9 +60,9 @@ public class ProteinDNAInteractionModel {
 	//Accessors
 	public int getWidth(){return modelWidth;}
 	public int getCenterOffset(){return centerOffset;}
-	public TagDistribution getXLTagDistribution(){return XLTagDist;}
-	public TagDistribution getCSTagDistribution(){return CSTagDist;}
-	public TagDistribution getBackTagDistribution(){return backTagDist;}
+	public TagProbabilityDensity getXLTagDistribution(){return XLTagDist;}
+	public TagProbabilityDensity getCSTagDistribution(){return CSTagDist;}
+	public TagProbabilityDensity getBackTagDistribution(){return backTagDist;}
 	public int getNumComponents(){return allComponents.size();}
 	public List<CompositeModelComponent> getAllComponents(){return allComponents;}
 	public List<CompositeModelComponent> getXLComponents(){return XLComponents;}

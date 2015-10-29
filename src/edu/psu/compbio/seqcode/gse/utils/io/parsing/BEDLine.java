@@ -57,21 +57,23 @@ public class BEDLine {
 			itemRgb = new Color(r, g, b);
 		}
 		
-		blockCount = array.length > 9 ? Integer.parseInt(array[9]) : null;
-		
-		aa = array.length > 10 ? array[10].split(",") : null;
-		if(array.length > 10) { 
-			blockSizes = new int[blockCount];
-			for(int i = 0; i < blockCount; i++) { 
-				blockSizes[i] = Integer.parseInt(aa[i]);
+		if(array.length>9){
+			blockCount = array.length>9 ? Integer.parseInt(array[9]) : null;
+			
+			aa = array.length > 10 ? array[10].split(",") : null;
+			if(array.length > 10) { 
+				blockSizes = new int[blockCount];
+				for(int i = 0; i < blockCount; i++) { 
+					blockSizes[i] = Integer.parseInt(aa[i]);
+				}
 			}
-		}
-
-		aa = array.length > 11 ? array[11].split(",") : null;
-		if(array.length > 11) { 
-			blockStarts = new int[blockCount];
-			for(int i = 0; i < blockCount; i++) { 
-				blockStarts[i] = Integer.parseInt(aa[i]);
+	
+			aa = array.length > 11 ? array[11].split(",") : null;
+			if(array.length > 11) { 
+				blockStarts = new int[blockCount];
+				for(int i = 0; i < blockCount; i++) { 
+					blockStarts[i] = Integer.parseInt(aa[i]);
+				}
 			}
 		}
 	}
