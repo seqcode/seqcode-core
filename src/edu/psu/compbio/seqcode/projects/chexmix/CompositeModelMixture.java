@@ -83,6 +83,8 @@ public class CompositeModelMixture {
 				if(kl[trainingRound]<config.getModelConvergenceKL())
 					converged=true;
 			}
+			if(config.getPlotEM())
+				EMtrainer.makeGifs();
 			trainedModel = true;
 		}catch (Exception e) {
 			e.printStackTrace();

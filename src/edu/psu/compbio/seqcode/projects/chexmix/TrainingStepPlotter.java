@@ -23,14 +23,18 @@ public class TrainingStepPlotter {
 	private int trackHeight=80;
 	private int trackSpacing=10;
 	private int plotWidth = 800;
-	int hmargin= 50, wmargin=20;
+	int hmargin= 50, wmargin=30;
 	private int componentThickness=2;
 	
 	public TrainingStepPlotter(){}
 	
 	public BufferedImage plotCompositeEM(String outName, CompositeTagDistribution composite, ProteinDNAInteractionModel model, int [] mu, double [] pi, int trainingRound, int iteration, int trimLeft, int trimRight){
-		String filename = outName + ".png";
-		File f = new File(filename);
+		String filename=null;
+		File f = null;
+		if(outName!=null){
+			filename = outName + ".png";
+			f = new File(filename);
+		}
 		int w = plotWidth;
 		int h = trackHeight+trackSpacing+(hmargin*2); 
 		BufferedImage im = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
@@ -43,17 +47,22 @@ public class TrainingStepPlotter {
 	    Stroke componentStroke = new BasicStroke(componentThickness);
 	    
 	    //Min & max locations
-	    int rstart = 0+trimLeft, rend = composite.getWinSize()-trimRight; 
-	    float rWidth = (float)(rend-rstart);	    
+	    int rstart = 0+trimLeft, rend = composite.getWinSize()-trimRight;
+	    float rWidth = (float)(rend-rstart);
+	    Integer startCoord = rstart - model.getCenterOffset();
+	    Integer endCoord = startCoord+rend-rstart;
 	    int tStart=hmargin;
 	    float trackWidth = w-(wmargin*2);
 	    
 	    //Pi
 	    double piMax = 1;
 	    double maxPi=0;
-	    for(CompositeModelComponent comp : model.getXLComponents())
+	    double xlPiSum = 0;
+	    for(CompositeModelComponent comp : model.getXLComponents()){
 	    	if(pi[comp.getIndex()]>maxPi)
 	    		maxPi = pi[comp.getIndex()];
+	    	xlPiSum+=pi[comp.getIndex()];
+	    }
 	    if(maxPi >0.5)
 	    	piMax = 1;
 	    else if(maxPi >0.1)
@@ -65,13 +74,16 @@ public class TrainingStepPlotter {
 	    
 	    //Actual plotting
     	g2.setColor(Color.black);
-    	g2.drawLine(wmargin, tStart+trackHeight, w-wmargin, tStart+trackHeight);		// x-axis
+    	g2.setFont(new Font("Courier", Font.PLAIN, 12));
+	    FontMetrics metrics = g2.getFontMetrics();
+	    g2.drawLine(wmargin, tStart+trackHeight, w-wmargin, tStart+trackHeight);		// x-axis
     	g2.drawLine(wmargin, tStart, wmargin, tStart+trackHeight);	// y-axis
     	g2.drawString(String.format("%.3f",piMax), wmargin+2, tStart);
-    	int center = (model.getCenterOffset()/model.getWidth())*w;
-    	g2.drawLine(wmargin+center, tStart+trackHeight+2, wmargin+(w/2), tStart+trackHeight-2);	// 0 tick on x-axis
-    	g2.drawString(new String("0"), wmargin+center, tStart+trackHeight-2);
-    	
+    	int center = (model.getCenterOffset()*(int)trackWidth)/model.getWidth();
+    	g2.drawLine(wmargin+center, tStart+trackHeight+8, wmargin+center, tStart+trackHeight);	// 0 tick on x-axis
+    	g2.drawString(new String("0"), wmargin+center-(metrics.stringWidth(new String("0"))/2), tStart+trackHeight+metrics.getHeight()+10);
+    	g2.drawString(startCoord.toString(), wmargin-(metrics.stringWidth(startCoord.toString())/2), tStart+trackHeight+metrics.getHeight()+10);
+    	g2.drawString(endCoord.toString(), w-wmargin-(metrics.stringWidth(endCoord.toString())/2), tStart+trackHeight+metrics.getHeight()+10);
     	
     	g2.setColor(Color.blue);
     	g2.setStroke(componentStroke);
@@ -95,23 +107,30 @@ public class TrainingStepPlotter {
 	    g2.setColor(Color.black);
 	    g2.setFont(new Font("Courier", Font.BOLD, 14));
 	    String iString = "EM:"+trainingRound+","+iteration;
-	    FontMetrics metrics = g2.getFontMetrics();
+	    metrics = g2.getFontMetrics();
 	    g2.drawString(iString, (w/2-(metrics.stringWidth(iString)/2)), hmargin);
 	    
-	    //Labels for pi of Background and CS components
+	    //Labels for pi of components
 	    g2.setFont(new Font("Courier", Font.BOLD, 14));
-	    g2.setColor(Color.DARK_GRAY);
+	    g2.setColor(Color.GRAY);
 	    metrics = g2.getFontMetrics();
-	    String bString = "Back: "+String.format("%.3f", pi[model.getBackgroundComponent().getIndex()]);
+	    String bString = "Back : "+String.format("%.3f", pi[model.getBackgroundComponent().getIndex()]);
 	    g2.drawString(bString, (3*w/4-(metrics.stringWidth(bString)+5)), hmargin);
-	    String csString = "CS  : "+String.format("%.3f", pi[model.getCSComponent().getIndex()]);
+	    g2.setColor(Color.RED);
+	    String csString = "CS   : "+String.format("%.3f", pi[model.getCSComponent().getIndex()]);
 	    g2.drawString(csString, (3*w/4-(metrics.stringWidth(bString)+5)), hmargin+metrics.getHeight()+5);
+	    g2.setColor(Color.blue);
+	    String xlString = "XLsum: "+String.format("%.3f", xlPiSum);
+	    g2.drawString(xlString, (3*w/4-(metrics.stringWidth(bString)+5)), hmargin+(2*metrics.getHeight())+10);
 	    
-    	try{
-	    	ImageIO.write(im, "png", f);
-	    }
-	    catch(IOException e){
-	    	System.err.println("Error in printing file "+filename);
+	    
+	    if(f!=null){
+	    	try{
+		    	ImageIO.write(im, "png", f);
+		    }
+		    catch(IOException e){
+		    	System.err.println("Error in printing file "+filename);
+		    }
 	    }
     	
     	return im;

@@ -1,13 +1,21 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
+import edu.psu.compbio.seqcode.gse.viz.utils.GifSequenceWriter;
 
 /**
  * CompositeModelEM: run EM training with sparse prior on a composite tag distribution.
@@ -46,6 +54,7 @@ public class CompositeModelEM {
 	protected double lastLAP, LAP; 		//log-likelihood monitoring
 	protected boolean plotEM=false;		//Plot the current region components
 	protected TrainingStepPlotter plotter = null;
+	protected List<BufferedImage> fullImages, zoomImages;
 	protected int stateEquivCount=0;
 	
 	/**
@@ -60,6 +69,13 @@ public class CompositeModelEM {
 		config=c;
 		manager = eMan;
 		numConditions = manager.getNumConditions();		
+		//Plotter?
+    	plotEM = config.getPlotEM();
+        if(plotEM){
+        	plotter = new TrainingStepPlotter();
+        	fullImages = new ArrayList<BufferedImage>();
+        	zoomImages = new ArrayList<BufferedImage>();
+        }
 	}
 	
 	
@@ -90,16 +106,11 @@ public class CompositeModelEM {
     	r= new double[numConditions][][];		// Binding component responsibilities
     	pi = new double[numComponents];	// pi : emission probabilities for binding components
     	mu = new int[numComponents]; // mu : positions of the binding components (fixed across conditions)
-    	plotEM = config.getPlotEM();
         //Monitor state convergence using the following last variables
         lastRBind = new double[numConditions][][];
         lastPi = new double[numComponents];
         lastMu = new int[numComponents];
         
-        //Plotter?
-        if(plotEM)
-        	plotter = new TrainingStepPlotter();
-        	
         //Initializing data structures
         for(int j=0;j<numComponents;j++){
         	//Load pi for binding components
@@ -194,7 +205,7 @@ public class CompositeModelEM {
         		printResponsibilitiesToFile(cond, filename);
         	}
         }
-
+        	
         return model;
     }//end of EMTrain method
 
@@ -223,12 +234,12 @@ public class CompositeModelEM {
         //Plot the initial pi & priors if plotting
     	////////////
         if(plotEM && plotter!=null){
-        	String outName = config.getOutputImagesDir()+File.separator+"EM_r"+trainingRound+"_t0";
-        	String outNameZoom = config.getOutputImagesDir()+File.separator+"EMzoom_r"+trainingRound+"_t0";
+        	String outName = config.getWriteSinglePlots() ? config.getOutputImagesDir()+File.separator+"EM_r"+trainingRound+"_t0" : null;
+        	String outNameZoom = config.getWriteSinglePlots() ? config.getOutputImagesDir()+File.separator+"EMzoom_r"+trainingRound+"_t0" : null;
         	int trimLeft = (model.getWidth()/2)-50;
         	int trimRight = (model.getWidth()/2)-50;
-        	plotter.plotCompositeEM(outName, composite, model, mu, pi, trainingRound, 0, 0,0);
-        	plotter.plotCompositeEM(outNameZoom, composite, model, mu, pi, trainingRound, 0, trimLeft, trimRight);
+        	fullImages.add(plotter.plotCompositeEM(outName, composite, model, mu, pi, trainingRound, 0, 0,0));
+        	zoomImages.add(plotter.plotCompositeEM(outNameZoom, composite, model, mu, pi, trainingRound, 0, trimLeft, trimRight));
         }
         
     	
@@ -434,12 +445,12 @@ public class CompositeModelEM {
             //Plot the current pi & priors if plotting
         	////////////
         	if(plotEM && plotter!=null){
-            	String outName = config.getOutputImagesDir()+File.separator+"EM_r"+trainingRound+"_t"+(t+1);
-            	String outNameZoom = config.getOutputImagesDir()+File.separator+"EMzoom_r"+trainingRound+"_t"+(t+1);
+            	String outName = config.getWriteSinglePlots() ? config.getOutputImagesDir()+File.separator+"EM_r"+trainingRound+"_t"+(t+1) : null;
+            	String outNameZoom = config.getWriteSinglePlots() ? config.getOutputImagesDir()+File.separator+"EMzoom_r"+trainingRound+"_t"+(t+1) : null;
             	int trimLeft = (model.getWidth()/2)-50;
             	int trimRight = (model.getWidth()/2)-50;
-            	plotter.plotCompositeEM(outName, composite, model, mu, pi, trainingRound, 0, 0,0);
-            	plotter.plotCompositeEM(outNameZoom, composite, model, mu, pi, trainingRound, 0, trimLeft, trimRight);
+            	fullImages.add(plotter.plotCompositeEM(outName, composite, model, mu, pi, trainingRound, t, 0,0));
+            	zoomImages.add(plotter.plotCompositeEM(outNameZoom, composite, model, mu, pi, trainingRound, t, trimLeft, trimRight));
             }
 
             //Is current state equivalent to the last?
@@ -588,4 +599,41 @@ public class CompositeModelEM {
 	}
 
 
+	/**
+	 * Make Gifs from stored images
+	 */
+	public void makeGifs(){
+		GifSequenceWriter gifWriter, gifZoomWriter;
+		try {
+			if(fullImages.size()>0 && zoomImages.size()>0){
+		    	String gifName = config.getOutputImagesDir()+File.separator+"EM.gif";
+		    	String gifNameZoom = config.getOutputImagesDir()+File.separator+"EMzoom.gif";
+		    	ImageOutputStream output1 = new FileImageOutputStream(new File(gifName));
+				ImageOutputStream output2 = new FileImageOutputStream(new File(gifNameZoom));
+		    	gifWriter = new GifSequenceWriter(output1, fullImages.get(0).getType(), 10, false);
+		    	gifZoomWriter = new GifSequenceWriter(output2, zoomImages.get(0).getType(), 10, false);
+		    	
+		    	//Write the images
+		    	for(int i=0; i<30; i++){ //Pause on the first image for 3 seconds
+		    		gifWriter.writeToSequence(fullImages.get(0));
+		    		gifZoomWriter.writeToSequence(zoomImages.get(0));
+		    	}
+		    	for(BufferedImage im : fullImages)
+		    		gifWriter.writeToSequence(im);
+		    	for(BufferedImage im : zoomImages)
+		    		gifZoomWriter.writeToSequence(im);
+		    	for(int i=0; i<100; i++){ //Pause on the last image for 10 seconds
+		    		gifWriter.writeToSequence(fullImages.get(fullImages.size()-1));
+		    		gifZoomWriter.writeToSequence(zoomImages.get(zoomImages.size()-1));
+		    	}
+		    	
+		    	gifWriter.close();
+		    	gifZoomWriter.close();
+		    	output1.close();
+		    	output2.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

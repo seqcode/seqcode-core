@@ -40,11 +40,11 @@ public class ProteinDNAInteractionModel {
 		//XL components
 		XLTagDist = initXLdistrib;
 		XLComponents = new ArrayList<CompositeModelComponent>();
-		numXLComponents = (initCSdistrib.getInfluenceRange()/4)/cmConfig.XLComponentSpacing;
-		int xlPos = centerOffset-(numXLComponents*cmConfig.XLComponentSpacing)/2;
+		numXLComponents = (initCSdistrib.getInfluenceRange()/2)/cmConfig.getXLComponentSpacing();
+		int xlPos = centerOffset-(numXLComponents*cmConfig.getXLComponentSpacing())/2;
 		for(int i=0; i<numXLComponents; i++){
 			XLComponents.add(new CompositeModelComponent(XLTagDist, xlPos, i+2, "XL", true, true));
-			xlPos += cmConfig.XLComponentSpacing; 
+			xlPos += cmConfig.getXLComponentSpacing(); 
 		}
 		
 		//All components

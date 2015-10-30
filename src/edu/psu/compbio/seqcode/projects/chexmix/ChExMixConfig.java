@@ -42,7 +42,7 @@ public class ChExMixConfig {
 	protected int compositeWinSize=1000; //Width of the composite plot
 	protected int XLDistribOffset=6; //exonuclease head-space
 	protected double XLDistribSigma=1.5; //gaussian distrib sigma
-	public int XLComponentSpacing = 8; //Inital number of bp between XL Components
+	protected int XLComponentSpacing = 8; //Inital number of bp between XL Components
 	protected int maxModelUpdateRounds=5; //Maximum number of outer EM training rounds
 	protected double modelConvergenceKL=-15; //KL-divergence threshold for convergence 
 	protected int maxThreads=1;				//Number of threads to use. Default is 1 for single processor machines. 
@@ -53,8 +53,9 @@ public class ChExMixConfig {
 	protected boolean updateBM=true; //Set to false to turn off binding model update
 	protected double bindingmodel_spline_smooth = 30; //Smoothing step for cubic spline in binding model reestimation
     protected double bindingmodel_gauss_smooth = 2; //Variance for Gaussian smoothing in binding model reestimation
-	protected boolean plotCompositeEM=false; //Plot the EM process for the composite plots
+    protected boolean plotCompositeEM=false; //Plot the EM process for the composite plots
 	protected boolean printCompositeResponsibilities = true; //Print the responsibilities for each composite position
+	protected boolean writeSinglePlots=false; //Plot the individual PNG images along with the gifs
     protected List<Region> regionsToPlotML = new ArrayList<Region>(); //List of regions that will be printed during ML training (for debugging/demonstration)
 	
 	//Constants
@@ -211,6 +212,7 @@ public class ChExMixConfig {
 	public double getAlphaScalingFactor(){return alphaScalingFactor;}
 	public double getFixedAlpha(){return fixedAlpha;}
 	public boolean getPlotEM(){return plotCompositeEM;}
+	public boolean getWriteSinglePlots(){return writeSinglePlots;}
 	public List<Region> getRegionsToPlot(){return regionsToPlotML;}
 	public TagProbabilityDensity getDefaultCSModel(){return defaultCSModel;}
 	public boolean doBMUpdate(){return updateBM;}
@@ -222,6 +224,7 @@ public class ChExMixConfig {
 	public double getModelConvergenceKL(){return modelConvergenceKL;}
 	public int getXLDistribOffset(){return XLDistribOffset;}
 	public double getXLDistribSigma(){return XLDistribSigma;}
+	public int getXLComponentSpacing(){return XLComponentSpacing;}
 	public boolean getPrintCompositeResponsibilities(){return printCompositeResponsibilities;}
 	
 	/**
