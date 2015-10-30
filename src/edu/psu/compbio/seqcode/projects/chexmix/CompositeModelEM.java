@@ -120,9 +120,6 @@ public class CompositeModelEM {
         	mu[j] = model.getAllComponents().get(j).getPosition();
         }
         
-        for(int j=0;j<numComponents;j++)
-        	System.out.println("\tT="+trainingRound+",-1\t"+j+"\t"+pi[j]+"\t"+mu[j]);
-    	
 		//Set maximum alpha
     	alphaMax =  config.getFixedAlpha()>0 ? config.getFixedAlpha() :
     			(config.getAlphaScalingFactor() * model.getBackgroundComponent().getPi())/composite.getWinSize(); 
@@ -276,10 +273,6 @@ public class CompositeModelEM {
         			}}
         		}
     		}
-    		for(int j=0;j<numComponents;j++)
-    			if(pi[j]>0)
-    				System.out.println("\tT="+trainingRound+","+t+"\t"+j+"\t"+pi[j]+"\t"+mu[j]);
-    		System.out.println("");
     		
     		/////////////////////
     		//M-step: maximize mu (positions)
@@ -389,9 +382,6 @@ public class CompositeModelEM {
         		}
         	}}
             
-            //for(int j=0;j<numComponents;j++)
-            //	System.out.println("\tT="+trainingRound+","+t+"\t"+j+"\t"+pi[j]+"\t"+mu[j]+"\t"+sumR[j]);
-    		//System.out.println("");
         	
         	/////////////
         	//Anneal alpha
