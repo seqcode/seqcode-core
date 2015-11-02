@@ -42,14 +42,13 @@ public class CompositeXLFinder {
 		//Initialize the mixture model 
 		mixtureModel = new CompositeModelMixture(signalComposite, controlComposite, gconfig, econfig, cconfig, manager);
 		
-		
 		//Train EM
-		System.out.println("EM training");
+		System.err.println("EM training");
 		mixtureModel.trainEM();
 		
 		
 		//ML assignment
-		System.out.println("ML assignment");
+		System.err.println("ML assignment");
 		mixtureModel.assignML(true);
 		
 		//Report
@@ -62,6 +61,7 @@ public class CompositeXLFinder {
 					+"_site-component-ML."+cond.getName()+".txt";
 			mixtureModel.printPerSiteComponentResponsibilitiesToFile(cond, perSiteRespFileName);
 		}
+		mixtureModel.saveCompositePlots();
 		
 	}
 	

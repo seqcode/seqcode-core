@@ -20,9 +20,9 @@ import javax.imageio.ImageIO;
  *
  */
 public class TrainingStepPlotter {
-	private int trackHeight=80;
+	private int trackHeight=200;
 	private int trackSpacing=10;
-	private int plotWidth = 800;
+	private int plotWidth = 1060;
 	int hmargin= 50, wmargin=30;
 	private int componentThickness=2;
 	
@@ -67,8 +67,10 @@ public class TrainingStepPlotter {
 	    	piMax = 1;
 	    else if(maxPi >0.1)
 	    	piMax = 0.5;
-	    else if(maxPi >0.01)
+	    else if(maxPi >0.05)
 	    	piMax = 0.1;
+	    else if(maxPi >0.01)
+	    	piMax = 0.05;
 	    else
 	    	piMax = 0.01;
 	    

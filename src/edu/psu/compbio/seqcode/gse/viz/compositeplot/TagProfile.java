@@ -25,7 +25,7 @@ public class TagProfile {
 		crickTags = crick;
 		this.center = centerBin;
 		width = watson.length;
-		stranded = crickTags==null;
+		stranded = crickTags==null ? false : true;
 	}
 	
 	//Accessors
@@ -34,7 +34,8 @@ public class TagProfile {
 	public int getWidth(){return width;}
 	public int getCenterBin(){return center;}
 	public int getLeftRelCoord(){return -center;}
-	public int getRightRelCoord(){return (width-center);}
+	public int getRightRelCoord(){return (width-center-1);}
+	public boolean isStranded(){return stranded;}
 	
 	protected int getBinAtRelCoord(int coord){
 		int x=-1;

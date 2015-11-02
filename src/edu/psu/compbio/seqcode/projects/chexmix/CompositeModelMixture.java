@@ -1,5 +1,7 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
+import java.awt.Color;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
+import edu.psu.compbio.seqcode.gse.viz.compositeplot.TagProfile;
+import edu.psu.compbio.seqcode.gse.viz.compositeplot.TagProfilePaintable;
 
 /**
  * CompositeModelMixture: defines a protein-DNA interaction mixture model in a composite tag distribution.
@@ -281,6 +285,103 @@ public class CompositeModelMixture {
     			fout.write("\n");
     		}
 			fout.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void saveCompositePlots(){
+		try {
+			//double[] Ymax = new double[manager.getNumConditions()];
+			double Ymax=0;
+			//full composites
+			for(ExperimentCondition cond : manager.getConditions()){
+				TagProfile full = new TagProfile(compositeDistrib.getCompositeWatson(cond), 
+						compositeDistrib.getCompositeCrick(cond), 
+						compositeDistrib.getCenterOffset());
+				TagProfilePaintable fullPainter = new TagProfilePaintable(full);
+				fullPainter.autoYmax(true);
+				fullPainter.setFilledColumns(true);
+				fullPainter.setWatsonColor(new Color(122,88,143));
+				fullPainter.setCrickColor(new Color(154,114,179));
+				Ymax = Math.max(Ymax,  fullPainter.getYmax());
+				String fullImageFileName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_compositeFull."+cond.getName()+".png";
+				fullPainter.saveImage(new File(fullImageFileName), 1060, 500, true);
+				fullPainter.setProfileLeftLimit(-50);
+				fullPainter.setProfileRightLimit(+49);
+				String fullZoomImageFileName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_compositeFullZoom."+cond.getName()+".png";
+				fullPainter.saveImage(new File(fullZoomImageFileName), 1060, 500, true);
+			}
+			
+			//Background component responsibilities 
+			TagProfile back = new TagProfile(model.getBackgroundComponent().getTagProfile(true), 
+					model.getBackgroundComponent().getTagProfile(false), 
+					compositeDistrib.getCenterOffset());
+			TagProfilePaintable backPainter = new TagProfilePaintable(back);
+			backPainter.autoYmax(false);
+			backPainter.setYmax(Ymax);
+			backPainter.setFilledColumns(true);
+			backPainter.setWatsonColor(new Color(145,145,145));
+			backPainter.setCrickColor(new Color(181,181,181));
+			String backImageFileName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_backCompResponsibilities.png";
+			backPainter.saveImage(new File(backImageFileName), 1060, 500, true);
+			backPainter.setProfileLeftLimit(-50);
+			backPainter.setProfileRightLimit(+49);
+			String backZoomImageFileName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_backCompResponsibilitiesZoom.png";
+			backPainter.saveImage(new File(backZoomImageFileName), 1060, 500, true);
+			
+			//CS component responsibilities 
+			TagProfile cs = new TagProfile(model.getCSComponent().getTagProfile(true), 
+					model.getCSComponent().getTagProfile(false), 
+					compositeDistrib.getCenterOffset());
+			TagProfilePaintable csPainter = new TagProfilePaintable(cs);
+			csPainter.autoYmax(false);
+			csPainter.setYmax(Ymax);
+			csPainter.setFilledColumns(true);
+			csPainter.setWatsonColor(new Color(179,59,61));
+			csPainter.setCrickColor(new Color(218,87,88));
+			String csImageFileName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_csCompResponsibilities.png";
+			csPainter.saveImage(new File(csImageFileName), 1060, 500, true);
+			csPainter.setProfileLeftLimit(-50);
+			csPainter.setProfileRightLimit(+49);
+			String csZoomImageFileName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_csCompResponsibilitiesZoom.png";
+			csPainter.saveImage(new File(csZoomImageFileName), 1060, 500, true);
+			
+			//XL component responsibilities
+			for(CompositeModelComponent xlComp : model.getXLComponents()){
+				if(xlComp.isNonZero() && xlComp.getTagProfile(true) !=null){
+					double[] rW = new double[compositeDistrib.getWinSize()];
+		        	double[] rC = new double[compositeDistrib.getWinSize()];
+		        	for(int r=0; r<compositeDistrib.getWinSize(); r++){ rW[r]=0; rC[r]=0;}
+		        	double[] xlW=xlComp.getTagProfile(true);
+		        	double[] xlC=xlComp.getTagProfile(false);
+		        	int pos = xlComp.getPosition()-compositeDistrib.getCenterOffset();
+		        	for(int i=xlComp.getTagDistribution().getLeft(); i<xlComp.getTagDistribution().getRight(); i++){ 
+		        		int iNew = pos+i + compositeDistrib.getCenterOffset();
+		        		int iOld = i-xlComp.getTagDistribution().getLeft();
+		        		if(iNew>0 && iNew<compositeDistrib.getWinSize()){
+		        			rW[iNew]= xlW[iOld];
+		        			rC[iNew]= xlC[iOld];
+		        		}
+		        	}
+		        	
+					TagProfile currXL = new TagProfile(rW, rC,
+							compositeDistrib.getCenterOffset());
+					TagProfilePaintable xlPainter = new TagProfilePaintable(currXL);
+					xlPainter.autoYmax(false);
+					xlPainter.setYmax(Ymax);
+					xlPainter.setFilledColumns(true);
+					xlPainter.setWatsonColor(new Color(62,115,165));
+					xlPainter.setCrickColor(new Color(88,147,204));
+					String xlImageFileName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_XL"+pos+"Responsibilities.png";
+					xlPainter.saveImage(new File(xlImageFileName), 1060, 500, true);
+					xlPainter.setProfileLeftLimit(-50);
+					xlPainter.setProfileRightLimit(+49);
+					String xlZoomImageFileName  = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_XL"+pos+"ResponsibilitiesZoom.png";
+					xlPainter.saveImage(new File(xlZoomImageFileName), 1060, 500, true);
+				}
+			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

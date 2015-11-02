@@ -612,7 +612,7 @@ public class CompositeModelEM {
 		    		gifWriter.writeToSequence(im);
 		    	for(BufferedImage im : zoomImages)
 		    		gifZoomWriter.writeToSequence(im);
-		    	for(int i=0; i<100; i++){ //Pause on the last image for 10 seconds
+		    	for(int i=0; i<150; i++){ //Pause on the last image for 15 seconds
 		    		gifWriter.writeToSequence(fullImages.get(fullImages.size()-1));
 		    		gifZoomWriter.writeToSequence(zoomImages.get(zoomImages.size()-1));
 		    	}
