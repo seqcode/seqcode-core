@@ -42,7 +42,7 @@ public class ChExMixConfig {
 	protected int compositeWinSize=1000; //Width of the composite plot
 	protected int XLDistribOffset=6; //exonuclease head-space
 	protected double XLDistribSigma=1.5; //gaussian distrib sigma
-	protected int XLComponentSpacing = 8; //Inital number of bp between XL Components
+	protected int XLComponentSpacing = 10; //Inital number of bp between XL Components
 	protected int maxModelUpdateRounds=5; //Maximum number of outer EM training rounds
 	protected double modelConvergenceKL=-15; //KL-divergence threshold for convergence 
 	protected int maxThreads=1;				//Number of threads to use. Default is 1 for single processor machines. 
@@ -60,8 +60,9 @@ public class ChExMixConfig {
 	
 	//Constants
 	public final double LOG2 = Math.log(2);
-	public final double INIT_CS_TO_XO_RATIO=0.05; 	//Initial ratio of CS component pi values to sum of XO pi values.
+	public final double INIT_CS_TO_XL_RATIO=0.05; 	//Initial ratio of CS component pi values to sum of XO pi values.
 	public final double MIN_CS_PI = 0.05; //Minimum pi value for CS component
+	public final double MIN_ALPHA = 0.005; //Minimum alpha 
 	public final int MAX_EM_ITER=2000;
     public final int EM_ML_ITER=100;     				//Run EM up until <tt>ML_ITER</tt> without using sparse prior
     public final int ML_ML_ITER=100;     				//Run ML up until <tt>ML_ITER</tt> without using sparse prior

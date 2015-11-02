@@ -122,7 +122,7 @@ public class CompositeModelEM {
         
 		//Set maximum alpha
     	alphaMax =  config.getFixedAlpha()>0 ? config.getFixedAlpha() :
-    			(config.getAlphaScalingFactor() * model.getBackgroundComponent().getPi())/composite.getWinSize(); 
+    			Math.max(config.MIN_ALPHA, (config.getAlphaScalingFactor() * model.getBackgroundComponent().getPi())/composite.getWinSize()); 
     	System.out.println("\n\tT="+trainingRound+", Alpha= "+alphaMax);
 
     	//Condition-specific stuff

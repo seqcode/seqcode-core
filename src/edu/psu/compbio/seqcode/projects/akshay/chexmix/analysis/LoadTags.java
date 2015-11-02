@@ -74,9 +74,9 @@ public class LoadTags {
 		File file = new File(this.tagsfilepath);
 		if(!file.isFile()){System.err.println("File not found: "+file.getName());System.exit(1);}
 		if(format.equals("SAM") || format.equals("BAM")){
-			currReader = new SAMFileHitLoader(file,useNonUnique, true, true, false);
+			currReader = new SAMFileHitLoader(file,useNonUnique, true, true, true, false);
 		}else if(format.equals("TOPSAM")){
-			currReader = new TophatFileHitLoader(file,useNonUnique, true, true, false);
+			currReader = new TophatFileHitLoader(file,useNonUnique, true, true, true, false);
 		}else if(format.equals("NOVO")){
 			currReader = new NovoFileHitLoader(file,useNonUnique, true, true, false);
 		}else if(format.equals("BOWTIE")){
