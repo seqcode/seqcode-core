@@ -215,6 +215,7 @@ public class CompositeModelEM {
         int numComp = numComponents;
         double [][] totalResp = new double[numConditions][];
         int[] newMu = new int[numComponents];// mu update
+        int csCompIndex = model.getCSComponent().getIndex(); 
         
         //Initialize responsibilities
         for(int c=0; c<numConditions; c++){
@@ -308,6 +309,7 @@ public class CompositeModelEM {
 			for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePosition()){
 				mu[j] = newMu[j];
 			}}
+			
 
     		//Maximize mu follow-up: Resolve duplicate positions (combine & delete one copy)
     		HashMap<Integer, Integer> pos2index = new HashMap<Integer, Integer>(); //Position to array index map 
@@ -381,7 +383,19 @@ public class CompositeModelEM {
         			pi[j]*=1-totalNonUpdateablePi;
         		}
         	}}
-            
+            //Special case for CS component:
+			if(pi[csCompIndex]<config.MIN_CS_PI){
+				pi[csCompIndex]=config.MIN_CS_PI;
+				//Renormalize
+				double totPi=0;
+				for(int j=0;j<numComp;j++){ if(pi[j]>0 && j!=csCompIndex && model.getAllComponents().get(j).hasUpdatablePi()){ 
+					totPi +=  pi[j];
+				}}
+				for(int j=0;j<numComp;j++){ if(pi[j]>0 && j!=csCompIndex && model.getAllComponents().get(j).hasUpdatablePi()){
+	        			pi[j]/=totPi;
+	        			pi[j]*=1-totalNonUpdateablePi-config.MIN_CS_PI;
+	        	}}
+			}
         	
         	/////////////
         	//Anneal alpha

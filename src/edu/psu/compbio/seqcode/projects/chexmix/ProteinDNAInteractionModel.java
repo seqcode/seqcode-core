@@ -88,9 +88,10 @@ public class ProteinDNAInteractionModel {
 	protected void setInitialPi(double noisePi){
 		backgroundComponent.setPi(noisePi);
 		double bindingPi = 1-noisePi;
-		CSComponent.setPi(bindingPi*cmConfig.INIT_CS_TO_XO_RATIO);
+		double initCS = Math.max(bindingPi*cmConfig.INIT_CS_TO_XO_RATIO, cmConfig.MIN_CS_PI);
+		CSComponent.setPi(initCS);
 		for(CompositeModelComponent xl : XLComponents){
-			double xoPi = bindingPi*(1-cmConfig.INIT_CS_TO_XO_RATIO)/(double)numXLComponents;
+			double xoPi = bindingPi*(1-initCS)/(double)numXLComponents;
 			xl.setPi(xoPi);
 		}
 	}

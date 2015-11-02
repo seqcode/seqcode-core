@@ -60,7 +60,8 @@ public class ChExMixConfig {
 	
 	//Constants
 	public final double LOG2 = Math.log(2);
-	public final double INIT_CS_TO_XO_RATIO=0.05; 	//Initial ratio of CS component pi values to sum of XO pi values. 
+	public final double INIT_CS_TO_XO_RATIO=0.05; 	//Initial ratio of CS component pi values to sum of XO pi values.
+	public final double MIN_CS_PI = 0.05; //Minimum pi value for CS component
 	public final int MAX_EM_ITER=2000;
     public final int EM_ML_ITER=100;     				//Run EM up until <tt>ML_ITER</tt> without using sparse prior
     public final int ML_ML_ITER=100;     				//Run ML up until <tt>ML_ITER</tt> without using sparse prior
@@ -72,7 +73,7 @@ public class ChExMixConfig {
     public final double NOISE_EMISSION_MIN = 0.05; //Arbitrary floor on the emission probability of noise (must be non-zero to mop up noise reads)
     public final double NOISE_EMISSION_MAX = 0.75; //Arbitrary ceiling on the emission probability of noise
     public final int NOISE_DISTRIB_SMOOTHING_WIN = 50; //Smoothing window for the noise distribution used in the BindingMixture
-    public final int MAX_BINDINGMODEL_WIDTH=1000; //Maximum width for binding models (affects how large the read profiles are for binding components    
+    public final int MAX_BINDINGMODEL_WIDTH=1000; //Maximum width for binding models (affects how large the read profiles are for binding components
 	public final boolean CALC_LL=false; //Calculate the log-likelihood during EM.
 	public final boolean CALC_COMP_LL=false; //Calculate component-wise log-likelihoods during ML
 	
