@@ -50,9 +50,9 @@ public class SAMFileHitLoader extends FileHitLoader{
 		while (iter.hasNext()) {
 		    SAMRecord record = iter.next();
 		    
-		    if (record.getReadUnmappedFlag()) {continue; }
+		    if(record.getReadUnmappedFlag()) {continue; }
 		    if(record.isSecondaryOrSupplementary() && !useChimericReads){continue;}
-		    if(record.getSecondOfPairFlag() && !loadRead2){continue;}
+		    if(record.getReadPairedFlag() && !record.getFirstOfPairFlag() && !loadRead2){continue;}
 		    	
 		    if (lastread == null || !lastread.equals(record.getReadName())) {
 		    	processRead(byRead);
