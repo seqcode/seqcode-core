@@ -18,7 +18,7 @@ import edu.psu.compbio.seqcode.deepseq.ReadHit;
 public class NovoFileHitLoader extends FileHitLoader {
 
 	public NovoFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs){
-		super(f, nonUnique, true, false, loadPairs);
+		super(f, nonUnique, true, false, false, loadPairs);
 		if(!loadT1Reads || loadT2Reads)
 			System.err.println("NovoFileHitLoader: You asked to load only Type1 or Type2 reads, we do not load this information from NovoAlign format.");
 		if(loadPairs)

@@ -71,6 +71,7 @@ public class CompositeXLFinder {
 		System.err.println("ChExMix version: "+ChExMixConfig.version);
 		GenomeConfig gcon = new GenomeConfig(args);
 		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		econ.setLoadRead2(false);//Enforce for chip-exo
 		ChExMixConfig ccon = new ChExMixConfig(gcon, args);
 		if(ccon.helpWanted()){
 			System.err.println(ccon.getArgsList());
