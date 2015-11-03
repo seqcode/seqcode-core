@@ -132,11 +132,11 @@ public class CompositeModelMixture {
 			initCSDistrib = new TagProbabilityDensity(TagProbabilityDensity.defaultChipSeqEmpiricalDistribution, null);
 		*/
 		initCSDistrib = new TagProbabilityDensity(compositeDistrib.getWinSize());
-		initCSDistrib.loadGaussianDistrib(150, 100);
+		initCSDistrib.loadGaussianDistrib(150, 100, 150, 100);
 		
 		//XO
 		initXODistrib = new TagProbabilityDensity(200);
-		initXODistrib.loadGaussianDistrib(config.getXLDistribOffset(), config.getXLDistribSigma());
+		initXODistrib.loadGaussianDistrib(config.getXLDistribOffset(), config.getXLDistribSigma(),config.getXLDistribOffset(), config.getXLDistribSigma());
 		
 		//Background
 		if(controlCompositeDistrib==null){
@@ -184,18 +184,17 @@ public class CompositeModelMixture {
      */
     public Double updateTagDistributions(){
     	double logKL = 0;
-    	TagProbabilityDensity CSdistrib = model.getCSTagDistribution();
-    	TagProbabilityDensity XLdistrib = model.getXLTagDistribution();
     	
-    	//CS component (empirical or gaussian fit) 
+    	//CS component (empirical or gaussian fit)
+    	TagProbabilityDensity CSdistrib = model.getCSTagDistribution();
     	double[] oldCSModelW = CSdistrib.getWatsonProbabilities();
     	double[] oldCSModelC = CSdistrib.getCrickProbabilities();
 		double[] csW = model.getCSComponent().getTagProfile(true);
     	double[] csC = model.getCSComponent().getTagProfile(false);
     	//smooth with arbitrary gaussian
-    	csW = StatUtil.gaussianSmoother(csW, 10);
-    	csC = StatUtil.gaussianSmoother(csC, 10);
-    	/*
+    	csW = StatUtil.gaussianSmoother(csW, 5);
+    	csC = StatUtil.gaussianSmoother(csC, 5);
+    	/*//This part is for an empirical distribution fit
     	double[] newCSModelW=new double[CSdistrib.getWinSize()];
 		double[] newCSModelC=new double[CSdistrib.getWinSize()];
 		for(int i=0; i<CSdistrib.getWinSize(); i++){
@@ -221,46 +220,59 @@ public class CompositeModelMixture {
     	double newOffset = -1*parameters[1];
     	double newSigma = parameters[2];
     	System.out.println("CSGaussianFit:\t"+newOffset+"\t"+newSigma);
-    	CSdistrib.loadGaussianDistrib(newOffset, newSigma);
+    	CSdistrib.loadGaussianDistrib(newOffset, newSigma, newOffset, newSigma); //Symmetric CS component
     	double[] newCSModelW = CSdistrib.getWatsonProbabilities();
     	double[] newCSModelC = CSdistrib.getCrickProbabilities();
+    	//Calc KL
+    	logKL += StatUtil.log_KL_Divergence(oldCSModelW, newCSModelW);
+    	logKL += StatUtil.log_KL_Divergence(oldCSModelC, newCSModelC);
     	
     	
     	//XL components (fit gaussian)
-    	double[] oldXLModelW = XLdistrib.getWatsonProbabilities();
-    	double[] oldXLModelC = XLdistrib.getCrickProbabilities();
-		double[] xlW = new double[XLdistrib.getWinSize()];
-    	double[] xlC = new double[XLdistrib.getWinSize()];
-    	for(int i=0; i<XLdistrib.getWinSize(); i++){ xlW[i]=0; xlC[i]=0;}
     	for(CompositeModelComponent xlComp : model.getXLComponents()){
+    		TagProbabilityDensity XLdistrib = model.getXLTagDistribution(xlComp);
+	    	double[] oldXLModelW = XLdistrib.getWatsonProbabilities();
+	    	double[] oldXLModelC = XLdistrib.getCrickProbabilities();
+			double[] xlW = new double[XLdistrib.getWinSize()];
+	    	double[] xlC = new double[XLdistrib.getWinSize()];
+	    	for(int i=0; i<XLdistrib.getWinSize(); i++){ xlW[i]=0; xlC[i]=0;}
     		double[] currW = xlComp.getTagProfile(true);
     		double[] currC = xlComp.getTagProfile(false);
     		for(int i=0; i<XLdistrib.getWinSize(); i++){ 
     			xlW[i]+=currW[i]; 
     			xlC[i]+=currC[i];
     		}
+    		if(config.FIXED_XL_OFFSET){
+    			//Mean stays constant - calculate separate sigmas for each strand
+    			double newSigmaW=0, newSigmaC=0, sumDiffW=0, sumDiffC=0;
+    			int z=XLdistrib.getLeft();
+    			for(int i=0; i<XLdistrib.getWinSize(); i++){
+    				sumDiffW += (xlW[i]*(z-i))*(xlW[i]*(z-i));
+    				sumDiffC += (xlC[i]*(z-i))*(xlC[i]*(z-i));
+    				z++;
+    			}
+    			newSigmaW = Math.sqrt(sumDiffW);
+    			newSigmaC = Math.sqrt(sumDiffC);
+    			System.out.println("XLGaussianFit:\t"+config.getXLDistribOffset()+"\t"+newSigma);
+		    	XLdistrib.loadGaussianDistrib(config.getXLDistribOffset(), newSigmaW, config.getXLDistribOffset(), newSigmaC);
+    		}else{
+    			//Calculate new mean and sigma (symmetric)
+		    	fitter = new GaussianFitter(new LevenbergMarquardtOptimizer());
+		    	for(int i=0; i<XLdistrib.getWinSize(); i++){
+		    		fitter.addObservedPoint((double)(i+XLdistrib.getLeft()), xlW[i]+xlC[XLdistrib.getWinSize()-i-1]);
+		    	}
+		    	parameters = fitter.fit();;
+		    	newOffset = -1*parameters[1];
+		    	newSigma = parameters[2];
+		    	System.out.println("XLGaussianFit:\t"+newOffset+"\t"+newSigma);
+		    	XLdistrib.loadGaussianDistrib(newOffset, newSigma, newOffset, newSigma); //symmetric
+    		}
+	    	double[] newXLModelW = XLdistrib.getWatsonProbabilities();
+	    	double[] newXLModelC = XLdistrib.getCrickProbabilities();
+	    	//Calc KL
+	    	logKL += StatUtil.log_KL_Divergence(oldXLModelW, newXLModelW);
+	    	logKL += StatUtil.log_KL_Divergence(oldXLModelC, newXLModelC);
     	}
-    	//smooth with arbitrary gaussian
-    	xlW = StatUtil.gaussianSmoother(xlW, 1);
-    	xlC = StatUtil.gaussianSmoother(xlC, 1);
-    	fitter = new GaussianFitter(new LevenbergMarquardtOptimizer());
-    	for(int i=0; i<XLdistrib.getWinSize(); i++){
-    		fitter.addObservedPoint((double)(i+XLdistrib.getLeft()), xlW[i]+xlC[XLdistrib.getWinSize()-i-1]);
-    	}
-    	parameters = fitter.fit();;
-    	newOffset = -1*parameters[1];
-    	newSigma = parameters[2];
-    	System.out.println("XLGaussianFit:\t"+newOffset+"\t"+newSigma);
-    	XLdistrib.loadGaussianDistrib(newOffset, newSigma);
-    	double[] newXLModelW = XLdistrib.getWatsonProbabilities();
-    	double[] newXLModelC = XLdistrib.getCrickProbabilities();
-    	
-    	
-    	//Calc KL
-    	logKL += StatUtil.log_KL_Divergence(oldCSModelW, newCSModelW);
-    	logKL += StatUtil.log_KL_Divergence(oldCSModelC, newCSModelC);
-    	logKL += StatUtil.log_KL_Divergence(oldXLModelW, newXLModelW);
-    	logKL += StatUtil.log_KL_Divergence(oldXLModelC, newXLModelC);
     	
 		return logKL;
 	}

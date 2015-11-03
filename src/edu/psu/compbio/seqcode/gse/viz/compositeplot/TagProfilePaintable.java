@@ -166,6 +166,11 @@ public class TagProfilePaintable extends AbstractPaintable{
     		//g2.drawString(String.format("%f",ymax), tX1+1, tY1+(metrics.getHeight()));
     		//if(isStranded)
     		//	g2.drawString(String.format("%f",ymax), tX1+1, tY2);
+    		
+        	//g2.drawLine(wmargin+center, tStart+trackHeight+8, wmargin+center, tStart+trackHeight);	// 0 tick on x-axis
+        	//g2.drawString(String.format("%d",leftLimit), tX1+1, tY1+(metrics.getHeight()));
+        	//		leftLimit, wmargin-(metrics.stringWidth(startCoord.toString())/2), tStart+trackHeight+metrics.getHeight()+10);
+        	//g2.drawString(rightLimit, w-wmargin-(metrics.stringWidth(endCoord.toString())/2), tStart+trackHeight+metrics.getHeight()+10);
 		}
 		g2.setStroke(oldStroke);
 	}

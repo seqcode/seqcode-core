@@ -2,7 +2,9 @@ package edu.psu.compbio.seqcode.projects.chexmix;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ProteinDNAInteractionModel: defines a collection of composite model components 
@@ -18,10 +20,10 @@ public class ProteinDNAInteractionModel {
 	protected ChExMixConfig cmConfig;
 	protected List<CompositeModelComponent> allComponents;
 	protected List<CompositeModelComponent> XLComponents;
+	protected Map<CompositeModelComponent, TagProbabilityDensity> XLComponentDensities;
 	protected CompositeModelComponent CSComponent;
 	protected CompositeModelComponent backgroundComponent;
-	protected int numXLComponents;
-	protected TagProbabilityDensity XLTagDist, CSTagDist, backTagDist; //TODO: Convert these to condition/replicate specific?
+	protected int numXLComponents; 
 	
 	public ProteinDNAInteractionModel(ChExMixConfig config, int width, TagProbabilityDensity initXLdistrib, TagProbabilityDensity initCSdistrib, 
 			TagProbabilityDensity initBackDistrib, double noisePi){
@@ -30,20 +32,21 @@ public class ProteinDNAInteractionModel {
 		cmConfig = config;
 		
 		//Background component
-		backTagDist = initBackDistrib;
-		backgroundComponent = new CompositeModelComponent(backTagDist, centerOffset, 0, "Back",  false, true);
+		backgroundComponent = new CompositeModelComponent(initBackDistrib, centerOffset, 0, "Back",  false, true);
 
 		//ChIP-seq component
-		CSTagDist = initCSdistrib;
-		CSComponent = new CompositeModelComponent(CSTagDist, centerOffset, 1, "CS", false, true);
+		CSComponent = new CompositeModelComponent(initCSdistrib, centerOffset, 1, "CS", false, true);
 				
 		//XL components
-		XLTagDist = initXLdistrib;
 		XLComponents = new ArrayList<CompositeModelComponent>();
+		XLComponentDensities = new HashMap<CompositeModelComponent, TagProbabilityDensity>();
 		numXLComponents = (initCSdistrib.getInfluenceRange()/2)/cmConfig.getXLComponentSpacing();
 		int xlPos = centerOffset-(numXLComponents*cmConfig.getXLComponentSpacing())/2;
 		for(int i=0; i<numXLComponents; i++){
-			XLComponents.add(new CompositeModelComponent(XLTagDist, xlPos, i+2, "XL", true, true));
+			TagProbabilityDensity XLTagDist = initXLdistrib.clone();
+			CompositeModelComponent newComp = new CompositeModelComponent(XLTagDist, xlPos, i+2, "XL", true, true);
+			XLComponents.add(newComp);
+			XLComponentDensities.put(newComp, XLTagDist);
 			xlPos += cmConfig.getXLComponentSpacing(); 
 		}
 		
@@ -60,9 +63,9 @@ public class ProteinDNAInteractionModel {
 	//Accessors
 	public int getWidth(){return modelWidth;}
 	public int getCenterOffset(){return centerOffset;}
-	public TagProbabilityDensity getXLTagDistribution(){return XLTagDist;}
-	public TagProbabilityDensity getCSTagDistribution(){return CSTagDist;}
-	public TagProbabilityDensity getBackTagDistribution(){return backTagDist;}
+	public TagProbabilityDensity getXLTagDistribution(CompositeModelComponent comp){return XLComponentDensities.get(comp);}
+	public TagProbabilityDensity getCSTagDistribution(){return CSComponent.getTagDistribution();}
+	public TagProbabilityDensity getBackTagDistribution(){return backgroundComponent.getTagDistribution();}
 	public int getNumComponents(){return allComponents.size();}
 	public List<CompositeModelComponent> getAllComponents(){return allComponents;}
 	public List<CompositeModelComponent> getXLComponents(){return XLComponents;}
@@ -95,6 +98,7 @@ public class ProteinDNAInteractionModel {
 			xl.setPi(xoPi);
 		}
 	}
+	
 	
 	/**
 	 * toString

@@ -29,10 +29,10 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 public class TagProbabilityDensity {
 	
 	protected final double LOG2 = Math.log(2);
-	protected final double TAGDISTRIB_MIN_PROB = 1e-100; //Minimum probabilitiy allowed in any tag distribution
+	protected final double TAGDISTRIB_MIN_PROB = 1e-100; //Minimum probability allowed in any tag distribution
 	protected int winSize;
 	protected int left, right; //relative left & right positions
-	protected double[] watsonData, crickData; //Data lanscape should be based on (typically tag counts)
+	protected double[] watsonData, crickData; //Data landscape should be based on (typically tag counts)
 	protected double[] watsonProbs, crickProbs; //Probability landscapes
 	protected double[] watsonLogProbs, crickLogProbs; //Log probabilities
 	protected int watsonSummit, crickSummit;		// relative positions of highest probs
@@ -242,9 +242,9 @@ public class TagProbabilityDensity {
 	 * @param offset: mean of gaussian this number of bp upstream for Watson strand and this number of bp downstream for Crick strand
 	 * @param gaussianSigma 
 	 */
-	public void loadGaussianDistrib(double offset, double gaussianSigma){
-		NormalDistribution wNorm = new NormalDistribution(-offset, gaussianSigma);
-		NormalDistribution cNorm = new NormalDistribution(offset, gaussianSigma);
+	public void loadGaussianDistrib(double offsetWatson, double gaussianSigmaWatson, double offsetCrick, double gaussianSigmaCrick){
+		NormalDistribution wNorm = new NormalDistribution(-offsetWatson, gaussianSigmaWatson);
+		NormalDistribution cNorm = new NormalDistribution(offsetCrick, gaussianSigmaCrick);
 		for(int i=left; i<=right; i++){
 			watsonData[i-left] = wNorm.density(i);
 			crickData[i-left] = cNorm.density(i);
@@ -366,6 +366,21 @@ public class TagProbabilityDensity {
 		}
 	}
 	
+	/**
+	 * Clone this TagProbabilityDensity
+	 */
+	public TagProbabilityDensity clone(){
+		TagProbabilityDensity newTDS = null;
+		try {
+			newTDS = new TagProbabilityDensity(this.winSize);
+			newTDS.loadData(watsonData, crickData);
+			newTDS.makeProbabilities();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return newTDS;
+	}
+	
 	public String toString(){
 		String out="";
 		for(int w=0; w<winSize; w++){
@@ -379,7 +394,7 @@ public class TagProbabilityDensity {
 	public static void main(String[] args){
 		int win = 200;
 		TagProbabilityDensity td = new TagProbabilityDensity(win);
-		td.loadGaussianDistrib(6, 1);
+		td.loadGaussianDistrib(6, 1, 6, 1);
 		
 		double[] watson = td.getWatsonProbabilities();
 		double[] crick = td.getCrickProbabilities();
