@@ -3,7 +3,6 @@ package edu.psu.compbio.seqcode.projects.chexmix;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;

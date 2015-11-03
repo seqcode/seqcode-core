@@ -43,8 +43,8 @@ public class ChExMixConfig {
 	protected int XLDistribOffset=6; //exonuclease head-space
 	protected double XLDistribSigma=1.5; //gaussian distrib sigma
 	protected int XLComponentSpacing = 5; //Inital number of bp between XL Components
-	protected int maxModelUpdateRounds=5; //Maximum number of outer EM training rounds
-	protected double modelConvergenceKL=-15; //KL-divergence threshold for convergence 
+	protected int maxModelUpdateRounds=10; //Maximum number of outer EM training rounds
+	protected double modelConvergenceKL=-25; //KL-divergence threshold for convergence 
 	protected int maxThreads=1;				//Number of threads to use. Default is 1 for single processor machines. 
 	protected double alphaScalingFactor = 10.0; //Scale the alpha value by this factor relative to the noise component per-base
 	protected double fixedAlpha = 0.0; //Fixed alpha value if above 0
