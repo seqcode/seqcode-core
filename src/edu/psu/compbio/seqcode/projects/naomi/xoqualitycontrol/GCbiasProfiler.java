@@ -143,11 +143,11 @@ public class GCbiasProfiler {
 		SequenceGenerator<Region> sequencegen = new SequenceGenerator<Region>(gconf.getGenome());
 		ArgParser ap = new ArgParser(args);
 		
-		int posStart = 75;
+		int posStart = 0;
 		if (ap.hasKey("a"))
 			posStart = Args.parseInteger(args,"a",3);
 		
-		int length = 50;
+		int length = 180;
 		if (ap.hasKey("l"))
 			length = Args.parseInteger(args,"l",3);
 		
