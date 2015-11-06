@@ -193,11 +193,11 @@ public class SegmentationTree {
 							tempScore = distanceFactor[i]*((1- Math.abs(gaussianBlur[kid][0] - gaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 							if (tempScore > intensityDiffScore){
 								intensityDiffScore = tempScore;
-								if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
-								else{
+//test								if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
+//test								else{
 				//					if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
 									if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
-								}
+//test								}
 							}
 						}							
 					}
