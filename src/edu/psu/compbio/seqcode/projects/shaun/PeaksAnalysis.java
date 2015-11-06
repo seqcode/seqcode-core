@@ -130,6 +130,7 @@ public class PeaksAnalysis {
 	        //options
 	        boolean printSeqs = ap.hasKey("printseqs");
 	        boolean printSeqKmers = ap.hasKey("printseqkmers");
+	        boolean printSeqKmerRange = ap.hasKey("printseqkmerRange");
 	        boolean printTiledSeqKmers = ap.hasKey("printtiledseqkmers");
 	        boolean printSeqKmersCoOccurence = ap.hasKey("printSeqKmersCoOccurence");
 	        int printSeqKmersCoOccurenceK = ap.hasKey("printSeqKmersCoOccurence") ? new Integer(ap.getKeyValue("printSeqKmersCoOccurence")).intValue():4;
@@ -169,9 +170,15 @@ public class PeaksAnalysis {
 			if(printSeqKmers)
 				analyzer.printPeakSeqKmers(printSeqKmersK, useCache, genomePath);
 			
+			if(printSeqKmerRange){
+				int kmin = ap.hasKey("kmin") ? new Integer(ap.getKeyValue("kmin")).intValue():3;
+				int kmax =  ap.hasKey("kmax") ? new Integer(ap.getKeyValue("kmax")).intValue():6;
+				analyzer.printPeakSeqKmerRange(kmin, kmax, useCache, genomePath);
+			}
+			
 			if(printTiledSeqKmers){
 				int kmin = ap.hasKey("kmin") ? new Integer(ap.getKeyValue("kmin")).intValue():3;
-				int kmax =  ap.hasKey("kmax") ? new Integer(ap.getKeyValue("kmax")).intValue():8;
+				int kmax =  ap.hasKey("kmax") ? new Integer(ap.getKeyValue("kmax")).intValue():6;
 				analyzer.printPeakSeqTiledKmers(kmin, kmax, useCache, genomePath);
 			}
 			
@@ -254,7 +261,7 @@ public class PeaksAnalysis {
 		}
 	}
 	
-	//Print the k-mers in the sequences for each peak 
+	//Print the k-mer counts (of a given kmer length) in the sequences for each peak 
 	public void printPeakSeqKmers(int k, boolean useCache, String genPath ){
 		SequenceGenerator seqgen = new SequenceGenerator();
 		seqgen.useCache(useCache);
@@ -290,6 +297,61 @@ public class PeaksAnalysis {
 			System.out.println("");
 		}
 	}
+	
+	// Print the the kmer counts (for a given range of value k) in the sequences for each peak
+	public void printPeakSeqKmerRange(int kmin, int kmax, boolean useCache, String genPath){
+		SequenceGenerator seqgen = new SequenceGenerator();
+		seqgen.useCache(useCache);
+		if(useCache){
+			seqgen.useLocalFiles(true);
+			seqgen.setGenomePath(genPath);
+		}
+		int numK=0;
+		for(int k=kmin; k<=kmax; k++){
+			numK =numK + (int)Math.pow(4, k);
+		}
+		int[] kmerCounts = new int[numK];
+		
+		//Printing the header line
+		System.out.print("Region");
+		for(int k=kmin; k<=kmax; k++){
+			int N = (int)Math.pow(4, k);
+			for(int i=0; i<N; i++)
+				System.out.print("\t"+RegionFileUtilities.int2seq(i, k));
+		}
+		System.out.println("");
+		
+		for(Region r : posSet){
+			for(int i=0; i<numK;i++)
+				kmerCounts[i]=0;
+			
+			String seq = seqgen.execute(r).toUpperCase();
+			//Check if the sequence (seq) contains any N's if present ignore them
+			if(seq.contains("N"))
+				continue;
+			
+			int ind=0;
+			for(int k=kmin; k<=kmax; k++){
+				for(int i=0; i<(seq.length()-k+1); i++){
+					String currK = seq.substring(i, i+k);
+					String revCurrK =SequenceUtils.reverseComplement(currK);
+					int  currKInt = RegionFileUtilities.seq2int(currK);
+					int  revCurrKInt = RegionFileUtilities.seq2int(revCurrK);
+					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+					kmerCounts[ind+kmer]++;
+				}
+				ind = ind + (int)Math.pow(4, k);
+			}
+			System.out.print(r.getLocationString());
+			for(int i=0; i<numK; i++)
+				System.out.print("\t"+kmerCounts[i]);
+			System.out.println("");
+		}
+	}
+	
+	
+	
+	
 	
 	public void printPeakSeqKmerCoO(int k, boolean useCache, String genPath, int s){
 		SequenceGenerator seqgen = new SequenceGenerator();
