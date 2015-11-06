@@ -185,19 +185,22 @@ public class SegmentationTree {
 
 				for (Integer kid : linkageMap.keySet()){
 				
-					double intensityDiffScore = 0;							
+					double intensityDiffScore = 0;		
+					// fix here!!
 					for (int i = 0; i<DCPsize; i++){
-						if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
+						if (linkageMap.containsValue(kid+dcp[i])){
+//test					if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
 							if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
 							else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
 
 							tempScore = distanceFactor[i]*((1- Math.abs(gaussianBlur[kid][0] - gaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 							if (tempScore > intensityDiffScore){
 								intensityDiffScore = tempScore;
+								linkageMap.put(kid,(kid+dcp[i]));
 //test								if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
 //test								else{
 				//					if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
-									if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
+//									if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
 //test								}
 							}
 						}							
