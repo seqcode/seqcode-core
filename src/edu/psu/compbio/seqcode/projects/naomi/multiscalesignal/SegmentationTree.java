@@ -164,7 +164,8 @@ public class SegmentationTree {
 			/***************
 			 * Linkage Loop	
 			 */		 
-			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();				 
+//			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();		
+			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>(linkageMap);				 
 			//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
 			//From the second iteration, we consider ground volume = number of nodes that parents are linked to the kids
 			//From third iteration, we increase the weight of the ground volume by 1e-7.
