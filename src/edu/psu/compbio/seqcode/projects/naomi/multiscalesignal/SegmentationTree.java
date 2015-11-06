@@ -128,10 +128,10 @@ public class SegmentationTree {
 			}	
 		
 			//testing; I can identify the region that I want to print using peak calling
-			if (currchromBinSize < 200000 && currchromBinSize >15000){			
-				for (int i = 0; i< 200;i++)
-				System.out.println(gaussianBlur[9650+i][0]+" : "+gaussianBlur[9650+i][1]);
-			}
+//			if (currchromBinSize < 200000 && currchromBinSize >15000){			
+//				for (int i = 0; i< 200;i++)
+//				System.out.println(gaussianBlur[9650+i][0]+" : "+gaussianBlur[9650+i][1]);
+//			}
 		
 			/***************
 			 * Search Volume
@@ -235,13 +235,13 @@ public class SegmentationTree {
 		// scale zero is getting overwriting with the parents of the last scale; I'm overwriting the scale zero with initial nodesest for quick fix
 		segmentationTree.put(0, startingNodes);
 		
-//		for (Integer scale : segmentationTree.keySet()){
-//			System.out.println("current scale is: "+scale);
-//			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
-//			System.out.println("current nodeset size is: "+sortedNodeSet.size());
-//			for (Integer node : sortedNodeSet)
-//				System.out.println(node);
-//		}	
+		for (Integer scale : segmentationTree.keySet()){
+			System.out.println("current scale is: "+scale);
+			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
+			System.out.println("current nodeset size is: "+sortedNodeSet.size());
+			for (Integer node : sortedNodeSet)
+				System.out.println(node);
+		}	
 		
 		return segmentationTree;
 		
