@@ -252,13 +252,13 @@ public class SegmentationTree {
 		// scale zero is getting overwriting with the parents of the last scale; I'm overwriting the scale zero with initial nodesest for quick fix
 		segmentationTree.put(0, startingNodes);
 		
-		for (Integer scale : segmentationTree.keySet()){
-			System.out.println("current scale is: "+scale);
-			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
-			System.out.println("current nodeset size is: "+sortedNodeSet.size());
-			for (Integer node : sortedNodeSet)
-				System.out.println(node);
-		}	
+//		for (Integer scale : segmentationTree.keySet()){
+//			System.out.println("current scale is: "+scale);
+//			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
+//			System.out.println("current nodeset size is: "+sortedNodeSet.size());
+//			for (Integer node : sortedNodeSet)
+//				System.out.println(node);
+//		}	
 		
 		return segmentationTree;
 		
