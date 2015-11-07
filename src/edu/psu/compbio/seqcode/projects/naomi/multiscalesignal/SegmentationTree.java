@@ -205,12 +205,27 @@ public class SegmentationTree {
 					// fix here!! maybe instead of looping through all DCP size, we can just look at all linkageMap value 
 					//and see if they are within DCPsize
 					for (int i = 0; i<DCPsize; i++){
+						
+						final long searchST = System.currentTimeMillis();
+						if (linkageMap.containsValue(kid+dcp[i])){System.out.println("yes");}
+						final long searchET = System.currentTimeMillis();
+						System.out.println("total search time "+(searchET-searchST));
+						
 						if (linkageMap.containsValue(kid+dcp[i])){
 //test					if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
 //							if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
 //							else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
+							
+							final long calcST = System.currentTimeMillis();
 
 							tempScore = distanceFactor[i]*((1- Math.abs(gaussianBlur[kid][0] - gaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
+							
+							final long calcET = System.currentTimeMillis();
+							
+							System.out.println("total calculation time "+(calcET-calcST));
+							
+							final long compandInsertingST = System.currentTimeMillis();
+							
 							if (tempScore > intensityDiffScore){
 								intensityDiffScore = tempScore;
 								linkageMap.put(kid,(kid+dcp[i]));
@@ -220,6 +235,9 @@ public class SegmentationTree {
 //									if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
 //test								}
 							}
+							final long compandInsertingET = System.currentTimeMillis();
+							System.out.println("comparing and inserting time "+(compandInsertingET-compandInsertingST));
+							
 						}							
 					}
 					
