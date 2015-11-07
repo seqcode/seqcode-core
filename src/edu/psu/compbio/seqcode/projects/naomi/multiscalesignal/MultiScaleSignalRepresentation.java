@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
@@ -191,10 +193,13 @@ public class MultiScaleSignalRepresentation {
 			final long endTime = System.currentTimeMillis();
 			
 			System.out.println("building segTree for chrom "+ currChrom+ " took "+(endTime-startTime));
+			System.out.println(StringEscapeUtils.escapeJava(currChrom.getChrom()));
 			
 			// I'm testing with small chrom21 ; beginning of test
-			Map<Integer,Set<Integer>> segmentationTree = null;		
-			if (currChrom.getChrom()=="22"){			
+			Map<Integer,Set<Integer>> segmentationTree = null;	
+			currChrom.getChrom().contains("chr21");
+			
+			if (currChrom.getChrom()=="21"){			
 			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 
 			
