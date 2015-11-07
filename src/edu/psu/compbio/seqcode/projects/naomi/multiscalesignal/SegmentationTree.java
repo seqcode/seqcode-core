@@ -196,6 +196,8 @@ public class SegmentationTree {
 
 				for (Integer kid : linkageMap.keySet()){
 					
+					final long kidStartT = System.currentTimeMillis();
+					
 					if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
 					else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
 				
@@ -220,6 +222,10 @@ public class SegmentationTree {
 							}
 						}							
 					}
+					
+					final long kidEndT = System.currentTimeMillis();
+					System.out.println("kid number"+kid+" takes "+(kidEndT-kidStartT));
+					
 				}						
 				//test
 				//		if (currchromBinSize > 20000000){			
