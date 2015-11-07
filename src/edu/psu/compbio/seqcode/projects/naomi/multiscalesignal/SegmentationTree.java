@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.naomi.multiscalesignal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -206,15 +207,24 @@ public class SegmentationTree {
 					//and see if they are within DCPsize
 					for (int i = 0; i<DCPsize; i++){
 						
+						System.out.println("linkageMap value search");
 						final long searchValueST = System.currentTimeMillis();
 						if (linkageMap.containsValue(kid+dcp[i])){System.out.println("yes");}else{System.out.println("no");}
 						final long searchValueET = System.currentTimeMillis();
 						System.out.println("total search time "+(searchValueET-searchValueST));
 						
+						System.out.println("GvParents key search");
 						final long searchKeyST = System.currentTimeMillis();
 						if (GvParents.containsKey(kid+dcp[i])){System.out.println("yes");}else{System.out.println("no");}
 						final long searchKeyET = System.currentTimeMillis();
 						System.out.println("total search time "+(searchKeyET-searchKeyST));
+						
+						final long setST = System.currentTimeMillis();
+						System.out.println("parentsSet key search");
+						TreeSet<Integer> parentsSet = new TreeSet<Integer>(linkageMap.values());
+						if (parentsSet.contains(kid+dcp[i])){System.out.println("yes");}else{System.out.println("no");}
+						final long setET = System.currentTimeMillis();
+						System.out.println("total search time "+(setET-setST));
 						
 						if (linkageMap.containsValue(kid+dcp[i])){
 //test					if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
