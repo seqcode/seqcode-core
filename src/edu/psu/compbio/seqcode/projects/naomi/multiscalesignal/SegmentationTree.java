@@ -185,6 +185,8 @@ public class SegmentationTree {
 			//updating ground volume and iterating to encourage convergence
 			for (int counter = 0; counter<5; counter++){
 				
+				final long counterStart = System.currentTimeMillis();
+				
 				if (counter != 0){
 					for (Integer parent : GvParents.keySet()){
 						if ( GvParents.get(parent) > groundVPmax)
@@ -236,6 +238,10 @@ public class SegmentationTree {
 				}
 				GvParents.put(0, trailingZero);
 				GvParents.put(gaussianBlur.length-1,gaussianBlur.length-zeroEnd-1);
+				
+				final long counterEnd = System.currentTimeMillis();
+				System.out.println("counter "+counter+" took "+(counterEnd-counterStart));
+				
 			}
 			Map<Integer, Integer> sortedLinkageMap = new HashMap<Integer,Integer> (MapUtility.sortByValue(linkageMap));
 			
