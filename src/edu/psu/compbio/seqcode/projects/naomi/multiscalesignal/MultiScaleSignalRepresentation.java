@@ -194,10 +194,11 @@ public class MultiScaleSignalRepresentation {
 			
 			System.out.println("building segTree for chrom "+ currChrom+ " took "+(endTime-startTime));
 			System.out.println(StringEscapeUtils.escapeJava(currChrom.getChrom()));
+			System.out.println(currChrom.getChrom()+"is there space character?");
 			
 			// I'm testing with small chrom21 ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;	
-			currChrom.getChrom().contains("chr21");
+			if (currChrom.getChrom().contains("21")){System.out.println("yes");}
 			
 			if (currChrom.getChrom()=="21"){			
 			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
