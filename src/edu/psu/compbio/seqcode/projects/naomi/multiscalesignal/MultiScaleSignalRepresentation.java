@@ -194,7 +194,7 @@ public class MultiScaleSignalRepresentation {
 			
 			// I'm testing with small chrom21 ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;		
-			if (currChrom.getChrom().contains("chr21")){			
+			if (currChrom.getChrom()=="22"){			
 			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 
 			
