@@ -186,16 +186,16 @@ public class MultiScaleSignalRepresentation {
 			//build segmentationTree
 			SegmentationTree segtree = new SegmentationTree(gconfig, econfig, sconfig, numScale);	
 			
-			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
+//			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 			
 			final long endTime = System.currentTimeMillis();
 			
 			System.out.println("building segTree for chrom "+ currChrom+ " took "+(endTime-startTime));
 			
-			// I'm testing with small regions ; beginning of test
-//			Map<Integer,Set<Integer>> segmentationTree = null;		
-//			if (currchromBinSize < 200000 && currchromBinSize >15000){			
-//			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
+			// I'm testing with small chrom21 ; beginning of test
+			Map<Integer,Set<Integer>> segmentationTree = null;		
+			if (currChrom.getChrom().contains("chr21")){			
+			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 
 			
 			//printing segmenationTree for test
@@ -225,7 +225,7 @@ public class MultiScaleSignalRepresentation {
 				}
 			}
 			
-//			}//end of test with small chromosome
+			}//end of test with small chromosome
 			
 		}// end of chromosome iteration					
 		manager.close();
