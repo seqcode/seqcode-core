@@ -77,6 +77,8 @@ public class SegmentationTree {
 		}
 		
 		for (int n = 1; n<numScale; n++){
+			
+			final long gaussianStartTime = System.currentTimeMillis();
 		
 			double polyCoeffi[] = new double [currchromBinSize];
 			//first copy from column[1] to column[0];this procedure need to be repeated for each iteration of scale
@@ -132,6 +134,10 @@ public class SegmentationTree {
 //				for (int i = 0; i< 200;i++)
 //				System.out.println(gaussianBlur[9650+i][0]+" : "+gaussianBlur[9650+i][1]);
 //			}
+			
+			final long gaussianEndTime = System.currentTimeMillis();
+			
+			System.out.println("scale "+n+" Gausisian blur execusion time "+ (gaussianEndTime-gaussianStartTime));
 		
 			/***************
 			 * Search Volume
@@ -164,6 +170,9 @@ public class SegmentationTree {
 			/***************
 			 * Linkage Loop	
 			 */		 
+			
+			final long linkageLoopStart = System.currentTimeMillis();
+			
 //			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();		
 			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>(linkageMap);				 
 			//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
@@ -186,7 +195,8 @@ public class SegmentationTree {
 				for (Integer kid : linkageMap.keySet()){
 				
 					double intensityDiffScore = 0;		
-					// fix here!!
+					// fix here!! maybe instead of looping through all DCP size, we can just look at all linkageMap value 
+					//and see if they are within DCPsize
 					for (int i = 0; i<DCPsize; i++){
 						if (linkageMap.containsValue(kid+dcp[i])){
 //test					if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
@@ -231,6 +241,9 @@ public class SegmentationTree {
 				linkageMap.put(parent, parent);
 			}						
 			//for each scaleNum, add the parents to the segmentationTree
+			
+			final long linkageLoopEnd = System.currentTimeMillis();
+			System.out.println("linkage Loop excusion time "+( linkageLoopEnd -linkageLoopStart));
 
 			segmentationTree.put(n, GvParents.keySet());
 			
