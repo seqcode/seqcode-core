@@ -193,6 +193,9 @@ public class SegmentationTree {
 				}	
 
 				for (Integer kid : linkageMap.keySet()){
+					
+					if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
+					else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
 				
 					double intensityDiffScore = 0;		
 					// fix here!! maybe instead of looping through all DCP size, we can just look at all linkageMap value 
@@ -200,8 +203,8 @@ public class SegmentationTree {
 					for (int i = 0; i<DCPsize; i++){
 						if (linkageMap.containsValue(kid+dcp[i])){
 //test					if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
-							if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
-							else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
+//							if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
+//							else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
 
 							tempScore = distanceFactor[i]*((1- Math.abs(gaussianBlur[kid][0] - gaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
 							if (tempScore > intensityDiffScore){
