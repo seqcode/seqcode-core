@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.naomi.multiscalesignal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -77,6 +78,8 @@ public class SegmentationTree {
 		}
 		
 		for (int n = 1; n<numScale; n++){
+			
+			final long gaussianStartTime = System.currentTimeMillis();
 		
 			double polyCoeffi[] = new double [currchromBinSize];
 			//first copy from column[1] to column[0];this procedure need to be repeated for each iteration of scale
@@ -128,10 +131,14 @@ public class SegmentationTree {
 			}	
 		
 			//testing; I can identify the region that I want to print using peak calling
-			if (currchromBinSize < 200000 && currchromBinSize >15000){			
-				for (int i = 0; i< 200;i++)
-				System.out.println(gaussianBlur[9650+i][0]+" : "+gaussianBlur[9650+i][1]);
-			}
+//			if (currchromBinSize < 200000 && currchromBinSize >15000){			
+//				for (int i = 0; i< 200;i++)
+//				System.out.println(gaussianBlur[9650+i][0]+" : "+gaussianBlur[9650+i][1]);
+//			}
+			
+			final long gaussianEndTime = System.currentTimeMillis();
+			
+			System.out.println("scale "+n+" Gausisian blur execusion time "+ (gaussianEndTime-gaussianStartTime));
 		
 			/***************
 			 * Search Volume
@@ -164,7 +171,11 @@ public class SegmentationTree {
 			/***************
 			 * Linkage Loop	
 			 */		 
-			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();				 
+			
+			final long linkageLoopStart = System.currentTimeMillis();
+			
+//			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();		
+			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>(linkageMap);				 
 			//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
 			//From the second iteration, we consider ground volume = number of nodes that parents are linked to the kids
 			//From third iteration, we increase the weight of the ground volume by 1e-7.
@@ -175,30 +186,38 @@ public class SegmentationTree {
 			//updating ground volume and iterating to encourage convergence
 			for (int counter = 0; counter<5; counter++){
 				
+				final long counterStart = System.currentTimeMillis();
+				
 				if (counter != 0){
 					for (Integer parent : GvParents.keySet()){
 						if ( GvParents.get(parent) > groundVPmax)
 							groundVPmax = GvParents.get(parent);
 					}				
 				}	
-
-				for (Integer kid : linkageMap.keySet()){
 				
-					double intensityDiffScore = 0;							
+				// look for parents within the windowSize
+				for (Integer kid : linkageMap.keySet()){
+					
+					if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
+					else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
+				
+					double intensityDiffScore = 0;		
+
 					for (int i = 0; i<DCPsize; i++){
-						if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
-							if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
-							else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
+						
+						if (GvParents.containsKey(kid+dcp[i])){
 
 							tempScore = distanceFactor[i]*((1- Math.abs(gaussianBlur[kid][0] - gaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
+							
 							if (tempScore > intensityDiffScore){
 								intensityDiffScore = tempScore;
-								if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
-								else{
+								linkageMap.put(kid,(kid+dcp[i]));
+//test								if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
+//test								else{
 				//					if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
-									if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
-								}
-							}
+//									if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
+//test								}
+							}							
 						}							
 					}
 				}						
@@ -219,6 +238,10 @@ public class SegmentationTree {
 				}
 				GvParents.put(0, trailingZero);
 				GvParents.put(gaussianBlur.length-1,gaussianBlur.length-zeroEnd-1);
+				
+				final long counterEnd = System.currentTimeMillis();
+				System.out.println("counter "+counter+" took "+(counterEnd-counterStart));
+				
 			}
 			Map<Integer, Integer> sortedLinkageMap = new HashMap<Integer,Integer> (MapUtility.sortByValue(linkageMap));
 			
@@ -227,6 +250,9 @@ public class SegmentationTree {
 				linkageMap.put(parent, parent);
 			}						
 			//for each scaleNum, add the parents to the segmentationTree
+			
+			final long linkageLoopEnd = System.currentTimeMillis();
+			System.out.println("linkage Loop excusion time "+( linkageLoopEnd -linkageLoopStart));
 
 			segmentationTree.put(n, GvParents.keySet());
 			

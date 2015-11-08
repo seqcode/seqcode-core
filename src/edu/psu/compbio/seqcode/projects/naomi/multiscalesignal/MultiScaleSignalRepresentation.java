@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
@@ -181,17 +183,24 @@ public class MultiScaleSignalRepresentation {
 			float maxInt = DImax-DImin;
 //			System.out.println("max intensity is: "+maxInt);
 			
+			final long startTime = System.currentTimeMillis();
+
 			//build segmentationTree
 			SegmentationTree segtree = new SegmentationTree(gconfig, econfig, sconfig, numScale);	
 			
 //			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
+			
+			final long endTime = System.currentTimeMillis();
+			
+			System.out.println("building segTree for chrom "+ currChrom+ " took "+(endTime-startTime));
+			System.out.println(StringEscapeUtils.escapeJava(currChrom.getChrom()));
 
 			
-			// I'm testing with small regions ; beginning of test
-			Map<Integer,Set<Integer>> segmentationTree = null;		
-			if (currchromBinSize < 200000 && currchromBinSize >15000){			
+			// I'm testing with small chrom21 ; beginning of test
+			Map<Integer,Set<Integer>> segmentationTree = null;	
+			
+			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000){			
 			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
-				 
 
 			
 			//printing segmenationTree for test
