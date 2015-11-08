@@ -64,6 +64,7 @@ public class ChExMixConfig {
 	public final double MIN_CS_PI = 0.05; //Minimum pi value for CS component
 	public final double MIN_ALPHA = 0.01; //Minimum alpha 
 	public final boolean FIXED_XL_OFFSET=true; //Estimate the XL component offset (mean)?
+	public final boolean XL_DISTRIB_SYMMETRIC=true; //Is the sigma associated with XL components symmetric?
 	public final int MAX_EM_ITER=2000;
     public final int EM_ML_ITER=100;     				//Run EM up until <tt>ML_ITER</tt> without using sparse prior
     public final int ML_ML_ITER=100;     				//Run ML up until <tt>ML_ITER</tt> without using sparse prior

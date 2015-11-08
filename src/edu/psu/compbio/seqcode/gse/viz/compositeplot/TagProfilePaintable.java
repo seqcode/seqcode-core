@@ -8,6 +8,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.viz.colors.Coloring;
 import edu.psu.compbio.seqcode.gse.viz.paintable.AbstractPaintable;
@@ -25,6 +27,7 @@ public class TagProfilePaintable extends AbstractPaintable{
 	private boolean transparent=false;
 	private int hmargin= 50, wmargin=30;
 	private int leftLimit, rightLimit;
+	private List<Integer> pointsOfInterest = new ArrayList<Integer>(); //x-coordinates of points of interest
 
 	public TagProfilePaintable(TagProfile profile){
 		this.profile = profile;
@@ -36,6 +39,7 @@ public class TagProfilePaintable extends AbstractPaintable{
 	public void setWatsonColor(Color c){watsonCol= transparent ? Coloring.clearer(c) : c;}
 	public void setCrickColor(Color c){crickCol= transparent ? Coloring.clearer(c) : c;}
 	public void setFilledColumns(boolean b){filledColumns=b;}
+	public void setPointOfInterest(int coord){pointsOfInterest.add(coord);}
 	public void setHmargin(int hm){hmargin = hm;}
 	public void setWmargin(int wm){wmargin = wm;}
 	public void setYmax(double y){ymax = y;}
@@ -80,7 +84,7 @@ public class TagProfilePaintable extends AbstractPaintable{
 		int tY1 = hmargin, tY2 = h-hmargin;
 		int tX1 = wmargin, tX2 = w-wmargin;
 		int tH = h-(hmargin*2);
-		int tW = w-(wmargin/2);
+		int tW = w-(wmargin*2);
 		g2.setColor(Color.white);
 		if(!transparent)
 			g2.fillRect(x1, y1, w, y2-y1);
@@ -156,6 +160,7 @@ public class TagProfilePaintable extends AbstractPaintable{
 			}
 		}
 		
+		//Text
 		if(drawAxis){
 			g2.setColor(Color.black);
     		g2.setStroke(new BasicStroke(2.0f));
@@ -163,15 +168,46 @@ public class TagProfilePaintable extends AbstractPaintable{
     		g2.drawLine(tX1, wPlotY2, tX2, wPlotY2); //X-axis
     		g2.setFont(new Font("Ariel", Font.PLAIN, 14));
     		FontMetrics metrics = g2.getFontMetrics();
-    		//g2.drawString(String.format("%f",ymax), tX1+1, tY1+(metrics.getHeight()));
-    		//if(isStranded)
-    		//	g2.drawString(String.format("%f",ymax), tX1+1, tY2);
-    		
-        	//g2.drawLine(wmargin+center, tStart+trackHeight+8, wmargin+center, tStart+trackHeight);	// 0 tick on x-axis
-        	//g2.drawString(String.format("%d",leftLimit), tX1+1, tY1+(metrics.getHeight()));
-        	//		leftLimit, wmargin-(metrics.stringWidth(startCoord.toString())/2), tStart+trackHeight+metrics.getHeight()+10);
-        	//g2.drawString(rightLimit, w-wmargin-(metrics.stringWidth(endCoord.toString())/2), tStart+trackHeight+metrics.getHeight()+10);
+
+    		//X-axis labels
+        	g2.drawString(String.format("%d",leftLimit), tX1-(metrics.stringWidth(String.format("%d",leftLimit))/2), wPlotY2+(metrics.getHeight()));
+        	g2.drawString(String.format("%d",(rightLimit+1)), tX2-(metrics.stringWidth(String.format("%d",(rightLimit+1)))/2), wPlotY2+(metrics.getHeight()));
+        	
+        	//X-axis ticks
+        	g2.setColor(Coloring.clearer(Color.DARK_GRAY));
+    		g2.setStroke(new BasicStroke(2));
+        	int tickSpacing=100, bigTickSpacing=1000;
+        	if(profileWidth()/10000 >=1){
+        		tickSpacing = 100; bigTickSpacing=1000;
+        	}else if(profileWidth()/1000 >=1){
+        		tickSpacing = 10; bigTickSpacing=100;
+        	}else if(profileWidth()/100 >=1){
+        		tickSpacing = 1; bigTickSpacing = 10;
+        	}
+        	int tickPixels = binPix * tickSpacing;
+        	int coordX = leftLimit;
+        	for(int x=tX1; x<=tX2; x+=tickPixels){
+        		if(coordX%bigTickSpacing==0)
+        			g2.drawLine(x, wPlotY2-4, x, wPlotY2+4); //big tick marks
+        		else
+        			g2.drawLine(x, wPlotY2-2, x, wPlotY2+2); //little tick marks
+        		coordX+=tickSpacing;
+        	}
+        	
 		}
+		
+		//Points of Interest
+		for(Integer pt : pointsOfInterest){
+			if(pt>=leftLimit && pt<=rightLimit){
+				int coordX = tX1+(((pt-leftLimit)*tW)/profileWidth())+(binPix/2);
+				System.out.println(tX1+"\t"+pt+"\t"+leftLimit+"\t"+tW+"\t"+profileWidth());
+				g2.setColor(Color.white);
+				g2.fillOval(coordX-3, wPlotY2-3, 6, 6);
+				g2.setColor(Color.black);
+				g2.drawOval(coordX-3, wPlotY2-3, 6, 6);
+			}
+		}
+		
 		g2.setStroke(oldStroke);
 	}
 
