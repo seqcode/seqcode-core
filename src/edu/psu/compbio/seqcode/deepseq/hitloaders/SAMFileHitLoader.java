@@ -52,26 +52,30 @@ public class SAMFileHitLoader extends FileHitLoader{
 		    
 		    if(record.getReadUnmappedFlag()) {continue; }
 		    if(record.isSecondaryOrSupplementary() && !useChimericReads){continue;}
-		    if(record.getReadPairedFlag() && !record.getFirstOfPairFlag() && !loadRead2){continue;}
-		    	
-		    if (lastread == null || !lastread.equals(record.getReadName())) {
-		    	processRead(byRead);
-		    	byRead.clear();
-		    }
-		    lastread = record.getReadName();
-		    
-		    byRead.add(record); //Filter by first or second of pair here if loading by type1/2?
 
-		    //load pair if this is a first mate, congruent, proper pair
-		    if(loadPairs && record.getFirstOfPairFlag() && record.getProperPairFlag()){
-		    	boolean neg = record.getReadNegativeStrandFlag();
-                boolean mateneg = record.getMateNegativeStrandFlag();
-                HitPair hp = new HitPair((neg ? record.getAlignmentEnd() : record.getAlignmentStart()),
-                		record.getMateReferenceName().replaceFirst("^chr", ""),
-                		(mateneg ? record.getMateAlignmentStart()+record.getReadLength()-1 : record.getMateAlignmentStart()), 
-                		mateneg ? 1 : 0,
-                		1);
-                addPair(record.getReferenceName().replaceFirst("^chr", ""), neg ? '-':'+', hp);
+		    //Excluding read2 in current Pugh lab data can only be done via filtering on proper pairs.
+		    //TODO: change back once issue is fixed. 
+		    if(loadRead2 || (record.getReadPairedFlag() && record.getProperPairFlag() && record.getFirstOfPairFlag())){
+		    	
+			    if (lastread == null || !lastread.equals(record.getReadName())) {
+			    	processRead(byRead);
+			    	byRead.clear();
+			    }
+			    lastread = record.getReadName();
+			    
+			    byRead.add(record); //Filter by first or second of pair here if loading by type1/2?
+	
+			    //load pair if this is a first mate, congruent, proper pair
+			    if(loadPairs && record.getFirstOfPairFlag() && record.getProperPairFlag()){
+			    	boolean neg = record.getReadNegativeStrandFlag();
+	                boolean mateneg = record.getMateNegativeStrandFlag();
+	                HitPair hp = new HitPair((neg ? record.getAlignmentEnd() : record.getAlignmentStart()),
+	                		record.getMateReferenceName().replaceFirst("^chr", ""),
+	                		(mateneg ? record.getMateAlignmentStart()+record.getReadLength()-1 : record.getMateAlignmentStart()), 
+	                		mateneg ? 1 : 0,
+	                		1);
+	                addPair(record.getReferenceName().replaceFirst("^chr", ""), neg ? '-':'+', hp);
+			    }
 		    }
 		}
 		processRead(byRead);

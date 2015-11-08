@@ -200,7 +200,6 @@ public class TagProfilePaintable extends AbstractPaintable{
 		for(Integer pt : pointsOfInterest){
 			if(pt>=leftLimit && pt<=rightLimit){
 				int coordX = tX1+(((pt-leftLimit)*tW)/profileWidth())+(binPix/2);
-				System.out.println(tX1+"\t"+pt+"\t"+leftLimit+"\t"+tW+"\t"+profileWidth());
 				g2.setColor(Color.white);
 				g2.fillOval(coordX-3, wPlotY2-3, 6, 6);
 				g2.setColor(Color.black);
