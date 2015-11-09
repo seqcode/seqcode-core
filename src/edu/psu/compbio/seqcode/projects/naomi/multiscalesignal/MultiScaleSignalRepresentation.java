@@ -297,11 +297,36 @@ public class MultiScaleSignalRepresentation {
 			System.out.println("scale: "+scale+"size of original region "+segRegionTree.get(scale).size());
 			System.out.println("size  of SFC region "+segSFC.get(scale).size());
 			System.out.println("content "+segSFC.get(scale));
+		}		
+		manager.close();		
+	}
+	
+	public void printCounts(){
+		
+		for (Integer scale : segRegionTree.keySet())
+			System.out.println("scale is: "+scale+"size is "+segRegionTree.get(scale).size());
+		
+		ExperimentManager manager = new ExperimentManager(econfig);
+		
+		Sample signal = null;
+		Sample control = null;
+		for (ControlledExperiment rep: manager.getReplicates()){
+			signal = rep.getSignal();
+			control = rep.getControl();
 		}
 		
-		manager.close();
+		System.out.println(signal.getName()+"\t"+control.getName());
 		
+		for (Integer scale : segRegionTree.keySet()){
+
+			List<Region> regList = segRegionTree.get(scale);
+			
+			for (Region reg : regList)				
+				System.out.println(signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
+		}
+		manager.close();				
 	}
+	
 		
 	public static void main(String[] args) {
 		
@@ -319,7 +344,8 @@ public class MultiScaleSignalRepresentation {
 		}		
 		MultiScaleSignalRepresentation msr = new MultiScaleSignalRepresentation (gconf, econf, sconf,numScale);	
 		msr.runMSR();	
-		msr.computeSFC();
+//		msr.computeSFC();
+		msr.printCounts();
 		
 		
 	}	
