@@ -230,48 +230,60 @@ public class CompositeModelMixture {
     	
     	//XL components (fit gaussian)
     	for(CompositeModelComponent xlComp : model.getXLComponents()){
-    		TagProbabilityDensity XLdistrib = model.getXLTagDistribution(xlComp);
-	    	double[] oldXLModelW = XLdistrib.getWatsonProbabilities();
-	    	double[] oldXLModelC = XLdistrib.getCrickProbabilities();
-			double[] xlW = new double[XLdistrib.getWinSize()];
-	    	double[] xlC = new double[XLdistrib.getWinSize()];
-	    	for(int i=0; i<XLdistrib.getWinSize(); i++){ xlW[i]=0; xlC[i]=0;}
-    		double[] currW = xlComp.getTagProfile(true);
-    		double[] currC = xlComp.getTagProfile(false);
-    		for(int i=0; i<XLdistrib.getWinSize(); i++){ 
-    			xlW[i]+=currW[i]; 
-    			xlC[i]+=currC[i];
+    		if(xlComp.isNonZero()){
+	    		TagProbabilityDensity XLdistrib = model.getXLTagDistribution(xlComp);
+		    	double[] oldXLModelW = XLdistrib.getWatsonProbabilities();
+		    	double[] oldXLModelC = XLdistrib.getCrickProbabilities();
+				double[] xlW = xlComp.getTagProfile(true);
+	    		double[] xlC = xlComp.getTagProfile(false);
+	    		
+	    		if(config.FIXED_XL_OFFSET){
+	    			//Mean stays constant - calculate sigmas 
+	    			double newSigmaW=config.getXLDistribSigma(), newSigmaC=config.getXLDistribSigma(), 
+	    					sumDiffW=0, sumDiffC=0, totW=0, totC=0;
+	    			int l=XLdistrib.getLeft();
+	    			
+	    			if(config.XL_DISTRIB_SYMMETRIC){
+	    				for(int i=0; i<XLdistrib.getWinSize(); i++){
+		    				//Note that the mean (i.e. position) is at position zero w.r.t XL distribution 
+		    				sumDiffW += (xlW[i]*(l+i))*(xlW[i]*(l+i)) + 
+		    						    (xlC[XLdistrib.getWinSize()-i-1]*(l+i))*(xlC[XLdistrib.getWinSize()-i-1]*(l+i));
+		    				totW+=xlW[i]+xlC[XLdistrib.getWinSize()-i-1];
+		    			}
+	    				sumDiffC = sumDiffW; totC = totW;
+	    			}else{
+		    			for(int i=0; i<XLdistrib.getWinSize(); i++){
+		    				//Note that the mean (i.e. position) is at position zero w.r.t XL distribution 
+		    				sumDiffW += (xlW[i]*(l+i))*(xlW[i]*(l+i));
+		    				totW+=xlW[i];
+		    				sumDiffC += (xlC[i]*(l+i))*(xlC[i]*(l+i));
+		    				totC+=xlC[i];
+		    			}
+	    			}
+	    			if(sumDiffW>0)
+	    				newSigmaW = Math.sqrt(sumDiffW/totW);
+	    			if(sumDiffC>0)
+	    				newSigmaC = Math.sqrt(sumDiffC/totC);
+	    			System.out.println("XLGaussianFit:\tOffset:"+config.getXLDistribOffset()+"\tSigmaW:"+newSigmaW+"\tSigmaC:"+newSigmaC);
+			    	XLdistrib.loadGaussianDistrib(config.getXLDistribOffset(), newSigmaW, config.getXLDistribOffset(), newSigmaC);
+	    		}else{
+	    			//Calculate new mean and sigma (symmetric)
+			    	fitter = new GaussianFitter(new LevenbergMarquardtOptimizer());
+			    	for(int i=0; i<XLdistrib.getWinSize(); i++){
+			    		fitter.addObservedPoint((double)(i+XLdistrib.getLeft()), xlW[i]+xlC[XLdistrib.getWinSize()-i-1]);
+			    	}
+			    	parameters = fitter.fit();;
+			    	newOffset = -1*parameters[1];
+			    	newSigma = parameters[2];
+			    	System.out.println("XLGaussianFit:\tOffset:"+newOffset+"\tSigma:"+newSigma);
+			    	XLdistrib.loadGaussianDistrib(newOffset, newSigma, newOffset, newSigma); //symmetric
+	    		}
+		    	double[] newXLModelW = XLdistrib.getWatsonProbabilities();
+		    	double[] newXLModelC = XLdistrib.getCrickProbabilities();
+		    	//Calc KL
+		    	logKL += StatUtil.log_KL_Divergence(oldXLModelW, newXLModelW);
+		    	logKL += StatUtil.log_KL_Divergence(oldXLModelC, newXLModelC);
     		}
-    		if(config.FIXED_XL_OFFSET){
-    			//Mean stays constant - calculate separate sigmas for each strand
-    			double newSigmaW=0, newSigmaC=0, sumDiffW=0, sumDiffC=0;
-    			int z=XLdistrib.getLeft();
-    			for(int i=0; i<XLdistrib.getWinSize(); i++){
-    				sumDiffW += (xlW[i]*(z-i))*(xlW[i]*(z-i));
-    				sumDiffC += (xlC[i]*(z-i))*(xlC[i]*(z-i));
-    				z++;
-    			}
-    			newSigmaW = Math.sqrt(sumDiffW);
-    			newSigmaC = Math.sqrt(sumDiffC);
-    			System.out.println("XLGaussianFit:\t"+config.getXLDistribOffset()+"\t"+newSigma);
-		    	XLdistrib.loadGaussianDistrib(config.getXLDistribOffset(), newSigmaW, config.getXLDistribOffset(), newSigmaC);
-    		}else{
-    			//Calculate new mean and sigma (symmetric)
-		    	fitter = new GaussianFitter(new LevenbergMarquardtOptimizer());
-		    	for(int i=0; i<XLdistrib.getWinSize(); i++){
-		    		fitter.addObservedPoint((double)(i+XLdistrib.getLeft()), xlW[i]+xlC[XLdistrib.getWinSize()-i-1]);
-		    	}
-		    	parameters = fitter.fit();;
-		    	newOffset = -1*parameters[1];
-		    	newSigma = parameters[2];
-		    	System.out.println("XLGaussianFit:\t"+newOffset+"\t"+newSigma);
-		    	XLdistrib.loadGaussianDistrib(newOffset, newSigma, newOffset, newSigma); //symmetric
-    		}
-	    	double[] newXLModelW = XLdistrib.getWatsonProbabilities();
-	    	double[] newXLModelC = XLdistrib.getCrickProbabilities();
-	    	//Calc KL
-	    	logKL += StatUtil.log_KL_Divergence(oldXLModelW, newXLModelW);
-	    	logKL += StatUtil.log_KL_Divergence(oldXLModelC, newXLModelC);
     	}
     	
 		return logKL;
@@ -385,6 +397,7 @@ public class CompositeModelMixture {
 					xlPainter.setFilledColumns(true);
 					xlPainter.setWatsonColor(new Color(62,115,165));
 					xlPainter.setCrickColor(new Color(88,147,204));
+					xlPainter.setPointOfInterest(xlComp.getPosition()-compositeDistrib.getCenterOffset());
 					String xlImageFileName = config.getOutputImagesDir()+File.separator+config.getOutBase()+"_XL"+pos+"Responsibilities.png";
 					xlPainter.saveImage(new File(xlImageFileName), 1060, 500, true);
 					xlPainter.setProfileLeftLimit(-50);

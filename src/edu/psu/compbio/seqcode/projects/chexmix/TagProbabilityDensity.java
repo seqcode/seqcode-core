@@ -43,6 +43,9 @@ public class TagProbabilityDensity {
 		winSize=size;
 		init(-(winSize/2), winSize-(winSize/2));
 	}
+	public TagProbabilityDensity(int l, int r){
+		init(l, r);
+	}
 	
 	public TagProbabilityDensity(File distFile){
 		int min=Integer.MAX_VALUE, max=Integer.MIN_VALUE;
@@ -230,7 +233,7 @@ public class TagProbabilityDensity {
 		if(w.length!=winSize || c.length!=winSize){
 			throw new Exception("TagProbabilityDensity: trying to load data of unmatched size");
 		}
-		for(int i=0; i<=w.length; i++){
+		for(int i=0; i<w.length; i++){
 			watsonData[i] = w[i];
 			crickData[i] = c[i];
 		}
@@ -372,7 +375,7 @@ public class TagProbabilityDensity {
 	public TagProbabilityDensity clone(){
 		TagProbabilityDensity newTDS = null;
 		try {
-			newTDS = new TagProbabilityDensity(this.winSize);
+			newTDS = new TagProbabilityDensity(this.left, this.right);
 			newTDS.loadData(watsonData, crickData);
 			newTDS.makeProbabilities();
 		} catch (Exception e) {
