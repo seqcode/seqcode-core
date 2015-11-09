@@ -38,6 +38,8 @@ public class TagProbabilityDensity {
 	protected int watsonSummit, crickSummit;		// relative positions of highest probs
 	protected int influenceRange; //95% probability range (over both strands)
 	protected double bgProb, logBgProb;
+	protected boolean isGaussian=false;
+	protected double gaussOffsetW=0, gaussOffsetC=0, gaussSigmaW=-1,gaussSigmaC=-1; 
 	
 	public TagProbabilityDensity(int size){
 		winSize=size;
@@ -253,6 +255,11 @@ public class TagProbabilityDensity {
 			crickData[i-left] = cNorm.density(i);
 		}
 		makeProbabilities();
+		isGaussian = true;
+		gaussOffsetW = offsetWatson;
+		gaussOffsetC = offsetCrick;
+		gaussSigmaW = gaussianSigmaWatson;
+		gaussSigmaC = gaussianSigmaCrick;
 	}
 	
 	/**
@@ -267,6 +274,7 @@ public class TagProbabilityDensity {
 		}
 		makeProbabilities();
 	}
+	
 	
 	/**
 	 * Set a probability landscape according to the data. 
@@ -384,13 +392,85 @@ public class TagProbabilityDensity {
 		return newTDS;
 	}
 	
+	/**
+	 * Save this TagProbabilityDensity
+	 */
 	public String toString(){
 		String out="";
 		for(int w=0; w<winSize; w++){
-			int pos = w+left;
-			out = out + pos+"\t"+watsonProbs[w]+"\t"+crickProbs[w]+"\n";
+			out = out + watsonProbs[w]+"\t"+crickProbs[w]+"\n";
 		}
 		return out;
+	}
+	
+	/**
+	 * Save this TagProbabilityDensity
+	 */
+	public String saveString(){
+		String out="#TagProbabilityDensity,"+left+","+right+","+winSize+",\n";
+		if(this.isGaussian){
+			out = out+"GaussianW,"+gaussOffsetW+","+gaussSigmaW+",\n";
+			out = out+"GaussianC,"+gaussOffsetC+","+gaussSigmaC+",\n";
+		}else{
+			out = out+"EmpiricalW,";
+			for(int w=0; w<winSize; w++){
+				out = out + watsonProbs[w]+",";
+			}out = out +"\n";
+			out = out+"EmpiricalC,";
+			for(int w=0; w<winSize; w++){
+				out = out + crickProbs[w]+",";
+			}out = out +"\n";
+		}
+		return out;
+	}
+	
+	/**
+	 * Load a TagProbabilityDensity using the same format as output in TagProbabilityDensity.saveString()
+	 * @param lines: List of 3 lines describing the TPD
+	 * @return
+	 */
+	public static TagProbabilityDensity load(List<String> lines){
+		TagProbabilityDensity tpd=null;
+		if(lines.size()!=3){
+			System.err.println("TagProbabilityDensity.load(): Unexpected format");
+			System.exit(1);
+		}else{
+			Integer l, r, w;
+			String[] bits = lines.get(0).split(",");
+			String[] bits2 = lines.get(1).split(",");
+			String[] bits3 = lines.get(2).split(",");
+			if(!bits[0].equals("#TagProbabilityDensity") || bits.length<4){
+				System.err.println("TagProbabilityDensity.load(): Unexpected format");
+				System.exit(1);
+			}
+			l = new Integer(bits[1]);
+			r = new Integer(bits[2]);
+			w = new Integer(bits[3]);
+			tpd = new TagProbabilityDensity(l, r);
+			if(bits2[0].equals("GaussianW") && bits3[0].equals("GaussianC")){
+				Integer gow = new Integer(bits2[1]);
+				Integer gsw = new Integer(bits2[2]);
+				Integer goc = new Integer(bits3[1]);
+				Integer gsc = new Integer(bits3[2]);
+				tpd.loadGaussianDistrib(gow, gsw, goc, gsc);
+			}else if(bits2[0].equals("EmpiricalW") && bits3[0].equals("EmpiricalC") && bits2.length>w && bits3.length>w){
+				double[] watson = new double[w];
+				double[] crick = new double[w];
+				for(int i=0; i<w; i++){
+					watson[i] = new Double(bits2[i+1]);
+					crick[i] = new Double(bits3[i+1]);
+				}
+				try {
+					tpd.loadData(watson, crick);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}else{
+				System.err.println("TagProbabilityDensity.load(): Unexpected format");
+				System.exit(1);
+			}
+		}
+		return tpd;
 	}
 	
 	//Main

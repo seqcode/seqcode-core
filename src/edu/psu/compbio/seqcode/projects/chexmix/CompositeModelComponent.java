@@ -70,4 +70,10 @@ public class CompositeModelComponent  implements Comparable<CompositeModelCompon
 	public String toString(int offset){
 		return String.format("%d\t%.5f", position-offset, pi);
 	}
+	
+	public String saveString(){
+		String out="#CompositeModelComponent,";
+		
+		return out;
+	}
 }
