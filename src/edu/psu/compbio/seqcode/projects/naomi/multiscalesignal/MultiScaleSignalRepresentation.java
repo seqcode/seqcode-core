@@ -320,7 +320,7 @@ public class MultiScaleSignalRepresentation {
 		List<Integer> scaleKeyList = new ArrayList<Integer>(segRegionTree.keySet());
 		
 		List<Integer> scaleList = new ArrayList<Integer>();
-		for (int i = Math.round(scaleKeyList.size()/5); i<scaleKeyList.size();i = i+Math.round(scaleKeyList.size()/5))
+		for (int i = Math.round(scaleKeyList.size()/5); i<scaleKeyList.size(); i = i+Math.round(scaleKeyList.size()/5))
 			scaleList.add(i);		
 		
 		for (Integer scale : scaleList){
@@ -332,10 +332,11 @@ public class MultiScaleSignalRepresentation {
 			List<Region> regList = segRegionTree.get(scale);
 				
 			writer.println("#scale is: "+scale+"size is "+segRegionTree.get(scale).size());
-			writer.println(signal.getName()+"\t"+control.getName());
+			writer.println("region\t"+signal.getName()+"\t"+control.getName());
 			
-			for (Region reg : regList)				
-				writer.println(signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
+			for (Region reg : regList)		
+				if (signal.countHits(reg)+control.countHits(reg)!= 0)
+					writer.println(reg+"\t"+signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
 			writer.close();
 		}
 		manager.close();				
