@@ -317,14 +317,11 @@ public class MultiScaleSignalRepresentation {
 		
 //		for (Integer scale : segRegionTree.keySet()){
 		
-		List<Integer> scaleList = new ArrayList<Integer>();
-		scaleList.add(4);
-		scaleList.add(9);
-		scaleList.add(14);
-		scaleList.add(19);
-		scaleList.add(24);
-		scaleList.add(29);
+		List<Integer> scaleKeyList = new ArrayList<Integer>(segRegionTree.keySet());
 		
+		List<Integer> scaleList = new ArrayList<Integer>();
+		for (int i = Math.round(scaleKeyList.size()/5); i<scaleKeyList.size();i = i+Math.round(scaleKeyList.size()/5))
+			scaleList.add(i);		
 		
 		for (Integer scale : scaleList){
 			
