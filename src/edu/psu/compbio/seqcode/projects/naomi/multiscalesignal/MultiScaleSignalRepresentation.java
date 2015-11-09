@@ -1,5 +1,8 @@
 package edu.psu.compbio.seqcode.projects.naomi.multiscalesignal;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -300,11 +303,8 @@ public class MultiScaleSignalRepresentation {
 		}		
 		manager.close();		
 	}
-	
-	public void printCounts(){
 		
-		for (Integer scale : segRegionTree.keySet())
-			System.out.println("scale is: "+scale+"size is "+segRegionTree.get(scale).size());
+	public void printCounts() throws FileNotFoundException, UnsupportedEncodingException{
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
 		
@@ -313,22 +313,39 @@ public class MultiScaleSignalRepresentation {
 		for (ControlledExperiment rep: manager.getReplicates()){
 			signal = rep.getSignal();
 			control = rep.getControl();
-		}
+		}		
 		
-		System.out.println(signal.getName()+"\t"+control.getName());
+//		for (Integer scale : segRegionTree.keySet()){
 		
-		for (Integer scale : segRegionTree.keySet()){
+		List<Integer> scaleList = new ArrayList<Integer>();
+		scaleList.add(4);
+		scaleList.add(9);
+		scaleList.add(14);
+		scaleList.add(19);
+		scaleList.add(24);
+		scaleList.add(29);
+		
+		
+		for (Integer scale : scaleList){
+			
+			String outName = scale+"_scaleCounts.txt";
+			
+			PrintWriter writer = new PrintWriter(outName,"UTF-8");
 
 			List<Region> regList = segRegionTree.get(scale);
+				
+			writer.println("#scale is: "+scale+"size is "+segRegionTree.get(scale).size());
+			writer.println(signal.getName()+"\t"+control.getName());
 			
 			for (Region reg : regList)				
 				System.out.println(signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
+			writer.close();
 		}
 		manager.close();				
 	}
 	
 		
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
 		
 		/***
 		 * Need to specify --tag3ext & --binwidth --scale
