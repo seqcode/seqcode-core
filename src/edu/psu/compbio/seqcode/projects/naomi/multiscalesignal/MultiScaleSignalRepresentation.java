@@ -335,7 +335,7 @@ public class MultiScaleSignalRepresentation {
 			writer.println("region\t"+signal.getName()+"\t"+control.getName());
 			
 			for (Region reg : regList)		
-				if (signal.countHits(reg)+control.countHits(reg)!= 0)
+				if (signal.countHits(reg)+control.countHits(reg) > 0)
 					writer.println(reg+"\t"+signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
 			writer.close();
 		}
