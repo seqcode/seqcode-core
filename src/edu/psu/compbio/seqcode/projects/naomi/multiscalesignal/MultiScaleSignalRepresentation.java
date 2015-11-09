@@ -1,5 +1,8 @@
 package edu.psu.compbio.seqcode.projects.naomi.multiscalesignal;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -297,13 +300,49 @@ public class MultiScaleSignalRepresentation {
 			System.out.println("scale: "+scale+"size of original region "+segRegionTree.get(scale).size());
 			System.out.println("size  of SFC region "+segSFC.get(scale).size());
 			System.out.println("content "+segSFC.get(scale));
-		}
-		
-		manager.close();
-		
+		}		
+		manager.close();		
 	}
 		
-	public static void main(String[] args) {
+	public void printCounts() throws FileNotFoundException, UnsupportedEncodingException{
+		
+		ExperimentManager manager = new ExperimentManager(econfig);
+		
+		Sample signal = null;
+		Sample control = null;
+		for (ControlledExperiment rep: manager.getReplicates()){
+			signal = rep.getSignal();
+			control = rep.getControl();
+		}		
+		
+//		for (Integer scale : segRegionTree.keySet()){
+		
+		List<Integer> scaleKeyList = new ArrayList<Integer>(segRegionTree.keySet());
+		
+		List<Integer> scaleList = new ArrayList<Integer>();
+		for (int i = Math.round(scaleKeyList.size()/5); i<scaleKeyList.size();i = i+Math.round(scaleKeyList.size()/5))
+			scaleList.add(i);		
+		
+		for (Integer scale : scaleList){
+			
+			String outName = scale+"_scaleCounts.txt";
+			
+			PrintWriter writer = new PrintWriter(outName,"UTF-8");
+
+			List<Region> regList = segRegionTree.get(scale);
+				
+			writer.println("#scale is: "+scale+"size is "+segRegionTree.get(scale).size());
+			writer.println(signal.getName()+"\t"+control.getName());
+			
+			for (Region reg : regList)				
+				writer.println(signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
+			writer.close();
+		}
+		manager.close();				
+	}
+	
+		
+	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
 		
 		/***
 		 * Need to specify --tag3ext & --binwidth --scale
@@ -319,7 +358,8 @@ public class MultiScaleSignalRepresentation {
 		}		
 		MultiScaleSignalRepresentation msr = new MultiScaleSignalRepresentation (gconf, econf, sconf,numScale);	
 		msr.runMSR();	
-		msr.computeSFC();
+//		msr.computeSFC();
+		msr.printCounts();
 		
 		
 	}	
