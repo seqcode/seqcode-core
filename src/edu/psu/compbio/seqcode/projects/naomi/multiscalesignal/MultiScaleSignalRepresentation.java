@@ -42,6 +42,7 @@ public class MultiScaleSignalRepresentation {
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
 	protected SEEDConfig sconfig;
+	protected ExperimentManager manager;
 	protected int numScale;
 
 	//external parameters
@@ -54,16 +55,16 @@ public class MultiScaleSignalRepresentation {
 	
 	protected Map<Integer,List<Region>> segRegionTree = new HashMap<Integer, List<Region>>();
 	
-	public MultiScaleSignalRepresentation(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon, int scale){	
+	public MultiScaleSignalRepresentation(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon, ExperimentManager man, int scale){	
 		gconfig = gcon;
 		econfig = econ;
 		sconfig = scon;
+		manager = man;
 		numScale = scale;
 	}
 	 
 	public void runMSR(){
-		
-		ExperimentManager manager = new ExperimentManager(econfig);
+
 		Genome genome = gconfig.getGenome();
 		
 		//fix here to get parameters only if they are specified
@@ -248,8 +249,6 @@ public class MultiScaleSignalRepresentation {
 		
 		Map<Integer,List<Region>> segSFC = new HashMap<Integer, List<Region>>();
 		
-		ExperimentManager manager = new ExperimentManager(econfig);
-		
 		Sample signal = null;
 		Sample control = null;
 		for (ControlledExperiment rep: manager.getReplicates()){
@@ -306,8 +305,6 @@ public class MultiScaleSignalRepresentation {
 		
 	public void printCounts() throws FileNotFoundException, UnsupportedEncodingException{
 		
-		ExperimentManager manager = new ExperimentManager(econfig);
-		
 		Sample signal = null;
 		Sample control = null;
 		for (ControlledExperiment rep: manager.getReplicates()){
@@ -319,6 +316,7 @@ public class MultiScaleSignalRepresentation {
 		
 		List<Integer> scaleKeyList = new ArrayList<Integer>(segRegionTree.keySet());
 		
+		// selecting a set of scales for output
 		List<Integer> scaleList = new ArrayList<Integer>();
 		for (int i = Math.round(scaleKeyList.size()/5); i<scaleKeyList.size(); i = i+Math.round(scaleKeyList.size()/5))
 			scaleList.add(i);		
@@ -333,7 +331,7 @@ public class MultiScaleSignalRepresentation {
 				
 			writer.println("#scale is: "+scale+"size is "+segRegionTree.get(scale).size());
 			
-			System.out.println("total control signal is "+control.getHitCount()+"signal is "+signal.getHitCount());
+			System.out.println("total control signal is "+control.getHitCount()+" signal is "+signal.getHitCount());
 			
 			System.out.println(regList);
 			
@@ -358,14 +356,15 @@ public class MultiScaleSignalRepresentation {
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		SEEDConfig sconf = new SEEDConfig(gconf, args);
 		ArgParser ap = new ArgParser(args);
+		ExperimentManager man = new ExperimentManager(econf); 
 		int numScale = 20;
 		if (ap.hasKey("scale")){
 			numScale = Args.parseInteger(args,"scale",3);
 		}		
-		MultiScaleSignalRepresentation msr = new MultiScaleSignalRepresentation (gconf, econf, sconf,numScale);	
+		MultiScaleSignalRepresentation msr = new MultiScaleSignalRepresentation (gconf, econf, sconf, man, numScale);	
 		msr.runMSR();	
-//		msr.computeSFC();
-		msr.printCounts();
+		msr.computeSFC();
+//		msr.printCounts();
 		
 		
 	}	
