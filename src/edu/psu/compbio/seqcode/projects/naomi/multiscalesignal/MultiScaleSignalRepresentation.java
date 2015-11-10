@@ -202,7 +202,7 @@ public class MultiScaleSignalRepresentation {
 			// I'm testing with small chrom21 ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;	
 			
-			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000){			
+			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000 && currchromBinSize <20000000){			
 			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 
 			
@@ -212,7 +212,7 @@ public class MultiScaleSignalRepresentation {
 					System.out.println("current scale is:"+scale);
 					Set<Integer> segmentation = segmentationTree.get(scale);
 					System.out.println("current size is : "+segmentation.size());
-					System.out.println("current nodes are is : "+segmentation);	
+//					System.out.println("current nodes are is : "+segmentation);	
 			}	
 			
 			//converting coordinates to regions
