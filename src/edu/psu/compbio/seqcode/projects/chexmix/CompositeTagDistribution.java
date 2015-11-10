@@ -127,6 +127,9 @@ public class CompositeTagDistribution {
 	//Accessors
 	public int getWinSize(){return win;}
 	public int getCenterOffset(){return centerOffset;}
+	public int getNumConditions(){return numConditions;}
+	public double[][] getCompositeWatson(){return watson;}
+	public double[][] getCompositeCrick(){return crick;}
 	public double[] getCompositeWatson(ExperimentCondition c){return watson[c.getIndex()];}
 	public double[] getCompositeCrick(ExperimentCondition c){return crick[c.getIndex()];}
 	public double[] getPointWatson(StrandedPoint p, ExperimentCondition c){return perPointWatson[pointIndex.get(p)][c.getIndex()];}
@@ -160,9 +163,9 @@ public class CompositeTagDistribution {
 		}
 		return out;
 	}
-	
+		
 	//Print probs to a file
-	public void printToFile(ExperimentCondition cond, String filename){
+	public void printProbsToFile(ExperimentCondition cond, String filename){
 		try {
 			FileWriter fout = new FileWriter(filename);
 			for(int w=0; w<win; w++){

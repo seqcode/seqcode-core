@@ -55,7 +55,7 @@ public class CompositeXLFinder {
 		for(ExperimentCondition cond : manager.getConditions()){
 			String compositeFileName = cconfig.getOutputParentDir()+File.separator+cconfig.getOutBase()
 					+"_composite."+cond.getName()+".txt";
-			signalComposite.printToFile(cond, compositeFileName);
+			signalComposite.printProbsToFile(cond, compositeFileName);
 			
 			String perSiteRespFileName = cconfig.getOutputParentDir()+File.separator+cconfig.getOutBase()
 					+"_site-component-ML."+cond.getName()+".txt";
@@ -63,6 +63,9 @@ public class CompositeXLFinder {
 		}
 		mixtureModel.saveCompositePlots();
 		
+		//Save the model
+		String modelFileName = cconfig.getOutputParentDir()+File.separator+cconfig.getOutBase()+".chexmix";
+		mixtureModel.getModel().saveToFile(modelFileName);
 	}
 	
 	//Main

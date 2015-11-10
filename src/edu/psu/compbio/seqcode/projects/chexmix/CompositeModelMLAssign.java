@@ -1,6 +1,5 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
