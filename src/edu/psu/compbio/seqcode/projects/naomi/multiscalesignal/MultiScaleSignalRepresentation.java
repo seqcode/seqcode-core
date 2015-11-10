@@ -221,7 +221,8 @@ public class MultiScaleSignalRepresentation {
 				Integer prevCoord = 0;
 				for (Integer coord : segmentationTree.get(scale)){
 					if (coord>0){
-						Region segRegion = new Region(genome,currChrom.getChrom(),prevCoord*binWidth,coord*binWidth);
+						//region coordinate is assumed to be inclusive, hence -1 from the end coordinate
+						Region segRegion = new Region(genome,currChrom.getChrom(),prevCoord*binWidth,coord*binWidth-1);
 						if (segRegionTree.containsKey(scale)){
 							segRegionTree.get(scale).add(segRegion);	
 						}else{
@@ -323,20 +324,14 @@ public class MultiScaleSignalRepresentation {
 		
 		for (Integer scale : scaleList){
 			
-			String outName = scale+"_scaleCounts.txt";
-			
+			String outName = scale+"_scaleCounts.txt";			
 			PrintWriter writer = new PrintWriter(outName,"UTF-8");
-
-			List<Region> regList = segRegionTree.get(scale);
-				
+			List<Region> regList = segRegionTree.get(scale);				
 			writer.println("#scale is: "+scale+"size is "+segRegionTree.get(scale).size());
 			
-			System.out.println("total control signal is "+control.getHitCount()+" signal is "+signal.getHitCount());
-			
 			for (Region reg : regList){
-				System.out.println(reg.getChrom()+"\t"+reg+"\t"+(control.countHits(reg)+signal.countHits(reg)));
-//				if (signal.countHits(reg)+control.countHits(reg) > 0)
-//					writer.println(reg+"\t"+signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
+				if (signal.countHits(reg)+control.countHits(reg) > 0)
+					writer.println(reg+"\t"+signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
 			}
 			writer.close();
 		}
