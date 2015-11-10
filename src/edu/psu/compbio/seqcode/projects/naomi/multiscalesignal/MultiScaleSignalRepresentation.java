@@ -333,8 +333,6 @@ public class MultiScaleSignalRepresentation {
 			
 			System.out.println("total control signal is "+control.getHitCount()+" signal is "+signal.getHitCount());
 			
-			System.out.println(regList);
-			
 			for (Region reg : regList){
 				System.out.println(reg.getChrom()+"\t"+reg+"\t"+(control.countHits(reg)+signal.countHits(reg)));
 //				if (signal.countHits(reg)+control.countHits(reg) > 0)
