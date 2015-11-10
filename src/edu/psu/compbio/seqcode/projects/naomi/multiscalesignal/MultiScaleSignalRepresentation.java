@@ -332,14 +332,16 @@ public class MultiScaleSignalRepresentation {
 			List<Region> regList = segRegionTree.get(scale);
 				
 			writer.println("#scale is: "+scale+"size is "+segRegionTree.get(scale).size());
-			writer.println("region\t"+signal.getName()+"\t"+control.getName());
 			
 			System.out.println("total control signal is "+control.getHitCount()+"signal is "+signal.getHitCount());
 			
-			for (Region reg : regList)	
-//				System.out.println(reg.getChrom()+"\t"+reg+"\t"+(control.countHits(reg)+signal.countHits(reg)));
+			System.out.println(regList);
+			
+			for (Region reg : regList){
+				System.out.println(reg.getChrom()+"\t"+reg+"\t"+(control.countHits(reg)+signal.countHits(reg)));
 //				if (signal.countHits(reg)+control.countHits(reg) > 0)
 //					writer.println(reg+"\t"+signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
+			}
 			writer.close();
 		}
 		manager.close();				
