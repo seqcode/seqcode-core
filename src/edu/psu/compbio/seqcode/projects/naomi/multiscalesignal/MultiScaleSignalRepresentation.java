@@ -334,9 +334,10 @@ public class MultiScaleSignalRepresentation {
 			writer.println("#scale is: "+scale+"size is "+segRegionTree.get(scale).size());
 			writer.println("region\t"+signal.getName()+"\t"+control.getName());
 			
-			for (Region reg : regList)		
-				if (signal.countHits(reg)+control.countHits(reg) > 0)
-					writer.println(reg+"\t"+signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
+			for (Region reg : regList)	
+				System.out.println(reg.getChrom()+"\t"+reg+"\t"+(control.countHits(reg)+signal.countHits(reg)));
+//				if (signal.countHits(reg)+control.countHits(reg) > 0)
+//					writer.println(reg+"\t"+signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
 			writer.close();
 		}
 		manager.close();				
