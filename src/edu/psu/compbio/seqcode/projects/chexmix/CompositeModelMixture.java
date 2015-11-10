@@ -41,7 +41,7 @@ public class CompositeModelMixture {
 	protected List<CompositeModelSiteAssignment> siteAssignments;
 	protected CompositeModelEM EMtrainer; //Training method
 	
-	protected TagProbabilityDensity initBackDistrib, initCSDistrib, initXODistrib;
+	protected TagProbabilityDensity initBackDistrib, initCSDistrib, initXLDistrib;
 	protected double initNoisePi;
 	protected List<Region> regionsToPlot;
 	protected int trainingRound=0;
@@ -60,7 +60,7 @@ public class CompositeModelMixture {
 
 		initializeTagDistributions();
 		
-		model = new ProteinDNAInteractionModel(config, compositeDistrib.getWinSize(), initXODistrib, initCSDistrib, initBackDistrib, initNoisePi);
+		model = new ProteinDNAInteractionModel(config, compositeDistrib, initXLDistrib, initCSDistrib, initBackDistrib, initNoisePi);
 		siteAssignments = new ArrayList<CompositeModelSiteAssignment>();
 	}
 	
@@ -122,7 +122,7 @@ public class CompositeModelMixture {
 	
      
 	/**
-	 * Initialize the CS, XO, and background tag distributions
+	 * Initialize the CS, XL, and background tag distributions
 	 */
 	protected void initializeTagDistributions(){
 		//CS (empirical)
@@ -135,8 +135,8 @@ public class CompositeModelMixture {
 		initCSDistrib.loadGaussianDistrib(150, 100, 150, 100);
 		
 		//XO
-		initXODistrib = new TagProbabilityDensity(200);
-		initXODistrib.loadGaussianDistrib(config.getXLDistribOffset(), config.getXLDistribSigma(),config.getXLDistribOffset(), config.getXLDistribSigma());
+		initXLDistrib = new TagProbabilityDensity(200);
+		initXLDistrib.loadGaussianDistrib(config.getXLDistribOffset(), config.getXLDistribSigma(),config.getXLDistribOffset(), config.getXLDistribSigma());
 		
 		//Background
 		if(controlCompositeDistrib==null){

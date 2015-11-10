@@ -47,7 +47,7 @@ public class TophatFileHitLoader extends FileHitLoader{
 		    SAMRecord record = iter.next();
 		    
 		    if (record.getReadUnmappedFlag()) {continue; }
-		    if(record.getReadPairedFlag() && !record.getFirstOfPairFlag() && !loadRead2){continue;}
+		    if(record.getReadPairedFlag() && record.getSecondOfPairFlag() && !loadRead2){continue;}
 		    float weight = 1/(float)record.getIntegerAttribute("NH");
 		    
 		    Read currRead = new Read();

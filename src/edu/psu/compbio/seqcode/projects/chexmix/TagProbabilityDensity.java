@@ -28,8 +28,11 @@ import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
  */
 public class TagProbabilityDensity {
 	
+	private static int count=0;
+	
 	protected final double LOG2 = Math.log(2);
 	protected final double TAGDISTRIB_MIN_PROB = 1e-100; //Minimum probability allowed in any tag distribution
+	protected int index;
 	protected int winSize;
 	protected int left, right; //relative left & right positions
 	protected double[] watsonData, crickData; //Data landscape should be based on (typically tag counts)
@@ -42,14 +45,17 @@ public class TagProbabilityDensity {
 	protected double gaussOffsetW=0, gaussOffsetC=0, gaussSigmaW=-1,gaussSigmaC=-1; 
 	
 	public TagProbabilityDensity(int size){
+		index=count; count++;
 		winSize=size;
 		init(-(winSize/2), winSize-(winSize/2));
 	}
 	public TagProbabilityDensity(int l, int r){
+		index=count; count++;
 		init(l, r);
 	}
 	
 	public TagProbabilityDensity(File distFile){
+		index=count; count++;
 		int min=Integer.MAX_VALUE, max=Integer.MIN_VALUE;
 		try {
 			List<Pair<Integer,Double>> empiricalDistribution = new LinkedList<Pair<Integer,Double>>(); 
@@ -92,6 +98,7 @@ public class TagProbabilityDensity {
 	}
 	
 	public TagProbabilityDensity(List<Pair<Integer,Double>> empiricalWatson, List<Pair<Integer,Double>> empiricalCrick){
+		index=count; count++;
 		int min=Integer.MAX_VALUE, max=Integer.MIN_VALUE;
 		try{
 			for(Pair<Integer,Double> p : empiricalWatson){
@@ -119,6 +126,8 @@ public class TagProbabilityDensity {
 	
 	
 	//Accessors
+	public int getIndex(){return index;}
+	public void setIndex(int i){index=i;}
 	public int getLeft(){return left;}
 	public int getRight(){return right;}
 	public int getWinSize(){return winSize;}
@@ -407,7 +416,7 @@ public class TagProbabilityDensity {
 	 * Save this TagProbabilityDensity
 	 */
 	public String saveString(){
-		String out="#TagProbabilityDensity,"+left+","+right+","+winSize+",\n";
+		String out="#TagProbabilityDensity,"+index+","+left+","+right+","+winSize+",\n";
 		if(this.isGaussian){
 			out = out+"GaussianW,"+gaussOffsetW+","+gaussSigmaW+",\n";
 			out = out+"GaussianC,"+gaussOffsetC+","+gaussSigmaC+",\n";
@@ -435,7 +444,7 @@ public class TagProbabilityDensity {
 			System.err.println("TagProbabilityDensity.load(): Unexpected format");
 			System.exit(1);
 		}else{
-			Integer l, r, w;
+			Integer index, l, r, w;
 			String[] bits = lines.get(0).split(",");
 			String[] bits2 = lines.get(1).split(",");
 			String[] bits3 = lines.get(2).split(",");
@@ -443,10 +452,12 @@ public class TagProbabilityDensity {
 				System.err.println("TagProbabilityDensity.load(): Unexpected format");
 				System.exit(1);
 			}
-			l = new Integer(bits[1]);
-			r = new Integer(bits[2]);
-			w = new Integer(bits[3]);
+			index = new Integer(bits[1]);
+			l = new Integer(bits[2]);
+			r = new Integer(bits[3]);
+			w = new Integer(bits[4]);
 			tpd = new TagProbabilityDensity(l, r);
+			tpd.setIndex(index);
 			if(bits2[0].equals("GaussianW") && bits3[0].equals("GaussianC")){
 				Integer gow = new Integer(bits2[1]);
 				Integer gsw = new Integer(bits2[2]);
