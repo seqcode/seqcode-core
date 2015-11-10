@@ -216,12 +216,12 @@ public class MultiScaleSignalRepresentation {
 //					System.out.println("current nodes are is : "+segmentation);	
 			}	
 			
-			//converting coordinates to regions
+			//converting coordinates to regions, multiplied by bin width
 			for (Integer scale : segmentationTree.keySet()){
 				Integer prevCoord = 0;
 				for (Integer coord : segmentationTree.get(scale)){
 					if (coord>0){
-						Region segRegion = new Region(genome,currChrom.getChrom(),prevCoord,coord);
+						Region segRegion = new Region(genome,currChrom.getChrom(),prevCoord*binWidth,coord*binWidth);
 						if (segRegionTree.containsKey(scale)){
 							segRegionTree.get(scale).add(segRegion);	
 						}else{
