@@ -361,8 +361,8 @@ public class MultiScaleSignalRepresentation {
 		}		
 		MultiScaleSignalRepresentation msr = new MultiScaleSignalRepresentation (gconf, econf, sconf, man, numScale);	
 		msr.runMSR();	
-		msr.computeSFC();
-//		msr.printCounts();
+//		msr.computeSFC();
+		msr.printCounts();
 		
 		
 	}	
