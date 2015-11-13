@@ -136,6 +136,11 @@ public class TagProbabilityDensity {
 	public int getInfluenceRange(){return influenceRange;}
 	public double[] getWatsonProbabilities(){return  watsonProbs.clone();}
 	public double[] getCrickProbabilities(){return  crickProbs.clone();}
+	public boolean isGaussian(){return isGaussian;}
+	public double getGaussOffsetW(){return gaussOffsetW;}
+	public double getGaussOffsetC(){return gaussOffsetC;}
+	public double getGaussSigmaW(){return gaussSigmaW;}
+	public double getGaussSigmaC(){return gaussSigmaC;}
 	
 	/**
 	 *  Look up the probability corresponding to a distance and strand relationship to the central position.
@@ -257,7 +262,7 @@ public class TagProbabilityDensity {
 	 * @param gaussianSigma 
 	 */
 	public void loadGaussianDistrib(double offsetWatson, double gaussianSigmaWatson, double offsetCrick, double gaussianSigmaCrick){
-		NormalDistribution wNorm = new NormalDistribution(-offsetWatson, gaussianSigmaWatson);
+		NormalDistribution wNorm = new NormalDistribution(offsetWatson, gaussianSigmaWatson);
 		NormalDistribution cNorm = new NormalDistribution(offsetCrick, gaussianSigmaCrick);
 		for(int i=left; i<=right; i++){
 			watsonData[i-left] = wNorm.density(i);
@@ -393,6 +398,11 @@ public class TagProbabilityDensity {
 		TagProbabilityDensity newTDS = null;
 		try {
 			newTDS = new TagProbabilityDensity(this.left, this.right);
+			newTDS.isGaussian=this.isGaussian;
+			newTDS.gaussOffsetW = this.gaussOffsetW;
+			newTDS.gaussOffsetC = this.gaussOffsetC;
+			newTDS.gaussSigmaW = this.gaussSigmaW;
+			newTDS.gaussSigmaC = this.gaussSigmaC;
 			newTDS.loadData(watsonData, crickData);
 			newTDS.makeProbabilities();
 		} catch (Exception e) {
@@ -407,7 +417,7 @@ public class TagProbabilityDensity {
 	public String toString(){
 		String out="";
 		for(int w=0; w<winSize; w++){
-			out = out + watsonProbs[w]+"\t"+crickProbs[w]+"\n";
+			out = out + w +"\t"+watsonProbs[w]+"\t"+crickProbs[w]+"\n";
 		}
 		return out;
 	}
@@ -448,7 +458,7 @@ public class TagProbabilityDensity {
 			String[] bits = lines.get(0).split(",");
 			String[] bits2 = lines.get(1).split(",");
 			String[] bits3 = lines.get(2).split(",");
-			if(!bits[0].equals("#TagProbabilityDensity") || bits.length<4){
+			if(!bits[0].equals("#TagProbabilityDensity") || bits.length!=5){
 				System.err.println("TagProbabilityDensity.load(): Unexpected format");
 				System.exit(1);
 			}
@@ -459,10 +469,10 @@ public class TagProbabilityDensity {
 			tpd = new TagProbabilityDensity(l, r);
 			tpd.setIndex(index);
 			if(bits2[0].equals("GaussianW") && bits3[0].equals("GaussianC")){
-				Integer gow = new Integer(bits2[1]);
-				Integer gsw = new Integer(bits2[2]);
-				Integer goc = new Integer(bits3[1]);
-				Integer gsc = new Integer(bits3[2]);
+				Double gow = new Double(bits2[1]);
+				Double gsw = new Double(bits2[2]);
+				Double goc = new Double(bits3[1]);
+				Double gsc = new Double(bits3[2]);
 				tpd.loadGaussianDistrib(gow, gsw, goc, gsc);
 			}else if(bits2[0].equals("EmpiricalW") && bits3[0].equals("EmpiricalC") && bits2.length>w && bits3.length>w){
 				double[] watson = new double[w];
@@ -488,7 +498,7 @@ public class TagProbabilityDensity {
 	public static void main(String[] args){
 		int win = 200;
 		TagProbabilityDensity td = new TagProbabilityDensity(win);
-		td.loadGaussianDistrib(6, 1, 6, 1);
+		td.loadGaussianDistrib(-6, 1, 6, 1);
 		
 		double[] watson = td.getWatsonProbabilities();
 		double[] crick = td.getCrickProbabilities();

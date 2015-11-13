@@ -37,12 +37,14 @@ public class ChExMixConfig {
 	protected String outName="chexmix", outBase="chexmix";
 	protected File outDir=null, interDir=null, imagesDir=null;
 	protected boolean printHelp=false;
+	protected String model=null; //Filename containing existing model
 	protected TagProbabilityDensity defaultCSModel=null;
 	protected List<StrandedPoint> compositePoints = new ArrayList<StrandedPoint>(); //Centers of the composite plots
 	protected int compositeWinSize=1000; //Width of the composite plot
 	protected int XLDistribOffset=6; //exonuclease head-space
 	protected double XLDistribSigma=1.5; //gaussian distrib sigma
 	protected int XLComponentSpacing = 5; //Inital number of bp between XL Components
+	protected int minModelUpdateRounds=3; //Minimum number of outer EM training rounds
 	protected int maxModelUpdateRounds=10; //Maximum number of outer EM training rounds
 	protected double modelConvergenceKL=-25; //KL-divergence threshold for convergence 
 	protected int maxThreads=1;				//Number of threads to use. Default is 1 for single processor machines. 
@@ -141,6 +143,8 @@ public class ChExMixConfig {
 					defaultCSModel = new TagProbabilityDensity(pFile); 
 				}
 				
+				/****Pre-existing model****/
+				model = Args.parseString(args,"model",model);
 				
 				/****Miscellaneous arguments****/
 				//Width of the composite window
@@ -149,7 +153,7 @@ public class ChExMixConfig {
 				if(ap.hasKey("cpoints"))
 					compositePoints = Utils.loadStrandedPointsFromFile(gen, Args.parseString(args, "cpoints", null));
 				//Maximum number of model update rounds
-				maxModelUpdateRounds = Args.parseInteger(args,"r", 3);
+				maxModelUpdateRounds = Args.parseInteger(args,"r", maxModelUpdateRounds);
 				//Turn off binding model updates
 				updateBM = Args.parseFlags(args).contains("nomodelupdate") ? false : true;
 				//Turn off smoothing during binding model updates 
@@ -210,6 +214,7 @@ public class ChExMixConfig {
 	//Accessors
 	public Genome getGenome(){return gen;}
 	public boolean helpWanted(){return printHelp;}
+	public String getModelFilename(){return model;}
 	public int getCompositeWinSize(){return compositeWinSize;}
 	public List<StrandedPoint> getCompositePoints(){return compositePoints;}
 	public int getMaxThreads(){return maxThreads;}
@@ -225,6 +230,7 @@ public class ChExMixConfig {
 	public boolean getGaussBMSmooth(){return gaussianSmoothingBMDuringUpdate;}
 	public double getBindingModelGaussSmoothParam(){return bindingmodel_gauss_smooth;}
 	public int getMaxModelUpdateRounds(){return maxModelUpdateRounds;}
+	public int getMinModelUpdateRounds(){return minModelUpdateRounds;}
 	public double getModelConvergenceKL(){return modelConvergenceKL;}
 	public int getXLDistribOffset(){return XLDistribOffset;}
 	public double getXLDistribSigma(){return XLDistribSigma;}
@@ -295,6 +301,8 @@ public class ChExMixConfig {
 				"\t--threads <number of threads to use (default="+maxThreads+")>\n" +
 				"Experiment Design File:\n" +
 				"\t--design <file name>\n" +
+				"ChExMix Model:" +
+				"\t--model <filename>\n" +
 				"Miscellaneous:\n" +
 				"\t--alphascale <alpha scaling factor(default="+alphaScalingFactor+">\n" +
 				"\t--fixedalpha <impose this alpha (default: set automatically)>\n" +

@@ -185,9 +185,10 @@ public class ProteinDNAInteractionModel {
 			out = out+"\n";
 		}
 		//Tag distributions & Components
-		for(CompositeModelComponent comp : getNonZeroComponents())
+		// Here we need to either put all components out here (incl non-zero) or re-index non-zero components
+		for(CompositeModelComponent comp : getAllComponents())
 			out = out+comp.getTagDistribution().saveString();
-		for(CompositeModelComponent comp : getNonZeroComponents())
+		for(CompositeModelComponent comp : getAllComponents())
 			out = out+comp.saveString();		
 		return out;
 	}
@@ -215,7 +216,7 @@ public class ProteinDNAInteractionModel {
 	public static ProteinDNAInteractionModel load(ChExMixConfig con, List<String> lines){
 		ProteinDNAInteractionModel mod = null;
 		String[] bits = lines.get(0).split(",");
-		if(bits.length!=5 || !bits[0].equals("#ProteinDNAInteractionModel")){
+		if(bits.length!=4 || !bits[0].equals("#ProteinDNAInteractionModel")){
 			System.err.println("ProteinDNAInteractionModel.load(): Unexpected format");
 			System.exit(1);
 		}else{
