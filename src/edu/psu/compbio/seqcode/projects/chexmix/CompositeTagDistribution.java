@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -186,17 +187,23 @@ public class CompositeTagDistribution {
 		ChExMixConfig config = new ChExMixConfig(gcon, args);
 		if(config.helpWanted()){
 			System.err.println("CompositeTagDistribution:");
-			System.err.println("\t--points <stranded point file>");
-			System.err.println("\t--win <window around points>");
+			System.err.println("\t--cpoints <stranded point file>");
+			System.err.println("\t--cwin <window around points>");
 			System.err.println(config.getArgsList());			
 		}else{
 			ExperimentManager manager = new ExperimentManager(econ);
 			
-			int w = Args.parseInteger(args, "win", 400);
-			String pFile = Args.parseString(args, "points", null);
+			int w = Args.parseInteger(args, "cwin", 400);
+			String pFile = Args.parseString(args, "cpoints", null);
 			List<StrandedPoint> pts = Utils.loadStrandedPointsFromFile(config.getGenome(), pFile);
 			
 			CompositeTagDistribution maker = new CompositeTagDistribution(pts, manager, w, true);
+			
+			for(ExperimentCondition cond : manager.getConditions()){
+				String compositeFileName = config.getOutBase()
+						+"_composite."+cond.getName()+".txt";
+				maker.printProbsToFile(cond, compositeFileName);
+			}
 			manager.close();
 		}
 	}

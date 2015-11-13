@@ -66,6 +66,9 @@ public class CompositeModelMixture {
 	
 	//Accessors
 	public ProteinDNAInteractionModel getModel(){return model;}
+	public void setModel(ProteinDNAInteractionModel mod){model=mod; trainedModel=true;} //Useful if not training model, but still want to use ML on a saved model
+	public List<CompositeModelSiteAssignment> getSiteAssignments(){return siteAssignments;}
+	
 	
 	/**
 	 * Train the mixture model with EM  
@@ -84,7 +87,8 @@ public class CompositeModelMixture {
 				System.out.println("TrainingRound: "+trainingRound+":\n"+model.toString()+"\n\tModelKL="+kl[trainingRound]);
 				
 				//Check for convergence
-				if(kl[trainingRound]<config.getModelConvergenceKL())
+				if(trainingRound>=config.getMinModelUpdateRounds()-1 && 
+						kl[trainingRound]<config.getModelConvergenceKL())
 					converged=true;
 			}
 			if(config.getPlotEM())
@@ -132,11 +136,11 @@ public class CompositeModelMixture {
 			initCSDistrib = new TagProbabilityDensity(TagProbabilityDensity.defaultChipSeqEmpiricalDistribution, null);
 		*/
 		initCSDistrib = new TagProbabilityDensity(compositeDistrib.getWinSize());
-		initCSDistrib.loadGaussianDistrib(150, 100, 150, 100);
+		initCSDistrib.loadGaussianDistrib(-150, 100, 150, 100);
 		
 		//XO
 		initXLDistrib = new TagProbabilityDensity(200);
-		initXLDistrib.loadGaussianDistrib(config.getXLDistribOffset(), config.getXLDistribSigma(),config.getXLDistribOffset(), config.getXLDistribSigma());
+		initXLDistrib.loadGaussianDistrib(-config.getXLDistribOffset(), config.getXLDistribSigma(),config.getXLDistribOffset(), config.getXLDistribSigma());
 		
 		//Background
 		if(controlCompositeDistrib==null){
@@ -217,10 +221,10 @@ public class CompositeModelMixture {
     		fitter.addObservedPoint((double)(i+CSdistrib.getLeft()), csW[i]+csC[CSdistrib.getWinSize()-i-1]);
     	}
     	double[] parameters = fitter.fit();;
-    	double newOffset = -1*parameters[1];
+    	double newOffset = parameters[1];
     	double newSigma = parameters[2];
     	System.out.println("CSGaussianFit:\t"+newOffset+"\t"+newSigma);
-    	CSdistrib.loadGaussianDistrib(newOffset, newSigma, newOffset, newSigma); //Symmetric CS component
+    	CSdistrib.loadGaussianDistrib(newOffset, newSigma, -newOffset, newSigma); //Symmetric CS component
     	double[] newCSModelW = CSdistrib.getWatsonProbabilities();
     	double[] newCSModelC = CSdistrib.getCrickProbabilities();
     	//Calc KL
@@ -232,31 +236,35 @@ public class CompositeModelMixture {
     	for(CompositeModelComponent xlComp : model.getXLComponents()){
     		if(xlComp.isNonZero()){
 	    		TagProbabilityDensity XLdistrib = model.getXLTagDistribution(xlComp);
-		    	double[] oldXLModelW = XLdistrib.getWatsonProbabilities();
+	    		if(!XLdistrib.isGaussian())
+	    			System.err.println("CompositeModelMixture: Warning: replacing an empirical distribution with a Gaussian in XL component");
+	    		
+	    		double[] oldXLModelW = XLdistrib.getWatsonProbabilities();
 		    	double[] oldXLModelC = XLdistrib.getCrickProbabilities();
 				double[] xlW = xlComp.getTagProfile(true);
 	    		double[] xlC = xlComp.getTagProfile(false);
 	    		
 	    		if(config.FIXED_XL_OFFSET){
 	    			//Mean stays constant - calculate sigmas 
-	    			double newSigmaW=config.getXLDistribSigma(), newSigmaC=config.getXLDistribSigma(), 
+	    			double newSigmaW=config.getXLDistribSigma(), newSigmaC=config.getXLDistribSigma(),
+	    					offsetW = XLdistrib.getGaussOffsetW(), offsetC = XLdistrib.getGaussOffsetC(),
 	    					sumDiffW=0, sumDiffC=0, totW=0, totC=0;
 	    			int l=XLdistrib.getLeft();
 	    			
 	    			if(config.XL_DISTRIB_SYMMETRIC){
 	    				for(int i=0; i<XLdistrib.getWinSize(); i++){
 		    				//Note that the mean (i.e. position) is at position zero w.r.t XL distribution 
-		    				sumDiffW += (xlW[i]*(l+i))*(xlW[i]*(l+i)) + 
-		    						    (xlC[XLdistrib.getWinSize()-i-1]*(l+i))*(xlC[XLdistrib.getWinSize()-i-1]*(l+i));
+		    				sumDiffW += (xlW[i]*(l+i-offsetW)*(l+i-offsetW)) + 
+		    						    (xlC[XLdistrib.getWinSize()-i-1]*(l+i-offsetW)*(l+i-offsetW)); //note... -oldOffsetW is correct here
 		    				totW+=xlW[i]+xlC[XLdistrib.getWinSize()-i-1];
 		    			}
 	    				sumDiffC = sumDiffW; totC = totW;
 	    			}else{
 		    			for(int i=0; i<XLdistrib.getWinSize(); i++){
 		    				//Note that the mean (i.e. position) is at position zero w.r.t XL distribution 
-		    				sumDiffW += (xlW[i]*(l+i))*(xlW[i]*(l+i));
+		    				sumDiffW += (xlW[i]*(l+i-offsetW)*(l+i-offsetW));
 		    				totW+=xlW[i];
-		    				sumDiffC += (xlC[i]*(l+i))*(xlC[i]*(l+i));
+		    				sumDiffC += (xlC[i]*(l+i-offsetC)*(l+i-offsetC));
 		    				totC+=xlC[i];
 		    			}
 	    			}
@@ -265,7 +273,7 @@ public class CompositeModelMixture {
 	    			if(sumDiffC>0)
 	    				newSigmaC = Math.sqrt(sumDiffC/totC);
 	    			System.out.println("XLGaussianFit:\tOffset:"+config.getXLDistribOffset()+"\tSigmaW:"+newSigmaW+"\tSigmaC:"+newSigmaC);
-			    	XLdistrib.loadGaussianDistrib(config.getXLDistribOffset(), newSigmaW, config.getXLDistribOffset(), newSigmaC);
+			    	XLdistrib.loadGaussianDistrib(-config.getXLDistribOffset(), newSigmaW, config.getXLDistribOffset(), newSigmaC);
 	    		}else{
 	    			//Calculate new mean and sigma (symmetric)
 			    	fitter = new GaussianFitter(new LevenbergMarquardtOptimizer());
@@ -273,10 +281,10 @@ public class CompositeModelMixture {
 			    		fitter.addObservedPoint((double)(i+XLdistrib.getLeft()), xlW[i]+xlC[XLdistrib.getWinSize()-i-1]);
 			    	}
 			    	parameters = fitter.fit();;
-			    	newOffset = -1*parameters[1];
+			    	newOffset = parameters[1];
 			    	newSigma = parameters[2];
 			    	System.out.println("XLGaussianFit:\tOffset:"+newOffset+"\tSigma:"+newSigma);
-			    	XLdistrib.loadGaussianDistrib(newOffset, newSigma, newOffset, newSigma); //symmetric
+			    	XLdistrib.loadGaussianDistrib(newOffset, newSigma, -newOffset, newSigma); //symmetric
 	    		}
 		    	double[] newXLModelW = XLdistrib.getWatsonProbabilities();
 		    	double[] newXLModelC = XLdistrib.getCrickProbabilities();

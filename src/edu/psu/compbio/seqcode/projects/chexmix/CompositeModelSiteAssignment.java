@@ -17,6 +17,21 @@ public class CompositeModelSiteAssignment{
 		modelComponentResponsibilities = modelResp;
 	}
 	
+	public StrandedPoint getPoint(){return point;}
+	
+	public double getCompResponsibility(ExperimentCondition cond, int componentIndex){
+		int index=-1;
+		for(int i=0; i<modelComponentIndices.length; i++)
+			if(modelComponentIndices[i]==componentIndex)
+				index = i;
+		
+		if(index==-1){
+			System.err.println("CompositeModelSiteAssignment: error: component not indexed");
+			System.exit(1);
+		}
+		return (modelComponentResponsibilities[cond.getIndex()][index]);
+	}
+	
 	public String toString(ExperimentCondition cond){
 		String out = point.getLocationString()+String.format("\t%.2f", totalTags[cond.getIndex()]);
 		for(int i=0; i<modelComponentIndices.length; i++)

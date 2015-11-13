@@ -92,7 +92,7 @@ public class CompositeModelComponent  implements Comparable<CompositeModelCompon
 	public static CompositeModelComponent load(String line, Map<Integer, TagProbabilityDensity> tagDensities){
 		CompositeModelComponent cmc = null;
 		String[] bits = line.split(",");
-		if(bits.length!=11 || !bits[0].equals("#CompositeModelComponent")){
+		if(bits.length!=10 || !bits[0].equals("#CompositeModelComponent")){
 			System.err.println("CompositeModelComponent.load(): Unexpected format");
 			System.exit(1);
 		}else{
