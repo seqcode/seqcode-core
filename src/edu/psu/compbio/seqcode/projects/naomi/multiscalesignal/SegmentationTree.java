@@ -144,11 +144,8 @@ public class SegmentationTree {
 					gaussianBlur[i][1]=(float) coefficients[(int) (polyMid-Math.floor((currchromBinSize/2-i)/binWindowSize))];
 			}	
 		
-			//testing; I can identify the region that I want to print using peak calling
-			if (currchromBinSize < 200000 && currchromBinSize >15000){			
-				for (int i = 0; i< 200;i++)
-				System.out.println(gaussianBlur[9650+i][0]+" : "+gaussianBlur[9650+i][1]);
-			}
+			for (int i = 0; i< 50;i++)
+				System.out.println(gaussianBlur[111113388+i][0]+" : "+gaussianBlur[111113388+i][1]);
 			
 			final long gaussianEndTime = System.currentTimeMillis();
 			
