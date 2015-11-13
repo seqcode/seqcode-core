@@ -145,7 +145,7 @@ public class SegmentationTree {
 			}	
 		
 			for (int i = 0; i< 50;i++)
-				System.out.println(gaussianBlur[11113388+i][0]+" : "+gaussianBlur[111113388+i][1]);
+				System.out.println(gaussianBlur[11113388+i][0]+" : "+gaussianBlur[11113388+i][1]);
 			
 			final long gaussianEndTime = System.currentTimeMillis();
 			
