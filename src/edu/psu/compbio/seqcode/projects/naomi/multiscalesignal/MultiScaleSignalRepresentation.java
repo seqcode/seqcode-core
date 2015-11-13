@@ -311,7 +311,7 @@ public class MultiScaleSignalRepresentation {
 		
 		// selecting a set of scales for output
 		List<Integer> scaleList = new ArrayList<Integer>();
-		for (int i = Math.round(scaleKeyList.size()/5); i<scaleKeyList.size(); i = i+Math.round(scaleKeyList.size()/5))
+		for (int i = Math.round(scaleKeyList.size()/5)-1; i<scaleKeyList.size(); i = i+Math.round(scaleKeyList.size()/5))
 			scaleList.add(i);		
 		
 		for (Integer scale : scaleList){
