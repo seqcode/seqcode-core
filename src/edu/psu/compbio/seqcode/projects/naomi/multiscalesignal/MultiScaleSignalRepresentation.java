@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
@@ -42,28 +43,27 @@ public class MultiScaleSignalRepresentation {
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
 	protected SEEDConfig sconfig;
+	protected ExperimentManager manager;
 	protected int numScale;
 
 	//external parameters
 	protected int threePrimReadExt = 200;
 	protected int binWidth = 1;
 	
-	protected double scaling = 1;	
-	
-	
-	
+	protected double scaling;	
+
 	protected Map<Integer,List<Region>> segRegionTree = new HashMap<Integer, List<Region>>();
 	
-	public MultiScaleSignalRepresentation(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon, int scale){	
+	public MultiScaleSignalRepresentation(GenomeConfig gcon, ExptConfig econ, SEEDConfig scon, ExperimentManager man, int scale){	
 		gconfig = gcon;
 		econfig = econ;
 		sconfig = scon;
+		manager = man;
 		numScale = scale;
 	}
 	 
 	public void runMSR(){
-		
-		ExperimentManager manager = new ExperimentManager(econfig);
+
 		Genome genome = gconfig.getGenome();
 		
 		//fix here to get parameters only if they are specified
@@ -75,9 +75,10 @@ public class MultiScaleSignalRepresentation {
 		System.out.println("threePrimReadExt is: "+threePrimReadExt);
 		
 		//get scaling ratio	
-		for (ControlledExperiment rep: manager.getReplicates()){
-			scaling = rep.getControlScaling();
-			System.out.println("Condition: "+rep.getCondName()+"\tScalingFactor: "+scaling);
+		for (ExperimentCondition condition : manager.getConditions()){
+			for (ControlledExperiment rep: condition.getReplicates()){
+				System.out.println("Condition: "+rep.getCondName()+"\tScalingFactor: "+rep.getControlScaling());
+			}
 		}
 		
 		Iterator<Region> chroms = new ChromosomeGenerator<Genome>().execute(genome);
@@ -90,7 +91,7 @@ public class MultiScaleSignalRepresentation {
 			
 			System.out.println("current chrom is "+currChrom.getChrom());
 			
-			Map<Sample,float[]> condiGaussianBlur = new HashMap<Sample,float[]>();
+			Map<Sample,float[]> gaussianBlurMap = new HashMap<Sample,float[]>();
 			float[] sampleCounts = new float[currchromBinSize];
 			//primitive array to store signal and the subsequent convolved signals
 			//its index correspond to the coordinates
@@ -100,23 +101,24 @@ public class MultiScaleSignalRepresentation {
 					gaussianBlur[i][j] = 0;
 			}
 			
-			//get StrandedBaseCount list for signal and control
-			Map<Sample, List<StrandedBaseCount>> condiCountsMap = new HashMap<Sample, List<StrandedBaseCount>>();
+			//get StrandedBaseCount list for each condition and replicate
+			Map<Sample, List<StrandedBaseCount>> sampleCountsMap = new HashMap<Sample, List<StrandedBaseCount>>();
 			
-			for (ControlledExperiment rep: manager.getReplicates()){
-				condiCountsMap.put(rep.getSignal(), rep.getSignal().getBases(currChrom));
-				if (rep.hasControl())
-					condiCountsMap.put(rep.getControl(), rep.getControl().getBases(currChrom));			
+			for (ExperimentCondition condition : manager.getConditions()){
+				
+				for (ControlledExperiment rep: condition.getReplicates()){
+					sampleCountsMap.put(rep.getSignal(), rep.getSignal().getBases(currChrom));			
+				}
 			}
 			
 			//StrandedBasedCount object contains positive and negative strand separately
 			//store all base counts indexed by positions at column[1]
-			//extend reads to 3' end and bin according to bin size			
-			for (Sample sample : manager.getSamples()){	
+			//extend reads to 3' end and bin according to bin size		
+			for (Sample sample : sampleCountsMap.keySet()){
 				for (int i = 0;i<currchromBinSize;i++)
-						sampleCounts[i] = 0;
+					sampleCounts[i] = 0;
 				
-				List<StrandedBaseCount> currentCounts = condiCountsMap.get(sample);
+				List<StrandedBaseCount> currentCounts = sampleCountsMap.get(sample);
 				for (StrandedBaseCount hits: currentCounts){
 					for (int i = 0; i<threePrimReadExt+1; i++){
 						if (hits.getStrand()=='+' && (int) Math.ceil((hits.getCoordinate()+i)/binWidth)<currchromBinSize){
@@ -127,25 +129,23 @@ public class MultiScaleSignalRepresentation {
 						}
 					}
 				}
-				condiGaussianBlur.put(sample, sampleCounts);
+				gaussianBlurMap.put(sample, sampleCounts);
 				currentCounts = null;
 			}
 			
-			//if there is a single sample, build SegmentaionTree using single sample
+			// constructing a gaussianBlur by combining signals from each condition and replicate
 			for (ControlledExperiment rep : manager.getReplicates()){
-				if (!rep.hasControl()){
-					for (Sample sample : manager.getSamples()){
-						float[] counts = condiGaussianBlur.get(sample);
-						for (int i = 0; i<currchromBinSize; i++)
-							gaussianBlur[i][1] = counts[i];					
-					}
-				}else{ //for control and signal; construct a gaussianBlur by taking signal*scaling-control
-					float[] signalCounts = condiGaussianBlur.get(rep.getSignal());
-					float[] controlCounts = condiGaussianBlur.get(rep.getControl());
-					for (int i = 0; i<currchromBinSize; i++)
-						gaussianBlur[i][1] = (float) (signalCounts[i]-scaling*controlCounts[i]);
-				}
-			}
+				float[] counts = gaussianBlurMap.get(rep.getSignal());
+				for (int i = 0; i<currchromBinSize ; i++)
+					gaussianBlur[i][1] += (float) (counts[i]/rep.getControlScaling());
+			}	
+
+//				}else{ //for control and signal; construct a gaussianBlur by taking signal*scaling-control
+//					float[] signalCounts = gaussianBlurMap.get(rep.getSignal());
+//					float[] controlCounts = gaussianBlurMap.get(rep.getControl());
+//					for (int i = 0; i<currchromBinSize; i++)
+//						gaussianBlur[i][1] = (float) (signalCounts[i]-scaling*controlCounts[i]);
+//				}
 			
 			/*********************
 			 * Starting nodes
@@ -202,7 +202,7 @@ public class MultiScaleSignalRepresentation {
 			// I'm testing with small chrom21 ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;	
 			
-			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000){			
+			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000 && currchromBinSize <20000000){			
 			segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
 
 			
@@ -212,15 +212,16 @@ public class MultiScaleSignalRepresentation {
 					System.out.println("current scale is:"+scale);
 					Set<Integer> segmentation = segmentationTree.get(scale);
 					System.out.println("current size is : "+segmentation.size());
-					System.out.println("current nodes are is : "+segmentation);	
+//					System.out.println("current nodes are is : "+segmentation);	
 			}	
 			
-			//converting coordinates to regions
+			//converting coordinates to regions, multiplied by bin width
 			for (Integer scale : segmentationTree.keySet()){
 				Integer prevCoord = 0;
 				for (Integer coord : segmentationTree.get(scale)){
 					if (coord>0){
-						Region segRegion = new Region(genome,currChrom.getChrom(),prevCoord,coord);
+						//region coordinate is assumed to be inclusive, hence -1 from the end coordinate
+						Region segRegion = new Region(genome,currChrom.getChrom(),prevCoord*binWidth,coord*binWidth-1);
 						if (segRegionTree.containsKey(scale)){
 							segRegionTree.get(scale).add(segRegion);	
 						}else{
@@ -247,8 +248,6 @@ public class MultiScaleSignalRepresentation {
 		}
 		
 		Map<Integer,List<Region>> segSFC = new HashMap<Integer, List<Region>>();
-		
-		ExperimentManager manager = new ExperimentManager(econfig);
 		
 		Sample signal = null;
 		Sample control = null;
@@ -306,42 +305,33 @@ public class MultiScaleSignalRepresentation {
 		
 	public void printCounts() throws FileNotFoundException, UnsupportedEncodingException{
 		
-		ExperimentManager manager = new ExperimentManager(econfig);
-		
-		Sample signal = null;
-		Sample control = null;
-		for (ControlledExperiment rep: manager.getReplicates()){
-			signal = rep.getSignal();
-			control = rep.getControl();
-		}		
-		
 //		for (Integer scale : segRegionTree.keySet()){
 		
 		List<Integer> scaleKeyList = new ArrayList<Integer>(segRegionTree.keySet());
 		
+		// selecting a set of scales for output
 		List<Integer> scaleList = new ArrayList<Integer>();
 		for (int i = Math.round(scaleKeyList.size()/5); i<scaleKeyList.size(); i = i+Math.round(scaleKeyList.size()/5))
 			scaleList.add(i);		
 		
 		for (Integer scale : scaleList){
 			
-			String outName = scale+"_scaleCounts.txt";
-			
-			PrintWriter writer = new PrintWriter(outName,"UTF-8");
-
-			List<Region> regList = segRegionTree.get(scale);
-				
-			writer.println("#scale is: "+scale+"size is "+segRegionTree.get(scale).size());
-			writer.println("region\t"+signal.getName()+"\t"+control.getName());
-			
-			for (Region reg : regList)		
-				if (signal.countHits(reg)+control.countHits(reg) > 0)
-					writer.println(reg+"\t"+signal.countHits(reg)+"\t"+control.countHits(reg)*scaling);
-			writer.close();
+			for (ExperimentCondition conditions : manager.getConditions()){
+				for (ControlledExperiment rep : conditions.getReplicates()){
+					String outName = scale+"_"+rep.getSignal().getName()+"_scaleCounts.txt";
+					PrintWriter writer = new PrintWriter(outName,"UTF-8");
+					List<Region> regList = segRegionTree.get(scale);
+					writer.println("#scale is: "+scale+"size is "+segRegionTree.get(scale).size());
+					writer.println(rep.getSignal().getName());
+					for (Region reg : regList){
+						writer.println(reg+"\t"+rep.getSignal().countHits(reg));
+					}
+					writer.close();
+				}
+			}
 		}
 		manager.close();				
 	}
-	
 		
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
 		
@@ -353,11 +343,12 @@ public class MultiScaleSignalRepresentation {
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		SEEDConfig sconf = new SEEDConfig(gconf, args);
 		ArgParser ap = new ArgParser(args);
+		ExperimentManager man = new ExperimentManager(econf); 
 		int numScale = 20;
 		if (ap.hasKey("scale")){
 			numScale = Args.parseInteger(args,"scale",3);
 		}		
-		MultiScaleSignalRepresentation msr = new MultiScaleSignalRepresentation (gconf, econf, sconf,numScale);	
+		MultiScaleSignalRepresentation msr = new MultiScaleSignalRepresentation (gconf, econf, sconf, man, numScale);	
 		msr.runMSR();	
 //		msr.computeSFC();
 		msr.printCounts();
