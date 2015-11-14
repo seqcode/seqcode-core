@@ -41,9 +41,9 @@ public class SegmentationTree {
 	final static double MINIMUM_VALUE = Math.pow(10, -100); //arbitrary minimum value; I cannot use Double.MIN_VALUE because it can become zero
 	// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
 //	final static double P_MIN = Math.pow(10,-3);
-	final static double P_MIN = 0.1;
+	final static double P_MIN = Math.pow(10,-2);
 	//P_BIN is to determine window size of growing bin
-	final static double P_BIN = 0.4999;
+	final static double P_BIN = 0.4995;
 	final static double K_MIN = 1/Math.sqrt(1-Math.exp(-2*DELTA_TAU));	
 	final static double K_N = Math.ceil(K_MIN);
 
@@ -269,13 +269,13 @@ public class SegmentationTree {
 		// scale zero is getting overwriting with the parents of the last scale; I'm overwriting the scale zero with initial nodesest for quick fix
 		segmentationTree.put(0, startingNodes);
 		
-//		for (Integer scale : segmentationTree.keySet()){
-//			System.out.println("current scale is: "+scale);
-//			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
-//			System.out.println("current nodeset size is: "+sortedNodeSet.size());
+		for (Integer scale : segmentationTree.keySet()){
+			System.out.println("current scale is: "+scale);
+			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
+			System.out.println("current nodeset size is: "+sortedNodeSet.size());
 //			for (Integer node : sortedNodeSet)
 //				System.out.println(node);
-//		}	
+		}	
 		
 		return segmentationTree;
 		
