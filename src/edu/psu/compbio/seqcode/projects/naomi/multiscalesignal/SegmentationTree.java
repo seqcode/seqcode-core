@@ -124,7 +124,7 @@ public class SegmentationTree {
 			double coefficients[]= polyMultiplication.getCoefficients();
 		
 			//taking mid point of polynomial coefficients			
-			int polyMid = (int) Math.floor(((float) coefficients.length)/2);
+			int coeffiMid = (int) Math.floor(((float) coefficients.length)/ 2.0);
 		
 			System.out.println("currchromBin Size is : "+currchromBinSize+"\twindowSize is: "+windowSize+
 					"\tpolyCoeffi length is "+polyCoeffi.length+"\tcoefficients length is: "+coefficients.length);
@@ -139,14 +139,13 @@ public class SegmentationTree {
 			
 			// copy Gaussian blur results to the column[1] with increasing bin size
 			for (int i = 0; i<currchromBinSize;i++){
-				gaussianBlur[i][1]=(float) coefficients[(int) (polyMid-Math.floor((fchromBinSize/2-i)/binWindowSize))];
-				if (currchromBinSize % 2 ==0 && coefficients.length % 2 == 1)
-					gaussianBlur[i][1]=(float) coefficients[(int) (polyMid-Math.floor((fchromBinSize/2-i-1)/binWindowSize))];
+				if (polyCoeffi.length % 2 ==0 && coefficients.length % 2 == 1)
+					gaussianBlur[i][1]=(float) coefficients[(int) (coeffiMid-Math.floor((fchromBinSize/2-i)/binWindowSize))+1];
 				else
-					gaussianBlur[i][1]=(float) coefficients[(int) (polyMid-Math.floor((fchromBinSize/2-i)/binWindowSize))];
+					gaussianBlur[i][1]=(float) coefficients[(int) (coeffiMid-Math.floor((fchromBinSize/2-i)/binWindowSize))];
 			}	
 		
-			for (int i = 0; i< 50;i++)
+			for (int i = 0; i< 50;i+=i*100)
 				System.out.println(gaussianBlur[11113388+i][0]+" : "+gaussianBlur[11113388+i][1]);
 			
 			final long gaussianEndTime = System.currentTimeMillis();
