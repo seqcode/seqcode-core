@@ -91,7 +91,7 @@ public class SegmentationTree {
 			double inverseCDF = normDistribution.inverseCumulativeProbability(P_MIN);	
 			double binInverseCDF = normDistribution.inverseCumulativeProbability(P_BIN);			
 			int windowSize = (int) (-Math.round(inverseCDF)*2+1);	
-			int binWindowSize = (int) (-Math.round(binInverseCDF)*2+1);
+			float binWindowSize = -Math.round(binInverseCDF)*2+1;
 			
 			//window calculation based on Gaussian(normal) distribution with sigma, mean=zero,x=X[i]			
 			double window[] = new double[windowSize];
@@ -103,16 +103,17 @@ public class SegmentationTree {
 			double normalizedWindow[]=new double[windowSize];
 			for (int i = 0;i<windowSize;i++)
 				normalizedWindow[i] = window[i]/windowSum;	
-					
-			double polyCoeffi[] = new double [(int) Math.ceil(currchromBinSize/binWindowSize)];
-			System.out.println("binWindowSize is "+binWindowSize+"\tpolyCoeffi length is "+(int) Math.ceil(currchromBinSize/binWindowSize));
+			
+			float fchromBinSize = currchromBinSize;
+			double polyCoeffi[] = new double [(int) Math.ceil(fchromBinSize/binWindowSize)];
+			System.out.println("binWindowSize is "+binWindowSize+"\tpolyCoeffi length is "+(int) Math.ceil(fchromBinSize/binWindowSize));
 			//copy from column[1] to column[0];this procedure need to be repeated for each iteration of scale
 			// copy from column[1] to array to store polynomial coefficient
 			for (int i = 0 ; i<currchromBinSize; i++){
 				gaussianBlur[i][0]=gaussianBlur[i][1];
-				polyCoeffi[(int) Math.floor(i/binWindowSize)] += (gaussianBlur[i][1])/binWindowSize;
+				polyCoeffi[(int) Math.floor(((float) i)/binWindowSize)] += gaussianBlur[i][1]/binWindowSize;
 			}
-			for (int i = 0; i < Math.ceil(currchromBinSize/binWindowSize); i++){
+			for (int i = 0; i < Math.ceil(fchromBinSize/binWindowSize); i++){
 				if (polyCoeffi[i] == 0)
 					polyCoeffi[i]=MINIMUM_VALUE;
 			}	
@@ -123,7 +124,7 @@ public class SegmentationTree {
 			double coefficients[]= polyMultiplication.getCoefficients();
 		
 			//taking mid point of polynomial coefficients			
-			int polyMid = (int) Math.floor(coefficients.length/2);
+			int polyMid = (int) Math.floor(((float) coefficients.length)/2);
 		
 			System.out.println("currchromBin Size is : "+currchromBinSize+"\twindowSize is: "+windowSize+
 					"\tpolyCoeffi length is "+polyCoeffi.length+"\tcoefficients length is: "+coefficients.length);
@@ -138,11 +139,11 @@ public class SegmentationTree {
 			
 			// copy Gaussian blur results to the column[1] with increasing bin size
 			for (int i = 0; i<currchromBinSize;i++){
-				gaussianBlur[i][1]=(float) coefficients[(int) (polyMid-Math.floor((currchromBinSize/2-i)/binWindowSize))];
+				gaussianBlur[i][1]=(float) coefficients[(int) (polyMid-Math.floor((fchromBinSize/2-i)/binWindowSize))];
 				if (currchromBinSize % 2 ==0 && coefficients.length % 2 == 1)
-					gaussianBlur[i][1]=(float) coefficients[(int) (polyMid-Math.floor((currchromBinSize/2-i-1)/binWindowSize))];
+					gaussianBlur[i][1]=(float) coefficients[(int) (polyMid-Math.floor((fchromBinSize/2-i-1)/binWindowSize))];
 				else
-					gaussianBlur[i][1]=(float) coefficients[(int) (polyMid-Math.floor((currchromBinSize/2-i)/binWindowSize))];
+					gaussianBlur[i][1]=(float) coefficients[(int) (polyMid-Math.floor((fchromBinSize/2-i)/binWindowSize))];
 			}	
 		
 			for (int i = 0; i< 50;i++)
