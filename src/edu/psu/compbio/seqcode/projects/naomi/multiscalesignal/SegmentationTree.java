@@ -105,11 +105,12 @@ public class SegmentationTree {
 				normalizedWindow[i] = window[i]/windowSum;	
 					
 			double polyCoeffi[] = new double [(int) Math.ceil(currchromBinSize/binWindowSize)];
+			System.out.println("binWindowSize is "+binWindowSize+"\tpolyCoeffi length is "+(int) Math.ceil(currchromBinSize/binWindowSize));
 			//copy from column[1] to column[0];this procedure need to be repeated for each iteration of scale
 			// copy from column[1] to array to store polynomial coefficient
 			for (int i = 0 ; i<currchromBinSize; i++){
 				gaussianBlur[i][0]=gaussianBlur[i][1];
-				polyCoeffi[(int) Math.floor(i/binWindowSize)] += gaussianBlur[i][1];
+				polyCoeffi[(int) Math.floor(i/binWindowSize)] += (gaussianBlur[i][1])/binWindowSize;
 			}
 			for (int i = 0; i < Math.ceil(currchromBinSize/binWindowSize); i++){
 				if (polyCoeffi[i] == 0)
