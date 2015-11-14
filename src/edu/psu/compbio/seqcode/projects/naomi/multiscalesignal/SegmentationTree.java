@@ -43,7 +43,7 @@ public class SegmentationTree {
 //	final static double P_MIN = Math.pow(10,-3);
 	final static double P_MIN = Math.pow(10,-2);
 	//P_BIN is to determine window size of growing bin
-	final static double P_BIN = 0.4999;
+	final static double P_BIN = 0.4995;
 	final static double K_MIN = 1/Math.sqrt(1-Math.exp(-2*DELTA_TAU));	
 	final static double K_N = Math.ceil(K_MIN);
 
@@ -146,8 +146,8 @@ public class SegmentationTree {
 					gaussianBlur[i][1]=(float) coefficients[(int) (coeffiMid-Math.floor((fchromBinSize/2-i)/binWindowSize))];
 			}	
 		
-			for (int i = 0; i< 5000;i += 100)
-				System.out.println(gaussianBlur[11113388+i][0]+" : "+gaussianBlur[11113388+i][1]);
+			for (int i = 0; i< 11516987;i += 200000)
+				System.out.println(gaussianBlur[i][0]+" : "+gaussianBlur[i][1]);
 			
 			final long gaussianEndTime = System.currentTimeMillis();
 			
