@@ -145,7 +145,7 @@ public class SegmentationTree {
 					gaussianBlur[i][1]=(float) coefficients[(int) (coeffiMid-Math.floor((fchromBinSize/2-i)/binWindowSize))];
 			}	
 		
-			for (int i = 0; i< 50;i += 100)
+			for (int i = 0; i< 5000;i += 100)
 				System.out.println(gaussianBlur[11113388+i][0]+" : "+gaussianBlur[11113388+i][1]);
 			
 			final long gaussianEndTime = System.currentTimeMillis();
