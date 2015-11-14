@@ -41,9 +41,9 @@ public class SegmentationTree {
 	final static double MINIMUM_VALUE = Math.pow(10, -100); //arbitrary minimum value; I cannot use Double.MIN_VALUE because it can become zero
 	// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
 //	final static double P_MIN = Math.pow(10,-3);
-	final static double P_MIN = Math.pow(10,-2);
+	final static double P_MIN = 0.1;
 	//P_BIN is to determine window size of growing bin
-	final static double P_BIN = 0.4995;
+	final static double P_BIN = 0.4999;
 	final static double K_MIN = 1/Math.sqrt(1-Math.exp(-2*DELTA_TAU));	
 	final static double K_N = Math.ceil(K_MIN);
 
