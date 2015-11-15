@@ -192,14 +192,8 @@ public class MultiScaleSignalRepresentation {
 			SegmentationTree segtree = new SegmentationTree(gconfig, econfig, sconfig, numScale);	
 			
 //			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
-			
-			final long endTime = System.currentTimeMillis();
-			
-			System.out.println("building segTree for chrom "+ currChrom+ " took "+(endTime-startTime));
-			System.out.println(StringEscapeUtils.escapeJava(currChrom.getChrom()));
 
-			
-			// I'm testing with small chrom21 ; beginning of test
+			// I'm testing with a singl chromosome ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;	
 			
 			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000 && currchromBinSize <20000000){			
@@ -214,6 +208,12 @@ public class MultiScaleSignalRepresentation {
 					System.out.println("current size is : "+segmentation.size());
 //					System.out.println("current nodes are is : "+segmentation);	
 			}	
+			
+			final long endTime = System.currentTimeMillis();
+			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000 && currchromBinSize <20000000){
+				System.out.println("building segTree for chrom "+ currChrom+ " took "+(endTime-startTime));
+				System.out.println(StringEscapeUtils.escapeJava(currChrom.getChrom()));
+			}
 			
 			//converting coordinates to regions, multiplied by bin width
 			for (Integer scale : segmentationTree.keySet()){
@@ -311,7 +311,7 @@ public class MultiScaleSignalRepresentation {
 		
 		// selecting a set of scales for output
 		List<Integer> scaleList = new ArrayList<Integer>();
-		for (int i = Math.round(scaleKeyList.size()/5); i<scaleKeyList.size(); i = i+Math.round(scaleKeyList.size()/5))
+		for (int i = Math.round(scaleKeyList.size()/5)-1; i<scaleKeyList.size(); i = i+Math.round(scaleKeyList.size()/5))
 			scaleList.add(i);		
 		
 		for (Integer scale : scaleList){
