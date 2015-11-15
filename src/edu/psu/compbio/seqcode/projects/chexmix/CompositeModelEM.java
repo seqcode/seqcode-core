@@ -177,7 +177,7 @@ public class CompositeModelEM {
         //////////
         // Run EM steps
         //////////
-        if(!runEM)
+        if(runEM)
         	EM_MAP();
         else
         	responsibilityAssignment();
@@ -479,7 +479,7 @@ public class CompositeModelEM {
     		if(!componentEliminated)
     			t++;
     		iter++;
-    		
+
             ////////////
           	//Check Stopping condition
           	////////////
