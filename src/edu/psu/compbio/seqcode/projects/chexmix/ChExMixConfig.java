@@ -50,6 +50,7 @@ public class ChExMixConfig {
 	protected int maxThreads=1;				//Number of threads to use. Default is 1 for single processor machines. 
 	protected double alphaScalingFactor = 10.0; //Scale the alpha value by this factor relative to the noise component per-base
 	protected double fixedAlpha = 0.0; //Fixed alpha value if above 0
+	protected boolean noXL=false; //Test method that turns off XL components (by seeting all XL pi to zero from start). 
 	protected boolean smoothingBMDuringUpdate=true;
 	protected boolean gaussianSmoothingBMDuringUpdate=false;
 	protected boolean updateBM=true; //Set to false to turn off binding model update
@@ -177,6 +178,8 @@ public class ChExMixConfig {
 				alphaScalingFactor = Args.parseDouble(args,"alphascale",alphaScalingFactor);
 				//Fixed alpha value
 				fixedAlpha = Args.parseDouble(args,"fixedalpha",fixedAlpha);
+				//Turn off XL components for testing
+				noXL =  Args.parseFlags(args).contains("noxl") ? true : false;
 				//Plot the EM process on the composite
 				plotCompositeEM =  Args.parseFlags(args).contains("plot") ? true : false;
 				//Regions to print during ML training
@@ -220,6 +223,7 @@ public class ChExMixConfig {
 	public int getMaxThreads(){return maxThreads;}
 	public double getAlphaScalingFactor(){return alphaScalingFactor;}
 	public double getFixedAlpha(){return fixedAlpha;}
+	public boolean noXL(){return noXL;}
 	public boolean getPlotEM(){return plotCompositeEM;}
 	public boolean getWriteSinglePlots(){return writeSinglePlots;}
 	public List<Region> getRegionsToPlot(){return regionsToPlotML;}
@@ -306,6 +310,7 @@ public class ChExMixConfig {
 				"Miscellaneous:\n" +
 				"\t--alphascale <alpha scaling factor(default="+alphaScalingFactor+">\n" +
 				"\t--fixedalpha <impose this alpha (default: set automatically)>\n" +
+				"\t--noxl [flag to turn off XL components for testing purposes]\n" +
 				"\t--nomodelupdate [flag to turn off binding model updates]\n" +
 				"\t--nomodelsmoothing [flag to turn off binding model smoothing]\n" +
 				"\t--splinesmoothparam <spline smoothing parameter (default="+bindingmodel_spline_smooth+">\n" +

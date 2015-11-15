@@ -1,6 +1,9 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,13 +12,12 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
-import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
-import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
+import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 
 public class XLQuantifier {
 
@@ -25,9 +27,12 @@ public class XLQuantifier {
 	protected ChExMixConfig cconfig;
 	protected ProteinDNAInteractionModel model;
 	protected CompositeModelMixture mixtureModel;
+	protected CompositeModelEM EMtrainer;
 	protected CompositeTagDistribution signalComposite;
 	protected CompositeTagDistribution controlComposite;
 	protected List<StrandedPoint> compositePoints;
+	private final char[] LETTERS = {'A','C','G','T'};
+	protected boolean motifWeightedByMaxCompsOnly=false;
 	
 	
 	public XLQuantifier(GenomeConfig gcon, ExptConfig econ, ChExMixConfig ccon){
@@ -55,7 +60,15 @@ public class XLQuantifier {
 		//Set the loaded model
 		mixtureModel.setModel(model);
 		
-		//ML assignment
+		//Set composite-level responsibilities in model
+		EMtrainer = new CompositeModelEM(signalComposite, cconfig, manager);
+		try {
+			EMtrainer.train(model, 0, false);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		//ML assignment at per-site level
 		System.err.println("ML assignment");
 		mixtureModel.assignML(true);
 		//Get the per-site assignments
@@ -65,6 +78,12 @@ public class XLQuantifier {
 		//Build per-XL-point weighted PWMs
 		Map<CompositeModelComponent, WeightMatrix> componentMotifs = getPerComponentWeightMatrices(assignments, pointSeqs, 20);
 		
+		//Estimate corrected XL tag counts
+		for(ExperimentCondition cond : manager.getConditions()){
+			String correctionFilename = cconfig.getOutputParentDir()+File.separator+cconfig.getOutBase()
+					+"_XL-bias-correction."+cond.getName()+".txt";
+			correctXLBias(cond, assignments, new File(correctionFilename));
+		}
 		
 		//Report
 		for(ExperimentCondition cond : manager.getConditions()){
@@ -75,6 +94,15 @@ public class XLQuantifier {
 			String perSiteRespFileName = cconfig.getOutputParentDir()+File.separator+cconfig.getOutBase()
 					+"_site-component-ML."+cond.getName()+".txt";
 			mixtureModel.printPerSiteComponentResponsibilitiesToFile(cond, perSiteRespFileName);
+		}
+		mixtureModel.saveCompositePlots();
+		//Print motif logos
+		for(CompositeModelComponent comp : componentMotifs.keySet()){
+			String motifFileName = cconfig.getOutputImagesDir()+File.separator+cconfig.getOutBase()
+					+"_xl-bias-motif."+(comp.getPosition()-signalComposite.getCenterOffset())+".png";
+			WeightMatrix motif = componentMotifs.get(comp);
+			String motifLabel = cconfig.getOutBase()+" "+(comp.getPosition()-signalComposite.getCenterOffset())+" XL bias motif";
+			Utils.printMotifLogo(motif, new File(motifFileName), 150, motifLabel, true);
 		}
 		
 	}
@@ -106,48 +134,162 @@ public class XLQuantifier {
 	protected Map<CompositeModelComponent, WeightMatrix> getPerComponentWeightMatrices(List<CompositeModelSiteAssignment> siteAssignments, Map<StrandedPoint, String> pointSeqs, int motifWidth){
 		Map<CompositeModelComponent, WeightMatrix> xlComponentMotifs = new HashMap<CompositeModelComponent, WeightMatrix>();
 		
-		for(CompositeModelComponent xlComp : model.getXLComponents()){
-			if(xlComp.isNonZero()){
+		for(CompositeModelComponent xlComp : model.getXLComponents()){ if(xlComp.isNonZero()){
 				int compOffset = xlComp.getPosition();
-				int motifStartPos = compOffset - (motifWidth/2);
-				double[][] freq =  new double[motifWidth][WeightMatrix.MAXLETTERVAL];
-				double[] sums =  new double[motifWidth];
-				for(int x=0; x<motifWidth; x++){ sums[x]=0; for(int y=0; y<WeightMatrix.MAXLETTERVAL; y++){freq[x][y]=0;}}
+				int motifStartPos = compOffset - (motifWidth/2)+1;
+				float[][] freq =  new float[motifWidth][WeightMatrix.MAXLETTERVAL];
+				float[][] freqWeight =  new float[motifWidth][WeightMatrix.MAXLETTERVAL];
+				float[][] pwm = new float[motifWidth][WeightMatrix.MAXLETTERVAL];
+				float[] sum =  new float[motifWidth];
+				float[] sumWeight =  new float[motifWidth];
+				float pseudoCount=(float) 0.01;
+				for(int x=0; x<motifWidth; x++){ 
+					sum[x]=0; sumWeight[x]=0; 
+					for (int b=0;b<LETTERS.length;b++){
+						freq[x][LETTERS[b]]=0; freqWeight[x][LETTERS[b]]=0;
+				}}
+				int numCountedSites=0;
 				
 				//Weighted freq matrix
 				for(CompositeModelSiteAssignment sa : siteAssignments){
 					StrandedPoint pt = sa.getPoint();
-					String currSeq = pointSeqs.get(pt);
+					String currSeq = pointSeqs.get(pt).toUpperCase();
 					
 					for(ExperimentCondition cond : manager.getConditions()){
-						double currWeight = sa.getCompResponsibility(cond, xlComp.getIndex());
+						//This block weights XL sites by proportion of total XL tags
+						/*
+						double currWeight =0;
+						double currResp = sa.getCompResponsibility(cond, xlComp.getIndex());
+						double totXLResp =0;
+						if(currResp>10){
+							for(CompositeModelComponent comp : model.getXLComponents()){ if(comp.isNonZero()){
+								totXLResp+=sa.getCompResponsibility(cond, comp.getIndex());
+							}}
+							currWeight=currResp/totXLResp;
+						}*/
+						
+						double currWeight =0;
+						if(motifWeightedByMaxCompsOnly){
+							//This block weights XL sites as component tags iff they are strongest XL site
+							double currResp = sa.getCompResponsibility(cond, xlComp.getIndex());
+							double maxXLResp =0;
+							for(CompositeModelComponent comp : model.getXLComponents()){ if(comp.isNonZero()){
+								if(sa.getCompResponsibility(cond, comp.getIndex())>maxXLResp)
+									maxXLResp =sa.getCompResponsibility(cond, comp.getIndex()); 
+							}}
+							currWeight=currResp==maxXLResp ? currResp : 0;
+						}else{						 
+							//Weight = XL tags at this component
+							currWeight = sa.getCompResponsibility(cond, xlComp.getIndex());
+						}
+						
+						if(currWeight>0)
+							numCountedSites++;
+						
 						for(int x=0; x<motifWidth; x++){ 
 							char letter = currSeq.charAt(motifStartPos+x);
-							freq[x][letter]+=currWeight;
-							sums[x]+=currWeight;
+							freqWeight[x][letter]+=currWeight;
+							sumWeight[x]+=currWeight;
+							freq[x][letter]++;
+							sum[x]++;
 						}
 					}
 				}
 				//Normalize freq matrix
-				for(int x=0; x<motifWidth; x++){ for(int y=0; y<WeightMatrix.MAXLETTERVAL; y++){
-					if(sums[x]>0)
-						freq[x][y]/=sums[x];
+				//Log-odds over expected motif
+				for(int x=0; x<motifWidth; x++){ 
+					for (int b=0;b<LETTERS.length;b++){
+						freq[x][LETTERS[b]]/=sum[x];
+						freqWeight[x][LETTERS[b]]/=sumWeight[x];
+					}
+					for (int b=0;b<LETTERS.length;b++){
+						freq[x][LETTERS[b]] = (freq[x][LETTERS[b]]+pseudoCount)/(1+(4*pseudoCount));
+						freqWeight[x][LETTERS[b]] = (freqWeight[x][LETTERS[b]]+pseudoCount)/(1+(4*pseudoCount));
+						pwm[x][LETTERS[b]] = (float) (Math.log((double)freqWeight[x][LETTERS[b]] / (double)freq[x][LETTERS[b]]) / Math.log(2.0));
 				}}
 				
+				
+				//Save as WeightMatrix
+				WeightMatrix motif = new WeightMatrix(pwm);
+				xlComponentMotifs.put(xlComp, motif);
+				
 				//Temp print
-				System.out.println("XLComponent motif: "+xlComp.getPosition());
+				System.out.println("XLComponent motif: "+(xlComp.getPosition()-signalComposite.getCenterOffset()));
 				for(int x=0; x<motifWidth; x++){
-					System.out.println(x+"\t"+freq[x]['A']+"\t"+freq[x]['C']+"\t"+freq[x]['G']+"\t"+freq[x]['T']);
+					System.out.println(x+"\t"+pwm[x]['A']+"\t"+pwm[x]['C']+"\t"+pwm[x]['G']+"\t"+pwm[x]['T']);
+					//System.out.println(x+"\t"+freqWeight[x]['A']+"\t"+freqWeight[x]['C']+"\t"+freqWeight[x]['G']+"\t"+freqWeight[x]['T']);
+					//System.out.println(x+"\t"+freq[x]['A']+"\t"+freq[x]['C']+"\t"+freq[x]['G']+"\t"+freq[x]['T']);
 				}System.out.println("");
 				
-				//Log-odds over standard motif
-				
-				//Save
+				System.out.println("Component "+(xlComp.getPosition()-signalComposite.getCenterOffset())+": motif created using "+numCountedSites);
 			}
 		}		
 		
 		return xlComponentMotifs;
 	}
+	
+	/**
+	 * Attempt to correct XL tag counts for XL bias.
+	 *  The intuition here is if an XL component is taking proportionally more responsibility for tags than
+	 *  it does on average, it must be compensating for inefficient crosslinking at other components.
+	 *  Therefore, this method infers total XL tag counts from the over-strength XL components.
+	 *    
+	 * @param siteAssignments
+	 */
+	protected void correctXLBias(ExperimentCondition cond, List<CompositeModelSiteAssignment> siteAssignments, File correctedOutFile){
+		try{
+			FileWriter fout = new FileWriter(correctedOutFile);
+			fout.write("#Point\tObsXLTags\tEstXLTags\n");
+			
+			//Find the expected/average XL proportions.
+			double totalXLpi = 0;
+			double[] expectedXLProps = new double[model.getXLComponents().size()];
+			Map<CompositeModelComponent, Integer> component2Index = new HashMap<CompositeModelComponent, Integer>();
+			int i=0;
+			for(CompositeModelComponent xlComp : model.getXLComponents()){
+				totalXLpi+=xlComp.getPi();
+				expectedXLProps[i]=xlComp.getPi();
+				component2Index.put(xlComp, i);
+				i++;
+			}
+			for(int x=0; x<expectedXLProps.length; x++)
+				expectedXLProps[x]/=totalXLpi;
+			
+			//Examine actual XL proportions for each ML assigned site  
+			for(CompositeModelSiteAssignment sa : siteAssignments){
+				StrandedPoint pt = sa.getPoint();
+				
+				//Calculate observed XL proportions & counts for this site
+				double siteXLtotal = 0;
+				double[] obsXLProps = new double[model.getXLComponents().size()];
+				double[] obsXLCounts = new double[model.getXLComponents().size()];
+				for(CompositeModelComponent xlComp : model.getXLComponents()){ if(xlComp.isNonZero()){
+					siteXLtotal+=sa.getCompResponsibility(cond, xlComp.getIndex());
+					obsXLProps[component2Index.get(xlComp)]=sa.getCompResponsibility(cond, xlComp.getIndex());
+					obsXLCounts[component2Index.get(xlComp)]=sa.getCompResponsibility(cond, xlComp.getIndex());
+				}}
+				for(CompositeModelComponent xlComp : model.getXLComponents()){ if(xlComp.isNonZero()){
+					obsXLProps[component2Index.get(xlComp)]/=siteXLtotal;
+				}}
+				
+				//For over-strength XL components, estimate totals
+				double sumEstTot = 0, count=0;
+				for(CompositeModelComponent xlComp : model.getXLComponents()){ if(xlComp.isNonZero()){
+					if(obsXLProps[component2Index.get(xlComp)] > expectedXLProps[component2Index.get(xlComp)]){
+						sumEstTot+=obsXLCounts[component2Index.get(xlComp)]/expectedXLProps[component2Index.get(xlComp)];;
+						count++;
+					}
+				}}
+				
+				double estimatedXLtotal = count>0 ? sumEstTot/count : siteXLtotal;
+				fout.write(pt.toString()+"\t"+siteXLtotal+"\t"+estimatedXLtotal+"\n");
+			}
+			fout.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 	public static void main(String[] args){
 		System.setProperty("java.awt.headless", "true");

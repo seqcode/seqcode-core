@@ -146,8 +146,8 @@ public class ProteinDNAInteractionModel {
 		double initCS = Math.max(bindingPi*cmConfig.INIT_CS_TO_XL_RATIO, cmConfig.MIN_CS_PI);
 		CSComponent.setPi(initCS);
 		for(CompositeModelComponent xl : XLComponents){
-			double xoPi = bindingPi*(1-initCS)/(double)numXLComponents;
-			xl.setPi(xoPi);
+			double xlPi = cmConfig.noXL() ? 0.0 : bindingPi*(1-initCS)/(double)numXLComponents;
+			xl.setPi(xlPi);
 		}
 	}
 	

@@ -81,7 +81,7 @@ public class CompositeModelMixture {
 			double[] kl = new double[config.getMaxModelUpdateRounds()];
 			for(trainingRound=0; trainingRound<config.getMaxModelUpdateRounds() && !converged; trainingRound++){
 				//Run EM inner loops
-				model = EMtrainer.train(model, trainingRound);
+				model = EMtrainer.train(model, trainingRound, true);
 				kl[trainingRound]=updateTagDistributions();
 			
 				System.out.println("TrainingRound: "+trainingRound+":\n"+model.toString()+"\n\tModelKL="+kl[trainingRound]);

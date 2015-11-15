@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
 
@@ -84,9 +85,16 @@ public class CompositeModelEM {
      * Almost purely matrix/array operations.
      * 
      * Returns an updated protein-DNA interaction model
-     */
+     *
+     * @param model: initial model
+	 * @param trainingRound: training round number
+	 * @param runEM: if false, just assign responsibilities instead of EM (used to get composite-level responsibilities using a trained model) 
+	 * @return
+	 * @throws Exception
+	 */
     public ProteinDNAInteractionModel  train(ProteinDNAInteractionModel model,
-    											  int trainingRound
+    											  int trainingRound,
+    											  boolean runEM
     											  ) throws Exception{
     	this.model=model;
     	//Need to ensure that the composite and model have the same center offsets, or the coordinate system will not be consistent
@@ -169,7 +177,10 @@ public class CompositeModelEM {
         //////////
         // Run EM steps
         //////////
-        EM_MAP();
+        if(!runEM)
+        	EM_MAP();
+        else
+        	responsibilityAssignment();
 	
         //////////
         // re-assign EM result back to component objects
@@ -485,6 +496,50 @@ public class CompositeModelEM {
     
     
     /**
+     * Responsibility assignment in the composite using trained model. No maximization. 
+     * Assumes H function, pi, and responsibilities have all been initialized
+     */
+    private void responsibilityAssignment () {
+        int numComp = numComponents;
+        double [][] totalResp = new double[numConditions][];
+        
+        //Initialize responsibilities
+        for(int c=0; c<numConditions; c++){
+    		int numBases = hitNum[c];
+    		totalResp[c] = new double[numBases];
+            for(int i=0;i<numBases;i++)
+                totalResp[c][i] = 0;
+    	}        
+    	
+    	//////////////////////////////////////////////////////////////////////////////////////////
+        //Run E step once
+    	//////////////////////////////////////////////////////////////////////////////////////////
+        for(int c=0; c<numConditions; c++){ 
+    		//Recompute h function, given binding component positions
+    		for(int i=0;i<hitNum[c];i++)
+            	for(int j=0;j<numComp;j++){ if(pi[j]>0){
+            		int dist = hitPos[c][i]-mu[j];
+            		h[c][j][i] = model.getAllComponents().get(j).getTagDistribution().probability(dist, hitPlusStr[c][i]);
+            	}}
+    		//Compute responsibilities
+			for(int i=0;i<hitNum[c];i++)
+                totalResp[c][i] = 0;
+    		for(int i=0;i<hitNum[c];i++){
+    			for(int j=0;j<numComp;j++){ if(pi[j]>0){
+    				r[c][j][i] = h[c][j][i]*pi[j];
+    				totalResp[c][i] +=r[c][j][i]; 
+    			}}
+    		}
+    		//Normalize responsibilities
+    		for(int i=0;i<hitNum[c];i++){
+    			for(int j=0;j<numComp;j++){ if(pi[j]>0){
+    				r[c][j][i]/=totalResp[c][i];
+    			}}
+    		}
+		}
+    }//end of responsibilityAssignment method
+    
+    /**
      * Set responsibility profile for each component (for kernel update)
      * @param bindComponents
      * @param signals
@@ -609,6 +664,7 @@ public class CompositeModelEM {
 		GifSequenceWriter gifWriter, gifZoomWriter;
 		try {
 			if(fullImages.size()>0 && zoomImages.size()>0){
+				//GIFs
 		    	String gifName = config.getOutputImagesDir()+File.separator+"EM.gif";
 		    	String gifNameZoom = config.getOutputImagesDir()+File.separator+"EMzoom.gif";
 		    	ImageOutputStream output1 = new FileImageOutputStream(new File(gifName));
@@ -634,7 +690,15 @@ public class CompositeModelEM {
 		    	gifZoomWriter.close();
 		    	output1.close();
 		    	output2.close();
+		    	
+		    	
+				//Final frames only
+		    	String finalFrameName = config.getOutputImagesDir()+File.separator+"EM_final.png";
+		    	String finalFrameNameZoom = config.getOutputImagesDir()+File.separator+"EMzoom_final.png";
+		    	ImageIO.write(fullImages.get(fullImages.size()-1),"png",new File(finalFrameName));
+		    	ImageIO.write(zoomImages.get(zoomImages.size()-1),"png",new File(finalFrameNameZoom));
 			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
