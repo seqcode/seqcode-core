@@ -368,15 +368,16 @@ public class CompositeModelEM {
             }else{
                 // Eliminate worst binding component
                 // Responsibilities will be redistributed in the E step
-               	pi[minIndex]=0.0;
+               	pi[minIndex]=0.0; sumR[minIndex]=0.0;
                	for(int c=0; c<numConditions; c++)
                		for(int i=0; i<hitNum[c];i++)
                			r[c][minIndex][i] = 0;
                	//I discussed this bit with Chris, and we decided that the best thing to do is
                	//to re-estimate pi values for non-eliminated components using the current responsibility assignments
-               	for(int j=0;j<numComp;j++){ if(pi[j]>0 && model.getAllComponents().get(j).hasUpdatablePi()){
-            		pi[j]=Math.max(0, sumR[j]); 
-            	}}
+               	for(int j=0;j<numComp;j++){ 
+               		if(j!=minIndex)
+               			pi[j]=Math.max(0, sumR[j]); 
+            	}
                	componentEliminated=true;
             }
             //Normalize pi
