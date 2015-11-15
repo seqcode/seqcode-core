@@ -143,7 +143,7 @@ public class ProteinDNAInteractionModel {
 	protected void setInitialPi(double noisePi){
 		backgroundComponent.setPi(noisePi);
 		double bindingPi = 1-noisePi;
-		double initCS = Math.max(bindingPi*cmConfig.INIT_CS_TO_XL_RATIO, cmConfig.MIN_CS_PI);
+		double initCS = cmConfig.noXL() ? bindingPi : Math.max(bindingPi*cmConfig.INIT_CS_TO_XL_RATIO, cmConfig.MIN_CS_PI);
 		CSComponent.setPi(initCS);
 		for(CompositeModelComponent xl : XLComponents){
 			double xlPi = cmConfig.noXL() ? 0.0 : bindingPi*(1-initCS)/(double)numXLComponents;
