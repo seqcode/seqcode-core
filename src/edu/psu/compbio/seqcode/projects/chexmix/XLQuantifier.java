@@ -31,7 +31,7 @@ public class XLQuantifier {
 	protected CompositeTagDistribution controlComposite;
 	protected List<StrandedPoint> compositePoints;
 	private final char[] LETTERS = {'A','C','G','T'};
-	protected boolean motifWeightedByMaxCompsOnly=true;
+	protected boolean motifWeightedByMaxCompsOnly=false;
 	
 	
 	public XLQuantifier(GenomeConfig gcon, ExptConfig econ, ChExMixConfig ccon){
