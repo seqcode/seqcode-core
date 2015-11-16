@@ -6,7 +6,7 @@ import java.awt.font.*;
 
 
 public class WeightMatrixPainter {
-	public final static int X_MARGIN = 7;
+	public final static int X_MARGIN = 10;
 	public final static int Y_MARGIN = 2;
 	public final static int YLABEL_SIZE = 12;
 	public void paint(WeightMatrix wm, Graphics g, int x1, int y1, int x2, int y2) {this.paint(wm, g, x1, y1, x2, y2, null, false);}

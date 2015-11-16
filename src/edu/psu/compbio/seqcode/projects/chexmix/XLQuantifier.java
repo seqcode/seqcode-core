@@ -31,7 +31,6 @@ public class XLQuantifier {
 	protected CompositeTagDistribution controlComposite;
 	protected List<StrandedPoint> compositePoints;
 	private final char[] LETTERS = {'A','C','G','T'};
-	protected boolean motifWeightedByMaxCompsOnly=false;
 	
 	
 	public XLQuantifier(GenomeConfig gcon, ExptConfig econ, ChExMixConfig ccon){
@@ -75,7 +74,8 @@ public class XLQuantifier {
 		Map<StrandedPoint, String> pointSeqs = retrieveSequences(assignments, signalComposite.getWinSize());
 		 
 		//Build per-XL-point weighted PWMs
-		Map<CompositeModelComponent, WeightMatrix> componentMotifs = getPerComponentWeightMatrices(assignments, pointSeqs, 20);
+		Map<CompositeModelComponent, WeightMatrix> componentMotifs = getPerComponentWeightMatrices(assignments, pointSeqs, 20, false);
+		Map<CompositeModelComponent, WeightMatrix> componentMotifsMaxPeaksOnly = getPerComponentWeightMatrices(assignments, pointSeqs, 20, true);
 		WeightMatrix allSiteMotif = getAllPointWeightMatrix(pointSeqs, 100);
 		
 		//Estimate corrected XL tag counts
@@ -103,11 +103,16 @@ public class XLQuantifier {
 			WeightMatrix motif = componentMotifs.get(comp);
 			String motifLabel = cconfig.getOutBase()+" "+(comp.getPosition()-signalComposite.getCenterOffset())+" XL bias motif";
 			Utils.printMotifLogo(motif, new File(motifFileName), 150, motifLabel, true);
+			String motifFileNameMaxOnly = cconfig.getOutputImagesDir()+File.separator+cconfig.getOutBase()
+					+"_xl-bias-motif-max-only."+(comp.getPosition()-signalComposite.getCenterOffset())+".png";
+			motif = componentMotifsMaxPeaksOnly.get(comp);
+			motifLabel = cconfig.getOutBase()+" "+(comp.getPosition()-signalComposite.getCenterOffset())+" XL bias motif (max XL only)";
+			Utils.printMotifLogo(motif, new File(motifFileNameMaxOnly), 150, motifLabel, true);
 		}
 		String allMotifFileName = cconfig.getOutputImagesDir()+File.separator+cconfig.getOutBase()
 				+"_all-site-motif.png";
 		String motifLabel = cconfig.getOutBase()+" all site motif";
-		Utils.printMotifLogo(allSiteMotif, new File(allMotifFileName), 400, motifLabel, true);
+		Utils.printMotifLogo(allSiteMotif, new File(allMotifFileName), 710, motifLabel, true);
 		
 	}
 	
@@ -176,7 +181,7 @@ public class XLQuantifier {
 	 * Calculate weighted motifs for each non-zero XL component
 	 * @return
 	 */
-	protected Map<CompositeModelComponent, WeightMatrix> getPerComponentWeightMatrices(List<CompositeModelSiteAssignment> siteAssignments, Map<StrandedPoint, String> pointSeqs, int motifWidth){
+	protected Map<CompositeModelComponent, WeightMatrix> getPerComponentWeightMatrices(List<CompositeModelSiteAssignment> siteAssignments, Map<StrandedPoint, String> pointSeqs, int motifWidth, boolean motifWeightedByMaxCompsOnly){
 		Map<CompositeModelComponent, WeightMatrix> xlComponentMotifs = new HashMap<CompositeModelComponent, WeightMatrix>();
 		
 		for(CompositeModelComponent xlComp : model.getXLComponents()){ if(xlComp.isNonZero()){
