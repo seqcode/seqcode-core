@@ -227,10 +227,11 @@ public class XLQuantifier {
 								if(sa.getCompResponsibility(cond, comp.getIndex())>maxXLResp)
 									maxXLResp =sa.getCompResponsibility(cond, comp.getIndex()); 
 							}}
-							currWeight=currResp==maxXLResp ? currResp : 0;
+							currWeight=(currResp==maxXLResp && currResp>0) ? Math.log(currResp) : 0;
 						}else{						 
 							//Weight = XL tags at this component
-							currWeight = sa.getCompResponsibility(cond, xlComp.getIndex());
+							double currResp = sa.getCompResponsibility(cond, xlComp.getIndex());
+							currWeight = currResp>0 ? Math.log(sa.getCompResponsibility(cond, xlComp.getIndex())) : 0;
 						}
 						
 						if(currWeight>0)
