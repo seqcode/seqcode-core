@@ -670,11 +670,11 @@ public class CompositeModelEM {
 		    	String gifNameZoom = config.getOutputImagesDir()+File.separator+"EMzoom.gif";
 		    	ImageOutputStream output1 = new FileImageOutputStream(new File(gifName));
 				ImageOutputStream output2 = new FileImageOutputStream(new File(gifNameZoom));
-		    	gifWriter = new GifSequenceWriter(output1, fullImages.get(0).getType(), 10, false);
-		    	gifZoomWriter = new GifSequenceWriter(output2, zoomImages.get(0).getType(), 10, false);
+		    	gifWriter = new GifSequenceWriter(output1, fullImages.get(0).getType(), 5, false);
+		    	gifZoomWriter = new GifSequenceWriter(output2, zoomImages.get(0).getType(), 5, false);
 		    	
 		    	//Write the images
-		    	for(int i=0; i<30; i++){ //Pause on the first image for 3 seconds
+		    	for(int i=0; i<20; i++){ //Pause on the first image for 2 seconds
 		    		gifWriter.writeToSequence(fullImages.get(0));
 		    		gifZoomWriter.writeToSequence(zoomImages.get(0));
 		    	}
@@ -682,7 +682,7 @@ public class CompositeModelEM {
 		    		gifWriter.writeToSequence(im);
 		    	for(BufferedImage im : zoomImages)
 		    		gifZoomWriter.writeToSequence(im);
-		    	for(int i=0; i<150; i++){ //Pause on the last image for 15 seconds
+		    	for(int i=0; i<300; i++){ //Pause on the last image for 15 seconds
 		    		gifWriter.writeToSequence(fullImages.get(fullImages.size()-1));
 		    		gifZoomWriter.writeToSequence(zoomImages.get(zoomImages.size()-1));
 		    	}
