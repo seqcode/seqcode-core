@@ -183,6 +183,7 @@ public class XLQuantifier {
 	 */
 	protected Map<CompositeModelComponent, WeightMatrix> getPerComponentWeightMatrices(List<CompositeModelSiteAssignment> siteAssignments, Map<StrandedPoint, String> pointSeqs, int motifWidth, boolean motifWeightedByMaxCompsOnly){
 		Map<CompositeModelComponent, WeightMatrix> xlComponentMotifs = new HashMap<CompositeModelComponent, WeightMatrix>();
+		double maxWeightProp = 0.05; //cap per-site motif weights as 5% of total component tag count
 		
 		for(CompositeModelComponent xlComp : model.getXLComponents()){ if(xlComp.isNonZero()){
 				int compOffset = xlComp.getPosition();
@@ -199,6 +200,14 @@ public class XLQuantifier {
 						freq[x][LETTERS[b]]=0; freqWeight[x][LETTERS[b]]=0;
 				}}
 				int numCountedSites=0;
+				
+				//Sum of weights (for capping weights)
+				float sumWeights=0;
+				for(CompositeModelSiteAssignment sa : siteAssignments){
+					for(ExperimentCondition cond : manager.getConditions()){
+						sumWeights+= sa.getCompResponsibility(cond, xlComp.getIndex());
+					}
+				}
 				
 				//Weighted freq matrix
 				for(CompositeModelSiteAssignment sa : siteAssignments){
@@ -227,11 +236,15 @@ public class XLQuantifier {
 								if(sa.getCompResponsibility(cond, comp.getIndex())>maxXLResp)
 									maxXLResp =sa.getCompResponsibility(cond, comp.getIndex()); 
 							}}
-							currWeight=(currResp==maxXLResp && currResp>0) ? Math.log(currResp) : 0;
+							//currWeight=(currResp==maxXLResp && currResp>1) ? currResp : 0;
+							currWeight=(currResp==maxXLResp && currResp>1) ? 1 : 0;
 						}else{						 
 							//Weight = XL tags at this component
 							double currResp = sa.getCompResponsibility(cond, xlComp.getIndex());
-							currWeight = currResp>0 ? Math.log(sa.getCompResponsibility(cond, xlComp.getIndex())) : 0;
+							currWeight = currResp>1 ? sa.getCompResponsibility(cond, xlComp.getIndex()) : 0;
+							currWeight/=sumWeights;
+							if(currWeight>maxWeightProp)
+								currWeight=maxWeightProp;
 						}
 						
 						if(currWeight>0)
