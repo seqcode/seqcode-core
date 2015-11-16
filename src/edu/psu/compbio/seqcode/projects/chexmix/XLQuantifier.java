@@ -3,7 +3,6 @@ package edu.psu.compbio.seqcode.projects.chexmix;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class XLQuantifier {
 	protected CompositeTagDistribution controlComposite;
 	protected List<StrandedPoint> compositePoints;
 	private final char[] LETTERS = {'A','C','G','T'};
-	protected boolean motifWeightedByMaxCompsOnly=false;
+	protected boolean motifWeightedByMaxCompsOnly=true;
 	
 	
 	public XLQuantifier(GenomeConfig gcon, ExptConfig econ, ChExMixConfig ccon){

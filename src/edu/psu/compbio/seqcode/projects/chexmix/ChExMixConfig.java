@@ -16,6 +16,7 @@ import java.util.TimeZone;
 
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -60,7 +61,9 @@ public class ChExMixConfig {
 	protected boolean printCompositeResponsibilities = true; //Print the responsibilities for each composite position
 	protected boolean writeSinglePlots=false; //Plot the individual PNG images along with the gifs
     protected List<Region> regionsToPlotML = new ArrayList<Region>(); //List of regions that will be printed during ML training (for debugging/demonstration)
+    protected List<Point> scanPoints = new ArrayList<Point>(); //Centers of the scan sites in scanning applications
 	
+    
 	//Constants
 	public final double LOG2 = Math.log(2);
 	public final double INIT_CS_TO_XL_RATIO=0.05; 	//Initial ratio of CS component pi values to sum of XO pi values.
@@ -153,6 +156,9 @@ public class ChExMixConfig {
 				//Composite plot center points (required)
 				if(ap.hasKey("cpoints"))
 					compositePoints = Utils.loadStrandedPointsFromFile(gen, Args.parseString(args, "cpoints", null));
+				//Scan center points
+				if(ap.hasKey("spoints"))
+					scanPoints = Utils.loadPointsFromFile(Args.parseString(args, "spoints", null), gen);
 				//Maximum number of model update rounds
 				maxModelUpdateRounds = Args.parseInteger(args,"r", maxModelUpdateRounds);
 				//Turn off binding model updates
@@ -240,6 +246,7 @@ public class ChExMixConfig {
 	public double getXLDistribSigma(){return XLDistribSigma;}
 	public int getXLComponentSpacing(){return XLComponentSpacing;}
 	public boolean getPrintCompositeResponsibilities(){return printCompositeResponsibilities;}
+	public List<Point> getScanPoints(){return scanPoints;}
 	
 	/**
 	 * Make some output directories used by ChExMix
@@ -302,7 +309,8 @@ public class ChExMixConfig {
 				"\t--r <max. model update rounds (default="+maxModelUpdateRounds+")>\n" +
 				"\t--out <out name (default="+outBase+")>\n" +
 				"\t--nonunique [flag to use non-unique reads]\n" +
-				"\t--threads <number of threads to use (default="+maxThreads+")>\n" +
+				//"\t--threads <number of threads to use (default="+maxThreads+")>\n" +
+				"\t--spoints <center points (unstranded) of scanning analysis>\n" +
 				"Experiment Design File:\n" +
 				"\t--design <file name>\n" +
 				"ChExMix Model:" +
