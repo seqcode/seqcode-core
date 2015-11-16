@@ -76,6 +76,7 @@ public class XLQuantifier {
 		 
 		//Build per-XL-point weighted PWMs
 		Map<CompositeModelComponent, WeightMatrix> componentMotifs = getPerComponentWeightMatrices(assignments, pointSeqs, 20);
+		WeightMatrix allSiteMotif = getAllPointWeightMatrix(pointSeqs, 100);
 		
 		//Estimate corrected XL tag counts
 		for(ExperimentCondition cond : manager.getConditions()){
@@ -103,6 +104,10 @@ public class XLQuantifier {
 			String motifLabel = cconfig.getOutBase()+" "+(comp.getPosition()-signalComposite.getCenterOffset())+" XL bias motif";
 			Utils.printMotifLogo(motif, new File(motifFileName), 150, motifLabel, true);
 		}
+		String allMotifFileName = cconfig.getOutputImagesDir()+File.separator+cconfig.getOutBase()
+				+"_all-site-motif.png";
+		String motifLabel = cconfig.getOutBase()+" all site motif";
+		Utils.printMotifLogo(allSiteMotif, new File(allMotifFileName), 400, motifLabel, true);
 		
 	}
 	
@@ -126,6 +131,47 @@ public class XLQuantifier {
 		return pointSequences;
 	}
 	
+	
+	/**
+	 * Calculate weighted motifs for each non-zero XL component
+	 * @return
+	 */
+	protected WeightMatrix getAllPointWeightMatrix(Map<StrandedPoint, String> pointSeqs, int motifWidth){
+		int motifStartPos = signalComposite.getCenterOffset() - (motifWidth/2)+1;
+		float[][] freq =  new float[motifWidth][WeightMatrix.MAXLETTERVAL];
+		float[][] pwm = new float[motifWidth][WeightMatrix.MAXLETTERVAL];
+		float[] sum =  new float[motifWidth];
+		float pseudoCount=(float) 0.01;
+		for(int x=0; x<motifWidth; x++){ 
+			sum[x]=0; 
+			for (int b=0;b<LETTERS.length;b++){
+				freq[x][LETTERS[b]]=0;
+		}}
+		
+		for(StrandedPoint pt : pointSeqs.keySet()){
+			String currSeq = pointSeqs.get(pt).toUpperCase();
+			for(int x=0; x<motifWidth; x++){ 
+				char letter = currSeq.charAt(motifStartPos+x);
+				freq[x][letter]++;
+				sum[x]++;
+			}
+		}
+		//Normalize freq matrix
+		//Log-odds over expected motif
+		for(int x=0; x<motifWidth; x++){ 
+			for (int b=0;b<LETTERS.length;b++){
+				freq[x][LETTERS[b]]/=sum[x];
+			}
+			for (int b=0;b<LETTERS.length;b++){
+				freq[x][LETTERS[b]] = (freq[x][LETTERS[b]]+pseudoCount)/(1+(4*pseudoCount));
+				pwm[x][LETTERS[b]] = (float) (Math.log((double)freq[x][LETTERS[b]] / 0.25) / Math.log(2.0));
+		}}
+		
+		
+		//Save as WeightMatrix
+		WeightMatrix motif = new WeightMatrix(pwm);
+		return motif;
+	}
 	/**
 	 * Calculate weighted motifs for each non-zero XL component
 	 * @return
