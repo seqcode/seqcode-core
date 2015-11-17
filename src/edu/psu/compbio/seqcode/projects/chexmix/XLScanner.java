@@ -7,6 +7,7 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 
 public class XLScanner {
 
@@ -16,6 +17,7 @@ public class XLScanner {
 	protected ChExMixConfig cconfig;
 	protected ProteinDNAInteractionModel model;
 	protected WindowedTagDistributions tagsDistribs;
+	protected CompositeModelScan scanner;
 	protected List<Point> scanPoints;
 	protected int scanWindow=50;
 	
@@ -36,7 +38,14 @@ public class XLScanner {
 		
 		tagsDistribs = new WindowedTagDistributions(scanPoints, manager, winSize+scanWindow, true);
 		
+		System.err.println("Scanning "+scanPoints.size()+" windows of length "+scanWindow+"bp.");
+		scanner = new CompositeModelScan(model, scanWindow, gconfig, econfig, cconfig, manager);
+		List<StrandedPoint> scanMaxPoints = scanner.scan(tagsDistribs);
 		
+		//Report (TODO: replace with file output)
+		for(StrandedPoint pt : scanMaxPoints){
+			System.out.println(pt.toString());
+		}
 	}
 	
 	

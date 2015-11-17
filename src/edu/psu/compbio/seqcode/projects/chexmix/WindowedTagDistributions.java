@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
@@ -30,12 +28,13 @@ public class WindowedTagDistributions {
 		this.numConditions=exptMan.getNumConditions();
 		isSignal = loadSignal;
 	
-		perRegionPlus = new double[numRegions][numConditions][win];
-		perRegionMinus = new double[numRegions][numConditions][win];
-		
 		for(Point pt : points)
 			regions.add(pt.expand(win/2));
 		numRegions = regions.size();
+		
+		perRegionPlus = new double[numRegions][numConditions][win];
+		perRegionMinus = new double[numRegions][numConditions][win];
+		
 		for(int p=0; p<numRegions; p++)
 			regionIndex.put(regions.get(p), p);
 

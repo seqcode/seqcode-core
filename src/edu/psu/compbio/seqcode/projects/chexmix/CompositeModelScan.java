@@ -1,9 +1,14 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 
 /**
  * CompositeModelScan: scan a set of regions for the best XL matches
@@ -33,8 +38,9 @@ public class CompositeModelScan {
 	protected int[]      mu;			// mu : positions of the binding components
 	protected int numConditions;
 	protected int numComponents;
+	protected int scanWindow;
 	
-	public CompositeModelScan(ProteinDNAInteractionModel model, GenomeConfig gcon, ExptConfig econ, ChExMixConfig ccon, ExperimentManager eMan){
+	public CompositeModelScan(ProteinDNAInteractionModel model, int scanWindow, GenomeConfig gcon, ExptConfig econ, ChExMixConfig ccon, ExperimentManager eMan){
 		gconfig = gcon;
 		econfig = econ;
 		config = ccon;
@@ -42,6 +48,7 @@ public class CompositeModelScan {
 		this.model = model;
 		numConditions = manager.getNumConditions();
 		numComponents = model.getNumComponents();
+		this.scanWindow = scanWindow;
 	}
 	
 	//Accessors
@@ -52,9 +59,10 @@ public class CompositeModelScan {
 	 * Run the scanner  
 	 * 
 	 */
-	public void scan(WindowedTagDistributions tagDists){		
+	public List<StrandedPoint> scan(WindowedTagDistributions tagDists){		
+		List<StrandedPoint> scanMaxPoints = new ArrayList<StrandedPoint>();
 		this.tagDistributions = tagDists;
-	/*	
+	
 		//Matrix initializations
         hitCounts= new double[numConditions][];	// Hit weights
     	hitPos= new int[numConditions][];			// Hit positions
@@ -65,90 +73,120 @@ public class CompositeModelScan {
     	pi = new double[numComponents];	// pi : emission probabilities for binding components
     	mu = new int[numComponents]; // mu : positions of the binding components (fixed across conditions)
         
-        //Initializing data structures
+        //Initializing data structures that will be used in every scan
         for(int j=0;j<numComponents;j++){
         	//Load pi for binding components
         	CompositeModelComponent comp = model.getAllComponents().get(j);
             pi[j]= comp.getPi();
-            //Load binding component positions
-        	mu[j] = model.getAllComponents().get(j).getPosition()+scanOffset; //needs to be re-initialized for every window shift
         }
-        
         for(ExperimentCondition cond : manager.getConditions()){
         	int c = cond.getIndex();
-        	
         	//Number of unique positions in the composite distribution (plus & minus)
         	hitNum[c]=tagDistributions.getWinSize()*2;
-
-            //Load read info
-            double[] countc= new double[hitNum[c]];
+            //Count matrices
             int[] posc= new int[hitNum[c]];
             boolean[] plusc= new boolean[hitNum[c]];
             for(int i=0;i<tagDistributions.getWinSize();i++){ //Watson
             	posc[i] = i;
             	plusc[i] = true;
-                countc[i]=tagDistributions.getCompositeWatson(cond)[i]; //change to site-specific
             }
             for(int i=0;i<tagDistributions.getWinSize();i++){ //Crick
             	posc[i+tagDistributions.getWinSize()] = i;
-            	plusc[i+tagDistributions.getWinSize()] = false;
-                countc[i+tagDistributions.getWinSize()]=tagDistributions.getCompositeCrick(cond)[i];
+            	plusc[i+tagDistributions.getWinSize()] = false;                    
             }
             hitPos[c] = posc;
-            hitCounts[c]=countc;
             hitPlusStr[c] = plusc;
-        	
-            //Initialize responsibility functions
-            double[][] hc= new double[numComponents][hitNum[c]];
-            for(int i=0;i<hitNum[c];i++){
-            	for(int j=0;j<numComponents;j++){
-            		int dist = hitPos[c][i]-mu[j];
-                    hc[j][i] = model.getAllComponents().get(j).getTagDistribution().probability(dist, hitPlusStr[c][i]);
-                }
-            }
-            h[c] = hc;
-            
             r[c] = new double[numComponents][hitNum[c]];
-    		        	
         }
-        
-        double [][] totalResp = new double[numConditions][];
-        
-        //Initialize responsibilities
-        for(int c=0; c<numConditions; c++){
-    		int numBases = hitNum[c];
-    		totalResp[c] = new double[numBases];
-            for(int i=0;i<numBases;i++)
-                totalResp[c][i] = 0;
-    	}        
-    	
-    	//////////////////////////////////////////////////////////////////////////////////////////
-        //Run E step once
-    	//////////////////////////////////////////////////////////////////////////////////////////
-        for(int c=0; c<numConditions; c++){ 
-    		//Recompute h function, given binding component positions
-    		for(int i=0;i<hitNum[c];i++)
-            	for(int j=0;j<numComponents;j++){ if(pi[j]>0){
-            		int dist = hitPos[c][i]-mu[j];
-            		h[c][j][i] = model.getAllComponents().get(j).getTagDistribution().probability(dist, hitPlusStr[c][i]);
-            	}}
-    		//Compute responsibilities
-			for(int i=0;i<hitNum[c];i++)
-                totalResp[c][i] = 0;
-    		for(int i=0;i<hitNum[c];i++){
-    			for(int j=0;j<numComponents;j++){ if(pi[j]>0){
-    				r[c][j][i] = h[c][j][i]*pi[j];
-    				totalResp[c][i] +=r[c][j][i]; 
-    			}}
-    		}
-    		//Normalize responsibilities
-    		for(int i=0;i<hitNum[c];i++){
-    			for(int j=0;j<numComponents;j++){ if(pi[j]>0){
-    				r[c][j][i]/=totalResp[c][i];
-    			}}
-    		}
-		}
-		*/
+           
+        //Iterate through each region
+        for(Region reg : tagDistributions.getRegions()){
+        	double bestScore = -Double.MAX_VALUE;
+        	int bestPos = -1;
+        	int bestStrand=0;
+
+        	//Scan each strand
+        	for(int strand=0; strand<2; strand++){
+	        	//Initialize this region's data
+	        	for(ExperimentCondition cond : manager.getConditions()){
+	            	int c = cond.getIndex();
+	            	//Count matrices
+	                double[] countc= new double[hitNum[c]];
+	                if(strand==1){
+		                for(int i=0;i<tagDistributions.getWinSize();i++)
+		                    countc[i]=tagDistributions.getRegionPlus(reg, cond)[i];
+		                for(int i=0;i<tagDistributions.getWinSize();i++)
+		                    countc[i+tagDistributions.getWinSize()]=tagDistributions.getRegionMinus(reg, cond)[i];
+	                }else{
+	                	for(int i=0;i<tagDistributions.getWinSize();i++)
+		                    countc[i]=tagDistributions.getRegionMinus(reg, cond)[tagDistributions.getWinSize()-i-1];
+		                for(int i=0;i<tagDistributions.getWinSize();i++)
+		                    countc[i+tagDistributions.getWinSize()]=tagDistributions.getRegionPlus(reg, cond)[tagDistributions.getWinSize()-i-1];
+	                }
+	                hitCounts[c]=countc;
+	        	}
+	        	
+	        	//Scan through window
+	        	for(int scanOffset=0; scanOffset<scanWindow; scanOffset++){
+	        		//Load binding component positions
+	        		for(int j=0;j<numComponents;j++)
+	        			mu[j] = model.getAllComponents().get(j).getPosition()+scanOffset; //needs to be re-initialized for every window shift
+	        		
+	        		
+	        		//Initialize responsibility functions
+	                for(ExperimentCondition cond : manager.getConditions()){
+	                	int c = cond.getIndex();
+	                	double[][] hc= new double[numComponents][hitNum[c]];
+	                    for(int i=0;i<hitNum[c];i++){
+	                    	for(int j=0;j<numComponents;j++){ if(pi[j]>0){
+	                    		if(hitPos[c][i]>=scanOffset && hitPos[c][i]<=(tagDistributions.getWinSize()-scanWindow+scanOffset)){
+	                    			int dist = hitPos[c][i]-mu[j];
+	                    			hc[j][i] = model.getAllComponents().get(j).getTagDistribution().probability(dist, hitPlusStr[c][i]);
+	                    		}else{
+	                    			hc[j][i] = 0;
+	                    		}
+	                        }}
+	                    }
+	                    h[c] = hc;        	
+	                }
+	                
+					//////////////////////////////////////////////////////////////////////////////////////////
+					//Run E step once
+					//////////////////////////////////////////////////////////////////////////////////////////
+					double sumResp = 0;
+	                for(int c=0; c<numConditions; c++){ 
+						//Compute responsibilities
+						//for(int i=0;i<hitNum[c];i++)
+						//	totalResp[c][i] = 0;
+						for(int i=0;i<hitNum[c];i++){
+							for(int j=0;j<numComponents;j++){ if(pi[j]>0){
+								r[c][j][i] = h[c][j][i]*pi[j];
+								sumResp+=r[c][j][i]*hitCounts[c][i];
+								//totalResp[c][i] +=sumResp; 
+							}}
+						}
+						//Normalize responsibilities
+						//for(int i=0;i<hitNum[c];i++){
+						//	for(int j=0;j<numComponents;j++){ if(pi[j]>0){
+						//		r[c][j][i]/=totalResp[c][i];
+						//	}}
+						//}
+					}
+					
+					//Test for best match!
+					if(sumResp>bestScore){
+						bestScore = sumResp;
+						bestPos = scanOffset;
+						bestStrand = strand;
+					}
+	        	}
+        	}
+        	StrandedPoint bestPoint = bestStrand==0 ? 
+        			new StrandedPoint(reg.getGenome(), reg.getChrom(), (reg.getStart()+bestPos+model.getCenterOffset()), '+') :
+        			new StrandedPoint(reg.getGenome(), reg.getChrom(), (reg.getEnd()-bestPos-model.getCenterOffset()), '-');
+        	scanMaxPoints.add(bestPoint);
+        }
+		return scanMaxPoints;
 	}
 	
 
