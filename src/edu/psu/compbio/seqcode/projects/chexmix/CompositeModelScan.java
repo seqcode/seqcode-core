@@ -159,11 +159,15 @@ public class CompositeModelScan {
 						//for(int i=0;i<hitNum[c];i++)
 						//	totalResp[c][i] = 0;
 						for(int i=0;i<hitNum[c];i++){
-							for(int j=0;j<numComponents;j++){ if(pi[j]>0){
-								r[c][j][i] = h[c][j][i]*pi[j];
-								sumResp+=r[c][j][i]*hitCounts[c][i];
-								//totalResp[c][i] +=sumResp; 
-							}}
+							//for(int j=0;j<numComponents;j++){ if(pi[j]>0){
+							for(CompositeModelComponent xlComp : model.getXLComponents()){
+								int j=xlComp.getIndex(); 
+								if(pi[j]>0){
+									r[c][j][i] = h[c][j][i]*pi[j];
+									sumResp+=r[c][j][i]*hitCounts[c][i];
+									//totalResp[c][i] +=sumResp;
+								}
+							}
 						}
 						//Normalize responsibilities
 						//for(int i=0;i<hitNum[c];i++){
