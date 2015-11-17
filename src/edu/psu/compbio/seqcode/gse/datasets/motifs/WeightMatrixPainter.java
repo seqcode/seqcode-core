@@ -6,6 +6,12 @@ import java.awt.font.*;
 
 
 public class WeightMatrixPainter {
+	private static Color AColor = Color.RED;
+	private static Color CColor = Color.BLUE;
+	private static Color GColor = Color.ORANGE;
+	private static Color TColor = Color.GREEN;
+	private static Color GapColor = Color.WHITE;
+	private static Color NColor = Color.GRAY;
 	public final static int X_MARGIN = 10;
 	public final static int Y_MARGIN = 2;
 	public final static int YLABEL_SIZE = 12;
@@ -70,13 +76,13 @@ public class WeightMatrixPainter {
             double totalscale = (2.0 - bits) / 2.0;
             for (int j = 3; j >= 0; j--) {
                 if (letters[j] == 'A') {
-                    g.setColor(Color.GREEN);
+                    g.setColor(AColor);
                 } else if (letters[j] == 'C') {
-                    g.setColor(Color.BLUE);
+                    g.setColor(CColor);
                 } else if (letters[j] == 'G') {
-                    g.setColor(Color.ORANGE);
+                    g.setColor(GColor);
                 }  else if (letters[j] == 'T') {
-                    g.setColor(Color.RED);
+                    g.setColor(TColor);
                 }        
                 double val = vals[j];
                 AffineTransform transform = new AffineTransform(xfactor,0,0,val * totalscale,0,0);
@@ -85,10 +91,11 @@ public class WeightMatrixPainter {
                 if (letterHeight>1){
 	                g.setFont(thisFont);
 	                int offset = 0;
-	                if (letters[j] == 'G') 
+	                /*if (letters[j] == 'G') 
 	                    offset = -(int)(pixelsPerLetter*0.05);
 	                else if (letters[j] == 'T')
 	                    offset = (int)(pixelsPerLetter*0.05);
+	                    */
 	                g.drawString(letters[j].toString(),x1+X_MARGIN +offset+ pos * pixelsPerLetter,ypos);
                 }else if (letterHeight==1){
                 	g.fillRect(x1+X_MARGIN+ pos*pixelsPerLetter, ypos, (int)(pixelsPerLetter*0.9), letterHeight);
