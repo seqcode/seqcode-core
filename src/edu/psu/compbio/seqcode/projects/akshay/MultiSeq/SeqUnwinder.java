@@ -356,7 +356,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    }
 	    
 	    AdmmFramework admm = new AdmmFramework(x,sm_x,m_Data);
-	    admm.serRidge(m_Ridge);
+	    admm.setRidge(m_Ridge);
 	    admm.setADMMmaxItrs(m_ADMM_MaxIts);
 	    admm.setBGFSmaxItrs(m_BGFS_MaxIts);
 	    admm.setClassStructure(sm_ClassStructure);
@@ -364,6 +364,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    admm.setInstanceWeights(weights);
 	    admm.setNumClasses(m_NumClasses);
 	    admm.setNumPredictors(m_NumPredictors);
+	    admm.initZandU();
 	    
 	    admm.execute();
 	    //  m_LL = -opt.getMinFunction(); // Log-likelihood (TODO: make sure this is taken care of)

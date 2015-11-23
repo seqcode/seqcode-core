@@ -54,8 +54,9 @@ public class AdmmFramework {
 	public void setClsMembership(int[] c){cls=c;}
 	public void setNumPredictors(int p){numPredictors=p;}
 	public void setNumClasses(int c){numClasses = c;}
-	public void setClassStructure(ClassRelationStructure rel){classStructure = rel; numNodes=rel.allNodes.size();}
-	public void serRidge(double r){ridge = r;}
+	public void setClassStructure(ClassRelationStructure rel){classStructure = rel; setNumNodes(rel.allNodes.size());}
+	public void setNumNodes(int n){numNodes = n;}
+	public void setRidge(double r){ridge = r;}
 	
 	//gettors
 	public double[] getX(){return x;}
@@ -63,15 +64,19 @@ public class AdmmFramework {
 	public double[] getU(){return u;}
 	public double[] getsmX(){return sm_x;}
 	
+	// Initialize
+	public void initZandU(){
+		int dim = numPredictors+1;
+		z= new double[numNodes*numNodes*dim];
+		u= new double[numNodes*numNodes*dim];
+	}
+	
 	
 	
 	public AdmmFramework(double[] xinit, double[] sm_xinit, double[][] d) {
 		x = xinit;
 		sm_x = sm_xinit;
 		data=d;
-		int dim = numPredictors+1;
-		z= new double[numNodes*numNodes*dim];
-		u= new double[numNodes*numNodes*dim];
 	}
 	
 	
@@ -98,7 +103,7 @@ public class AdmmFramework {
 						}
 					}
 				}else{
-					int zOffset = (n.nodeIndex*numNodes*dim);
+					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
 						xRelaxed[zOffset+w] = ADMM_ALPHA*(x[nOffset+w])+(1-ADMM_ALPHA)*z[zOffset+w]+u[zOffset+w];
 					}
@@ -117,7 +122,7 @@ public class AdmmFramework {
 						}
 					}
 				}else{
-					int zOffset = (n.nodeIndex*numNodes*dim);
+					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
 						u[zOffset+w] = xRelaxed[zOffset+w]-z[zOffset+w];
 					}
@@ -163,7 +168,7 @@ public class AdmmFramework {
 						primals[n.nodeIndex*numNodes+pid] = primalResidueNorm;
 					}
 				}else{
-					int zOffset = (n.nodeIndex*numNodes*dim);
+					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					double xnorm=0;
 					double znorm=0;
 					double unorm=0;
@@ -175,8 +180,8 @@ public class AdmmFramework {
 					xnorm = Math.sqrt(xnorm);
 					znorm = Math.sqrt(znorm);
 					unorm = Math.sqrt(unorm);
-					primal_tol[n.nodeIndex*numNodes] = Math.sqrt(numPredictors)*ADMM_ABSTOL+ADMM_RELTOL*Math.max(xnorm, znorm);
-					dual_tol[n.nodeIndex*numNodes] = Math.sqrt(numPredictors)*ADMM_ABSTOL + ADMM_RELTOL*unorm;
+					primal_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(numPredictors)*ADMM_ABSTOL+ADMM_RELTOL*Math.max(xnorm, znorm);
+					dual_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(numPredictors)*ADMM_ABSTOL + ADMM_RELTOL*unorm;
 					double deltaZnorm=0;
 					double primalResidueNorm = 0;
 					for(int w=0; w<dim; w++){
@@ -185,8 +190,8 @@ public class AdmmFramework {
 					}
 					deltaZnorm = Math.sqrt(deltaZnorm);
 					primalResidueNorm = Math.sqrt(primalResidueNorm);
-					duals[n.nodeIndex*numNodes] = deltaZnorm;
-					primals[n.nodeIndex*numNodes] = primalResidueNorm;
+					duals[n.nodeIndex*numNodes+n.nodeIndex] = deltaZnorm;
+					primals[n.nodeIndex*numNodes+n.nodeIndex] = primalResidueNorm;
 				}
 			}
 		
@@ -255,12 +260,7 @@ public class AdmmFramework {
 		
 		
 		public OptObject() {
-			// TODO provide number of. predictors in the model
-			// TODO provide the number of classes in the model
-			// TODO provide the relationships between multiple SeqUnwinder classes (use ClassRelationStructure)
 		}
-		
-		
 		
 		/** 
 		 * Fix the leaf node values
@@ -375,7 +375,7 @@ public class AdmmFramework {
 						}
 					}
 				}else{
-					int zOffset = (n.nodeIndex*numNodes*dim);
+					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
 						grad[nOffset+w] += ADMM_PHO*(sm_x[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
 					}
@@ -423,7 +423,7 @@ public class AdmmFramework {
 						}
 					}
 				}else{
-					int zOffset = (n.nodeIndex*numNodes*dim);
+					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
 						nll += (ADMM_PHO/2)*(sm_x[nOffset+w]-z[zOffset+w]+u[zOffset+w])*(sm_x[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
 					}
