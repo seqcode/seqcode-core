@@ -44,7 +44,7 @@ public class BEDLine {
 		chromEnd = Integer.parseInt(array[2]);
 
 		name = array.length > 3 ? array[3] : null;
-		score = array.length > 4 ? Double.parseDouble(array[4]) : null;
+		score = array.length > 4 ? (array[4].charAt(0)=='.' ? 0 :Double.parseDouble(array[4])) : null;
 		strand = array.length > 5 ? array[5].charAt(0) : null;
 		thickStart = array.length > 6 ? Integer.parseInt(array[6]) : null;
 		thickEnd = array.length > 7 ? Integer.parseInt(array[7]) : null;

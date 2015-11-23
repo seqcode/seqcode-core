@@ -585,14 +585,15 @@ public class BindingEM {
                 }else{
                     // Eliminate worst binding component
                     // Responsibilities will be redistributed in the E step
-                   	pi[c][minIndex]=0.0;
+                   	pi[c][minIndex]=0.0; sumR[minIndex]=0.0;
                    	for(int i=0; i<numBases;i++)
                    		rBind[c][minIndex][i] = 0;
                    	//I discussed this bit with Chris, and we decided that the best thing to do is
                    	//to re-estimate pi values for non-eliminated components using the current responsibility assignments
-                   	for(int j=0;j<numComp;j++){ if(pi[c][j]>0){
-                		pi[c][j]=Math.max(0, sumR[j]); 
-                	}}
+                   	for(int j=0;j<numComp;j++){ 
+                   		if(j!=minIndex)
+                   			pi[c][j]=Math.max(0, sumR[j]); 
+                	}
                    	componentEliminated=true;
                 }
                 //Normalize pi (accounting for piNoise)

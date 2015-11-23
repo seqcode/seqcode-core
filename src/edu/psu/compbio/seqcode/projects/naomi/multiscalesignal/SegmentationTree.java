@@ -1,5 +1,6 @@
 package edu.psu.compbio.seqcode.projects.naomi.multiscalesignal;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +40,10 @@ public class SegmentationTree {
 	final static double DELTA_TAU = 0.5*Math.log(2);
 	final static double MINIMUM_VALUE = Math.pow(10, -100); //arbitrary minimum value; I cannot use Double.MIN_VALUE because it can become zero
 	// I have to determine P_MIN value carefully because P_MIN will substantially affect Gaussian window size
-	final static double P_MIN = Math.pow(10,-3);
+//	final static double P_MIN = Math.pow(10,-3);
+	final static double P_MIN = Math.pow(10,-2);
+	//P_BIN is to determine window size of growing bin
+	final static double P_BIN = 0.4995;
 	final static double K_MIN = 1/Math.sqrt(1-Math.exp(-2*DELTA_TAU));	
 	final static double K_N = Math.ceil(K_MIN);
 
@@ -77,26 +81,19 @@ public class SegmentationTree {
 		}
 		
 		for (int n = 1; n<numScale; n++){
-		
-			double polyCoeffi[] = new double [currchromBinSize];
-			//first copy from column[1] to column[0];this procedure need to be repeated for each iteration of scale
-			//also copy from column[1] to array to store polynomial coefficient
-			for (int i = 0 ; i<currchromBinSize; i++){
-				gaussianBlur[i][0]=gaussianBlur[i][1];
-				if (gaussianBlur[i][1] != 0){
-					polyCoeffi[i]=gaussianBlur[i][1];
-				}else{
-					polyCoeffi[i]=MINIMUM_VALUE;
-				}
-			}
+			
+			final long gaussianStartTime = System.currentTimeMillis();
 			
 			//sigma calculation
 			sigma[n] = Math.exp(n*DELTA_TAU);
 			// create normal distribution with mean zero and sigma[n]
 			NormalDistribution normDistribution = new NormalDistribution(0.00,sigma[n]);
 			//take inverse CDF based on the normal distribution using probability
-			double inverseCDF = normDistribution.inverseCumulativeProbability(P_MIN);				
-			int windowSize = (int) (-Math.round(inverseCDF)*2+1);						
+			double inverseCDF = normDistribution.inverseCumulativeProbability(P_MIN);	
+			double binInverseCDF = normDistribution.inverseCumulativeProbability(P_BIN);			
+			int windowSize = (int) (-Math.round(inverseCDF)*2+1);	
+			float binWindowSize = -Math.round(binInverseCDF)*2+1;
+			
 			//window calculation based on Gaussian(normal) distribution with sigma, mean=zero,x=X[i]			
 			double window[] = new double[windowSize];
 			double windowSum = 0;
@@ -107,6 +104,20 @@ public class SegmentationTree {
 			double normalizedWindow[]=new double[windowSize];
 			for (int i = 0;i<windowSize;i++)
 				normalizedWindow[i] = window[i]/windowSum;	
+			
+			float fchromBinSize = currchromBinSize;
+			double polyCoeffi[] = new double [(int) Math.ceil(fchromBinSize/binWindowSize)];
+			System.out.println("binWindowSize is "+binWindowSize+"\tpolyCoeffi length is "+(int) Math.ceil(fchromBinSize/binWindowSize));
+			//copy from column[1] to column[0];this procedure need to be repeated for each iteration of scale
+			// copy from column[1] to array to store polynomial coefficient
+			for (int i = 0 ; i<currchromBinSize; i++){
+				gaussianBlur[i][0]=gaussianBlur[i][1];
+				polyCoeffi[(int) Math.floor(((float) i)/binWindowSize)] += gaussianBlur[i][1]/binWindowSize;
+			}
+			for (int i = 0; i < Math.ceil(fchromBinSize/binWindowSize); i++){
+				if (polyCoeffi[i] == 0)
+					polyCoeffi[i]=MINIMUM_VALUE;
+			}	
 
 			PolynomialFunction poly1 = new PolynomialFunction(polyCoeffi);
 			PolynomialFunction poly2 = new PolynomialFunction(normalizedWindow);
@@ -114,24 +125,33 @@ public class SegmentationTree {
 			double coefficients[]= polyMultiplication.getCoefficients();
 		
 			//taking mid point of polynomial coefficients			
-			int polyMid = (int) Math.floor(coefficients.length/2);
+			int coeffiMid = (int) Math.floor(((float) coefficients.length)/ 2.0);
 		
-			System.out.println("currchromBin Size is : "+currchromBinSize+"\t"+ "windowSize is: "+windowSize+"\t"+"coefficients length is: "+coefficients.length);
+			System.out.println("currchromBin Size is : "+currchromBinSize+"\twindowSize is: "+windowSize+
+					"\tpolyCoeffi length is "+polyCoeffi.length+"\tcoefficients length is: "+coefficients.length);
 
-			//copy Gaussian blur results to the column[1]
-			// I should check to make sure that it's not off by 1
+			//copy Gaussian blur results to the column[1] without increasing bin size
+//			for (int i = 0; i<currchromBinSize;i++){
+//				if (currchromBinSize % 2 ==0 && coefficients.length % 2 == 1){
+//					gaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i+1];
+//				}else{
+//					gaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i];
+//				}
+			
+			// copy Gaussian blur results to the column[1] with increasing bin size
 			for (int i = 0; i<currchromBinSize;i++){
-				if (currchromBinSize % 2 ==0 && coefficients.length/2 == 1)
-					gaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i+1];
+				if (polyCoeffi.length % 2 ==0 && coefficients.length % 2 == 1)
+					gaussianBlur[i][1]=(float) coefficients[(int) (coeffiMid-Math.floor((fchromBinSize/2-i)/binWindowSize))+1];
 				else
-					gaussianBlur[i][1]=(float) coefficients[polyMid-currchromBinSize/2+i];
+					gaussianBlur[i][1]=(float) coefficients[(int) (coeffiMid-Math.floor((fchromBinSize/2-i)/binWindowSize))];
 			}	
 		
-			//testing; I can identify the region that I want to print using peak calling
-			if (currchromBinSize < 200000 && currchromBinSize >15000){			
-				for (int i = 0; i< 200;i++)
-				System.out.println(gaussianBlur[9650+i][0]+" : "+gaussianBlur[9650+i][1]);
-			}
+			for (int i = 0; i< 11516987;i += 200000)
+				System.out.println(gaussianBlur[i][0]+" : "+gaussianBlur[i][1]);
+			
+			final long gaussianEndTime = System.currentTimeMillis();
+			
+			System.out.println("scale "+n+" Gausisian blur execusion time "+ (gaussianEndTime-gaussianStartTime));
 		
 			/***************
 			 * Search Volume
@@ -164,7 +184,11 @@ public class SegmentationTree {
 			/***************
 			 * Linkage Loop	
 			 */		 
-			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();				 
+			
+			final long linkageLoopStart = System.currentTimeMillis();
+			
+//			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>();		
+			TreeMap<Integer, Integer> GvParents = new TreeMap<Integer,Integer>(linkageMap);				 
 			//First iteration only consider intensity differences between parent and kid and connect to the ones with the least difference.
 			//From the second iteration, we consider ground volume = number of nodes that parents are linked to the kids
 			//From third iteration, we increase the weight of the ground volume by 1e-7.
@@ -181,24 +205,30 @@ public class SegmentationTree {
 							groundVPmax = GvParents.get(parent);
 					}				
 				}	
-
-				for (Integer kid : linkageMap.keySet()){
 				
-					double intensityDiffScore = 0;							
+				// look for parents within the windowSize
+				for (Integer kid : linkageMap.keySet()){
+					
+					if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
+					else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
+				
+					double intensityDiffScore = 0;		
+
 					for (int i = 0; i<DCPsize; i++){
-						if ((kid + dcp[i]) >=0 && (kid + dcp[i]) <currchromBinSize){
-							if (counter ==0 || groundVPmax == 0){groundVC = 0.00;}
-							else{ groundVC = (WEIGHT_I+WEIGHT_G*counter)*GvParents.get(linkageMap.get(kid))/groundVPmax;}
+						
+						if (GvParents.containsKey(kid+dcp[i])){
 
 							tempScore = distanceFactor[i]*((1- Math.abs(gaussianBlur[kid][0] - gaussianBlur[kid+dcp[i]][1])/DImax)+groundVC);
+							
 							if (tempScore > intensityDiffScore){
 								intensityDiffScore = tempScore;
-								if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
-								else{
+								linkageMap.put(kid,(kid+dcp[i]));
+//test								if (counter ==0){linkageMap.put(kid,(kid+dcp[i]));}
+//test								else{
 				//					if(GvParents.containsKey(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
-									if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
-								}
-							}
+//									if(linkageMap.containsValue(kid+dcp[i])){linkageMap.put(kid,(kid+dcp[i]));}
+//test								}
+							}							
 						}							
 					}
 				}						
@@ -219,6 +249,7 @@ public class SegmentationTree {
 				}
 				GvParents.put(0, trailingZero);
 				GvParents.put(gaussianBlur.length-1,gaussianBlur.length-zeroEnd-1);
+				
 			}
 			Map<Integer, Integer> sortedLinkageMap = new HashMap<Integer,Integer> (MapUtility.sortByValue(linkageMap));
 			
@@ -227,6 +258,9 @@ public class SegmentationTree {
 				linkageMap.put(parent, parent);
 			}						
 			//for each scaleNum, add the parents to the segmentationTree
+			
+			final long linkageLoopEnd = System.currentTimeMillis();
+			System.out.println("linkage Loop excusion time "+( linkageLoopEnd -linkageLoopStart));
 
 			segmentationTree.put(n, GvParents.keySet());
 			
@@ -235,13 +269,13 @@ public class SegmentationTree {
 		// scale zero is getting overwriting with the parents of the last scale; I'm overwriting the scale zero with initial nodesest for quick fix
 		segmentationTree.put(0, startingNodes);
 		
-//		for (Integer scale : segmentationTree.keySet()){
-//			System.out.println("current scale is: "+scale);
-//			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
-//			System.out.println("current nodeset size is: "+sortedNodeSet.size());
+		for (Integer scale : segmentationTree.keySet()){
+			System.out.println("current scale is: "+scale);
+			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
+			System.out.println("current nodeset size is: "+sortedNodeSet.size());
 //			for (Integer node : sortedNodeSet)
 //				System.out.println(node);
-//		}	
+		}	
 		
 		return segmentationTree;
 		

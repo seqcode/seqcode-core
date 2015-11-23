@@ -52,7 +52,7 @@ public class SAMFileHitLoader extends FileHitLoader{
 		    
 		    if(record.getReadUnmappedFlag()) {continue; }
 		    if(record.isSecondaryOrSupplementary() && !useChimericReads){continue;}
-		    if(record.getReadPairedFlag() && !record.getFirstOfPairFlag() && !loadRead2){continue;}
+		    if(record.getReadPairedFlag() && record.getSecondOfPairFlag() && !loadRead2){continue;}
 		    	
 		    if (lastread == null || !lastread.equals(record.getReadName())) {
 		    	processRead(byRead);
@@ -73,7 +73,8 @@ public class SAMFileHitLoader extends FileHitLoader{
                 		1);
                 addPair(record.getReferenceName().replaceFirst("^chr", ""), neg ? '-':'+', hp);
 		    }
-		}
+	    }
+
 		processRead(byRead);
 		iter.close();
 		try {

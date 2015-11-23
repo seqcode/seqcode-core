@@ -1,5 +1,7 @@
 package edu.psu.compbio.seqcode.projects.chexmix;
 
+import java.util.Map;
+
 /**
  * CompositeModelComponent: a component in ChExMix mixtures
  * 
@@ -69,5 +71,50 @@ public class CompositeModelComponent  implements Comparable<CompositeModelCompon
 	
 	public String toString(int offset){
 		return String.format("%d\t%.5f", position-offset, pi);
+	}
+	
+	/**
+	 * Encode variables in a string
+	 * @return
+	 */
+	public String saveString(){
+		String out="#CompositeModelComponent,"+index+","+label+","+position+","+pi+","+distrib.getIndex()+","+
+				updatablePosition+","+updatablePi+","+sumRespW+","+sumRespC+",\n";		
+		return out;
+	}
+	
+	/**
+	 * Load a CompositeModelComponent using a String in the same format as used in saveString
+	 * @param line: String to be converted
+	 * @param tagDensities: TagProbabilityDensities mapped by index
+	 * @return
+	 */
+	public static CompositeModelComponent load(String line, Map<Integer, TagProbabilityDensity> tagDensities){
+		CompositeModelComponent cmc = null;
+		String[] bits = line.split(",");
+		if(bits.length!=10 || !bits[0].equals("#CompositeModelComponent")){
+			System.err.println("CompositeModelComponent.load(): Unexpected format");
+			System.exit(1);
+		}else{
+			Integer index = new Integer(bits[1]);
+			String label = bits[2];
+			Integer pos = new Integer(bits[3]);
+			Double pi = new Double(bits[4]);
+			Integer tagDistIndex = new Integer(bits[5]);
+			Boolean upPos = new Boolean(bits[6]);
+			Boolean upPi = new Boolean(bits[7]);
+			Double sumRW = new Double(bits[8]);
+			Double sumRC = new Double(bits[9]);
+			if(!tagDensities.containsKey(tagDistIndex)){
+				System.err.println("CompositeModelComponent.load(): TagProbabilityDensity not defined");
+				System.exit(1);
+			}else{
+				TagProbabilityDensity tagDist = tagDensities.get(tagDistIndex);
+				cmc = new CompositeModelComponent(tagDist, pos, index, label, upPos, upPi);
+				cmc.setPi(pi);
+				cmc.setSumResponsibilities(sumRW, sumRC);
+			}
+		}
+		return cmc;
 	}
 }

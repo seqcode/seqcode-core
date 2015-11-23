@@ -16,6 +16,7 @@ import java.util.TimeZone;
 
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -37,17 +38,20 @@ public class ChExMixConfig {
 	protected String outName="chexmix", outBase="chexmix";
 	protected File outDir=null, interDir=null, imagesDir=null;
 	protected boolean printHelp=false;
+	protected String model=null; //Filename containing existing model
 	protected TagProbabilityDensity defaultCSModel=null;
 	protected List<StrandedPoint> compositePoints = new ArrayList<StrandedPoint>(); //Centers of the composite plots
 	protected int compositeWinSize=1000; //Width of the composite plot
 	protected int XLDistribOffset=6; //exonuclease head-space
 	protected double XLDistribSigma=1.5; //gaussian distrib sigma
 	protected int XLComponentSpacing = 5; //Inital number of bp between XL Components
+	protected int minModelUpdateRounds=3; //Minimum number of outer EM training rounds
 	protected int maxModelUpdateRounds=10; //Maximum number of outer EM training rounds
 	protected double modelConvergenceKL=-25; //KL-divergence threshold for convergence 
 	protected int maxThreads=1;				//Number of threads to use. Default is 1 for single processor machines. 
 	protected double alphaScalingFactor = 10.0; //Scale the alpha value by this factor relative to the noise component per-base
 	protected double fixedAlpha = 0.0; //Fixed alpha value if above 0
+	protected boolean noXL=false; //Test method that turns off XL components (by seeting all XL pi to zero from start). 
 	protected boolean smoothingBMDuringUpdate=true;
 	protected boolean gaussianSmoothingBMDuringUpdate=false;
 	protected boolean updateBM=true; //Set to false to turn off binding model update
@@ -57,13 +61,16 @@ public class ChExMixConfig {
 	protected boolean printCompositeResponsibilities = true; //Print the responsibilities for each composite position
 	protected boolean writeSinglePlots=false; //Plot the individual PNG images along with the gifs
     protected List<Region> regionsToPlotML = new ArrayList<Region>(); //List of regions that will be printed during ML training (for debugging/demonstration)
+    protected List<Point> scanPoints = new ArrayList<Point>(); //Centers of the scan sites in scanning applications
 	
+    
 	//Constants
 	public final double LOG2 = Math.log(2);
 	public final double INIT_CS_TO_XL_RATIO=0.05; 	//Initial ratio of CS component pi values to sum of XO pi values.
 	public final double MIN_CS_PI = 0.05; //Minimum pi value for CS component
 	public final double MIN_ALPHA = 0.01; //Minimum alpha 
 	public final boolean FIXED_XL_OFFSET=true; //Estimate the XL component offset (mean)?
+	public final boolean XL_DISTRIB_SYMMETRIC=true; //Is the sigma associated with XL components symmetric?
 	public final int MAX_EM_ITER=2000;
     public final int EM_ML_ITER=100;     				//Run EM up until <tt>ML_ITER</tt> without using sparse prior
     public final int ML_ML_ITER=100;     				//Run ML up until <tt>ML_ITER</tt> without using sparse prior
@@ -140,6 +147,8 @@ public class ChExMixConfig {
 					defaultCSModel = new TagProbabilityDensity(pFile); 
 				}
 				
+				/****Pre-existing model****/
+				model = Args.parseString(args,"model",model);
 				
 				/****Miscellaneous arguments****/
 				//Width of the composite window
@@ -147,8 +156,11 @@ public class ChExMixConfig {
 				//Composite plot center points (required)
 				if(ap.hasKey("cpoints"))
 					compositePoints = Utils.loadStrandedPointsFromFile(gen, Args.parseString(args, "cpoints", null));
+				//Scan center points
+				if(ap.hasKey("spoints"))
+					scanPoints = Utils.loadPointsFromFile(Args.parseString(args, "spoints", null), gen);
 				//Maximum number of model update rounds
-				maxModelUpdateRounds = Args.parseInteger(args,"r", 3);
+				maxModelUpdateRounds = Args.parseInteger(args,"r", maxModelUpdateRounds);
 				//Turn off binding model updates
 				updateBM = Args.parseFlags(args).contains("nomodelupdate") ? false : true;
 				//Turn off smoothing during binding model updates 
@@ -172,6 +184,8 @@ public class ChExMixConfig {
 				alphaScalingFactor = Args.parseDouble(args,"alphascale",alphaScalingFactor);
 				//Fixed alpha value
 				fixedAlpha = Args.parseDouble(args,"fixedalpha",fixedAlpha);
+				//Turn off XL components for testing
+				noXL =  Args.parseFlags(args).contains("noxl") ? true : false;
 				//Plot the EM process on the composite
 				plotCompositeEM =  Args.parseFlags(args).contains("plot") ? true : false;
 				//Regions to print during ML training
@@ -209,11 +223,13 @@ public class ChExMixConfig {
 	//Accessors
 	public Genome getGenome(){return gen;}
 	public boolean helpWanted(){return printHelp;}
+	public String getModelFilename(){return model;}
 	public int getCompositeWinSize(){return compositeWinSize;}
 	public List<StrandedPoint> getCompositePoints(){return compositePoints;}
 	public int getMaxThreads(){return maxThreads;}
 	public double getAlphaScalingFactor(){return alphaScalingFactor;}
 	public double getFixedAlpha(){return fixedAlpha;}
+	public boolean noXL(){return noXL;}
 	public boolean getPlotEM(){return plotCompositeEM;}
 	public boolean getWriteSinglePlots(){return writeSinglePlots;}
 	public List<Region> getRegionsToPlot(){return regionsToPlotML;}
@@ -224,11 +240,13 @@ public class ChExMixConfig {
 	public boolean getGaussBMSmooth(){return gaussianSmoothingBMDuringUpdate;}
 	public double getBindingModelGaussSmoothParam(){return bindingmodel_gauss_smooth;}
 	public int getMaxModelUpdateRounds(){return maxModelUpdateRounds;}
+	public int getMinModelUpdateRounds(){return minModelUpdateRounds;}
 	public double getModelConvergenceKL(){return modelConvergenceKL;}
 	public int getXLDistribOffset(){return XLDistribOffset;}
 	public double getXLDistribSigma(){return XLDistribSigma;}
 	public int getXLComponentSpacing(){return XLComponentSpacing;}
 	public boolean getPrintCompositeResponsibilities(){return printCompositeResponsibilities;}
+	public List<Point> getScanPoints(){return scanPoints;}
 	
 	/**
 	 * Make some output directories used by ChExMix
@@ -291,12 +309,16 @@ public class ChExMixConfig {
 				"\t--r <max. model update rounds (default="+maxModelUpdateRounds+")>\n" +
 				"\t--out <out name (default="+outBase+")>\n" +
 				"\t--nonunique [flag to use non-unique reads]\n" +
-				"\t--threads <number of threads to use (default="+maxThreads+")>\n" +
+				//"\t--threads <number of threads to use (default="+maxThreads+")>\n" +
+				"\t--spoints <center points (unstranded) of scanning analysis>\n" +
 				"Experiment Design File:\n" +
 				"\t--design <file name>\n" +
+				"ChExMix Model:" +
+				"\t--model <filename>\n" +
 				"Miscellaneous:\n" +
 				"\t--alphascale <alpha scaling factor(default="+alphaScalingFactor+">\n" +
 				"\t--fixedalpha <impose this alpha (default: set automatically)>\n" +
+				"\t--noxl [flag to turn off XL components for testing purposes]\n" +
 				"\t--nomodelupdate [flag to turn off binding model updates]\n" +
 				"\t--nomodelsmoothing [flag to turn off binding model smoothing]\n" +
 				"\t--splinesmoothparam <spline smoothing parameter (default="+bindingmodel_spline_smooth+">\n" +

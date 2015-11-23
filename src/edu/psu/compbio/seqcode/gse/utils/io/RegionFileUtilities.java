@@ -195,7 +195,7 @@ public class RegionFileUtilities {
 	            StrandedRegion sq = new StrandedRegion(
 	            		gen,
 	            		line.getChrom(),
-	            		line.getChromStart(),
+	            		line.getChromStart()+1,
 	            		line.getChromEnd(),
 	            		line.getStrand());
 	            if(win==-1)
