@@ -365,6 +365,11 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    admm.setNumClasses(m_NumClasses);
 	    admm.setNumPredictors(m_NumPredictors);
 	    admm.initZandU();
+	    admm.setDebugMode(sm_Debug);
+	    
+	    /** DEBUG output */
+	    if(sm_Debug)
+	    	System.err.println("Beginning training of the L1 model using ADMM framework");
 	    
 	    admm.execute();
 	    //  m_LL = -opt.getMinFunction(); // Log-likelihood (TODO: make sure this is taken care of)

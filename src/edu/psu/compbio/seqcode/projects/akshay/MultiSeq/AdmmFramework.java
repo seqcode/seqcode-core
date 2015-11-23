@@ -1,6 +1,8 @@
 package edu.psu.compbio.seqcode.projects.akshay.MultiSeq;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import weka.core.Optimization;
 import weka.core.Utils;
@@ -37,6 +39,7 @@ public class AdmmFramework {
 	protected ClassRelationStructure classStructure;
 	protected int numNodes;
 	protected double ridge;
+	protected boolean sm_Debug;
 	
 	// To clear memory
 	public void clearADMM(){
@@ -57,6 +60,7 @@ public class AdmmFramework {
 	public void setClassStructure(ClassRelationStructure rel){classStructure = rel; setNumNodes(rel.allNodes.size());}
 	public void setNumNodes(int n){numNodes = n;}
 	public void setRidge(double r){ridge = r;}
+	public void setDebugMode(boolean debug){sm_Debug =debug;}
 	
 	//gettors
 	public double[] getX(){return x;}
@@ -85,7 +89,17 @@ public class AdmmFramework {
 		
 		int dim = numPredictors +1;
 		
+		// Stores the dual and primal residues over the progression of the ADMM algo
+		List<double[]> history_duals = new ArrayList<double[]>();
+		List<double[]> history_primals = new ArrayList<double[]>();
+		
+		// track the number of linear constraints
+		
 		for(int ad=0; ad < maxItr; ad++){
+			if(sm_Debug){
+				//System.err.print(".");
+				System.err.print("X-update!!");
+			}
 			// x-update
 			updateX();
 		
@@ -111,6 +125,11 @@ public class AdmmFramework {
 			}
 		
 			doSkrinkage(xRelaxed,ADMM_PHO/(2*ridge));
+			
+			if(sm_Debug){
+				//System.err.print(".");
+				System.err.print("Z-update Finished !!");
+			}
 		
 			//u-update
 			for(Node n : classStructure.leafs){
@@ -127,6 +146,11 @@ public class AdmmFramework {
 						u[zOffset+w] = xRelaxed[zOffset+w]-z[zOffset+w];
 					}
 				}
+			}
+			
+			if(sm_Debug){
+				//System.err.print(".");
+				System.err.print("U-update Finished !!");
 			}
 		
 			//Check for stopping criteria
@@ -194,6 +218,9 @@ public class AdmmFramework {
 					primals[n.nodeIndex*numNodes+n.nodeIndex] = primalResidueNorm;
 				}
 			}
+			
+			history_duals.add(duals);
+			history_primals.add(primals);
 		
 			boolean converged = true;
 			for(int d=0; d<duals.length; d++ ){
@@ -205,16 +232,42 @@ public class AdmmFramework {
 					break;
 			}
 		
-			if(converged)
+			if(converged){
+				if (sm_Debug) {
+					System.err.println("ADMM Converged in "+Integer.toString(ad)+" iterations !!");
+				}
 				break;
+			}
+				
+			if (sm_Debug) {
+				System.err.println("ADMM yet to converge !!");
+			}
 		}
+		
+		// Now plot the  ADMM primal and dual trajectories
+		double[][] Xax_duals = new double[history_duals.size()][numNodes*numNodes];
+		double[][] Yax_duals = new double[history_duals.size()][numNodes*numNodes];
+		double[][] Xax_primals = new double[history_duals.size()][numNodes*numNodes];
+		double[][] Yax_primals = new double[history_duals.size()][numNodes*numNodes];
+		for(int itr=0; itr<history_duals.size(); itr++){
+			for(int i=0; i<numNodes*numNodes; i++){
+				Xax_duals[itr][i] = itr;
+				Xax_primals[itr][i] = itr;
+			}
+			Yax_duals[itr]=history_duals.get(itr);
+			Yax_primals[itr]=history_primals.get(itr);
+		}
+		ADMMplotter plotter = new ADMMplotter();
+		File fp = new File("dual_residues.png");
+		plotter.plot(Xax_duals,Yax_duals,"Number of ADMM interations","Dual residues",fp);
+		fp = new File("primal_residues.png");
+		plotter.plot(Xax_primals,Yax_primals,"Number of ADMM interations","Prinal residues",fp);
 	}
 
 	
 	public void updateX() throws Exception{
 		OptObject oO = new OptObject();
 		Optimization opt = new OptEng(oO);
-		opt.setMaxIteration(BGFS_maxIts);
 		
 		double[][] b = new double[2][x.length]; // Boundary constraints, N/A here
 		for (int p = 0; p < numClasses; p++) {
@@ -230,7 +283,13 @@ public class AdmmFramework {
 			x = opt.findArgmin(x, b);
 			while (x == null) {
 				x = opt.getVarbValues();
+					if (sm_Debug) {
+						System.err.println("First set of iterations finished, not enough!");
+					}
 				x = opt.findArgmin(x, b);
+			}
+			if (sm_Debug) {
+				System.err.println(" -------------<BGFS Converged>--------------");
 			}
 		} else {
 			opt.setMaxIteration(BGFS_maxIts);
