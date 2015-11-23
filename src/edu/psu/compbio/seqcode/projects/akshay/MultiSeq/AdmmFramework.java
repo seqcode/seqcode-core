@@ -113,13 +113,13 @@ public class AdmmFramework {
 						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
 						int pOffset = pid*dim;
 						for(int w=0; w<dim; w++){
-							xRelaxed[zOffset+w] = ADMM_ALPHA*(x[nOffset+w]-x[pOffset+w])+(1-ADMM_ALPHA)*z[zOffset+w]+u[zOffset+w];
+							xRelaxed[zOffset+w] = ADMM_ALPHA*(sm_x[nOffset+w]-sm_x[pOffset+w])+(1-ADMM_ALPHA)*z[zOffset+w]+u[zOffset+w];
 						}
 					}
 				}else{
 					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
-						xRelaxed[zOffset+w] = ADMM_ALPHA*(x[nOffset+w])+(1-ADMM_ALPHA)*z[zOffset+w]+u[zOffset+w];
+						xRelaxed[zOffset+w] = ADMM_ALPHA*(sm_x[nOffset+w])+(1-ADMM_ALPHA)*z[zOffset+w]+u[zOffset+w];
 					}
 				}
 			}
@@ -170,7 +170,7 @@ public class AdmmFramework {
 						double znorm=0;
 						double unorm=0;
 						for(int w=0; w<dim; w++){
-							xnorm +=  (x[nOffset+w]-x[pOffset+w])*(x[nOffset+w]-x[pOffset+w]);
+							xnorm +=  (sm_x[nOffset+w]-sm_x[pOffset+w])*(sm_x[nOffset+w]-sm_x[pOffset+w]);
 							znorm += z[zOffset+w]*z[zOffset+w];
 							unorm += ADMM_PHO*u[zOffset+w]*ADMM_PHO*u[zOffset+w];
 						}
@@ -184,7 +184,7 @@ public class AdmmFramework {
 						double primalResidueNorm = 0;
 						for(int w=0; w<dim; w++){
 							deltaZnorm +=  ADMM_PHO*(z[zOffset+w] - zold[zOffset+w])*ADMM_PHO*(z[zOffset+w] - zold[zOffset+w]);
-							primalResidueNorm += (x[nOffset+w]-x[pOffset+w]-z[zOffset+w])*(x[nOffset+w]-x[pOffset+w]-z[zOffset+w]);
+							primalResidueNorm += (sm_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w])*(sm_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]);
 						}
 						deltaZnorm = Math.sqrt(deltaZnorm);
 						primalResidueNorm = Math.sqrt(primalResidueNorm);
@@ -197,7 +197,7 @@ public class AdmmFramework {
 					double znorm=0;
 					double unorm=0;
 					for(int w=0; w<dim; w++){
-						xnorm +=  (x[nOffset+w])*(x[nOffset+w]);
+						xnorm +=  (sm_x[nOffset+w])*(sm_x[nOffset+w]);
 						znorm += z[zOffset+w]*z[zOffset+w];
 						unorm += ADMM_PHO*u[zOffset+w]*ADMM_PHO*u[zOffset+w];
 					}
@@ -210,7 +210,7 @@ public class AdmmFramework {
 					double primalResidueNorm = 0;
 					for(int w=0; w<dim; w++){
 						deltaZnorm +=  ADMM_PHO*(z[zOffset+w] - zold[zOffset+w])*ADMM_PHO*(z[zOffset+w] - zold[zOffset+w]);
-						primalResidueNorm += (x[nOffset+w]-z[zOffset+w])*(x[nOffset+w]-z[zOffset+w]);
+						primalResidueNorm += (sm_x[nOffset+w]-z[zOffset+w])*(sm_x[nOffset+w]-z[zOffset+w]);
 					}
 					deltaZnorm = Math.sqrt(deltaZnorm);
 					primalResidueNorm = Math.sqrt(primalResidueNorm);
