@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.MultiLogistic.ClassRelationStructure.Node;
+import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelationStructure.Node;
 
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.pmml.producer.LogisticProducerHelper;
@@ -27,7 +27,7 @@ import weka.filters.unsupervised.attribute.RemoveUseless;
 import weka.filters.unsupervised.attribute.ReplaceMissingValues;
 
 
-public class MultiLogistic extends AbstractClassifier implements OptionHandler, WeightedInstancesHandler, PMMLProducer{
+public class SeqUnwinder extends AbstractClassifier implements OptionHandler, WeightedInstancesHandler, PMMLProducer{
 
 	// Model parameters compatible with a normal Multinomial logit model
 	
@@ -67,12 +67,10 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	protected double m_LL;
 	
 	/** The maximum number of iterations. */
-	private int m_MaxIts = -1;
-	 
-	/** Wether to use conjugate gradient descent rather than BFGS updates. */
-	private boolean m_useConjugateGradientDescent = false;
+	private int m_BGFS_MaxIts = -1;
 	  
 	private Instances m_structure;
+	
 	
 	
 	// Model parameters of the structured multinomial logit not compatible with the weka logit class
@@ -90,16 +88,12 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	
 	protected boolean sm_Debug;
 	
+	protected int m_ADMM_MaxIts = 1000;
+	
+	
+	
 	
 	// Setters
-	/**
-	 * Sets whether conjugate gradient descent is used.
-	 * 
-	 * @param useConjugateGradientDescent true if CGD is to be used.
-	 */
-	public void setUseConjugateGradientDescent(boolean useConjugateGradientDescent) {
-		m_useConjugateGradientDescent = useConjugateGradientDescent;
-	}
 	/**
 	 * Sets the Ridge parameter
 	 * @param ridge
@@ -111,9 +105,11 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	 * Sets the maximum nuber of training rounds while lerning
 	 * @param newMaxIts
 	 */
-	public void setMaxIts(int newMaxIts){
-		m_MaxIts = newMaxIts;
+	public void setBGFSMaxIts(int newMaxIts){
+		m_BGFS_MaxIts = newMaxIts;
 	}
+	public void serADMMMaxItrs(int ADMMmax){m_ADMM_MaxIts = ADMMmax;}
+	
 	public void setSmDebug(boolean smD){
 		sm_Debug = smD;
 	}
@@ -124,14 +120,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	
 	//Gettors
 
-	/**
-	 * Gets whether to use conjugate gradient descent rather than BFGS updates.
-	 * 
-	 * @return true if CGD is used
-	 */
-	public boolean getUseConjugateGradientDescent() {
-		return m_useConjugateGradientDescent;
-	}
+	
 	/**
 	 * Returns the ridge co-eff of the model
 	 * @return
@@ -143,8 +132,11 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	 * Return the value of m_MaxIts
 	 * @return
 	 */
-	public int getMaxIts(){
-		return m_MaxIts;
+	public int getBGFSMaxIts(){
+		return m_BGFS_MaxIts;
+	}
+	public int getADMMMaxItrs(){
+		return m_ADMM_MaxIts;
 	}
 	public boolean getSmDebug(){
 		return sm_Debug;
@@ -330,7 +322,6 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	    }
 	    
 	    double x[] = new double[(nR + 1) * nK];
-	    double[][] b = new double[2][x.length]; // Boundary constraints, N/A here
 	      
 	    // Fill sm_sY
 	    // First fill the leaf node
@@ -349,12 +340,8 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	    for (int p = 0; p < nK; p++) {
 	    	int offset = p * (nR + 1);
 	    	x[offset] = Math.log(sY[p] + 1.0) - Math.log(sY[nK-1] + 1.0); // Null model
-	        b[0][offset] = Double.NaN;
-	        b[1][offset] = Double.NaN;
 	        for (int q = 1; q <= nR; q++) {
 	        	x[offset + q] = 0.0;
-	        	b[0][offset + q] = Double.NaN;
-	        	b[1][offset + q] = Double.NaN;
 	        }
 	    }
 	    
@@ -367,38 +354,26 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	    		sm_x[offset+q] = 0.0;
 	    	}
 	    }
-	   
-	    OptObject oO = new OptObject();
-	    oO.setCls(Y);
-	    oO.setWeights(weights);
-	    oO.setsmX(sm_x);
-	   
-	    Optimization opt = null;
-	    if (m_useConjugateGradientDescent) {
-	    	opt = new OptEngCG(oO);
-	    } else {
-	    	opt = new OptEng(oO);
-	    }
-	   
-	    if (m_MaxIts == -1) { // Search until convergence
-	    	x = opt.findArgmin(x, b);
-	    	while (x == null) {
-	    		x = opt.getVarbValues();
-		        x = opt.findArgmin(x, b);
-	    	}
-	    } else {
-	    	opt.setMaxIteration(m_MaxIts);
-	    	x = opt.findArgmin(x, b);
-	    	if (x == null) {
-	    		x = opt.getVarbValues();
-	    	}
-	    }
-
-	    m_LL = -opt.getMinFunction(); // Log-likelihood
+	    
+	    AdmmFramework admm = new AdmmFramework(x,sm_x,m_Data);
+	    admm.serRidge(m_Ridge);
+	    admm.setADMMmaxItrs(m_ADMM_MaxIts);
+	    admm.setBGFSmaxItrs(m_BGFS_MaxIts);
+	    admm.setClassStructure(sm_ClassStructure);
+	    admm.setClsMembership(Y);
+	    admm.setInstanceWeights(weights);
+	    admm.setNumClasses(m_NumClasses);
+	    admm.setNumPredictors(m_NumPredictors);
+	    
+	    admm.execute();
+	    //  m_LL = -opt.getMinFunction(); // Log-likelihood (TODO: make sure this is taken care of)
 
 	    // Don't need data matrix anymore
 	    m_Data = null;
-		    
+		
+	    x=admm.getX();
+	    sm_x= admm.getsmX();
+	    admm.clearADMM();
 		    
 	    // Now update the m_Par and sm_Par with the learned parameters
 	    for (int i = 0; i < nK; i++) {
@@ -412,13 +387,12 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	        }
 	    }
 	    
-	    oO.updateInternalNodes(x);
 	    
 	    //Now update the sm_Par with the learned parameters
 	    for(Node n : sm_ClassStructure.allNodes.values()){
-	    	sm_Par[0][n.nodeIndex] = oO.sm_x[n.nodeIndex*(nR+1)];
+	    	sm_Par[0][n.nodeIndex] = sm_x[n.nodeIndex*(nR+1)];
 	    	for(int j=1; j<=nR; j++){
-	    		sm_Par[j][n.nodeIndex] = oO.sm_x[n.nodeIndex*(nR+1)+j];
+	    		sm_Par[j][n.nodeIndex] = sm_x[n.nodeIndex*(nR+1)+j];
 	    		if(xSD[j] != 0 ){
 	    			sm_Par[j][n.nodeIndex] /=xSD[j];
 	    			sm_Par[0][n.nodeIndex] -= sm_Par[j][n.nodeIndex]*xMean[j];
@@ -556,277 +530,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 		
 	}
 	
-	private class OptEng extends Optimization {
 
-	    OptObject m_oO = null;
-
-	    private OptEng(OptObject oO) {
-	      m_oO = oO;
-	    }
-
-	    @Override
-	    protected double objectiveFunction(double[] x) {
-	      return m_oO.objectiveFunction(x);
-	    }
-
-	    @Override
-	    protected double[] evaluateGradient(double[] x) {
-	      return m_oO.evaluateGradient(x);
-	    }
-
-	    @Override
-	    public String getRevision() {
-	      return RevisionUtils.extract("$Revision: 11247 $");
-	    }
-	  }
-
-	  private class OptEngCG extends ConjugateGradientOptimization {
-
-	    OptObject m_oO = null;
-
-	    private OptEngCG(OptObject oO) {
-	      m_oO = oO;
-	    }
-
-	    @Override
-	    protected double objectiveFunction(double[] x) {
-	      return m_oO.objectiveFunction(x);
-	    }
-
-	    @Override
-	    protected double[] evaluateGradient(double[] x) {
-	      return m_oO.evaluateGradient(x);
-	    }
-
-	    @Override
-	    public String getRevision() {
-	      return RevisionUtils.extract("$Revision: 11247 $");
-	    }
-	  }
-
-	
-	
-	private class OptObject {
-		/** Weights of the instances */
-		protected double[] weights;
-		
-		/** Current values of variable for all the nodes */
-		/** Updated when evaluage gradient is called */
-		protected double[] sm_x;
-		
-		/** Instance class membership */
-		protected int[] cls;
-		
-		//Settors
-		public void setWeights(double[] w){weights = w;}
-		public void setCls(int[] c){cls=c;}
-		public void setsmX(double[] smx){sm_x=smx;}
-		
-		/** 
-		 * Fix the leaf node values
-		 * Updates all odd numbered layers
-		 * Update all even numbered layers except the leaf 
-		 * (The gradient for the leaf layer is computed in the evaluateGradient code)
-		 * @param x // Leaf layer nodes
-		 */
-		protected void updateInternalNodes(double[] x){
-			int dim = m_NumPredictors+1;
-			
-			// Copy the current x(leaf params) to sm_x
-			for(Node l: sm_ClassStructure.leafs){
-				int offset = l.nodeIndex*dim;
-				for(int w=0; w<dim;w++){
-					sm_x[offset+w] = x[offset+w];
-				}
-			}
-			
-			//First update all odd-numbered layrers
-			for(int l=1; l<sm_ClassStructure.numLayers;l+=2){
-				for(Node n : sm_ClassStructure.layers.get(l)){// Get nodes in this layer
-					int offset = n.nodeIndex*dim;
-					double den = n.parents.size()+n.children.size();
-					for(int w=0; w<dim; w++){
-						double num = 0.0;
-						for(int pind: n.parents){
-							num = num+sm_x[pind*dim+w];
-						}
-						for(int cind: n.children){
-							num=num+sm_x[cind*dim+w];
-						}
-						sm_x[offset+w] = num/den;
-					}
-				}
-			}
-			
-			// Now update all the even numbered layers except the leaf layer
-			for(int l=2; l<sm_ClassStructure.numLayers; l+=2){
-				for(Node n: sm_ClassStructure.layers.get(l)){
-					int offset = n.nodeIndex*dim;
-					double den = n.parents.size()+n.children.size();
-					for(int w=0; w<dim; w++){
-						double num = 0;
-						for(int pind : n.parents){
-							num=num+sm_x[pind*dim+w];
-						}
-						for(int cind : n.children){
-							num=num+sm_x[cind*dim+w];
-						}
-						sm_x[offset+w] = num/den;
-					}
-				}
-			}
-		}
-		
-		public double[] evaluateGradient(double[] x){
-			// Update the internal nodes first
-			updateInternalNodes(x);
-			double[] grad = new double[x.length];
-			int dim = m_NumPredictors + 1; // Number of variables per class
-
-			for (int i = 0; i < cls.length; i++) { // ith instance
-				double[] num = new double[m_NumClasses]; // numerator of
-		                                                     // [-log(1+sum(exp))]'
-		        int index;
-		        for (int offset = 0; offset < m_NumClasses; offset++) { // Which
-		                                                                    // part of 
-		        	double exp = 0.0;
-		        	index = offset * dim;
-		        	for (int j = 0; j < dim; j++) {
-		        		exp += m_Data[i][j]*sm_x[index + j];
-		        	}
-		        	num[offset] = exp;
-		        }
-
-		        double max = num[Utils.maxIndex(num)];
-		       
-		        double denom=0.0;
-		        for (int offset = 0; offset < m_NumClasses; offset++) {
-		        	num[offset] = Math.exp(num[offset] - max);
-		        	denom += num[offset];
-		        }
-		        Utils.normalize(num, denom);
-
-		        // Update denominator of the gradient of -log(Posterior)
-		        double firstTerm;
-		        for (int offset = 0; offset < m_NumClasses; offset++) { // Which
-		                                                                    // part of x
-		        	index = offset * dim;
-		        	firstTerm = weights[i] * num[offset];
-		        	for (int q = 0; q < dim; q++) {
-		        		grad[index + q] += firstTerm * m_Data[i][q];
-		        	}
-		        }
-
-		        for (int p = 0; p < dim; p++) {
-		            grad[cls[i] * dim + p] -= weights[i] * m_Data[i][p];
-		        }
-		        
-			}
-		      
-
-			for(Node n : sm_ClassStructure.leafs){
-				int nOffset = n.nodeIndex*dim;
-				if(n.parents.size() > 0){
-					for(int pid : n.parents){
-						int pOffset = pid*dim;
-						for(int w=0; w<dim; w++){
-							grad[nOffset+w] += m_Ridge*(sm_x[nOffset+w]-sm_x[pOffset+w]);
-						}
-					}
-				}else{
-					for(int w=0; w<dim; w++){
-						grad[nOffset+w] += m_Ridge*(sm_x[nOffset+w]);
-					}
-				}
-			}	
-		      
-			return grad;
-			/////////////////////////////////
-			
-			//double[] grad = new double[x.length];
-			//int dim = m_NumPredictors+1;
-			
-		//	for(int c=0; c<cls.length; c++){
-				
-			//	double[] exp=new double[sm_ClassStructure.leafs.size()];
-				
-		//		for(Node n: sm_ClassStructure.leafs){
-			//		int offset = n.nodeIndex*dim;
-				//	for(int i=0; i<dim; i++){
-					//	exp[n.nodeIndex] += sm_x[offset+i]*m_Data[c][i];
-					//}
-				//}
-				//double max = exp[Utils.maxIndex(exp)];
-				//double num = Math.exp(-max);
-				//double denom = num+Math.exp(exp[cls[c]]-max);
-				
-				//for(int w=0; w<dim; w++){
-				//	grad[cls[c]*dim+w] -= weights[c]*(num/denom)*m_Data[c][w];
-				//}
-				
-			//}
-			
-			
-			// Now add the regularization part
-			
-			
-					
-		}
-		
-		
-		public double objectiveFunction(double[] x){
-			double nll=0.0;
-			int dim = m_NumPredictors+1;
-			// update all the internal nodes again
-			updateInternalNodes(x);
-
-			for (int i = 0; i < cls.length; i++) { // ith instance
-				double[] exp = new double[m_NumClasses];
-				int index;
-				for (int offset = 0; offset < m_NumClasses; offset++) {
-					index = offset * dim;
-					for (int j = 0; j < dim; j++) {
-						exp[offset] += m_Data[i][j] * sm_x[index + j];
-					}
-				}
-				double max = exp[Utils.maxIndex(exp)];
-		        double denom = 0;
-		        double num = exp[cls[i]] - max;
-		        
-		        for (int offset = 0; offset < m_NumClasses; offset++) {
-		        	denom += Math.exp(exp[offset] - max);
-		        }
-
-		        nll -= weights[i] * (num - Math.log(denom)); // Weighted NLL
-			}
-			
-			for(Node n : sm_ClassStructure.allNodes.values()){
-				int nOffset = n.nodeIndex*dim;
-				if(n.parents.size() >0){
-					for(int pid : n.parents){
-						int pOffset = pid*dim;
-						for(int w=0; w<dim; w++){
-							nll += (m_Ridge/2)*(sm_x[nOffset+w]-sm_x[pOffset+w])*(sm_x[nOffset+w]-sm_x[pOffset+w]);
-						}
-					}
-				}else{
-					for(int w=0; w<dim; w++){
-						nll += (m_Ridge/2)*(sm_x[nOffset+w]*sm_x[nOffset+w]);
-					}
-				}
-			}
-		
-			if(getSmDebug()){
-				System.err.println("Objective:"+nll);
-			}
-			
-			return nll;
-		}
-		
-		
-	}
-	
-	
 	protected class ClassRelationStructure implements Serializable{
 		
 		/**
@@ -950,8 +654,10 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	      "-C"));
 	    newVector.addElement(new Option("\tSet the ridge in the log-likelihood.",
 	      "R", 1, "-R <ridge>"));
-	    newVector.addElement(new Option("\tSet the maximum number of iterations"
+	    newVector.addElement(new Option("\tSet the maximum number of iterations for the BGFS x-update"
 	      + " (default -1, until convergence).", "M", 1, "-M <number>"));
+	    newVector.addElement(new Option("\tSet the maximum number of iterations for the ADMM method"
+	  	      + " (default 1000).", "A", 1, "-A <number>"));
 	    newVector.addElement(new Option("\tProvide the class structure file for the multiclasses","CLS",0,"-CLS <File name>"));
 	    newVector.addElement(new Option("\tProvide the number of layers in the class structur","NL",0,"-NL <Num of Layers>"));
 	    newVector.addElement(new Option("\tFlag to run in debug mode","DEBUG",0,"-DEBUG"));
@@ -964,7 +670,7 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 
 	@Override
 	public void setOptions(String[] options) throws Exception {
-		setUseConjugateGradientDescent(Utils.getFlag('C', options));
+		
 		setSmDebug(Utils.getFlag("DEBUG", options));
 
 	    String ridgeString = Utils.getOption('R', options);
@@ -976,9 +682,16 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 
 	    String maxItsString = Utils.getOption('M', options);
 	    if (maxItsString.length() != 0) {
-	      m_MaxIts = Integer.parseInt(maxItsString);
+	    	m_BGFS_MaxIts = Integer.parseInt(maxItsString);
 	    } else {
-	      m_MaxIts = -1;
+	    	m_BGFS_MaxIts = -1;
+	    }
+	    
+	    String AmaxItsString = Utils.getOption('A', options);
+	    if (AmaxItsString.length() != 0) {
+	    	m_ADMM_MaxIts = Integer.parseInt(AmaxItsString);
+	    } else {
+	    	m_ADMM_MaxIts = 1000;
 	    }
 	    
 	    String numLayerString = Utils.getOption("NL", options);
@@ -1011,13 +724,13 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	public String[] getOptions() {
 		Vector<String> options = new Vector<String>();
 
-	    if (getUseConjugateGradientDescent()) {
-	      options.add("-C");
-	    }
+	    
 	    options.add("-R");
 	    options.add("" + m_Ridge);
 	    options.add("-M");
-	    options.add("" + m_MaxIts);
+	    options.add("" + m_BGFS_MaxIts);
+	    options.add("-A");
+	    options.add("" + m_ADMM_MaxIts);
 	    options.add("-CLS");
 	    options.add("-NL");
 	    options.add("-DEBUG");
@@ -1035,6 +748,6 @@ public class MultiLogistic extends AbstractClassifier implements OptionHandler, 
 	 *          Evaluation)
 	 */
 	public static void main(String[] argv) {
-		runClassifier(new MultiLogistic(), argv);
+		runClassifier(new SeqUnwinder(), argv);
 	}
 }
