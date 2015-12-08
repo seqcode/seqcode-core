@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.stat.regression.SimpleRegression;
+
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
@@ -27,7 +29,7 @@ public class CrossContaminationEstimator {
 	protected float[][] xyPairs;
 
 
-	public final float CONST1 = 2000000;
+	public final float CONST1 = 3000000;
 	
 	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ){	
 		gconfig = gcon;
@@ -155,25 +157,6 @@ public class CrossContaminationEstimator {
 				xy_index++;
 			}				
 		}	
-		
-//		float CONST=20;
-		
-//		int dataPointSize = 0;
-//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-//			if ((dataPoints[i][0] + dataPoints[i][1]) > CONST)
-//				dataPointSize++;
-//		}
-//		System.out.println("dataPointsSize is: "+dataPointSize);
-//		int xy_index = 0;
-//		xyPairs = new float [dataPointSize][3];
-//		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-//			if ((dataPoints[i][0] + dataPoints[i][1]) > CONST){
-//				for (int s = 0; s<3;s++){
-//					xyPairs[xy_index][s] = dataPoints[i][s];
-//				}
-//				xy_index++;
-//			}
-//		}
 	}
 
 	public void printXYpairs(String out) throws FileNotFoundException, UnsupportedEncodingException {
@@ -191,7 +174,8 @@ public class CrossContaminationEstimator {
 		System.out.println("*******computing slopes in K_LinesMeans********current K is: "+ K);
 		
 		List<Double> angles = new ArrayList<Double>();	
-
+		
+		//initializing angles according to number of K
 		if (K==1){
 			angles.add((double) 45);
 		}else if (K>=2){
@@ -249,10 +233,10 @@ public class CrossContaminationEstimator {
 					x_point = intersect/(slope-neg_inverse);
 					y_point = slope*x_point;
 					squareDistance = Math.pow(x_point-xyPairs[i][0],2)+Math.pow(y_point-xyPairs[i][1],2);
-					//error! array out of bound exception					
+										
 					distanceArray[i][slopes.indexOf(slope)]= squareDistance;
 					
-					//initialize everything
+					//initialize everything back to zeros
 					intersect = 0;
 					x_point = 0;
 					y_point = 0;
@@ -275,41 +259,26 @@ public class CrossContaminationEstimator {
 				minimum = Integer.MAX_VALUE;
 				minIndex = 0;
 			}
-
-			float xSum = 0;
-			float ySum = 0;
-			int N = 0;	
-			double xMeans = xSum/N;
-			double yMeans = ySum/N;
+			
 			//copy slopes in previousSlopes and remove contents of slopes
 			previousSlopes.clear();
 			previousSlopes.addAll(slopes);
-			
 			slopes.clear();
-			
-			//comparing the values of slope not the object; this may cause issues when excecuting
+						
+			//if the new slope is not equal to the old slope, re-calculate slopes
+			//apply regression here
 			for (double slope : previousSlopes){
 				
+				SimpleRegression regression = new SimpleRegression(false);
+								
 				for (int i = 0; i<xyPairs.length;i++){
 					if (xySlopes[i]==slope){
-						xSum+=xyPairs[i][0];
-						ySum+=xyPairs[i][1];
-						N++;
+						regression.addData(xyPairs[i][0],xyPairs[i][1]);
 					}
 				}
-				xMeans = xSum/N;
-				yMeans = ySum/N;
-				slopes.add(yMeans/xMeans);
+				slopes.add(regression.getSlope());
 				
-				System.out.println("xSum is: "+xSum+" ySum is: "+ySum+" N is "+N+" xMeans is "+xMeans+" yMeans is "+yMeans);
-				
-				//initialize everything
-				xSum = 0;
-				ySum = 0;
-				N = 0;
-				xMeans = 0;
-				yMeans = 0;
-
+				System.out.println("number of observation is "+regression.getN()+" correlation is "+regression.getR()+" slope is "+regression.getSlope());
 			}
 			
 			System.out.println("current iteration number is: "+iteration_tracker);
