@@ -115,22 +115,22 @@ public class CrossContaminationEstimator {
 		}//end of chromosome iteration
 		
 		//iterate dataPoints to figure out non-zero dataPoints[i][0] (=maxTag number)
-//		int dataPointsSize = 0;		
-//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-//			if (dataPoints[i][0]!=0)
-//				dataPointsSize++;
-//		}		
+		int dataPointsSize = 0;		
+		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
+			if (dataPoints[i][0]!=0)
+				dataPointsSize++;
+		}		
 		//copy non-zero dataPoints to xyPoints
-//		float [][] xyPairs = new float[dataPointsSize][3];		
-//		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-//			if (dataPoints[i][0]!=0){
-//				for (int s= 0; s<3;s++)
-//					xyPairs[i][s]=dataPoints[i][s];
-//			}
-//		}
-		
+		float [][] xyPairs = new float[dataPointsSize][3];		
+		for (int i = 0; i<(int) genome.getGenomeLength();i++){
+			if (dataPoints[i][0]!=0){
+				for (int s= 0; s<3;s++)
+					xyPairs[i][s]=dataPoints[i][s];
+			}
+		}
+	
+		/**
 		//only copying datapoints which go over some upper limits
-
 		int SumAllCounts = 0;
 		for (Sample sample: manager.getSamples()){
 			SumAllCounts+= sample.getHitCount();
@@ -157,6 +157,7 @@ public class CrossContaminationEstimator {
 				xy_index++;
 			}				
 		}	
+		**/
 	}
 
 	public void printXYpairs(String out) throws FileNotFoundException, UnsupportedEncodingException {
