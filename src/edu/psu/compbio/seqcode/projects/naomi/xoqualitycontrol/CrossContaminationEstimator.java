@@ -121,13 +121,16 @@ public class CrossContaminationEstimator {
 				dataPointsSize++;
 		}		
 		//copy non-zero dataPoints to xyPoints
-		float [][] xyPairs = new float[dataPointsSize][3];		
+		int xy_index = 0;		
+		xyPairs = new float[dataPointsSize][3];
 		for (int i = 0; i<(int) genome.getGenomeLength();i++){
 			if (dataPoints[i][0]!=0){
-				for (int s= 0; s<3;s++)
-					xyPairs[i][s]=dataPoints[i][s];
-			}
-		}
+				for (int s = 0; s<3;s++){
+					xyPairs[xy_index][s]= dataPoints[i][s];
+				}
+				xy_index++;
+			}				
+		}	
 	
 		/**
 		//only copying datapoints which go over some upper limits
