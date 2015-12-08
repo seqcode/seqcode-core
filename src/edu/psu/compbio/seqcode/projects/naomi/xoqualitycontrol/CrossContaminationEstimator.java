@@ -29,7 +29,7 @@ public class CrossContaminationEstimator {
 	protected float[][] xyPairs;
 
 
-	public final float CONST1 = 3000000;
+	public final float CONST1 = 2000000;
 	
 	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ){	
 		gconfig = gcon;
