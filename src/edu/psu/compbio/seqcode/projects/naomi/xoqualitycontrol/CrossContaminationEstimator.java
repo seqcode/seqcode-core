@@ -114,7 +114,6 @@ public class CrossContaminationEstimator {
 			sampleCountsMap.clear();		
 		}//end of chromosome iteration
 		
-		/**
 		//iterate dataPoints to figure out non-zero dataPoints[i][0] (=maxTag number)
 		int dataPointsSize = 0;		
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
@@ -132,35 +131,36 @@ public class CrossContaminationEstimator {
 				xy_index++;
 			}				
 		}	
-		**/
 	
-		//only copying datapoints which go over some upper limits
+		/**
+		//only copying datapoints which go over some bp limits
 		int SumAllCounts = 0;
 		for (Sample sample: manager.getSamples()){
 			SumAllCounts+= sample.getHitCount();
 		}		
-		double upperLimit = 0;
-		upperLimit = SumAllCounts/CONST1;
+		double bpLimit = 0;
+		bpLimit = SumAllCounts/CONST1;
 		float CONST=5;
 		
-		System.out.println("upperLimit is: "+upperLimit);
+//		System.out.println("bpLimit is: "+bpLimit);
 		
 		int dataPointSize = 0;
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-			if (((dataPoints[i][0]+dataPoints[i][1])>upperLimit)&&(dataPoints[i][0]+dataPoints[i][1])>CONST)
+			if (((dataPoints[i][0]+dataPoints[i][1])>bpLimit)&&(dataPoints[i][0]+dataPoints[i][1])>CONST)
 				dataPointSize++;
 		}		
-		System.out.println("dataPointSize is: "+dataPointSize);		
+//		System.out.println("dataPointSize is: "+dataPointSize);		
 		int xy_index = 0;		
 		xyPairs = new float[dataPointSize][3];
 		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-			if (((dataPoints[i][0]+dataPoints[i][1])>upperLimit)&&(dataPoints[i][0]+dataPoints[i][1])>CONST){
+			if (((dataPoints[i][0]+dataPoints[i][1])>bpLimit)&&(dataPoints[i][0]+dataPoints[i][1])>CONST){
 				for (int s = 0; s<3;s++){
 					xyPairs[xy_index][s]= dataPoints[i][s];
 				}
 				xy_index++;
 			}				
-		}	
+		}
+		**/	
 	}
 
 	public void printXYpairs(String out) throws FileNotFoundException, UnsupportedEncodingException {
@@ -186,7 +186,7 @@ public class CrossContaminationEstimator {
 			angles.add((double)0.000000000000001);
 			double seg = (double)90/((double)(K-1));
 			double total = seg;
-			System.out.println("seg value is: "+seg);
+	//		System.out.println("seg value is: "+seg);
 			if (total<90){
 				while (total<90){
 					angles.add(total);
@@ -210,17 +210,13 @@ public class CrossContaminationEstimator {
 		//xyPairs_slope is a parallel double arrays of xyPairs (hence, same index system) that hold slope values.
 		double [] xySlopes = new double [xyPairs.length];
 		
-		//testing
-		System.out.println("xyPairs.length is: "+xyPairs.length);
-		
 		//distanceArray holds squared distance of each point to each slope
 		double distanceArray[][] = new double [xyPairs.length][K];		
 		
-		//this is to test how many iteration it is making
+		//tracking iteration
 		int iteration_tracker = 1;
 		
-		//iterating till slopes stop changing
-		//error !iteration is not stopping by comparing to the previous slope list!!!!
+		//iterating till slopes converge
 		while (!previousSlopes.equals(slopes)){ 
 			
 			//calculating intersect, intersecting x and y points and squared distances from slope
@@ -282,17 +278,19 @@ public class CrossContaminationEstimator {
 				}
 				slopes.add(regression.getSlope());
 				
-				System.out.println("number of observation is "+regression.getN()+" correlation is "+regression.getR()+" slope is "+regression.getSlope());
+//				System.out.println("number of observation is "+regression.getN()+" correlation is "+regression.getR()+" slope is "+regression.getSlope());
 			}
 			
-			System.out.println("current iteration number is: "+iteration_tracker);
-			System.out.println("printing current list of slopes");
+//			System.out.println("current iteration number is: "+iteration_tracker);
+//			System.out.println("printing current list of slopes");
 			for (double slope : slopes)
 				System.out.println(slope);
 			
 			iteration_tracker++;
 			
 		}//finish the loop once the values in slopes stop changing
+		for (double slope : slopes)
+			System.out.println(slope);
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException{
