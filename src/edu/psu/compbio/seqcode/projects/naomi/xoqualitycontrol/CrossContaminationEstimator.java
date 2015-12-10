@@ -114,6 +114,7 @@ public class CrossContaminationEstimator {
 			sampleCountsMap.clear();		
 		}//end of chromosome iteration
 		
+		/**
 		//iterate dataPoints to figure out non-zero dataPoints[i][0] (=maxTag number)
 		int dataPointsSize = 0;		
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
@@ -131,8 +132,8 @@ public class CrossContaminationEstimator {
 				xy_index++;
 			}				
 		}	
+		**/	
 	
-		/**
 		//only copying datapoints which go over some bp limits
 		int SumAllCounts = 0;
 		for (Sample sample: manager.getSamples()){
@@ -160,7 +161,6 @@ public class CrossContaminationEstimator {
 				xy_index++;
 			}				
 		}
-		**/	
 	}
 
 	public void printXYpairs(String out) throws FileNotFoundException, UnsupportedEncodingException {
