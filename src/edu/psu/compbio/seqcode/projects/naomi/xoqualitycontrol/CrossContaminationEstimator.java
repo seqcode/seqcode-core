@@ -175,7 +175,7 @@ public class CrossContaminationEstimator {
 	
 	public void K_LineMeans(int K){
 		
-		System.out.println("*******computing slopes in K_LinesMeans********current K is: "+ K);
+//		System.out.println("*******computing slopes in K_LinesMeans********current K is: "+ K);
 		
 		List<Double> angles = new ArrayList<Double>();	
 		
@@ -283,14 +283,15 @@ public class CrossContaminationEstimator {
 			
 //			System.out.println("current iteration number is: "+iteration_tracker);
 //			System.out.println("printing current list of slopes");
-			for (double slope : slopes)
-				System.out.println(slope);
+//			for (double slope : slopes)
+//				System.out.println(slope);
 			
 			iteration_tracker++;
 			
 		}//finish the loop once the values in slopes stop changing
-		for (double slope : slopes)
-			System.out.println(slope);
+		System.out.println("K :"+K+"\tslope:"+slopes);
+//		for (double slope : slopes)
+//			System.out.println(slope);
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException{
