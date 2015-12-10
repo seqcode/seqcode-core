@@ -290,11 +290,12 @@ public class CrossContaminationEstimator {
 			iteration_tracker++;
 			
 		}//finish the loop once the values in slopes stop changing
-//		for (double slope : slopes)
-//			System.out.println(slope);
-		if (K == '3'){
+		for (double slope : slopes)
+			System.out.println(slope);
+		if (K == 3){
 			k3MinSlope = slopes.get(0);
 		}
+		System.out.println("k3MinSlope is "+k3MinSlope);
 	}
 	
 	public void printWarning(){
