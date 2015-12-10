@@ -28,8 +28,8 @@ public class CrossContaminationEstimator {
 	protected ExptConfig econfig;
 	protected float[][] xyPairs;
 
-
 	public final float CONST1 = 5000000;
+	public double k3MinSlope = 0;
 	
 	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ){	
 		gconfig = gcon;
@@ -114,7 +114,6 @@ public class CrossContaminationEstimator {
 			sampleCountsMap.clear();		
 		}//end of chromosome iteration
 		
-		/**
 		//iterate dataPoints to figure out non-zero dataPoints[i][0] (=maxTag number)
 		int dataPointsSize = 0;		
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
@@ -132,8 +131,8 @@ public class CrossContaminationEstimator {
 				xy_index++;
 			}				
 		}	
-		**/	
-	
+		
+		/**
 		//only copying datapoints which go over some bp limits
 		int SumAllCounts = 0;
 		for (Sample sample: manager.getSamples()){
@@ -161,17 +160,19 @@ public class CrossContaminationEstimator {
 				xy_index++;
 			}				
 		}
-	}
-
+		**/
+	}	
+		
 	public void printXYpairs(String out) throws FileNotFoundException, UnsupportedEncodingException {
 		
 		PrintWriter writer = new PrintWriter(out,"UTF-8");
 		//printing xyPairs
+		writer.println("slope\t"+k3MinSlope);
 		writer.println("#max_tag_number\tsum_of_other_sample's_tags\tsampleID");
 		for (int i = 0; i< xyPairs.length; i++)
 			writer.println(xyPairs[i][0]+"\t"+xyPairs[i][1]+"\t"+xyPairs[i][2]);
 		writer.close();
-	}			
+	}	
 	
 	public void K_LineMeans(int K){
 		
@@ -289,9 +290,17 @@ public class CrossContaminationEstimator {
 			iteration_tracker++;
 			
 		}//finish the loop once the values in slopes stop changing
-		System.out.println("K :"+K+"\tslope:"+slopes);
 //		for (double slope : slopes)
 //			System.out.println(slope);
+		if (K == '3'){
+			k3MinSlope = slopes.get(0);
+		}
+	}
+	
+	public void printWarning(){
+		if (k3MinSlope > 0.1){
+			System.out.println("There is potential for cross-contamination contamination");
+		}
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException{
@@ -312,19 +321,19 @@ public class CrossContaminationEstimator {
 		
 		ArgParser ap = new ArgParser(args);
 		
-		if (ap.hasKey("count") && ap.hasKey("file")){
-			String outName = null;
-			outName = Args.parseString(args, "file", "count.txt");
-			estimator.printXYpairs(outName);
-		}
-		
 		if (ap.hasKey("K")){
 			int k_num = Args.parseInteger(args,"K",5);
 			estimator.K_LineMeans(k_num);
 		}else if (ap.hasKey("varK")){
 			for (int k = 1;k<=4;k++)
 				estimator.K_LineMeans(k);
-		}			
+		}	
+		
+		if (ap.hasKey("count") && ap.hasKey("file")){
+			String outName = null;
+			outName = Args.parseString(args, "file", "count.txt");
+			estimator.printXYpairs(outName);
+		}
 	}
 
 }

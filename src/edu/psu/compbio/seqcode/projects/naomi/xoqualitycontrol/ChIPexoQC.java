@@ -19,7 +19,8 @@ public class ChIPexoQC {
 	 
 	public void printQCMetrics(){
 		
-		double ncis, signalHits, controlHits, IPstrength;
+		double ncis, signalHits, controlHits;
+		double IPstrength=0;
 		
 		ExperimentManager manager = new ExperimentManager(econfig);
 				
@@ -29,7 +30,9 @@ public class ChIPexoQC {
 				signalHits = rep.getSignal().getHitCount();
 				controlHits = rep.getControl().getHitCount();
 				IPstrength = 1-(ncis/(signalHits/controlHits));
-				System.out.println("Condition: "+rep.getCondName()+"\tSignal: "+signalHits+"\tControl: "+controlHits+"\tScalingFactor: "+ncis+"\tIPstrength: "+IPstrength);
+				if (IPstrength<0)
+					IPstrength=0;
+				System.out.println("Condition:"+rep.getCondName()+"\tSignal:"+signalHits+"\tControl:"+controlHits+"\tScalingFactor:"+ncis+"\tIPstrength: "+IPstrength);
 			}
 		}
 	}
