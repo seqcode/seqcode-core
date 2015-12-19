@@ -267,6 +267,13 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    m_Par = new double[nR + 1][nK]; // Optimized parameter values of the leaf nodes
 	    sm_Par = new double[nR+1][sm_NumNodes]; // Optimized parameter values of all the nodes
 	    
+	    if(sm_Debug){
+	    	System.err.println("Number of training instances: "+Y.length);
+	    	System.err.println("Number of classes: "+m_NumClasses);
+	    	System.err.println("Number of nodes: "+sm_NumNodes);
+	    	System.err.println("Number of predictors: "+nR);
+	    }
+	    
 	    for (int i = 0; i < nC; i++) {
 	    	// initialize X[][]
 	    	Instance current = train.instance(i);
