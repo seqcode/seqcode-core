@@ -35,7 +35,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	 * 
 	 */
 	private static final long serialVersionUID = -6260376163872744102L;
-
+	
 	/** The coefficients of the optimized Structured Multinomial logit model. However, this only stores the leaf node parameters*/
 	protected double[][] m_Par; // [NumPredictors+Intercept][NumClasses]
 	
@@ -90,9 +90,6 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	
 	protected int m_ADMM_MaxIts = 1000;
 	
-	
-	
-	
 	// Setters
 	/**
 	 * Sets the Ridge parameter
@@ -112,15 +109,10 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	
 	public void setSmDebug(boolean smD){
 		sm_Debug = smD;
-	}
-	
-	
-	
-	
+	}	
 	
 	//Gettors
 
-	
 	/**
 	 * Returns the ridge co-eff of the model
 	 * @return
@@ -354,33 +346,24 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    		sm_x[offset+q] = 0.0;
 	    	}
 	    }
-	    
-	    AdmmFramework admm = new AdmmFramework(x,sm_x,m_Data);
-	    admm.setRidge(m_Ridge);
-	    admm.setADMMmaxItrs(m_ADMM_MaxIts);
-	    admm.setBGFSmaxItrs(m_BGFS_MaxIts);
-	    admm.setClassStructure(sm_ClassStructure);
-	    admm.setClsMembership(Y);
-	    admm.setInstanceWeights(weights);
-	    admm.setNumClasses(m_NumClasses);
-	    admm.setNumPredictors(m_NumPredictors);
-	    admm.initZandU();
-	    admm.setDebugMode(sm_Debug);
-	    
-	    /** DEBUG output */
-	    if(sm_Debug)
-	    	System.err.println("Beginning training of the L1 model using ADMM framework");
-	    
-	    admm.execute();
-	    //  m_LL = -opt.getMinFunction(); // Log-likelihood (TODO: make sure this is taken care of)
-
-	    // Don't need data matrix anymore
+	   
+	    Optimizer opt = new Optimizer(x,sm_x,m_Data);
+	    opt.setRidge(m_Ridge);
+	    opt.setADMMmaxItrs(m_ADMM_MaxIts);
+	    opt.setBGFSmaxItrs(m_BGFS_MaxIts);
+	    opt.setClassStructure(sm_ClassStructure);
+	    opt.setClsMembership(Y);
+	    opt.setInstanceWeights(weights);
+	    opt.setNumClasses(m_NumClasses);
+	    opt.setNumPredictors(m_NumPredictors);
+	    opt.initZandU();
+	    opt.setDebugMode(sm_Debug);
+	    opt.execute();
 	    m_Data = null;
 		
-	    x=admm.getX();
-	    sm_x= admm.getsmX();
-	    admm.clearADMM();
-		    
+	    x=opt.getX();
+	    sm_x= opt.getsmX();
+	    opt.clearOptimizer();
 	    // Now update the m_Par and sm_Par with the learned parameters
 	    for (int i = 0; i < nK; i++) {
 	    	m_Par[0][i] = x[i * (nR + 1)];
@@ -392,7 +375,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    		}
 	        }
 	    }
-	    
+
 	    
 	    //Now update the sm_Par with the learned parameters
 	    for(Node n : sm_ClassStructure.allNodes.values()){
@@ -536,7 +519,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		
 	}
 	
-
+	
+	
 	protected class ClassRelationStructure implements Serializable{
 		
 		/**
@@ -730,7 +714,6 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	public String[] getOptions() {
 		Vector<String> options = new Vector<String>();
 
-	    
 	    options.add("-R");
 	    options.add("" + m_Ridge);
 	    options.add("-M");

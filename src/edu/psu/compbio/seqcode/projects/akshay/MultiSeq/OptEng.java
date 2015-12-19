@@ -1,6 +1,6 @@
 package edu.psu.compbio.seqcode.projects.akshay.MultiSeq;
 
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.AdmmFramework.OptObject;
+import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.Optimizer.OptObject;
 import weka.core.Optimization;
 import weka.core.RevisionUtils;
 
@@ -28,3 +28,4 @@ public class OptEng extends Optimization {
 	}
 
 }
+

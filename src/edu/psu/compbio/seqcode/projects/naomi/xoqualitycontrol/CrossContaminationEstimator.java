@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.stat.regression.SimpleRegression;
+
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
@@ -26,8 +28,8 @@ public class CrossContaminationEstimator {
 	protected ExptConfig econfig;
 	protected float[][] xyPairs;
 
-
-	public final float CONST1 = 2000000;
+	public final float CONST1 = 5000000;
+	public double k3MinSlope = 0;
 	
 	public CrossContaminationEstimator(GenomeConfig gcon, ExptConfig econ){	
 		gconfig = gcon;
@@ -113,42 +115,16 @@ public class CrossContaminationEstimator {
 		}//end of chromosome iteration
 		
 		//iterate dataPoints to figure out non-zero dataPoints[i][0] (=maxTag number)
-//		int dataPointsSize = 0;		
-//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-//			if (dataPoints[i][0]!=0)
-//				dataPointsSize++;
-//		}		
-		//copy non-zero dataPoints to xyPoints
-//		float [][] xyPairs = new float[dataPointsSize][3];		
-//		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-//			if (dataPoints[i][0]!=0){
-//				for (int s= 0; s<3;s++)
-//					xyPairs[i][s]=dataPoints[i][s];
-//			}
-//		}
-		
-		//only copying datapoints which go over some upper limits
-
-		int SumAllCounts = 0;
-		for (Sample sample: manager.getSamples()){
-			SumAllCounts+= sample.getHitCount();
-		}		
-		double upperLimit = 0;
-		upperLimit = SumAllCounts/CONST1;
-		float CONST=10;
-		
-		System.out.println("upperLimit is: "+upperLimit);
-		
-		int dataPointSize = 0;
+		int dataPointsSize = 0;		
 		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-			if (((dataPoints[i][0]+dataPoints[i][1])>upperLimit)&&(dataPoints[i][0]+dataPoints[i][1])>CONST)
-				dataPointSize++;
+			if (dataPoints[i][0]!=0)
+				dataPointsSize++;
 		}		
-		System.out.println("dataPointSize is: "+dataPointSize);		
+		//copy non-zero dataPoints to xyPoints
 		int xy_index = 0;		
-		xyPairs = new float[dataPointSize][3];
+		xyPairs = new float[dataPointsSize][3];
 		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-			if (((dataPoints[i][0]+dataPoints[i][1])>upperLimit)&&(dataPoints[i][0]+dataPoints[i][1])>CONST){
+			if (dataPoints[i][0]!=0){
 				for (int s = 0; s<3;s++){
 					xyPairs[xy_index][s]= dataPoints[i][s];
 				}
@@ -156,49 +132,62 @@ public class CrossContaminationEstimator {
 			}				
 		}	
 		
-//		float CONST=20;
+		/**
+		//only copying datapoints which go over some bp limits
+		int SumAllCounts = 0;
+		for (Sample sample: manager.getSamples()){
+			SumAllCounts+= sample.getHitCount();
+		}		
+		double bpLimit = 0;
+		bpLimit = SumAllCounts/CONST1;
+		float CONST=5;
 		
-//		int dataPointSize = 0;
-//		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
-//			if ((dataPoints[i][0] + dataPoints[i][1]) > CONST)
-//				dataPointSize++;
-//		}
-//		System.out.println("dataPointsSize is: "+dataPointSize);
-//		int xy_index = 0;
-//		xyPairs = new float [dataPointSize][3];
-//		for (int i = 0; i<(int) genome.getGenomeLength();i++){
-//			if ((dataPoints[i][0] + dataPoints[i][1]) > CONST){
-//				for (int s = 0; s<3;s++){
-//					xyPairs[xy_index][s] = dataPoints[i][s];
-//				}
-//				xy_index++;
-//			}
-//		}
-	}
-
+//		System.out.println("bpLimit is: "+bpLimit);
+		
+		int dataPointSize = 0;
+		for (int i = 0; i<(int) genome.getGenomeLength(); i++){
+			if (((dataPoints[i][0]+dataPoints[i][1])>bpLimit)&&(dataPoints[i][0]+dataPoints[i][1])>CONST)
+				dataPointSize++;
+		}		
+//		System.out.println("dataPointSize is: "+dataPointSize);		
+		int xy_index = 0;		
+		xyPairs = new float[dataPointSize][3];
+		for (int i = 0; i<(int) genome.getGenomeLength();i++){
+			if (((dataPoints[i][0]+dataPoints[i][1])>bpLimit)&&(dataPoints[i][0]+dataPoints[i][1])>CONST){
+				for (int s = 0; s<3;s++){
+					xyPairs[xy_index][s]= dataPoints[i][s];
+				}
+				xy_index++;
+			}				
+		}
+		**/
+	}	
+		
 	public void printXYpairs(String out) throws FileNotFoundException, UnsupportedEncodingException {
 		
 		PrintWriter writer = new PrintWriter(out,"UTF-8");
 		//printing xyPairs
+		writer.println("slope\t"+k3MinSlope);
 		writer.println("#max_tag_number\tsum_of_other_sample's_tags\tsampleID");
 		for (int i = 0; i< xyPairs.length; i++)
 			writer.println(xyPairs[i][0]+"\t"+xyPairs[i][1]+"\t"+xyPairs[i][2]);
 		writer.close();
-	}			
+	}	
 	
 	public void K_LineMeans(int K){
 		
-		System.out.println("*******computing slopes in K_LinesMeans********current K is: "+ K);
+//		System.out.println("*******computing slopes in K_LinesMeans********current K is: "+ K);
 		
 		List<Double> angles = new ArrayList<Double>();	
-
+		
+		//initializing angles according to number of K
 		if (K==1){
 			angles.add((double) 45);
 		}else if (K>=2){
 			angles.add((double)0.000000000000001);
 			double seg = (double)90/((double)(K-1));
 			double total = seg;
-			System.out.println("seg value is: "+seg);
+	//		System.out.println("seg value is: "+seg);
 			if (total<90){
 				while (total<90){
 					angles.add(total);
@@ -222,17 +211,13 @@ public class CrossContaminationEstimator {
 		//xyPairs_slope is a parallel double arrays of xyPairs (hence, same index system) that hold slope values.
 		double [] xySlopes = new double [xyPairs.length];
 		
-		//testing
-		System.out.println("xyPairs.length is: "+xyPairs.length);
-		
 		//distanceArray holds squared distance of each point to each slope
 		double distanceArray[][] = new double [xyPairs.length][K];		
 		
-		//this is to test how many iteration it is making
+		//tracking iteration
 		int iteration_tracker = 1;
 		
-		//iterating till slopes stop changing
-		//error !iteration is not stopping by comparing to the previous slope list!!!!
+		//iterating till slopes converge
 		while (!previousSlopes.equals(slopes)){ 
 			
 			//calculating intersect, intersecting x and y points and squared distances from slope
@@ -249,10 +234,10 @@ public class CrossContaminationEstimator {
 					x_point = intersect/(slope-neg_inverse);
 					y_point = slope*x_point;
 					squareDistance = Math.pow(x_point-xyPairs[i][0],2)+Math.pow(y_point-xyPairs[i][1],2);
-					//error! array out of bound exception					
+										
 					distanceArray[i][slopes.indexOf(slope)]= squareDistance;
 					
-					//initialize everything
+					//initialize everything back to zeros
 					intersect = 0;
 					x_point = 0;
 					y_point = 0;
@@ -275,51 +260,48 @@ public class CrossContaminationEstimator {
 				minimum = Integer.MAX_VALUE;
 				minIndex = 0;
 			}
-
-			float xSum = 0;
-			float ySum = 0;
-			int N = 0;	
-			double xMeans = xSum/N;
-			double yMeans = ySum/N;
+			
 			//copy slopes in previousSlopes and remove contents of slopes
 			previousSlopes.clear();
 			previousSlopes.addAll(slopes);
-			
 			slopes.clear();
-			
-			//comparing the values of slope not the object; this may cause issues when excecuting
+						
+			//if the new slope is not equal to the old slope, re-calculate slopes
+			//apply regression here
 			for (double slope : previousSlopes){
 				
+				SimpleRegression regression = new SimpleRegression(false);
+								
 				for (int i = 0; i<xyPairs.length;i++){
 					if (xySlopes[i]==slope){
-						xSum+=xyPairs[i][0];
-						ySum+=xyPairs[i][1];
-						N++;
+						regression.addData(xyPairs[i][0],xyPairs[i][1]);
 					}
 				}
-				xMeans = xSum/N;
-				yMeans = ySum/N;
-				slopes.add(yMeans/xMeans);
+				slopes.add(regression.getSlope());
 				
-				System.out.println("xSum is: "+xSum+" ySum is: "+ySum+" N is "+N+" xMeans is "+xMeans+" yMeans is "+yMeans);
-				
-				//initialize everything
-				xSum = 0;
-				ySum = 0;
-				N = 0;
-				xMeans = 0;
-				yMeans = 0;
-
+//				System.out.println("number of observation is "+regression.getN()+" correlation is "+regression.getR()+" slope is "+regression.getSlope());
 			}
 			
-			System.out.println("current iteration number is: "+iteration_tracker);
-			System.out.println("printing current list of slopes");
-			for (double slope : slopes)
-				System.out.println(slope);
+//			System.out.println("current iteration number is: "+iteration_tracker);
+//			System.out.println("printing current list of slopes");
+//			for (double slope : slopes)
+//				System.out.println(slope);
 			
 			iteration_tracker++;
 			
 		}//finish the loop once the values in slopes stop changing
+		for (double slope : slopes)
+			System.out.println(slope);
+		if (K == 3){
+			k3MinSlope = slopes.get(0);
+		}
+		System.out.println("k3MinSlope is "+k3MinSlope);
+	}
+	
+	public void printWarning(){
+		if (k3MinSlope > 0.1){
+			System.out.println("There is potential for cross-contamination contamination");
+		}
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException{
@@ -340,19 +322,19 @@ public class CrossContaminationEstimator {
 		
 		ArgParser ap = new ArgParser(args);
 		
-		if (ap.hasKey("count") && ap.hasKey("file")){
-			String outName = null;
-			outName = Args.parseString(args, "file", "count.txt");
-			estimator.printXYpairs(outName);
-		}
-		
 		if (ap.hasKey("K")){
 			int k_num = Args.parseInteger(args,"K",5);
 			estimator.K_LineMeans(k_num);
 		}else if (ap.hasKey("varK")){
 			for (int k = 1;k<=4;k++)
 				estimator.K_LineMeans(k);
-		}			
+		}	
+		
+		if (ap.hasKey("count") && ap.hasKey("file")){
+			String outName = null;
+			outName = Args.parseString(args, "file", "count.txt");
+			estimator.printXYpairs(outName);
+		}
 	}
 
 }
