@@ -219,10 +219,8 @@ public class Utils {
                 }
 	        }reader.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return(points);
@@ -234,7 +232,7 @@ public class Utils {
 	 * @param f
 	 * @param pixheight
 	 */
-	public static void printMotifLogo(WeightMatrix wm, File f, int pixheight, String label){
+	public static void printMotifLogo(WeightMatrix wm, File f, int pixheight, String label, boolean drawAxes){
 		int pixwidth = (pixheight-WeightMatrixPainter.Y_MARGIN*3-WeightMatrixPainter.YLABEL_SIZE) * wm.length() /2 +WeightMatrixPainter.X_MARGIN*2;
 		System.setProperty("java.awt.headless", "true");
 		BufferedImage im = new BufferedImage(pixwidth, pixheight,BufferedImage.TYPE_INT_ARGB);
@@ -244,11 +242,12 @@ public class Utils {
         WeightMatrixPainter wmp = new WeightMatrixPainter();
         g2.setColor(Color.WHITE);
         g2.fillRect(0,0,pixwidth, pixheight);
-        wmp.paint(wm,g2,0,0,pixwidth,pixheight, label);
+        wmp.paint(wm,g2,0,0,pixwidth,pixheight, label, drawAxes);
         try {
             ImageIO.write(im,"png",f);
         }  catch (IOException ex) {
             ex.printStackTrace();
         }
 	}
+	public static void printMotifLogo(WeightMatrix wm, File f, int pixheight, String label){printMotifLogo(wm, f, pixheight, label, false);}
 }

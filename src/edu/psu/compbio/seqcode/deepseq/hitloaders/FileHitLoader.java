@@ -22,8 +22,8 @@ public abstract class FileHitLoader extends HitLoader{
 	 * @param files Pairs of Files and Strings (formats)
 	 * @param useNonUnique boolean -- load non-uniquely mapping reads
 	 */
-	public FileHitLoader(File file, boolean useNonUnique, boolean loadT1, boolean loadT2, boolean loadPairs){
-		super(loadT1, loadT2, loadPairs);
+	public FileHitLoader(File file, boolean useNonUnique, boolean loadT1, boolean loadT2, boolean loadRead2, boolean loadPairs){
+		super(loadT1, loadT2, loadRead2, loadPairs);
 		this.file = file;
 		this.useNonUnique=useNonUnique;
 		this.sourceName = file.getName();

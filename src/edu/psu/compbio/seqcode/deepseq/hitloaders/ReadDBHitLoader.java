@@ -14,7 +14,6 @@ import edu.psu.compbio.seqcode.deepseq.HitPair;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqAlignment;
-import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqExpt;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqDataLoader;
 import edu.psu.compbio.seqcode.gse.datasets.seqdata.SeqLocator;
 import edu.psu.compbio.seqcode.gse.projects.readdb.*;
@@ -50,7 +49,7 @@ public class ReadDBHitLoader extends HitLoader{
 	 * @param loadPairs boolean
 	 */
 	public ReadDBHitLoader(SeqDataLoader loader, Genome g, List<SeqLocator> locs, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs){
-		super(loadT1Reads, loadT2Reads, loadPairs);
+		super(loadT1Reads, loadT2Reads, true, loadPairs);
 		gen=g;
 		exptLocs = locs;
 		

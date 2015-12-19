@@ -44,7 +44,7 @@ public class StrandedPointParser implements Mapper<String,Point> {
 			if(strandstr.length() > 0) { strand = strandstr.charAt(0); }
             return new StrandedPoint(genome, chrom, start, strand);
         } else { 
-            System.err.println("Line \"" + input + "\" is incorrectly formatted for a StrandedRegion");
+            System.err.println("Line \"" + input + "\" is incorrectly formatted for a StrandedPoint");
             return null;
         }
     }

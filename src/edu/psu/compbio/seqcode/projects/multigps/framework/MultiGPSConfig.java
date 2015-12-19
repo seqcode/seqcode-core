@@ -446,4 +446,4 @@ public class MultiGPSConfig {
 				"\t--config <config file: all options can be specified in a name<space>value text file, over-ridden by command-line args>\n" +
 				""));
 	}
-	}
+}

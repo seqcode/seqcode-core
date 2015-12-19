@@ -26,8 +26,8 @@ public class SAMFileHitLoader extends FileHitLoader{
 
 	private boolean useChimericReads=false; //Ignore chimeric mappings for now. 
 	
-	public SAMFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs) {
-    	super(f, nonUnique, true, false, loadPairs);
+	public SAMFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadRead2, boolean loadPairs) {
+    	super(f, nonUnique, true, false, loadRead2, loadPairs);
     	if(!loadT1Reads || loadT2Reads)
 			System.err.println("SAMFileHitLoader: You asked to load only Type1 or Type2 reads, we do not yet load this information from SAM format.");
     }
@@ -50,9 +50,10 @@ public class SAMFileHitLoader extends FileHitLoader{
 		while (iter.hasNext()) {
 		    SAMRecord record = iter.next();
 		    
-		    if (record.getReadUnmappedFlag()) {continue; }
+		    if(record.getReadUnmappedFlag()) {continue; }
 		    if(record.isSecondaryOrSupplementary() && !useChimericReads){continue;}
-		    
+		    if(record.getReadPairedFlag() && record.getSecondOfPairFlag() && !loadRead2){continue;}
+		    	
 		    if (lastread == null || !lastread.equals(record.getReadName())) {
 		    	processRead(byRead);
 		    	byRead.clear();
@@ -72,7 +73,8 @@ public class SAMFileHitLoader extends FileHitLoader{
                 		1);
                 addPair(record.getReferenceName().replaceFirst("^chr", ""), neg ? '-':'+', hp);
 		    }
-		}
+	    }
+
 		processRead(byRead);
 		iter.close();
 		try {

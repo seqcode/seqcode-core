@@ -24,8 +24,8 @@ import edu.psu.compbio.seqcode.deepseq.ReadHit;
  */
 public class TophatFileHitLoader extends FileHitLoader{
 
-    public TophatFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs) {
-    	super(f, nonUnique, true, false, loadPairs);
+    public TophatFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadRead2, boolean loadPairs) {
+    	super(f, nonUnique, true, false, loadRead2, loadPairs);
     	if(!loadT1Reads || loadT2Reads)
 			System.err.println("TophatFileHitLoader: You asked to load only Type1 or Type2 reads, we do not load this information from Tophat SAM format.");
     }
@@ -47,6 +47,7 @@ public class TophatFileHitLoader extends FileHitLoader{
 		    SAMRecord record = iter.next();
 		    
 		    if (record.getReadUnmappedFlag()) {continue; }
+		    if(record.getReadPairedFlag() && record.getSecondOfPairFlag() && !loadRead2){continue;}
 		    float weight = 1/(float)record.getIntegerAttribute("NH");
 		    
 		    Read currRead = new Read();

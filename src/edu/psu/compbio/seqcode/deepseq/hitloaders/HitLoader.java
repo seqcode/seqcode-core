@@ -26,6 +26,7 @@ public abstract class HitLoader {
 
 	protected boolean loadType1=true; //Load type1 reads
 	protected boolean loadType2=false; //Load type2 reads (if exists)
+	protected boolean loadRead2=true; //Load read 2 in paired-end
 	protected boolean loadPairs=false; //Load pair information (if exists)
 	protected boolean hasPairs = false; //Flag to say there are pairs in the sample 
 	protected double totalHits; //totalHits is the sum of alignment weights
@@ -57,9 +58,10 @@ public abstract class HitLoader {
 	 * Constructor
 	 * @param g Genome
 	 */
-	public HitLoader(boolean loadR1, boolean loadR2, boolean loadPairs){
-		this.loadType1=loadR1;
-		this.loadType2=loadR2;
+	public HitLoader(boolean loadT1, boolean loadT2, boolean loadRead2, boolean loadPairs){
+		this.loadType1=loadT1;
+		this.loadType2=loadT2;
+		this.loadRead2 = loadRead2;
 		this.loadPairs=loadPairs;
 		totalHits=0;		
 	}

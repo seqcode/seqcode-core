@@ -36,6 +36,12 @@ public class SequenceAlignmentFigure {
 	
 	public SequenceAlignmentFigure(){}
 	
+	public static void setColors(Color a, Color c, Color g, Color t){
+		AColor = a;
+		CColor = c;
+		GColor = g;
+		TColor = t;
+	}
 	/**
 	 * Visualize sequences as color pixels
 	 * @param seqs, raw sequences or FASTA sequences
@@ -107,12 +113,24 @@ public class SequenceAlignmentFigure {
 	
 	public static void main(String[] args) {
 		ArgParser ap = new ArgParser(args);
+		Color AColor = Color.RED;
+		Color CColor = Color.BLUE;
+		Color GColor = Color.ORANGE;
+		Color TColor = Color.GREEN;
         
         try {
         	String outFile = ap.hasKey("out") ? ap.getKeyValue("out") : "out.png";
         	String seqOutFile = ap.hasKey("seqout") ? ap.getKeyValue("seqout") : null;
         	int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():-1;
 			List<String> seqs = null;
+			
+			//color options
+			if(ap.hasKey("wscolor")){
+				CColor = new Color(128,100,128);
+				GColor = new Color(128,100,128);
+				AColor = Color.YELLOW;
+				TColor = Color.YELLOW;
+			}
     	
         	if(ap.hasKey("species") && ap.hasKey("gen") && (ap.hasKey("peaks") || ap.hasKey("bed"))){
 	        	Pair<Species, Genome> pair = Args.parseGenome(args);
@@ -152,6 +170,7 @@ public class SequenceAlignmentFigure {
         	
         	if(seqs !=null){
 		    	SequenceAlignmentFigure fig = new SequenceAlignmentFigure();
+		    	fig.setColors(AColor, CColor, GColor, TColor);
 		    	fig.visualizeSequences(seqs, 3, 1, new File(outFile));
 		    	
 		    	if(seqOutFile != null){
@@ -179,8 +198,9 @@ public class SequenceAlignmentFigure {
                 "  --seq <FASTA file>\n" +
                 " Optional:\n" +
                 "  --win <window of sequence around peaks> \n"+
-                "  --out output filename\n" +
-                "  --seqout sequence output filename\n" +
+                "  --out <output filename>\n" +
+                "  --seqout <sequence output filename>\n" +
+                "  --wscolor [color bases according to Weak & Strong]" +
                 "");
 		return;
 	}

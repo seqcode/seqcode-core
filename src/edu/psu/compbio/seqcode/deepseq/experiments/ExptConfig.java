@@ -52,6 +52,7 @@ public class ExptConfig {
 	//For example, some file formats cannot store pairs. ReadDB ignores the difference between R1 & R2 in single-end, etc.
 	protected boolean loadType1Reads = true; //Load Type1 reads
 	protected boolean loadType2Reads = false; //Load Type2 reads (if exists and distinguishable)
+	protected boolean loadRead2=true; //Load second in pair reads (only used by BAM loader for now)
 	protected boolean loadPairs = false; //Load pair information (if exists)
 	
 	    
@@ -107,6 +108,7 @@ public class ExptConfig {
 				loadPairs = Args.parseFlags(args).contains("loadpairs");
 				loadType1Reads = !Args.parseFlags(args).contains("not1reads");
 				loadType2Reads = Args.parseFlags(args).contains("loadt2reads");
+				loadRead2 = !Args.parseFlags(args).contains("noread2");
 				
 				////////////////////////
 				//Read limit parameters
@@ -306,6 +308,7 @@ public class ExptConfig {
 	public List<Region> getInitialCachedRegions(){return initialCachedRegions;}
 	public boolean getLoadType1Reads(){return loadType1Reads;}
 	public boolean getLoadType2Reads(){return loadType2Reads;}
+	public boolean getLoadRead2(){return loadRead2;}
 	public boolean getLoadPairs(){return loadPairs;}
 	
 	//Some accessors to allow modification of options after config .
@@ -318,6 +321,7 @@ public class ExptConfig {
 	public void setFileCacheDirName(String d){fileCacheDir = d;}
 	public void setLoadType1Reads(boolean l){loadType1Reads = l;}
 	public void setLoadType2Reads(boolean l){loadType2Reads = l;}
+	public void setLoadRead2(boolean l){loadRead2 = l;}
 	public void setLoadPairs(boolean l){loadPairs = l;}
 	
 	
@@ -369,6 +373,7 @@ public class ExptConfig {
 				"\t--mappability <fraction of the genome that is mappable for these experiments>\n" +
 				"\t--nocache [flag to turn off caching of the entire set of experiments (i.e. run slower with less memory)]\n" +
 				"\t--not1reads / --loadt2reads [flags to use Type1 or Type2 reads] (Type1 loaded by default)\n" +
+				"\t--noread2 [flag to ignore second reads in paired-end]\n" +
 				""));
 	}
 }

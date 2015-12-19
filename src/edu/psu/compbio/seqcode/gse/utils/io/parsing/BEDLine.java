@@ -44,7 +44,7 @@ public class BEDLine {
 		chromEnd = Integer.parseInt(array[2]);
 
 		name = array.length > 3 ? array[3] : null;
-		score = array.length > 4 ? Double.parseDouble(array[4]) : null;
+		score = array.length > 4 ? (array[4].charAt(0)=='.' ? 0 :Double.parseDouble(array[4])) : null;
 		strand = array.length > 5 ? array[5].charAt(0) : null;
 		thickStart = array.length > 6 ? Integer.parseInt(array[6]) : null;
 		thickEnd = array.length > 7 ? Integer.parseInt(array[7]) : null;
@@ -57,21 +57,23 @@ public class BEDLine {
 			itemRgb = new Color(r, g, b);
 		}
 		
-		blockCount = array.length > 9 ? Integer.parseInt(array[9]) : null;
-		
-		aa = array.length > 10 ? array[10].split(",") : null;
-		if(array.length > 10) { 
-			blockSizes = new int[blockCount];
-			for(int i = 0; i < blockCount; i++) { 
-				blockSizes[i] = Integer.parseInt(aa[i]);
+		if(array.length>9){
+			blockCount = array.length>9 ? Integer.parseInt(array[9]) : null;
+			
+			aa = array.length > 10 ? array[10].split(",") : null;
+			if(array.length > 10) { 
+				blockSizes = new int[blockCount];
+				for(int i = 0; i < blockCount; i++) { 
+					blockSizes[i] = Integer.parseInt(aa[i]);
+				}
 			}
-		}
-
-		aa = array.length > 11 ? array[11].split(",") : null;
-		if(array.length > 11) { 
-			blockStarts = new int[blockCount];
-			for(int i = 0; i < blockCount; i++) { 
-				blockStarts[i] = Integer.parseInt(aa[i]);
+	
+			aa = array.length > 11 ? array[11].split(",") : null;
+			if(array.length > 11) { 
+				blockStarts = new int[blockCount];
+				for(int i = 0; i < blockCount; i++) { 
+					blockStarts[i] = Integer.parseInt(aa[i]);
+				}
 			}
 		}
 	}

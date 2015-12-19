@@ -17,7 +17,7 @@ import edu.psu.compbio.seqcode.deepseq.ReadHit;
 public class IDXFileHitLoader extends FileHitLoader {
 
 	public IDXFileHitLoader(File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadPairs){
-		super(f, nonUnique, true, false, loadPairs);
+		super(f, nonUnique, true, false, false, loadPairs);
 		if(!loadT1Reads || loadT2Reads)
 			System.err.println("IDXFileHitLoader: You asked to load only Type1 or Type2 reads, but IDX cannot discriminate between reads for single-end hits.");
 		if(loadPairs)
