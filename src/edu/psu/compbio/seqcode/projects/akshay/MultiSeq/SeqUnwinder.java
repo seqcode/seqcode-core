@@ -348,7 +348,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    // Initialize the sm_x parameters
 	    for(int p=0; p<sm_NumNodes; p++) {
 	    	int offset = p*(nR+1);
-	    	sm_x[offset] = Math.log(sm_sY[p] + 1.0) - Math.log(sm_sY[nK] + 1.0); // Null model
+	    	sm_x[offset] = Math.log(sm_sY[p] + 1.0) - Math.log(sm_sY[nK-1] + 1.0); // Null model
 	    	for (int q = 1; q <= nR; q++) {
 	    		sm_x[offset+q] = 0.0;
 	    	}

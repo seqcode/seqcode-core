@@ -119,6 +119,8 @@ public class Optimizer {
 		z= new double[numNodes*numNodes*dim];
 		zold = new double[numNodes*numNodes*dim];
 		u= new double[numNodes*numNodes*dim];
+		history_primal = new double[ADMM_maxItr][numNodes*numNodes];
+		history_dual = new double[ADMM_maxItr][numNodes*numNodes];
 	}
 	
 	public Optimizer(double[] xinit, double[] sm_xinit, double[][] d) {
