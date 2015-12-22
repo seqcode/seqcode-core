@@ -226,8 +226,8 @@ public class Optimizer {
 					double znorm = getL2NormZ(n.nodeIndex, pid);
 					double unorm = getL2NormU(n.nodeIndex, pid);
 					double cnorm = getL2NormX(pid);
-					primal_tol[n.nodeIndex*dim+pid] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.max(xnorm, Math.max(znorm, cnorm));
-					dual_tol[n.nodeIndex*dim+pid] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*unorm;
+					primal_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.max(xnorm, Math.max(znorm, cnorm));
+					dual_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*unorm;
 					
 					double deltaZnorm = 0;
 					double primalResidualNorm = 0;
@@ -244,8 +244,8 @@ public class Optimizer {
 			}else{
 				double znorm = getL2NormZ(n.nodeIndex, n.nodeIndex);
 				double unorm = getL2NormU(n.nodeIndex, n.nodeIndex);
-				primal_tol[n.nodeIndex*dim+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.max(xnorm, znorm);
-				dual_tol[n.nodeIndex*dim+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*unorm;
+				primal_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.max(xnorm, znorm);
+				dual_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*unorm;
 				double deltaZnorm = 0;
 				double primalResidualNorm = 0;
 				int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
