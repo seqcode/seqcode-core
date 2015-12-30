@@ -90,6 +90,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	
 	protected int m_ADMM_MaxIts = 1000;
 	
+	protected int m_SeqUnwinder_MaxIts = 10;
+	
 	// Setters
 	/**
 	 * Sets the Ridge parameter
@@ -106,6 +108,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		m_BGFS_MaxIts = newMaxIts;
 	}
 	public void serADMMMaxItrs(int ADMMmax){m_ADMM_MaxIts = ADMMmax;}
+	
+	public void setSeqUnwinderMaxItrs(int SeqUnwinderMaxIts){m_SeqUnwinder_MaxIts = SeqUnwinderMaxIts;}
 	
 	public void setSmDebug(boolean smD){
 		sm_Debug = smD;
@@ -358,6 +362,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    opt.setRidge(m_Ridge);
 	    opt.setADMMmaxItrs(m_ADMM_MaxIts);
 	    opt.setBGFSmaxItrs(m_BGFS_MaxIts);
+	    opt.setSeqUnwinderMaxIts(m_SeqUnwinder_MaxIts);
 	    opt.setClassStructure(sm_ClassStructure);
 	    opt.setClsMembership(Y);
 	    opt.setInstanceWeights(weights);
@@ -655,6 +660,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	      + " (default -1, until convergence).", "M", 1, "-M <number>"));
 	    newVector.addElement(new Option("\tSet the maximum number of iterations for the ADMM method"
 	  	      + " (default 1000).", "A", 1, "-A <number>"));
+	    newVector.addElement(new Option("\tSet the maximum number of iterations for SeqUwinder"
+		  	      + " (default 10).", "S", 1, "-S <number>"));
 	    newVector.addElement(new Option("\tProvide the class structure file for the multiclasses","CLS",0,"-CLS <File name>"));
 	    newVector.addElement(new Option("\tProvide the number of layers in the class structur","NL",0,"-NL <Num of Layers>"));
 	    newVector.addElement(new Option("\tFlag to run in debug mode","DEBUG",0,"-DEBUG"));
@@ -689,6 +696,13 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    	m_ADMM_MaxIts = Integer.parseInt(AmaxItsString);
 	    } else {
 	    	m_ADMM_MaxIts = 1000;
+	    }
+	    
+	    String SmaxItsString = Utils.getOption('S', options);
+	    if (SmaxItsString.length() != 0) {
+	    	m_SeqUnwinder_MaxIts = Integer.parseInt(SmaxItsString);
+	    } else {
+	    	m_SeqUnwinder_MaxIts = 10;
 	    }
 	    
 	    String numLayerString = Utils.getOption("NL", options);
@@ -727,6 +741,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    options.add("" + m_BGFS_MaxIts);
 	    options.add("-A");
 	    options.add("" + m_ADMM_MaxIts);
+	    options.add("-S");
+	    options.add("" + m_SeqUnwinder_MaxIts);
 	    options.add("-CLS");
 	    options.add("-NL");
 	    options.add("-DEBUG");

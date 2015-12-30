@@ -97,6 +97,7 @@ public class Optimizer {
 	//Settors
 	public void setBGFSmaxItrs(int m){BGFS_maxIts=m;}
 	public void setADMMmaxItrs(int m){ADMM_maxItr = m;}
+	public void setSeqUnwinderMaxIts(int m){NODES_maxItr = m;}
 	public void setInstanceWeights(double[] w){weights=w;}
 	public void setClsMembership(int[] c){cls=c;}
 	public void setNumPredictors(int p){numPredictors=p;}
@@ -517,6 +518,11 @@ public class Optimizer {
 					}
 				}
 			}
+			
+			if(sm_Debug){
+				System.err.println("Negative Log Likelihood: "+nll);
+			}
+			
 			return nll;
 		}
 		
