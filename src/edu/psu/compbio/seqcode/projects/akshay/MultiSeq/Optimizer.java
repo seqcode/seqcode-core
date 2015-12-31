@@ -358,6 +358,7 @@ public class Optimizer {
 				x = opt.getVarbValues();
 				x = opt.findArgmin(x, b);
 			}
+			nll_ret = opt.getMinFunction();
 		}else{
 			opt.setMaxIteration(BGFS_maxIts);
 			x = opt.findArgmin(x, b);
