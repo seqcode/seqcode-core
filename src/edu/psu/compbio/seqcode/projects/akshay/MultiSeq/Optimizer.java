@@ -158,7 +158,7 @@ public class Optimizer {
 		int dim = numPredictors+1;
 		for(int itr=0; itr<ADMM_maxItr; itr++){
 			// Update x
-			updateX();
+			double xmin = updateX();
 			
 			// Copy z to zold
 			zold=z;
@@ -184,7 +184,10 @@ public class Optimizer {
 			}
 			
 			// Z-update
-			updateZ(xrel, ADMM_PHO/(2*regularization));
+			double zmin = updateZ(xrel, ADMM_PHO/(2*regularization));
+			
+			if(sm_Debug)
+				System.err.println("Xmin: "+xmin+"Zmin "+zmin);
 			
 			//U-update
 			for(Node n :classStructure.leafs){
@@ -275,13 +278,64 @@ public class Optimizer {
 	
 	
 	
-	public void updateZ(double[] xrel, double pho){
+	public double updateZ(double[] xrel, double pho){
+		
+		int dim = numPredictors+1;
+		
+		double z_ret=0;
+		
 		for(int i=0; i<xrel.length; i++){
 			z[i] = xrel[i] - Math.signum(xrel[i])*Math.min(pho, xrel[i]);
 		}
+		
+		// Compute the found minimum value for the z-update step
+		// Sum over all the Znp update values
+		
+		for(Node n : classStructure.leafs){
+			double znp=0;
+			if(n.parents.size() > 0){ // if the leaf node has parents
+				for(int pid : n.parents){ // over all the parents of the current node
+					// First part, one-norm part
+					double firstPart = 0;
+					int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
+					for(int w=0; w<dim; w++){
+						firstPart += regularization*Math.abs(z[zOffset+w]);
+					}
+					double secondPart = 0;
+					int nOffset = n.nodeIndex*dim;
+					int pOffset = pid*dim;
+					for(int w=0; w<dim; w++){
+						secondPart += (ADMM_PHO/2)*Math.pow(sm_x[nOffset+w]-z[zOffset+w]-sm_x[pOffset+w]+u[zOffset+w], 2);
+					}
+					znp = firstPart + secondPart;
+				}
+			}else{ // if the lead node has no parents
+				double firstPart = 0;
+				int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+				int nOffset = n.nodeIndex*dim;
+				for(int w=0; w<dim; w++){
+					firstPart += regularization+Math.abs(z[zOffset+w]);
+				}
+				double secondPart = 0;
+				for(int w=0; w<dim; w++){
+					secondPart += (ADMM_PHO/2)*Math.pow(sm_x[nOffset+w]-z[zOffset+w]+u[zOffset+w], 2);
+				}
+				znp = firstPart + secondPart;
+			}
+			z_ret += znp;
+		}
+		
+		return z_ret;
 	}
 	
-	public void updateX() throws Exception{
+	/**
+	 * 
+	 * @return the current value of the function that is minimized during the x-update 
+	 * @throws Exception
+	 */
+	public double updateX() throws Exception{
+		
+		double nll_ret = 0;
 		
 		// Create Boundry constraints for the BGFS method, N/A here
 		double[][] b = new double[2][x.length]; // Boundary constraints, N/A here
@@ -310,6 +364,7 @@ public class Optimizer {
 			if (x == null) {
 				x = opt.getVarbValues();
 			}
+			nll_ret = opt.getMinFunction();
 		}
 			
 		// Now copy the leaf node weights (i.e x) to sm_x
@@ -320,6 +375,7 @@ public class Optimizer {
 				sm_x[nOffset+w] = x[nOffset+w];
 			}
 		}
+		return nll_ret;
 	}
 	
 	
@@ -520,7 +576,7 @@ public class Optimizer {
 			}
 			
 			if(sm_Debug){
-				System.err.println("Negative Log Likelihood: "+nll);
+				//System.err.println("Negative Log Likelihood: "+nll);
 			}
 			
 			return nll;
