@@ -18,6 +18,8 @@ import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelatio
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.pmml.producer.LogisticProducerHelper;
 
+import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LOne;
+
 import weka.core.*;
 import weka.core.Capabilities.Capability;
 import weka.core.pmml.PMMLProducer;
@@ -71,7 +73,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	  
 	private Instances m_structure;
 	
-	
+	private String m_OptimizationType = "L1";
 	
 	// Model parameters of the structured multinomial logit not compatible with the weka logit class
 	
@@ -358,9 +360,17 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    	}
 	    }
 	   
-	    Optimizer opt = new Optimizer(x,sm_x,m_Data);
+	    Optimizer opt = null;
+	    
+	    if(m_OptimizationType.equals("L1"))
+	    	opt = new LOne(x,sm_x,m_Data);
+	    else
+	    	opt = new L2(x,sm_x,m_Data);
+	    
 	    opt.setRidge(m_Ridge);
-	    opt.setADMMmaxItrs(m_ADMM_MaxIts);
+	    if(opt instanceof LOne){
+	    	((LOne) opt).setADMMmaxItrs(m_ADMM_MaxIts);
+	    }
 	    opt.setBGFSmaxItrs(m_BGFS_MaxIts);
 	    opt.setSeqUnwinderMaxIts(m_SeqUnwinder_MaxIts);
 	    opt.setClassStructure(sm_ClassStructure);
@@ -368,7 +378,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    opt.setInstanceWeights(weights);
 	    opt.setNumClasses(m_NumClasses);
 	    opt.setNumPredictors(m_NumPredictors);
-	    opt.initZandU();
+	    if(opt instanceof LOne)
+	    	((LOne) opt).initZandU();
 	    opt.setDebugMode(sm_Debug);
 	    opt.execute();
 	    m_Data = null;
@@ -664,6 +675,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		  	      + " (default 10).", "S", 1, "-S <number>"));
 	    newVector.addElement(new Option("\tProvide the class structure file for the multiclasses","CLS",0,"-CLS <File name>"));
 	    newVector.addElement(new Option("\tProvide the number of layers in the class structur","NL",0,"-NL <Num of Layers>"));
+	    newVector.addElement(new Option("\tL1 or L2 norm Logit model","TY",0,"-TY <L1 or L2>"));
 	    newVector.addElement(new Option("\tFlag to run in debug mode","DEBUG",0,"-DEBUG"));
 	    newVector.addAll(Collections.list(super.listOptions()));
 
@@ -711,6 +723,13 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    	System.exit(1);
 	    }
 	     sm_NumLayers = Integer.parseInt(numLayerString);
+	     
+	    String Type = Utils.getOption("TY", options);
+	    if (SmaxItsString.length() != 0) {
+	    	m_OptimizationType = Type;
+	    }else{
+	    	m_OptimizationType = "L1";
+	    }
 	    
 	    String classStructureFilename = Utils.getOption("CLS", options);
 	    if(classStructureFilename == ""){
@@ -745,6 +764,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    options.add("" + m_SeqUnwinder_MaxIts);
 	    options.add("-CLS");
 	    options.add("-NL");
+	    options.add("-TY");
 	    options.add("-DEBUG");
 
 	    Collections.addAll(options, super.getOptions());
