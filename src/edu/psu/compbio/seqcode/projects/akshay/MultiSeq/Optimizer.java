@@ -492,9 +492,9 @@ public class Optimizer {
 		 * @param currx
 		 * @return
 		 */
-		public double[] evaluateGradient(double[] currx){
+		public double[] evaluateGradient(double[] x){
 			
-			double[] grad = new double[currx.length];
+			double[] grad = new double[x.length];
 			int dim = numPredictors + 1; // Number of variables per class
 
 			for (int i = 0; i < cls.length; i++) { // ith instance
@@ -506,7 +506,7 @@ public class Optimizer {
 		        	double exp = 0.0;
 		        	index = offset * dim;
 		        	for (int j = 0; j < dim; j++) {
-		        		exp += data[i][j]*currx[index + j];
+		        		exp += data[i][j]*x[index + j];
 		        	}
 		        	num[offset] = exp;
 		        }
@@ -545,13 +545,13 @@ public class Optimizer {
 						int pOffset = pid*dim;
 						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
 						for(int w=0; w<dim; w++){
-							grad[nOffset+w] += ADMM_PHO*(currx[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w]);
+							grad[nOffset+w] += ADMM_PHO*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w]);
 						}
 					}
 				}else{
 					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
-						grad[nOffset+w] += ADMM_PHO*(currx[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
+						grad[nOffset+w] += ADMM_PHO*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
 					}
 				}
 			}	
@@ -564,7 +564,7 @@ public class Optimizer {
 		 * @param currx
 		 * @return
 		 */
-		public double objectiveFunction(double[] currx){
+		public double objectiveFunction(double[] x){
 			double nll=0.0;
 			int dim = numPredictors+1;
 
@@ -574,7 +574,7 @@ public class Optimizer {
 				for (int offset = 0; offset < numClasses; offset++) {
 					index = offset * dim;
 					for (int j = 0; j < dim; j++) {
-						exp[offset] += data[i][j] * currx[index + j];
+						exp[offset] += data[i][j] * x[index + j];
 					}
 				}
 				double max = exp[Utils.maxIndex(exp)];
@@ -595,13 +595,13 @@ public class Optimizer {
 						int pOffset = pid*dim;
 						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
 						for(int w=0; w<dim; w++){
-							nll += (ADMM_PHO/2)*(currx[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w])*(currx[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w]);
+							nll += (ADMM_PHO/2)*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w])*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w]);
 						}
 					}
 				}else{
 					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
-						nll += (ADMM_PHO/2)*(currx[nOffset+w]-z[zOffset+w]+u[zOffset+w])*(currx[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
+						nll += (ADMM_PHO/2)*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w])*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
 					}
 				}
 			}
