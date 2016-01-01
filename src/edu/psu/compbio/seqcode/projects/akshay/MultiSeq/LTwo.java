@@ -216,12 +216,12 @@ public class LTwo extends Optimizer{
 					for(int pid : n.parents){
 						int pOffset = pid*dim;
 						for(int w=0; w<dim; w++){
-							grad[nOffset+w] += regularization*(sm_x[nOffset+w]-sm_x[pOffset+w]);
+							grad[nOffset+w] += regularization*(x[nOffset+w]-sm_x[pOffset+w]);
 						}
 					}
 				}else{
 					for(int w=0; w<dim; w++){
-						grad[nOffset+w] += regularization*(sm_x[nOffset+w]);
+						grad[nOffset+w] += regularization*(x[nOffset+w]);
 					}
 				}
 			}	
@@ -240,7 +240,7 @@ public class LTwo extends Optimizer{
 				for (int offset = 0; offset < numClasses; offset++) {
 					index = offset * dim;
 					for (int j = 0; j < dim; j++) {
-						exp[offset] += data[i][j] * sm_x[index + j];
+						exp[offset] += data[i][j] * x[index + j];
 					}
 				}
 				double max = exp[Utils.maxIndex(exp)];
@@ -260,12 +260,12 @@ public class LTwo extends Optimizer{
 					for(int pid : n.parents){
 						int pOffset = pid*dim;
 						for(int w=0; w<dim; w++){
-							nll += (regularization/2)*(sm_x[nOffset+w]-sm_x[pOffset+w])*(sm_x[nOffset+w]-sm_x[pOffset+w]);
+							nll += (regularization/2)*(x[nOffset+w]-sm_x[pOffset+w])*(x[nOffset+w]-sm_x[pOffset+w]);
 						}
 					}
 				}else{
 					for(int w=0; w<dim; w++){
-						nll += (regularization/2)*(sm_x[nOffset+w]*sm_x[nOffset+w]);
+						nll += (regularization/2)*(x[nOffset+w]*x[nOffset+w]);
 					}
 				}
 			}
