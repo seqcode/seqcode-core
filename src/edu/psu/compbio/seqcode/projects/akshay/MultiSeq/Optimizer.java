@@ -556,6 +556,12 @@ public class Optimizer {
 				}
 			}	
 		      
+			if(sm_Debug){
+				System.err.println(grad[20]);
+				System.err.println(grad[dim+20]);
+				System.err.println(grad[2*dim+20]);
+			}
+			
 			return grad;
 		}
 		
