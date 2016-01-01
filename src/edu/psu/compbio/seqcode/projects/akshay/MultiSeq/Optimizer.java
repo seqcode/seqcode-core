@@ -285,7 +285,8 @@ public class Optimizer {
 		double z_ret=0;
 		
 		for(int i=0; i<xrel.length; i++){
-			z[i] = xrel[i] - Math.signum(xrel[i])*Math.min(pho, xrel[i]);
+			//z[i] = xrel[i] - Math.signum(xrel[i])*Math.min(pho, xrel[i]);
+			z[i] = Math.max(0, xrel[i]-pho) - Math.max(0, -xrel[i] - pho);
 		}
 		
 		// Compute the found minimum value for the z-update step
@@ -352,6 +353,22 @@ public class Optimizer {
 		// First, create and opt object for the BGFS algorithm
 		OptObject oO = new OptObject();
 		Optimization opt = new OptEng(oO);
+		
+		// Debugging
+		
+		if(sm_Debug){
+			System.err.println("X values before the Newtown method");
+			System.err.println(x[20]);
+			System.err.println(x[numPredictors+1+20]);
+			System.err.println(x[2*(numPredictors+1)+20]);
+			double zsum=0, usum=0;
+			for(int i=0; i<z.length; i++){
+				zsum += z[i];
+				usum += u[i];
+			}
+			System.err.println("Zsum "+zsum+" Usum "+usum);
+		}
+		
 		if(BGFS_maxIts == -1){ // Search until convergence
 			x = opt.findArgmin(x, b);
 			while (x == null) {
@@ -366,6 +383,19 @@ public class Optimizer {
 				x = opt.getVarbValues();
 			}
 			nll_ret = opt.getMinFunction();
+		}
+		
+		if(sm_Debug){
+			System.err.println("X values after the Newtown method");
+			System.err.println(x[20]);
+			System.err.println(x[numPredictors+1+20]);
+			System.err.println(x[2*(numPredictors+1)+20]);
+			double zsum=0, usum=0;
+			for(int i=0; i<z.length; i++){
+				zsum += z[i];
+				usum += u[i];
+			}
+			System.err.println("Zsum "+zsum+" Usum "+usum);
 		}
 			
 		// Now copy the leaf node weights (i.e x) to sm_x
