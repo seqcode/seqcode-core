@@ -38,7 +38,9 @@ public class LTwo extends Optimizer{
 	/** Current feature weights for all the nodes in the SeqUnwinder (also contains the intercept term). Dimension :- (numPredictors+1)*numNodes */
 	public double[] sm_x;
 	/** Current feature weights for all the leaf nodes (classes) in the SeqUnwinder (also contains the intercept term). Dimension :- (numPredictors+1)*numClasses */
-	public double[] x; 
+	public double[] x;
+	/** Boundry conditions needed for the the newton's method. However, null in this case */
+	public double[][] b;
 	
 	// SeqUnwinder training data
 	
@@ -70,10 +72,11 @@ public class LTwo extends Optimizer{
 	public double[] getX(){return x;}
 	public double[] getsmX(){return sm_x;}
 	
-	public LTwo(double[] xinit, double[] sm_xinit, double[][] d) {
+	public LTwo(double[] xinit, double[] sm_xinit, double[][] d, double[][] bc) {
 		x = xinit;
 		sm_x = sm_xinit;
 		data=d;
+		b=bc;
 	}
 	@Override
 	public void execute() throws Exception {
@@ -100,18 +103,6 @@ public class LTwo extends Optimizer{
 	}
 	
 	public void executeLeaf() throws Exception{
-		// Create Boundry constraints for the BGFS method, N/A here
-		double[][] b = new double[2][x.length]; // Boundary constraints, N/A here
-		for (int p = 0; p < numClasses; p++) {
-			int offset = p * (numClasses + 1);
-			b[0][offset] = Double.NaN;
-			b[1][offset] = Double.NaN;
-			for (int q = 1; q <= numPredictors; q++) {
-				b[0][offset + q] = Double.NaN;
-				b[1][offset + q] = Double.NaN;
-			}
-		}
-		
 		// First, create and opt object for the BGFS algorithm
 		OptObject oO = new OptObject();
 		Optimization opt = new OptEng(oO);

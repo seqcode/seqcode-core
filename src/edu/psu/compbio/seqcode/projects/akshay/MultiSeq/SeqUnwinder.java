@@ -449,11 +449,11 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    */
 		
 		// can classifier handle the data?
-					getCapabilities().testWithFail(train);
+		getCapabilities().testWithFail(train);
 				    
-					// remove instances with missing class
-				    train = new Instances(train);
-				    train.deleteWithMissingClass();
+		// remove instances with missing class
+		train = new Instances(train);
+		train.deleteWithMissingClass();
 				    
 				    // Replace missing values
 				    m_ReplaceMissingValues = new ReplaceMissingValues();
@@ -577,41 +577,49 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 				    	}
 				    }
 				   
-				    OptObject oO = new OptObject();
-				    oO.setCls(Y);
-				    oO.setWeights(weights);
-				    oO.setsmX(sm_x);
+				    Optimizer opt = null;
 				    
-				    System.err.println("X values before the Newtown method");
-					System.err.println(x[20]);
-					System.err.println(x[m_NumPredictors+1+20]);
-					System.err.println(x[2*(m_NumPredictors+1)+20]);
-				   
-				    Optimization opt = null;
+				    if(m_OptimizationType.equals("L1"))
+					    opt = new LOne(x,sm_x,m_Data);
+					    else
+					    	opt = new LTwo(x,sm_x,m_Data,b);
+					    
+					    opt.setRidge(m_Ridge);
+					    if(opt instanceof LOne){
+					    	((LOne) opt).setADMMmaxItrs(m_ADMM_MaxIts);
+					    }
+					    opt.setBGFSmaxItrs(m_BGFS_MaxIts);
+					    opt.setSeqUnwinderMaxIts(m_SeqUnwinder_MaxIts);
+					    opt.setClassStructure(sm_ClassStructure);
+					    opt.setClsMembership(Y);
+					    opt.setInstanceWeights(weights);
+					    opt.setNumClasses(m_NumClasses);
+					    opt.setNumPredictors(m_NumPredictors);
+					    if(opt instanceof LOne)
+					    	((LOne) opt).initZandU();
+					    opt.setDebugMode(sm_Debug);
+					    opt.execute();
+					    m_Data = null;
+						
+					    x=opt.getX();
+					    sm_x= opt.getsmX();
+					    opt.clearOptimizer();
+					    
+					  //Now update the m_Par and sm_Par with the learned parameters
+					    for (int i = 0; i < nK; i++) {
+					    	m_Par[0][i] = x[i * (nR + 1)];
+					    	for (int j = 1; j <= nR; j++) {
+					    		m_Par[j][i] = x[i * (nR + 1) + j];
+					    		if (xSD[j] != 0) {
+					    			m_Par[j][i] /= xSD[j];
+					    			m_Par[0][i] -= m_Par[j][i] * xMean[j];
+					    		}
+					        }
+					    }
 				    
-				    opt = new OptEng(oO);
-				    
-				   
-				    if (m_BGFS_MaxIts == -1) { // Search until convergence
-				    	x = opt.findArgmin(x, b);
-				    	while (x == null) {
-				    		x = opt.getVarbValues();
-					        x = opt.findArgmin(x, b);
-				    	}
-				    } else {
-				    	opt.setMaxIteration(m_BGFS_MaxIts);
-				    	x = opt.findArgmin(x, b);
-				    	if (x == null) {
-				    		x = opt.getVarbValues();
-				    	}
-				    }
-				    
-				    System.err.println("X values After the Newtown method");
-					System.err.println(x[20]);
-					System.err.println(x[m_NumPredictors+1+20]);
-					System.err.println(x[2*(m_NumPredictors+1)+20]);
+			
 
-				    m_LL = -opt.getMinFunction(); // Log-likelihood
+				   
 
 				    // Don't need data matrix anymore
 				    m_Data = null;
@@ -868,161 +876,6 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 				else{return -1;}
 			}
 			
-		}
-	}
-
-	public class OptObject {
-	
-		/** Weights of the instances */
-		protected double[] weights;
-	
-		/** Current values of variable for all the nodes */
-		/** Updated when evaluage gradient is called */
-		protected double[] sm_x;
-	
-		/** Instance class membership */
-		protected int[] cls;
-	
-		//Settors
-		public void setWeights(double[] w){weights = w;}
-		public void setCls(int[] c){cls=c;}
-		public void setsmX(double[] smx){sm_x=smx;}
-		
-		public double[] evaluateGradient(double[] x){
-		double[] grad = new double[x.length];
-		int dim = m_NumPredictors + 1; // Number of variables per class
-
-		for (int i = 0; i < cls.length; i++) { // ith instance
-			double[] num = new double[m_NumClasses]; // numerator of
-		                                                     // [-log(1+sum(exp))]'
-		        int index;
-		        for (int offset = 0; offset < m_NumClasses; offset++) { // Which
-		                                                                    // part of 
-		        	double exp = 0.0;
-		        	index = offset * dim;
-		        	for (int j = 0; j < dim; j++) {
-		        		exp += m_Data[i][j]*x[index + j];
-		        	}
-		        	num[offset] = exp;
-		        }
-
-		        double max = num[Utils.maxIndex(num)];
-		       
-		        double denom=0.0;
-		        for (int offset = 0; offset < m_NumClasses; offset++) {
-		        	num[offset] = Math.exp(num[offset] - max);
-		        	denom += num[offset];
-		        }
-		        Utils.normalize(num, denom);
-
-		        // Update denominator of the gradient of -log(Posterior)
-		        double firstTerm;
-		        for (int offset = 0; offset < m_NumClasses; offset++) { // Which
-		                                                                    // part of x
-		        	index = offset * dim;
-		        	firstTerm = weights[i] * num[offset];
-		        	for (int q = 0; q < dim; q++) {
-		        		grad[index + q] += firstTerm * m_Data[i][q];
-		        	}
-		        }
-
-		        for (int p = 0; p < dim; p++) {
-		            grad[cls[i] * dim + p] -= weights[i] * m_Data[i][p];
-		        }
-		        
-			}
-		      
-
-			for(Node n : sm_ClassStructure.leafs){
-				int nOffset = n.nodeIndex*dim;
-				if(n.parents.size() > 0){
-					for(int pid : n.parents){
-						int pOffset = pid*dim;
-						for(int w=0; w<dim; w++){
-							grad[nOffset+w] += m_Ridge*(x[nOffset+w]-sm_x[pOffset+w]);
-						}
-					}
-				}else{
-					for(int w=0; w<dim; w++){
-						grad[nOffset+w] += m_Ridge*(x[nOffset+w]);
-					}
-				}
-			}	
-		      
-			return grad;
-					
-		}
-		
-		public double objectiveFunction(double[] x){
-			double nll=0.0;
-			int dim = m_NumPredictors+1;
-			
-			for (int i = 0; i < cls.length; i++) { // ith instance
-				double[] exp = new double[m_NumClasses];
-				int index;
-				for (int offset = 0; offset < m_NumClasses; offset++) {
-					index = offset * dim;
-					for (int j = 0; j < dim; j++) {
-						exp[offset] += m_Data[i][j] * x[index + j];
-					}
-				}
-				double max = exp[Utils.maxIndex(exp)];
-		        double denom = 0;
-		        double num = exp[cls[i]] - max;
-		        
-		        for (int offset = 0; offset < m_NumClasses; offset++) {
-		        	denom += Math.exp(exp[offset] - max);
-		        }
-
-		        nll -= weights[i] * (num - Math.log(denom)); // Weighted NLL
-			}
-			
-			for(Node n : sm_ClassStructure.leafs){
-				int nOffset = n.nodeIndex*dim;
-				if(n.parents.size() >0){
-					for(int pid : n.parents){
-						int pOffset = pid*dim;
-						for(int w=0; w<dim; w++){
-							nll += (m_Ridge/2)*(x[nOffset+w]-sm_x[pOffset+w])*(x[nOffset+w]-sm_x[pOffset+w]);
-						}
-					}
-				}else{
-					for(int w=0; w<dim; w++){
-						nll += (m_Ridge/2)*(x[nOffset+w]*x[nOffset+w]);
-					}
-				}
-			}
-		
-			if(sm_Debug){
-				//System.err.println("Objective:"+nll);
-			}
-			
-			return nll;
-		}
-		
-	}
-	
-	public class OptEng extends Optimization {
-		
-		OptObject m_oO = null;
-		
-		public OptEng(OptObject oO){
-			m_oO = oO;
-		}
-		 
-		@Override
-		public String getRevision() {
-			return RevisionUtils.extract("$Revision: 11247 $");
-		}
-
-		@Override
-		protected double objectiveFunction(double[] x) throws Exception {
-			return m_oO.objectiveFunction(x);
-		}
-
-		@Override
-		protected double[] evaluateGradient(double[] x) throws Exception {
-			return m_oO.evaluateGradient(x);
 		}
 	}
 	
