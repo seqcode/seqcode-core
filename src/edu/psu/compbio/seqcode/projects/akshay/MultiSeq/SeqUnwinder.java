@@ -231,222 +231,6 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	
 	@Override
 	public void buildClassifier(Instances train) throws Exception {
-		/*
-		// can classifier handle the data?
-		getCapabilities().testWithFail(train);
-	    
-		// remove instances with missing class
-	    train = new Instances(train);
-	    train.deleteWithMissingClass();
-	    
-	    // Replace missing values
-	    m_ReplaceMissingValues = new ReplaceMissingValues();
-	    m_ReplaceMissingValues.setInputFormat(train);
-	    train = Filter.useFilter(train, m_ReplaceMissingValues);
-
-	    // Remove useless attributes
-	    m_AttFilter = new RemoveUseless();
-	    m_AttFilter.setInputFormat(train);
-	    train = Filter.useFilter(train, m_AttFilter);
-
-	    // Transform attributes
-	    m_NominalToBinary = new NominalToBinary();
-	    m_NominalToBinary.setInputFormat(train);
-	    train = Filter.useFilter(train, m_NominalToBinary);
-
-	    // Save the structure for printing the model
-	    m_structure = new Instances(train, 0);
-
-	    // Extract data
-	    m_ClassIndex = train.classIndex();
-	    m_NumClasses = train.numClasses();
-	    
-	    int nK = m_NumClasses; // All K classes needed unlike Weka's logistic framework
-	    int nR = m_NumPredictors = train.numAttributes() - 1; // Minus 1 to remove the class attribute
-	    int nC = train.numInstances();
-	    
-	    m_Data = new double[nC][nR + 1]; // Data values
-	    int[] Y = new int[nC]; // Class labels
-	    double[] xMean = new double[nR + 1]; // Attribute means
-	    double[] xSD = new double[nR + 1]; // Attribute stddev's
-	    double[] sY = new double[nK]; // Number of classes
-	    double[] sm_sY = new double[sm_NumNodes]; // Number of instances under each node
-	    double[] weights = new double[nC]; // Weights of instances
-	    double totWeights = 0; // Total weights of the instances
-	    m_Par = new double[nR + 1][nK]; // Optimized parameter values of the leaf nodes
-	    sm_Par = new double[nR+1][sm_NumNodes]; // Optimized parameter values of all the nodes
-	    
-	    if(sm_Debug){
-	    	System.err.println("Number of training instances: "+Y.length);
-	    	System.err.println("Number of classes: "+m_NumClasses);
-	    	System.err.println("Number of nodes: "+sm_NumNodes);
-	    	System.err.println("Number of predictors: "+nR);
-	    }
-	    
-	    for (int i = 0; i < nC; i++) {
-	    	// initialize X[][]
-	    	Instance current = train.instance(i);
-	    	Y[i] = (int) current.classValue(); // Class value starts from 0
-	    	weights[i] = current.weight(); // Dealing with weights
-	    	totWeights += weights[i];
-
-	    	m_Data[i][0] = 1;
-	    	int j = 1;
-	    	for (int k = 0; k <= nR; k++) {
-	    		if (k != m_ClassIndex) {
-	    			double x = current.value(k);
-	    			m_Data[i][j] = x;
-	    			xMean[j] += weights[i] * x;
-	    			xSD[j] += weights[i] * x * x;
-	    			j++;
-	    		}
-	        }
-	    	// Class count
-	        sY[Y[i]]++;
-	    }
-	    
-	    if ((totWeights <= 1) && (nC > 1)) {
-	    	throw new Exception(
-	    			"Sum of weights of instances less than 1, please reweight!");
-	    }
-	    xMean[0] = 0;
-	    xSD[0] = 1;
-	    for (int j = 1; j <= nR; j++) {
-	    	xMean[j] = xMean[j] / totWeights;
-	    	if (totWeights > 1) {
-	    		xSD[j] = Math.sqrt(Math.abs(xSD[j] - totWeights * xMean[j] * xMean[j])/ (totWeights - 1));
-	        } else {
-	        	xSD[j] = 0;
-	        }
-	    }
-	      
-	   // Normalise input data
-	    for (int i = 0; i < nC; i++) {
-	    	for (int j = 0; j <= nR; j++) {
-	    		if (xSD[j] != 0) {
-	    			m_Data[i][j] = (m_Data[i][j] - xMean[j]) / xSD[j];
-	    		}
-	        }
-	    }
-	    
-	    double x[] = new double[(nR + 1) * nK];
-	      
-	    // Fill sm_sY
-	    // First fill the leaf node
-	    for(Node n : sm_ClassStructure.leafs){
-	    	sm_sY[n.nodeIndex] = sY[n.nodeIndex];
-	    }
-	    for(int l=1; l<sm_ClassStructure.numLayers; l++){
-	    	for(Node n :sm_ClassStructure.layers.get(l)){
-	    		for(Integer cind : n.children){
-	    			sm_sY[n.nodeIndex] = sm_sY[n.nodeIndex]+sm_sY[cind];
-	    		}
-	    	}
-	    }
-	      
-	    // Initialize
-	    for (int p = 0; p < nK; p++) {
-	    	int offset = p * (nR + 1);
-	    	x[offset] = Math.log(sY[p] + 1.0) - Math.log(sY[nK-1] + 1.0); // Null model
-	        for (int q = 1; q <= nR; q++) {
-	        	x[offset + q] = 0.0;
-	        }
-	    }
-	    
-	    double[] sm_x = new double[(nR+1)*sm_NumNodes];
-	    // Initialize the sm_x parameters
-	    for(int p=0; p<sm_NumNodes; p++) {
-	    	int offset = p*(nR+1);
-	    	sm_x[offset] = Math.log(sm_sY[p] + 1.0) - Math.log(sm_sY[nK-1] + 1.0); // Null model
-	    	for (int q = 1; q <= nR; q++) {
-	    		sm_x[offset+q] = 0.0;
-	    	}
-	    }
-	    
-	    double[][] b = new double[2][x.length]; // Boundary constraints, N/A here
-		for (int p = 0; p < m_NumClasses; p++) {
-			int offset = p * (m_NumClasses + 1);
-			b[0][offset] = Double.NaN;
-			b[1][offset] = Double.NaN;
-			for (int q = 1; q <= m_NumPredictors; q++) {
-				b[0][offset + q] = Double.NaN;
-				b[1][offset + q] = Double.NaN;
-			}
-		}
-	    
-	    OptObject oO = new OptObject();
-	    oO.setCls(Y);
-	    oO.setWeights(weights);
-	    oO.setsmX(sm_x);
-	    
-	    System.err.println("X values before the Newtown method");
-		System.err.println(x[20]);
-		System.err.println(x[m_NumPredictors+1+20]);
-		System.err.println(x[2*(m_NumPredictors+1)+20]);
-		
-		Optimization opt = new OptEng(oO);
-		
-		if ( m_BGFS_MaxIts == -1) { // Search until convergence
-			 x = opt.findArgmin(x, b);
-			 while (x == null) {
-				 x = opt.getVarbValues();
-				 x = opt.findArgmin(x, b);
-			 }
-		 } else {
-			 opt.setMaxIteration(m_BGFS_MaxIts);
-			 x = opt.findArgmin(x, b);
-			 if (x == null) {
-				 x = opt.getVarbValues();
-			 }
-		 }
-		
-		System.err.println("X values after the Newtown method");
-		System.err.println(x[20]);
-		System.err.println(x[m_NumPredictors+1+20]);
-		System.err.println(x[2*(m_NumPredictors+1)+20]);
-		 
-		 
-	   
-	   // Optimizer opt = null;
-	    
-	   // if(m_OptimizationType.equals("L1"))
-	    //	opt = new LOne(x,sm_x,m_Data);
-	    //else
-	    //	opt = new LTwo(x,sm_x,m_Data);
-	    
-	   // opt.setRidge(m_Ridge);
-	    //if(opt instanceof LOne){
-	    //	((LOne) opt).setADMMmaxItrs(m_ADMM_MaxIts);
-	    //}
-	    //opt.setBGFSmaxItrs(m_BGFS_MaxIts);
-	    //opt.setSeqUnwinderMaxIts(m_SeqUnwinder_MaxIts);
-	    //opt.setClassStructure(sm_ClassStructure);
-	    //opt.setClsMembership(Y);
-	    //opt.setInstanceWeights(weights);
-	    //opt.setNumClasses(m_NumClasses);
-	    //opt.setNumPredictors(m_NumPredictors);
-	    //if(opt instanceof LOne)
-	    //	((LOne) opt).initZandU();
-	    //opt.setDebugMode(sm_Debug);
-	    //opt.execute();
-	    m_Data = null;
-		
-	    //x=opt.getX();
-	    //sm_x= opt.getsmX();
-	    //opt.clearOptimizer();
-	    // Now update the m_Par and sm_Par with the learned parameters
-	    //for (int i = 0; i < nK; i++) {
-	    //	m_Par[0][i] = x[i * (nR + 1)];
-	    //	for (int j = 1; j <= nR; j++) {
-	    //		m_Par[j][i] = x[i * (nR + 1) + j];
-	    //		if (xSD[j] != 0) {
-	    //			m_Par[j][i] /= xSD[j];
-	    //			m_Par[0][i] -= m_Par[j][i] * xMean[j];
-	    //		}
-	     //   }
-	    //}
-
-	    */
 		
 		// can classifier handle the data?
 		getCapabilities().testWithFail(train);
@@ -455,187 +239,183 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		train = new Instances(train);
 		train.deleteWithMissingClass();
 				    
-				    // Replace missing values
-				    m_ReplaceMissingValues = new ReplaceMissingValues();
-				    m_ReplaceMissingValues.setInputFormat(train);
-				    train = Filter.useFilter(train, m_ReplaceMissingValues);
+		// Replace missing values
+		m_ReplaceMissingValues = new ReplaceMissingValues();
+		m_ReplaceMissingValues.setInputFormat(train);
+		train = Filter.useFilter(train, m_ReplaceMissingValues);
 
-				    // Remove useless attributes
-				    m_AttFilter = new RemoveUseless();
-				    m_AttFilter.setInputFormat(train);
-				    train = Filter.useFilter(train, m_AttFilter);
+		// Remove useless attributes
+		m_AttFilter = new RemoveUseless();
+		m_AttFilter.setInputFormat(train);
+		train = Filter.useFilter(train, m_AttFilter);
 
-				    // Transform attributes
-				    m_NominalToBinary = new NominalToBinary();
-				    m_NominalToBinary.setInputFormat(train);
-				    train = Filter.useFilter(train, m_NominalToBinary);
+		// Transform attributes
+		m_NominalToBinary = new NominalToBinary();
+		m_NominalToBinary.setInputFormat(train);
+		train = Filter.useFilter(train, m_NominalToBinary);
 
-				    // Save the structure for printing the model
-				    m_structure = new Instances(train, 0);
+		// Save the structure for printing the model
+		m_structure = new Instances(train, 0);
 
-				    // Extract data
-				    m_ClassIndex = train.classIndex();
-				    m_NumClasses = train.numClasses();
-				    
-				    int nK = m_NumClasses; // All K classes needed unlike Weka's logistic framework
-				    int nR = m_NumPredictors = train.numAttributes() - 1; // Minus 1 to remove the class attribute
-				    int nC = train.numInstances();
-				    
-				    m_Data = new double[nC][nR + 1]; // Data values
-				    int[] Y = new int[nC]; // Class labels
-				    double[] xMean = new double[nR + 1]; // Attribute means
-				    double[] xSD = new double[nR + 1]; // Attribute stddev's
-				    double[] sY = new double[nK]; // Number of classes
-				    double[] sm_sY = new double[sm_NumNodes]; // Number of instances under each node
-				    double[] weights = new double[nC]; // Weights of instances
-				    double totWeights = 0; // Total weights of the instances
-				    m_Par = new double[nR + 1][nK]; // Optimized parameter values of the leaf nodes
-				    sm_Par = new double[nR+1][sm_NumNodes]; // Optimized parameter values of all the nodes
-				    
-				    for (int i = 0; i < nC; i++) {
-				    	// initialize X[][]
-				    	Instance current = train.instance(i);
-				    	Y[i] = (int) current.classValue(); // Class value starts from 0
-				    	weights[i] = current.weight(); // Dealing with weights
-				    	totWeights += weights[i];
+		// Extract data
+		m_ClassIndex = train.classIndex();
+		m_NumClasses = train.numClasses();
 
-				    	m_Data[i][0] = 1;
-				    	int j = 1;
-				    	for (int k = 0; k <= nR; k++) {
-				    		if (k != m_ClassIndex) {
-				    			double x = current.value(k);
-				    			m_Data[i][j] = x;
-				    			xMean[j] += weights[i] * x;
-				    			xSD[j] += weights[i] * x * x;
-				    			j++;
-				    		}
-				        }
-				    	// Class count
-				        sY[Y[i]]++;
-				    }
-				    
-				    if ((totWeights <= 1) && (nC > 1)) {
-				    	throw new Exception(
-				    			"Sum of weights of instances less than 1, please reweight!");
-				    }
-				    xMean[0] = 0;
-				    xSD[0] = 1;
-				    for (int j = 1; j <= nR; j++) {
-				    	xMean[j] = xMean[j] / totWeights;
-				    	if (totWeights > 1) {
-				    		xSD[j] = Math.sqrt(Math.abs(xSD[j] - totWeights * xMean[j] * xMean[j])/ (totWeights - 1));
-				        } else {
-				        	xSD[j] = 0;
-				        }
-				    }
-				      
-				   // Normalise input data
-				    for (int i = 0; i < nC; i++) {
-				    	for (int j = 0; j <= nR; j++) {
-				    		if (xSD[j] != 0) {
-				    			m_Data[i][j] = (m_Data[i][j] - xMean[j]) / xSD[j];
-				    		}
-				        }
-				    }
-				    
-				    double x[] = new double[(nR + 1) * nK];
-				    double[][] b = new double[2][x.length]; // Boundary constraints, N/A here
-				      
-				    // Fill sm_sY
-				    // First fill the leaf node
-				    for(Node n : sm_ClassStructure.leafs){
-				    	sm_sY[n.nodeIndex] = sY[n.nodeIndex];
-				    }
-				    for(int l=1; l<sm_ClassStructure.numLayers; l++){
-				    	for(Node n :sm_ClassStructure.layers.get(l)){
-				    		for(Integer cind : n.children){
-				    			sm_sY[n.nodeIndex] = sm_sY[n.nodeIndex]+sm_sY[cind];
-				    		}
-				    	}
-				    }
-				      
-				    // Initialize
-				    for (int p = 0; p < nK; p++) {
-				    	int offset = p * (nR + 1);
-				    	x[offset] = Math.log(sY[p] + 1.0) - Math.log(sY[nK-1] + 1.0); // Null model
-				        b[0][offset] = Double.NaN;
-				        b[1][offset] = Double.NaN;
-				        for (int q = 1; q <= nR; q++) {
-				        	x[offset + q] = 0.0;
-				        	b[0][offset + q] = Double.NaN;
-				        	b[1][offset + q] = Double.NaN;
-				        }
-				    }
-				    
-				    double[] sm_x = new double[(nR+1)*sm_NumNodes];
-				    // Initialize the sm_x parameters
-				    for(int p=0; p<sm_NumNodes; p++) {
-				    	int offset = p*(nR+1);
-				    	sm_x[offset] = Math.log(sm_sY[p] + 1.0) - Math.log(sm_sY[nK-1] + 1.0); // Null model
-				    	for (int q = 1; q <= nR; q++) {
-				    		sm_x[offset+q] = 0.0;
-				    	}
-				    }
-				   
-				    Optimizer opt = null;
-				    
-				    if(m_OptimizationType.equals("L1"))
-					    opt = new LOne(x,sm_x,m_Data);
-					    else
-					    	opt = new LTwo(x,sm_x,m_Data,b);
-					    
-					    opt.setRidge(m_Ridge);
-					    if(opt instanceof LOne){
-					    	((LOne) opt).setADMMmaxItrs(m_ADMM_MaxIts);
-					    }
-					    opt.setBGFSmaxItrs(m_BGFS_MaxIts);
-					    opt.setSeqUnwinderMaxIts(m_SeqUnwinder_MaxIts);
-					    opt.setClassStructure(sm_ClassStructure);
-					    opt.setClsMembership(Y);
-					    opt.setInstanceWeights(weights);
-					    opt.setNumClasses(m_NumClasses);
-					    opt.setNumPredictors(m_NumPredictors);
-					    if(opt instanceof LOne)
-					    	((LOne) opt).initZandU();
-					    opt.setDebugMode(sm_Debug);
-					    opt.execute();
-					    m_Data = null;
-						
-					    x=opt.getX();
-					    sm_x= opt.getsmX();
-					    opt.clearOptimizer();
-					    
-					  //Now update the m_Par and sm_Par with the learned parameters
-					    for (int i = 0; i < nK; i++) {
-					    	m_Par[0][i] = x[i * (nR + 1)];
-					    	for (int j = 1; j <= nR; j++) {
-					    		m_Par[j][i] = x[i * (nR + 1) + j];
-					    		if (xSD[j] != 0) {
-					    			m_Par[j][i] /= xSD[j];
-					    			m_Par[0][i] -= m_Par[j][i] * xMean[j];
-					    		}
-					        }
-					    }
-				    
-			
+		int nK = m_NumClasses; // All K classes needed unlike Weka's logistic framework
+		int nR = m_NumPredictors = train.numAttributes() - 1; // Minus 1 to remove the class attribute
+		int nC = train.numInstances();
 
-				   
+		m_Data = new double[nC][nR + 1]; // Data values
+		int[] Y = new int[nC]; // Class labels
+		double[] xMean = new double[nR + 1]; // Attribute means
+		double[] xSD = new double[nR + 1]; // Attribute stddev's
+		double[] sY = new double[nK]; // Number of classes
+		double[] sm_sY = new double[sm_NumNodes]; // Number of instances under each node
+		double[] weights = new double[nC]; // Weights of instances
+		double totWeights = 0; // Total weights of the instances
+		m_Par = new double[nR + 1][nK]; // Optimized parameter values of the leaf nodes
+		sm_Par = new double[nR+1][sm_NumNodes]; // Optimized parameter values of all the nodes
 
-				    // Don't need data matrix anymore
-				    m_Data = null;
+		for (int i = 0; i < nC; i++) {
+			// initialize X[][]
+			Instance current = train.instance(i);
+			Y[i] = (int) current.classValue(); // Class value starts from 0
+			weights[i] = current.weight(); // Dealing with weights
+			totWeights += weights[i];
+
+			m_Data[i][0] = 1;
+			int j = 1;
+			for (int k = 0; k <= nR; k++) {
+				if (k != m_ClassIndex) {
+					double x = current.value(k);
+					m_Data[i][j] = x;
+					xMean[j] += weights[i] * x;
+					xSD[j] += weights[i] * x * x;
+					j++;
+				}
+			}
+			// Class count
+			sY[Y[i]]++;
+		}
+
+		if ((totWeights <= 1) && (nC > 1)) {
+			throw new Exception(
+					"Sum of weights of instances less than 1, please reweight!");
+		}
+		xMean[0] = 0;
+		xSD[0] = 1;
+		for (int j = 1; j <= nR; j++) {
+			xMean[j] = xMean[j] / totWeights;
+			if (totWeights > 1) {
+				xSD[j] = Math.sqrt(Math.abs(xSD[j] - totWeights * xMean[j] * xMean[j])/ (totWeights - 1));
+			} else {
+				xSD[j] = 0;
+			}
+		}
+
+		// Normalise input data
+		for (int i = 0; i < nC; i++) {
+			for (int j = 0; j <= nR; j++) {
+				if (xSD[j] != 0) {
+					m_Data[i][j] = (m_Data[i][j] - xMean[j]) / xSD[j];
+				}
+			}
+		}
+
+		double x[] = new double[(nR + 1) * nK];
+		double[][] b = new double[2][x.length]; // Boundary constraints, N/A here
+
+		// Fill sm_sY
+		// First fill the leaf node
+		for(Node n : sm_ClassStructure.leafs){
+			sm_sY[n.nodeIndex] = sY[n.nodeIndex];
+		}
+		for(int l=1; l<sm_ClassStructure.numLayers; l++){
+			for(Node n :sm_ClassStructure.layers.get(l)){
+				for(Integer cind : n.children){
+					sm_sY[n.nodeIndex] = sm_sY[n.nodeIndex]+sm_sY[cind];
+				}
+			}
+		}
+
+		// Initialize
+		for (int p = 0; p < nK; p++) {
+			int offset = p * (nR + 1);
+			x[offset] = Math.log(sY[p] + 1.0) - Math.log(sY[nK-1] + 1.0); // Null model
+			b[0][offset] = Double.NaN;
+			b[1][offset] = Double.NaN;
+			for (int q = 1; q <= nR; q++) {
+				x[offset + q] = 0.0;
+				b[0][offset + q] = Double.NaN;
+				b[1][offset + q] = Double.NaN;
+			}
+		}
+
+		double[] sm_x = new double[(nR+1)*sm_NumNodes];
+		// Initialize the sm_x parameters
+		for(int p=0; p<sm_NumNodes; p++) {
+			int offset = p*(nR+1);
+			sm_x[offset] = Math.log(sm_sY[p] + 1.0) - Math.log(sm_sY[nK-1] + 1.0); // Null model
+			for (int q = 1; q <= nR; q++) {
+				sm_x[offset+q] = 0.0;
+			}
+		}
+
+		Optimizer opt = null;
+
+		if(m_OptimizationType.equals("L1"))
+			opt = new LOne(x,sm_x,m_Data);
+		else
+			opt = new LTwo(x,sm_x,m_Data,b);
+
+		opt.setRidge(m_Ridge);
+		if(opt instanceof LOne){
+			((LOne) opt).setADMMmaxItrs(m_ADMM_MaxIts);
+		}
+		opt.setBGFSmaxItrs(m_BGFS_MaxIts);
+		opt.setSeqUnwinderMaxIts(m_SeqUnwinder_MaxIts);
+		opt.setClassStructure(sm_ClassStructure);
+		opt.setClsMembership(Y);
+		opt.setInstanceWeights(weights);
+		opt.setNumClasses(m_NumClasses);
+		opt.setNumPredictors(m_NumPredictors);
+		if(opt instanceof LOne)
+			((LOne) opt).initZandU();
+		opt.setDebugMode(sm_Debug);
+		opt.execute();
+		m_Data = null;
+
+		x=opt.getX();
+		sm_x= opt.getsmX();
+		opt.clearOptimizer();
+
+		//Now update the m_Par and sm_Par with the learned parameters
+		for (int i = 0; i < nK; i++) {
+			m_Par[0][i] = x[i * (nR + 1)];
+			for (int j = 1; j <= nR; j++) {
+				m_Par[j][i] = x[i * (nR + 1) + j];
+				if (xSD[j] != 0) {
+					m_Par[j][i] /= xSD[j];
+					m_Par[0][i] -= m_Par[j][i] * xMean[j];
+				}
+			}
+		}
 		
-		
-	    //Now update the sm_Par with the learned parameters
-	    for(Node n : sm_ClassStructure.allNodes.values()){
-	    	sm_Par[0][n.nodeIndex] = sm_x[n.nodeIndex*(nR+1)];
-	    	for(int j=1; j<=nR; j++){
-	    		sm_Par[j][n.nodeIndex] = sm_x[n.nodeIndex*(nR+1)+j];
-	    		if(xSD[j] != 0 ){
-	    			sm_Par[j][n.nodeIndex] /=xSD[j];
-	    			sm_Par[0][n.nodeIndex] -= sm_Par[j][n.nodeIndex]*xMean[j];
-	    		}
-	    	}
-	    }
+		// Don't need data matrix anymore
+		m_Data = null;
+
+
+		//Now update the sm_Par with the learned parameters
+		for(Node n : sm_ClassStructure.allNodes.values()){
+			sm_Par[0][n.nodeIndex] = sm_x[n.nodeIndex*(nR+1)];
+			for(int j=1; j<=nR; j++){
+				sm_Par[j][n.nodeIndex] = sm_x[n.nodeIndex*(nR+1)+j];
+				if(xSD[j] != 0 ){
+					sm_Par[j][n.nodeIndex] /=xSD[j];
+					sm_Par[0][n.nodeIndex] -= sm_Par[j][n.nodeIndex]*xMean[j];
+				}
+			}
+		}
 	}
 
 

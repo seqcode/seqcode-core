@@ -82,7 +82,7 @@ public class LTwo extends Optimizer{
 	public void execute() throws Exception {
 		for(int it=0; it<NODES_maxItr; it++){
 			// First, run admm on leaf nodes
-			executeLeaf();
+			leafUpdate();
 			
 			// Now update the internal nodes
 			//updateInternalNodes();
@@ -102,13 +102,13 @@ public class LTwo extends Optimizer{
 		
 	}
 	
-	public void executeLeaf() throws Exception{
+	public void leafUpdate() throws Exception{
 		// First, create and opt object for the BGFS algorithm
 		OptObject oO = new OptObject();
 		Optimization opt = new OptEng(oO);
 		
 		if(sm_Debug){
-			System.err.println("X values before the Newtown method");
+			System.err.println("Today X values before the Newtown method");
 			System.err.println(x[20]);
 			System.err.println(x[numPredictors+1+20]);
 			System.err.println(x[2*(numPredictors+1)+20]);
@@ -129,7 +129,7 @@ public class LTwo extends Optimizer{
 		 }
 		 
 		 if(sm_Debug){
-				System.err.println("X values after the Newtown method");
+				System.err.println("Today X values after the Newtown method");
 				System.err.println(x[20]);
 				System.err.println(x[numPredictors+1+20]);
 				System.err.println(x[2*(numPredictors+1)+20]);
