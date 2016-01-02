@@ -364,7 +364,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		Optimizer opt = null;
 
 		if(m_OptimizationType.equals("L1"))
-			opt = new LOne(x,sm_x,m_Data);
+			opt = new LOne(x,sm_x,m_Data,b);
 		else
 			opt = new LTwo(x,sm_x,m_Data,b);
 

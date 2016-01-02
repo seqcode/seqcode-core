@@ -78,6 +78,8 @@ public class LOne extends Optimizer {
 	public double[][] history_primal;
 	/** Stores the dual residuals over the course of the ADMM algorithm Dimension:- [ADMM_maxItr][numNodes*numNodes] */
 	public double[][] history_dual;
+	/** Boundry conditions needed for the the newton's method. However, null in this case */
+	public double[][] b;
 	
 	
 	// SeqUnwinder training data
@@ -125,10 +127,11 @@ public class LOne extends Optimizer {
 		history_dual = new double[ADMM_maxItr][numNodes*numNodes];
 	}
 	
-	public LOne(double[] xinit, double[] sm_xinit, double[][] d) {
+	public LOne(double[] xinit, double[] sm_xinit, double[][] d, double[][] bc) {
 		x = xinit;
 		sm_x = sm_xinit;
 		data=d;
+		b=bc;
 	}
 	
 	public void execute() throws Exception{
@@ -338,18 +341,6 @@ public class LOne extends Optimizer {
 	public double updateX() throws Exception{
 		
 		double nll_ret = 0;
-		
-		// Create Boundry constraints for the BGFS method, N/A here
-		double[][] b = new double[2][x.length]; // Boundary constraints, N/A here
-		for (int p = 0; p < numClasses; p++) {
-			int offset = p * (numClasses + 1);
-			b[0][offset] = Double.NaN;
-			b[1][offset] = Double.NaN;
-			for (int q = 1; q <= numPredictors; q++) {
-				b[0][offset + q] = Double.NaN;
-				b[1][offset + q] = Double.NaN;
-			}
-		}
 		
 		// First, create and opt object for the BGFS algorithm
 		OptObject oO = new OptObject();
