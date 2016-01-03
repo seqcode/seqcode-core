@@ -188,7 +188,7 @@ public class LOne extends Optimizer {
 			}
 			
 			// Z-update
-			double zmin = updateZ(xrel, ADMM_PHO/(2*regularization));
+			double zmin = updateZ(xrel, (2*regularization)/ADMM_PHO);
 			
 			if(sm_Debug)
 				System.err.println("Xmin: "+xmin+"Zmin "+zmin);
@@ -289,7 +289,7 @@ public class LOne extends Optimizer {
 		double z_ret=0;
 		
 		for(int i=0; i<xrel.length; i++){
-			z[i] = xrel[i] - Math.signum(xrel[i])*Math.min(pho, xrel[i]);
+			z[i] = xrel[i] - Math.signum(xrel[i])*Math.min(pho, Math.abs(xrel[i]));
 			//z[i] = Math.max(0, xrel[i]-pho) - Math.max(0, -xrel[i] - pho);
 		}
 		
