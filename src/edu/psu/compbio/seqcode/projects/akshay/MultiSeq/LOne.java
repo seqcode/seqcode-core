@@ -182,18 +182,30 @@ public class LOne extends Optimizer {
 				}else{
 					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
-						xrel[zOffset+w] = ADMM_ALPHA*sm_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w]+u[zOffset+w];
+						//xrel[zOffset+w] = ADMM_ALPHA*sm_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w]+u[zOffset+w];
+						xrel[zOffset+w] = ADMM_ALPHA*sm_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w];
 					}
 				}
 			}
 			
+			for(int i=0; i<z.length;i++){
+				z[i] = xrel[i]+u[i];
+			}
+			
 			// Z-update
-			double zmin = updateZ(xrel, (2*regularization)/ADMM_PHO);
+			double zmin = updateZ((2*regularization)/ADMM_PHO);
 			
 			if(sm_Debug)
-				System.err.println("Xmin: "+xmin+"Zmin "+zmin);
+				//System.err.println("Xmin: "+xmin+"Zmin "+zmin);
 			
 			//U-update
+			
+			for(int i=0; i<u.length; i++){
+				u[i] = u[i] + xrel[i] - z[i]; 
+			}
+			
+			//U-update
+			/*
 			for(Node n :classStructure.leafs){
 				if(n.parents.size() > 0){
 					for(int pid : n.parents){
@@ -209,12 +221,14 @@ public class LOne extends Optimizer {
 					}
 				}
 			}
-			
+			*/
 			// Check Convergence
 			boolean converged = hasADMMConverged(itr);
 			
-			if(converged)
+			if(converged){
+				System.err.println("ADMM has converged!!");
 				break;
+			}
 		}
 		
 	}
@@ -282,14 +296,14 @@ public class LOne extends Optimizer {
 	
 	
 	
-	public double updateZ(double[] xrel, double pho){
+	public double updateZ(double pho){
 		
 		int dim = numPredictors+1;
 		
 		double z_ret=0;
 		
-		for(int i=0; i<xrel.length; i++){
-			z[i] = xrel[i] - Math.signum(xrel[i])*Math.min(pho, Math.abs(xrel[i]));
+		for(int i=0; i<z.length; i++){
+			z[i] = z[i] - Math.signum(z[i])*Math.min(pho, Math.abs(z[i]));
 			//z[i] = Math.max(0, xrel[i]-pho) - Math.max(0, -xrel[i] - pho);
 		}
 		
