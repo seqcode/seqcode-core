@@ -194,7 +194,7 @@ public class LOne extends Optimizer {
 			}
 			
 			if(sm_Debug){
-				System.err.println("Current values of z before shrinkage : "+ (2*regularization)/ADMM_PHO);
+				System.err.println("Current values of z before shrinkage : "+ (2*regularization)/ADMM_pho);
 				for(int i=0; i<dim; i++){
 					System.err.println(z[i]);
 				}
@@ -202,12 +202,12 @@ public class LOne extends Optimizer {
 			
 			
 			// Z-update
-			double zmin = updateZ((2*regularization)/ADMM_PHO);
+			double zmin = updateZ((2*regularization)/ADMM_pho);
 			
 			
 			
 			if(sm_Debug){
-				System.err.println("Current values of z : "+ (2*regularization)/ADMM_PHO);
+				System.err.println("Current values of z : "+ (2*regularization)/ADMM_pho);
 				for(int i=0; i<dim; i++){
 					System.err.println(z[i]);
 				}
@@ -270,7 +270,7 @@ public class LOne extends Optimizer {
 					double primalResidualNorm = 0;
 					int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
 					for(int w=0; w<dim; w++){
-						deltaZnorm += Math.pow(ADMM_PHO*(z[zOffset+w] - zold[zOffset+w]), 2);
+						deltaZnorm += Math.pow(ADMM_pho*(z[zOffset+w] - zold[zOffset+w]), 2);
 						primalResidualNorm += Math.pow((sm_x[n.nodeIndex*dim+w]-z[zOffset+w]-sm_x[pid*dim+w]),2);
 					}
 					deltaZnorm = Math.sqrt(deltaZnorm);
@@ -287,7 +287,7 @@ public class LOne extends Optimizer {
 				double primalResidualNorm = 0;
 				int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 				for(int w=0; w<dim; w++){
-					deltaZnorm += Math.pow(ADMM_PHO*(z[zOffset+w] - zold[zOffset+w]), 2);
+					deltaZnorm += Math.pow(ADMM_pho*(z[zOffset+w] - zold[zOffset+w]), 2);
 					primalResidualNorm += Math.pow((sm_x[n.nodeIndex*dim+w]-z[zOffset+w]),2);
 				}
 				deltaZnorm = Math.sqrt(deltaZnorm);
@@ -339,7 +339,7 @@ public class LOne extends Optimizer {
 					int nOffset = n.nodeIndex*dim;
 					int pOffset = pid*dim;
 					for(int w=0; w<dim; w++){
-						secondPart += (ADMM_PHO/2)*Math.pow(sm_x[nOffset+w]-z[zOffset+w]-sm_x[pOffset+w]+u[zOffset+w], 2);
+						secondPart += (ADMM_pho/2)*Math.pow(sm_x[nOffset+w]-z[zOffset+w]-sm_x[pOffset+w]+u[zOffset+w], 2);
 					}
 					znp = firstPart + secondPart;
 				}
@@ -352,7 +352,7 @@ public class LOne extends Optimizer {
 				}
 				double secondPart = 0;
 				for(int w=0; w<dim; w++){
-					secondPart += (ADMM_PHO/2)*Math.pow(sm_x[nOffset+w]-z[zOffset+w]+u[zOffset+w], 2);
+					secondPart += (ADMM_pho/2)*Math.pow(sm_x[nOffset+w]-z[zOffset+w]+u[zOffset+w], 2);
 				}
 				znp = firstPart + secondPart;
 			}
@@ -538,13 +538,13 @@ public class LOne extends Optimizer {
 						int pOffset = pid*dim;
 						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
 						for(int w=0; w<dim; w++){
-							grad[nOffset+w] += ADMM_PHO*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w]);
+							grad[nOffset+w] += ADMM_pho*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w]);
 						}
 					}
 				}else{
 					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
-						grad[nOffset+w] += ADMM_PHO*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
+						grad[nOffset+w] += ADMM_pho*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
 					}
 				}
 			}	
@@ -594,13 +594,13 @@ public class LOne extends Optimizer {
 						int pOffset = pid*dim;
 						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
 						for(int w=0; w<dim; w++){
-							nll += (ADMM_PHO/2)*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w])*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w]);
+							nll += (ADMM_pho/2)*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w])*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w]);
 						}
 					}
 				}else{
 					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
-						nll += (ADMM_PHO/2)*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w])*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
+						nll += (ADMM_pho/2)*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w])*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
 					}
 				}
 			}
