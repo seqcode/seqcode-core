@@ -24,8 +24,6 @@ public class LOne extends Optimizer {
 	
 	// Fixed ADMM parameters
 	
-	/** Augmented Lagrangian parameter rho */
-	public final double ADMM_PHO = 1.2; 
 	/** Relaxation parameter (to help faster convergence) */
 	public final double ADMM_ALPHA = 1.5;
 	/** Absolute feasibility tolerance for the primal and dual feasibility conditions */
@@ -41,7 +39,9 @@ public class LOne extends Optimizer {
 	// Tunable ADMM parameters
 	
 	/** The maximum number of allowed iterations for the ADMM algorithm */
-	public int ADMM_maxItr = 30; 
+	public int ADMM_maxItr = 30;
+	/** Augmented Lagrangian parameter rho */
+	public double ADMM_pho = 1.2; 
 	
 	// BGFS parameters 
 	
@@ -109,6 +109,7 @@ public class LOne extends Optimizer {
 	public void setNumNodes(int n){numNodes = n;}
 	public void setRidge(double r){regularization = r;}
 	public void setDebugMode(boolean debug){sm_Debug =debug;}
+	public void setPho(double ph){ADMM_pho = ph;}
 	
 	//gettors
 	public double[] getX(){return x;}
@@ -192,11 +193,25 @@ public class LOne extends Optimizer {
 				z[i] = xrel[i]+u[i];
 			}
 			
+			if(sm_Debug){
+				System.err.println("Current values of z before shrinkage : "+ (2*regularization)/ADMM_PHO);
+				for(int i=0; i<dim; i++){
+					System.err.println(z[i]);
+				}
+			}
+			
+			
 			// Z-update
 			double zmin = updateZ((2*regularization)/ADMM_PHO);
 			
-			if(sm_Debug)
-				//System.err.println("Xmin: "+xmin+"Zmin "+zmin);
+			
+			
+			if(sm_Debug){
+				System.err.println("Current values of z : "+ (2*regularization)/ADMM_PHO);
+				for(int i=0; i<dim; i++){
+					System.err.println(z[i]);
+				}
+			}
 			
 			//U-update
 			

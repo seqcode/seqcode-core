@@ -94,6 +94,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	
 	protected int m_ADMM_MaxIts = 1000;
 	
+	protected double m_ADMM_pho=100000;
+	
 	protected int m_SeqUnwinder_MaxIts = 10;
 	
 	// Setters
@@ -379,8 +381,10 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		opt.setInstanceWeights(weights);
 		opt.setNumClasses(m_NumClasses);
 		opt.setNumPredictors(m_NumPredictors);
-		if(opt instanceof LOne)
+		if(opt instanceof LOne){
 			((LOne) opt).initZandU();
+			((LOne) opt).setPho(m_ADMM_pho);
+		}
 		opt.setDebugMode(sm_Debug);
 		opt.execute();
 		m_Data = null;
@@ -668,6 +672,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	      "-C"));
 	    newVector.addElement(new Option("\tSet the ridge in the log-likelihood.",
 	      "R", 1, "-R <ridge>"));
+	    newVector.addElement(new Option("\t Pho dual co-efficient for ADMM.",
+	  	      "PHO", 1, "-PHO <default is 100000>"));
 	    newVector.addElement(new Option("\tSet the maximum number of iterations for the BGFS x-update"
 	      + " (default -1, until convergence).", "M", 1, "-M <number>"));
 	    newVector.addElement(new Option("\tSet the maximum number of iterations for the ADMM method"
@@ -709,6 +715,13 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    	m_ADMM_MaxIts = Integer.parseInt(AmaxItsString);
 	    } else {
 	    	m_ADMM_MaxIts = 1000;
+	    }
+	    
+	    String PhoString = Utils.getOption("PHO", options);
+	    if(PhoString.length() !=0){
+	    	m_ADMM_pho = Double.parseDouble(PhoString);
+	    }else{
+	    	m_ADMM_pho = 100000;
 	    }
 	    
 	    String SmaxItsString = Utils.getOption('S', options);
@@ -756,6 +769,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		Vector<String> options = new Vector<String>();
 
 	    options.add("-R");
+	    options.add("-PHO");
 	    options.add("" + m_Ridge);
 	    options.add("-M");
 	    options.add("" + m_BGFS_MaxIts);
