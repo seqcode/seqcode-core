@@ -94,7 +94,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	
 	protected int m_ADMM_MaxIts = 1000;
 	
-	protected double m_ADMM_pho=100000;
+	protected double m_ADMM_pho=0.001;
 	
 	protected int m_SeqUnwinder_MaxIts = 10;
 	
@@ -721,7 +721,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    if(PhoString.length() !=0){
 	    	m_ADMM_pho = Double.parseDouble(PhoString);
 	    }else{
-	    	m_ADMM_pho = 100000;
+	    	m_ADMM_pho = 0.001;
 	    }
 	    
 	    String SmaxItsString = Utils.getOption('S', options);

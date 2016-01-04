@@ -41,7 +41,7 @@ public class LOne extends Optimizer {
 	/** The maximum number of allowed iterations for the ADMM algorithm */
 	public int ADMM_maxItr = 30;
 	/** Augmented Lagrangian parameter rho */
-	public double ADMM_pho = 1.2; 
+	public double ADMM_pho = 0.001; 
 	
 	// BGFS parameters 
 	
@@ -163,6 +163,14 @@ public class LOne extends Optimizer {
 		int dim = numPredictors+1;
 		for(int itr=0; itr<ADMM_maxItr; itr++){
 			System.err.print(".");
+			
+			
+			// Update pho 
+			if(itr >0)
+				updatePhoAndU(itr-1);
+			
+			System.err.print(" "+ADMM_pho+" ");
+			
 			// Update x
 			double xmin = updateX();
 			
@@ -170,7 +178,7 @@ public class LOne extends Optimizer {
 			zold=z;
 			
 			// Calculate over-relaxed x:- xrel
-			double[] xrel = new double[z.length];
+			double[] xhat = new double[z.length];
 			for(Node n : classStructure.leafs){
 				int nOffset = n.nodeIndex*dim;
 				if(n.parents.size()>0){
@@ -178,66 +186,32 @@ public class LOne extends Optimizer {
 						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
 						int pOffset = pid*dim;
 						for(int w=0; w<dim; w++){
-							xrel[zOffset+w] = ADMM_ALPHA*(sm_x[nOffset+w])+(1-ADMM_ALPHA)*zold[zOffset+w]-ADMM_ALPHA*sm_x[pOffset+w]+u[zOffset+w];
+							xhat[zOffset+w] = ADMM_ALPHA*(sm_x[nOffset+w])+(1-ADMM_ALPHA)*zold[zOffset+w]-ADMM_ALPHA*sm_x[pOffset+w]+u[zOffset+w];
 						}
 					}
 				}else{
 					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 					for(int w=0; w<dim; w++){
 						//xrel[zOffset+w] = ADMM_ALPHA*sm_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w]+u[zOffset+w];
-						xrel[zOffset+w] = ADMM_ALPHA*sm_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w];
+						xhat[zOffset+w] = ADMM_ALPHA*sm_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w];
 					}
 				}
 			}
 			
 			for(int i=0; i<z.length;i++){
-				z[i] = xrel[i]+u[i];
+				z[i] = xhat[i]+u[i];
 			}
-			
-			if(sm_Debug){
-			//	System.err.println("Current values of z before shrinkage : "+ (2*regularization)/ADMM_pho);
-			//	for(int i=0; i<dim; i++){
-			//		System.err.println(z[i]);
-			//	}
-			}
-			
 			
 			// Z-update
 			double zmin = updateZ((2*regularization)/ADMM_pho);
 			
-			
-			
-			if(sm_Debug){
-			//	System.err.println("Current values of z : "+ (2*regularization)/ADMM_pho);
-			//	for(int i=0; i<dim; i++){
-			//		System.err.println(z[i]);
-			//	}
-			}
-			
 			//U-update
 			
 			for(int i=0; i<u.length; i++){
-				u[i] = u[i] + xrel[i] - z[i]; 
+				u[i] = u[i] + xhat[i] - z[i]; 
 			}
 			
-			//U-update
-			/*
-			for(Node n :classStructure.leafs){
-				if(n.parents.size() > 0){
-					for(int pid : n.parents){
-						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
-						for(int w=0; w<dim; w++){
-							u[zOffset+w] = xrel[zOffset+w] - z[zOffset+w];
-						}
-					}
-				}else{
-					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
-					for(int w=0; w<dim; w++){
-						u[zOffset+w] = xrel[zOffset+w] - z[zOffset+w];
-					}
-				}
-			}
-			*/
+			
 			// Check Convergence
 			boolean converged = hasADMMConverged(itr);
 			
@@ -250,6 +224,33 @@ public class LOne extends Optimizer {
 		
 	}
 	
+	
+	public void updatePhoAndU(int A_itr){
+		
+		double primal_residuals=0; // Sum of all the primal residuals
+		double dual_residuals=0; // Sum of all the dual residuals
+		
+		double mu = 10; // maintains the primal and dual residuals within a factor of mu of one another
+		double tao=2; // the factor by with pho will be increased or decreased at each iterations
+		
+		for(int i=0; i<(numNodes*numNodes); i++){
+			primal_residuals += history_primal[A_itr][i];
+			dual_residuals += history_dual[A_itr][i];
+		}
+		
+		if(primal_residuals > mu*dual_residuals){ // if primal residual are greater than dual by a factor of mu; decrease pho 
+			ADMM_pho = ADMM_pho*tao;
+			for(int i=0; i<u.length; i++){ // update u
+				u[i] = u[i]/tao;
+			}
+		}else if(dual_residuals > primal_residuals*tao){
+			ADMM_pho = ADMM_pho/tao;
+			for(int i=0; i<u.length; i++){ // update u
+				u[i] = u[i]*tao;
+			}
+		}
+		
+	}
 	
 	public boolean hasADMMConverged(int itr){
 		boolean converged = true;
@@ -266,7 +267,7 @@ public class LOne extends Optimizer {
 					double unorm = getL2NormU(n.nodeIndex, pid);
 					double cnorm = getL2NormX(pid);
 					primal_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.max(xnorm, Math.max(znorm, cnorm));
-					dual_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*unorm;
+					dual_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.sqrt(ADMM_pho)*unorm;
 					
 					double deltaZnorm = 0;
 					double primalResidualNorm = 0;
@@ -284,7 +285,7 @@ public class LOne extends Optimizer {
 				double znorm = getL2NormZ(n.nodeIndex, n.nodeIndex);
 				double unorm = getL2NormU(n.nodeIndex, n.nodeIndex);
 				primal_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.max(xnorm, znorm);
-				dual_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*unorm;
+				dual_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.sqrt(ADMM_pho)*unorm;
 				double deltaZnorm = 0;
 				double primalResidualNorm = 0;
 				int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
@@ -327,6 +328,7 @@ public class LOne extends Optimizer {
 		// Compute the found minimum value for the z-update step
 		// Sum over all the Znp update values
 		
+		/*
 		for(Node n : classStructure.leafs){
 			double znp=0;
 			if(n.parents.size() > 0){ // if the leaf node has parents
@@ -360,7 +362,7 @@ public class LOne extends Optimizer {
 			}
 			z_ret += znp;
 		}
-		
+		*/
 		return z_ret;
 	}
 	
