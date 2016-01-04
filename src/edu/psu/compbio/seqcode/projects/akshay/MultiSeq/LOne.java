@@ -162,6 +162,7 @@ public class LOne extends Optimizer {
 	public void executeADMM() throws Exception{
 		int dim = numPredictors+1;
 		for(int itr=0; itr<ADMM_maxItr; itr++){
+			System.err.print(".");
 			// Update x
 			double xmin = updateX();
 			
@@ -194,10 +195,10 @@ public class LOne extends Optimizer {
 			}
 			
 			if(sm_Debug){
-				System.err.println("Current values of z before shrinkage : "+ (2*regularization)/ADMM_pho);
-				for(int i=0; i<dim; i++){
-					System.err.println(z[i]);
-				}
+			//	System.err.println("Current values of z before shrinkage : "+ (2*regularization)/ADMM_pho);
+			//	for(int i=0; i<dim; i++){
+			//		System.err.println(z[i]);
+			//	}
 			}
 			
 			
@@ -207,10 +208,10 @@ public class LOne extends Optimizer {
 			
 			
 			if(sm_Debug){
-				System.err.println("Current values of z : "+ (2*regularization)/ADMM_pho);
-				for(int i=0; i<dim; i++){
-					System.err.println(z[i]);
-				}
+			//	System.err.println("Current values of z : "+ (2*regularization)/ADMM_pho);
+			//	for(int i=0; i<dim; i++){
+			//		System.err.println(z[i]);
+			//	}
 			}
 			
 			//U-update
@@ -241,7 +242,8 @@ public class LOne extends Optimizer {
 			boolean converged = hasADMMConverged(itr);
 			
 			if(converged){
-				System.err.println("ADMM has converged!!");
+				System.err.println();
+				System.err.println("ADMM has converged after "+itr+" iterations !!");
 				break;
 			}
 		}
