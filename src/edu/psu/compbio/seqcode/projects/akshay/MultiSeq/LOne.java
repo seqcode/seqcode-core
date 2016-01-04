@@ -243,7 +243,7 @@ public class LOne extends Optimizer {
 			for(int i=0; i<u.length; i++){ // update u
 				u[i] = u[i]/tao;
 			}
-		}else if(dual_residuals > primal_residuals*tao){
+		}else if(dual_residuals > primal_residuals*mu){
 			ADMM_pho = ADMM_pho/tao;
 			for(int i=0; i<u.length; i++){ // update u
 				u[i] = u[i]*tao;
