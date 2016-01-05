@@ -429,6 +429,15 @@ public class LOne extends Optimizer {
 			
 			LBFGS.lbfgs(x.length, m, x, obj, grad, false, diag, iprint, eps, xtol, iflag);
 		}
+		
+		// Now copy the leaf node weights (i.e x) to sm_x
+		for(Node n: classStructure.leafs){
+			int dim = numPredictors+1;
+			int nOffset = n.nodeIndex*dim;
+			for(int w=0; w<dim; w++){
+				sm_x[nOffset+w] = x[nOffset+w];
+			}
+		}
 	
 	}
 	
