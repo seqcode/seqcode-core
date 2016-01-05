@@ -172,7 +172,8 @@ public class LOne extends Optimizer {
 			System.err.print(" "+ADMM_pho+" ");
 			
 			// Update x
-			double xmin = updateX();
+			//double xmin = updateX();
+			updateApproxX();
 			
 			// Copy z to zold
 			zold=z;
@@ -404,6 +405,31 @@ public class LOne extends Optimizer {
 			}
 		}
 		return nll_ret;
+	}
+	
+	public void updateApproxX() throws Exception {
+		
+		OptObject oO = new OptObject();
+		
+		int[] iflag = new int[1];
+		double obj= oO.objectiveFunction(x);
+		double[] grad = oO.evaluateGradient(x);
+		int m = 5;
+		double[] diag = new double[x.length];
+		int[] iprint = new int[1];
+		double eps = 0.001;
+		double xtol = 10e-16;
+		
+		LBFGS.lbfgs(x.length, m, x, obj, grad, false, diag, iprint, eps, xtol, iflag);
+		
+		while(iflag[0] == 1 ){
+			//re-evaluate the objective and the gradient
+			obj = oO.objectiveFunction(x);
+			grad = oO.evaluateGradient(x);
+			
+			LBFGS.lbfgs(x.length, m, x, obj, grad, false, diag, iprint, eps, xtol, iflag);
+		}
+	
 	}
 	
 	
