@@ -416,7 +416,7 @@ public class LOne extends Optimizer {
 		double[] grad = oO.evaluateGradient(x);
 		int m = 5;
 		double[] diag = new double[x.length];
-		int[] iprint = new int[1];
+		int[] iprint = new int[2];
 		double eps = 0.001;
 		double xtol = 10e-16;
 		
