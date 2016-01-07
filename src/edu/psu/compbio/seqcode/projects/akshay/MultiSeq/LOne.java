@@ -234,6 +234,19 @@ public class LOne extends Optimizer {
 			// Check Convergence
 			boolean converged = hasADMMConverged(itr);
 			
+			// Print the prinal and dual residuals
+			
+			if(sm_Debug){
+				double primal = 0.0;
+				double dual = 0.0;
+				for(int i=0; i<(numNodes*numNodes); i++){
+					primal += history_primal[itr][i];
+					dual += history_dual[itr][i];
+				}
+				System.err.println("Primal residual "+ primal + " , Dual residual "+ dual);
+			}
+						
+			
 			if(converged){
 				System.err.println();
 				System.err.println("ADMM has converged after "+itr+" iterations !!");
