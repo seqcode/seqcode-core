@@ -739,7 +739,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	     sm_NumLayers = Integer.parseInt(numLayerString);
 	     
 	    String Type = Utils.getOption("TY", options);
-	    if (SmaxItsString.length() != 0) {
+	    if (Type.length() != 0) {
 	    	m_OptimizationType = Type;
 	    }else{
 	    	m_OptimizationType = "L1";
@@ -769,8 +769,9 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		Vector<String> options = new Vector<String>();
 
 	    options.add("-R");
-	    options.add("-PHO");
 	    options.add("" + m_Ridge);
+	    options.add("-PHO");
+	    options.add("" + m_ADMM_pho);
 	    options.add("-M");
 	    options.add("" + m_BGFS_MaxIts);
 	    options.add("-A");
@@ -778,9 +779,13 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    options.add("-S");
 	    options.add("" + m_SeqUnwinder_MaxIts);
 	    options.add("-CLS");
+	    options.add(""+ " ");
 	    options.add("-NL");
+	    options.add("" + 3);
 	    options.add("-TY");
+	    options.add("" + m_OptimizationType);
 	    options.add("-DEBUG");
+	    options.add("" + sm_Debug);
 
 	    Collections.addAll(options, super.getOptions());
 
