@@ -61,6 +61,8 @@ public class LOne extends Optimizer {
 	protected double regularization;
 	/** Maximum number of iterations to update internal nodes. For small number of node levels (usually 3 to 4), we might need very few iterations*/
 	protected int NODES_maxItr=10;
+	/** Internal flag that indicated if ADMM has been run before */
+	protected boolean ranADMM=false;
 	
 	// SeqUnwinder and ADMM variables
 	
@@ -138,6 +140,9 @@ public class LOne extends Optimizer {
 	public void execute() throws Exception{
 		
 		for(int it=0; it<NODES_maxItr; it++){
+			
+			double[] sm_x_old = sm_x;
+			
 			// First, run admm on leaf nodes
 			executeADMM();
 			
@@ -147,7 +152,12 @@ public class LOne extends Optimizer {
 			// Check Convergence
 			boolean converged = true;
 			for(Node n : classStructure.allNodes.values()){
-				if( getL2NormX(n.nodeIndex) > Math.sqrt(numPredictors)*NODES_tol){
+				double diff = 0.0;
+				for(int w=0; w<(numPredictors+1); w++){
+					diff += Math.pow(sm_x_old[n.nodeIndex*(numPredictors+1)+w]-sm_x[n.nodeIndex*(numPredictors+1)+w],2);
+				}
+				diff = Math.sqrt(diff);
+				if( diff > Math.sqrt(numPredictors)*NODES_tol){
 					converged=false;
 					break;
 				}
@@ -166,7 +176,7 @@ public class LOne extends Optimizer {
 			
 			
 			// Update pho 
-			if(itr >0)
+			if(itr >0 && !ranADMM)
 				updatePhoAndU(itr-1);
 			
 			System.err.print(" "+ADMM_pho+" ");
@@ -219,9 +229,11 @@ public class LOne extends Optimizer {
 			if(converged){
 				System.err.println();
 				System.err.println("ADMM has converged after "+itr+" iterations !!");
+				ranADMM=true;
 				break;
 			}
 		}
+		ranADMM = true;
 		
 	}
 	
@@ -449,14 +461,12 @@ public class LOne extends Optimizer {
 		// First update odd layaer nodes
 		for(int l=1; l<classStructure.numLayers; l+=2){
 			for(Node n : classStructure.layers.get(l)){// Get nodes in this layer
-				if(n.parents.size() > 0)
 					updateNode(n);
 			}
 		}
 		// Now update even layer nodes except the leaf node
 		for(int l=2; l<classStructure.numLayers; l+=2){
 			for(Node n : classStructure.layers.get(l)){// Get nodes in this layer
-				if(n.parents.size() > 0)
 					updateNode(n);
 			}
 		}
@@ -465,7 +475,8 @@ public class LOne extends Optimizer {
 	private void updateNode(Node n){
 		int dim = numPredictors+1;
 		int nOffset = n.nodeIndex*dim;
-		for(int w=0; w<dim; w++){
+		// Note the intercept term not included
+		for(int w=1; w<dim; w++){
 			List<Double> xs = new ArrayList<Double>();
 			for(int pid : n.parents){
 				xs.add(sm_x[pid*dim+w]);
@@ -576,13 +587,13 @@ public class LOne extends Optimizer {
 					for(int pid : n.parents){
 						int pOffset = pid*dim;
 						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
-						for(int w=0; w<dim; w++){
+						for(int w=1; w<dim; w++){
 							grad[nOffset+w] += ADMM_pho*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w]);
 						}
 					}
 				}else{
 					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
-					for(int w=0; w<dim; w++){
+					for(int w=1; w<dim; w++){
 						grad[nOffset+w] += ADMM_pho*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
 					}
 				}
@@ -632,13 +643,13 @@ public class LOne extends Optimizer {
 					for(int pid : n.parents){
 						int pOffset = pid*dim;
 						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
-						for(int w=0; w<dim; w++){
+						for(int w=1; w<dim; w++){
 							nll += (ADMM_pho/2)*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w])*(x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+u[zOffset+w]);
 						}
 					}
 				}else{
 					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
-					for(int w=0; w<dim; w++){
+					for(int w=1; w<dim; w++){
 						nll += (ADMM_pho/2)*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w])*(x[nOffset+w]-z[zOffset+w]+u[zOffset+w]);
 					}
 				}
