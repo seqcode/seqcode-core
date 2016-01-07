@@ -120,7 +120,7 @@ public class LBFGS {
          * scaled (in which case the exponent should be increased).
          */
 
-        public static double stpmin = 1e-20;
+        public static double stpmin = 1e-5;
 
         /**
          * Specify upper bound for the step in the line search. The default value is

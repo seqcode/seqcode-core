@@ -34,7 +34,7 @@ public class LOne extends Optimizer {
 	// Fixed SeqUnwinder parameters
 	
 	/** Tolerence for internal Nodes convergence */
-	public final double NODES_tol = 1E-5;
+	public final double NODES_tol = 1E-4;
 	
 	// Tunable ADMM parameters
 	
@@ -43,7 +43,7 @@ public class LOne extends Optimizer {
 	/** Augmented Lagrangian parameter rho */
 	public double ADMM_pho = 0.001; 
 	/** The maximum allowed value for pho */
-	public double ADMM_pho_max = 100;
+	public double ADMM_pho_max = 100000000;
 	
 	// BGFS parameters 
 	
@@ -143,7 +143,11 @@ public class LOne extends Optimizer {
 		
 		for(int it=0; it<NODES_maxItr; it++){
 			
-			double[] sm_x_old = sm_x;
+			double[] sm_x_old = new double[sm_x.length];
+			
+			for(int i=0; i<sm_x.length; i++){
+				sm_x_old[i] = sm_x[i];
+			}
 			
 			// First, run admm on leaf nodes
 			executeADMM();
@@ -188,7 +192,9 @@ public class LOne extends Optimizer {
 			updateApproxX();
 			
 			// Copy z to zold
-			zold=z;
+			for(int i=0; i<z.length; i++){
+				zold[i] = z[i];
+			}
 			
 			// Calculate over-relaxed x:- xrel
 			double[] xhat = new double[z.length];
@@ -419,7 +425,7 @@ public class LOne extends Optimizer {
 			for(int w=0; w<dim; w++){
 				sm_x[nOffset+w] = x[nOffset+w];
 			}
-		}
+		} 
 		return nll_ret;
 	}
 	
