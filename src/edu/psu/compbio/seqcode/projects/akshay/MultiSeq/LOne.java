@@ -34,7 +34,7 @@ public class LOne extends Optimizer {
 	// Fixed SeqUnwinder parameters
 	
 	/** Tolerence for internal Nodes convergence */
-	public final double NODES_tol = 1E-2;
+	public final double NODES_tol = 1E-5;
 	
 	// Tunable ADMM parameters
 	
@@ -42,6 +42,8 @@ public class LOne extends Optimizer {
 	public int ADMM_maxItr = 30;
 	/** Augmented Lagrangian parameter rho */
 	public double ADMM_pho = 0.001; 
+	/** The maximum allowed value for pho */
+	public double ADMM_pho_max = 100;
 	
 	// BGFS parameters 
 	
@@ -176,7 +178,7 @@ public class LOne extends Optimizer {
 			
 			
 			// Update pho 
-			if(itr >0 && !ranADMM)
+			if(itr >0 && !ranADMM && ADMM_pho < ADMM_pho_max)
 				updatePhoAndU(itr-1);
 			
 			System.err.print(" "+ADMM_pho+" ");
@@ -252,9 +254,11 @@ public class LOne extends Optimizer {
 		}
 		
 		if(primal_residuals > mu*dual_residuals){ // if primal residual are greater than dual by a factor of mu; decrease pho 
-			ADMM_pho = ADMM_pho*tao;
+			double old_pho = ADMM_pho;
+			ADMM_pho = Math.min(ADMM_pho_max,ADMM_pho*tao);
+			double fold =  ADMM_pho/old_pho;
 			for(int i=0; i<u.length; i++){ // update u
-				u[i] = u[i]/tao;
+				u[i] = u[i]/fold;
 			}
 		}else if(dual_residuals > primal_residuals*mu){
 			ADMM_pho = ADMM_pho/tao;
