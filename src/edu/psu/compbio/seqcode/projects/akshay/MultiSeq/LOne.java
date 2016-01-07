@@ -25,7 +25,7 @@ public class LOne extends Optimizer {
 	// Fixed ADMM parameters
 	
 	/** Relaxation parameter (to help faster convergence) */
-	public final double ADMM_ALPHA = 1.5;
+	public final double ADMM_ALPHA = 1.9;
 	/** Absolute feasibility tolerance for the primal and dual feasibility conditions */
 	public final double ADMM_ABSTOL = 1E-4; 
 	/** Relative  feasibility tolerance for the primal and dual feasibility conditions */
@@ -178,7 +178,7 @@ public class LOne extends Optimizer {
 	public void executeADMM() throws Exception{
 		int dim = numPredictors+1;
 		for(int itr=0; itr<ADMM_maxItr; itr++){
-			System.err.print(".");
+			System.err.print(". "+ itr + " .");
 			
 			
 			// Update pho 
@@ -205,7 +205,7 @@ public class LOne extends Optimizer {
 						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
 						int pOffset = pid*dim;
 						for(int w=0; w<dim; w++){
-							xhat[zOffset+w] = ADMM_ALPHA*(sm_x[nOffset+w])+(1-ADMM_ALPHA)*zold[zOffset+w]-ADMM_ALPHA*sm_x[pOffset+w]+u[zOffset+w];
+							xhat[zOffset+w] = ADMM_ALPHA*(sm_x[nOffset+w])+(1-ADMM_ALPHA)*zold[zOffset+w]-ADMM_ALPHA*sm_x[pOffset+w];
 						}
 					}
 				}else{
