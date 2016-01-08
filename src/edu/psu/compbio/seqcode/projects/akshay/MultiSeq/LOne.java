@@ -163,14 +163,20 @@ public class LOne extends Optimizer {
 					diff += Math.pow(sm_x_old[n.nodeIndex*(numPredictors+1)+w]-sm_x[n.nodeIndex*(numPredictors+1)+w],2);
 				}
 				diff = Math.sqrt(diff);
+				if(sm_Debug)
+					System.err.println("Hierarchy update diff: Node: "+n.nodeIndex + " diff is: "+  diff);
 				if( diff > Math.sqrt(numPredictors)*NODES_tol){
 					converged=false;
 					break;
 				}
 			}
 			
-			if(converged)
+			if(converged){
+				System.err.println();
+				System.err.println("SeqUnwinder has converged after "+it+1+" iterations !!");
 				break;
+			}
+				
 		}
 		
 	}
@@ -178,14 +184,15 @@ public class LOne extends Optimizer {
 	public void executeADMM() throws Exception{
 		int dim = numPredictors+1;
 		for(int itr=0; itr<ADMM_maxItr; itr++){
-			System.err.print(". "+ itr + " .");
+			if(sm_Debug)
+				System.err.print(". "+ itr + " .");
 			
 			
 			// Update pho 
 			if(itr >0 && !ranADMM && ADMM_pho < ADMM_pho_max)
 				updatePhoAndU(itr-1);
-			
-			System.err.print(" "+ADMM_pho+" ");
+			if(sm_Debug)
+				System.err.print(" "+ADMM_pho+" ");
 			
 			// Update x
 			//double xmin = updateX();
@@ -249,7 +256,7 @@ public class LOne extends Optimizer {
 			
 			if(converged){
 				System.err.println();
-				System.err.println("ADMM has converged after "+itr+" iterations !!");
+				System.err.println("ADMM has converged after "+itr+1+" iterations !!");
 				ranADMM=true;
 				break;
 			}
@@ -508,8 +515,9 @@ public class LOne extends Optimizer {
 				xs.add(sm_x[cid*dim+w]);
 			}
 			Collections.sort(xs);
-			int midInd = xs.size()/2;
-			sm_x[nOffset+w] = xs.get(midInd);
+			sm_x[nOffset+w] = (xs.size() % 2 == 0) ? (xs.get(xs.size()/2) + xs.get((xs.size()/2)-1))/2 : xs.get(xs.size()/2);
+		//	int midInd = xs.size()/2;
+		//	sm_x[nOffset+w] = xs.get(midInd);
 		}
 	}
 	
