@@ -86,14 +86,15 @@ public class ChIPexoQC {
 		for(ExperimentCondition exptCond: manager.getConditions()){
 			for(ControlledExperiment rep : exptCond.getReplicates()){
 				
-				writer.println("#"+rep.getCondition());
+				writer.println("#"+rep.getRepName());
 				
 				List<Float> signalSampCounts = new ArrayList<Float>();
 				List<Float> controlSampCounts = new ArrayList<Float>();
 				signalSampCounts = sampleWindowCounts.get(rep.getSignal());
 				controlSampCounts = sampleWindowCounts.get(rep.getControl());
 				for (int i = 0; i < signalSampCounts.size(); i ++){
-					writer.println(signalSampCounts.get(i)+":"+controlSampCounts.get(i));				
+					if (signalSampCounts.get(i)+controlSampCounts.get(i)>0)
+						writer.println(signalSampCounts.get(i)+":"+controlSampCounts.get(i));				
 				}
 			}
 		}
