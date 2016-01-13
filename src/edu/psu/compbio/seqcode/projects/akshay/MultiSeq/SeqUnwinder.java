@@ -96,6 +96,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	
 	protected double m_ADMM_pho=0.001;
 	
+	protected int m_ADMM_numThreads = 5;
+	
 	protected int m_SeqUnwinder_MaxIts = 10;
 	
 	// Setters
@@ -366,13 +368,13 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		Optimizer opt = null;
 
 		if(m_OptimizationType.equals("L1"))
-			opt = new LOne(x,sm_x,m_Data,b);
+			opt = new LOneTh(x,sm_x,m_Data);
 		else
 			opt = new LTwo(x,sm_x,m_Data,b);
 
 		opt.setRidge(m_Ridge);
-		if(opt instanceof LOne){
-			((LOne) opt).setADMMmaxItrs(m_ADMM_MaxIts);
+		if(opt instanceof LOneTh){
+			((LOneTh) opt).setADMMmaxItrs(m_ADMM_MaxIts);
 		}
 		opt.setBGFSmaxItrs(m_BGFS_MaxIts);
 		opt.setSeqUnwinderMaxIts(m_SeqUnwinder_MaxIts);
@@ -381,9 +383,9 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		opt.setInstanceWeights(weights);
 		opt.setNumClasses(m_NumClasses);
 		opt.setNumPredictors(m_NumPredictors);
-		if(opt instanceof LOne){
-			((LOne) opt).initZandU();
-			((LOne) opt).setPho(m_ADMM_pho);
+		if(opt instanceof LOneTh){
+			((LOneTh) opt).setPho(m_ADMM_pho);
+			((LOneTh) opt).set_numThreads(m_ADMM_numThreads);
 		}
 		opt.setDebugMode(sm_Debug);
 		opt.execute();
@@ -673,13 +675,15 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    newVector.addElement(new Option("\tSet the ridge in the log-likelihood.",
 	      "R", 1, "-R <ridge>"));
 	    newVector.addElement(new Option("\t Pho dual co-efficient for ADMM.",
-	  	      "PHO", 1, "-PHO <default is 100000>"));
+	  	      "PHO", 1, "-PHO <default is 0.0001>"));
 	    newVector.addElement(new Option("\tSet the maximum number of iterations for the BGFS x-update"
 	      + " (default -1, until convergence).", "M", 1, "-M <number>"));
 	    newVector.addElement(new Option("\tSet the maximum number of iterations for the ADMM method"
 	  	      + " (default 1000).", "A", 1, "-A <number>"));
 	    newVector.addElement(new Option("\tSet the maximum number of iterations for SeqUwinder"
 		  	      + " (default 10).", "S", 1, "-S <number>"));
+	    newVector.addElement(new Option("\tSet the number of threads to run ADMM part in SeqUnwinder"
+		  	      + " (default 5).", "threads", 1, "-threads <number>"));
 	    newVector.addElement(new Option("\tProvide the class structure file for the multiclasses","CLS",0,"-CLS <File name>"));
 	    newVector.addElement(new Option("\tProvide the number of layers in the class structur","NL",0,"-NL <Num of Layers>"));
 	    newVector.addElement(new Option("\tL1 or L2 norm Logit model","TY",0,"-TY <L1 or L2>"));
@@ -701,6 +705,11 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	      m_Ridge = Double.parseDouble(ridgeString);
 	    } else {
 	      m_Ridge = 1.0e-8;
+	    }
+	    
+	    String threadString = Utils.getOption("threads", options);
+	    if(threadString.length() != 0){
+	    	m_ADMM_numThreads = Integer.parseInt(threadString);
 	    }
 
 	    String maxItsString = Utils.getOption('M', options);
@@ -786,6 +795,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	    options.add("" + m_OptimizationType);
 	    options.add("-DEBUG");
 	    options.add("" + sm_Debug);
+	    options.add("-threads");
+	    options.add("" + m_ADMM_numThreads);
 
 	    Collections.addAll(options, super.getOptions());
 

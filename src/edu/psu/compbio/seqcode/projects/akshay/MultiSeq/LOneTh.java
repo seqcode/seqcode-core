@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import weka.core.Optimization;
 import weka.core.RevisionUtils;
@@ -12,7 +13,7 @@ import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LBFGS.ExceptionWithIflag
 import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelationStructure;
 import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelationStructure.Node;
 
-public class LOneTh {
+public class LOneTh extends Optimizer {
 	// Fixed ADMM parameters
 	
 		/** Relaxation parameter (to help faster convergence) */
@@ -32,9 +33,12 @@ public class LOneTh {
 		/** The maximum number of allowed iterations for the ADMM algorithm */
 		public int ADMM_maxItr = 30;
 		/** Augmented Lagrangian parameter rho */
-		public double ADMM_pho = 0.001; 
+		public double ADMM_pho = 0.001;
+		public double ADMM_pho_fold = 1.0;
 		/** The maximum allowed value for pho */
 		public double ADMM_pho_max = 100000000;
+		/** Number of threads to run ADMM on */
+		public int ADMM_numThreads = 5;
 		
 		// BGFS parameters 
 		
@@ -63,19 +67,6 @@ public class LOneTh {
 		public double[] sm_x;
 		/** Current feature weights for all the leaf nodes (classes) in the SeqUnwinder (also contains the intercept term). Dimension :- (numPredictors+1)*numClasses */
 		public double[] x; 
-		/** Current values of z (z-step in ADMM). Dimension :- (numPredictors+1)*numNodes*numNodes */
-		public double[] z; // for the Z-step
-		/** Value of z at previous iteration. Needed to assess convergence  Dimension :- (numPredictors+1)*numNodes*numNodes */
-		public double[] zold;
-		/** Current values of the augmented lagrange dual variables. Dimension :- (numPredictors+1)*numNodes*numNodes  */
-		public double[] u;
-		/** Stores the primal residuals over the course of the ADMM algorithm Dimension:- [ADMM_maxItr][numNodes*numNodes] */
-		public double[][] history_primal;
-		/** Stores the dual residuals over the course of the ADMM algorithm Dimension:- [ADMM_maxItr][numNodes*numNodes] */
-		public double[][] history_dual;
-		/** Boundry conditions needed for the the newton's method. However, null in this case */
-		public double[][] b;
-		
 		
 		// SeqUnwinder training data
 		
@@ -105,29 +96,16 @@ public class LOneTh {
 		public void setRidge(double r){regularization = r;}
 		public void setDebugMode(boolean debug){sm_Debug =debug;}
 		public void setPho(double ph){ADMM_pho = ph;}
+		public void set_numThreads(int nt){ADMM_numThreads = nt;}
 		
 		//gettors
 		public double[] getX(){return x;}
-		public double[] getZ(){return z;}
-		public double[] getU(){return u;}
 		public double[] getsmX(){return sm_x;}
 		
-		
-		// Initialize
-		public void initZandU(){
-			int dim = numPredictors+1;
-			z= new double[numNodes*numNodes*dim];
-			zold = new double[numNodes*numNodes*dim];
-			u= new double[numNodes*numNodes*dim];
-			history_primal = new double[ADMM_maxItr][numNodes*numNodes];
-			history_dual = new double[ADMM_maxItr][numNodes*numNodes];
-		}
-		
-		public LOneTh(double[] xinit, double[] sm_xinit, double[][] d, double[][] bc) {
+		public LOneTh(double[] xinit, double[] sm_xinit, double[][] d) {
 			x = xinit;
 			sm_x = sm_xinit;
 			data=d;
-			b=bc;
 		}
 		
 		public void execute() throws Exception{
@@ -141,7 +119,8 @@ public class LOneTh {
 				}
 				
 				// First, run admm on leaf nodes
-				executeADMM();
+				ADMMrunner admm = new ADMMrunner();
+				admm.execute();
 				
 				// Now update the internal nodes
 				updateInternalNodes();
@@ -171,310 +150,6 @@ public class LOneTh {
 			}
 			
 		}
-		
-		public void executeADMM() throws Exception{
-			int dim = numPredictors+1;
-			for(int itr=0; itr<ADMM_maxItr; itr++){
-				if(sm_Debug)
-					System.err.print(". "+ itr + " .");
-				
-				
-				// Update pho 
-				if(itr >0 && !ranADMM && ADMM_pho < ADMM_pho_max)
-					updatePhoAndU(itr-1);
-				if(sm_Debug)
-					System.err.print(" "+ADMM_pho+" ");
-				
-				// Update x
-				//double xmin = updateX();
-				updateApproxX();
-				
-				// Copy z to zold
-				for(int i=0; i<z.length; i++){
-					zold[i] = z[i];
-				}
-				
-				// Calculate over-relaxed x:- xrel
-				double[] xhat = new double[z.length];
-				for(Node n : classStructure.leafs){
-					int nOffset = n.nodeIndex*dim;
-					if(n.parents.size()>0){
-						for(int pid : n.parents){
-							int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
-							int pOffset = pid*dim;
-							for(int w=0; w<dim; w++){
-								xhat[zOffset+w] = ADMM_ALPHA*(sm_x[nOffset+w])+(1-ADMM_ALPHA)*zold[zOffset+w]-ADMM_ALPHA*sm_x[pOffset+w];
-							}
-						}
-					}else{
-						int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
-						for(int w=0; w<dim; w++){
-							//xrel[zOffset+w] = ADMM_ALPHA*sm_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w]+u[zOffset+w];
-							xhat[zOffset+w] = ADMM_ALPHA*sm_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w];
-						}
-					}
-				}
-				
-				for(int i=0; i<z.length;i++){
-					z[i] = xhat[i]+u[i];
-				}
-				
-				// Z-update
-				double zmin = updateZ((2*regularization)/ADMM_pho);
-				
-				//U-update
-				
-				for(int i=0; i<u.length; i++){
-					u[i] = u[i] + xhat[i] - z[i]; 
-				}
-				
-				
-				// Check Convergence
-				boolean converged = hasADMMConverged(itr);
-				
-				// Print the prinal and dual residuals
-				
-				if(sm_Debug){
-					double primal = 0.0;
-					double dual = 0.0;
-					for(int i=0; i<(numNodes*numNodes); i++){
-						primal += history_primal[itr][i];
-						dual += history_dual[itr][i];
-					}
-					System.err.println("Primal residual "+ primal + " , Dual residual "+ dual);
-				}
-							
-				
-				if(converged){
-					System.err.println();
-					System.err.println("ADMM has converged after "+itr+1+" iterations !!");
-					ranADMM=true;
-					break;
-				}
-			}
-			ranADMM = true;
-			
-		}
-		
-		
-		public void updatePhoAndU(int A_itr){
-			
-			double primal_residuals=0; // Sum of all the primal residuals
-			double dual_residuals=0; // Sum of all the dual residuals
-			
-			double mu = 10; // maintains the primal and dual residuals within a factor of mu of one another
-			double tao=2; // the factor by with pho will be increased or decreased at each iterations
-			
-			for(int i=0; i<(numNodes*numNodes); i++){
-				primal_residuals += history_primal[A_itr][i];
-				dual_residuals += history_dual[A_itr][i];
-			}
-			
-			if(primal_residuals > mu*dual_residuals){ // if primal residual are greater than dual by a factor of mu; decrease pho 
-				double old_pho = ADMM_pho;
-				ADMM_pho = Math.min(ADMM_pho_max,ADMM_pho*tao);
-				double fold =  ADMM_pho/old_pho;
-				for(int i=0; i<u.length; i++){ // update u
-					u[i] = u[i]/fold;
-				}
-			}else if(dual_residuals > primal_residuals*mu){
-				ADMM_pho = ADMM_pho/tao;
-				for(int i=0; i<u.length; i++){ // update u
-					u[i] = u[i]*tao;
-				}
-			}
-			
-		}
-		
-		public boolean hasADMMConverged(int itr){
-			boolean converged = true;
-			int dim = numPredictors + 1;
-			
-			double[] primal_tol = new double[numNodes*numNodes];
-			double[] dual_tol = new double[numNodes*numNodes];
-			
-			for(Node n : classStructure.leafs){
-				double xnorm = getL2NormX(n.nodeIndex);
-				if(n.parents.size() > 0){ // If this node has parents
-					for(int pid : n.parents){ // Over all the parents of this node
-						double znorm = getL2NormZ(n.nodeIndex, pid);
-						double unorm = getL2NormU(n.nodeIndex, pid);
-						double cnorm = getL2NormX(pid);
-						primal_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.max(xnorm, Math.max(znorm, cnorm));
-						dual_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.sqrt(ADMM_pho)*unorm;
-						
-						double deltaZnorm = 0;
-						double primalResidualNorm = 0;
-						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
-						for(int w=0; w<dim; w++){
-							deltaZnorm += Math.pow(ADMM_pho*(z[zOffset+w] - zold[zOffset+w]), 2);
-							primalResidualNorm += Math.pow((sm_x[n.nodeIndex*dim+w]-z[zOffset+w]-sm_x[pid*dim+w]),2);
-						}
-						deltaZnorm = Math.sqrt(deltaZnorm);
-						primalResidualNorm = Math.sqrt(primalResidualNorm);
-						history_primal[itr][n.nodeIndex*numNodes+pid] = primalResidualNorm;
-						history_dual[itr][n.nodeIndex*numNodes+pid] = deltaZnorm;
-					}
-				}else{
-					double znorm = getL2NormZ(n.nodeIndex, n.nodeIndex);
-					double unorm = getL2NormU(n.nodeIndex, n.nodeIndex);
-					primal_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.max(xnorm, znorm);
-					dual_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + ADMM_RELTOL*Math.sqrt(ADMM_pho)*unorm;
-					double deltaZnorm = 0;
-					double primalResidualNorm = 0;
-					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
-					for(int w=0; w<dim; w++){
-						deltaZnorm += Math.pow(ADMM_pho*(z[zOffset+w] - zold[zOffset+w]), 2);
-						primalResidualNorm += Math.pow((sm_x[n.nodeIndex*dim+w]-z[zOffset+w]),2);
-					}
-					deltaZnorm = Math.sqrt(deltaZnorm);
-					primalResidualNorm = Math.sqrt(primalResidualNorm);
-					history_primal[itr][n.nodeIndex*numNodes+n.nodeIndex] = primalResidualNorm;
-					history_dual[itr][n.nodeIndex*numNodes+n.nodeIndex] = deltaZnorm;
-				}
-			}
-			
-			for(int i=0; i<primal_tol.length; i++){
-				if(history_primal[itr][i] > primal_tol[i])
-					converged=false;
-				if(history_dual[itr][i] > dual_tol[i])
-					converged=false;
-				if(!converged)
-					break;
-			}
-			
-			return converged;
-		}
-		
-		
-		
-		public double updateZ(double pho){
-			
-			int dim = numPredictors+1;
-			
-			double z_ret=0;
-			
-			for(int i=0; i<z.length; i++){
-				z[i] = z[i] - Math.signum(z[i])*Math.min(pho, Math.abs(z[i]));
-				//z[i] = Math.max(0, xrel[i]-pho) - Math.max(0, -xrel[i] - pho);
-			}
-			
-			// Compute the found minimum value for the z-update step
-			// Sum over all the Znp update values
-			
-			/*
-			for(Node n : classStructure.leafs){
-				double znp=0;
-				if(n.parents.size() > 0){ // if the leaf node has parents
-					for(int pid : n.parents){ // over all the parents of the current node
-						// First part, one-norm part
-						double firstPart = 0;
-						int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
-						for(int w=0; w<dim; w++){
-							firstPart += regularization*Math.abs(z[zOffset+w]);
-						}
-						double secondPart = 0;
-						int nOffset = n.nodeIndex*dim;
-						int pOffset = pid*dim;
-						for(int w=0; w<dim; w++){
-							secondPart += (ADMM_pho/2)*Math.pow(sm_x[nOffset+w]-z[zOffset+w]-sm_x[pOffset+w]+u[zOffset+w], 2);
-						}
-						znp = firstPart + secondPart;
-					}
-				}else{ // if the lead node has no parents
-					double firstPart = 0;
-					int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
-					int nOffset = n.nodeIndex*dim;
-					for(int w=0; w<dim; w++){
-						firstPart += regularization+Math.abs(z[zOffset+w]);
-					}
-					double secondPart = 0;
-					for(int w=0; w<dim; w++){
-						secondPart += (ADMM_pho/2)*Math.pow(sm_x[nOffset+w]-z[zOffset+w]+u[zOffset+w], 2);
-					}
-					znp = firstPart + secondPart;
-				}
-				z_ret += znp;
-			}
-			*/
-			return z_ret;
-		}
-		
-		/**
-		 * 
-		 * @return the current value of the function that is minimized during the x-update 
-		 * @throws Exception
-		 */
-		public double updateX() throws Exception{
-			
-			double nll_ret = 0;
-			
-			// First, create and opt object for the BGFS algorithm
-			OptObject oO = new OptObject();
-			Optimization opt = new OptEng(oO);
-			
-			if(BGFS_maxIts == -1){ // Search until convergence
-				x = opt.findArgmin(x, b);
-				while (x == null) {
-					x = opt.getVarbValues();
-					x = opt.findArgmin(x, b);
-				}
-				nll_ret = opt.getMinFunction();
-			}else{
-				opt.setMaxIteration(BGFS_maxIts);
-				x = opt.findArgmin(x, b);
-				if (x == null) {
-					x = opt.getVarbValues();
-				}
-				nll_ret = opt.getMinFunction();
-			}
-				
-			// Now copy the leaf node weights (i.e x) to sm_x
-			for(Node n: classStructure.leafs){
-				int dim = numPredictors+1;
-				int nOffset = n.nodeIndex*dim;
-				for(int w=0; w<dim; w++){
-					sm_x[nOffset+w] = x[nOffset+w];
-				}
-			} 
-			return nll_ret;
-		}
-		
-		public void updateApproxX() throws Exception {
-			
-			OptObject oO = new OptObject();
-			
-			int[] iflag = new int[1];
-			double obj= oO.objectiveFunction(x);
-			double[] grad = oO.evaluateGradient(x);
-			int m = 5;
-			double[] diag = new double[x.length];
-			int[] iprint = new int[2];
-			double eps = 0.001;
-			double xtol = 10e-16;
-			
-			LBFGS.lbfgs(x.length, m, x, obj, grad, false, diag, iprint, eps, xtol, iflag);
-			
-			while(iflag[0] == 1 ){
-				//re-evaluate the objective and the gradient
-				obj = oO.objectiveFunction(x);
-				grad = oO.evaluateGradient(x);
-				
-				LBFGS.lbfgs(x.length, m, x, obj, grad, false, diag, iprint, eps, xtol, iflag);
-			}
-			
-			// Now copy the leaf node weights (i.e x) to sm_x
-			for(Node n: classStructure.leafs){
-				int dim = numPredictors+1;
-				int nOffset = n.nodeIndex*dim;
-				for(int w=0; w<dim; w++){
-					sm_x[nOffset+w] = x[nOffset+w];
-				}
-			}
-		
-		}
-		
-		
 		
 		// Slave methods
 		
@@ -522,241 +197,463 @@ public class LOneTh {
 			return Math.sqrt(norm);
 		}
 		
-		private double getL2NormZ(int nInd, int pInd){
-			double norm=0;
-			int dim = numPredictors+1;
-			int zOffset = (nInd*numNodes*dim)+(pInd*dim);
-			for(int w=0; w<dim; w++){
-				norm += Math.pow(z[zOffset+w], 2);
-			}
-			return Math.sqrt(norm);
-		}
-		
-		private double getL2NormU(int nInd, int pInd){
-			double norm=0;
-			int dim = numPredictors+1;
-			int uOffset = (nInd*numNodes*dim)+(pInd*dim);
-			for(int w=0; w<dim; w++){
-				norm += Math.pow(u[uOffset+w], 2);
-			}
-			return Math.sqrt(norm);
-		}
 		
 		
-		/**
-		 * This class implements two things:-
-		 * It calculates the gradient for the x-update sub-problem. (The BGFS method will need this)
-		 * It calculates the overall objective function for the x-update subproblem. (The BGFS method will need this)
-		 * @author akshaykakumanu
-		 *
-		 */
-		public class OptObject {
-			
-			public double[][] o_Data;
-			public double[] o_weights;
-			public double[] o_u;
-			
-			
-			/**
-			 * Claclulates the gradient
-			 * @param currx
-			 * @return
-			 */
-			public double[] evaluateGradient(double[] c_x){
-				
-				double[] grad = new double[c_x.length];
-				int dim = numPredictors + 1; // Number of variables per class
-
-				for (int i = 0; i < cls.length; i++) { // ith instance
-					double[] num = new double[numClasses]; // numerator of
-			                                                     // [-log(1+sum(exp))]'
-			        int index;
-			        for (int offset = 0; offset < numClasses; offset++) { // Which
-			                                                                    // part of 
-			        	double exp = 0.0;
-			        	index = offset * dim;
-			        	for (int j = 0; j < dim; j++) {
-			        		exp += o_Data[i][j]*c_x[index + j];
-			        	}
-			        	num[offset] = exp;
-			        }
-
-			        double max = num[Utils.maxIndex(num)];
-			       
-			        double denom=0.0;
-			        for (int offset = 0; offset < numClasses; offset++) {
-			        	num[offset] = Math.exp(num[offset] - max);
-			        	denom += num[offset];
-			        }
-			        Utils.normalize(num, denom);
-
-			        // Update denominator of the gradient of -log(Posterior)
-			        double firstTerm;
-			        for (int offset = 0; offset < numClasses; offset++) { // Which
-			                                                                    // part of x
-			        	index = offset * dim;
-			        	firstTerm = o_weights[i] * num[offset];
-			        	for (int q = 0; q < dim; q++) {
-			        		grad[index + q] += firstTerm * o_Data[i][q];
-			        	}
-			        }
-
-			        for (int p = 0; p < dim; p++) {
-			            grad[cls[i] * dim + p] -= o_weights[i] * o_Data[i][p];
-			        }
-			        
-				}
-			      
-
-				for(Node n : classStructure.leafs){
-					int nOffset = n.nodeIndex*dim;
-					if(n.parents.size() > 0){
-						for(int pid : n.parents){
-							int pOffset = pid*dim;
-							int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
-							for(int w=1; w<dim; w++){
-								grad[nOffset+w] += ADMM_pho*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
-							}
-						}
-					}else{
-						int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
-						for(int w=1; w<dim; w++){
-							grad[nOffset+w] += ADMM_pho*(c_x[nOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
-						}
-					}
-				}	
-			      
-				if(sm_Debug){
-					//System.err.println(grad[20]);
-					//System.err.println(grad[dim+20]);
-					//System.err.println(grad[2*dim+20]);
-				}
-				
-				return grad;
-			}
-			
-			/**
-			 * Claclulates the objective function
-			 * @param currx
-			 * @return
-			 */
-			public double objectiveFunction(double[] c_x){
-				double nll=0.0;
-				int dim = numPredictors+1;
-
-				for (int i = 0; i < cls.length; i++) { // ith instance
-					double[] exp = new double[numClasses];
-					int index;
-					for (int offset = 0; offset < numClasses; offset++) {
-						index = offset * dim;
-						for (int j = 0; j < dim; j++) {
-							exp[offset] += o_Data[i][j] * c_x[index + j];
-						}
-					}
-					double max = exp[Utils.maxIndex(exp)];
-			        double denom = 0;
-			        double num = exp[cls[i]] - max;
-			        
-			        for (int offset = 0; offset < numClasses; offset++) {
-			        	denom += Math.exp(exp[offset] - max);
-			        }
-
-			        nll -= o_weights[i] * (num - Math.log(denom)); // Weighted NLL
-				}
-				
-				for(Node n : classStructure.leafs){
-					int nOffset = n.nodeIndex*dim;
-					if(n.parents.size() >0){
-						for(int pid : n.parents){
-							int pOffset = pid*dim;
-							int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
-							for(int w=1; w<dim; w++){
-								nll += (ADMM_pho/2)*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+o_u[zOffset+w])*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
-							}
-						}
-					}else{
-						int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
-						for(int w=1; w<dim; w++){
-							nll += (ADMM_pho/2)*(c_x[nOffset+w]-z[zOffset+w]+o_u[zOffset+w])*(c_x[nOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
-						}
-					}
-				}
-				
-				if(sm_Debug){
-					//System.err.println("Negative Log Likelihood: "+nll);
-				}
-				
-				return nll;
-			}
-			
-		}
 		
-		public class OptEng extends Optimization {
-			
-			OptObject m_oO = null;
-			
-			public OptEng(OptObject oO){
-				m_oO = oO;
-			}
-			 
-			@Override
-			public String getRevision() {
-				return RevisionUtils.extract("$Revision: 11247 $");
-			}
-
-			@Override
-			protected double objectiveFunction(double[] x) throws Exception {
-				return m_oO.objectiveFunction(x);
-			}
-
-			@Override
-			protected double[] evaluateGradient(double[] x) throws Exception {
-				return m_oO.evaluateGradient(x);
-			}
-		}
+		
 		
 		// To clear memory
 		public void clearOptimizer(){
 			data=null;
 			sm_x=null;
 			x=null;
-			z=null;
-			u=null;
 		}
 		
 		
 		public class ADMMrunner {
-			public HashMap <String,double[][]> t_Data;
-			public HashMap <String,double[]> t_x;
 			
+			// Threaded variables
+			
+			/** 
+			 * Hashmap holding the data block that goes into each thread. 
+			 * Keys are the thread ids (for eg:- Thread2) and value is the data-block
+			 */
+			public HashMap<String,double[][]> t_Data;
+			/**
+			 * Hashmap holding the computed x's from each thread at iteration "t+1".
+			 * Keys are the thread ids (for eg:- Thread2)
+			 */
+			public HashMap<String,double[]> t_x;
+			/** Hashmap holding the u's from each thread at iteration "t" */
+			public HashMap<String,double[]> t_u;
+			/** The weights of input instances for the data blocks that go into each thread */
+			public HashMap<String,double[]> t_weights;
+			/** All the threads vote their status on line search (or thex-update) */
 			public boolean[] finished_linesrch;
-			
-			public boolean ADMMconverged = false;
-			
-			public int numThreads = 0;
-			
+			/** Tracks the convergenece of ADMM  */
+			public AtomicBoolean ADMMconverged = new AtomicBoolean(false);
 			/** Finished running the current z-step */
-			public boolean updatedZ = false;
+			public AtomicBoolean updatedZ = new AtomicBoolean(false);
 			
+			//ADMM consensus variables
 			
+			/** Current values (t) of z (z-step in ADMM). Dimension :- (numPredictors+1)*numNodes*numNodes */
+			public double[] z; // for the Z-step
+			/** Value of z at previous iteration (t-1). Needed to assess convergence  Dimension :- (numPredictors+1)*numNodes*numNodes */
+			public double[] zold;
+			/** Current values of the augmented lagrange dual variables (t). Dimension :- (numPredictors+1)*numNodes*numNodes  */
+			public double[] u;
+			/** Stores the primal residuals over the course of the ADMM algorithm Dimension:- [ADMM_maxItr][numNodes*numNodes] */
+			public double[][] history_primal;
+			/** Stores the dual residuals over the course of the ADMM algorithm Dimension:- [ADMM_maxItr][numNodes*numNodes] */
+			public double[][] history_dual;
 			
+			public double[][] history_xnorm;
 			
-			public ADMMrunner(int nT) {
+			public double[][] history_unorm;
+			
+			public double[][] history_znorm;
+			
+			// Initialize
+			public void initZandU(){
+				int dim = numPredictors+1;
+				z= new double[numNodes*numNodes*dim];
+				zold = new double[numNodes*numNodes*dim];
+				u= new double[numNodes*numNodes*dim];
+				history_primal = new double[ADMM_maxItr][numNodes*numNodes];
+				history_dual = new double[ADMM_maxItr][numNodes*numNodes];
+				history_xnorm = new double[ADMM_maxItr][numNodes];
+				history_unorm = new double[ADMM_maxItr][numNodes*numNodes];
+				history_znorm = new double[ADMM_maxItr][numNodes*numNodes];
+			}
+			public ADMMrunner() {
+				int blockSize = data.length/ADMM_numThreads;
+				for(int i=0; i<blockSize*ADMM_numThreads; i++){
+					int threadID = i % ADMM_numThreads;
+					String threadName = "Thread"+threadID;
+					if(t_Data.containsKey(threadName)){
+						for(int j=0; j<data[0].length; j++){
+							t_Data.get(threadName)[i/ADMM_numThreads][j] = data[i][j];
+							t_weights.get(threadName)[i/ADMM_numThreads] = weights[i];
+						}
+					}else{
+						t_Data.put(threadName, new double[blockSize][data[0].length]);
+						t_weights.put(threadName, new double[blockSize]);
+						t_weights.get(threadName)[i/ADMM_numThreads] = weights[i];
+						for(int j=0; j< data[0].length; j++){
+							t_Data.get(threadName)[i/ADMM_numThreads][j] = data[i][j];
+						}
+					}
+				}
 				
+				
+				// Initialize t_x
+				for(int i=0; i< ADMM_numThreads; i++){
+					String threadName = "Thread"+i;
+					if(t_x.containsKey(threadName)){
+						for(int j=0; j<x.length; j++){
+							t_x.get(threadName)[j] = x[j];
+						}
+					}else{
+						t_x.put(threadName, new double[x.length]);
+						for(int j=0; j<x.length; j++){
+							t_x.get(threadName)[j] = x[j];
+						}
+					}
+				}
+				
+				// Initialize u, z and zold
+				initZandU();
+				
+				//Initialize t_u
+				for(int i=0; i<ADMM_numThreads; i++){
+					String threadName = "Thread"+i;
+					if(t_u.containsKey(threadName)){
+						for(int j=0; j<u.length; j++){
+							t_u.get(threadName)[j] = u[j];
+						}
+					}else{
+						t_u.put(threadName, new double[u.length]);
+						for(int j=0; j<u.length; j++){
+							t_u.get(threadName)[j] = u[j];
+						}
+					}
+				}
 			}
 			
+			//Update methods
+			public void updateUbar(){
+				synchronized(t_u){
+					for(int i=0; i<u.length; i++){
+						u[i] = 0;
+						for(String tname: t_u.keySet()){
+							u[i] += t_u.get(tname)[i];
+						}
+						u[i] = u[i]/ADMM_numThreads;
+					}
+				}
+				
+			}
+			public void updateXbar(){
+				synchronized(t_x){
+					for(int i=0; i<x.length; i++){
+						x[i] = 0;
+						for(String tname: t_x.keySet()){
+							x[i] += t_x.get(tname)[i];
+						}
+						x[i] = x[i]/ADMM_numThreads;
+					}
+				}
+			}
+			public void updateResiduals(int itr){
+				int dim = numPredictors + 1;
+				// First calculate and update the primal residual at the current iteration
+				for(Node n : classStructure.leafs){
+					double r_t = 0.0;
+					double s_t =0.0;
+					if(n.parents.size() > 0){
+						for(int pid : n.parents){
+							int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
+							for(String thname: t_x.keySet()){
+								for(int w=0; w<dim; w++){
+									r_t += Math.pow(t_x.get(thname)[n.nodeIndex*dim+w]-z[zOffset+w]-sm_x[pid*dim+w], 2);
+								}
+							}
+							for(int w=0; w<dim; w++){
+								s_t += Math.pow(ADMM_pho*(z[zOffset+w] - zold[zOffset+w]), 2);
+							}
+							s_t = Math.sqrt(s_t*ADMM_numThreads);
+							history_primal[itr][n.nodeIndex*numNodes+pid] = Math.sqrt(r_t);
+							history_dual[itr][n.nodeIndex*numNodes+pid] = s_t;
+						}
+					}else{
+						int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+						for(String thname: t_x.keySet()){
+							for(int w=0; w<dim; w++){
+								r_t += Math.pow(t_x.get(thname)[n.nodeIndex*dim+w]-z[zOffset+w], 2);
+							}
+						}
+						for(int w=0; w<dim; w++){
+							s_t += Math.pow(ADMM_pho*(z[zOffset+w] - zold[zOffset+w]), 2);
+						}
+						history_primal[itr][n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(r_t);
+						history_dual[itr][n.nodeIndex*numNodes+n.nodeIndex] = s_t;
+					}
+				} // Over all the leaf nodes		
+			}
+			public void updateUnorm(int itr){
+				for(Node n : classStructure.leafs){
+					int dim = numPredictors+1;
+					if(n.parents.size() > 0){
+						for(int pid: n.parents){
+							double unorm = 0.0;
+							int uOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
+							for(int w=0; w<dim; w++){
+								unorm += Math.pow(u[uOffset+w], 2);
+							}
+							history_unorm[itr][n.nodeIndex*numNodes+pid] = Math.sqrt(unorm);
+						}
+					}else{
+						double unorm = 0;
+						int uOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+						for(int w=0; w<dim; w++){
+							unorm += Math.pow(u[uOffset+w], 2);
+						}
+						history_unorm[itr][n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(unorm);
+					}
+				}
+			}
+			public void updateXnorm(int itr){
+				int dim = numPredictors+1;
+				for(Node n : classStructure.leafs){
+					int xOffset = n.nodeIndex*dim;
+					double xnorm = 0.0;
+					for(int w=0; w<dim; w++){
+						xnorm += Math.pow(x[xOffset+w], 2);
+					}
+					history_xnorm[itr][n.nodeIndex] = Math.sqrt(xnorm);
+				}
+			}
+			public void updateZnorm(int itr){
+				for(Node n : classStructure.leafs){
+					int dim = numPredictors+1;
+					if(n.parents.size() > 0){
+						for(int pid: n.parents){
+							double znorm = 0.0;
+							int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
+							for(int w=0; w<dim; w++){
+								znorm += Math.pow(z[zOffset+w], 2);
+							}
+							history_znorm[itr][n.nodeIndex*numNodes+pid] = Math.sqrt(znorm);
+						}
+					}else{
+						double znorm = 0;
+						int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+						for(int w=0; w<dim; w++){
+							znorm += Math.pow(u[zOffset+w], 2);
+						}
+						history_znorm[itr][n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(znorm);
+					}
+				}
+				
+			}
+			public void updatePhoAndFold(int A_itr){
+				
+				double primal_residuals=0; // Sum of all the primal residuals
+				double dual_residuals=0; // Sum of all the dual residuals
+				
+				double mu = 10; // maintains the primal and dual residuals within a factor of mu of one another
+				double tao=2; // the factor by with pho will be increased or decreased at each iterations
+				
+				for(int i=0; i<(numNodes*numNodes); i++){
+					primal_residuals += history_primal[A_itr][i];
+					dual_residuals += history_dual[A_itr][i];
+				}
+				
+				if(primal_residuals > mu*dual_residuals){ // if primal residual are greater than dual by a factor of mu; decrease pho 
+					double old_pho = ADMM_pho;
+					ADMM_pho = Math.min(ADMM_pho_max,ADMM_pho*tao);
+					ADMM_pho_fold =  ADMM_pho/old_pho;
+				}else if(dual_residuals > primal_residuals*mu){
+					ADMM_pho = ADMM_pho/tao;
+					ADMM_pho_fold = tao;
+				}
+				
+			}
+			public void updateZ(double pho){
+				for(int i=0; i<z.length; i++){
+					z[i] = z[i] - Math.signum(z[i])*Math.min(pho, Math.abs(z[i]));
+					//z[i] = Math.max(0, xrel[i]-pho) - Math.max(0, -xrel[i] - pho);
+				}
+			}
 			
+			//Has ADMM converged
+			public boolean hasADMMConverged(int itr){
+				boolean converged =true;
+				int dim = numPredictors + 1;
+				
+				double[] primal_tol = new double[numNodes*numNodes];
+				double[] dual_tol = new double[numNodes*numNodes];
+				
+				for(Node n : classStructure.leafs){
+					double xnorm = history_xnorm[itr][n.nodeIndex];
+					if(n.parents.size() > 0){ // If this node has parents
+						for(int pid : n.parents){ // Over all the parents of this node
+							int zOffset = (n.nodeIndex*numNodes)+(pid);
+							double znorm = history_znorm[itr][zOffset];
+							double unorm = history_unorm[itr][zOffset];
+							double cnorm = getL2NormX(pid);
+							primal_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*ADMM_RELTOL*Math.max(xnorm, Math.max(znorm, cnorm));
+							dual_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*ADMM_RELTOL*ADMM_pho*unorm;
+						}
+					}else{
+						int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+						double znorm = history_znorm[itr][zOffset];
+						double unorm = history_unorm[itr][zOffset];
+						primal_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*ADMM_RELTOL*Math.max(xnorm, znorm);
+						dual_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*ADMM_RELTOL*ADMM_pho*unorm;
+					}
+				}
+				
+				for(int i=0; i<primal_tol.length; i++){
+					if(history_primal[itr][i] > primal_tol[i])
+						converged=false;
+					if(history_dual[itr][i] > dual_tol[i])
+						converged=false;
+					if(!converged)
+						break;
+				}
+				
+				return converged;
+			}
+			public boolean finshedLineSrch(){
+				boolean ret = true;
+				synchronized(finished_linesrch){
+					for(int i=0; i<finished_linesrch.length; i++){
+						if(!finished_linesrch[i])
+							ret = false;
+					}
+				}
+				return ret;	
+			}
 			
+			// Runs the ADMM algorithm
 			public void execute(){
+				int dim = numPredictors+1;
 				
+				// Initiate the threads
+				Thread[] threads = new Thread[ADMM_numThreads];
+				for(int i=0; i<ADMM_numThreads; i++){
+					String thname = "Thread"+i;
+					ADMMrun th = new ADMMrun(t_Data.get(thname), t_weights.get(thname), t_x.get(thname), t_u.get(thname), thname);
+					Thread t = new Thread(th, thname);
+					t.start();
+					threads[i] = t;
+				}
+				
+				for(int itr=0; itr<ADMM_maxItr; itr++){
+					if(sm_Debug)
+						System.err.print(". "+ itr + " .");
+					
+					
+					// Update pho 
+					if(itr >0 && !ranADMM && ADMM_pho < ADMM_pho_max)
+						updatePhoAndFold(itr-1);
+					if(sm_Debug)
+						System.err.print(" "+ADMM_pho+" ");
+					
+					// Now atomically update "updateZ" boolean to true to trigger x-update
+					updatedZ.set(true);
+					
+					//Periodically check if all threads have finished line search
+					while(!finshedLineSrch()){
+						try {
+							Thread.sleep(2000);
+						} catch (InterruptedException e) {}
+					}
+					
+					//Now check for convergence at previous iteration
+					if(itr>0){
+						ADMMconverged.set(hasADMMConverged(itr-1));
+					}
+					
+					// Print the primal and dual residuals
+					if(itr>0){
+						if(sm_Debug && !ADMMconverged.get()){
+							double primal = 0.0;
+							double dual = 0.0;
+							for(int i=0; i<(numNodes*numNodes); i++){
+								primal += history_primal[itr-1][i];
+								dual += history_dual[itr-1][i];
+							}
+							System.err.println("Primal residual "+ primal + " , Dual residual "+ dual);
+						}else{
+							System.err.println();
+							System.err.println("ADMM has converged after "+itr+1+" iterations !!");
+							updatedZ.set(true);
+							ranADMM=true;
+							break;
+						}
+					}
+					
+					// Now update z
+					
+						//Fist copy z to zold
+					for(int i=0; i<z.length; i++){
+						zold[i] = z[i];
+					}
+					
+						//Now pool the estimates of x_t+1 from all the threads
+					updateXbar();
+						//Also, pool the estimates of u_t from all the threads
+					updateUbar();
+						// Also update norms
+					if(itr>0)
+						updateUnorm(itr-1);
+					
+					updateXnorm(itr);
+				
+						// Calculate over-relaxed xhat
+					double[] xhat = new double[z.length];
+					for(Node n : classStructure.leafs){
+						int nOffset = n.nodeIndex*dim;
+						if(n.parents.size()>0){
+							for(int pid : n.parents){
+								int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
+								int pOffset = pid*dim;
+								for(int w=0; w<dim; w++){
+									xhat[zOffset+w] = ADMM_ALPHA*(x[nOffset+w])+(1-ADMM_ALPHA)*zold[zOffset+w]-ADMM_ALPHA*sm_x[pOffset+w];
+								}
+							}
+						}else{
+							int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+							for(int w=0; w<dim; w++){
+								xhat[zOffset+w] = ADMM_ALPHA*x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w];
+							}
+						}
+					}
+					
+					for(int i=0; i<z.length;i++){
+						z[i] = xhat[i]+u[i];
+					}
+					
+					// Z-update
+					updateZ((2*regularization)/(ADMM_pho*ADMM_numThreads));
+					
+					updateZnorm(itr);
+					
+					// Calculate and update the primal and dual residuals
+					updateResiduals(itr);
+					
+				}
+				
+				// Wait till all the threads terminate 
+				boolean anyrunning = true;
+				while (anyrunning) {
+		            anyrunning = false;
+		            try {
+		                Thread.sleep(1000);
+		            } catch (InterruptedException e) { }
+		            for (int i = 0; i < threads.length; i++) {
+		                if (threads[i].isAlive()) {
+		                    anyrunning = true;
+		                    break;
+		                }
+		            }
+		        }
+				
+				// Now copy the leaf node weights (i.e x) to sm_x
+				for(Node n: classStructure.leafs){
+					int nOffset = n.nodeIndex*dim;
+					for(int w=0; w<dim; w++){
+						sm_x[nOffset+w] = x[nOffset+w];
+					}
+				} 
 				
 			}
 			
 			
-			
-			public class ADMMthread extends Thread{
-				
-			}
+	
 			
 			
 			public class ADMMrun implements Runnable{
@@ -774,26 +671,70 @@ public class LOneTh {
 				/** The current u of this thread */
 				public double[] t_b_u;
 				
-				/** Finished the LBFGS line search */
-				public boolean finished_linesrch = false;
+				
 				
 				public OptObject oO;
 				
+				public String threadName;
 				
-				public ADMMrun() {
-					oO = new OptObject();
+				
+				public ADMMrun(double[][] dat, double[] t_wts, double[] predictors, double[] admm_u, String tname) {
+					t_b_Data = dat;
+					t_b_weights = t_wts;
+					t_b_x = predictors;
+					t_b_u = admm_u;
+					oO = new OptObject(dat, t_b_weights, t_b_u);
+					threadName =tname;
 				}
 				
 
 				@Override
 				public void run() {
 					
-					while(!ADMMconverged){
-						while(!updatedZ){
+					while(!ADMMconverged.get()){
+						while(!updatedZ.get()){ //Wait till the z-step has finished
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e){}
 						}
+						
+						// update t_b_u
+						
+						// first calculate xhat
+						
+						// Calculate over-relaxed x:- xrel
+						int dim = numPredictors + 1;
+						double[] t_b_xhat = new double[z.length];
+						for(Node n : classStructure.leafs){
+							int nOffset = n.nodeIndex*dim;
+							if(n.parents.size()>0){
+								for(int pid : n.parents){
+									int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
+									int pOffset = pid*dim;
+									for(int w=0; w<dim; w++){
+										t_b_xhat[zOffset+w] = ADMM_ALPHA*(t_b_x[nOffset+w])+(1-ADMM_ALPHA)*zold[zOffset+w]-ADMM_ALPHA*sm_x[pOffset+w];
+									}
+								}
+							}else{
+								int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+								for(int w=0; w<dim; w++){
+									//xrel[zOffset+w] = ADMM_ALPHA*sm_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w]+u[zOffset+w];
+									t_b_xhat[zOffset+w] = ADMM_ALPHA*t_b_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w];
+								}
+							}
+						}
+						
+						for(int i=0; i<u.length; i++){
+							t_b_u[i] = t_b_u[i] + t_b_xhat[i] - z[i]; 
+						}
+						
+						// Correct u
+						for(int i=0; i< t_b_u.length; i++){
+							t_b_u[i] = t_b_u[i]/ADMM_pho_fold;
+						}
+						
+						
+						// t_b_x update
 						
 						int[] iflag = new int[1];
 						double obj= oO.objectiveFunction(t_b_x);
@@ -805,7 +746,7 @@ public class LOneTh {
 						double xtol = 10e-16;
 						
 						try {
-							LBFGS.lbfgs(x.length, m, x, obj, grad, false, diag, iprint, eps, xtol, iflag);
+							LBFGS.lbfgs(t_b_x.length, m, t_b_x, obj, grad, false, diag, iprint, eps, xtol, iflag);
 						} catch (ExceptionWithIflag e) {
 							e.printStackTrace();
 						}
@@ -816,38 +757,194 @@ public class LOneTh {
 							grad = oO.evaluateGradient(x);
 							
 							try {
-								LBFGS.lbfgs(x.length, m, x, obj, grad, false, diag, iprint, eps, xtol, iflag);
+								LBFGS.lbfgs(t_b_x.length, m, t_b_x, obj, grad, false, diag, iprint, eps, xtol, iflag);
 							} catch (ExceptionWithIflag e) {
 								e.printStackTrace();
 							}
 						}
 						
+						// This could be a weak link in the code. I'm assuming the other threads have initiated line search
+						// Which, they should. However, if a thread reaches this point too soon (which is highly unlikely)
+						// Then the other thread whouldn't have initiated line search
+						// Can't think of a good way to make this full proof at the moment.
+						updatedZ.set(false); // Atomically set to false
 						
-						
-					
-					
-					
-					
+						synchronized(t_x){
+							for(int i=0; i<t_b_x.length; i++){
+								t_x.get(threadName)[i] = t_b_x[i];
+							}
+						}
+						synchronized(t_u){
+							for(int i=0; i<t_b_u.length; i++){
+								t_u.get(threadName)[i] = t_b_u[i];
+							}
+						}
+						synchronized(finished_linesrch){
+							finished_linesrch[getThreadId()] = true;
+						}
 					}
 				}
 				
 				//Gettors
-				public double[] getX(){return t_b_x;}
-				public boolean finishedLineSrch(){return finished_linesrch;}
+				public int getThreadId(){return Integer.parseInt(threadName.substring(6));}
 				
 				//Settors
-				public void setX(){updatedZ = true; finished_linesrch = false;}
+				
 				
 			}
 			
-		
-	
-			
-			
-			
-			
-			
-			
+			/**
+			 * This class implements two things:-
+			 * It calculates the gradient for the x-update sub-problem. (The BGFS method will need this)
+			 * It calculates the overall objective function for the x-update subproblem. (The BGFS method will need this)
+			 * @author akshaykakumanu
+			 *
+			 */
+			public class OptObject {
+				
+				public double[][] o_Data;
+				public double[] o_weights;
+				public double[] o_u;
+				
+				public OptObject(double[][] dat, double[] wts, double[] admm_u) {
+					o_Data = dat;
+					o_weights = wts;
+					o_u = admm_u;
+				}
+				
+				/**
+				 * Claclulates the gradient
+				 * @param currx
+				 * @return
+				 */
+				public double[] evaluateGradient(double[] c_x){
+					
+					double[] grad = new double[c_x.length];
+					int dim = numPredictors + 1; // Number of variables per class
+
+					for (int i = 0; i < cls.length; i++) { // ith instance
+						double[] num = new double[numClasses]; // numerator of
+				                                                     // [-log(1+sum(exp))]'
+				        int index;
+				        for (int offset = 0; offset < numClasses; offset++) { // Which
+				                                                                    // part of 
+				        	double exp = 0.0;
+				        	index = offset * dim;
+				        	for (int j = 0; j < dim; j++) {
+				        		exp += o_Data[i][j]*c_x[index + j];
+				        	}
+				        	num[offset] = exp;
+				        }
+
+				        double max = num[Utils.maxIndex(num)];
+				       
+				        double denom=0.0;
+				        for (int offset = 0; offset < numClasses; offset++) {
+				        	num[offset] = Math.exp(num[offset] - max);
+				        	denom += num[offset];
+				        }
+				        Utils.normalize(num, denom);
+
+				        // Update denominator of the gradient of -log(Posterior)
+				        double firstTerm;
+				        for (int offset = 0; offset < numClasses; offset++) { // Which
+				                                                                    // part of x
+				        	index = offset * dim;
+				        	firstTerm = o_weights[i] * num[offset];
+				        	for (int q = 0; q < dim; q++) {
+				        		grad[index + q] += firstTerm * o_Data[i][q];
+				        	}
+				        }
+
+				        for (int p = 0; p < dim; p++) {
+				            grad[cls[i] * dim + p] -= o_weights[i] * o_Data[i][p];
+				        }
+				        
+					}
+				      
+
+					for(Node n : classStructure.leafs){
+						int nOffset = n.nodeIndex*dim;
+						if(n.parents.size() > 0){
+							for(int pid : n.parents){
+								int pOffset = pid*dim;
+								int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
+								for(int w=1; w<dim; w++){
+									grad[nOffset+w] += ADMM_pho*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
+								}
+							}
+						}else{
+							int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+							for(int w=1; w<dim; w++){
+								grad[nOffset+w] += ADMM_pho*(c_x[nOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
+							}
+						}
+					}	
+				      
+					if(sm_Debug){
+						//System.err.println(grad[20]);
+						//System.err.println(grad[dim+20]);
+						//System.err.println(grad[2*dim+20]);
+					}
+					
+					return grad;
+				}
+				
+				/**
+				 * Claclulates the objective function
+				 * @param currx
+				 * @return
+				 */
+				public double objectiveFunction(double[] c_x){
+					double nll=0.0;
+					int dim = numPredictors+1;
+
+					for (int i = 0; i < cls.length; i++) { // ith instance
+						double[] exp = new double[numClasses];
+						int index;
+						for (int offset = 0; offset < numClasses; offset++) {
+							index = offset * dim;
+							for (int j = 0; j < dim; j++) {
+								exp[offset] += o_Data[i][j] * c_x[index + j];
+							}
+						}
+						double max = exp[Utils.maxIndex(exp)];
+				        double denom = 0;
+				        double num = exp[cls[i]] - max;
+				        
+				        for (int offset = 0; offset < numClasses; offset++) {
+				        	denom += Math.exp(exp[offset] - max);
+				        }
+
+				        nll -= o_weights[i] * (num - Math.log(denom)); // Weighted NLL
+					}
+					
+					for(Node n : classStructure.leafs){
+						int nOffset = n.nodeIndex*dim;
+						if(n.parents.size() >0){
+							for(int pid : n.parents){
+								int pOffset = pid*dim;
+								int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
+								for(int w=1; w<dim; w++){
+									nll += (ADMM_pho/2)*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+o_u[zOffset+w])*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
+								}
+							}
+						}else{
+							int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+							for(int w=1; w<dim; w++){
+								nll += (ADMM_pho/2)*(c_x[nOffset+w]-z[zOffset+w]+o_u[zOffset+w])*(c_x[nOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
+							}
+						}
+					}
+					
+					if(sm_Debug){
+						//System.err.println("Negative Log Likelihood: "+nll);
+					}
+					
+					return nll;
+				}
+				
+			}
 		}
 
 }
