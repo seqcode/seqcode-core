@@ -228,6 +228,8 @@ public class LOneTh extends Optimizer {
 			public HashMap<String,double[]> t_u = new HashMap<String,double[]>();
 			/** The weights of input instances for the data blocks that go into each thread */
 			public HashMap<String,double[]> t_weights = new HashMap<String,double[]>();
+			/** The class assignment of input instances for the data blocks that go into each thread*/
+			public HashMap<String, int[]> t_cls = new HashMap<String,int[]>();
 			/** All the threads vote their status on line search (or thex-update) */
 			public boolean[] finished_linesrch;
 			/** Tracks the convergenece of ADMM  */
@@ -275,14 +277,17 @@ public class LOneTh extends Optimizer {
 					int threadID = i % ADMM_numThreads;
 					String threadName = "Thread"+threadID;
 					if(t_Data.containsKey(threadName)){
+						t_weights.get(threadName)[i/ADMM_numThreads] = weights[i];
+						t_cls.get(threadName)[i/ADMM_numThreads] = cls[i];
 						for(int j=0; j<data[0].length; j++){
 							t_Data.get(threadName)[i/ADMM_numThreads][j] = data[i][j];
-							t_weights.get(threadName)[i/ADMM_numThreads] = weights[i];
 						}
 					}else{
 						t_Data.put(threadName, new double[blockSize][data[0].length]);
 						t_weights.put(threadName, new double[blockSize]);
 						t_weights.get(threadName)[i/ADMM_numThreads] = weights[i];
+						t_cls.put(threadName, new int[blockSize]);
+						t_cls.get(threadName)[i/ADMM_numThreads] = cls[i];
 						for(int j=0; j< data[0].length; j++){
 							t_Data.get(threadName)[i/ADMM_numThreads][j] = data[i][j];
 						}
@@ -528,7 +533,7 @@ public class LOneTh extends Optimizer {
 				Thread[] threads = new Thread[ADMM_numThreads];
 				for(int i=0; i<ADMM_numThreads; i++){
 					String thname = "Thread"+i;
-					ADMMrun th = new ADMMrun(t_Data.get(thname), t_weights.get(thname), t_x.get(thname), t_u.get(thname), thname);
+					ADMMrun th = new ADMMrun(t_Data.get(thname), t_weights.get(thname), t_x.get(thname), t_cls.get(thname), t_u.get(thname), thname);
 					Thread t = new Thread(th, thname);
 					t.start();
 					threads[i] = t;
@@ -681,12 +686,12 @@ public class LOneTh extends Optimizer {
 				public String threadName;
 				
 				
-				public ADMMrun(double[][] dat, double[] t_wts, double[] predictors, double[] admm_u, String tname) {
+				public ADMMrun(double[][] dat, double[] t_wts, double[] predictors, int[] cl, double[] admm_u, String tname) {
 					t_b_Data = dat;
 					t_b_weights = t_wts;
 					t_b_x = predictors;
 					t_b_u = admm_u;
-					oO = new OptObject(dat, t_b_weights, t_b_u);
+					oO = new OptObject(dat, t_b_weights, cl, t_b_u);
 					threadName =tname;
 				}
 				
@@ -808,11 +813,13 @@ public class LOneTh extends Optimizer {
 				public double[][] o_Data;
 				public double[] o_weights;
 				public double[] o_u;
+				public int[] o_cls;
 				
-				public OptObject(double[][] dat, double[] wts, double[] admm_u) {
+				public OptObject(double[][] dat, double[] wts, int[] cl, double[] admm_u) {
 					o_Data = dat;
 					o_weights = wts;
 					o_u = admm_u;
+					o_cls = cl;
 				}
 				
 				/**
@@ -825,7 +832,7 @@ public class LOneTh extends Optimizer {
 					double[] grad = new double[c_x.length];
 					int dim = numPredictors + 1; // Number of variables per class
 
-					for (int i = 0; i < cls.length; i++) { // ith instance
+					for (int i = 0; i < o_cls.length; i++) { // ith instance
 						double[] num = new double[numClasses]; // numerator of
 				                                                     // [-log(1+sum(exp))]'
 				        int index;
@@ -860,7 +867,7 @@ public class LOneTh extends Optimizer {
 				        }
 
 				        for (int p = 0; p < dim; p++) {
-				            grad[cls[i] * dim + p] -= o_weights[i] * o_Data[i][p];
+				            grad[o_cls[i] * dim + p] -= o_weights[i] * o_Data[i][p];
 				        }
 				        
 					}
@@ -902,7 +909,7 @@ public class LOneTh extends Optimizer {
 					double nll=0.0;
 					int dim = numPredictors+1;
 
-					for (int i = 0; i < cls.length; i++) { // ith instance
+					for (int i = 0; i < o_cls.length; i++) { // ith instance
 						double[] exp = new double[numClasses];
 						int index;
 						for (int offset = 0; offset < numClasses; offset++) {
@@ -913,7 +920,7 @@ public class LOneTh extends Optimizer {
 						}
 						double max = exp[Utils.maxIndex(exp)];
 				        double denom = 0;
-				        double num = exp[cls[i]] - max;
+				        double num = exp[o_cls[i]] - max;
 				        
 				        for (int offset = 0; offset < numClasses; offset++) {
 				        	denom += Math.exp(exp[offset] - max);
