@@ -218,16 +218,16 @@ public class LOneTh extends Optimizer {
 			 * Hashmap holding the data block that goes into each thread. 
 			 * Keys are the thread ids (for eg:- Thread2) and value is the data-block
 			 */
-			public HashMap<String,double[][]> t_Data;
+			public HashMap<String,double[][]> t_Data = new HashMap<String,double[][]>();
 			/**
 			 * Hashmap holding the computed x's from each thread at iteration "t+1".
 			 * Keys are the thread ids (for eg:- Thread2)
 			 */
-			public HashMap<String,double[]> t_x;
+			public HashMap<String,double[]> t_x = new HashMap<String,double[]>();
 			/** Hashmap holding the u's from each thread at iteration "t" */
-			public HashMap<String,double[]> t_u;
+			public HashMap<String,double[]> t_u = new HashMap<String,double[]>();
 			/** The weights of input instances for the data blocks that go into each thread */
-			public HashMap<String,double[]> t_weights;
+			public HashMap<String,double[]> t_weights = new HashMap<String,double[]>();
 			/** All the threads vote their status on line search (or thex-update) */
 			public boolean[] finished_linesrch;
 			/** Tracks the convergenece of ADMM  */
@@ -267,6 +267,9 @@ public class LOneTh extends Optimizer {
 				history_znorm = new double[ADMM_maxItr][numNodes*numNodes];
 			}
 			public ADMMrunner() {
+				
+				finished_linesrch = new boolean[ADMM_numThreads];
+				
 				int blockSize = data.length/ADMM_numThreads;
 				for(int i=0; i<blockSize*ADMM_numThreads; i++){
 					int threadID = i % ADMM_numThreads;
