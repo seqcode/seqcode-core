@@ -495,7 +495,7 @@ public class LOneTh extends Optimizer {
 							dual_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*ADMM_RELTOL*ADMM_pho*unorm;
 						}
 					}else{
-						int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+						int zOffset = (n.nodeIndex*numNodes)+(n.nodeIndex);
 						double znorm = history_znorm[itr][zOffset];
 						double unorm = history_unorm[itr][zOffset];
 						primal_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*ADMM_RELTOL*Math.max(xnorm, znorm);
@@ -520,6 +520,7 @@ public class LOneTh extends Optimizer {
 					for(int i=0; i<finished_linesrch.length; i++){
 						if(!finished_linesrch[i])
 							ret = false;
+						break;
 					}
 				}
 				return ret;	
@@ -549,6 +550,13 @@ public class LOneTh extends Optimizer {
 						updatePhoAndFold(itr-1);
 					if(sm_Debug)
 						System.err.print(" "+ADMM_pho+" ");
+					
+					//Make sure finshedLineSrch[] are all false before releasing the other threads to sleep the current thread
+					synchronized(finished_linesrch){
+						for(int i=0; i<finished_linesrch.length; i++){
+							finished_linesrch[i] = false;
+						}
+					}
 					
 					// Now atomically update "updateZ" boolean to true to trigger x-update
 					updatedZ.set(true);
