@@ -384,6 +384,7 @@ public class LOneTh extends Optimizer {
 						for(int w=0; w<dim; w++){
 							s_t += Math.pow(ADMM_pho*(z[zOffset+w] - zold[zOffset+w]), 2);
 						}
+						s_t = Math.sqrt(s_t*ADMM_numThreads);
 						history_primal[itr][n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(r_t);
 						history_dual[itr][n.nodeIndex*numNodes+n.nodeIndex] = s_t;
 					}
