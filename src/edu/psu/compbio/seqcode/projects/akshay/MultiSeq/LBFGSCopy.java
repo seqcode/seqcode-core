@@ -155,6 +155,8 @@ public class LBFGSCopy {
         private  boolean finish = false;
 
         private  double[] w = null;
+        
+        private McsrchCopy mscrch;
 
         /**
          * This method returns the total number of evaluations of the objective
@@ -330,7 +332,7 @@ public class LBFGSCopy {
          */
         
         public LBFGSCopy() {
-			// TODO Auto-generated constructor stub
+        	mscrch = new McsrchCopy();
 		}
 
         public  void lbfgs(int n, int m, double[] x, double f, double[] g,
@@ -498,7 +500,7 @@ public class LBFGSCopy {
                                 }
 
                                 nfev[0] = 0;
-                                Mcsrch.setSTP(stp, iter == 1 && stp1 < 1 ? stp1 : 1);
+                                mscrch.setSTP(stp, iter == 1 && stp1 < 1 ? stp1 : 1);
 
                                 for (i = 1; i <= n; i += 1) {
                                         w[i - 1] = g[i - 1];
@@ -521,7 +523,7 @@ public class LBFGSCopy {
                         // if (iprint[1 - 1] >= 0)
                         // lb1(iprint, iter, nfun, gnorm, n, m, x, f, g, stp, finish);
 
-                        Mcsrch.mcsrch(n, x, f, g, w, ispt + point * n, stp, ftol, xtol,
+                        mscrch.mcsrch(n, x, f, g, w, ispt + point * n, stp, ftol, xtol,
                                         maxfev, info, nfev, diag, iprint);
 
                         if (info[0] == -1) {
@@ -531,9 +533,9 @@ public class LBFGSCopy {
 
                         if (iprint[0] > 0)
                                 System.err.println("msrch return = nfev=" + nfev[0] + " nfun="
-                                                + nfun + " info=" + info[0] + " bestx=" + Mcsrch.stx[0]
-                                                + " farx=" + Mcsrch.sty[0] + " brackt="
-                                                + Mcsrch.brackt[0] + " stp=" + stp[0] + " gnorm="
+                                                + nfun + " info=" + info[0] + " bestx=" + mscrch.stx[0]
+                                                + " farx=" + mscrch.sty[0] + " brackt="
+                                                + mscrch.brackt[0] + " stp=" + stp[0] + " gnorm="
                                                 + Math.sqrt(ddot(n, g, 0, 1, g, 0, 1)) + " xnorm="
                                                 + Math.sqrt(ddot(n, x, 0, 1, x, 0, 1)));
 
