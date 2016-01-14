@@ -761,8 +761,8 @@ public class LOneTh extends Optimizer {
 						
 						while(iflag[0] == 1 ){
 							//re-evaluate the objective and the gradient
-							obj = oO.objectiveFunction(x);
-							grad = oO.evaluateGradient(x);
+							obj = oO.objectiveFunction(t_b_x);
+							grad = oO.evaluateGradient(t_b_x);
 							
 							try {
 								LBFGS.lbfgs(t_b_x.length, m, t_b_x, obj, grad, false, diag, iprint, eps, xtol, iflag);
