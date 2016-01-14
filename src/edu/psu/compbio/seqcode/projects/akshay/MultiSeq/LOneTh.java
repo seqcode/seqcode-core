@@ -6,10 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import weka.core.Optimization;
-import weka.core.RevisionUtils;
+import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LBFGSCopy;
 import weka.core.Utils;
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LBFGS.ExceptionWithIflag;
+import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LBFGSCopy.ExceptionWithIflag;
 import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelationStructure;
 import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelationStructure.Node;
 
@@ -762,11 +761,14 @@ public class LOneTh extends Optimizer {
 						double eps = 0.001;
 						double xtol = 10e-16;
 						
+						LBFGSCopy lineFinder = new LBFGSCopy();
+						
 						try {
-							LBFGS.lbfgs(t_b_x.length, m, t_b_x, obj, grad, false, diag, iprint, eps, xtol, iflag);
-						} catch (ExceptionWithIflag e) {
-							e.printStackTrace();
+							lineFinder.lbfgs(t_b_x.length, m, t_b_x, obj, grad, false, diag, iprint, eps, xtol, iflag);
+						} catch (ExceptionWithIflag e1) {
+							e1.printStackTrace();
 						}
+						
 						
 						while(iflag[0] == 1 ){
 							//re-evaluate the objective and the gradient
@@ -774,7 +776,7 @@ public class LOneTh extends Optimizer {
 							grad = oO.evaluateGradient(t_b_x);
 							
 							try {
-								LBFGS.lbfgs(t_b_x.length, m, t_b_x, obj, grad, false, diag, iprint, eps, xtol, iflag);
+								lineFinder.lbfgs(t_b_x.length, m, t_b_x, obj, grad, false, diag, iprint, eps, xtol, iflag);
 							} catch (ExceptionWithIflag e) {
 								e.printStackTrace();
 							}
