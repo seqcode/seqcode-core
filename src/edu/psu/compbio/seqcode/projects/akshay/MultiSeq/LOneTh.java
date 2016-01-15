@@ -464,7 +464,7 @@ public class LOneTh extends Optimizer {
 					ADMM_pho_fold =  ADMM_pho/old_pho;
 				}else if(dual_residuals > primal_residuals*mu){
 					ADMM_pho = ADMM_pho/tao;
-					ADMM_pho_fold = tao;
+					ADMM_pho_fold = 1/tao;
 				}
 				
 			}
