@@ -520,9 +520,10 @@ public class LOneTh extends Optimizer {
 				boolean ret = true;
 				synchronized(finished_linesrch){
 					for(int i=0; i<finished_linesrch.length; i++){
-						if(!finished_linesrch[i])
+						if(!finished_linesrch[i]){
 							ret = false;
-						break;
+							break;
+						}
 					}
 				}
 				return ret;	
