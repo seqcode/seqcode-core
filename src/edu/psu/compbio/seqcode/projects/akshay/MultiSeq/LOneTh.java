@@ -687,9 +687,11 @@ public class LOneTh extends Optimizer {
 				/** The current u of this thread */
 				public double[] t_b_u;
 				
+				public int[] t_b_cls;
 				
 				
-				public OptObject oO;
+				
+				public OptObject oO = new OptObject();
 				
 				public String threadName;
 				
@@ -697,10 +699,16 @@ public class LOneTh extends Optimizer {
 				public ADMMrun(double[][] dat, double[] t_wts, double[] predictors, int[] cl, double[] admm_u, String tname) {
 					t_b_Data = dat;
 					t_b_weights = t_wts;
-					t_b_x = predictors;
-					t_b_u = admm_u;
-					oO = new OptObject(dat, t_b_weights, cl, t_b_u);
+					t_b_cls = cl;
 					threadName =tname;
+					
+					t_b_x = new double[predictors.length];
+					for(int i=0; i<predictors.length; i++)
+						t_b_x[i] = predictors[i];
+					t_b_u = new double[admm_u.length];
+					for(int i=0; i<admm_u.length; i++)
+						t_b_u[i] = admm_u[i];
+					
 				}
 				
 
@@ -807,165 +815,156 @@ public class LOneTh extends Optimizer {
 				//Gettors
 				public int getThreadId(){return Integer.parseInt(threadName.substring(6));}
 				
-				//Settors
+				/**
+				 * This class implements two things:-
+				 * It calculates the gradient for the x-update sub-problem. (The BGFS method will need this)
+				 * It calculates the overall objective function for the x-update subproblem. (The BGFS method will need this)
+				 * @author akshaykakumanu
+				 *
+				 */
+				public class OptObject {
+					
+					public OptObject() {
+					}
+					
+					/**
+					 * Claclulates the gradient
+					 * @param currx
+					 * @return
+					 */
+					public double[] evaluateGradient(double[] c_x){
+						
+						double[] grad = new double[c_x.length];
+						int dim = numPredictors + 1; // Number of variables per class
+
+						for (int i = 0; i < t_b_cls.length; i++) { // ith instance
+							double[] num = new double[numClasses]; // numerator of
+					                                                     // [-log(1+sum(exp))]'
+					        int index;
+					        for (int offset = 0; offset < numClasses; offset++) { // Which
+					                                                                    // part of 
+					        	double exp = 0.0;
+					        	index = offset * dim;
+					        	for (int j = 0; j < dim; j++) {
+					        		exp += t_b_Data[i][j]*c_x[index + j];
+					        	}
+					        	num[offset] = exp;
+					        }
+
+					        double max = num[Utils.maxIndex(num)];
+					       
+					        double denom=0.0;
+					        for (int offset = 0; offset < numClasses; offset++) {
+					        	num[offset] = Math.exp(num[offset] - max);
+					        	denom += num[offset];
+					        }
+					        Utils.normalize(num, denom);
+
+					        // Update denominator of the gradient of -log(Posterior)
+					        double firstTerm;
+					        for (int offset = 0; offset < numClasses; offset++) { // Which
+					                                                                    // part of x
+					        	index = offset * dim;
+					        	firstTerm = t_b_weights[i] * num[offset];
+					        	for (int q = 0; q < dim; q++) {
+					        		grad[index + q] += firstTerm * t_b_Data[i][q];
+					        	}
+					        }
+
+					        for (int p = 0; p < dim; p++) {
+					            grad[t_b_cls[i] * dim + p] -= t_b_weights[i] * t_b_Data[i][p];
+					        }
+					        
+						}
+					      
+
+						for(Node n : classStructure.leafs){
+							int nOffset = n.nodeIndex*dim;
+							if(n.parents.size() > 0){
+								for(int pid : n.parents){
+									int pOffset = pid*dim;
+									int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
+									for(int w=1; w<dim; w++){
+										grad[nOffset+w] += ADMM_pho*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+t_b_u[zOffset+w]);
+									}
+								}
+							}else{
+								int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+								for(int w=1; w<dim; w++){
+									grad[nOffset+w] += ADMM_pho*(c_x[nOffset+w]-z[zOffset+w]+t_b_u[zOffset+w]);
+								}
+							}
+						}	
+					      
+						if(sm_Debug){
+							//System.err.println(grad[20]);
+							//System.err.println(grad[dim+20]);
+							//System.err.println(grad[2*dim+20]);
+						}
+						
+						return grad;
+					}
+					
+					/**
+					 * Claclulates the objective function
+					 * @param currx
+					 * @return
+					 */
+					public double objectiveFunction(double[] c_x){
+						double nll=0.0;
+						int dim = numPredictors+1;
+
+						for (int i = 0; i < t_b_cls.length; i++) { // ith instance
+							double[] exp = new double[numClasses];
+							int index;
+							for (int offset = 0; offset < numClasses; offset++) {
+								index = offset * dim;
+								for (int j = 0; j < dim; j++) {
+									exp[offset] += t_b_Data[i][j] * c_x[index + j];
+								}
+							}
+							double max = exp[Utils.maxIndex(exp)];
+					        double denom = 0;
+					        double num = exp[t_b_cls[i]] - max;
+					        
+					        for (int offset = 0; offset < numClasses; offset++) {
+					        	denom += Math.exp(exp[offset] - max);
+					        }
+
+					        nll -= t_b_weights[i] * (num - Math.log(denom)); // Weighted NLL
+						}
+						
+						for(Node n : classStructure.leafs){
+							int nOffset = n.nodeIndex*dim;
+							if(n.parents.size() >0){
+								for(int pid : n.parents){
+									int pOffset = pid*dim;
+									int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
+									for(int w=1; w<dim; w++){
+										nll += (ADMM_pho/2)*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+t_b_u[zOffset+w])*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+t_b_u[zOffset+w]);
+									}
+								}
+							}else{
+								int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
+								for(int w=1; w<dim; w++){
+									nll += (ADMM_pho/2)*(c_x[nOffset+w]-z[zOffset+w]+t_b_u[zOffset+w])*(c_x[nOffset+w]-z[zOffset+w]+t_b_u[zOffset+w]);
+								}
+							}
+						}
+						
+						if(sm_Debug){
+							//System.err.println("Negative Log Likelihood: "+nll);
+						}
+						
+						return nll;
+					}
+					
+				}
 				
 				
 			}
 			
-			/**
-			 * This class implements two things:-
-			 * It calculates the gradient for the x-update sub-problem. (The BGFS method will need this)
-			 * It calculates the overall objective function for the x-update subproblem. (The BGFS method will need this)
-			 * @author akshaykakumanu
-			 *
-			 */
-			public class OptObject {
-				
-				public double[][] o_Data;
-				public double[] o_weights;
-				public double[] o_u;
-				public int[] o_cls;
-				
-				public OptObject(double[][] dat, double[] wts, int[] cl, double[] admm_u) {
-					o_Data = dat;
-					o_weights = wts;
-					o_u = admm_u;
-					o_cls = cl;
-				}
-				
-				/**
-				 * Claclulates the gradient
-				 * @param currx
-				 * @return
-				 */
-				public double[] evaluateGradient(double[] c_x){
-					
-					double[] grad = new double[c_x.length];
-					int dim = numPredictors + 1; // Number of variables per class
-
-					for (int i = 0; i < o_cls.length; i++) { // ith instance
-						double[] num = new double[numClasses]; // numerator of
-				                                                     // [-log(1+sum(exp))]'
-				        int index;
-				        for (int offset = 0; offset < numClasses; offset++) { // Which
-				                                                                    // part of 
-				        	double exp = 0.0;
-				        	index = offset * dim;
-				        	for (int j = 0; j < dim; j++) {
-				        		exp += o_Data[i][j]*c_x[index + j];
-				        	}
-				        	num[offset] = exp;
-				        }
-
-				        double max = num[Utils.maxIndex(num)];
-				       
-				        double denom=0.0;
-				        for (int offset = 0; offset < numClasses; offset++) {
-				        	num[offset] = Math.exp(num[offset] - max);
-				        	denom += num[offset];
-				        }
-				        Utils.normalize(num, denom);
-
-				        // Update denominator of the gradient of -log(Posterior)
-				        double firstTerm;
-				        for (int offset = 0; offset < numClasses; offset++) { // Which
-				                                                                    // part of x
-				        	index = offset * dim;
-				        	firstTerm = o_weights[i] * num[offset];
-				        	for (int q = 0; q < dim; q++) {
-				        		grad[index + q] += firstTerm * o_Data[i][q];
-				        	}
-				        }
-
-				        for (int p = 0; p < dim; p++) {
-				            grad[o_cls[i] * dim + p] -= o_weights[i] * o_Data[i][p];
-				        }
-				        
-					}
-				      
-
-					for(Node n : classStructure.leafs){
-						int nOffset = n.nodeIndex*dim;
-						if(n.parents.size() > 0){
-							for(int pid : n.parents){
-								int pOffset = pid*dim;
-								int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
-								for(int w=1; w<dim; w++){
-									grad[nOffset+w] += ADMM_pho*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
-								}
-							}
-						}else{
-							int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
-							for(int w=1; w<dim; w++){
-								grad[nOffset+w] += ADMM_pho*(c_x[nOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
-							}
-						}
-					}	
-				      
-					if(sm_Debug){
-						//System.err.println(grad[20]);
-						//System.err.println(grad[dim+20]);
-						//System.err.println(grad[2*dim+20]);
-					}
-					
-					return grad;
-				}
-				
-				/**
-				 * Claclulates the objective function
-				 * @param currx
-				 * @return
-				 */
-				public double objectiveFunction(double[] c_x){
-					double nll=0.0;
-					int dim = numPredictors+1;
-
-					for (int i = 0; i < o_cls.length; i++) { // ith instance
-						double[] exp = new double[numClasses];
-						int index;
-						for (int offset = 0; offset < numClasses; offset++) {
-							index = offset * dim;
-							for (int j = 0; j < dim; j++) {
-								exp[offset] += o_Data[i][j] * c_x[index + j];
-							}
-						}
-						double max = exp[Utils.maxIndex(exp)];
-				        double denom = 0;
-				        double num = exp[o_cls[i]] - max;
-				        
-				        for (int offset = 0; offset < numClasses; offset++) {
-				        	denom += Math.exp(exp[offset] - max);
-				        }
-
-				        nll -= o_weights[i] * (num - Math.log(denom)); // Weighted NLL
-					}
-					
-					for(Node n : classStructure.leafs){
-						int nOffset = n.nodeIndex*dim;
-						if(n.parents.size() >0){
-							for(int pid : n.parents){
-								int pOffset = pid*dim;
-								int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
-								for(int w=1; w<dim; w++){
-									nll += (ADMM_pho/2)*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+o_u[zOffset+w])*(c_x[nOffset+w]-sm_x[pOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
-								}
-							}
-						}else{
-							int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
-							for(int w=1; w<dim; w++){
-								nll += (ADMM_pho/2)*(c_x[nOffset+w]-z[zOffset+w]+o_u[zOffset+w])*(c_x[nOffset+w]-z[zOffset+w]+o_u[zOffset+w]);
-							}
-						}
-					}
-					
-					if(sm_Debug){
-						//System.err.println("Negative Log Likelihood: "+nll);
-					}
-					
-					return nll;
-				}
-				
-			}
+			
 		}
 
 }
