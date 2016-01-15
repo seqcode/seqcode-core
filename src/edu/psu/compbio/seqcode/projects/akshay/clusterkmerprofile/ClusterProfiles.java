@@ -38,6 +38,8 @@ public class ClusterProfiles {
 	private File outbase;
 	private HashMap<Integer,String> indToLocation;
 	private HashMap<Integer,Double> intToLogitScore;
+	private int minK=4;
+	private int maxK=7;
 	private int kmerLen=4;
 	
 	// Minimum penetrance of a kmer in a cluster to be considered
