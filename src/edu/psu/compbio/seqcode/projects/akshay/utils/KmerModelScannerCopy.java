@@ -148,12 +148,12 @@ public class KmerModelScannerCopy {
 	 */
 	public void clusterKmerProfilesAtMountains(boolean useCache, String genpath, double oddsThresh) throws IOException{
 		fillMountains(useCache,genpath,oddsThresh);
-		//ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,posProfiles,posMountainsToIndex,k,posMountainsScores,outbase,outdir);
-		//clusterManager.execute("pos");
-		//if(negPeaks.size() !=0 && negRegions.size() !=0){
-		//	clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,negProfiles,negMountainsToIndex,k,negMountainsScores,outbase,outdir);
-		//	clusterManager.execute("neg");
-		//}
+		ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,posProfiles,posMountainsToIndex,minK,maxK,posMountainsScores,outbase,outdir);
+		clusterManager.execute("pos");
+		if(negPeaks.size() !=0 && negRegions.size() !=0){
+			clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,negProfiles,negMountainsToIndex,minK,maxK,negMountainsScores,outbase,outdir);
+			clusterManager.execute("neg");
+		}
 	}
 	
 	

@@ -25,7 +25,7 @@ public class LOneTh extends Optimizer {
 		// Fixed SeqUnwinder parameters
 		
 		/** Tolerence for internal Nodes convergence */
-		public final double NODES_tol = 1E-4;
+		public final double NODES_tol = 1E-2;
 		
 		// Tunable ADMM parameters
 		
@@ -588,7 +588,7 @@ public class LOneTh extends Optimizer {
 							System.err.println("Primal residual "+ primal + " , Dual residual "+ dual);
 						}else{
 							System.err.println();
-							System.err.println("ADMM has converged after "+itr+1+" iterations !!");
+							System.err.println("ADMM has converged after "+itr+" iterations !!");
 							updatedZ.set(true);
 							ranADMM=true;
 							break;
@@ -769,7 +769,7 @@ public class LOneTh extends Optimizer {
 						int m = 5;
 						double[] diag = new double[t_b_x.length];
 						int[] iprint = new int[2];
-						double eps = 0.001;
+						double eps = 0.1;
 						double xtol = 10e-16;
 						
 						LBFGSCopy lineFinder = new LBFGSCopy();

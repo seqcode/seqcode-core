@@ -40,7 +40,7 @@ public class ClusterProfiles {
 	private HashMap<Integer,Double> intToLogitScore;
 	private int minK=4;
 	private int maxK=7;
-	private int kmerLen=4;
+
 	
 	// Minimum penetrance of a kmer in a cluster to be considered
 	public final double minKmerProp = 0.2;
@@ -52,7 +52,14 @@ public class ClusterProfiles {
 	public final int W=800;
 	public final int H=800;
 	
-	
+	//Gettors
+	public int getKmerBaseInd(int len){
+		int baseInd = 0;
+		for(int k=minK; k<len; k++){
+			baseInd += (int)Math.pow(4, k);
+		}
+		return baseInd;
+	}
 	
 	//Settors
 	public void setProfiles(ArrayList<int[]> data){profiles=data;}
@@ -61,7 +68,8 @@ public class ClusterProfiles {
 	public void setOutDir(File odir){outbase = odir;}
 	public void setProfileInds(HashMap<Integer,String> plfsinds){indToLocation=plfsinds;}
 	public void setProfileScores(HashMap<Integer,Double> plfscore){intToLogitScore = plfscore;}
-	public void setKmerModLen(int k){kmerLen = k;}
+	public void setKmerModLenMin(int k){minK = k;}
+	public void setKmerModLenMax(int k){maxK = k;}
 	
 	
 	/**
@@ -169,7 +177,17 @@ public class ClusterProfiles {
 		
 		//fill the cnames
 		for(int j=0; j<sparseLenght; j++){
-			cnames[j] = RegionFileUtilities.int2seq(indexes[j], kmerLen);
+			// First, find the k-mer length
+			int currKmerLen = 0;
+			ArrayList<Integer> baseinds = new ArrayList<Integer>();
+			for(int k=minK; k <= maxK; k++){
+				baseinds.add(getKmerBaseInd(k));
+			}
+			int search = Collections.binarySearch(baseinds, indexes[j]);
+			
+			currKmerLen = search >= 0 ? minK + search : -1*(search + 1) - 1 + minK;
+			cnames[j] = RegionFileUtilities.int2seq(indexes[j] - getKmerBaseInd(currKmerLen), currKmerLen);
+			
 		}
 		
 		int rowInd = 0;
@@ -233,14 +251,15 @@ public class ClusterProfiles {
 	 * @param pfls
 	 * @param otag
 	 */
-	public ClusterProfiles(int itrs, int k, ArrayList<int[]> pfls, HashMap<Integer,String> pflsIndsMap, int kmerL, HashMap<Integer,Double> pflscores, String otag, File odir) {
+	public ClusterProfiles(int itrs, int k, ArrayList<int[]> pfls, HashMap<Integer,String> pflsIndsMap, int mink, int maxk, HashMap<Integer,Double> pflscores, String otag, File odir) {
 		setProfiles(pfls);
 		setNumClusters(k);
 		setOuttag(otag);
 		setOutDir(odir);
 		setProfileInds(pflsIndsMap);
 		setProfileScores(pflscores);
-		setKmerModLen(kmerL);
+		setKmerModLenMin(mink);
+		setKmerModLenMin(maxk);
 		
 		comparator = new KmerProfileEucDistComparator();
 		rep = new KmerProfileAvgDistRep(comparator);
