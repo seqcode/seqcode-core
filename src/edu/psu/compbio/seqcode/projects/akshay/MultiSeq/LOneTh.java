@@ -733,11 +733,11 @@ public class LOneTh extends Optimizer {
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e){}
-							if(ADMM_currItr_value.get() < ADMM_maxItr)
+							if(ADMM_currItr_value.get() >= ADMM_maxItr)
 								break;
 						}
 						
-						if(ADMM_currItr_value.get() < ADMM_maxItr)
+						if(ADMM_currItr_value.get() >= ADMM_maxItr)
 							break;
 						
 						// update t_b_u
