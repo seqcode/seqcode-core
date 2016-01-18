@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LBFGSCopy;
 import weka.core.Utils;
@@ -256,6 +257,9 @@ public class LOneTh extends Optimizer {
 			public double[][] history_unorm;
 			
 			public double[][] history_znorm;
+			
+			/** Tracking the iterations of ADMM */
+			public AtomicInteger ADMM_currItr_value = new AtomicInteger(0);
 			
 			// Initialize
 			public void initZandU(){
@@ -545,14 +549,14 @@ public class LOneTh extends Optimizer {
 					threads[i] = t;
 				}
 				
-				for(int itr=0; itr<ADMM_maxItr; itr++){
+				while(ADMM_currItr_value.get() < ADMM_maxItr){
 					if(sm_Debug)
-						System.err.print(". "+ itr + " .");
+						System.err.print(". "+ ADMM_currItr_value.get() + " .");
 					
 					
 					// Update pho 
-					if(itr >0 && !ranADMM && ADMM_pho < ADMM_pho_max)
-						updatePhoAndFold(itr-1);
+					if(ADMM_currItr_value.get() >0 && !ranADMM && ADMM_pho < ADMM_pho_max)
+						updatePhoAndFold(ADMM_currItr_value.get()-1);
 					if(sm_Debug)
 						System.err.print(" "+ADMM_pho+" ");
 					
@@ -574,23 +578,23 @@ public class LOneTh extends Optimizer {
 					}
 					
 					//Now check for convergence at previous iteration
-					if(itr>0){
-						ADMMconverged.set(hasADMMConverged(itr-1));
+					if(ADMM_currItr_value.get()>0){
+						ADMMconverged.set(hasADMMConverged(ADMM_currItr_value.get()-1));
 					}
 					
 					// Print the primal and dual residuals
-					if(itr>0){
+					if(ADMM_currItr_value.get()>0){
 						if(sm_Debug && !ADMMconverged.get()){
 							double primal = 0.0;
 							double dual = 0.0;
 							for(int i=0; i<(numNodes*numNodes); i++){
-								primal += history_primal[itr-1][i];
-								dual += history_dual[itr-1][i];
+								primal += history_primal[ADMM_currItr_value.get()-1][i];
+								dual += history_dual[ADMM_currItr_value.get()-1][i];
 							}
 							System.err.println("Primal residual "+ primal + " , Dual residual "+ dual);
 						}else{
 							System.err.println();
-							System.err.println("ADMM has converged after "+itr+" iterations !!");
+							System.err.println("ADMM has converged after "+ADMM_currItr_value.get()+" iterations !!");
 							updatedZ.set(true);
 							ranADMM=true;
 							break;
@@ -609,10 +613,10 @@ public class LOneTh extends Optimizer {
 						//Also, pool the estimates of u_t from all the threads
 					updateUbar();
 						// Also update norms
-					if(itr>0)
-						updateUnorm(itr-1);
+					if(ADMM_currItr_value.get()>0)
+						updateUnorm(ADMM_currItr_value.get()-1);
 					
-					updateXnorm(itr);
+					updateXnorm(ADMM_currItr_value.get());
 				
 						// Calculate over-relaxed xhat
 					double[] xhat = new double[z.length];
@@ -641,12 +645,16 @@ public class LOneTh extends Optimizer {
 					// Z-update
 					updateZ((2*regularization)/(ADMM_pho*ADMM_numThreads));
 					
-					updateZnorm(itr);
+					updateZnorm(ADMM_currItr_value.get());
 					
 					// Calculate and update the primal and dual residuals
-					updateResiduals(itr);
+					updateResiduals(ADMM_currItr_value.get());
+					
+					ADMM_currItr_value.incrementAndGet();
 					
 				}
+				
+				
 				
 				// Wait till all the threads terminate 
 				boolean anyrunning = true;
@@ -725,7 +733,12 @@ public class LOneTh extends Optimizer {
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e){}
+							if(ADMM_currItr_value.get() < ADMM_maxItr)
+								break;
 						}
+						
+						if(ADMM_currItr_value.get() < ADMM_maxItr)
+							break;
 						
 						// update t_b_u
 						
