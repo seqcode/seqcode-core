@@ -18,7 +18,7 @@ public class LOneTh extends Optimizer {
 		/** Relaxation parameter (to help faster convergence) */
 		public final double ADMM_ALPHA = 1.9;
 		/** Absolute feasibility tolerance for the primal and dual feasibility conditions */
-		public final double ADMM_ABSTOL = 1E-4; 
+		public final double ADMM_ABSTOL = 1E-2; 
 		/** Relative  feasibility tolerance for the primal and dual feasibility conditions */
 		public final double ADMM_RELTOL = 1E-2;
 		
@@ -111,6 +111,8 @@ public class LOneTh extends Optimizer {
 			
 			for(int it=0; it<NODES_maxItr; it++){
 				
+				System.err.println("Running SeqUnwinder for Iteration: "+ it);
+				
 				double[] sm_x_old = new double[sm_x.length];
 				
 				for(int i=0; i<sm_x.length; i++){
@@ -134,7 +136,7 @@ public class LOneTh extends Optimizer {
 					diff = Math.sqrt(diff);
 					if(sm_Debug)
 						System.err.println("Hierarchy update diff: Node: "+n.nodeIndex + " diff is: "+  diff);
-					if( diff > Math.sqrt(numPredictors)*NODES_tol){
+					if( diff > (Math.sqrt(numPredictors)*NODES_tol + NODES_tol*getL2NormX(n.nodeIndex))){
 						converged=false;
 						break;
 					}
