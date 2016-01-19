@@ -386,6 +386,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		if(opt instanceof LOneTh){
 			((LOneTh) opt).setPho(m_ADMM_pho);
 			((LOneTh) opt).set_numThreads(m_ADMM_numThreads);
+			((LOneTh) opt).initUandZ();
 		}
 		opt.setDebugMode(sm_Debug);
 		opt.execute();

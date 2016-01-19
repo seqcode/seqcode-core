@@ -66,10 +66,17 @@ public class LOneTh extends Optimizer {
 		/** Current feature weights for all the nodes in the SeqUnwinder (also contains the intercept term). Dimension :- (numPredictors+1)*numNodes */
 		public double[] sm_x;
 		/** Current feature weights for all the leaf nodes (classes) in the SeqUnwinder (also contains the intercept term). Dimension :- (numPredictors+1)*numClasses */
-		public double[] x; 
+		public double[] x;
+		/** Current values (t) of z (z-step in ADMM). Dimension :- (numPredictors+1)*numNodes*numNodes */
+		public double[] z; // for the Z-step
+		/** Value of z at previous iteration (t-1). Needed to assess convergence  Dimension :- (numPredictors+1)*numNodes*numNodes */
+		public double[] zold;
+		/** Current values of the augmented lagrange dual variables (t). Dimension :- (numPredictors+1)*numNodes*numNodes  */
+		public double[] u;
+		
+		
 		
 		// SeqUnwinder training data
-		
 		/** Training data (Instances)*/
 		public double[][] data;
 		/** Weights of the instances */
@@ -78,6 +85,13 @@ public class LOneTh extends Optimizer {
 		protected int[] cls;
 		
 		// Misc
+		
+		public void initUandZ(){
+			int dim = numPredictors+1;
+			z= new double[numNodes*numNodes*dim];
+			zold = new double[numNodes*numNodes*dim];
+			u= new double[numNodes*numNodes*dim];
+		}
 		
 		/** Boolean variable indicating debug mode */
 		protected boolean sm_Debug;
@@ -245,11 +259,11 @@ public class LOneTh extends Optimizer {
 			//ADMM consensus variables
 			
 			/** Current values (t) of z (z-step in ADMM). Dimension :- (numPredictors+1)*numNodes*numNodes */
-			public double[] z; // for the Z-step
+			//public double[] z; // for the Z-step
 			/** Value of z at previous iteration (t-1). Needed to assess convergence  Dimension :- (numPredictors+1)*numNodes*numNodes */
-			public double[] zold;
+			//public double[] zold;
 			/** Current values of the augmented lagrange dual variables (t). Dimension :- (numPredictors+1)*numNodes*numNodes  */
-			public double[] u;
+			//public double[] u;
 			/** Stores the primal residuals over the course of the ADMM algorithm Dimension:- [ADMM_maxItr][numNodes*numNodes] */
 			public double[][] history_primal;
 			/** Stores the dual residuals over the course of the ADMM algorithm Dimension:- [ADMM_maxItr][numNodes*numNodes] */
@@ -265,11 +279,8 @@ public class LOneTh extends Optimizer {
 			public AtomicInteger ADMM_currItr_value = new AtomicInteger(0);
 			
 			// Initialize
-			public void initZandU(){
+			public void initHistories(){
 				int dim = numPredictors+1;
-				z= new double[numNodes*numNodes*dim];
-				zold = new double[numNodes*numNodes*dim];
-				u= new double[numNodes*numNodes*dim];
 				history_primal = new double[ADMM_maxItr][numNodes*numNodes];
 				history_dual = new double[ADMM_maxItr][numNodes*numNodes];
 				history_xnorm = new double[ADMM_maxItr][numNodes];
@@ -318,8 +329,8 @@ public class LOneTh extends Optimizer {
 					}
 				}
 				
-				// Initialize u, z and zold
-				initZandU();
+				// Initialize histories
+				initHistories();
 				
 				//Initialize t_u
 				for(int i=0; i<ADMM_numThreads; i++){
