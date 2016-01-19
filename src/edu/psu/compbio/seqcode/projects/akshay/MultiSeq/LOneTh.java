@@ -26,7 +26,7 @@ public class LOneTh extends Optimizer {
 		// Fixed SeqUnwinder parameters
 		
 		/** Tolerence for internal Nodes convergence */
-		public final double NODES_tol = 1E-2;
+		public final double NODES_tol = 1E-1;
 		
 		// Tunable ADMM parameters
 		
