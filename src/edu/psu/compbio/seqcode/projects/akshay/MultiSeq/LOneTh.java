@@ -135,9 +135,12 @@ public class LOneTh extends Optimizer {
 						diff += Math.pow(sm_x_old[n.nodeIndex*(numPredictors+1)+w]-sm_x[n.nodeIndex*(numPredictors+1)+w],2);
 					}
 					diff = Math.sqrt(diff);
-					if(sm_Debug)
+					if(sm_Debug){
 						System.err.println("Hierarchy update diff: Node: "+n.nodeIndex + " diff is: "+  diff);
-					if( diff > (Math.sqrt(numPredictors)*NODES_tol + NODES_tol*getL2NormX(n.nodeIndex))){
+						double tmp = NODES_tol*getL2NormX(n.nodeIndex);
+						System.err.println("Target diff : Node: " + n.nodeIndex + " is "+ tmp);
+					}
+					if( diff > NODES_tol*getL2NormX(n.nodeIndex)){
 						converged=false;
 						break;
 					}
