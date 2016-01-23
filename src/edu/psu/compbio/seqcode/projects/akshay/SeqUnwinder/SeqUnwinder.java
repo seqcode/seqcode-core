@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.MultiSeq;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,14 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LTwo.OptEng;
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LTwo.OptObject;
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelationStructure.Node;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.SeqUnwinder.ClassRelationStructure.Node;
 
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.pmml.producer.LogisticProducerHelper;
 
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LOne;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.LOne;
 
 import weka.core.*;
 import weka.core.Capabilities.Capability;
@@ -368,13 +366,13 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		Optimizer opt = null;
 
 		if(m_OptimizationType.equals("L1"))
-			opt = new LOneTh(x,sm_x,m_Data);
+			opt = new LOne(x,sm_x,m_Data);
 		else
 			opt = new LTwo(x,sm_x,m_Data,b);
 
 		opt.setRidge(m_Ridge);
-		if(opt instanceof LOneTh){
-			((LOneTh) opt).setADMMmaxItrs(m_ADMM_MaxIts);
+		if(opt instanceof LOne){
+			((LOne) opt).setADMMmaxItrs(m_ADMM_MaxIts);
 		}
 		opt.setBGFSmaxItrs(m_BGFS_MaxIts);
 		opt.setSeqUnwinderMaxIts(m_SeqUnwinder_MaxIts);
@@ -383,9 +381,9 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		opt.setInstanceWeights(weights);
 		opt.setNumClasses(m_NumClasses);
 		opt.setNumPredictors(m_NumPredictors);
-		if(opt instanceof LOneTh){
-			((LOneTh) opt).setPho(m_ADMM_pho);
-			((LOneTh) opt).set_numThreads(m_ADMM_numThreads);
+		if(opt instanceof LOne){
+			((LOne) opt).setPho(m_ADMM_pho);
+			((LOne) opt).set_numThreads(m_ADMM_numThreads);
 		}
 		opt.setDebugMode(sm_Debug);
 		opt.execute();

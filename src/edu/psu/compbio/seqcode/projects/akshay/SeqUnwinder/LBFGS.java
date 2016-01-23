@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.MultiSeq;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
 
 
 
@@ -80,7 +80,7 @@ package edu.psu.compbio.seqcode.projects.akshay.MultiSeq;
  *         1990). Robert Dodier: Java translation, August 1997.
  */
 
-public class LBFGSCopy {
+public class LBFGS {
         /**
          * Specialized exception class for LBFGS; contains the <code>iflag</code>
          * value returned by <code>lbfgs</code>.
@@ -113,7 +113,7 @@ public class LBFGSCopy {
          * should be greater than 1e-4.
          */
 
-        public  double gtol = 0.9;
+        public static double gtol = 0.9;
 
         /**
          * Specify lower bound for the step in the line search. The default value is
@@ -122,7 +122,7 @@ public class LBFGSCopy {
          * scaled (in which case the exponent should be increased).
          */
 
-        public  double stpmin = 1e-5;
+        public static double stpmin = 1e-5;
 
         /**
          * Specify upper bound for the step in the line search. The default value is
@@ -131,7 +131,7 @@ public class LBFGSCopy {
          * scaled (in which case the exponent should be increased).
          */
 
-        public  double stpmax = 1e20;
+        public static double stpmax = 1e20;
 
         public  int maxfev = 200;
 
@@ -156,7 +156,7 @@ public class LBFGSCopy {
 
         private  double[] w = null;
         
-        private McsrchCopy mscrch;
+        private Mcsrch mscrch;
 
         /**
          * This method returns the total number of evaluations of the objective
@@ -331,8 +331,8 @@ public class LBFGSCopy {
          * @throws LBFGS.ExceptionWithIflag
          */
         
-        public LBFGSCopy() {
-        	mscrch = new McsrchCopy();
+        public LBFGS() {
+        	mscrch = new Mcsrch();
 		}
 
         public  void lbfgs(int n, int m, double[] x, double f, double[] g,

@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.MultiSeq;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LBFGSCopy;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.LBFGS;
 import weka.core.Utils;
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LBFGSCopy.ExceptionWithIflag;
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelationStructure;
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelationStructure.Node;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.LBFGS.ExceptionWithIflag;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.SeqUnwinder.ClassRelationStructure;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.SeqUnwinder.ClassRelationStructure.Node;
 
-public class LOneTh extends Optimizer {
+public class LOne extends Optimizer {
 	// Fixed ADMM parameters
 	
 		/** Relaxation parameter (to help faster convergence) */
@@ -102,7 +102,7 @@ public class LOneTh extends Optimizer {
 		public double[] getX(){return x;}
 		public double[] getsmX(){return sm_x;}
 		
-		public LOneTh(double[] xinit, double[] sm_xinit, double[][] d) {
+		public LOne(double[] xinit, double[] sm_xinit, double[][] d) {
 			x = xinit;
 			sm_x = sm_xinit;
 			data=d;
@@ -790,7 +790,7 @@ public class LOneTh extends Optimizer {
 						double eps = 0.1;
 						double xtol = 10e-16;
 						
-						LBFGSCopy lineFinder = new LBFGSCopy();
+						LBFGS lineFinder = new LBFGS();
 						
 						try {
 							lineFinder.lbfgs(t_b_x.length, m, t_b_x, obj, grad, false, diag, iprint, eps, xtol, iflag);

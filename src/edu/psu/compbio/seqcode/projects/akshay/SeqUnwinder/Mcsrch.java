@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.MultiSeq;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
 
 /* Mcsrch.java
  * Copyright (C) 1999, Robert Dodier (robert_dodier@yahoo.com)
@@ -24,26 +24,30 @@ package edu.psu.compbio.seqcode.projects.akshay.MultiSeq;
  * in the file <tt>LBFGS.java</tt> for more information.
  */
 public class Mcsrch {
-        private static int infoc[] = new int[1], j = 0;
-        private static double dg = 0, dgm = 0, dginit = 0, dgtest = 0,
+        private  int infoc[] = new int[1], j = 0;
+        private  double dg = 0, dgm = 0, dginit = 0, dgtest = 0,
                         dgx[] = new double[1], dgxm[] = new double[1],
                         dgy[] = new double[1], dgym[] = new double[1], finit = 0,
                         ftest1 = 0, fm = 0, fx[] = new double[1], fxm[] = new double[1],
                         fy[] = new double[1], fym[] = new double[1];
-        static double stx[] = new double[1];
-        static double sty[] = new double[1];
-        static double stmin = 0, stmax = 0, width = 0, width1 = 0;
-        static boolean brackt[] = new boolean[1];
-        static boolean stage1 = false;
-        private static final double ONE_HALF = 0.5, TWO_THIRDS = 0.66, FOUR = 4;
+         double stx[] = new double[1];
+         double sty[] = new double[1];
+         double stmin = 0, stmax = 0, width = 0, width1 = 0;
+         boolean brackt[] = new boolean[1];
+         boolean stage1 = false;
+        private  final double ONE_HALF = 0.5, TWO_THIRDS = 0.66, FOUR = 4;
 
-        static double sqr(double x) {
+         double sqr(double x) {
                 return x * x;
         }
 
-        static double max3(double x, double y, double z) {
+         double max3(double x, double y, double z) {
                 return x < y ? (y < z ? z : y) : (x < z ? z : x);
         }
+         
+         public Mcsrch() {
+			// TODO Auto-generated constructor stub
+		}
 
         /**
          * Minimize a function along a search direction. This code is a Java
@@ -166,7 +170,7 @@ public class Mcsrch {
          *            Temporary storage array, of length <code>n</code>.
          */
 
-        public static void mcsrch(final int n, double[] x, double f, double[] g,
+        public  void mcsrch(final int n, double[] x, double f, double[] g,
                         double[] s, int is0, double[] stp, double ftol, double xtol,
                         int maxfev, int[] info, int[] nfev, double[] wa, int[] iprint) {
 //              System.err.println("mc " + f + " " + stp[0]);
@@ -435,7 +439,7 @@ public class Mcsrch {
          *         part of Minpack project. Argonne Nat'l Laboratory, June 1983.
          *         Robert Dodier: Java translation, August 1997.
          */
-        public static void mcstep(double[] stx1, double[] fx1, double[] dx,
+        public  void mcstep(double[] stx1, double[] fx1, double[] dx,
                         double[] sty1, double[] fy1, double[] dy, double[] stp, double fp,
                         double dp, boolean[] brackt1, double stpmin, double stpmax,
                         int[] info, int[] iprint) {
@@ -614,7 +618,7 @@ public class Mcsrch {
                 return;
         }
 
-        static void setSTP(double[] stp, double value) {
+         void setSTP(double[] stp, double value) {
                 if (value < 0)// || value > 10)
                         throw new IllegalArgumentException(value + "");
                 if (value > 1000) {

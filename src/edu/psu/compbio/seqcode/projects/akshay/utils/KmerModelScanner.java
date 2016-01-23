@@ -144,13 +144,13 @@ public class KmerModelScanner {
 	 * @param oddsThresh
 	 */
 	public void clusterKmerProfilesAtMountains(boolean useCache, String genpath, double oddsThresh) throws IOException{
-		fillMountains(useCache,genpath,oddsThresh);
-		ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,posProfiles,posMountainsToIndex,k,posMountainsScores,outbase,outdir);
-		clusterManager.execute("pos");
-		if(negPeaks.size() !=0 && negRegions.size() !=0){
-			clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,negProfiles,negMountainsToIndex,k,negMountainsScores,outbase,outdir);
-			clusterManager.execute("neg");
-		}
+		//fillMountains(useCache,genpath,oddsThresh);
+		//ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,posProfiles,posMountainsToIndex,k,posMountainsScores,outbase,outdir);
+		//clusterManager.execute("pos");
+		//if(negPeaks.size() !=0 && negRegions.size() !=0){
+		//	clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,negProfiles,negMountainsToIndex,k,negMountainsScores,outbase,outdir);
+		//	clusterManager.execute("neg");
+		//}
 	}
 	
 	

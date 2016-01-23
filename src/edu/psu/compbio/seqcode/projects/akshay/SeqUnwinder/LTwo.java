@@ -1,13 +1,13 @@
-package edu.psu.compbio.seqcode.projects.akshay.MultiSeq;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
 
 import weka.core.Optimization;
 import weka.core.RevisionUtils;
 import weka.core.Utils;
 
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LTwo.OptEng;
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.LTwo.OptObject;
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelationStructure;
-import edu.psu.compbio.seqcode.projects.akshay.MultiSeq.SeqUnwinder.ClassRelationStructure.Node;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.LTwo.OptEng;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.LTwo.OptObject;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.SeqUnwinder.ClassRelationStructure;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.SeqUnwinder.ClassRelationStructure.Node;
 
 public class LTwo extends Optimizer{
 

@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.clusterkmerprofile;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.clusterkmerprofile;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -31,11 +31,7 @@ public class ClusterProfiles {
 	private KmerProfileAvgDistRep rep;
 	private int K;
 	private ArrayList<int[]> profiles;
-	// Out tag name
-	private String outtag="out";
-	// The name of the directory that holds all the results
-	// Assumes that the directory has already been created
-	private File outbase;
+	private File outdir;
 	private HashMap<Integer,String> indToLocation;
 	private HashMap<Integer,Double> intToLogitScore;
 	private int minK=4;
@@ -64,43 +60,46 @@ public class ClusterProfiles {
 	//Settors
 	public void setProfiles(ArrayList<int[]> data){profiles=data;}
 	public void setNumClusters(int nc){K=nc;}
-	public void setOuttag(String otag){outtag=otag;}
-	public void setOutDir(File odir){outbase = odir;}
 	public void setProfileInds(HashMap<Integer,String> plfsinds){indToLocation=plfsinds;}
 	public void setProfileScores(HashMap<Integer,Double> plfscore){intToLogitScore = plfscore;}
 	public void setKmerModLenMin(int k){minK = k;}
 	public void setKmerModLenMax(int k){maxK = k;}
+	public void setOutdir(File f){outdir = f;}
 	
 	
 	/**
 	 * The method that should be executed after initiating the class object
 	 * @throws IOException 
 	 */
-	public void execute(String tag) throws IOException{
+	public List<Integer> execute() throws IOException{
 		Collection<Cluster<int[]>> clusters = ((KMeansClustering<int[]>)method).clusterElements(profiles,0.01);
 		Vector<int[]> clustermeans = ((KMeansClustering<int[]>)method).getClusterMeans();
 		
 		//Print the clusters
-		writeClusters(clustermeans,tag);
-		
+		List<Integer> clusAssignment = writeClusters(clustermeans);
 		//Plot the clusters
 		Mappable orderedClusters = reorderKmerProfileMaps(clusters);
-		drawClusterHeatmap(orderedClusters, tag);
-		printMatrix(orderedClusters,tag);
+		drawClusterHeatmap(orderedClusters);
+		printMatrix(orderedClusters);
+		
+		return clusAssignment;
 	}
 	
 	
 	
 	// Slave methods
-	private void writeClusters(Vector<int[]> clusMeans, String tag) throws IOException{
-		File clusout = new File(outbase.getAbsolutePath()+File.separator+outtag+"_"+tag+"_clusterAssignment.list");
+	private List<Integer> writeClusters(Vector<int[]> clusMeans) throws IOException{
+		List<Integer> clusterAssignment = new ArrayList<Integer>();
+		File clusout = new File(outdir.getAbsolutePath()+File.separator+"ClusterAssignment.list");
 		FileWriter ow = new FileWriter(clusout);
 		BufferedWriter bw = new BufferedWriter(ow);
 		for(int p=0; p<profiles.size(); p++){
 			int memebership = getClusterAssignment(profiles.get(p),clusMeans);
+			clusterAssignment.add(memebership);
 			bw.write(indToLocation.get(p)+"\t"+Integer.toString(memebership)+"\t"+Double.toString(intToLogitScore.get(p))+"\n");
 		}
 		bw.close();
+		return clusterAssignment;
 	}
 	
 	private int getClusterAssignment(int[] pfl, Vector<int[]> clusMeans){
@@ -205,7 +204,7 @@ public class ClusterProfiles {
 		return ret;
 	}
 	
-	private void printMatrix(Mappable mat, String tag) throws IOException{
+	private void printMatrix(Mappable mat) throws IOException{
 		StringBuilder sb = new StringBuilder();
 		sb.append("Region"+"\t");
 		for(int c=0; c<mat.colnames.length; c++){
@@ -220,7 +219,7 @@ public class ClusterProfiles {
 			sb.deleteCharAt(sb.length()-1);sb.append("\n");
 		}
 		
-		File matout = new File(outbase.getAbsolutePath()+File.separator+outtag+"_"+tag+"_kmer.mat");
+		File matout = new File(outdir.getAbsoluteFile()+File.separator+"K-mer.mat");
 		FileWriter ow = new FileWriter(matout);
 		BufferedWriter bw = new BufferedWriter(ow);
 		bw.write(sb.toString());
@@ -229,7 +228,7 @@ public class ClusterProfiles {
 		
 	}
 	
-	public void drawClusterHeatmap(Mappable plotMat, String tag) throws IOException{
+	public void drawClusterHeatmap(Mappable plotMat) throws IOException{
 		double[][] matrix = plotMat.matrix;
 		HeatChart map = new HeatChart(matrix);
 		map.setHighValueColour(new Color(10));
@@ -238,7 +237,7 @@ public class ClusterProfiles {
 		map.setAxisLabelsFont(new Font("Ariel",Font.PLAIN,55));
 		map.setXValues(plotMat.rownmanes);
 		map.setYValues(plotMat.colnames);
-		File f = new File(outbase.getAbsolutePath()+File.separator+outtag+"_"+tag+"_clusters.png");
+		File f = new File(outdir.getAbsoluteFile()+File.separator+"Clusters.png");
 		map.saveToFile(f);
 	}
 	
@@ -251,15 +250,15 @@ public class ClusterProfiles {
 	 * @param pfls
 	 * @param otag
 	 */
-	public ClusterProfiles(int itrs, int k, ArrayList<int[]> pfls, HashMap<Integer,String> pflsIndsMap, int mink, int maxk, HashMap<Integer,Double> pflscores, String otag, File odir) {
+	public ClusterProfiles(int itrs, int k, ArrayList<int[]> pfls, HashMap<Integer,String> pflsIndsMap, int mink, int maxk, HashMap<Integer,Double> pflscores,File odir) {
 		setProfiles(pfls);
 		setNumClusters(k);
-		setOuttag(otag);
-		setOutDir(odir);
+		
 		setProfileInds(pflsIndsMap);
 		setProfileScores(pflscores);
 		setKmerModLenMin(mink);
 		setKmerModLenMin(maxk);
+		this.setOutdir(odir);
 		
 		comparator = new KmerProfileEucDistComparator();
 		rep = new KmerProfileAvgDistRep(comparator);

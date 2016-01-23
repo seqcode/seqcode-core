@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.clusterkmerprofile;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.clusterkmerprofile;
 
 import java.util.Set;
 

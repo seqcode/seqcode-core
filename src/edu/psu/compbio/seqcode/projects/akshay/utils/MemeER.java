@@ -48,12 +48,18 @@ public class MemeER {
 	}
 	
 	
-	public Pair<List<WeightMatrix>,List<WeightMatrix>> execute(List<String> sequences, String memeOutDirName, boolean bestOnly){
+	public Pair<List<WeightMatrix>,List<WeightMatrix>> execute(List<String> sequences, File memeOutDirFullName, boolean bestOnly){
 		List<WeightMatrix> wm = new ArrayList<WeightMatrix>();
 		List<WeightMatrix> fm = new ArrayList<WeightMatrix>();
-		String wDir = System.getProperty("user.dir");
-		String memeOutDir = wDir+"/meme_out";
-		File workingDir = new File(wDir);
+		String memeOutDir = null;
+		File workingDir = new File(System.getProperty("user.dir"));
+		if(memeOutDirFullName == null){
+			String wDir = System.getProperty("user.dir");
+			memeOutDir = wDir+"/meme_out";
+		}else{
+			memeOutDir = memeOutDirFullName.getAbsolutePath();
+		}
+		
 		try {
 			//Set up the input file
 			File seqFile= File.createTempFile("seq", ".fa", workingDir);
@@ -301,7 +307,7 @@ public class MemeER {
 					}
 				}
 			
-				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, "results", false);
+				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, null, false);
 				List<WeightMatrix> wm = matrices.car();
 				List<WeightMatrix> fm = matrices.cdr();
 			
@@ -333,7 +339,7 @@ public class MemeER {
 		}
 	}
 	
-	protected static double lowercaseFraction(String seq){
+	public static double lowercaseFraction(String seq){
 		double count = 0;
 		for (char c:seq.toCharArray())
 			if (Character.isLowerCase(c) || c=='N')
@@ -341,7 +347,7 @@ public class MemeER {
 		return count/(double)seq.length();
 	}
 	
-	protected  double[] motifROCScores(List<WeightMatrix> matrices, List<String> posSeqs, String[] negSeqs){
+	public  double[] motifROCScores(List<WeightMatrix> matrices, List<String> posSeqs, String[] negSeqs){
 		double[] rocScores = new double[matrices.size()];
 		int m=0;
 		for(WeightMatrix motif : matrices){
@@ -416,7 +422,7 @@ public class MemeER {
 		}
 	}
 	
-	protected static List<Region> randomRegionPick(Genome gen, List<Region> blackList, int numSamples, int sampleSize){
+	public static List<Region> randomRegionPick(Genome gen, List<Region> blackList, int numSamples, int sampleSize){
 		List<Region> regs = new ArrayList<Region>();
 		Random rand = new Random();
 		int validSamples=0;
