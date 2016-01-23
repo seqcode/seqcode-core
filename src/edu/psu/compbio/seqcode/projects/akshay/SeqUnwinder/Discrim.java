@@ -434,6 +434,13 @@ public class Discrim {
 		}
 		runner.setKmerWeights(weights);
 		
+		// Name of the output folder to write all the output file names
+		String out = Args.parseString(args, "out", "out");
+		runner.setOutbase(out);
+		
+		runner.makeOutPutDirs(out);
+		
+		
 		// Peaks file name
 		String peaksfilename = Args.parseString(args, "peaks", null);
 		if(peaksfilename == null){
@@ -446,9 +453,7 @@ public class Discrim {
 		int numClus = Args.parseInteger(args, "numClusters", 3);
 		runner.setNumKmerClusters(numClus);
 		
-		// Name of the output folder to write all the output file names
-		String out = Args.parseString(args, "out", "out");
-		runner.setOutbase(out);
+		
 		
 		runner.setRandomRegs();
 		
