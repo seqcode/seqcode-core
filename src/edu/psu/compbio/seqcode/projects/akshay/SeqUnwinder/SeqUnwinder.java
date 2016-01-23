@@ -13,12 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.LOne;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.LTwo;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.Optimizer;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.SeqUnwinder.ClassRelationStructure;
 import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.SeqUnwinder.ClassRelationStructure.Node;
 
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.pmml.producer.LogisticProducerHelper;
-
-import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.LOne;
 
 import weka.core.*;
 import weka.core.Capabilities.Capability;
@@ -32,72 +34,72 @@ import weka.filters.unsupervised.attribute.ReplaceMissingValues;
 public class SeqUnwinder extends AbstractClassifier implements OptionHandler, WeightedInstancesHandler, PMMLProducer{
 
 	// Model parameters compatible with a normal Multinomial logit model
-	
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -6260376163872744102L;
-	
+
 	/** The coefficients of the optimized Structured Multinomial logit model. However, this only stores the leaf node parameters*/
 	protected double[][] m_Par; // [NumPredictors+Intercept][NumClasses]
-	
+
 	/** The training data saved as a matrix */
 	protected double[][] m_Data; // [NumInstances][NumPredictors+Intercept]
-	
+
 	/** The number of attributes in the model */
 	protected int m_NumPredictors;
-	
+
 	/** The number of class lables or the number of leaf nodes */
 	protected int m_NumClasses;
-	
+
 	/** The regularization parameter, Is multiplied to the logit part of the loss function */
 	protected double m_Ridge = 100;
-	
+
 	/** The index of the class attribute. Usually the last attribute */
 	protected int m_ClassIndex;
-	
+
 	/** An attribute filter */
 	private RemoveUseless m_AttFilter;
-	
+
 	/** The filter used to make attributes numeric. */
 	private NominalToBinary m_NominalToBinary;
-	
+
 	/** The filter used to get rid of missing values. */
 	private ReplaceMissingValues m_ReplaceMissingValues;
-	 
+
 	/** Log-likelihood of the searched model */
 	protected double m_LL;
-	
+
 	/** The maximum number of iterations. */
 	private int m_BGFS_MaxIts = -1;
-	  
+
 	private Instances m_structure;
-	
+
 	private String m_OptimizationType = "L1";
-	
+
 	// Model parameters of the structured multinomial logit not compatible with the weka logit class
-	
+
 	/** All model parameters including the internal non-leaf nodes */
 	protected double[][] sm_Par; //[NumPredictors+Intercept][NumNodes]
-	
+
 	/** Total number of nodes in the structured representation of the classes. Including the root node */
 	protected int sm_NumNodes;
-	
+
 	protected int sm_NumLayers;
-	
+
 	/** Class Structure relationships */
 	public ClassRelationStructure sm_ClassStructure;
-	
+
 	protected boolean sm_Debug;
-	
+
 	protected int m_ADMM_MaxIts = 1000;
-	
+
 	protected double m_ADMM_pho=0.001;
-	
+
 	protected int m_ADMM_numThreads = 5;
-	
+
 	protected int m_SeqUnwinder_MaxIts = 10;
-	
+
 	// Setters
 	/**
 	 * Sets the Ridge parameter
@@ -114,13 +116,13 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		m_BGFS_MaxIts = newMaxIts;
 	}
 	public void serADMMMaxItrs(int ADMMmax){m_ADMM_MaxIts = ADMMmax;}
-	
+
 	public void setSeqUnwinderMaxItrs(int SeqUnwinderMaxIts){m_SeqUnwinder_MaxIts = SeqUnwinderMaxIts;}
-	
+
 	public void setSmDebug(boolean smD){
 		sm_Debug = smD;
 	}	
-	
+
 	//Gettors
 
 	/**
@@ -143,7 +145,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	public boolean getSmDebug(){
 		return sm_Debug;
 	}
-	
+
 	/**
 	 * Returns the coefficients of the leaf nodes of the model. The first dimension
 	 * indexes the attributes, and the second the classes.
@@ -160,8 +162,8 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	public double[][] coefficientsFull(){
 		return sm_Par;
 	}
-	
-	
+
+
 	/**
 	 * Returns default capabilities of the classifier.
 	 * @return the capabilities of this classifier
@@ -171,20 +173,20 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		Capabilities result = super.getCapabilities();
 		result.disableAll();
 
-	    // attributes
-	    result.enable(Capability.NOMINAL_ATTRIBUTES);
-	    result.enable(Capability.NUMERIC_ATTRIBUTES);
-	    result.enable(Capability.DATE_ATTRIBUTES);
-	    result.enable(Capability.MISSING_VALUES);
+		// attributes
+		result.enable(Capability.NOMINAL_ATTRIBUTES);
+		result.enable(Capability.NUMERIC_ATTRIBUTES);
+		result.enable(Capability.DATE_ATTRIBUTES);
+		result.enable(Capability.MISSING_VALUES);
 
-	    // class
-	    result.enable(Capability.NOMINAL_CLASS);
-	    result.enable(Capability.MISSING_CLASS_VALUES);
+		// class
+		result.enable(Capability.NOMINAL_CLASS);
+		result.enable(Capability.MISSING_CLASS_VALUES);
 
-	    return result;
+		return result;
 	}
-	  
-	
+
+
 	@Override
 	public double[] distributionForInstance(Instance instance) throws Exception {
 		m_ReplaceMissingValues.input(instance);
@@ -207,40 +209,40 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		double[] distribution = evaluateProbability(instDat);
 		return distribution;
 	}
-	  
+
 	private double[] evaluateProbability(double[] data) {
 		double[] prob = new double[m_NumClasses], v = new double[m_NumClasses];
 
-	    // Log-posterior before normalizing
-	    for (int j = 0; j < m_NumClasses ; j++) {
-	      for (int k = 0; k <= m_NumPredictors; k++) {
-	        v[j] += m_Par[k][j] * data[k];
-	      }
-	    }
+		// Log-posterior before normalizing
+		for (int j = 0; j < m_NumClasses ; j++) {
+			for (int k = 0; k <= m_NumPredictors; k++) {
+				v[j] += m_Par[k][j] * data[k];
+			}
+		}
 
-	    // Do so to avoid scaling problems
-	    for (int m = 0; m < m_NumClasses; m++) {
-	      double sum = 0;
-	      for (int n = 0; n < m_NumClasses; n++) {
-	        sum += Math.exp(v[n] - v[m]);
-	      }
-	      prob[m] = 1 / (sum);
-	    }
+		// Do so to avoid scaling problems
+		for (int m = 0; m < m_NumClasses; m++) {
+			double sum = 0;
+			for (int n = 0; n < m_NumClasses; n++) {
+				sum += Math.exp(v[n] - v[m]);
+			}
+			prob[m] = 1 / (sum);
+		}
 
-	    return prob;
+		return prob;
 	}
-	
-	
+
+
 	@Override
 	public void buildClassifier(Instances train) throws Exception {
-		
+
 		// can classifier handle the data?
 		getCapabilities().testWithFail(train);
-				    
+
 		// remove instances with missing class
 		train = new Instances(train);
 		train.deleteWithMissingClass();
-				    
+
 		// Replace missing values
 		m_ReplaceMissingValues = new ReplaceMissingValues();
 		m_ReplaceMissingValues.setInputFormat(train);
@@ -384,6 +386,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		if(opt instanceof LOne){
 			((LOne) opt).setPho(m_ADMM_pho);
 			((LOne) opt).set_numThreads(m_ADMM_numThreads);
+			((LOne) opt).initUandZ();
 		}
 		opt.setDebugMode(sm_Debug);
 		opt.execute();
@@ -404,7 +407,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 				}
 			}
 		}
-		
+
 		// Don't need data matrix anymore
 		m_Data = null;
 
@@ -426,11 +429,11 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	@Override
 	public String toPMML(Instances train) {
 		return LogisticProducerHelper.toPMML(train, m_structure, m_Par,
-			      m_NumClasses);
+				m_NumClasses);
 	}
 
-	
-	
+
+
 	public String toString(){
 		StringBuffer temp = new StringBuffer();
 		String result = "";
@@ -446,7 +449,7 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 				attLength = m_structure.attribute(i).name().length();
 			}
 		}
-		
+
 		if ("Intercept".length() > attLength) {
 			attLength = "Intercept".length();
 		}
@@ -456,105 +459,105 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		}
 		attLength += 2;
 
-	    int colWidth = 0;
-	    // check length of class names
-	    for (Node n : sm_ClassStructure.allNodes.values()) {
-	    	if (n.nodeName.length() > colWidth) {
-	    		colWidth = n.nodeName.length();
-	    	}
-	    }
+		int colWidth = 0;
+		// check length of class names
+		for (Node n : sm_ClassStructure.allNodes.values()) {
+			if (n.nodeName.length() > colWidth) {
+				colWidth = n.nodeName.length();
+			}
+		}
 
-	    // check against coefficients and odds ratios
-	    for (int j = 1; j <= m_NumPredictors; j++) {
-	    	for (Node n : sm_ClassStructure.allNodes.values() ) {
-	    		if (Utils.doubleToString(sm_Par[j][n.nodeIndex], 12, 4).trim().length() > colWidth) {
-	    			colWidth = Utils.doubleToString(sm_Par[j][n.nodeIndex], 12, 4).trim().length();
-	    		}
-	    		double ORc = Math.exp(sm_Par[j][n.nodeIndex]);
-	    		String t = " "
-	    				+ ((ORc > 1e10) ? "" + ORc : Utils.doubleToString(ORc, 12, 4));
-	    		if (t.trim().length() > colWidth) {
-	    			colWidth = t.trim().length();
-	    		}
-	    	}
-	    }
+		// check against coefficients and odds ratios
+		for (int j = 1; j <= m_NumPredictors; j++) {
+			for (Node n : sm_ClassStructure.allNodes.values() ) {
+				if (Utils.doubleToString(sm_Par[j][n.nodeIndex], 12, 4).trim().length() > colWidth) {
+					colWidth = Utils.doubleToString(sm_Par[j][n.nodeIndex], 12, 4).trim().length();
+				}
+				double ORc = Math.exp(sm_Par[j][n.nodeIndex]);
+				String t = " "
+						+ ((ORc > 1e10) ? "" + ORc : Utils.doubleToString(ORc, 12, 4));
+				if (t.trim().length() > colWidth) {
+					colWidth = t.trim().length();
+				}
+			}
+		}
 
-	    if ("Class".length() > colWidth) {
-	    	colWidth = "Class".length();
-	    }
-	    colWidth += 2;
+		if ("Class".length() > colWidth) {
+			colWidth = "Class".length();
+		}
+		colWidth += 2;
 
-	    temp.append("\nCoefficients...\n");
-	    temp.append(Utils.padLeft(" ", attLength)
-	      + Utils.padLeft("Class", colWidth) + "\n");
-	    temp.append(Utils.padRight("Variable", attLength));
+		temp.append("\nCoefficients...\n");
+		temp.append(Utils.padLeft(" ", attLength)
+				+ Utils.padLeft("Class", colWidth) + "\n");
+		temp.append(Utils.padRight("Variable", attLength));
 
-	    for (Node n : sm_ClassStructure.allNodes.values()) {
-	    	String className = n.nodeName;
-	    	temp.append(Utils.padLeft(className, colWidth));
-	    }
-	    temp.append("\n");
-	    int separatorL = attLength + ((sm_NumNodes) * colWidth);
-	    for (int i = 0; i < separatorL; i++) {
-	    	temp.append("=");
-	    }
-	    temp.append("\n");
+		for (Node n : sm_ClassStructure.allNodes.values()) {
+			String className = n.nodeName;
+			temp.append(Utils.padLeft(className, colWidth));
+		}
+		temp.append("\n");
+		int separatorL = attLength + ((sm_NumNodes) * colWidth);
+		for (int i = 0; i < separatorL; i++) {
+			temp.append("=");
+		}
+		temp.append("\n");
 
-	    int j = 1;
-	    for (int i = 0; i < m_structure.numAttributes(); i++) {
-	    	if (i != m_structure.classIndex()) {
-	    		temp.append(Utils.padRight(m_structure.attribute(i).name(), attLength));
-	    		for (Node n : sm_ClassStructure.allNodes.values()) {
-	    			temp.append(Utils.padLeft(Utils.doubleToString(sm_Par[j][n.nodeIndex], 12, 4).trim(), colWidth));
-	    		}
-	    		temp.append("\n");
-	    		j++;
-	      }
-	    }
+		int j = 1;
+		for (int i = 0; i < m_structure.numAttributes(); i++) {
+			if (i != m_structure.classIndex()) {
+				temp.append(Utils.padRight(m_structure.attribute(i).name(), attLength));
+				for (Node n : sm_ClassStructure.allNodes.values()) {
+					temp.append(Utils.padLeft(Utils.doubleToString(sm_Par[j][n.nodeIndex], 12, 4).trim(), colWidth));
+				}
+				temp.append("\n");
+				j++;
+			}
+		}
 
-	    temp.append(Utils.padRight("Intercept", attLength));
-	    for (Node n : sm_ClassStructure.allNodes.values()) {
-	    	temp.append(Utils.padLeft(Utils.doubleToString(sm_Par[0][n.nodeIndex], 10, 4).trim(), colWidth));
-	    }
-	    temp.append("\n");
+		temp.append(Utils.padRight("Intercept", attLength));
+		for (Node n : sm_ClassStructure.allNodes.values()) {
+			temp.append(Utils.padLeft(Utils.doubleToString(sm_Par[0][n.nodeIndex], 10, 4).trim(), colWidth));
+		}
+		temp.append("\n");
 
-	    temp.append("\n\nOdds Ratios...\n");
-	    temp.append(Utils.padLeft(" ", attLength)
-	      + Utils.padLeft("Class", colWidth) + "\n");
-	    temp.append(Utils.padRight("Variable", attLength));
+		temp.append("\n\nOdds Ratios...\n");
+		temp.append(Utils.padLeft(" ", attLength)
+				+ Utils.padLeft("Class", colWidth) + "\n");
+		temp.append(Utils.padRight("Variable", attLength));
 
-	    for (Node n: sm_ClassStructure.allNodes.values()) {
-	    	String className = n.nodeName;
-	    	temp.append(Utils.padLeft(className, colWidth));
-	    }
-	    temp.append("\n");
-	    for (int i = 0; i < separatorL; i++) {
-	    	temp.append("=");
-	    }
-	    temp.append("\n");
+		for (Node n: sm_ClassStructure.allNodes.values()) {
+			String className = n.nodeName;
+			temp.append(Utils.padLeft(className, colWidth));
+		}
+		temp.append("\n");
+		for (int i = 0; i < separatorL; i++) {
+			temp.append("=");
+		}
+		temp.append("\n");
 
-	    j = 1;
-	    for (int i = 0; i < m_structure.numAttributes(); i++) {
-	    	if (i != m_structure.classIndex()) {
-	    		temp.append(Utils.padRight(m_structure.attribute(i).name(), attLength));
-	    		for (Node n : sm_ClassStructure.allNodes.values()) {
-	    			double ORc = Math.exp(sm_Par[j][n.nodeIndex]);
-	    			String ORs = " "+ ((ORc > 1e10) ? "" + ORc : Utils.doubleToString(ORc, 12, 4));
-	    			temp.append(Utils.padLeft(ORs.trim(), colWidth));
-	    		}
-	    		temp.append("\n");
-	    		j++;
-	    	}
-	    }
+		j = 1;
+		for (int i = 0; i < m_structure.numAttributes(); i++) {
+			if (i != m_structure.classIndex()) {
+				temp.append(Utils.padRight(m_structure.attribute(i).name(), attLength));
+				for (Node n : sm_ClassStructure.allNodes.values()) {
+					double ORc = Math.exp(sm_Par[j][n.nodeIndex]);
+					String ORs = " "+ ((ORc > 1e10) ? "" + ORc : Utils.doubleToString(ORc, 12, 4));
+					temp.append(Utils.padLeft(ORs.trim(), colWidth));
+				}
+				temp.append("\n");
+				j++;
+			}
+		}
 
-	    return temp.toString();
-		
+		return temp.toString();
+
 	}
-	
-	
-	
+
+
+
 	protected class ClassRelationStructure implements Serializable{
-		
+
 		/**
 		 * 
 		 */
@@ -565,69 +568,69 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 		protected Map<Integer,Node> allNodes = new HashMap<Integer,Node>();
 		protected int numLayers;
 
-		
-		
-		
-		
+
+
+
+
 		public ClassRelationStructure(File structureFile,int nLayers) throws IOException {
 			BufferedReader br = new BufferedReader(new FileReader(structureFile));
 			String line;
 			numLayers=nLayers;
-			
-			
+
+
 			for(int i=0; i<numLayers; i++){
 				layers.add(new ArrayList<Node>());
 			}
-			
-	        while ((line = br.readLine()) != null) {
-	        	if(!line.startsWith("#")){
-	        		String[] pieces = line.split("\t");
-	        		if(pieces.length <6){System.err.println("Incorrect class structure format!!!"); System.exit(1);}
-	        		Node currNode = new Node(Integer.parseInt(pieces[0]), pieces[1],Integer.parseInt(pieces[2]) == 1? true : false);
-	        		// Add parents indexes
-	        		if(!currNode.nodeName.contains("Root")){
-	        			String[] pInds = pieces[3].split(",");
-	        			for(String s : pInds){
-	        				currNode.addParent(Integer.parseInt(s));
-	        			}
-	        		}else{
-	        			currNode.isRoot = true;
-	        		}
-	        		// Add children indexes
-	        		if(!currNode.isLeaf){
-	        			String[] cInds = pieces[4].split(",");
-	        			for(String s : cInds){
-	        				currNode.addChild(Integer.parseInt(s));
-	        			}
-	        		}
-	        		allNodes.put(currNode.nodeIndex, currNode);
-	        		if(currNode.isRoot)
-	        			root = currNode;
-	        		if(currNode.isLeaf)
-	        			leafs.add(currNode);
-	        		layers.get(Integer.parseInt(pieces[5])).add(currNode);	
-	        	}
-	        }br.close();
-	        
-	        // Print the loaded class structure
-	        if(getSmDebug()){
-	        	StringBuilder structure = new StringBuilder();
-	        	for(int l=0; l<layers.size(); l++){
-	        		
-	        		for(Node n : layers.get(l)){
-	        			structure.append(n.nodeName); structure.append("\t");
-	        		}
-	        		structure.deleteCharAt(structure.length()-1);
-	        		structure.append("\n");
-	        	}
-	        	
-	        	System.err.println(structure.toString());
-	        }
+
+			while ((line = br.readLine()) != null) {
+				if(!line.startsWith("#")){
+					String[] pieces = line.split("\t");
+					if(pieces.length <6){System.err.println("Incorrect class structure format!!!"); System.exit(1);}
+					Node currNode = new Node(Integer.parseInt(pieces[0]), pieces[1],Integer.parseInt(pieces[2]) == 1? true : false);
+					// Add parents indexes
+					if(!currNode.nodeName.contains("Root")){
+						String[] pInds = pieces[3].split(",");
+						for(String s : pInds){
+							currNode.addParent(Integer.parseInt(s));
+						}
+					}else{
+						currNode.isRoot = true;
+					}
+					// Add children indexes
+					if(!currNode.isLeaf){
+						String[] cInds = pieces[4].split(",");
+						for(String s : cInds){
+							currNode.addChild(Integer.parseInt(s));
+						}
+					}
+					allNodes.put(currNode.nodeIndex, currNode);
+					if(currNode.isRoot)
+						root = currNode;
+					if(currNode.isLeaf)
+						leafs.add(currNode);
+					layers.get(Integer.parseInt(pieces[5])).add(currNode);	
+				}
+			}br.close();
+
+			// Print the loaded class structure
+			if(getSmDebug()){
+				StringBuilder structure = new StringBuilder();
+				for(int l=0; l<layers.size(); l++){
+
+					for(Node n : layers.get(l)){
+						structure.append(n.nodeName); structure.append("\t");
+					}
+					structure.deleteCharAt(structure.length()-1);
+					structure.append("\n");
+				}
+
+				System.err.println(structure.toString());
+			}
 		}
-		
-		
+
+
 		protected class Node implements Serializable,Comparable<Node>{
-			
+
 			/**
 			 * 
 			 */
@@ -639,134 +642,134 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 			protected boolean isRoot=false;
 			protected List<Integer> parents = new ArrayList<Integer>();
 			protected List<Integer> children = new ArrayList<Integer>();
-			
+
 			protected Node(int nInd, String nName, boolean leaf) {
 				nodeIndex = nInd;
 				nodeName = nName;
 				isLeaf = leaf;
 			}
-			
+
 			protected void addParent(Integer pInd){
 				parents.add(pInd);
 			}
 			protected void addChild(Integer cInd){
 				children.add(cInd);
 			}
-			
+
 			@Override
 			public int compareTo(Node o) {
 				if(o.nodeIndex == nodeIndex){return 0;}
 				else if(nodeIndex > o.nodeIndex){return 1;}
 				else{return -1;}
 			}
-			
+
 		}
 	}
-	
+
 	@Override
 	public Enumeration<Option> listOptions() {
 		Vector<Option> newVector = new Vector<Option>(7);
 
-	    newVector.addElement(new Option(
-	      "\tUse conjugate gradient descent rather than BFGS updates.", "C", 0,
-	      "-C"));
-	    newVector.addElement(new Option("\tSet the ridge in the log-likelihood.",
-	      "R", 1, "-R <ridge>"));
-	    newVector.addElement(new Option("\t Pho dual co-efficient for ADMM.",
-	  	      "PHO", 1, "-PHO <default is 0.0001>"));
-	    newVector.addElement(new Option("\tSet the maximum number of iterations for the BGFS x-update"
-	      + " (default -1, until convergence).", "M", 1, "-M <number>"));
-	    newVector.addElement(new Option("\tSet the maximum number of iterations for the ADMM method"
-	  	      + " (default 1000).", "A", 1, "-A <number>"));
-	    newVector.addElement(new Option("\tSet the maximum number of iterations for SeqUwinder"
-		  	      + " (default 10).", "S", 1, "-S <number>"));
-	    newVector.addElement(new Option("\tSet the number of threads to run ADMM part in SeqUnwinder"
-		  	      + " (default 5).", "threads", 1, "-threads <number>"));
-	    newVector.addElement(new Option("\tProvide the class structure file for the multiclasses","CLS",0,"-CLS <File name>"));
-	    newVector.addElement(new Option("\tProvide the number of layers in the class structur","NL",0,"-NL <Num of Layers>"));
-	    newVector.addElement(new Option("\tL1 or L2 norm Logit model","TY",0,"-TY <L1 or L2>"));
-	    newVector.addElement(new Option("\tFlag to run in debug mode","DEBUG",0,"-DEBUG"));
-	    newVector.addAll(Collections.list(super.listOptions()));
+		newVector.addElement(new Option(
+				"\tUse conjugate gradient descent rather than BFGS updates.", "C", 0,
+				"-C"));
+		newVector.addElement(new Option("\tSet the ridge in the log-likelihood.",
+				"R", 1, "-R <ridge>"));
+		newVector.addElement(new Option("\t Pho dual co-efficient for ADMM.",
+				"PHO", 1, "-PHO <default is 0.0001>"));
+		newVector.addElement(new Option("\tSet the maximum number of iterations for the BGFS x-update"
+				+ " (default -1, until convergence).", "M", 1, "-M <number>"));
+		newVector.addElement(new Option("\tSet the maximum number of iterations for the ADMM method"
+				+ " (default 1000).", "A", 1, "-A <number>"));
+		newVector.addElement(new Option("\tSet the maximum number of iterations for SeqUwinder"
+				+ " (default 10).", "S", 1, "-S <number>"));
+		newVector.addElement(new Option("\tSet the number of threads to run ADMM part in SeqUnwinder"
+				+ " (default 5).", "threads", 1, "-threads <number>"));
+		newVector.addElement(new Option("\tProvide the class structure file for the multiclasses","CLS",0,"-CLS <File name>"));
+		newVector.addElement(new Option("\tProvide the number of layers in the class structur","NL",0,"-NL <Num of Layers>"));
+		newVector.addElement(new Option("\tL1 or L2 norm Logit model","TY",0,"-TY <L1 or L2>"));
+		newVector.addElement(new Option("\tFlag to run in debug mode","DEBUG",0,"-DEBUG"));
+		newVector.addAll(Collections.list(super.listOptions()));
 
-	    return newVector.elements();
+		return newVector.elements();
 	}
 
 
 
 	@Override
 	public void setOptions(String[] options) throws Exception {
-		
+
 		setSmDebug(Utils.getFlag("DEBUG", options));
 
-	    String ridgeString = Utils.getOption('R', options);
-	    if (ridgeString.length() != 0) {
-	      m_Ridge = Double.parseDouble(ridgeString);
-	    } else {
-	      m_Ridge = 1.0e-8;
-	    }
-	    
-	    String threadString = Utils.getOption("threads", options);
-	    if(threadString.length() != 0){
-	    	m_ADMM_numThreads = Integer.parseInt(threadString);
-	    }
+		String ridgeString = Utils.getOption('R', options);
+		if (ridgeString.length() != 0) {
+			m_Ridge = Double.parseDouble(ridgeString);
+		} else {
+			m_Ridge = 1.0e-8;
+		}
 
-	    String maxItsString = Utils.getOption('M', options);
-	    if (maxItsString.length() != 0) {
-	    	m_BGFS_MaxIts = Integer.parseInt(maxItsString);
-	    } else {
-	    	m_BGFS_MaxIts = -1;
-	    }
-	    
-	    String AmaxItsString = Utils.getOption('A', options);
-	    if (AmaxItsString.length() != 0) {
-	    	m_ADMM_MaxIts = Integer.parseInt(AmaxItsString);
-	    } else {
-	    	m_ADMM_MaxIts = 1000;
-	    }
-	    
-	    String PhoString = Utils.getOption("PHO", options);
-	    if(PhoString.length() !=0){
-	    	m_ADMM_pho = Double.parseDouble(PhoString);
-	    }else{
-	    	m_ADMM_pho = 0.001;
-	    }
-	    
-	    String SmaxItsString = Utils.getOption('S', options);
-	    if (SmaxItsString.length() != 0) {
-	    	m_SeqUnwinder_MaxIts = Integer.parseInt(SmaxItsString);
-	    } else {
-	    	m_SeqUnwinder_MaxIts = 10;
-	    }
-	    
-	    String numLayerString = Utils.getOption("NL", options);
-	    if(numLayerString == ""){
-	    	System.err.println("Please provide number of layers!!");
-	    	System.exit(1);
-	    }
-	     sm_NumLayers = Integer.parseInt(numLayerString);
-	     
-	    String Type = Utils.getOption("TY", options);
-	    if (Type.length() != 0) {
-	    	m_OptimizationType = Type;
-	    }else{
-	    	m_OptimizationType = "L1";
-	    }
-	    
-	    String classStructureFilename = Utils.getOption("CLS", options);
-	    if(classStructureFilename == ""){
-	    	System.err.println("Please provide the class structure file!!");
-	    	System.exit(1);
-	    }else{
-	    	File f = new File(classStructureFilename);
-	    	sm_ClassStructure = new ClassRelationStructure(f,sm_NumLayers);
-	    	sm_NumNodes = sm_ClassStructure.allNodes.size();
-	    }
-	    
+		String threadString = Utils.getOption("threads", options);
+		if(threadString.length() != 0){
+			m_ADMM_numThreads = Integer.parseInt(threadString);
+		}
 
-	    super.setOptions(options);
+		String maxItsString = Utils.getOption('M', options);
+		if (maxItsString.length() != 0) {
+			m_BGFS_MaxIts = Integer.parseInt(maxItsString);
+		} else {
+			m_BGFS_MaxIts = -1;
+		}
 
-	    Utils.checkForRemainingOptions(options);
-		
+		String AmaxItsString = Utils.getOption('A', options);
+		if (AmaxItsString.length() != 0) {
+			m_ADMM_MaxIts = Integer.parseInt(AmaxItsString);
+		} else {
+			m_ADMM_MaxIts = 1000;
+		}
+
+		String PhoString = Utils.getOption("PHO", options);
+		if(PhoString.length() !=0){
+			m_ADMM_pho = Double.parseDouble(PhoString);
+		}else{
+			m_ADMM_pho = 0.001;
+		}
+
+		String SmaxItsString = Utils.getOption('S', options);
+		if (SmaxItsString.length() != 0) {
+			m_SeqUnwinder_MaxIts = Integer.parseInt(SmaxItsString);
+		} else {
+			m_SeqUnwinder_MaxIts = 10;
+		}
+
+		String numLayerString = Utils.getOption("NL", options);
+		if(numLayerString == ""){
+			System.err.println("Please provide number of layers!!");
+			System.exit(1);
+		}
+		sm_NumLayers = Integer.parseInt(numLayerString);
+
+		String Type = Utils.getOption("TY", options);
+		if (Type.length() != 0) {
+			m_OptimizationType = Type;
+		}else{
+			m_OptimizationType = "L1";
+		}
+
+		String classStructureFilename = Utils.getOption("CLS", options);
+		if(classStructureFilename == ""){
+			System.err.println("Please provide the class structure file!!");
+			System.exit(1);
+		}else{
+			File f = new File(classStructureFilename);
+			sm_ClassStructure = new ClassRelationStructure(f,sm_NumLayers);
+			sm_NumNodes = sm_ClassStructure.allNodes.size();
+		}
+
+
+		super.setOptions(options);
+
+		Utils.checkForRemainingOptions(options);
+
 	}
 
 
@@ -775,33 +778,33 @@ public class SeqUnwinder extends AbstractClassifier implements OptionHandler, We
 	public String[] getOptions() {
 		Vector<String> options = new Vector<String>();
 
-	    options.add("-R");
-	    options.add("" + m_Ridge);
-	    options.add("-PHO");
-	    options.add("" + m_ADMM_pho);
-	    options.add("-M");
-	    options.add("" + m_BGFS_MaxIts);
-	    options.add("-A");
-	    options.add("" + m_ADMM_MaxIts);
-	    options.add("-S");
-	    options.add("" + m_SeqUnwinder_MaxIts);
-	    options.add("-CLS");
-	    options.add(""+ " ");
-	    options.add("-NL");
-	    options.add("" + 3);
-	    options.add("-TY");
-	    options.add("" + m_OptimizationType);
-	    options.add("-DEBUG");
-	    options.add("" + sm_Debug);
-	    options.add("-threads");
-	    options.add("" + m_ADMM_numThreads);
+		options.add("-R");
+		options.add("" + m_Ridge);
+		options.add("-PHO");
+		options.add("" + m_ADMM_pho);
+		options.add("-M");
+		options.add("" + m_BGFS_MaxIts);
+		options.add("-A");
+		options.add("" + m_ADMM_MaxIts);
+		options.add("-S");
+		options.add("" + m_SeqUnwinder_MaxIts);
+		options.add("-CLS");
+		options.add(""+ " ");
+		options.add("-NL");
+		options.add("" + 3);
+		options.add("-TY");
+		options.add("" + m_OptimizationType);
+		options.add("-DEBUG");
+		options.add("" + sm_Debug);
+		options.add("-threads");
+		options.add("" + m_ADMM_numThreads);
 
-	    Collections.addAll(options, super.getOptions());
+		Collections.addAll(options, super.getOptions());
 
-	    return options.toArray(new String[0]);
+		return options.toArray(new String[0]);
 	}
-	
-	
+
+
 	/**
 	 * Main method for testing this class.
 	 * 
