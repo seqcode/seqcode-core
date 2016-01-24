@@ -60,7 +60,7 @@ public class Discrim {
 	
 	// K-mer hills clustering parameters
 	/** No of iterations of clustering */
-	protected int its_CLUS=100;
+	protected int its_CLUS=10;
 	/** Number of cluster; ideally each cluster corresponds to a motif */
 	protected int numClus_CLUS=3;
 	
@@ -461,7 +461,9 @@ public class Discrim {
 		int numClus = Args.parseInteger(args, "numClusters", 3);
 		runner.setNumKmerClusters(numClus);
 		
-		
+		// Seq number of iterations for K-means clustering of K-mer profiles
+		int itrs_Clus = Args.parseInteger(args, "itrsClustering", 10);
+		runner.setNumClusteringItrs(itrs_Clus);
 		
 		runner.setRandomRegs();
 		
