@@ -131,6 +131,7 @@ public class Discrim {
 	public void setMEMEmaxW(int w){MEMEmaxw = w;}
 	public void setMEMEsearchWin(int w){MEMEwin = w;}
 	public void setMEMEnmotifs(int n){MEMEnmotifs = n;}
+	public void setHillThreshold(double t){thresold_hills = t;}
 	
 	
 	@SuppressWarnings("unchecked")
@@ -160,9 +161,9 @@ public class Discrim {
 		
 		for(String s : kmerModelNames){
 			File memeDir = new File(outdir.getAbsoluteFile()+File.separator+s+File.separator+"meme");
-			memeDir.mkdir();
+			memeDir.mkdirs();
 			File kmerProfDir = new File(outdir.getAbsoluteFile()+File.separator+s+File.separator+"kmer_profiles");
-			kmerProfDir.mkdir();
+			kmerProfDir.mkdirs();
 		}
 
 	}
@@ -217,6 +218,9 @@ public class Discrim {
 		public void execute() throws IOException{
 			// First, find, cluster and print the hills
 			clusterKmerProfilesAtMountains();
+			
+			System.err.println("Finished clustering K-mer profiles for model: "+kmerModelName);
+			
 			// Now do meme search on each clusters separately
 			String memeargs = MEMEargs+" -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
 			MemeER meme = new MemeER(MEMEpath, memeargs);
@@ -303,6 +307,7 @@ public class Discrim {
 		 */
 		public void clusterKmerProfilesAtMountains() throws IOException{
 			fillHills();
+			System.err.println("No of hills for K-mer model "+kmerModelName+" are :"+posHills.size());
 			ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,profiles,posHillsToIndex,minK,maxK,posHillScores,basedir_profiles);
 			clusterAssignment = clusterManager.execute();
 		}
@@ -440,6 +445,9 @@ public class Discrim {
 		
 		runner.makeOutPutDirs(out);
 		
+		// Threshold for calling hills
+		double threshold = Args.parseDouble(args, "hillsThres", 0.1);
+		runner.setHillThreshold(threshold);
 		
 		// Peaks file name
 		String peaksfilename = Args.parseString(args, "peaks", null);
