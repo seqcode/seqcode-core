@@ -213,7 +213,7 @@ public class Discrim {
 		public KmerModelScanner(String modName) {
 			setKmerModName(modName);
 			basedir_profiles = new File(outdir.getAbsoluteFile()+File.separator+kmerModelName+File.separator+"kmer_profiles");
-			basedir_meme = new File(outdir.getAbsoluteFile()+File.separator+kmerModelName+File.separator+"meme_out");
+			basedir_meme = new File(outdir.getAbsoluteFile()+File.separator+kmerModelName+File.separator+"meme");
 		}
 		
 		
@@ -238,7 +238,7 @@ public class Discrim {
 					}
 				}
 				List<WeightMatrix> selectedMotifs = new ArrayList<WeightMatrix>();
-				File meme_outFile = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_meme_out");
+				File meme_outFile = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_meme");
 				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, meme_outFile, false);
 				List<WeightMatrix> wm = matrices.car();
 				List<WeightMatrix> fm = matrices.cdr();
@@ -300,6 +300,14 @@ public class Discrim {
 			}
 			profiles = getProfilesAtPeaks(posHills);
 		}
+		
+		//private List<Pair<Region,Double>> sorthills(List<Pair<Region,Double>> hlls){
+		//	List<Pair<Region,Double>> ret = new ArrayList<Pair<Region,Double>>();
+			
+		//	for(Pair<r>)
+			
+			
+		//}
 		
 		/**
 		 * Prints the mountain composition
