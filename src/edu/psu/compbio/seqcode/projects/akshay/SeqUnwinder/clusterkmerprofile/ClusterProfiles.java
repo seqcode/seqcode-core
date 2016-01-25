@@ -83,7 +83,7 @@ public class ClusterProfiles {
 	public void setSparcedProfiles(ArrayList<int[]> pfs){
 		
 		// First find the penetrance of each feature
-		int[] feature_penetrance = new int[pfs.get(0).length];
+		double[] feature_penetrance = new double[pfs.get(0).length];
 		for(int[] p : pfs){
 			for(int i=0; i<p.length; i++){
 				if(p[i] > 0)

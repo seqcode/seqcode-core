@@ -121,9 +121,11 @@ public class Discrim {
 	public void setOutbase(String o){outbase=o;}
 	public void setRandomRegs(){
 		// Generate random sequences later need for meme analysis to assess motifs
-		SequenceGenerator.setOffRegionCache();
+		
 		List<Region> randomRegions = MemeER.randomRegionPick(gcon.getGenome(), null, MemeER.MOTIF_FINDING_NEGSEQ,win);
-		randomSequences = seqgen.setupRegionCache(regions, randomRegions);
+		for(int i=0; i<randomRegions.size(); i++){
+			randomSequences[i] = seqgen.execute(randomRegions.get(i));
+		}
 	}
 	// Settors for MEME params
 	public void setMEMEPath(String s){MEMEpath = s;}
@@ -228,7 +230,7 @@ public class Discrim {
 				List<String> seqs = new ArrayList<String>();
 				for(int p=0; p<posHills.size(); p++){
 					if(clusterAssignment.get(p) == c){
-						Region tmpR = posHills.get(p).expand(MEMEwin/2, MEMEwin/2);
+						Region tmpR = posHills.get(p).getMidpoint().expand(MEMEwin/2);
 						String s = seqgen.execute(tmpR);
 						if(MemeER.lowercaseFraction(s)<=MemeER.MOTIF_FINDING_ALLOWED_REPETITIVE){
 							seqs.add(s);
