@@ -30,7 +30,8 @@ public class ClusterProfiles {
 	private ClusteringMethod<int[]> method;
 	private KmerProfileAvgDistRep rep;
 	private int K;
-	private ArrayList<int[]> profiles;
+	private ArrayList<int[]> sparse_profiles = new ArrayList<int[]>();
+	private ArrayList<String> sparse_colnames = new ArrayList<String>();
 	private File outdir;
 	private HashMap<Integer,String> indToLocation;
 	private HashMap<Integer,Double> intToLogitScore;
@@ -39,8 +40,8 @@ public class ClusterProfiles {
 
 	
 	// Minimum penetrance of a kmer in a cluster to be considered
-	public final double minKmerProp = 0.2;
-	
+	public final double minKmerProp_clus = 0.2;
+	public final double minKmerProp_global = 0.04;
 	
 	// Heatmap options
 	public final int W_MARGIN=80;
@@ -56,9 +57,21 @@ public class ClusterProfiles {
 		}
 		return baseInd;
 	}
+	public String getKmerName(int ind){
+		int currKmerLen = 0;
+		ArrayList<Integer> baseinds = new ArrayList<Integer>();
+		for(int k=minK; k <= maxK; k++){
+			baseinds.add(getKmerBaseInd(k));
+		}
+		int search = Collections.binarySearch(baseinds, ind);
+		
+		currKmerLen = search >= 0 ? minK + search : -1*(search + 1) - 1 + minK;
+		String kmerName = RegionFileUtilities.int2seq(ind- getKmerBaseInd(currKmerLen), currKmerLen);
+		
+		return kmerName;
+	}
 	
 	//Settors
-	public void setProfiles(ArrayList<int[]> data){profiles=data;}
 	public void setNumClusters(int nc){K=nc;}
 	public void setProfileInds(HashMap<Integer,String> plfsinds){indToLocation=plfsinds;}
 	public void setProfileScores(HashMap<Integer,Double> plfscore){intToLogitScore = plfscore;}
@@ -67,12 +80,51 @@ public class ClusterProfiles {
 	public void setOutdir(File f){outdir = f;}
 	
 	
+	public void setSparcedProfiles(ArrayList<int[]> pfs){
+		
+		// First find the penetrance of each feature
+		int[] feature_penetrance = new int[pfs.get(0).length];
+		for(int[] p : pfs){
+			for(int i=0; i<p.length; i++){
+				if(p[i] > 0)
+					feature_penetrance[i]++;
+			}
+		}
+		
+		// Find the colnames of the once that will be kept and store the colnames in a list
+		for(int i=0; i<feature_penetrance.length; i++){
+			feature_penetrance[i] = feature_penetrance[i]/pfs.size();
+			if(feature_penetrance[i] > minKmerProp_global){
+				sparse_colnames.add(getKmerName(i));
+			}
+		}
+
+		// Now make the sparse profiles
+		int sparce_length = sparse_colnames.size();
+		System.err.println(sparce_length);
+		//ArrayList<int[]> sparce_profiles = new ArrayList<int[]>();
+		for(int[] p : pfs){
+			int[] sparce_p = new int[sparce_length];
+			int count=0;
+			for(int i=0; i<p.length; i++){
+				if(feature_penetrance[i] > minKmerProp_global){
+					sparce_p[count] = p[i];
+					count++;
+				}
+					
+			}
+			sparse_profiles.add(sparce_p);
+		}
+		
+	}
+	
+	
 	/**
 	 * The method that should be executed after initiating the class object
 	 * @throws IOException 
 	 */
 	public List<Integer> execute() throws IOException{
-		Collection<Cluster<int[]>> clusters = ((KMeansClustering<int[]>)method).clusterElements(profiles,0.01);
+		Collection<Cluster<int[]>> clusters = ((KMeansClustering<int[]>)method).clusterElements(sparse_profiles,0.01);
 		Vector<int[]> clustermeans = ((KMeansClustering<int[]>)method).getClusterMeans();
 		
 		//Print the clusters
@@ -93,8 +145,8 @@ public class ClusterProfiles {
 		File clusout = new File(outdir.getAbsolutePath()+File.separator+"ClusterAssignment.list");
 		FileWriter ow = new FileWriter(clusout);
 		BufferedWriter bw = new BufferedWriter(ow);
-		for(int p=0; p<profiles.size(); p++){
-			int memebership = getClusterAssignment(profiles.get(p),clusMeans);
+		for(int p=0; p<sparse_profiles.size(); p++){
+			int memebership = getClusterAssignment(sparse_profiles.get(p),clusMeans);
 			clusterAssignment.add(memebership);
 			bw.write(indToLocation.get(p)+"\t"+Integer.toString(memebership)+"\t"+Double.toString(intToLogitScore.get(p))+"\n");
 		}
@@ -125,7 +177,7 @@ public class ClusterProfiles {
 		String[] cnames;
 		
 		// Which colums to retain while drawing the heatmap
-		boolean[] keepCol = new boolean[profiles.get(0).length];
+		boolean[] keepCol = new boolean[sparse_profiles.get(0).length];
 		for(int i=0; i<keepCol.length; i++){
 			keepCol[i] = false;
 		}
@@ -147,7 +199,7 @@ public class ClusterProfiles {
 					}
 				}
 				colPerc = colPerc/c.getElements().size();
-				if(colPerc > minKmerProp){
+				if(colPerc > minKmerProp_clus){
 					keepCol[i] = true;
 					if(clusID < colCluster.get(i)){
 						colCluster.set(i, clusID);
@@ -170,23 +222,13 @@ public class ClusterProfiles {
 				break;
 		}
 		
-		matrix = new double[profiles.size()][sparseLenght];
-		rnames = new String[profiles.size()];
+		matrix = new double[sparse_profiles.size()][sparseLenght];
+		rnames = new String[sparse_profiles.size()];
 		cnames = new String[sparseLenght];
 		
 		//fill the cnames
 		for(int j=0; j<sparseLenght; j++){
-			// First, find the k-mer length
-			int currKmerLen = 0;
-			ArrayList<Integer> baseinds = new ArrayList<Integer>();
-			for(int k=minK; k <= maxK; k++){
-				baseinds.add(getKmerBaseInd(k));
-			}
-			int search = Collections.binarySearch(baseinds, indexes[j]);
-			
-			currKmerLen = search >= 0 ? minK + search : -1*(search + 1) - 1 + minK;
-			cnames[j] = RegionFileUtilities.int2seq(indexes[j] - getKmerBaseInd(currKmerLen), currKmerLen);
-			
+			cnames[j] = sparse_colnames.get(indexes[j]);
 		}
 		
 		int rowInd = 0;
@@ -251,13 +293,13 @@ public class ClusterProfiles {
 	 * @param otag
 	 */
 	public ClusterProfiles(int itrs, int k, ArrayList<int[]> pfls, HashMap<Integer,String> pflsIndsMap, int mink, int maxk, HashMap<Integer,Double> pflscores,File odir) {
-		setProfiles(pfls);
+		setSparcedProfiles(pfls);
 		setNumClusters(k);
 		
 		setProfileInds(pflsIndsMap);
 		setProfileScores(pflscores);
 		setKmerModLenMin(mink);
-		setKmerModLenMin(maxk);
+		setKmerModLenMax(maxk);
 		this.setOutdir(odir);
 		
 		comparator = new KmerProfileEucDistComparator();
@@ -266,8 +308,8 @@ public class ClusterProfiles {
 		
 		List<int[]> starts = new ArrayList<int[]>();
 		for(int s=0; s<K; s++){
-			int r = generator.nextInt(profiles.size());
-			starts.add(profiles.get(r));
+			int r = generator.nextInt(sparse_profiles.size());
+			starts.add(sparse_profiles.get(r));
 		}
 		
 		
