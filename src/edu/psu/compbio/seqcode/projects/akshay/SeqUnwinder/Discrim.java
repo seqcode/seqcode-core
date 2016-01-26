@@ -8,6 +8,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -59,6 +61,8 @@ public class Discrim {
 	protected int win=150;
 	
 	// K-mer hills clustering parameters
+	/** The number of hills to consider for clustering and motif finding for a given K-mer model */
+	public final int numHills = 1500;
 	/** No of iterations of clustering */
 	protected int its_CLUS=10;
 	/** Number of cluster; ideally each cluster corresponds to a motif */
@@ -227,6 +231,7 @@ public class Discrim {
 			String memeargs = MEMEargs+" -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
 			MemeER meme = new MemeER(MEMEpath, memeargs);
 			for(int c=0; c<numClus_CLUS; c++){ // Over each cluster
+				System.err.println("Loading sequences for meme analysis : "+kmerModelName+ "Cluster"+c);
 				List<String> seqs = new ArrayList<String>();
 				for(int p=0; p<posHills.size(); p++){
 					if(clusterAssignment.get(p) == c){
@@ -239,7 +244,10 @@ public class Discrim {
 				}
 				List<WeightMatrix> selectedMotifs = new ArrayList<WeightMatrix>();
 				File meme_outFile = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_meme");
+				
+				System.err.println("Running meme now");
 				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, meme_outFile, false);
+				System.err.println("Finished running meme, Now evaluating motif significance");
 				List<WeightMatrix> wm = matrices.car();
 				List<WeightMatrix> fm = matrices.cdr();
 				if(wm.size()>0){
@@ -288,9 +296,10 @@ public class Discrim {
 		private void fillHills() throws IOException{
 			List<Pair<Region,Double>> hills= new ArrayList<Pair<Region,Double>>();
 			hills= findHills();
+			List<Pair<Region,Double>> top_hills = sorthills(hills);
 			int index=0;
 			HashMap<String,Integer> addedHills = new HashMap<String,Integer>();
-			for(Pair<Region,Double> pr : hills){
+			for(Pair<Region,Double> pr : top_hills){
 				if(!addedHills.containsKey(pr.car().getLocationString())){
 					posHills.add(pr.car());
 					posHillsToIndex.put(index,pr.car().getLocationString() );
@@ -301,13 +310,18 @@ public class Discrim {
 			profiles = getProfilesAtPeaks(posHills);
 		}
 		
-		//private List<Pair<Region,Double>> sorthills(List<Pair<Region,Double>> hlls){
-		//	List<Pair<Region,Double>> ret = new ArrayList<Pair<Region,Double>>();
+		private List<Pair<Region,Double>> sorthills(List<Pair<Region,Double>> hlls){
+			List<Pair<Region,Double>> ret = new ArrayList<Pair<Region,Double>>();
+			HillsIndexComparator comp = new HillsIndexComparator(hlls);
+			Integer[] indicies = comp.createIndexArray();
+			Arrays.sort(indicies, comp);
 			
-		//	for(Pair<r>)
+			for(int i=0; i<Math.min(hlls.size(),numHills); i++){
+				ret.add(hlls.get(indicies[i]));
+			}
 			
-			
-		//}
+			return ret;
+		}
 		
 		/**
 		 * Prints the mountain composition
@@ -411,6 +425,29 @@ public class Discrim {
 				ret.addAll(mountains);	
 			}
 			return ret;
+		}
+		
+		public class HillsIndexComparator implements Comparator<Integer>{
+			
+			List<Pair<Region,Double>> hill;
+			
+			public HillsIndexComparator(List<Pair<Region,Double>> h) {
+				hill = h;
+			}
+			
+			public Integer[] createIndexArray(){
+				Integer[] indexes = new Integer[hill.size()];
+				for(int i=0; i<indexes.length; i++){
+					indexes[i] = i;
+				}
+				return indexes;
+			}
+
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				return -1*(hill.get(o1).cdr().compareTo(hill.get(o2).cdr()));
+			}
+			
 		}
 	}
 	

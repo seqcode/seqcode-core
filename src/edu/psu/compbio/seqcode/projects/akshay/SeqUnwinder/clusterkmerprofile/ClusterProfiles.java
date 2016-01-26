@@ -101,7 +101,7 @@ public class ClusterProfiles {
 
 		// Now make the sparse profiles
 		int sparce_length = sparse_colnames.size();
-		System.err.println(sparce_length);
+		//System.err.println(sparce_length);
 		//ArrayList<int[]> sparce_profiles = new ArrayList<int[]>();
 		for(int[] p : pfs){
 			int[] sparce_p = new int[sparce_length];
