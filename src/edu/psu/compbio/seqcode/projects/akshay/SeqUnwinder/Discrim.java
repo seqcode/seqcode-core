@@ -224,56 +224,57 @@ public class Discrim {
 		public void execute() throws IOException{
 			// First, find, cluster and print the hills
 			clusterKmerProfilesAtMountains();
-			
-			System.err.println("Finished clustering K-mer profiles for model: "+kmerModelName);
-			
-			// Now do meme search on each clusters separately
-			String memeargs = MEMEargs+" -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
-			MemeER meme = new MemeER(MEMEpath, memeargs);
-			for(int c=0; c<numClus_CLUS; c++){ // Over each cluster
-				System.err.println("Loading sequences for meme analysis : "+kmerModelName+ "Cluster"+c);
-				List<String> seqs = new ArrayList<String>();
-				for(int p=0; p<posHills.size(); p++){
-					if(clusterAssignment.get(p) == c){
-						Region tmpR = posHills.get(p).getMidpoint().expand(MEMEwin/2);
-						String s = seqgen.execute(tmpR);
-						if(MemeER.lowercaseFraction(s)<=MemeER.MOTIF_FINDING_ALLOWED_REPETITIVE){
-							seqs.add(s);
+			if(posHills.size() != 0){
+				System.err.println("Finished clustering K-mer profiles for model: "+kmerModelName);
+
+				// Now do meme search on each clusters separately
+				String memeargs = MEMEargs+" -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
+				MemeER meme = new MemeER(MEMEpath, memeargs);
+				for(int c=0; c<numClus_CLUS; c++){ // Over each cluster
+					System.err.println("Loading sequences for meme analysis : "+kmerModelName+ "Cluster"+c);
+					List<String> seqs = new ArrayList<String>();
+					for(int p=0; p<posHills.size(); p++){
+						if(clusterAssignment.get(p) == c){
+							Region tmpR = posHills.get(p).getMidpoint().expand(MEMEwin/2);
+							String s = seqgen.execute(tmpR);
+							if(MemeER.lowercaseFraction(s)<=MemeER.MOTIF_FINDING_ALLOWED_REPETITIVE){
+								seqs.add(s);
+							}
 						}
 					}
-				}
-				List<WeightMatrix> selectedMotifs = new ArrayList<WeightMatrix>();
-				File meme_outFile = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_meme");
-				
-				System.err.println("Running meme now");
-				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, meme_outFile, false);
-				System.err.println("Finished running meme, Now evaluating motif significance");
-				List<WeightMatrix> wm = matrices.car();
-				List<WeightMatrix> fm = matrices.cdr();
-				if(wm.size()>0){
-					//Evaluate the significance of the discovered motifs
-					double rocScores[] = meme.motifROCScores(wm,seqs,randomSequences);
-					System.err.println("MEME results for:" );
-					for(int w=0; w<fm.size(); w++){
-						if(fm.get(w)!=null){
-							System.err.println("\t"+fm.get(w).getName()+"\t"+ WeightMatrix.getConsensus(fm.get(w))+"\tROC:"+String.format("%.2f",rocScores[w]));
-						}
-						if(rocScores[w] > MemeER.MOTIF_MIN_ROC){
-							selectedMotifs.add(fm.get(w));
+					List<WeightMatrix> selectedMotifs = new ArrayList<WeightMatrix>();
+					File meme_outFile = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_meme");
+
+					System.err.println("Running meme now");
+					Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, meme_outFile, false);
+					System.err.println("Finished running meme, Now evaluating motif significance");
+					List<WeightMatrix> wm = matrices.car();
+					List<WeightMatrix> fm = matrices.cdr();
+					if(wm.size()>0){
+						//Evaluate the significance of the discovered motifs
+						double rocScores[] = meme.motifROCScores(wm,seqs,randomSequences);
+						System.err.println("MEME results for:" );
+						for(int w=0; w<fm.size(); w++){
+							if(fm.get(w)!=null){
+								System.err.println("\t"+fm.get(w).getName()+"\t"+ WeightMatrix.getConsensus(fm.get(w))+"\tROC:"+String.format("%.2f",rocScores[w]));
+							}
+							if(rocScores[w] > MemeER.MOTIF_MIN_ROC){
+								selectedMotifs.add(fm.get(w));
+							}
 						}
 					}
+
+					// Print ROC values into a file names "Motifs.ROC"
+					File motifs_roc = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_motifs.roc");
+					FileWriter fw = new FileWriter(motifs_roc);
+					BufferedWriter bw = new BufferedWriter(fw);
+
+					for(int m =0; m<selectedMotifs.size(); m++){
+						String out = WeightMatrix.printTransfacMatrix(selectedMotifs.get(m),"Motif_"+Integer.toString(m));
+						bw.write(out);
+					}
+					bw.close();
 				}
-				
-				// Print ROC values into a file names "Motifs.ROC"
-				File motifs_roc = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_motifs.roc");
-				FileWriter fw = new FileWriter(motifs_roc);
-				BufferedWriter bw = new BufferedWriter(fw);
-				
-				for(int m =0; m<selectedMotifs.size(); m++){
-					String out = WeightMatrix.printTransfacMatrix(selectedMotifs.get(m),"Motif_"+Integer.toString(m));
-					bw.write(out);
-				}
-				bw.close();
 			}
 		
 		}
@@ -332,8 +333,10 @@ public class Discrim {
 		public void clusterKmerProfilesAtMountains() throws IOException{
 			fillHills();
 			System.err.println("No of hills for K-mer model "+kmerModelName+" are :"+posHills.size());
-			ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,profiles,posHillsToIndex,minK,maxK,posHillScores,basedir_profiles);
-			clusterAssignment = clusterManager.execute();
+			if(posHills.size() != 0){
+				ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,profiles,posHillsToIndex,minK,maxK,posHillScores,basedir_profiles);
+				clusterAssignment = clusterManager.execute();
+			}
 		}
 		
 		private ArrayList<int[]> getProfilesAtPeaks(List<Region> rs){
