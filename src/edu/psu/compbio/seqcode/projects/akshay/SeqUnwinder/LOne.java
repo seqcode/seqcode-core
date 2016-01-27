@@ -254,7 +254,7 @@ public class LOne extends Optimizer {
 		/** Tracks the convergenece of ADMM  */
 		public AtomicBoolean ADMMconverged = new AtomicBoolean(false);
 		/** Finished running the current z-step */
-		public AtomicBoolean updatedZ = new AtomicBoolean(false);
+		//public AtomicBoolean updatedZ = new AtomicBoolean(false);
 
 		//ADMM consensus variables
 
@@ -290,6 +290,9 @@ public class LOne extends Optimizer {
 		public ADMMrunner() {
 
 			finished_linesrch = new boolean[ADMM_numThreads];
+			for(int i=0; i<ADMM_numThreads; i++){
+				finished_linesrch[i] = true;
+			}
 
 			int blockSize = data.length/ADMM_numThreads;
 			for(int i=0; i<blockSize*ADMM_numThreads; i++){
@@ -574,7 +577,7 @@ public class LOne extends Optimizer {
 				if(sm_Debug)
 					System.err.print(" "+ADMM_pho+" ");
 
-				//Make sure finshedLineSrch[] are all false before releasing the other threads to sleep the current thread
+				//Set all finshedLineSrch[] to false to initiate line search
 				synchronized(finished_linesrch){
 					for(int i=0; i<finished_linesrch.length; i++){
 						finished_linesrch[i] = false;
@@ -582,7 +585,7 @@ public class LOne extends Optimizer {
 				}
 
 				// Now atomically update "updateZ" boolean to true to trigger x-update
-				updatedZ.set(true);
+				//updatedZ.set(true);
 
 				//Periodically check if all threads have finished line search
 				while(!finshedLineSrch()){
@@ -609,7 +612,12 @@ public class LOne extends Optimizer {
 					}else{
 						System.err.println();
 						System.err.println("ADMM has converged after "+ADMM_currItr_value.get()+" iterations !!");
-						updatedZ.set(true);
+						//updatedZ.set(true);
+						synchronized(finished_linesrch){
+							for(int i=0; i<finished_linesrch.length; i++){
+								finished_linesrch[i] = false;
+							}
+						}
 						ranADMM=true;
 						break;
 					}
@@ -743,7 +751,8 @@ public class LOne extends Optimizer {
 			public void run() {
 
 				while(!ADMMconverged.get()){
-					while(!updatedZ.get()){ //Wait till the z-step has finished
+					//while(!updatedZ.get()){ //Wait till the z-step has finished
+					while(finished_linesrch[getThreadId()]){
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e){}
@@ -826,7 +835,7 @@ public class LOne extends Optimizer {
 					// Which, they should. However, if a thread reaches this point too soon (which is highly unlikely)
 					// Then the other thread whouldn't have initiated line search
 					// Can't think of a good way to make this full proof at the moment.
-					updatedZ.set(false); // Atomically set to false
+					//updatedZ.set(false); // Atomically set to false
 
 					synchronized(t_x){
 						for(int i=0; i<t_b_x.length; i++){
