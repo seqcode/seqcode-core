@@ -154,7 +154,7 @@ public class ClusterProfiles {
 		List<Integer> clusAssignment = writeClusters(clustermeans);
 		//Plot the clusters
 		Mappable orderedClusters = reorderKmerProfileMaps(clusters);
-		drawClusterHeatmap(orderedClusters);
+		//drawClusterHeatmap(orderedClusters);
 		printMatrix(orderedClusters);
 		
 		return clusAssignment;
