@@ -23,14 +23,18 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.machinelearning.clustering.Cluster;
 import edu.psu.compbio.seqcode.machinelearning.clustering.ClusterRepresentative;
 import edu.psu.compbio.seqcode.machinelearning.clustering.ClusteringMethod;
+import edu.psu.compbio.seqcode.machinelearning.clustering.PairwiseElementMetric;
 import edu.psu.compbio.seqcode.machinelearning.clustering.kmeans.KMeansClustering;
+import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.DefaultVectorClusterElement;
+import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.EuclideanDistance;
+import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.Mean;
+import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.VectorClusterElement;
 
 public class ClusterProfiles {
-	private KmerProfileEucDistComparator comparator;
-	private ClusteringMethod<int[]> method;
-	private KmerProfileAvgDistRep rep;
+	private PairwiseElementMetric<VectorClusterElement> metric = new EuclideanDistance<VectorClusterElement>();
 	private int K;
-	private ArrayList<int[]> sparse_profiles = new ArrayList<int[]>();
+	private int numClusItrs;
+	private ArrayList<VectorClusterElement> sparse_profiles = new ArrayList<VectorClusterElement>();
 	private ArrayList<String> sparse_colnames = new ArrayList<String>();
 	private File outdir;
 	private HashMap<Integer,String> indToLocation;
@@ -102,20 +106,19 @@ public class ClusterProfiles {
 		// Now make the sparse profiles
 		int sparce_length = sparse_colnames.size();
 		//System.err.println(sparce_length);
-		//ArrayList<int[]> sparce_profiles = new ArrayList<int[]>();
+
 		for(int[] p : pfs){
-			int[] sparce_p = new int[sparce_length];
+			double[] sparce_p = new double[sparce_length];
 			int count=0;
 			for(int i=0; i<p.length; i++){
 				if(feature_penetrance[i] > minKmerProp_global){
-					sparce_p[count] = p[i];
+					sparce_p[count] = (double)p[i];
 					count++;
-				}
-					
+				}		
 			}
-			sparse_profiles.add(sparce_p);
+			DefaultVectorClusterElement v = new DefaultVectorClusterElement(sparce_p);
+			sparse_profiles.add(v);
 		}
-		
 	}
 	
 	
@@ -124,8 +127,22 @@ public class ClusterProfiles {
 	 * @throws IOException 
 	 */
 	public List<Integer> execute() throws IOException{
-		Collection<Cluster<int[]>> clusters = ((KMeansClustering<int[]>)method).clusterElements(sparse_profiles,0.01);
-		Vector<int[]> clustermeans = ((KMeansClustering<int[]>)method).getClusterMeans();
+		// Initialize
+		ClusterRepresentative<VectorClusterElement> crep = new Mean();
+		//Random starts
+		Random generator = new Random();
+		Vector<VectorClusterElement> starts = new Vector<VectorClusterElement>();
+		for(int s=0; s<K; s++){
+			int r = generator.nextInt(sparse_profiles.size());
+			starts.add(sparse_profiles.get(r));
+		}
+		
+		//Initialize clustering
+		KMeansClustering<VectorClusterElement> kmc = new KMeansClustering<VectorClusterElement>(metric, crep, starts);
+		kmc.setIterations(numClusItrs);
+		
+		Collection<Cluster<VectorClusterElement>> clusters = kmc.clusterElements(sparse_profiles,0.01);
+		Vector<VectorClusterElement> clustermeans = kmc.getClusterMeans();
 		
 		//Print the clusters
 		List<Integer> clusAssignment = writeClusters(clustermeans);
@@ -140,7 +157,7 @@ public class ClusterProfiles {
 	
 	
 	// Slave methods
-	private List<Integer> writeClusters(Vector<int[]> clusMeans) throws IOException{
+	private List<Integer> writeClusters(Vector<VectorClusterElement> clusMeans) throws IOException{
 		List<Integer> clusterAssignment = new ArrayList<Integer>();
 		File clusout = new File(outdir.getAbsolutePath()+File.separator+"ClusterAssignment.list");
 		FileWriter ow = new FileWriter(clusout);
@@ -154,11 +171,11 @@ public class ClusterProfiles {
 		return clusterAssignment;
 	}
 	
-	private int getClusterAssignment(int[] pfl, Vector<int[]> clusMeans){
+	private int getClusterAssignment(VectorClusterElement pfl, Vector<VectorClusterElement> clusMeans){
 		int minCluster = -1;
         double minDist = 0.0;
         for(int i = 0; i < clusMeans.size(); i++) { 
-            double clustDist = comparator.evaluate(pfl, clusMeans.get(i));
+            double clustDist = metric.evaluate(pfl, clusMeans.get(i));
             if(minCluster == -1 || clustDist < minDist) { 
                 minDist = clustDist;
                 minCluster = i;
@@ -168,7 +185,7 @@ public class ClusterProfiles {
 	}
 	
 	
-	private Mappable reorderKmerProfileMaps(Collection<Cluster<int[]>> clus){
+	private Mappable reorderKmerProfileMaps(Collection<Cluster<VectorClusterElement>> clus){
 		Mappable ret = null; 
 		
 		//Mappable features
@@ -177,7 +194,7 @@ public class ClusterProfiles {
 		String[] cnames;
 		
 		// Which colums to retain while drawing the heatmap
-		boolean[] keepCol = new boolean[sparse_profiles.get(0).length];
+		boolean[] keepCol = new boolean[sparse_profiles.get(0).dimension()];
 		for(int i=0; i<keepCol.length; i++){
 			keepCol[i] = false;
 		}
@@ -190,11 +207,11 @@ public class ClusterProfiles {
 		
 		
 		int clusID=1;
-		for(Cluster<int[]> c : clus){
+		for(Cluster<VectorClusterElement> c : clus){
 			for(int i=0; i<keepCol.length; i++){
 				double colPerc=0;
-				for(int[] elems : c.getElements()){
-					if(elems[i] > 0){
+				for(VectorClusterElement elems : c.getElements()){
+					if(elems.getValue(i) > 0){
 						colPerc++;
 					}
 				}
@@ -232,10 +249,10 @@ public class ClusterProfiles {
 		}
 		
 		int rowInd = 0;
-		for(Cluster<int[]> c : clus){
-			for(int[] elems : c.getElements()){
+		for(Cluster<VectorClusterElement> c : clus){
+			for(VectorClusterElement elems : c.getElements()){
 				for(int j=0; j<sparseLenght; j++){
-					matrix[rowInd][j] = elems[indexes[j]];
+					matrix[rowInd][j] = elems.getValue(indexes[j]);
 				}
 				rnames[rowInd] = indToLocation.get(rowInd);
 				rowInd++;
@@ -293,6 +310,7 @@ public class ClusterProfiles {
 	 * @param otag
 	 */
 	public ClusterProfiles(int itrs, int k, ArrayList<int[]> pfls, HashMap<Integer,String> pflsIndsMap, int mink, int maxk, HashMap<Integer,Double> pflscores,File odir) {
+		numClusItrs = itrs;
 		setSparcedProfiles(pfls);
 		setNumClusters(k);
 		
@@ -302,19 +320,6 @@ public class ClusterProfiles {
 		setKmerModLenMax(maxk);
 		this.setOutdir(odir);
 		
-		comparator = new KmerProfileEucDistComparator();
-		rep = new KmerProfileAvgDistRep(comparator);
-		Random generator = new Random();
-		
-		List<int[]> starts = new ArrayList<int[]>();
-		for(int s=0; s<K; s++){
-			int r = generator.nextInt(sparse_profiles.size());
-			starts.add(sparse_profiles.get(r));
-		}
-		
-		
-		method = new KMeansClustering<int[]>(comparator,rep,starts);
-		((KMeansClustering<int[]>)method).setIterations(itrs);
 	}
 	
 	public class Mappable{
