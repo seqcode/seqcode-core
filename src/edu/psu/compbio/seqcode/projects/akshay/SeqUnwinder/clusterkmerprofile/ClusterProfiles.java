@@ -121,7 +121,6 @@ public class ClusterProfiles {
 		}
 	}
 	
-	
 	/**
 	 * The method that should be executed after initiating the class object
 	 * @throws IOException 
@@ -133,8 +132,15 @@ public class ClusterProfiles {
 		Random generator = new Random();
 		Vector<VectorClusterElement> starts = new Vector<VectorClusterElement>();
 		for(int s=0; s<K; s++){
-			int r = generator.nextInt(sparse_profiles.size());
-			starts.add(sparse_profiles.get(r));
+			boolean found = false;
+			while(!found){
+				int r = generator.nextInt(sparse_profiles.size());
+				if(!added(starts,sparse_profiles.get(r))){
+					starts.add(sparse_profiles.get(r));
+					found = true;
+				}
+			}
+				
 		}
 		
 		//Initialize clustering
@@ -154,6 +160,22 @@ public class ClusterProfiles {
 		return clusAssignment;
 	}
 	
+	public boolean added(Vector<VectorClusterElement> added, VectorClusterElement curr){
+		boolean ret = false;
+		for(VectorClusterElement a : added){
+			boolean match = true;
+			for(int i=0; i<a.dimension(); i++){
+				if(curr.getValue(i) != a.getValue(i))
+					match = false;
+			}
+			if(match){
+				ret=true;
+				break;
+			}
+		}
+		return ret;
+		
+	}
 	
 	
 	// Slave methods
