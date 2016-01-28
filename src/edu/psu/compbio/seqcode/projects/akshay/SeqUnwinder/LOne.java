@@ -255,6 +255,8 @@ public class LOne extends Optimizer {
 		public AtomicBoolean ADMMconverged = new AtomicBoolean(false);
 		/** Finished running the current z-step */
 		//public AtomicBoolean updatedZ = new AtomicBoolean(false);
+		/** Atomic boolean to begin line search */
+		AtomicBoolean beginLinesrch = new AtomicBoolean(false);
 
 		//ADMM consensus variables
 
@@ -577,12 +579,14 @@ public class LOne extends Optimizer {
 				if(sm_Debug)
 					System.err.print(" "+ADMM_pho+" ");
 
-				//Set all finshedLineSrch[] to false to initiate line search
+				//make sure all of finished_linesrch[] are set to false before you begin the linesearch.
 				synchronized(finished_linesrch){
 					for(int i=0; i<finished_linesrch.length; i++){
 						finished_linesrch[i] = false;
 					}
 				}
+				
+				beginLinesrch.set(true);
 
 				// Now atomically update "updateZ" boolean to true to trigger x-update
 				//updatedZ.set(true);
@@ -752,7 +756,7 @@ public class LOne extends Optimizer {
 
 				while(!ADMMconverged.get()){
 					//while(!updatedZ.get()){ //Wait till the z-step has finished
-					while(finished_linesrch[getThreadId()]){
+					while(!beginLinesrch.get()){
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e){}
@@ -850,6 +854,16 @@ public class LOne extends Optimizer {
 					synchronized(finished_linesrch){
 						finished_linesrch[getThreadId()] = true;
 					}
+					
+					//Periodically check if all threads have finished line search
+					while(!finshedLineSrch()){
+						try {
+							Thread.sleep(2000);
+						} catch (InterruptedException e) {}
+					}
+					
+					beginLinesrch.set(false);
+					
 				}
 			}
 
