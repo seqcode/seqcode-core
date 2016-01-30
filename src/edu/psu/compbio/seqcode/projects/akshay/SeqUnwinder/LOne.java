@@ -585,7 +585,7 @@ public class LOne extends Optimizer {
 
 				// Notify all threads to begin line search
 				synchronized(beginLineSearch){
-					notifyAll();
+					beginLineSearch.notifyAll();
 				}
 
 				
@@ -593,7 +593,7 @@ public class LOne extends Optimizer {
 				synchronized(finished_linesrch){
 					while(!finshedLineSrch()){
 						try {
-							wait();
+							finished_linesrch.wait();
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -622,7 +622,7 @@ public class LOne extends Optimizer {
 						System.err.println("ADMM has converged after "+ADMM_currItr_value.get()+" iterations !!");
 						// Notify all slave threads
 						synchronized(beginLineSearch){
-							notifyAll();
+							beginLineSearch.notifyAll();
 						}
 						ranADMM=true;
 						break;
@@ -768,17 +768,15 @@ public class LOne extends Optimizer {
 					// Go to the wait list of the monitor region for object beginLineSearch
 					// The current thread will wait until the main thread notifies
 					
-					System.out.println(threadName + "goint to get locked!!");
 					
 					synchronized(beginLineSearch){
 						try {
-							wait();
+							beginLineSearch.wait();
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
 					}
 					
-					System.out.println(threadName + "has been realeasd!!");
 
 					if(ADMM_currItr_value.get() >= ADMM_maxItr)
 						break;
@@ -868,7 +866,7 @@ public class LOne extends Optimizer {
 					}
 					synchronized(finished_linesrch){
 						finished_linesrch[getThreadId()] = true;
-						notifyAll();
+						finished_linesrch.notifyAll();
 					}
 					
 				}
