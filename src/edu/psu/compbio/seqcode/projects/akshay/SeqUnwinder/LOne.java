@@ -682,7 +682,10 @@ public class LOne extends Optimizer {
 
 			}
 
-
+			// Notify any waiting threads in beginLineSearch's monitor region
+			synchronized(beginLineSearch){
+				beginLineSearch.notifyAll();
+			}
 
 			// Wait till all the threads terminate 
 			boolean anyrunning = true;
