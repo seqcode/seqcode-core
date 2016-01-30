@@ -767,6 +767,9 @@ public class LOne extends Optimizer {
 					
 					// Go to the wait list of the monitor region for object beginLineSearch
 					// The current thread will wait until the main thread notifies
+					
+					System.out.println(threadName + "goint to get locked!!");
+					
 					synchronized(beginLineSearch){
 						try {
 							wait();
@@ -775,6 +778,7 @@ public class LOne extends Optimizer {
 						}
 					}
 					
+					System.out.println(threadName + "has been realeasd!!");
 
 					if(ADMM_currItr_value.get() >= ADMM_maxItr)
 						break;
