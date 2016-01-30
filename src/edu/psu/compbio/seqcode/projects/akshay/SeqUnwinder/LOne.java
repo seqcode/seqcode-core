@@ -255,6 +255,8 @@ public class LOne extends Optimizer {
 		public AtomicBoolean ADMMconverged = new AtomicBoolean(false);
 		/** Finished running the current z-step */
 		public AtomicBoolean beginLineSearch = new AtomicBoolean(false);
+		
+		public AtomicInteger numberOfReleasedThreads = new AtomicInteger(0);
 
 		//ADMM consensus variables
 
@@ -582,10 +584,13 @@ public class LOne extends Optimizer {
 						finished_linesrch[i] = false;
 					}
 				}
+				
 
 				// Notify all threads to begin line search
-				synchronized(beginLineSearch){
-					beginLineSearch.notifyAll();
+				while(!numberOfReleasedThreads.compareAndSet(ADMM_numThreads, 0)){
+					synchronized(beginLineSearch){
+						beginLineSearch.notifyAll();
+					}
 				}
 
 				
@@ -780,7 +785,9 @@ public class LOne extends Optimizer {
 						}
 					}
 					
-
+					numberOfReleasedThreads.incrementAndGet();
+					System.out.println("Thread "+ threadName + " realeased!!");
+					
 					if(ADMM_currItr_value.get() >= ADMM_maxItr)
 						break;
 					if(ADMMconverged.get())
