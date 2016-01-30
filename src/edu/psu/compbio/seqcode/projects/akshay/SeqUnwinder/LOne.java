@@ -254,9 +254,7 @@ public class LOne extends Optimizer {
 		/** Tracks the convergenece of ADMM  */
 		public AtomicBoolean ADMMconverged = new AtomicBoolean(false);
 		/** Finished running the current z-step */
-		//public AtomicBoolean updatedZ = new AtomicBoolean(false);
-		/** Atomic boolean to begin line search */
-		AtomicBoolean beginLinesrch = new AtomicBoolean(false);
+		public AtomicBoolean beginLineSearch = new AtomicBoolean(false);
 
 		//ADMM consensus variables
 
@@ -541,21 +539,20 @@ public class LOne extends Optimizer {
 
 			return converged;
 		}
+		
 		public boolean finshedLineSrch(){
 			boolean ret = true;
-			synchronized(finished_linesrch){
-				for(int i=0; i<finished_linesrch.length; i++){
-					if(!finished_linesrch[i]){
-						ret = false;
-						break;
-					}
+			for(int i=0; i<finished_linesrch.length; i++){
+				if(!finished_linesrch[i]){
+					ret = false;
+					break;
 				}
 			}
 			return ret;	
 		}
 
 		// Runs the ADMM algorithm
-		public void execute(){
+		public void execute() {
 			int dim = numPredictors+1;
 
 			// Initiate the threads
@@ -585,18 +582,25 @@ public class LOne extends Optimizer {
 						finished_linesrch[i] = false;
 					}
 				}
-				
-				beginLinesrch.set(true);
 
-				// Now atomically update "updateZ" boolean to true to trigger x-update
-				//updatedZ.set(true);
-
-				//Periodically check if all threads have finished line search
-				while(!finshedLineSrch()){
-					try {
-						Thread.sleep(2000);
-					} catch (InterruptedException e) {}
+				// Notify all threads to begin line search
+				synchronized(beginLineSearch){
+					notifyAll();
 				}
+
+				
+				// Wait in the monitor area of finished_linesrch
+				synchronized(finished_linesrch){
+					while(!finshedLineSrch()){
+						try {
+							wait();
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+				
 
 				//Now check for convergence at previous iteration
 				if(ADMM_currItr_value.get()>0){
@@ -616,11 +620,9 @@ public class LOne extends Optimizer {
 					}else{
 						System.err.println();
 						System.err.println("ADMM has converged after "+ADMM_currItr_value.get()+" iterations !!");
-						//updatedZ.set(true);
-						synchronized(finished_linesrch){
-							for(int i=0; i<finished_linesrch.length; i++){
-								finished_linesrch[i] = false;
-							}
+						// Notify all slave threads
+						synchronized(beginLineSearch){
+							notifyAll();
 						}
 						ranADMM=true;
 						break;
@@ -754,23 +756,33 @@ public class LOne extends Optimizer {
 			@Override
 			public void run() {
 
-				while(!ADMMconverged.get()){
-					//while(!updatedZ.get()){ //Wait till the z-step has finished
-					while(!beginLinesrch.get()){
+				while(true){
+					//while(!beginLineSearch.get()){//Wait till the z-step has finished
+						//try {
+						//	Thread.sleep(1000);
+						//} catch (InterruptedException e){}
+						//if(ADMM_currItr_value.get() >= ADMM_maxItr)
+						//	break;
+					//}
+					
+					// Go to the wait list of the monitor region for object beginLineSearch
+					// The current thread will wait until the main thread notifies
+					synchronized(beginLineSearch){
 						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e){}
-						if(ADMM_currItr_value.get() >= ADMM_maxItr)
-							break;
+							wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
+					
 
 					if(ADMM_currItr_value.get() >= ADMM_maxItr)
 						break;
+					if(ADMMconverged.get())
+						break;
 
 					// update t_b_u
-
 					// first calculate xhat
-
 					// Calculate over-relaxed x:- xrel
 					int dim = numPredictors + 1;
 					double[] t_b_xhat = new double[z.length];
@@ -804,7 +816,6 @@ public class LOne extends Optimizer {
 
 
 					// t_b_x update
-
 					int[] iflag = new int[1];
 					double obj= oO.objectiveFunction(t_b_x);
 					double[] grad = oO.evaluateGradient(t_b_x);
@@ -839,7 +850,7 @@ public class LOne extends Optimizer {
 					// Which, they should. However, if a thread reaches this point too soon (which is highly unlikely)
 					// Then the other thread whouldn't have initiated line search
 					// Can't think of a good way to make this full proof at the moment.
-					//updatedZ.set(false); // Atomically set to false
+					//beginLineSearch.set(false); // Atomically set to false
 
 					synchronized(t_x){
 						for(int i=0; i<t_b_x.length; i++){
@@ -853,16 +864,8 @@ public class LOne extends Optimizer {
 					}
 					synchronized(finished_linesrch){
 						finished_linesrch[getThreadId()] = true;
+						notifyAll();
 					}
-					
-					//Periodically check if all threads have finished line search
-					while(!finshedLineSrch()){
-						try {
-							Thread.sleep(2000);
-						} catch (InterruptedException e) {}
-					}
-					
-					beginLinesrch.set(false);
 					
 				}
 			}
