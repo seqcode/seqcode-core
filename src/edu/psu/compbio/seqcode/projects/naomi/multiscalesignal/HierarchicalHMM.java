@@ -18,7 +18,7 @@ public class HierarchicalHMM {
 	protected int numObs;
 	protected int depth; //hierarchy depth
 	protected double o [][]; //observations	o[numObs][depth]
-	protected double q [][]; //ith state at level d
+	protected int q [][]; //ith state at level d ; temporary set as int to do the initial development
 	protected double pi [][]; // initial state distributions
 	protected double a [][][]; // state transition probabilities
 	protected double b [][][]; //emission probabilities	
@@ -50,7 +50,7 @@ public class HierarchicalHMM {
 	 * @param o		signal mean
 	 * @param itr	the number of iterations performed
 	 **/	
-	public void baumWelch (double[][] o, int itr){
+	public void baumWelch (int[][] o, int itr){
 		
 		int T = o.length;
 		double [][][] forward;
@@ -64,10 +64,10 @@ public class HierarchicalHMM {
 		
 		for (int s = 0; s <itr; s++){
 			//calculate forward, backward, downward, upward variables from the current model
-			forward = forwardProc(o);
-			backward = backwardProc(o);
-			upward = upwardProc(o);
-			downward = downwardProc(o);
+//			forward = forwardProc(o);
+//			backward = backwardProc(o);
+//			upward = upwardProc(o);
+//			downward = downwardProc(o);
 			
 			//re-estimation of initial state probabilities
 			for (int i = 0; i <numStates; i++){
@@ -82,7 +82,7 @@ public class HierarchicalHMM {
 				  double num = 0;
 				  double denom = 0;
 				  for (int t = 0; t <= T - 1; t++) {
-				    num += xi(t, i, j, o, forward, backward);
+//				    num += xi(t, i, j, o, forward, backward);
 	//			    denom += gamma(i, t, o, forward, backward);
 				  }
 	//			  a1[i][j] = divide(num, denom);
@@ -108,6 +108,14 @@ public class HierarchicalHMM {
 		int T = o[0].length;
 		double [][][] forward = new double [numStates][T][depth];
 		
+		//Bottom level: d=D
+		//for each state, calculate probability based on state initial distributions of d-1
+		
+		for (int i = 0; i <numStates; i++)
+			forward[i][0][depth] = pi[q[i][depth-1]][depth-1]; //multiplied by observation
+		
+		
+		
 		// initialization (time 0)
 		for (int i = 0; i <numStates; i++)
 			forward[i][0][0] = pi[i][0] *b[i][0][0];
@@ -123,20 +131,6 @@ public class HierarchicalHMM {
 			}
 		}
 
-		/**
-		// induction
-		for (int d = 0; d <depth; d++){
-			for (int t = 0 ; t <= T-2 ; t++){
-				for (int j = 0 ; j < numStates ; j++){
-					forward[j][t+1][d] = 0;
-					for (int i = 0; i< numStates; i++){
-						forward[j][t+1][d] += (forward[i][t][d]*a[i][j][d]);
-						forward[j][t+1][d] *= b[j][t+1][d];
-					}
-				}
-			}
-		}
-		**/
 		
 		return forward;
 		
