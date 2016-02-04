@@ -86,7 +86,7 @@ public class ChIPexoQC {
 		for(ExperimentCondition exptCond: manager.getConditions()){
 			for(ControlledExperiment rep : exptCond.getReplicates()){
 				
-				writer.println("#"+rep.getRepName());
+				writer.println("#"+rep.getCondName());
 				
 				List<Float> signalSampCounts = new ArrayList<Float>();
 				List<Float> controlSampCounts = new ArrayList<Float>();
