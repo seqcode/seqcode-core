@@ -12,11 +12,15 @@ import java.util.Arrays;
  *
  **/
 
+// observations and q are temporary int: later I need to change!!
+//right now the number of states are fixed
+
 public class HierarchicalHMM {
 
 	protected int numStates; 
 	protected int numObs;
 	protected int depth; //hierarchy depth
+	protected int D = depth-1;
 	protected double o [][]; //observations	o[numObs][depth]
 	protected int q [][]; //ith state at level d ; temporary set as int to do the initial development
 	protected double pi [][]; // initial state distributions
@@ -103,34 +107,48 @@ public class HierarchicalHMM {
 	 * @param o		signal mean
 	 * @return 		a 3d array containing forward variables f(i,t,d) over states, time, and depth.
 	 **/			
-	public double [][][] forwardProc(double[][] o){
+	public double [][][] forwardProc(int [][] o){
 		
 		int T = o[0].length;
 		double [][][] forward = new double [numStates][T][depth];
+		double [][][] sum1 = new double [numStates][T][depth];
+		double [][][] sum2 = new double [numStates][T][depth];		
 		
-		//Bottom level: d=D
-		//for each state, calculate probability based on state initial distributions of d-1
-		
+		//bottom level: d=D
+		//for each state, calculate probability based on state initial distributions of d-1		
 		for (int i = 0; i <numStates; i++)
-			forward[i][0][depth] = pi[q[i][depth-1]][depth-1]; //multiplied by observation
+			forward[i][0][D] = pi[q[i][D]][D-1]*b[o[i][D-1]][0][D]; 
 		
-		
-		
-		// initialization (time 0)
-		for (int i = 0; i <numStates; i++)
-			forward[i][0][0] = pi[i][0] *b[i][0][0];
-		
-		// induction when depth is zero
-		for (int t = 0 ; t <= T-2 ; t++){
-			for (int j = 0 ; j < numStates ; j++){
-				forward[j][t+1][0] = 0;
-				for (int i = 0; i< numStates; i++){
-					forward[j][t+1][0] += (forward[i][t][0]*a[i][j][0]);
-				forward[j][t+1][0] *= b[j][t+1][0];
+		//induction at bottom level: d=D
+		for (int t = 1 ; t < T-1 ; t++){
+			for (int i = 0 ; i < numStates ; i++){
+				forward[i][t][D] = 0;
+				for (int j = 0; j< numStates; j++){
+					forward[i][t][D] += (forward[i][t-1][D]*a[j][i][D-1]);
+				forward[i][t][D] *= b[o[i][D-1]][t][0];
 				}
 			}
 		}
+		//bottom up calculation of forward algorithm
+		for (int d = D-1; d >=0; d--){
+			for (int i = 0; i <numStates; i++){
+				// I don't know if forward[i][0][d+1] is correct
+				forward[i][0][d] = pi[q[i][d]][d-1]*forward[i][0][d+1]*b[o[i][d-1]][0][d];
+			}
 
+			for (int t = 1; t < T-1 ; t++){
+				// I have to look carefully to see what l is
+				for (int l = 0 ; l < T-1 ; l++){
+					for (int i = 0 ; i < numStates ; i++){
+						forward[i][t][d] = 0;
+						for (int j = 0; j< numStates; j++){
+							forward[i][t][D] += (forward[i][t-1][d]*a[j][i][d-1]);
+						}
+					
+					}
+				}
+			}
+		}
 		
 		return forward;
 		
