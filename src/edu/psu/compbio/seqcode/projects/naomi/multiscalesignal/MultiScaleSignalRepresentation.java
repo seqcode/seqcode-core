@@ -34,8 +34,10 @@ import edu.psu.compbio.seqcode.projects.seed.stats.FeatureStatistics;
  * Methods refer to two papers
  * Probabilistic Multiscale Image Segmentation, Vincken et al. IEEE (1997)
  * 
+ * This only takes one experimental target
+ * 
  * @author naomi yamada
- *
+ * 
  **/
 
 public class MultiScaleSignalRepresentation {

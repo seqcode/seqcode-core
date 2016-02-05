@@ -30,14 +30,14 @@ import edu.psu.compbio.seqcode.projects.seed.SEEDConfig;
 import edu.psu.compbio.seqcode.projects.seed.stats.FeatureStatistics;
 
 /**
- * MultiScaleSignalRepresentation
+ * MultiScaleSR
  *
  * Methods refer to two papers
  * Probabilistic Multiscale Image Segmentation, Vincken et al. IEEE (1997)
  * 
  * @author naomi yamada
  * 
- * copied from MultiScaleSignalRepresentation to modify to take multiple experimentTarget
+ * copied from MultiScaleSignalRepresentation to take more than one experiment target
  *
  **/
 
@@ -162,22 +162,18 @@ public class MultiScaleSR {
 			List <Integer> nonzeroList = new ArrayList<Integer>();
 			linkageMap.put(0,0);
 			float[] DImax = new float[numTargets];
-			float[] DImin = new float[numTargets];
-			for (int k = 0 ; k < numTargets; k ++){
+			for (int k = 0 ; k < numTargets; k ++)
 				DImax[k] = (float) Integer.MIN_VALUE;
-				DImin[k] = (float) Integer.MAX_VALUE;
-			}
 			
-			//fix from here
 			for (int i = 0 ; i< gaussianBlur.length-1; i++){ 
-				if (gaussianBlur[i][1] != gaussianBlur[i+1][1])
-					linkageMap.put(i,i);
-//				if (gaussianBlur[i][1] > DImax)
-					DImax = gaussianBlur[i][1];
-//				if (gaussianBlur[i][1] < DImin)
-					DImin = gaussianBlur[i][1];		
-//				if (gaussianBlur[i][1]!=0)
-					nonzeroList.add(i);
+				for (int k = 0 ; k < numTargets ; k ++){
+					if (gaussianBlur[i][1][k] != gaussianBlur[i+1][1][k])
+						linkageMap.put(i, i);
+					if (gaussianBlur[i][1][k] > DImax[k])
+						DImax[k] = gaussianBlur[i][1][k];					
+					if (gaussianBlur[i][1][k]!=0 && !nonzeroList.contains(i))
+						nonzeroList.add(i);
+				}
 			}
 			linkageMap.put(gaussianBlur.length-1,gaussianBlur.length-1);
 			
@@ -193,22 +189,19 @@ public class MultiScaleSR {
 			
 //			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
 //					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);	
-			float maxInt = DImax[0]-DImin[0];  
-//			System.out.println("max intensity is: "+maxInt);
 			
 			final long startTime = System.currentTimeMillis();
 
 			//build segmentationTree
-			SegmentationTree segtree = new SegmentationTree(gconfig, econfig, sconfig, numScale);	
+			HyperstackSegmentation segtree = new HyperstackSegmentation(gconfig, econfig, sconfig, numScale);	
 			
-//			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
+//			Map<Integer,Set<Integer>> segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, DImax, trailingZero, zeroEnd);
 
 			// I'm testing with a singl chromosome ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;	
 			
 			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000 && currchromBinSize <20000000){			
-	//		segmentationTree = segtree.buildTree(currchromBinSize, gaussianBlur, linkageMap, maxInt, trailingZero, zeroEnd);
-// above is temporary commented out
+				segmentationTree = segtree.buildTree(gaussianBlur, linkageMap, DImax, trailingZero, zeroEnd);
 			
 			//printing segmenationTree for test
 			System.out.println("from returned values from segmentationTree");
@@ -326,12 +319,12 @@ public class MultiScaleSR {
 		
 		for (Integer scale : scaleList){
 			
-			for (ExperimentCondition conditions : manager.getConditions()){
-				for (ControlledExperiment rep : conditions.getReplicates()){
+			for (ExperimentTarget target : manager.getTargets()){
+				for (ControlledExperiment rep : target.getTargetExperiments()){
 					String outName = scale+"_"+rep.getSignal().getName()+"_scaleCounts.txt";
 					PrintWriter writer = new PrintWriter(outName,"UTF-8");
 					List<Region> regList = segRegionTree.get(scale);
-					writer.println("#scale is: "+scale+"size is "+segRegionTree.get(scale).size());
+					writer.println("#scale is: "+scale+" size is "+segRegionTree.get(scale).size());
 					writer.println(rep.getSignal().getName());
 					for (Region reg : regList){
 						writer.println(reg+"\t"+rep.getSignal().countHits(reg));
