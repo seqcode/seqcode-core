@@ -169,9 +169,7 @@ public class MultiScaleSR {
 				DImin[k] = (float) Integer.MAX_VALUE;
 			}
 
-			int prevPos = 0;
 			for (int i = 0 ; i< gaussianBlur.length-1; i++){ 
-				System.out.println("current index "+i);
 				for (int k = 0 ; k < numConditions ; k ++){
 					if (gaussianBlur[i][1][k] != gaussianBlur[i+1][1][k])
 						linkageMap.put(i, i);
@@ -179,15 +177,11 @@ public class MultiScaleSR {
 						DImax[k] = gaussianBlur[i][1][k];	
 					if (gaussianBlur[i][1][k] < DImin[k])
 						DImin[k] = gaussianBlur[i][1][k];
-					if ((gaussianBlur[i][1][k]!= 0) && ( i != prevPos )){
-						nonzeroList.add(i);
-						prevPos = i;
-					}					
+					if (gaussianBlur[i][1][k]!= 0)
+						nonzeroList.add(i);					
 				}
 			}
 			linkageMap.put(gaussianBlur.length-1,gaussianBlur.length-1);
-			
-			System.out.println("finish putting in linkageMap");
 			
 			//determine the first nonzero and last nonzero from signal	
 			int trailingZero = 0;
@@ -216,7 +210,8 @@ public class MultiScaleSR {
 			
 			System.out.println("before calling segmentationTree");
 			
-			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000 && currchromBinSize <20000000){			
+			//size restriction needs to be adjusted for bin size this current setting is for bin size 100bp
+			if (currChrom.getChrom().contains("13") && currchromBinSize > 1000000 && currchromBinSize <2000000){			
 				segmentationTree = segtree.buildTree(gaussianBlur, linkageMap, maxIntensity, trailingZero, zeroEnd);
 			
 			//printing segmenationTree for test
