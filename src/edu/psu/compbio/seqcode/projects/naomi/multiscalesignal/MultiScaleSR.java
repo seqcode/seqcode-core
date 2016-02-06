@@ -140,15 +140,15 @@ public class MultiScaleSR {
 				currentCounts = null;
 			}
 			
-			// constructing a gaussianBlur by combining signals from each condition and replicate
+			// gaussianBlur contains normalized signal counts for l number of targets 
+			int l = 0; 
 			for (ExperimentTarget target : manager.getTargets()){
-				int k = 0;
 				for (ControlledExperiment rep: target.getTargetExperiments()){
 					float[] counts = gaussianBlurMap.get(rep.getSignal());
 					for (int i = 0; i<currchromBinSize ; i++)
-						gaussianBlur[i][1][k] += (float) (counts[i]/rep.getControlScaling());
+						gaussianBlur[i][1][l] += (float) (counts[i]/rep.getControlScaling());
 				}
-				k++;
+				l++;
 			}
 			
 			/*********************
@@ -162,15 +162,20 @@ public class MultiScaleSR {
 			List <Integer> nonzeroList = new ArrayList<Integer>();
 			linkageMap.put(0,0);
 			float[] DImax = new float[numTargets];
-			for (int k = 0 ; k < numTargets; k ++)
+			float[] DImin = new float[numTargets];
+			for (int k = 0 ; k < numTargets; k ++){
 				DImax[k] = (float) Integer.MIN_VALUE;
+				DImin[k] = (float) Integer.MAX_VALUE;
+			}
 			
 			for (int i = 0 ; i< gaussianBlur.length-1; i++){ 
 				for (int k = 0 ; k < numTargets ; k ++){
 					if (gaussianBlur[i][1][k] != gaussianBlur[i+1][1][k])
 						linkageMap.put(i, i);
 					if (gaussianBlur[i][1][k] > DImax[k])
-						DImax[k] = gaussianBlur[i][1][k];					
+						DImax[k] = gaussianBlur[i][1][k];	
+					if (gaussianBlur[i][1][k] < DImin[k])
+						DImin[k] = gaussianBlur[i][1][k];
 					if (gaussianBlur[i][1][k]!=0 && !nonzeroList.contains(i))
 						nonzeroList.add(i);
 				}
