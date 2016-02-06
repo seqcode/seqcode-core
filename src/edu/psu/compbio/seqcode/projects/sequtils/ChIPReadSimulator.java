@@ -363,6 +363,9 @@ public class ChIPReadSimulator {
 	public void setJointEventRate(double jointRate){
 		this.jointEventRate = jointRate;
 	}
+	public void setReadLength(int r){
+		this.rLen=r;
+	}
 	public void setNoiseSource(List<Sample> controls, boolean subsample){
 		subsampleControl = subsample;
 		noiseSource = new ArrayList<ReadHit>();
@@ -428,7 +431,7 @@ public class ChIPReadSimulator {
 	 */
 	public static void main(String[] args) {
 		String empFile, outFile="out";
-		int c=2, r=2, numdata, jointSpacing=200;
+		int c=2, r=2, numdata, jointSpacing=200, rlen=32;
 		double frags=1000000, reads=1000000, a, up, down, diff, jointRate=0.0;
 		String bmfile;
 		boolean printEvents=true, subsampleControl=false;
@@ -443,6 +446,7 @@ public class ChIPReadSimulator {
 					"\t--a <over-dispersion param>\n" +
 					"\t--frags <avg total fragments>\n" +
 					"\t--reads <avg total reads>\n" +
+					"\t--rlen <length of each read>\n" +
 					"\t--up <up-regulated fraction>\n" +
 					"\t--down <down-regulated fraction>\n" +
 					"\t--diff <basis of differential expression>\n" +
@@ -488,7 +492,9 @@ public class ChIPReadSimulator {
 				cdsim.setReadsA(frags);
 				cdsim.setReadsB(frags);
 			}if(ap.hasKey("reads")){
-				reads = new Double(ap.getKeyValue("reads"));				
+				reads = new Double(ap.getKeyValue("reads"));
+			}if(ap.hasKey("rlen")){
+				rlen = new Integer(ap.getKeyValue("rlen"));
 			}if(ap.hasKey("up")){
 				up = new Double(ap.getKeyValue("up"));
 				cdsim.setUpRegFrac(up);
@@ -548,6 +554,7 @@ public class ChIPReadSimulator {
 			}
 			
 	        sim.setTotalReads((int) reads);
+	        sim.setReadLength(rlen);
 	        
 	        if(noiseProb<1 && printEvents)
 	        	sim.printEvents();	      
