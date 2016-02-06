@@ -172,8 +172,13 @@ public class HyperstackSegmentation {
 			// printing region is sensitive to bin size; current bin size is 100 bp
 			for (int k = 0 ; k < numConditions ; k ++){
 				System.out.println("condition "+k);
-				for (int i = 0; i< 1151698;i += 20000)
-					System.out.println(gaussianBlur[i][0][k]+" : "+gaussianBlur[i][1][k]);
+				for (int i = 0 ; i < gaussianBlur.length; i++){
+					if (gaussianBlur[i][0][k] > 0){
+						System.out.println("signal is "+gaussianBlur[i][0][k]+" index is "+i);
+					}
+				}
+//				for (int i = 0; i< 1151698;i += 20000)
+//					System.out.println(gaussianBlur[i][0][k]+" : "+gaussianBlur[i][1][k]);
 			}
 			
 			final long gaussianEndTime = System.currentTimeMillis();
@@ -249,6 +254,7 @@ public class HyperstackSegmentation {
 						C_ground = WEIGHT_G*counter*GV_parents.get(linkageMap.get(kid))/GV_max; 
 						for (int k = 0 ; k < numConditions ; k++)
 							// calculating the mean parents intensity; I need to double check this
+							// line 252 is producing array out of bound exception
 							M_parent[k] = cumGaussianBlur[linkageMap.get(kid)][0][k] - gaussianBlur[linkageMap.get(kid) - GV_parents.get(linkageMap.get(kid))][0][k];
 					}
 				
