@@ -169,8 +169,9 @@ public class HyperstackSegmentation {
 				}			
 			}
 			
+			// printing region is sensitive to bin size; current bin size is 100 bp
 			for (int k = 0 ; k < numConditions ; k ++){
-				for (int i = 0; i< 11516987;i += 200000)
+				for (int i = 0; i< 1151698;i += 20000)
 					System.out.println(gaussianBlur[i][0][k]+" : "+gaussianBlur[i][1][k]);
 			}
 			
