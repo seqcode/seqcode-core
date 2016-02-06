@@ -140,7 +140,7 @@ public class MultiScaleSR {
 				currentCounts = null;
 			}
 			
-			System.out.println("number of sample is: "+manager.getSamples());
+			System.out.println("number of sample is: "+manager.getSamples().size());
 			
 			// gaussianBlur contains normalized signal counts for l number of targets 
 			int l = 0; 
@@ -152,6 +152,7 @@ public class MultiScaleSR {
 				}
 				l++;
 			}
+			System.out.println("finish putting gaussianBlur array ");
 			
 			/*********************
 			 * Starting nodes
@@ -185,6 +186,8 @@ public class MultiScaleSR {
 			}
 			linkageMap.put(gaussianBlur.length-1,gaussianBlur.length-1);
 			
+			System.out.println("finish putting in linkageMap");
+			
 			//determine the first nonzero and last nonzero from signal	
 			int trailingZero = 0;
 			int zeroEnd = 0;
@@ -209,6 +212,8 @@ public class MultiScaleSR {
 
 			// I'm testing with a singl chromosome ; beginning of test
 			Map<Integer,Set<Integer>> segmentationTree = null;	
+			
+			System.out.println("before calling segmentationTree");
 			
 			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000 && currchromBinSize <20000000){			
 				segmentationTree = segtree.buildTree(gaussianBlur, linkageMap, maxIntensity, trailingZero, zeroEnd);
