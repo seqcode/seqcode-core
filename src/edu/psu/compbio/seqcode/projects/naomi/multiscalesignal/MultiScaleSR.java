@@ -152,7 +152,7 @@ public class MultiScaleSR {
 				}
 				l++;
 			}
-			System.out.println("finish putting gaussianBlur array ");
+			System.out.println("number of l is: "+l+" finish putting gaussianBlur array ");
 			
 			/*********************
 			 * Starting nodes
@@ -172,7 +172,9 @@ public class MultiScaleSR {
 				DImin[k] = (float) Integer.MAX_VALUE;
 			}
 			
+			System.out.println("before putting in linkageMap");
 			for (int i = 0 ; i< gaussianBlur.length-1; i++){ 
+				System.out.println("current index "+i);
 				for (int k = 0 ; k < numConditions ; k ++){
 					if (gaussianBlur[i][1][k] != gaussianBlur[i+1][1][k])
 						linkageMap.put(i, i);
@@ -180,7 +182,7 @@ public class MultiScaleSR {
 						DImax[k] = gaussianBlur[i][1][k];	
 					if (gaussianBlur[i][1][k] < DImin[k])
 						DImin[k] = gaussianBlur[i][1][k];
-					if (gaussianBlur[i][1][k]!=0 && !nonzeroList.contains(i))
+					if ((gaussianBlur[i][1][k]!= 0) && (!nonzeroList.contains(i)))
 						nonzeroList.add(i);
 				}
 			}
