@@ -65,18 +65,18 @@ public class HyperstackSegmentation {
 	protected Map <Integer, Set<Integer>> buildTree (float[][][] gaussianBlur, Map <Integer, Integer> linkageMap, float[] DImax, int trailingZero, int zeroEnd){
 		
 		int currchromBinSize = gaussianBlur.length;
-		int numTargets = gaussianBlur[0][0].length;
+		int numConditions = gaussianBlur[0][0].length;
 		float fchromBinSize = currchromBinSize;
 		
 		//cumGaussianBlur stores cumulative signal counts; this to be used to get the mean signal intensity
-		float[][][] cumGaussianBlur = new float [gaussianBlur.length][2][numTargets];
+		float[][][] cumGaussianBlur = new float [gaussianBlur.length][2][numConditions];
 		for (int i = 0; i<currchromBinSize; i++){
 			for (int j = 0; j<2; j++){
-				for (int k = 0 ; k < numTargets ; k++)
+				for (int k = 0 ; k < numConditions ; k++)
 					gaussianBlur[i][j][k] = 0;
 			}
 		}
-		for (int k = 0 ; k < numTargets ; k++){
+		for (int k = 0 ; k < numConditions ; k++){
 			cumGaussianBlur[0][1][k] = gaussianBlur[0][1][k];
 			for (int i = 1; i < currchromBinSize; i++){
 				cumGaussianBlur[i][1][k] = cumGaussianBlur[i-1][1][k] + gaussianBlur[i][1][k];
@@ -124,8 +124,8 @@ public class HyperstackSegmentation {
 			for (int i = 0;i<windowSize;i++)
 				normalizedWindow[i] = window[i]/windowSum;				
 			
-			// smoothing signals for numTargets times
-			for (int k = 0 ; k < numTargets; k++){
+			// smoothing signals for numConditions times
+			for (int k = 0 ; k < numConditions; k++){
 				
 				double polyCoeffi[] = new double [(int) Math.ceil(fchromBinSize/binWindowSize)];
 				System.out.println("binWindowSize is "+binWindowSize+"\tpolyCoeffi length is "+(int) Math.ceil(fchromBinSize/binWindowSize));
@@ -169,7 +169,7 @@ public class HyperstackSegmentation {
 				}			
 			}
 			
-			for (int k = 0 ; k < numTargets ; k ++){
+			for (int k = 0 ; k < numConditions ; k ++){
 				for (int i = 0; i< 11516987;i += 200000)
 					System.out.println(gaussianBlur[i][0][k]+" : "+gaussianBlur[i][1][k]);
 			}
@@ -225,7 +225,7 @@ public class HyperstackSegmentation {
 			double affectionScore = 0;
 			Integer prevKid = 0;
 			double M_kid = 0;
-			double[] M_parent = new double [numTargets];
+			double[] M_parent = new double [numConditions];
 			//updating ground volume and iterating to encourage convergence
 			for (int counter = 0; counter<5; counter++){
 				
@@ -245,7 +245,7 @@ public class HyperstackSegmentation {
 						C_meanIntensity = 0.00;
 					}else{ // I changed weights of ground volume significantly from the previous version so I don't know if this will work in encouraging fewer parents
 						C_ground = WEIGHT_G*counter*GV_parents.get(linkageMap.get(kid))/GV_max; 
-						for (int k = 0 ; k < numTargets ; k++)
+						for (int k = 0 ; k < numConditions ; k++)
 							// calculating the mean parents intensity; I need to double check this
 							M_parent[k] = cumGaussianBlur[linkageMap.get(kid)][0][k] - gaussianBlur[linkageMap.get(kid) - GV_parents.get(linkageMap.get(kid))][0][k];
 					}
@@ -258,7 +258,7 @@ public class HyperstackSegmentation {
 							
 							double totalIdiff = 0;
 							double totalMeanIdiff = 0;
-							for (int k = 0 ; k <numTargets; k++){
+							for (int k = 0 ; k <numConditions; k++){
 								totalIdiff += Math.abs(gaussianBlur[kid][0][k] - gaussianBlur[kid+dcp[i]][1][k])/DImax[k];	
 								M_kid = cumGaussianBlur[kid+dcp[i]][1][k] - cumGaussianBlur[prevKid][1][k];
 								totalMeanIdiff += Math.abs(M_parent[k] - M_kid)/DImax[k];

@@ -52,7 +52,7 @@ public class MultiScaleSR {
 	//external parameters
 	protected int threePrimReadExt = 200;
 	protected int binWidth = 1;
-	protected int numTargets = 1;
+	protected int numConditions = 1;
 	
 	protected double scaling;	
 
@@ -73,17 +73,17 @@ public class MultiScaleSR {
 		//fix here to get parameters only if they are specified
 		binWidth = sconfig.getBinWidth();
 		threePrimReadExt = sconfig.getTag3PrimeExtension();
-		numTargets = manager.getTargets().size();
+		numConditions = manager.getNumConditions();
 		
 		//test to print binWidth and threePrimReadExt
 		System.out.println("binWidth is: "+binWidth);
 		System.out.println("threePrimReadExt is: "+threePrimReadExt);
-		System.out.println("numTarget is: "+numTargets);
+		System.out.println("numConditions is: "+numConditions);
 		
 		//get scaling ratio	
-		for (ExperimentTarget target : manager.getTargets()){
-			for (ControlledExperiment rep : target.getTargetExperiments()){
-				System.out.println("expTarget: "+target.getName()+"\tScalingFactor: "+rep.getControlScaling());
+		for (ExperimentCondition condition : manager.getConditions()){
+			for (ControlledExperiment rep: condition.getReplicates()){
+				System.out.println("condition: "+condition.getName()+"\tScalingFactor: "+rep.getControlScaling());
 			}
 		}
 		
@@ -101,10 +101,10 @@ public class MultiScaleSR {
 			float[] sampleCounts = new float[currchromBinSize];
 			//primitive array to store signal and the subsequent convolved signals
 			//its index correspond to the coordinates
-			float[][][] gaussianBlur = new float[currchromBinSize][2][numTargets];
+			float[][][] gaussianBlur = new float[currchromBinSize][2][numConditions];
 			for (int i = 0; i<currchromBinSize; i++){
 				for (int j = 0; j<2; j++){
-					for (int k = 0 ; k < numTargets ; k++)
+					for (int k = 0 ; k < numConditions ; k++)
 						gaussianBlur[i][j][k] = 0;
 				}
 			}
@@ -112,8 +112,8 @@ public class MultiScaleSR {
 			//get StrandedBaseCount list for each condition and replicate
 			Map<Sample, List<StrandedBaseCount>> sampleCountsMap = new HashMap<Sample, List<StrandedBaseCount>>();
 			
-			for (ExperimentTarget target : manager.getTargets()){				
-				for (ControlledExperiment rep: target.getTargetExperiments()){
+			for (ExperimentCondition condition : manager.getConditions()){			
+				for (ControlledExperiment rep: condition.getReplicates()){
 					sampleCountsMap.put(rep.getSignal(), rep.getSignal().getBases(currChrom));			
 				}
 			}
@@ -140,10 +140,12 @@ public class MultiScaleSR {
 				currentCounts = null;
 			}
 			
+			System.out.println("number of sample is: "+manager.getSamples());
+			
 			// gaussianBlur contains normalized signal counts for l number of targets 
 			int l = 0; 
-			for (ExperimentTarget target : manager.getTargets()){
-				for (ControlledExperiment rep: target.getTargetExperiments()){
+			for (ExperimentCondition condition : manager.getConditions()){	
+				for (ControlledExperiment rep: condition.getReplicates()){
 					float[] counts = gaussianBlurMap.get(rep.getSignal());
 					for (int i = 0; i<currchromBinSize ; i++)
 						gaussianBlur[i][1][l] += (float) (counts[i]/rep.getControlScaling());
@@ -161,16 +163,16 @@ public class MultiScaleSR {
 			//setting max & min signal intensity  
 			List <Integer> nonzeroList = new ArrayList<Integer>();
 			linkageMap.put(0,0);
-			float[] DImax = new float[numTargets];
-			float[] DImin = new float[numTargets];
-			float[] maxIntensity = new float[numTargets];
-			for (int k = 0 ; k < numTargets; k ++){
+			float[] DImax = new float[numConditions];
+			float[] DImin = new float[numConditions];
+			float[] maxIntensity = new float[numConditions];
+			for (int k = 0 ; k < numConditions; k ++){
 				DImax[k] = (float) Integer.MIN_VALUE;
 				DImin[k] = (float) Integer.MAX_VALUE;
 			}
 			
 			for (int i = 0 ; i< gaussianBlur.length-1; i++){ 
-				for (int k = 0 ; k < numTargets ; k ++){
+				for (int k = 0 ; k < numConditions ; k ++){
 					if (gaussianBlur[i][1][k] != gaussianBlur[i+1][1][k])
 						linkageMap.put(i, i);
 					if (gaussianBlur[i][1][k] > DImax[k])
@@ -195,7 +197,7 @@ public class MultiScaleSR {
 			
 			System.out.println("DImax is: "+DImax[0]+"\t"+"DImin is: "+DImin[0]+
 					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);
-			for (int k = 0 ; k < numTargets ; k++)
+			for (int k = 0 ; k < numConditions ; k++)
 				maxIntensity[k] = DImax[k]-DImin[k];
 			
 			final long startTime = System.currentTimeMillis();
