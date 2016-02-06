@@ -140,8 +140,6 @@ public class MultiScaleSR {
 				currentCounts = null;
 			}
 			
-			System.out.println("number of sample is: "+manager.getSamples().size());
-			
 			// gaussianBlur contains normalized signal counts for l number of targets 
 			int l = 0; 
 			for (ExperimentCondition condition : manager.getConditions()){	
@@ -152,7 +150,6 @@ public class MultiScaleSR {
 				}
 				l++;
 			}
-			System.out.println("number of l is: "+l+" finish putting gaussianBlur array ");
 			
 			/*********************
 			 * Starting nodes
@@ -171,10 +168,8 @@ public class MultiScaleSR {
 				DImax[k] = (float) Integer.MIN_VALUE;
 				DImin[k] = (float) Integer.MAX_VALUE;
 			}
-			
-			System.out.println("before putting in linkageMap. gaussianBlur length is "+gaussianBlur.length);
-			System.out.println("currentchrombinsize "+currchromBinSize);
-			
+
+			int prevPos = 0;
 			for (int i = 0 ; i< gaussianBlur.length-1; i++){ 
 				System.out.println("current index "+i);
 				for (int k = 0 ; k < numConditions ; k ++){
@@ -184,8 +179,10 @@ public class MultiScaleSR {
 						DImax[k] = gaussianBlur[i][1][k];	
 					if (gaussianBlur[i][1][k] < DImin[k])
 						DImin[k] = gaussianBlur[i][1][k];
-					if ((gaussianBlur[i][1][k]!= 0) && (!nonzeroList.contains(i)))
+					if ((gaussianBlur[i][1][k]!= 0) && ( i != prevPos )){
 						nonzeroList.add(i);
+						prevPos = i;
+					}					
 				}
 			}
 			linkageMap.put(gaussianBlur.length-1,gaussianBlur.length-1);
