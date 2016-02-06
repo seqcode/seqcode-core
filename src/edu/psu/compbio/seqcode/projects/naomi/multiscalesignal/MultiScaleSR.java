@@ -95,7 +95,7 @@ public class MultiScaleSR {
 			int currchromSize = currChrom.getWidth();
 			int currchromBinSize = (int) Math.ceil(currchromSize/binWidth);
 			
-			System.out.println("current chrom is "+currChrom.getChrom());
+//			System.out.println("current chrom is "+currChrom.getChrom());
 			
 			Map<Sample,float[]> gaussianBlurMap = new HashMap<Sample,float[]>();
 			float[] sampleCounts = new float[currchromBinSize];
@@ -354,7 +354,7 @@ public class MultiScaleSR {
 		MultiScaleSR msr = new MultiScaleSR (gconf, econf, sconf, man, numScale);	
 		msr.runMSR();	
 //		msr.computeSFC();
-		msr.printCounts();
+//		msr.printCounts();
 		
 		
 	}	

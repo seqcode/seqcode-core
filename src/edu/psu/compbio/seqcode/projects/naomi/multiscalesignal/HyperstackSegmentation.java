@@ -278,13 +278,13 @@ public class HyperstackSegmentation {
 					prevKid = kid;
 				}						
 				//test
-				//		if (currchromBinSize > 20000000){			
-				//			System.out.println("current Chrom is: "+currChrom.getChrom());
-				//			System.out.println("printing linkangeMap content");
-				//			for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
-				//				System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
-				//			}
-				//		}
+//						if (currchromBinSize > 20000000){			
+//							System.out.println("current Chrom is: "+currChrom.getChrom());
+//							System.out.println("printing linkangeMap content");
+//							for (Map.Entry<Integer, Integer> entry : linkageMap.entrySet()){
+//								System.out.println("Key: "+entry.getKey()+" Value: "+entry.getValue());
+//							}
+//						}
 				GV_parents.clear();	
 				Integer prevParent = 0;
 				Map<Integer, Integer> sortedLinkageMap = new HashMap<Integer,Integer> (MapUtility.sortByValue(linkageMap));
@@ -314,13 +314,13 @@ public class HyperstackSegmentation {
 		// scale zero is getting overwriting with the parents of the last scale; I'm overwriting the scale zero with initial nodesest for quick fix
 		segmentationTree.put(0, startingNodes);
 		
-		for (Integer scale : segmentationTree.keySet()){
-			System.out.println("current scale is: "+scale);
-			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
-			System.out.println("current nodeset size is: "+sortedNodeSet.size());
+//		for (Integer scale : segmentationTree.keySet()){
+//			System.out.println("current scale is: "+scale);
+//			Set<Integer> sortedNodeSet = new TreeSet<Integer>(segmentationTree.get(scale));
+//			System.out.println("current nodeset size is: "+sortedNodeSet.size());
 //			for (Integer node : sortedNodeSet)
 //				System.out.println(node);
-		}	
+//		}	
 		
 		return segmentationTree;
 		
