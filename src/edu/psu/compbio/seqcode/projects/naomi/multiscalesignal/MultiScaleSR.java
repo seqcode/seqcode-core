@@ -172,7 +172,9 @@ public class MultiScaleSR {
 				DImin[k] = (float) Integer.MAX_VALUE;
 			}
 			
-			System.out.println("before putting in linkageMap");
+			System.out.println("before putting in linkageMap. gaussianBlur length is "+gaussianBlur.length);
+			System.out.println("currentchrombinsize "+currchromBinSize);
+			
 			for (int i = 0 ; i< gaussianBlur.length-1; i++){ 
 				System.out.println("current index "+i);
 				for (int k = 0 ; k < numConditions ; k ++){
