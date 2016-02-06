@@ -83,7 +83,7 @@ public class MultiScaleSR {
 		//get scaling ratio	
 		for (ExperimentTarget target : manager.getTargets()){
 			for (ControlledExperiment rep : target.getTargetExperiments()){
-				System.out.println("expTarget: "+target+"\tScalingFactor: "+rep.getControlScaling());
+				System.out.println("expTarget: "+target.getName()+"\tScalingFactor: "+rep.getControlScaling());
 			}
 		}
 		
@@ -95,7 +95,7 @@ public class MultiScaleSR {
 			int currchromSize = currChrom.getWidth();
 			int currchromBinSize = (int) Math.ceil(currchromSize/binWidth);
 			
-//			System.out.println("current chrom is "+currChrom.getChrom());
+			System.out.println("current chrom is "+currChrom.getChrom());
 			
 			Map<Sample,float[]> gaussianBlurMap = new HashMap<Sample,float[]>();
 			float[] sampleCounts = new float[currchromBinSize];
@@ -187,8 +187,8 @@ public class MultiScaleSR {
 			if (trailingZero == -1)
 				trailingZero = 0;
 			
-//			System.out.println("DImax is: "+DImax+"\t"+"DImin is: "+DImin+
-//					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);	
+			System.out.println("DImax is: "+DImax+"\t"+
+					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);	
 			
 			final long startTime = System.currentTimeMillis();
 
