@@ -163,6 +163,7 @@ public class MultiScaleSR {
 			linkageMap.put(0,0);
 			float[] DImax = new float[numTargets];
 			float[] DImin = new float[numTargets];
+			float[] maxIntensity = new float[numTargets];
 			for (int k = 0 ; k < numTargets; k ++){
 				DImax[k] = (float) Integer.MIN_VALUE;
 				DImin[k] = (float) Integer.MAX_VALUE;
@@ -192,8 +193,10 @@ public class MultiScaleSR {
 			if (trailingZero == -1)
 				trailingZero = 0;
 			
-			System.out.println("DImax is: "+DImax+"\t"+
-					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);	
+			System.out.println("DImax is: "+DImax[0]+"\t"+"DImin is: "+DImin[0]+
+					"\t"+"trailingZero: "+trailingZero+"\t"+"zeroEnd"+"\t"+zeroEnd);
+			for (int k = 0 ; k < numTargets ; k++)
+				maxIntensity[k] = DImax[k]-DImin[k];
 			
 			final long startTime = System.currentTimeMillis();
 
@@ -206,7 +209,7 @@ public class MultiScaleSR {
 			Map<Integer,Set<Integer>> segmentationTree = null;	
 			
 			if (currChrom.getChrom().contains("13") && currchromBinSize > 10000000 && currchromBinSize <20000000){			
-				segmentationTree = segtree.buildTree(gaussianBlur, linkageMap, DImax, trailingZero, zeroEnd);
+				segmentationTree = segtree.buildTree(gaussianBlur, linkageMap, maxIntensity, trailingZero, zeroEnd);
 			
 			//printing segmenationTree for test
 			System.out.println("from returned values from segmentationTree");
