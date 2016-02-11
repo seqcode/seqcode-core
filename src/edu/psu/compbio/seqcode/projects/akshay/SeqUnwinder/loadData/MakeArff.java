@@ -141,7 +141,7 @@ public class MakeArff {
 			
 			for(String subS : subgroupNames.keySet()){ 
 				if(subS.startsWith(s+"&") || subS.endsWith("&"+s)){
-					designBuilder.append(labelNames.get(subS)+","); // Assigned subgroups
+					designBuilder.append(subgroupNames.get(subS)+","); // Assigned subgroups
 				}
 			}
 			designBuilder.deleteCharAt(designBuilder.length()-1);
