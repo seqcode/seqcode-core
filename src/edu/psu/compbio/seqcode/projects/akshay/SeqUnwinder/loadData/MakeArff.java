@@ -44,7 +44,7 @@ public class MakeArff {
 	protected List<Region> regions = new ArrayList<Region>();
 	protected GenomeConfig gcon;
 	protected SequenceGenerator<Region> seqgen = null;
-	protected int win;
+	protected int win = 150;
 	protected String outArffFileName="out.arff";
 	protected int Kmin=4;
 	protected int Kmax=6;
@@ -184,6 +184,7 @@ public class MakeArff {
 	public void setArffOutFileName(String arffOut){outArffFileName = arffOut;}
 	public void setKmin(int kmin){Kmin = kmin;}
 	public void setKmax(int kmax){Kmax = kmax;}
+	public void setWin(int w){win = w;}
 	
 	//Getters
 	public List<Region> getRandRegs(int n){
@@ -244,6 +245,7 @@ public class MakeArff {
 		
 		// Get peak window size
 		int win = Args.parseInteger(args, "win", 150);
+		arffmaker.setWin(win);
 		
 		// Reading peaks files
 		String eventsFile = ap.getKeyValue("peaks");
@@ -261,7 +263,7 @@ public class MakeArff {
 		br.close();
 		
 		List<Point> peaks = new ArrayList<Point>();
-		peaks.addAll(RegionFileUtilities.loadPeaksFromPeakFile(gc.getGenome(), eventsFile, win));
+		peaks.addAll(RegionFileUtilities.loadPeaksFromPeakFile(gc.getGenome(), eventsFile, -1));
 		
 		// Set peaks and regions
 		arffmaker.setPeaks(peaks);
@@ -270,7 +272,7 @@ public class MakeArff {
 		List<Region> ranregs = new ArrayList<Region>();
 		
 		if(ap.hasKey("randregs")){
-			ranregs.addAll(RegionFileUtilities.loadRegionsFromPeakFile(gc.getGenome(), ap.getKeyValue("randregs"), 150));
+			ranregs.addAll(RegionFileUtilities.loadRegionsFromPeakFile(gc.getGenome(), ap.getKeyValue("randregs"), win));
 		}else{
 			// First find how many rand regions are needed
 			int numRand = Integer.MAX_VALUE; // This should be the size of the subgroup with minimum no of. instances
@@ -376,9 +378,7 @@ public class MakeArff {
 					if (randPos < total + chromoSize[c]) {
 						found = true;
 						if (randPos + win < total + chromoSize[c]) {
-							potential = new Region(gcon.getGenome(), chromoNames[c],
-									(int) (randPos - total), (int) (randPos
-											+ win - total - 1));
+							potential = new Region(gcon.getGenome(), chromoNames[c], (int) (randPos - total), (int) (randPos+ win - total - 1));
 							boolean regionOK = true;
 
 							// screen repeats
