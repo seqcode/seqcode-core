@@ -105,8 +105,9 @@ public class MakeArff {
 							 "Layer"+"\n");
 		// Now subgroups
 		int index = 0;
-		Set<String> subGs = subgroupNames.keySet();
-		Collections.sort((List<String>) subGs, new MapKeyComparator<Integer>(subgroupNames));
+		MapKeyComparator<Integer> comp = new MapKeyComparator<Integer>(subgroupNames);
+		List<String> subGs = comp.getKeyList();
+		Collections.sort(subGs, comp);
 		for(String s : subGs){
 			designBuilder.append(index);designBuilder.append("\t"); // subgroup id
 			designBuilder.append(s+"\t"); // subgroup 
@@ -129,8 +130,9 @@ public class MakeArff {
 		
 		index++;
 		// Now Labels
-		Set<String> LABs = labelNames.keySet();
-		Collections.sort((List<String>) LABs, new MapKeyComparator<Integer>(labelNames));
+		comp = new MapKeyComparator<Integer>(subgroupNames);
+		List<String> LABs = comp.getKeyList();
+		Collections.sort(LABs, comp);
 		for(String s : LABs){
 			designBuilder.append(index);designBuilder.append("\t"); // label id
 			designBuilder.append("Root"+s+"\t"); // label name
@@ -164,8 +166,9 @@ public class MakeArff {
 				subGroupWeights.put(s, subGroupWeights.get(s)+1);
 		}
 		// Now get the sorted keys
-		List<String> groupWeightsKeyset = (List<String>) subGroupWeights.keySet();
-		Collections.sort(groupWeightsKeyset,new MapKeyComparator<Double>(subGroupWeights));
+		MapKeyComparator<Double> comp_d = new MapKeyComparator<Double>(subGroupWeights);
+		List<String> groupWeightsKeyset = comp_d.getKeyList();
+		Collections.sort(groupWeightsKeyset, comp_d);
 		
 		for(int i=0; i<groupWeightsKeyset.size()-1; i++){
 			subGroupWeights.put(groupWeightsKeyset.get(i), 
@@ -314,6 +317,14 @@ public class MakeArff {
 		public MapKeyComparator(HashMap<String,X> m) {
 			map = m;
 		}
+		
+		public List<String> getKeyList(){
+			List<String> ret = new ArrayList<String>();
+			for(String s : map.keySet()){
+				ret.add(s);
+			}
+			return ret;
+		}
 
 		@Override
 		public int compare(String o1, String o2) {
@@ -341,6 +352,7 @@ public class MakeArff {
 		public void setScreenRepeats(boolean s){screenRepeats=s;}
 		
 		public RandRegionsGenerator(boolean screenReps, int num) {
+			repMask = new RepeatMaskedGenerator<Region>(gcon.getGenome());
 			setScreenRepeats(screenReps);
 			setNum(num);
 			
