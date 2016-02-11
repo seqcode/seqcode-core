@@ -212,8 +212,23 @@ public class MakeArff {
 	}
 	
 	public void generateArff() throws Exception{
-		DataSource source = new DataSource("tmpCounts.mat");
-		Instances data = source.getDataSet();
+		
+		//
+		CSVLoader loader = new CSVLoader();
+		// Set options
+		loader.setNominalAttributes("last");
+		loader.setStringAttributes("");
+		loader.setMissingValue("?");
+		loader.setFieldSeparator("\t");
+		StringBuilder sb = new StringBuilder();
+		for(String s : subGroupNames){
+			sb.append(s);sb.append(",");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		loader.setNominalLabelSpecs(new String[] {sb.toString()});
+		loader.setFile(new File("tmpCounts.mat"));
+		Instances data = loader.getDataSet();
+		
 		//Set subgroup index
 		if(data.classIndex() == -1)
 			data.setClassIndex(data.numAttributes()-1);
@@ -473,10 +488,10 @@ public class MakeArff {
 			for (int k = kmin; k <= kmax; k++) {
 				int N = (int) Math.pow(4, k);
 				for (int i = 0; i < N; i++)
-					sb.append(","+RegionFileUtilities.int2seq(i, k));
+					sb.append("\t"+RegionFileUtilities.int2seq(i, k));
 			}
 			sb.deleteCharAt(0);
-			sb.append(","+"Weight"+","+"Label"+"\n");
+			sb.append("\t"+"Weight"+"\t"+"Label"+"\n");
 			//bw.write("Weight"+"\t"+"Label"+"\n");
 			bw.write(sb.toString());
 
@@ -505,9 +520,9 @@ public class MakeArff {
 				}
 				sb = new StringBuilder();
 				for (int i = 0; i < numK; i++)
-					sb.append("," + kmerCounts[i]);
+					sb.append("\t" + kmerCounts[i]);
 				sb.deleteCharAt(0);
-				sb.append(","+subGroupWeights.get(subGroupNames.get(r))+","+subGroupNames.get(r)+"\n");
+				sb.append("\t"+subGroupWeights.get(subGroupNames.get(r))+"\t"+subGroupNames.get(r)+"\n");
 				bw.write(sb.toString());
 			}
 			bw.close();
