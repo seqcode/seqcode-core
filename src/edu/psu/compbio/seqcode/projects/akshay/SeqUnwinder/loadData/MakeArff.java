@@ -313,7 +313,7 @@ public class MakeArff {
 			
 	}
 	
-	public class MapKeyComparator<X> implements Comparator<String>{
+	public class MapKeyComparator<X extends Number> implements Comparator<String>{
 		HashMap<String,X> map;
 		
 		public MapKeyComparator(HashMap<String,X> m) {
@@ -326,11 +326,13 @@ public class MakeArff {
 				ret.add(s);
 			}
 			return ret;
+			
 		}
 
 		@Override
 		public int compare(String o1, String o2) {
-			return ((Integer) map.get(o1)).compareTo((Integer) map.get(o2));
+			//return (map.get(o1).intValue()).compareTo(map.get(o2).intValue());
+			return Integer.compare(map.get(o1).intValue(), map.get(o2).intValue());
 		}
 		
 	}
@@ -465,16 +467,18 @@ public class MakeArff {
 			
 			FileWriter of = new FileWriter(outfilename);
 			BufferedWriter bw = new BufferedWriter(of);
-
+			
+			StringBuilder sb = new StringBuilder();
 			// Printing the header line
-			//System.out.print("Region");
 			for (int k = kmin; k <= kmax; k++) {
 				int N = (int) Math.pow(4, k);
 				for (int i = 0; i < N; i++)
-					bw.write("\t" + RegionFileUtilities.int2seq(i, k));
+					sb.append(","+RegionFileUtilities.int2seq(i, k));
 			}
-			bw.write("Weight"+"\t"+"Label"+"\n");
-			
+			sb.deleteCharAt(0);
+			sb.append(","+"Weight"+","+"Label"+"\n");
+			//bw.write("Weight"+"\t"+"Label"+"\n");
+			bw.write(sb.toString());
 
 			//for (Region r : regs) {
 			for(int r=0; r<regions.size(); r++){
@@ -499,10 +503,12 @@ public class MakeArff {
 					}
 					ind = ind + (int) Math.pow(4, k);
 				}
-				//System.out.print(r.getLocationString());
+				sb = new StringBuilder();
 				for (int i = 0; i < numK; i++)
-					bw.write("\t" + kmerCounts[i]);
-				bw.write(subGroupWeights.get(subGroupNames.get(r))+"\t"+subGroupNames.get(r)+"\n");
+					sb.append("," + kmerCounts[i]);
+				sb.deleteCharAt(0);
+				sb.append(","+subGroupWeights.get(subGroupNames.get(r))+","+subGroupNames.get(r)+"\n");
+				bw.write(sb.toString());
 			}
 			bw.close();
 		}
