@@ -91,7 +91,7 @@ public class MakeArff {
 		}
 		// Now, adjest the indexes of the labels
 		for(String s : labelNames.keySet()){
-			labelNames.put(s, labelNames.get(s)+indSG);
+			labelNames.put(s, labelNames.get(s)+indSG+1);
 		}
 		
 		// Now make the design file
@@ -130,7 +130,7 @@ public class MakeArff {
 		
 		index++;
 		// Now Labels
-		comp = new MapKeyComparator<Integer>(subgroupNames);
+		comp = new MapKeyComparator<Integer>(labelNames);
 		List<String> LABs = comp.getKeyList();
 		Collections.sort(LABs, comp);
 		for(String s : LABs){
@@ -172,7 +172,7 @@ public class MakeArff {
 		
 		for(int i=0; i<groupWeightsKeyset.size()-1; i++){
 			subGroupWeights.put(groupWeightsKeyset.get(i), 
-					subGroupWeights.get(groupWeightsKeyset.get(i))/subGroupWeights.get(groupWeightsKeyset.get(groupWeightsKeyset.size()-1)));
+					subGroupWeights.get(groupWeightsKeyset.get(groupWeightsKeyset.size()-1))/subGroupWeights.get(groupWeightsKeyset.get(i)));
 		}
 		subGroupWeights.put(groupWeightsKeyset.get(groupWeightsKeyset.size()-1), 1.0);
 	
