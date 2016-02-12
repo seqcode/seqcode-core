@@ -146,7 +146,7 @@ public class MakeArff {
 			}
 			designBuilder.deleteCharAt(designBuilder.length()-1);
 			designBuilder.append("\t");
-			designBuilder.append(1);designBuilder.append("\n");
+			designBuilder.append(2);designBuilder.append("\n");
 			index++;
 		}
 		designBuilder.deleteCharAt(designBuilder.length()-1);
