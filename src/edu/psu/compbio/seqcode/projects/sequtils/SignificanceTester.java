@@ -112,7 +112,7 @@ public class SignificanceTester {
 		bindingManager.estimateSignalVsNoiseFractions(events);
 				
 		EnrichmentSignificance tester = new EnrichmentSignificance(config, manager, bindingManager, config.getMinEventFoldChange(), econfig.getMappableGenomeLength());
-		tester.execute();
+		tester.execute(searchRegionWin);
 		
 		bindingManager.setBindingEvents(events);
 		bindingManager.writeReplicateCounts(outDirName+File.separator+outFileBase+"_replicatecounts.txt");
@@ -170,7 +170,7 @@ public class SignificanceTester {
 						double logF = Math.log(e.getCondSigVCtrlFold(cond))/config.LOG2;
 						double sigHits = e.getCondSigHits(cond);
 						double ctrlHits = e.getCondCtrlHits(cond);
-						String attrib = origGFF.getAttribString()+String.format(";sig_tags=%.1f;ctrl_tags=%.1f;log2_fold_sigctrl=%.3f;log2_qval_sigctrl=%.3f", sigHits, ctrlHits, logF, logP);
+						String attrib = origGFF.getAttribString()+String.format(";sig_tags=%.1f;ctrl_tags=%.1f;log2_fold_sigctrl=%.3f;log2_qval_sigctrl=%e", sigHits, ctrlHits, logF, logP);
 			    		
 						double score = sigHits;
 						if(rankByQ)
