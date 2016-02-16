@@ -105,7 +105,7 @@ public class SignificanceTester {
 	public void execute(){
 		
 		//Convert our points to events
-		PointsToEvents p2e = new PointsToEvents(config, manager, bindingManager, potentialSites, searchRegionWin,simpleReadAssignment);
+		PointsToEvents p2e = new PointsToEvents(config, manager, bindingManager, potentialSites, searchRegionWin,!simpleReadAssignment);
 		List<BindingEvent> events = p2e.execute();
 		
 		//Estimate signal fraction (necessary for calculating statistics)
