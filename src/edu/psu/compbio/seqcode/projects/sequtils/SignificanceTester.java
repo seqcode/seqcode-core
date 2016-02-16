@@ -107,14 +107,14 @@ public class SignificanceTester {
 		//Convert our points to events
 		PointsToEvents p2e = new PointsToEvents(config, manager, bindingManager, potentialSites, searchRegionWin,!simpleReadAssignment);
 		List<BindingEvent> events = p2e.execute();
+		bindingManager.setBindingEvents(events);
 		
 		//Estimate signal fraction (necessary for calculating statistics)
 		bindingManager.estimateSignalVsNoiseFractions(events);
-				
+		
 		EnrichmentSignificance tester = new EnrichmentSignificance(config, manager, bindingManager, config.getMinEventFoldChange(), econfig.getMappableGenomeLength());
 		tester.execute(searchRegionWin);
 		
-		bindingManager.setBindingEvents(events);
 		bindingManager.writeReplicateCounts(outDirName+File.separator+outFileBase+"_replicatecounts.txt");
 		writeBindingEventGFFFiles(outDirName+File.separator+outFileBase, events);
 		
