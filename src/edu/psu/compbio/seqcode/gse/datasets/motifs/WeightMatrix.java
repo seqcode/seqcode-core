@@ -650,6 +650,37 @@ public class WeightMatrix {
         }
         return new String(out[0]);
     }
+    
+    public static List<String> getConsensusKmers(WeightMatrix matrix, int Kmin, int Kmax){
+    	List<String> ret = new ArrayList<String>();
+    	String consensus = WeightMatrix.getConsensus(matrix);
+    	// Now trin the edges 
+    	// Trim the front chars first
+    	while(consensus.startsWith("N")){
+    		consensus = consensus.substring(1);
+    	}
+    	// Now trim the ends
+    	while(consensus.endsWith("N")){
+    		consensus = consensus.substring(0, consensus.length()-2);
+    	}
+    	if(matrix.length() < Kmin){
+    		return ret;
+    	}else{
+    		int KCap = Math.min(Kmax,matrix.length());
+    		for(int k=Kmin; k<=KCap; k++){
+    			for (int i = 0; i < (matrix.length() - k + 1); i++) {
+    				String sub = consensus.substring(i, i+k);
+    				if(sub.contains("R") || sub.contains("Y") || sub.contains("S") || sub.contains("W") || sub.contains("K") || sub.contains("M") || sub.contains("N")){
+    					
+    				}
+    			}
+        	}
+    	}
+    	
+    	return ret;
+    }
+    
+    
     /** returns a simple consensus string <br>
      * i.e. the first line of printMatrixLetters()*/
     public static String getConsensus(WeightMatrix matrix) {

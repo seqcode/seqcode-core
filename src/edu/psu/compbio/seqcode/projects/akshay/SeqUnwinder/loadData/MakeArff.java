@@ -116,7 +116,7 @@ public class MakeArff {
 			designBuilder.append(labelNames.get(assignedLabs[0])+","+
 					             labelNames.get(assignedLabs[1])+"\t"); // Assigned labels
 			designBuilder.append("-"+"\t"); // Assigned subgroups
-			designBuilder.append(1);designBuilder.append("\n"); // Layer
+			designBuilder.append(0);designBuilder.append("\n"); // Layer
 			index++;
 		}
 		
@@ -126,7 +126,7 @@ public class MakeArff {
 		designBuilder.append(1);designBuilder.append("\t");
 		designBuilder.append("-"+"\t");
 		designBuilder.append("-"+"\t");
-		designBuilder.append(1);designBuilder.append("\n");
+		designBuilder.append(0);designBuilder.append("\n");
 		
 		index++;
 		// Now Labels
@@ -146,7 +146,7 @@ public class MakeArff {
 			}
 			designBuilder.deleteCharAt(designBuilder.length()-1);
 			designBuilder.append("\t");
-			designBuilder.append(2);designBuilder.append("\n");
+			designBuilder.append(1);designBuilder.append("\n");
 			index++;
 		}
 		designBuilder.deleteCharAt(designBuilder.length()-1);
