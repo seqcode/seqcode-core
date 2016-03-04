@@ -651,10 +651,10 @@ public class WeightMatrix {
         return new String(out[0]);
     }
     
-    public static List<String> getConsensusKmers(WeightMatrix matrix, int Kmin, int Kmax){
-    	List<String> ret = new ArrayList<String>();
+    public static HashSet<String> getConsensusKmers(WeightMatrix matrix, int Kmin, int Kmax){
+    	HashSet<String> ret = new HashSet<String>();
     	String consensus = WeightMatrix.getConsensus(matrix);
-    	// Now trin the edges 
+    	// Now trim the edges 
     	// Trim the front chars first
     	while(consensus.startsWith("N")){
     		consensus = consensus.substring(1);
@@ -663,7 +663,7 @@ public class WeightMatrix {
     	while(consensus.endsWith("N")){
     		consensus = consensus.substring(0, consensus.length()-2);
     	}
-    	if(matrix.length() < Kmin){
+    	if(matrix.length() < Kmin){ // Return an empty set if Kmin is gt than motif length
     		return ret;
     	}else{
     		int KCap = Math.min(Kmax,matrix.length());
@@ -671,13 +671,65 @@ public class WeightMatrix {
     			for (int i = 0; i < (matrix.length() - k + 1); i++) {
     				String sub = consensus.substring(i, i+k);
     				if(sub.contains("R") || sub.contains("Y") || sub.contains("S") || sub.contains("W") || sub.contains("K") || sub.contains("M") || sub.contains("N")){
-    					
+    					List<StringBuilder> mers = new ArrayList<StringBuilder>();
+    					StringBuilder sb = new StringBuilder();
+    					mers.add(sb);
+    					for(int s=0; s<sub.length(); s++){
+    						List<StringBuilder> newMers = new ArrayList<StringBuilder>();
+    						if(sub.charAt(s) == 'R'){
+    							for(StringBuilder tb : mers){
+    								newMers.add(new StringBuilder(tb.toString()+"G"));
+    								tb.append('A');
+    							}
+    						}else if(sub.charAt(s) == 'Y'){
+    							for(StringBuilder tb : mers){
+    								newMers.add(new StringBuilder(tb.toString()+"T"));
+    								tb.append('C');
+    							}
+    						}else if(sub.charAt(s) == 'S'){
+    							for(StringBuilder tb : mers){
+    								newMers.add(new StringBuilder(tb.toString()+"G"));
+    								tb.append('C');
+    							}
+    						}else if(sub.charAt(s) == 'W'){
+    							for(StringBuilder tb : mers){
+    								newMers.add(new StringBuilder(tb.toString()+"T"));
+    								tb.append('A');
+    							}
+    						}else if(sub.charAt(s) == 'K'){
+    							for(StringBuilder tb : mers){
+    								newMers.add(new StringBuilder(tb.toString()+"G"));
+    								tb.append('T');
+    							}
+    						}else if(sub.charAt(s) == 'M'){
+    							for(StringBuilder tb : mers){
+    								newMers.add(new StringBuilder(tb.toString()+"C"));
+    								tb.append('A');
+    							}
+    						}else if(sub.charAt(s) == 'N'){
+    							for(StringBuilder tb : mers){
+    								newMers.add(new StringBuilder(tb.toString()+"A"));
+    								newMers.add(new StringBuilder(tb.toString()+"C"));
+    								newMers.add(new StringBuilder(tb.toString()+"G"));
+    								tb.append("T");
+    							}
+    						}else{
+    							for(StringBuilder tb : mers){
+    								tb.append(sub.charAt(s));
+    							}
+    						}
+    						mers.addAll(newMers);
+    					}
+    					for(StringBuilder tb : mers){
+    						ret.add(tb.toString());
+    					}
+    				}else{
+    					ret.add(sub);
     				}
     			}
         	}
-    	}
-    	
-    	return ret;
+    		return ret;
+    	}   	
     }
     
     
