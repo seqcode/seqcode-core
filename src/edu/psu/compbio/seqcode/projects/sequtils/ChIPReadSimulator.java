@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
+
 import edu.psu.compbio.seqcode.deepseq.ReadHit;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
@@ -60,10 +62,13 @@ public class ChIPReadSimulator {
 	private int eventSpacing = 2000;
 	private double jointEventRate = 0.0;
 	private int jointEventSpacing = 200;
+	private int fragLenMean = 200;
+	private int fragLenStdDev = 20;
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
 	private HashMap<Point, Boolean> eventIsJoint = new HashMap<Point, Boolean>();
 	private List<ReadHit> noiseSource=null;
 	private boolean subsampleControl=false;
+	private boolean paired=false;
 	
 	public ChIPReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, int jointSpacing, String outPath){
 		model=m;
@@ -216,9 +221,11 @@ public class ChIPReadSimulator {
 		Random sigGenerator = new Random();
 		Random noiseGenerator = new Random();
 		Random strandGenerator = new Random();
+		NormalDistribution fragLengthDistrib = new NormalDistribution(fragLenMean, fragLenStdDev);
 		for(int co=0; co<numConditions; co++)
 			for(int r=0; r<numReplicates; r++){
 				List<ReadHit> frags = new ArrayList<ReadHit>();
+				List<ReadHit> fragPairs = new ArrayList<ReadHit>();
 				
 				// Generate event reads
 				if(noiseProbabilities[co][r]<1){
@@ -230,7 +237,7 @@ public class ChIPReadSimulator {
 						int sample = co*numReplicates+r;
 						double readCount = eventIsJoint.get(coord) ? sc.backup[sample] : sc.counts[sample];
 						
-						ReadHit rh = null;
+						ReadHit rh = null; ReadHit rhp=null;
 						for(int x=0; x<readCount; x++){
 							boolean forwardStrand = strandGenerator.nextDouble()<0.5 ? true:false;
 							double rand = sigGenerator.nextDouble();
@@ -244,8 +251,13 @@ public class ChIPReadSimulator {
 									}
 								}
 								//Make the ReadHit
-								if((fivePrimeEnd+rLen-1)<chrLen)
-									rh = new ReadHit(chr, fivePrimeEnd, fivePrimeEnd+rLen-1, '+');			
+								if((fivePrimeEnd+rLen-1)<chrLen){
+									rh = new ReadHit(chr, fivePrimeEnd, fivePrimeEnd+rLen-1, '+');
+									if(paired){
+										int len =Math.max(rLen, (int)fragLengthDistrib.sample()); 
+										rhp = new ReadHit(chr, fivePrimeEnd+len-rLen+1, fivePrimeEnd+len, '-');
+									}
+								}
 							}else{
 								for(int j=eventWidth-1; j>=0; j--){
 									if(revProbCumul[j] < rand){
@@ -254,11 +266,18 @@ public class ChIPReadSimulator {
 									}
 								}
 								//Make the ReadHit
-								if(fivePrimeEnd<chrLen)
+								if(fivePrimeEnd<chrLen){
 									rh = new ReadHit(chr, Math.max(1, fivePrimeEnd-rLen+1), fivePrimeEnd, '-');
+									if(paired){
+										int len =Math.max(rLen, (int)fragLengthDistrib.sample()); 
+										rhp = new ReadHit(chr, Math.max(1, fivePrimeEnd-len), Math.max(1, fivePrimeEnd-len+rLen-1), '+');
+									}
+								}
 							}
-							if(rh!=null)
+							if(rh!=null && (!paired || rhp!=null)){
 								frags.add(rh);
+								fragPairs.add(rhp);
+							}
 						}
 					}
 				}
@@ -268,7 +287,7 @@ public class ChIPReadSimulator {
 				int noiseFrags = (int)((double)numTotalFrags[co][r]*noiseProbabilities[co][r]);
 				if(noiseSource==null) //Poisson
 					for(int i=0; i<noiseFrags; i++){
-						ReadHit rh=null;
+						ReadHit rh=null, rhp=null;
 						double noiserand = noiseGenerator.nextDouble();
 						double strandrand = strandGenerator.nextDouble();
 	
@@ -285,11 +304,22 @@ public class ChIPReadSimulator {
 						long start = pos-offset;
 						
 						//Add the ReadHit
-						if (strandrand<0.5)
+						if (strandrand<0.5){
 							rh = new ReadHit(chr, (int)start, (int)start+rLen-1, '+');
-						else
+							if(paired){
+								int len =Math.max(rLen, (int)fragLengthDistrib.sample()); 
+								rhp = new ReadHit(chr, (int)start+len-rLen+1, (int)start+len, '-');
+							}
+						}else{
 							rh = new ReadHit(chr, Math.max(1, (int)start-rLen+1), (int)start, '-');
+							if(paired){
+								int len =Math.max(rLen, (int)fragLengthDistrib.sample()); 
+								rhp = new ReadHit(chr, Math.max(1, (int)start-len), Math.max(1, (int)start-len+rLen-1), '+');
+							}
+						}
 						frags.add(rh);
+						if(paired)
+							fragPairs.add(rhp);
 					}
 				else{
 					//If the noise source is a control experiment, we shouldn't sample fragments with replacement.
@@ -327,17 +357,21 @@ public class ChIPReadSimulator {
 				try {
 					int numFrags = frags.size();
 					for(int x=0; x<numReads; x++){
-						ReadHit rh;
+						ReadHit rh=null, rhp=null;
 						if(noiseSource==null || !subsampleControl){
 							double rand = readSampler.nextDouble();
 							int index = (int)((double)numFrags*rand);
 							rh = frags.get(index);
+							if(paired)
+								rhp=fragPairs.get(index);
 						}else{
 							//Here, the options tell us to just *subsample* the control reads directly without replacement. 
 							//This is easy here, as frags should contain a randomly ordered subset of control reads already
 							rh = frags.get(x);
 						}
 						writers[co][r].write(rh.getChrom()+"\t"+rh.getStart()+"\t"+rh.getEnd()+"\tU\t0\t"+rh.getStrand()+"\n");
+						if(paired)
+							writers[co][r].write(rhp.getChrom()+"\t"+rhp.getStart()+"\t"+rhp.getEnd()+"\tU\t0\t"+rhp.getStrand()+"\n");
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -366,6 +400,7 @@ public class ChIPReadSimulator {
 	public void setReadLength(int r){
 		this.rLen=r;
 	}
+	public void setPaired(boolean p){ this.paired=p;}
 	public void setNoiseSource(List<Sample> controls, boolean subsample){
 		subsampleControl = subsample;
 		noiseSource = new ArrayList<ReadHit>();
@@ -380,6 +415,7 @@ public class ChIPReadSimulator {
 		}
 		System.err.println(noiseSource.size()+" control reads sourced as distinct fragments");
 	}
+	
 
 	// clean up
 	public void close(){
@@ -434,7 +470,7 @@ public class ChIPReadSimulator {
 		int c=2, r=2, numdata, jointSpacing=200, rlen=32;
 		double frags=1000000, reads=1000000, a, up, down, diff, jointRate=0.0;
 		String bmfile;
-		boolean printEvents=true, subsampleControl=false;
+		boolean printEvents=true, subsampleControl=false, isPaired=false;
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h") || !ap.hasKey("emp")){
 			System.err.println("ChIPReadSimulator:\n" +
@@ -458,6 +494,7 @@ public class ChIPReadSimulator {
 					"\t--jointrate <proportion of peaks that are joint binding events>\n" +
 					"\t--jointspacing <spacing between joint events>\n" +
 					"\t--noevents [flag to turn off making some files]\n" +
+					"\t--paired [flag to generate paired reads (not working for control-sampling yet)]\n" +
 					"\t--out <output file>\n" +
 					"");
 		}else{
@@ -518,6 +555,8 @@ public class ChIPReadSimulator {
 					System.err.println("Can't subsample in cases where frags is less than reads!");
 					System.exit(1);
 				}
+			}if(ap.hasKey("paired")){
+				isPaired=true;
 			}
 			double noiseProb   = Args.parseDouble(args, "noise", 0.9);
 			double [][] noiseProbs = new double[c][r];
@@ -555,6 +594,7 @@ public class ChIPReadSimulator {
 			
 	        sim.setTotalReads((int) reads);
 	        sim.setReadLength(rlen);
+	        sim.setPaired(isPaired);
 	        
 	        if(noiseProb<1 && printEvents)
 	        	sim.printEvents();	      
