@@ -62,8 +62,8 @@ public class ChIPReadSimulator {
 	private int eventSpacing = 2000;
 	private double jointEventRate = 0.0;
 	private int jointEventSpacing = 200;
-	private int fragLenMean = 200;
-	private int fragLenStdDev = 20;
+	private int fragLenMean = 140;
+	private int fragLenStdDev = 40;
 	private List<Pair<Point, SimCounts>> events = new ArrayList<Pair<Point, SimCounts>>();
 	private HashMap<Point, Boolean> eventIsJoint = new HashMap<Point, Boolean>();
 	private List<ReadHit> noiseSource=null;
