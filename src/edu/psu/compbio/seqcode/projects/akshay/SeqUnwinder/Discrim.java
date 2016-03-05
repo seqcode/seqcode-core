@@ -100,6 +100,7 @@ public class Discrim {
             if(words[0].charAt(0) == '#' || words[0].contains("Variable") || words[0].contains("Class")){
             	header = true;
             	for(int i=1; i<words.length; i++){
+            		words[i] = words[i].replace('&', '_');
             		kmerModelNames.add(words[i]);
             		kmerweights.put(words[i], new double[numK]);
             	}
