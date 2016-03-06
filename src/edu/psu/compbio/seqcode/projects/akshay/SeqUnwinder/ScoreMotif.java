@@ -63,7 +63,16 @@ public class ScoreMotif {
 	
 	public void execute(){
 		StringBuilder sb = new StringBuilder();
+		// First get the header
+		// Motif-name	Kmer-model-1	Kmer-model-2	...
+		sb.append("Motif");sb.append("\t");
+		for(String modName: kmerModelNames){
+			sb.append(modName);sb.append("\t");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		
 		for(WeightMatrix mot : motifs){
+			sb.append(mot.getName());sb.append("\t");
 			HashSet<String> motKmers = WeightMatrix.getConsensusKmers(mot, Kmin, Kmax);
 			for(String modName : kmerModelNames){
 				double weight=0.0;
@@ -72,8 +81,9 @@ public class ScoreMotif {
 					weight = weight + kmerweights.get(modName)[ind];
 				}
 				weight = weight/motKmers.size();
-				sb.append(mot.getName()+"\t");sb.append(modName+"\t");sb.append(weight);sb.append("\n");
+				sb.append(weight);sb.append("\t");
 			}
+			sb.deleteCharAt(sb.length()-1);
 		}
 		System.out.println(sb.toString());
 	}
