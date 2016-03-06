@@ -41,7 +41,7 @@ public class RNASeqExonicCounter extends RNASeqAnalyzer{
 				TUnit exon = ite.next();
 				for(ReadHit h : hits){
 					if(h.getFivePrime()>=exon.getCoords().getStart() && h.getFivePrime()<=exon.getCoords().getEnd())
-						gene.addHits(h.getWeight());
+						gene.addHits(h.getWeight()*h.getReadLength());
 				}
 			}
 		}
@@ -51,7 +51,7 @@ public class RNASeqExonicCounter extends RNASeqAnalyzer{
 			FileWriter fw = new FileWriter(outputName);
 			fw.write(String.format("Name\tID\tCoord\tType\tExonHits\tExonLengths\tFPKM\n"));
 			for(GeneTUnit gene : knownGenes){
-				double fpkm = (gene.getHits()/((double)gene.getExonLength()/1000.0))/(totalHitCount/1000000);
+				double fpkm = ((gene.getHits()/readLength)/((double)gene.getExonLength()/1000.0))/(totalHitCount/1000000);
 				fw.write(String.format("%s\t%s\t%s\t%s\t%.2f\t%d\t%.2f\n", gene.getName(),gene.getID(),gene.getCoords().getLocationString(),gene.getType(),gene.getHits(),gene.getExonLength(), fpkm));
 			}
 			fw.close();

@@ -33,7 +33,7 @@ public class RNASeqRegionCounter extends RNASeqAnalyzer{
 			//If we have multiple experiments, just pool all data
 			for(DeepSeqExpt e : experiments){
 				for(ReadHit hit : e.loadHits(reg)){
-					regionCounts.put(reg, regionCounts.get(reg)+hit.getWeight());
+					regionCounts.put(reg, regionCounts.get(reg)+(hit.getWeight()*hit.getReadLength()));
 				}
 			}
 		}
@@ -41,7 +41,7 @@ public class RNASeqRegionCounter extends RNASeqAnalyzer{
 		//Print counts
 		System.out.println(String.format("Coord\tHits\tRegionLength\tFPKM"));
 		for(Region reg : getRegionsOfInterest()){
-			double count = regionCounts.get(reg);
+			double count = regionCounts.get(reg)/readLength;
 			double fpkm = (count/((double)reg.getWidth()/1000.0))/(totalHitCount/1000000);
 			System.out.println(String.format("%s\t%.2f\t%d\t%.2f", reg.getLocationString(),count,reg.getWidth(), fpkm));
 		}

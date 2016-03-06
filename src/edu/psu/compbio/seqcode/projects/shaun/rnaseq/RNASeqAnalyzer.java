@@ -35,6 +35,7 @@ public abstract class RNASeqAnalyzer {
 	protected GTFReader gtfReader;
 	protected List<GeneTUnit> knownGenes = new ArrayList<GeneTUnit>();
 	private ArrayList<Region> regionsOfInterest = new ArrayList<Region>();
+	protected double readLength=36;
 	
 	public RNASeqAnalyzer(String[] args){
 		try{
@@ -73,7 +74,11 @@ public abstract class RNASeqAnalyzer {
 				knownGenes = gtfReader.loadGenes();
 				//Could define an initial fake genome here for the case where no genome was defined
 			}
-			
+			//Load read length
+			if(ap.hasKey("rlen")){
+				readLength = new Double(ap.getKeyValue("rlen"));
+			}
+
 			//Load file of coords
 			if(ap.hasKey("regions")){
 				String regFile = ap.getKeyValue("regions");
@@ -200,6 +205,7 @@ public abstract class RNASeqAnalyzer {
                 "\n\t--expt <aligned reads file for expt>" +
                 "\n\t--format <TOPSAM/ELAND/NOVO/BOWTIE/BED/SAM (default TOPSAM)>" +
                 "\n\t--nonunique [use nonunique reads]" +
+                "\n\t--rlen <read length>" +
                 "\nRequired:"+
                 "\n\t--species <organism name;genome version>\n\tOR"+
                 "\n\t--geninfo <file with chr name/length pairs>" +
