@@ -3,14 +3,19 @@ package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.gse.datasets.motifs.CountsBackgroundModel;
+import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
+import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.projects.shaun.FreqMatrixImport;
 
@@ -40,8 +45,10 @@ public class ScoreMotif {
 		}
 	}
 	// Load freq matrices
-	public void loadMotifsFromFile(String filename) {
-		motifs.addAll(FreqMatrixImport.readTransfacMatrices(filename));
+	public void loadMotifsFromFile(String filename, MarkovBackgroundModel b) {
+		FreqMatrixImport motifImport = new FreqMatrixImport();
+    	motifImport.setBackground(b);
+		motifs.addAll(motifImport.readTransfacMatrices(filename));
 	}
 
 	// Gettors
@@ -99,9 +106,21 @@ public class ScoreMotif {
         }reader.close();
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, ParseException {
 		ArgParser ap = new ArgParser(args);
 		ScoreMotif runner = new ScoreMotif();
+		
+		GenomeConfig gcon = new GenomeConfig(args);
+		
+		String backFile =ap.hasKey("back") ? ap.getKeyValue("back"):null;
+		
+		MarkovBackgroundModel back;
+		
+		if(backFile == null){
+        	back = new MarkovBackgroundModel(CountsBackgroundModel.modelFromWholeGenome(gcon.getGenome()));
+        }else{
+        	back = BackgroundModelIO.parseMarkovBackgroundModel(backFile, gcon.getGenome());
+        }
 
 		// Length of the smallest K-mer in the K-mer models
 		int minK = Args.parseInteger(args, "minK", 4);
@@ -123,7 +142,7 @@ public class ScoreMotif {
 		
 		// Now load K-mer models
 		String motifFile = ap.getKeyValue("motiffile");
-		runner.loadMotifsFromFile(motifFile);
+		runner.loadMotifsFromFile(motifFile,back);
 		
 		runner.execute();
 	}
