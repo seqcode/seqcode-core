@@ -225,7 +225,7 @@ public class Discrim {
 		public void execute() throws IOException{
 			// First, find, cluster and print the hills
 			clusterKmerProfilesAtMountains();
-			if(posHills.size() != 0){
+			if(posHills.size() > 100){
 				System.err.println("Finished clustering K-mer profiles for model: "+kmerModelName);
 
 				// Now do meme search on each clusters separately
@@ -334,7 +334,7 @@ public class Discrim {
 		public void clusterKmerProfilesAtMountains() throws IOException{
 			fillHills();
 			System.err.println("No of hills for K-mer model "+kmerModelName+" are :"+posHills.size());
-			if(posHills.size() != 0){
+			if(posHills.size() > 100){
 				ClusterProfiles clusterManager = new ClusterProfiles(its_CLUS,numClus_CLUS,profiles,posHillsToIndex,minK,maxK,posHillScores,basedir_profiles);
 				clusterAssignment = clusterManager.execute();
 			}
