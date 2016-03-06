@@ -84,6 +84,7 @@ public class ScoreMotif {
 				sb.append(weight);sb.append("\t");
 			}
 			sb.deleteCharAt(sb.length()-1);
+			sb.append("\n");
 		}
 		System.out.println(sb.toString());
 	}
