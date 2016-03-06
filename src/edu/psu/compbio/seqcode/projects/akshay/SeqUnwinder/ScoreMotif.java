@@ -70,6 +70,7 @@ public class ScoreMotif {
 			sb.append(modName);sb.append("\t");
 		}
 		sb.deleteCharAt(sb.length()-1);
+		sb.append("\n");
 		
 		for(WeightMatrix mot : motifs){
 			sb.append(mot.getName());sb.append("\t");
@@ -81,7 +82,8 @@ public class ScoreMotif {
 					weight = weight + kmerweights.get(modName)[ind];
 				}
 				weight = weight/motKmers.size();
-				sb.append(weight);sb.append("\t");
+				String weightString = String.format("%.2f", weight);
+				sb.append(weightString);sb.append("\t");
 			}
 			sb.deleteCharAt(sb.length()-1);
 			sb.append("\n");
