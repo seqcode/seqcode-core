@@ -17,6 +17,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
+import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.shaun.FreqMatrixImport;
 
 public class ScoreMotif {
@@ -76,15 +77,19 @@ public class ScoreMotif {
 			sb.append(mot.getName());sb.append("\t");
 			HashSet<String> motKmers = WeightMatrix.getConsensusKmers(mot, Kmin, Kmax);
 			// For debug purposes 
-			System.out.println(mot.getName());
-			for(String s : motKmers){
-				System.out.println(s);
-			}
+			//System.out.println(mot.getName());
+			//for(String s : motKmers){
+			//	System.out.println(s);
+			//}
 			// End debug
 			for(String modName : kmerModelNames){
 				double weight=0.0;
 				for(String s : motKmers){
-					int ind = getKmerBaseInd(s) + RegionFileUtilities.seq2int(s);
+					String revS = SequenceUtils.reverseComplement(s);
+					int indS = RegionFileUtilities.seq2int(s);
+					int indRevS = RegionFileUtilities.seq2int(revS);
+					int KmerInd  = indS<indRevS ? indS : indRevS;
+					int ind = getKmerBaseInd(s) + KmerInd;
 					weight = weight + kmerweights.get(modName)[ind];
 				}
 				weight = weight/motKmers.size();
