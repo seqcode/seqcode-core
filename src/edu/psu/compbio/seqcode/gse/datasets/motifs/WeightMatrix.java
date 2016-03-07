@@ -663,12 +663,12 @@ public class WeightMatrix {
     	while(consensus.endsWith("N")){
     		consensus = consensus.substring(0, consensus.length()-2);
     	}
-    	if(matrix.length() < Kmin){ // Return an empty set if Kmin is gt than motif length
+    	if(consensus.length() < Kmin){ // Return an empty set if Kmin is gt than motif length
     		return ret;
     	}else{
-    		int KCap = Math.min(Kmax,matrix.length());
+    		int KCap = Math.min(Kmax,consensus.length());
     		for(int k=Kmin; k<=KCap; k++){
-    			for (int i = 0; i < (matrix.length() - k + 1); i++) {
+    			for (int i = 0; i < (consensus.length() - k + 1); i++) {
     				String sub = consensus.substring(i, i+k);
     				if(sub.contains("R") || sub.contains("Y") || sub.contains("S") || sub.contains("W") || sub.contains("K") || sub.contains("M") || sub.contains("N")){
     					List<StringBuilder> mers = new ArrayList<StringBuilder>();

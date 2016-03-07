@@ -92,7 +92,6 @@ public class ScoreMotif {
 					int ind = getKmerBaseInd(s) + KmerInd;
 					weight = weight + kmerweights.get(modName)[ind];
 				}
-				weight = weight/motKmers.size();
 				String weightString = String.format("%.2f", weight);
 				sb.append(weightString);sb.append("\t");
 			}
