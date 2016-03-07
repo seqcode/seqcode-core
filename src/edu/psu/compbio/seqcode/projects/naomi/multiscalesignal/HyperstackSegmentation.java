@@ -227,12 +227,12 @@ public class HyperstackSegmentation {
 			TreeMap<Integer, Integer> GV_parents = new TreeMap<Integer,Integer>(linkageMap);
 			double C_intensity = 0; 
 			double C_ground = 0; 
-			double C_meanIntensity = 0;
+//			double C_meanIntensity = 0;
 			double GV_max = 0;		
 			double affectionScore = 0;
 			Integer prevKid = 0;
-			double M_kid = 0;
-			double[] M_parent = new double [numConditions];
+//			double M_kid = 0;
+//			double[] M_parent = new double [numConditions];
 			//updating ground volume and iterating to encourage convergence
 			for (int counter = 0; counter<5; counter++){
 				
@@ -249,13 +249,13 @@ public class HyperstackSegmentation {
 					//per kid, we determine ground volume of parent and mean intensity of parent
 					if (counter ==0 || GV_max == 0){
 						C_ground = 0.00;
-						C_meanIntensity = 0.00;
+//						C_meanIntensity = 0.00;
 					}else{ // I changed weights of ground volume significantly from the previous version so I don't know if this will work in encouraging fewer parents
 						C_ground = WEIGHT_G*counter*GV_parents.get(linkageMap.get(kid))/GV_max; 
-						for (int k = 0 ; k < numConditions ; k++)
-							// calculating the mean parents intensity; I need to double check this
-							// line 252 is producing array out of bound exception
-							M_parent[k] = cumGaussianBlur[linkageMap.get(kid)][0][k] - gaussianBlur[linkageMap.get(kid) - GV_parents.get(linkageMap.get(kid))][0][k];
+	//					for (int k = 0 ; k < numConditions ; k++)
+	//						// calculating the mean parents intensity; I need to double check this
+	//						// line 252 is producing array out of bound exception
+	//						M_parent[k] = cumGaussianBlur[linkageMap.get(kid)][0][k] - gaussianBlur[linkageMap.get(kid) - GV_parents.get(linkageMap.get(kid))][0][k];
 					}
 				
 					double maxAffectionScore = 0;		
@@ -265,17 +265,18 @@ public class HyperstackSegmentation {
 						if (GV_parents.containsKey(kid+dcp[i])){
 							
 							double totalIdiff = 0;
-							double totalMeanIdiff = 0;
+//							double totalMeanIdiff = 0;
 							for (int k = 0 ; k <numConditions; k++){
 								totalIdiff += Math.abs(gaussianBlur[kid][0][k] - gaussianBlur[kid+dcp[i]][1][k])/DImax[k];	
-								M_kid = cumGaussianBlur[kid+dcp[i]][1][k] - cumGaussianBlur[prevKid][1][k];
-								totalMeanIdiff += Math.abs(M_parent[k] - M_kid)/DImax[k];
+//								M_kid = cumGaussianBlur[kid+dcp[i]][1][k] - cumGaussianBlur[prevKid][1][k];
+//								totalMeanIdiff += Math.abs(M_parent[k] - M_kid)/DImax[k];
 							}
 							C_intensity = WEIGHT_I*(1 - totalIdiff);
-							C_meanIntensity = WEIGHT_M*(1-totalMeanIdiff);	
+//							C_meanIntensity = WEIGHT_M*(1-totalMeanIdiff);	
 
 							//applying equation 9 in Vincken(1997)
-							affectionScore = distanceFactor[i]*(C_intensity+C_ground+C_meanIntensity)/(WEIGHT_I + WEIGHT_G + WEIGHT_M);
+//							affectionScore = distanceFactor[i]*(C_intensity+C_ground+C_meanIntensity)/(WEIGHT_I + WEIGHT_G + WEIGHT_M);
+							affectionScore = distanceFactor[i]*(C_intensity+C_ground)/(WEIGHT_I + WEIGHT_G);
 							
 							if (affectionScore > maxAffectionScore){
 								maxAffectionScore = affectionScore;
