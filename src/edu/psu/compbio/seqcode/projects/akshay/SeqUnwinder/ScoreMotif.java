@@ -75,6 +75,12 @@ public class ScoreMotif {
 		for(WeightMatrix mot : motifs){
 			sb.append(mot.getName());sb.append("\t");
 			HashSet<String> motKmers = WeightMatrix.getConsensusKmers(mot, Kmin, Kmax);
+			// For debug purposes 
+			System.out.println(mot.getName());
+			for(String s : motKmers){
+				System.out.println(s);
+			}
+			// End debug
 			for(String modName : kmerModelNames){
 				double weight=0.0;
 				for(String s : motKmers){
