@@ -68,7 +68,7 @@ public class SimulateBindingSite {
 				int pointOfInsertion = mID*motifBlockSize + 15;
 				if(i <  insertRate.get(mID)*N){
 					StringBuilder sBuilder = new StringBuilder(s);
-					sBuilder.replace(pointOfInsertion, motifs.get(mID).matrix.length, motifConsensusBuilder.toString());
+					sBuilder.replace(pointOfInsertion, pointOfInsertion + motifs.get(mID).matrix.length, motifConsensusBuilder.toString());
 					s=sBuilder.toString();
 				}
 				
