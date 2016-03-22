@@ -51,6 +51,7 @@ public class SimulateData {
 			bs.setInsertRate(insrtRate);
 			bs.setLen(win);
 			bs.setMotifs(mots);
+			bs.setN(subclasses[i]);
 			
 			List<String> seq = bs.execute();
 			for(String s : seq){

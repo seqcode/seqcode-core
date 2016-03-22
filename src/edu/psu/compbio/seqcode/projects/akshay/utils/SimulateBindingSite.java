@@ -30,6 +30,7 @@ public class SimulateBindingSite {
 	public void setInsertRate(List<Double> rate){insertRate = rate;}
 	public void setBack(MarkovBackgroundModel m){markov = m;}
 	public void setLen(int l){len=l;}
+	public void setN(int n){N=n;}
 	
 	public SimulateBindingSite(GenomeConfig g) {
 		gcon = g;
