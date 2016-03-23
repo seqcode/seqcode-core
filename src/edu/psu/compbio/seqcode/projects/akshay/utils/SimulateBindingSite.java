@@ -44,12 +44,13 @@ public class SimulateBindingSite {
 			String s = generateASeq();
 			// Now insert motifs
 			// How many motifs to insert
-			int motifBlockSize = motifs.size()/len;
+			double motifBlockSize = len/motifs.size();
 			// Insert point (id*motifBlockSize+15)
 			for(int mID=0; mID<motifs.size(); mID++){
 				// first covert the PWM to a PFM or PPM
 				StringBuilder motifConsensusBuilder = new StringBuilder();
-				motifs.get(mID).toFrequency(markov);
+				motifs.get(mID).toFrequency();
+				System.out.println(WeightMatrix.printMatrix(motifs.get(mID)));
 				for(int j=0; j<motifs.get(mID).matrix.length; j++){
 					double r = Math.random();
 					if(r<= motifs.get(mID).matrix[j]['A']){
@@ -65,7 +66,7 @@ public class SimulateBindingSite {
 						motifConsensusBuilder.append('T');
 					}
 				}
-				int pointOfInsertion = mID*motifBlockSize + 15;
+				int pointOfInsertion = (int)(mID*motifBlockSize) + 15;
 				if(i <  insertRate.get(mID)*N){
 					StringBuilder sBuilder = new StringBuilder(s);
 					sBuilder.replace(pointOfInsertion, pointOfInsertion + motifs.get(mID).matrix.length, motifConsensusBuilder.toString());
