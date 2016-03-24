@@ -152,8 +152,16 @@ public class FreqMatrixImport {
     	}
     	for(int m = 0; m<motifCount; m++){
     		//Make a new WeightMatrix
-    		matrix = new WeightMatrix(arrays.get(m));
+    		matrix = new WeightMatrix(arrayLens.get(m));
     		matrix.name=names.get(m);
+    		
+    		//Convert the freq matrix to a weight matrix
+            for(int i = 0; i < arrayLens.get(m); i++) { 
+        		for(int j = 0; j < 4; j++) {
+        			matrix.matrix[i][indices[j]] = arrays.get(m)[i][j];
+                }
+            }
+    		
     		matrices.add(matrix);
     	}
     	
