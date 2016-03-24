@@ -152,7 +152,7 @@ public class FreqMatrixImport {
     	}
     	for(int m = 0; m<motifCount; m++){
     		//Make a new WeightMatrix
-    		matrix = new WeightMatrix(arrayLens.get(m));
+    		matrix = new WeightMatrix(arrays.get(m));
     		matrix.name=names.get(m);
     		matrices.add(matrix);
     	}
