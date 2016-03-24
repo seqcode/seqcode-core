@@ -49,7 +49,7 @@ public class SimulateBindingSite {
 			for(int mID=0; mID<motifs.size(); mID++){
 				// first covert the PWM to a PFM or PPM
 				StringBuilder motifConsensusBuilder = new StringBuilder();
-				motifs.get(mID).toFrequency(markov);
+				motifs.get(mID).normalizeFrequencies();
 				System.out.println(WeightMatrix.printMatrix(motifs.get(mID)));
 				for(int j=0; j<motifs.get(mID).matrix.length; j++){
 					double r = Math.random();

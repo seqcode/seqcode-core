@@ -86,9 +86,8 @@ public class SimulateData {
 		MarkovBackgroundModel back = BackgroundModelIO.parseMarkovBackgroundModel(backFile, gc.getGenome());
 		
 		FreqMatrixImport motifImport = new FreqMatrixImport();
-		motifImport.setBackground(back);
 		List<WeightMatrix> mots = new ArrayList<WeightMatrix>();
-		mots.addAll(motifImport.readTransfacMatrices(motifFilename));
+		mots.addAll(motifImport.readTransfacMatricesAsFreqMatrices(motifFilename));
 		Map<String,WeightMatrix> motsWithLabs = new HashMap<String,WeightMatrix>();
 		motsWithLabs.put("I", mots.get(0));
 		motsWithLabs.put("II", mots.get(1));

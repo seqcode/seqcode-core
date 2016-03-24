@@ -114,6 +114,54 @@ public class FreqMatrixImport {
     }
     public void setBackground(MarkovBackgroundModel b){back=b;}
     
+    // Does not convert the freq matrix into a weight matrix; loads multiple motifs 
+    public static List<WeightMatrix> readTransfacMatricesAsFreqMatrices(String freqFile) throws NumberFormatException, IOException{
+    	List<WeightMatrix> matrices = new ArrayList<WeightMatrix>();
+    	BufferedReader br = new BufferedReader(new FileReader(new File(freqFile)));
+    	String line;        
+    	WeightMatrix matrix = null;
+    	int motifCount=0;
+    	Vector<float[][]> arrays = new Vector<float[][]>();
+    	Vector<Integer> arrayLens = new Vector<Integer>();
+    	Vector<String> names = new Vector<String>();
+    	Vector<String> versions=new Vector<String>();
+
+    	//Read in Transfac format first
+    	boolean nameLoaded=false;
+    	int matLen=0;
+    	while((line = br.readLine()) != null) { 
+    		line = line.trim();
+    		if(line.length() > 0) {
+    			String[] pieces = line.split("\\s+");
+    			if(pieces[0].equals("DE")){
+    				names.add(pieces[1]);
+    				nameLoaded=true;
+    				arrays.add(new float[MAX_MOTIF_LEN][4]);
+    				matLen=0;
+    			}else if(pieces[0].equals("XX")){
+    				arrayLens.add(matLen);
+    				motifCount++;
+    			}else if(nameLoaded && (pieces.length==5 || pieces.length==6)){ 
+    				//Load the matrix
+    				for(int i = 1; i <=4 ; i++) { 
+    					arrays.get(motifCount)[matLen][i-1] = Float.parseFloat(pieces[i]);
+    				}
+    				matLen++;
+    			}
+    		}
+    	}
+    	for(int m = 0; m<motifCount; m++){
+    		//Make a new WeightMatrix
+    		matrix = new WeightMatrix(arrayLens.get(m));
+    		matrix.name=names.get(m);
+    		matrices.add(matrix);
+    	}
+    	
+    	br.close();
+    	return matrices;
+            
+    }
+    
     //Unlike the WeigthMatrixImport version, this one actually loads more than one matrix!
     public static LinkedList<WeightMatrix> readTransfacMatrices(String wmfile, String version) throws IOException {
         LinkedList<WeightMatrix> matrices = new LinkedList<WeightMatrix>();
