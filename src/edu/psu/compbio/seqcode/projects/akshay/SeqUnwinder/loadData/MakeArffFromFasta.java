@@ -23,6 +23,7 @@ import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
+import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
@@ -162,6 +163,7 @@ public class MakeArffFromFasta {
 	public void setKmin(int kmin){Kmin = kmin;}
 	public void setKmax(int kmax){Kmax = kmax;}
 	public void setLen(int l){len = l;}
+	public void setBack(MarkovBackgroundModel b){markov = b;}
 	
 	//Getters
 	public List<String> getRandSeqs(int n){
@@ -234,6 +236,15 @@ public class MakeArffFromFasta {
 		MakeArffFromFasta arffmaker = new MakeArffFromFasta(gc);
 		ArgParser ap = new ArgParser(args);
 
+		String backFile =ap.getKeyValue("back");
+		if(!ap.hasKey("back")){
+			System.err.println("Please provide a background model file!!");
+			System.exit(0);
+		}
+
+		MarkovBackgroundModel back = BackgroundModelIO.parseMarkovBackgroundModel(backFile, gc.getGenome());
+		arffmaker.setBack(back);
+		
 		// Get peak window size
 		int win = Args.parseInteger(args, "len", 150);
 		arffmaker.setLen(win);
