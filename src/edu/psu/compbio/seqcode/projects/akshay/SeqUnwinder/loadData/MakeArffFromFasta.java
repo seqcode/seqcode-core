@@ -40,7 +40,6 @@ public class MakeArffFromFasta {
 	public Random rand = new Random();
 	protected String outArffFileName="out.arff";
 	protected int len=150;
-	
 	protected int Kmin=4;
 	protected int Kmax=6;
 	
@@ -48,6 +47,79 @@ public class MakeArffFromFasta {
 		gcon = gc;
 	}
 	
+	/**
+	 * Use this settor method if you only have subgroups (simple multi-logistic regression)
+	 * @param labs
+	 * @param randSeqs
+	 */
+	public void setLabelsSimple(List<String> labs, List<String> randSeqs){
+		subGroupNames.addAll(labs);
+		// Now make the design file
+		StringBuilder designBuilder = new StringBuilder();
+		//First get the header
+		designBuilder.append("#Index"+"\t"+
+				"Name"+"\t"+
+				"isSubGroup" +"\t"+
+				"AssignedLabs" + "\t"+
+				"AssignedSGs" + "\t"+
+				"Layer"+"\n");
+		// Now subgroups
+		HashMap<String,Integer> subgroupNames = new HashMap<String,Integer>();
+		for(String s : subGroupNames){
+			if(!subgroupNames.containsKey(s))
+				subgroupNames.put(s, 1);
+		}
+		int index = 0;
+		for(String s : subgroupNames.keySet()){
+			designBuilder.append(index);designBuilder.append("\t"); // subgroup id
+			designBuilder.append(s+"\t"); // subgroup 
+			designBuilder.append(1);designBuilder.append("\t"); // subgroup indicator
+			designBuilder.append("-"+"\t"); // Assigned labels
+			designBuilder.append("-"+"\t"); // Assigned subgroups
+			designBuilder.append(0);designBuilder.append("\n"); // Layer
+			index++;
+		}
+		
+		// Now add the random label subgroup
+		designBuilder.append(index);designBuilder.append("\t"); 
+		designBuilder.append("RootRandom"+"\t");
+		designBuilder.append(1);designBuilder.append("\t");
+		designBuilder.append("-"+"\t");
+		designBuilder.append("-"+"\t");
+		designBuilder.append(0);designBuilder.append("\n");
+		
+		designBuilder.deleteCharAt(designBuilder.length()-1);
+		design = designBuilder.toString();
+		
+		// Now add the random-seqs to seqs and "RootRandom" label to subGroupNames
+		seqs.addAll(randSeqs);
+		for(String se : randSeqs){
+			subGroupNames.add("RootRandom");
+		}
+		
+		// Finally, find the weights for each subgroup
+		for(String s : subGroupNames){
+			if(!subGroupWeights.containsKey(s))
+				subGroupWeights.put(s, 1.0);
+			else
+				subGroupWeights.put(s, subGroupWeights.get(s)+1);
+		}
+		// Now get the sorted keys
+		MapKeyComparator<Double> comp_d = new MapKeyComparator<Double>(subGroupWeights);
+		List<String> groupWeightsKeyset = comp_d.getKeyList();
+		Collections.sort(groupWeightsKeyset, comp_d);
+
+		for(int i=0; i<groupWeightsKeyset.size()-1; i++){
+			subGroupWeights.put(groupWeightsKeyset.get(i), 
+					subGroupWeights.get(groupWeightsKeyset.get(groupWeightsKeyset.size()-1))/subGroupWeights.get(groupWeightsKeyset.get(i)));
+		}
+		subGroupWeights.put(groupWeightsKeyset.get(groupWeightsKeyset.size()-1), 1.0);
+	}
+	/**
+	 * Use this settor method, if you have labels in addition to subgroups
+	 * @param labs
+	 * @param randSeqs
+	 */
 	public void setLabels(List<String> labs, List<String> randSeqs){
 		HashMap<String,Integer> subgroupNames = new HashMap<String,Integer>();
 		HashMap<String,Integer> labelNames = new HashMap<String,Integer>();
@@ -294,7 +366,12 @@ public class MakeArffFromFasta {
 
 
 		// Now set labels, design file string, and ranSeqs to seqs
-		arffmaker.setLabels(labels, randSeqs);
+		// Check if we have labels
+		if(ap.hasKey("simple")){
+			arffmaker.setLabelsSimple(labels, randSeqs);
+		}else{
+			arffmaker.setLabels(labels, randSeqs);
+		}
 
 		// Now get K-mer params
 		int kmin = Args.parseInteger(args, "Kmin", 4);
