@@ -20,6 +20,7 @@ import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVLoader;
 
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
@@ -134,6 +135,9 @@ public class MakeArffFromFasta {
 
 		// Now add the random-seqs to seqs and "RootRandom" label to subGroupNames
 		seqs.addAll(randSeqs);
+		for(String se : randSeqs){
+			subGroupNames.add("RootRandom");
+		}
 
 		// Finally, find the weights for each subgroup
 		for(String s : subGroupNames){
