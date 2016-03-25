@@ -6,12 +6,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
@@ -22,6 +24,7 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.Discrim.KmerModelScanner;
@@ -57,6 +60,9 @@ public class DiscrimFromSeq {
 	protected double thresold_hills = 0.1;
 	/** Window around peaks to scan for finding motifs */
 	protected int win=150;
+	
+	protected MarkovBackgroundModel markov;
+	public Random rand = new Random();
 
 	// K-mer hills clustering parameters
 	/** The number of hills to consider for clustering and motif finding for a given K-mer model */
@@ -78,6 +84,7 @@ public class DiscrimFromSeq {
 
 	// Settors
 	public void setWin(int w){win=w;}
+	public void setBack(MarkovBackgroundModel b){markov = b;}
 	public void setMinM(int m){minM = m;}
 	public void setMaxM(int m){maxM = m;}
 	public void setKmerMin(int k){minK = k;}
@@ -121,8 +128,11 @@ public class DiscrimFromSeq {
 	public void setNumKmerClusters(int c){numClus_CLUS = c;}
 	public void setNumClusteringItrs(int itrs){its_CLUS = itrs;}
 	public void setOutbase(String o){outbase=o;}
-	public void setRandomRegs(String[] randSeqs){
-		randomSequences = randSeqs;
+	public void setRandomRegs(){
+		for(int i=0; i<randomSequences.length; i++){
+			String rs = generateASeq();
+			randomSequences[i] = rs;
+		}
 	}
 	// Settors for MEME params
 	public void setMEMEPath(String s){MEMEpath = s;}
@@ -451,10 +461,10 @@ public class DiscrimFromSeq {
 		}
 	}
 
-	public static void main(String[] args) throws IOException{
+	public static void main(String[] args) throws IOException, ParseException{
 		ArgParser ap = new ArgParser(args);
 		GenomeConfig gc = new GenomeConfig(args);
-		Discrim runner = new Discrim(gc);
+		DiscrimFromSeq runner = new DiscrimFromSeq(gc);
 
 		// Size of the window to scan the K-mer models
 		int win = Args.parseInteger(args, "win", 150);
@@ -496,13 +506,23 @@ public class DiscrimFromSeq {
 		double threshold = Args.parseDouble(args, "hillsThres", 0.1);
 		runner.setHillThreshold(threshold);
 
-		// Peaks file name
-		String peaksfilename = Args.parseString(args, "peaks", null);
+		// Seqs file name
+		String peaksfilename = Args.parseString(args, "Seqs", null);
 		if(peaksfilename == null){
-			System.err.println("Provide peaks file");
+			System.err.println("Provide Seqs file");
 			System.exit(1);
 		}
-		runner.setPeaks(peaksfilename);
+		
+		FileReader fr = new FileReader(peaksfilename);
+		BufferedReader br = new BufferedReader(fr);
+		
+		String line;
+		List<String> seqs = new ArrayList<String>();
+		while((line = br.readLine()) != null){
+			String[] pieces = line.split("\t");
+			seqs.add(pieces[0]);
+		}
+		runner.setSeqs(seqs);
 
 		// Set number of clusters while clustering K-mer profiles
 		int numClus = Args.parseInteger(args, "numClusters", 3);
@@ -512,6 +532,15 @@ public class DiscrimFromSeq {
 		int itrs_Clus = Args.parseInteger(args, "itrsClustering", 10);
 		runner.setNumClusteringItrs(itrs_Clus);
 
+		// Get the background model to generate random seqs
+		String backFile =ap.getKeyValue("back");
+		if(!ap.hasKey("back")){
+			System.err.println("Please provide a background model file!!");
+			System.exit(0);
+		}
+
+		MarkovBackgroundModel back = BackgroundModelIO.parseMarkovBackgroundModel(backFile, gc.getGenome());
+		runner.setBack(back);
 		runner.setRandomRegs();
 
 		// Path to MEME binary
@@ -537,6 +566,57 @@ public class DiscrimFromSeq {
 
 		runner.execute();
 
+	}
+	
+	private String generateASeq(){
+		String s = new String();
+		//Preliminary bases
+		for(int i=1; i<markov.getMaxKmerLen() && i<=win; i++){
+			double prob = rand.nextDouble();
+			double sum=0; int j=0;
+			while(sum<prob){
+				String test = s.concat(int2base(j));
+				sum += markov.getMarkovProb(test);
+				if(sum>=prob){
+					s = test;
+					break;
+				}
+				j++;
+			}
+		}
+		//Remaining bases
+		for(int i=markov.getMaxKmerLen(); i<=win; i++){
+			String lmer = s.substring(s.length()-(markov.getMaxKmerLen() -1));
+			double prob = rand.nextDouble();
+			double sum=0; int j=0;
+			while(sum<prob){
+				String test = lmer.concat(int2base(j));
+				sum += markov.getMarkovProb(test);
+				if(sum>=prob){
+					s =s.concat(int2base(j));
+					break;
+				}
+				j++;
+			}
+		}
+		return s;
+	}
+
+	private String int2base(int x){
+		String c;
+		switch(x){
+		case 0:
+			c="A"; break;
+		case 1:
+			c="C"; break;
+		case 2:
+			c="G"; break;
+		case 3:
+			c="T"; break;
+		default:
+			c="N";
+		}
+		return(c);
 	}
 
 }
