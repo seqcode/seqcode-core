@@ -18,8 +18,13 @@ import edu.psu.compbio.seqcode.projects.shaun.FreqMatrixImport;
 public class SimulateData {
 	/** Total number of training examples */
 	public double N = 10000.0;
-	public int[] subclasses = {1700,1200,1100,1400,1200,3400};
-	public String[] classNames = {"I;B","I;A","I;C","II;C","II;A","II;B"};
+	//public int[] subclasses = {1700,1200,1100,1400,1200,3400};
+	//public String[] classNames = {"I;B","I;A","I;C","II;C","II;A","II;B"};
+	
+	public int[] subclasses = {4000,1000,1000,2000,1500,500};
+	public String[] classNames = {"I;A","I;B","I;C","II,C","II;B","II;A"};
+	
+	
 	/** Motifs to inset */
 	public Map<String,WeightMatrix> motifs = new HashMap<String,WeightMatrix>();
 	public GenomeConfig gcon;
@@ -44,7 +49,12 @@ public class SimulateData {
 			SimulateBindingSite bs = new SimulateBindingSite(gcon);
 			
 			List<WeightMatrix> mots = new ArrayList<WeightMatrix>();
-			mots.add(motifs.get(labels[0]));mots.add(motifs.get(labels[1]));
+			if(motifs.containsKey(labels[0])){
+				mots.add(motifs.get(labels[0]));
+			}
+			if(motifs.containsKey(labels[1])){
+				mots.add(motifs.get(labels[1]));
+			}
 			List<Double> insrtRate = new ArrayList<Double>();
 			insrtRate.add(1.0);insrtRate.add(1.0);
 			bs.setBack(markov);
@@ -89,11 +99,11 @@ public class SimulateData {
 		List<WeightMatrix> mots = new ArrayList<WeightMatrix>();
 		mots.addAll(motifImport.readTransfacMatricesAsFreqMatrices(motifFilename));
 		Map<String,WeightMatrix> motsWithLabs = new HashMap<String,WeightMatrix>();
-		motsWithLabs.put("I", mots.get(0));
-		motsWithLabs.put("II", mots.get(1));
-		motsWithLabs.put("A", mots.get(2));
-		motsWithLabs.put("B", mots.get(3));
-		motsWithLabs.put("C", mots.get(4));
+		//motsWithLabs.put("I", mots.get(0));
+		//motsWithLabs.put("II", mots.get(1));
+		motsWithLabs.put("A", mots.get(0));
+		motsWithLabs.put("B", mots.get(1));
+		motsWithLabs.put("C", mots.get(2));
 		
 		SimulateData sd = new SimulateData(gc);
 		sd.setMotifs(motsWithLabs);
