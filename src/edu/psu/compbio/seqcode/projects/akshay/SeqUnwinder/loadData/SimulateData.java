@@ -22,7 +22,7 @@ public class SimulateData {
 	//public String[] classNames = {"I;B","I;A","I;C","II;C","II;A","II;B"};
 	
 	public int[] subclasses = {4000,1000,1000,2000,1500,500};
-	public String[] classNames = {"I;A","I;B","I;C","II,C","II;B","II;A"};
+	public String[] classNames = {"I;A","I;B","I;C","II;C","II;B","II;A"};
 	
 	
 	/** Motifs to inset */
