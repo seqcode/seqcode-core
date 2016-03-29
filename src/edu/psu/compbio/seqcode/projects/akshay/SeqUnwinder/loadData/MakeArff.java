@@ -33,6 +33,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.loadData.MakeArffFromFasta.MapKeyComparator;
 
 public class MakeArff {
 	
@@ -55,6 +56,76 @@ public class MakeArff {
 		seqgen = gc.getSequenceGenerator();
 	}
 	
+	/**
+	 * Use this settor method if you only have subgroups (simple multi-logistic regression)
+	 * @param labs
+	 * @param randSeqs
+	 */
+	public void setLabelsSimple(List<String> labs, List<Region> randRegs){
+		subGroupNames.addAll(labs);
+		// Now make the design file
+		StringBuilder designBuilder = new StringBuilder();
+		//First get the header
+		designBuilder.append("#Index"+"\t"+
+				"Name"+"\t"+
+				"isSubGroup" +"\t"+
+				"AssignedLabs" + "\t"+
+				"AssignedSGs" + "\t"+
+				"Layer"+"\n");
+		// Now subgroups
+		HashMap<String,Integer> subgroupNames = new HashMap<String,Integer>();
+		for(String s : subGroupNames){
+			if(!subgroupNames.containsKey(s))
+				subgroupNames.put(s, 1);
+		}
+		int index = 0;
+		for(String s : subgroupNames.keySet()){
+			designBuilder.append(index);designBuilder.append("\t"); // subgroup id
+			designBuilder.append(s+"\t"); // subgroup 
+			designBuilder.append(1);designBuilder.append("\t"); // subgroup indicator
+			designBuilder.append("-"+"\t"); // Assigned labels
+			designBuilder.append("-"+"\t"); // Assigned subgroups
+			designBuilder.append(0);designBuilder.append("\n"); // Layer
+			index++;
+		}
+
+		// Now add the random label subgroup
+		designBuilder.append(index);designBuilder.append("\t"); 
+		designBuilder.append("RootRandom"+"\t");
+		designBuilder.append(1);designBuilder.append("\t");
+		designBuilder.append("-"+"\t");
+		designBuilder.append("-"+"\t");
+		designBuilder.append(0);designBuilder.append("\n");
+
+		designBuilder.deleteCharAt(designBuilder.length()-1);
+		design = designBuilder.toString();
+		
+		// Now add the random regions to peaks and "RootRandom" label to subGroupNames
+		regions.addAll(randRegs);
+		for(Region re : randRegs){
+			peaks.add(re.getMidpoint());
+			subGroupNames.add("RootRandom");
+		}
+
+		// Finally, find the weights for each subgroup
+		for(String s : subGroupNames){
+			if(!subGroupWeights.containsKey(s))
+				subGroupWeights.put(s, 1.0);
+			else
+				subGroupWeights.put(s, subGroupWeights.get(s)+1);
+		}
+		// Now get the sorted keys
+		MapKeyComparator<Double> comp_d = new MapKeyComparator<Double>(subGroupWeights);
+		List<String> groupWeightsKeyset = comp_d.getKeyList();
+		Collections.sort(groupWeightsKeyset, comp_d);
+
+		for(int i=0; i<groupWeightsKeyset.size()-1; i++){
+			subGroupWeights.put(groupWeightsKeyset.get(i), 
+					subGroupWeights.get(groupWeightsKeyset.get(groupWeightsKeyset.size()-1))/subGroupWeights.get(groupWeightsKeyset.get(i)));
+		}
+		subGroupWeights.put(groupWeightsKeyset.get(groupWeightsKeyset.size()-1), 1.0);
+	}
+
 	
 	//Setters
 	/**
@@ -308,7 +379,12 @@ public class MakeArff {
 		}
 		
 		// Now set labels, design file string, and ranRegs to peaks
-		arffmaker.setLabels(labels, ranregs);
+		// Check if we have labels
+		if(ap.hasKey("simple")){
+			arffmaker.setLabelsSimple(labels, ranregs);
+		}else{
+			arffmaker.setLabels(labels, ranregs);
+		}
 		
 		// Now get K-mer params
 		int kmin = Args.parseInteger(args, "Kmin", 4);
