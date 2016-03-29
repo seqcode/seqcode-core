@@ -654,7 +654,7 @@ public class MotifAnalysisSandbox {
 			}
         }
 		double perc = (double)peaksWithHits/(double)totalPeaks;
-		System.out.println(motif.name+" hits: "+numHits+" hits in "+peaksWithHits+" regions from "+totalPeaks+" total peaks ("+perc+").");
+		System.err.println(motif.name+" hits: "+numHits+" hits in "+peaksWithHits+" regions from "+totalPeaks+" total peaks ("+perc+").");
 		for(int h=0; h<hits.size(); h++){
 			//System.out.println(hits.get(h)+"\t"+hitseqs.get(h)+"\t"+SequenceUtils.reverseComplement(hitseqs.get(h)));
 			System.out.println(hits.get(h).toTabString()+"\t"+hitseqs.get(h));
