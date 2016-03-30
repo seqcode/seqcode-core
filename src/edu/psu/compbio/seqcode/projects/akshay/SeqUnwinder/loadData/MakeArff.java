@@ -254,7 +254,7 @@ public class MakeArff {
 			designBuilder.append("-"+"\t"); // Assigned labels
 			
 			for(String subS : subgroupNames.keySet()){ 
-				if(subS.startsWith(s+"&") || subS.endsWith("&"+s)){
+				if(subS.startsWith(s+"&") || subS.endsWith("&"+s) || subS.contains("&"+s+"&")){
 					designBuilder.append(subgroupNames.get(subS)+","); // Assigned subgroups
 				}
 			}
