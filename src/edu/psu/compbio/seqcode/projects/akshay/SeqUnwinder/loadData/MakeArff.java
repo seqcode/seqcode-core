@@ -142,27 +142,52 @@ public class MakeArff {
 		HashMap<String,Integer> subgroupNames = new HashMap<String,Integer>();
 		HashMap<String,Integer> labelNames = new HashMap<String,Integer>();
 		int indSG=0;
-		int indLab=0;
 		for(String s : labs){
 			String[] labels = s.split(";");
-			String subgroup = labels[0]+"&"+labels[1];
+			// Now generate the sub group name
+			StringBuilder subgroupSB = new StringBuilder();
+			for(String sname : labels){
+				subgroupSB.append(sname);subgroupSB.append("&");
+			}
+			//String subgroup = labels[0]+"&"+labels[1];
+			String subgroup = subgroupSB.toString();
 			if(!subgroupNames.containsKey(subgroup)){
 				subgroupNames.put(subgroup, indSG);
 				indSG++;
 			}
-			if(!labelNames.containsKey(labels[0])){
-				labelNames.put(labels[0], indLab);
-				indLab++;
+			for(String sname : labels){
+				if(!labelNames.containsKey(sname)){
+					labelNames.put(sname, 1);
+				}
 			}
-			if(!labelNames.containsKey(labels[1])){
-				labelNames.put(labels[1], indLab);
-				indLab++;
-			}
+			
 			subGroupNames.add(subgroup);
 		}
+		
+		// Now remove a label that has only one subgroup to it
+		HashMap<String,Integer> tmpLabMap = new HashMap<String,Integer>(); 
+		for(String sname : subgroupNames.keySet()){
+			for(String piece : sname.split("&")){
+				if(tmpLabMap.containsKey(piece)){
+					tmpLabMap.put(piece,tmpLabMap.get(piece) + 1);
+				}else{
+					tmpLabMap.put(piece, 1);
+				}
+			}
+		}
+		
+		for(String sname : tmpLabMap.keySet()){
+			if(tmpLabMap.get(sname) ==1){
+				labelNames.remove(sname);
+			}
+		}
+		tmpLabMap.clear();
+		
 		// Now, adjest the indexes of the labels
+		int indLab=0;
 		for(String s : labelNames.keySet()){
-			labelNames.put(s, labelNames.get(s)+indSG+1);
+			labelNames.put(s, indLab+indSG+1);
+			indLab++;
 		}
 		
 		// Now make the design file
@@ -180,12 +205,30 @@ public class MakeArff {
 		List<String> subGs = comp.getKeyList();
 		Collections.sort(subGs, comp);
 		for(String s : subGs){
+			// Check if this subgroup has parents
+			boolean isRoot = true;
+			for(String labname: labelNames.keySet()){
+				if((labname+"&").equals(s))
+					isRoot = false;
+			}
+			if(labelNames.size() == 0)
+				isRoot = true;
+			//If this subgroup is a root add the root tag to all the names in "subGroupNames"
+			if(isRoot)
+				addRootTag(s);
 			designBuilder.append(index);designBuilder.append("\t"); // subgroup id
 			designBuilder.append(s+"\t"); // subgroup 
 			designBuilder.append(1);designBuilder.append("\t"); // subgroup indicator
-			String[] assignedLabs = s.split("&");
-			designBuilder.append(labelNames.get(assignedLabs[0])+","+
-					             labelNames.get(assignedLabs[1])+"\t"); // Assigned labels
+			if(!isRoot){
+				String[] assignedLabs = s.split("&");
+				for(String aS : assignedLabs){
+					designBuilder.append(labelNames.get(aS)+",");// Assigned labels
+				}
+				designBuilder.deleteCharAt(designBuilder.length()-1);
+				designBuilder.append("\t");
+			}else{
+				designBuilder.append("-"+"\t");
+			}
 			designBuilder.append("-"+"\t"); // Assigned subgroups
 			designBuilder.append(0);designBuilder.append("\n"); // Layer
 			index++;
@@ -249,6 +292,13 @@ public class MakeArff {
 		subGroupWeights.put(groupWeightsKeyset.get(groupWeightsKeyset.size()-1), 1.0);
 	
 		
+	}
+	public void addRootTag(String sgName){
+		for(int i=0; i<subGroupNames.size(); i++){
+			if(subGroupNames.get(i).equals(sgName)){
+				subGroupNames.set(i, "Root"+subGroupNames.get(i));
+			}
+		}
 	}
 	public void setPeaks(List<Point> ps){
 		peaks.addAll(ps);
