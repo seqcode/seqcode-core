@@ -16,12 +16,14 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
+import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 
 public class ChIPexoQC {
 	
+	public boolean printBinCounts = false;
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
 	protected ExperimentManager manager;
@@ -31,6 +33,8 @@ public class ChIPexoQC {
 		econfig = econ;
 		manager = man;
 	}
+	
+	public void setBinCounts(boolean printBin){printBinCounts = true;}
 	 
 	public void printQCMetrics(){
 		
@@ -46,14 +50,17 @@ public class ChIPexoQC {
 				if (IPstrength<0)
 					IPstrength=0;
 				System.out.println("Condition:"+rep.getCondName()+"\tSignal:"+signalHits+"\tControl:"+controlHits+"\tScalingFactor:"+ncis+"\tIPstrength: "+IPstrength);
+				
+				if (printBinCounts ==true){
+					
+				}
 			}
 		}
+		manager.close();
 	}
 	
-	public void printPairedBinCounts(String out, int scalingWindowSize) throws FileNotFoundException, UnsupportedEncodingException{
-		
-		PrintWriter writer = new PrintWriter(out,"UTF-8");
-		writer.println("#signalBinCounts : controlBinCounts");
+	public void printPairedBinCounts(int scalingWindowSize) throws FileNotFoundException, UnsupportedEncodingException{
+
 		
 		Genome genome = econfig.getGenome();
 		Map<Sample, List<Float>> sampleWindowCounts = new HashMap<Sample, List<Float>>();
@@ -61,7 +68,7 @@ public class ChIPexoQC {
 		List<Sample> signalSamples = new ArrayList<Sample>();
 		List<Sample> controlSamples = new ArrayList<Sample>();
 			
-		for(ExperimentCondition exptCond: manager.getConditions()){
+		for(ExperimentCondition exptCond: manager.getConditions()){			
 			for(ControlledExperiment rep : exptCond.getReplicates()){
 				signalSamples.add(rep.getSignal());
 				controlSamples.add(rep.getControl());
@@ -84,9 +91,12 @@ public class ChIPexoQC {
 			}
 		}
 		for(ExperimentCondition exptCond: manager.getConditions()){
+			
 			for(ControlledExperiment rep : exptCond.getReplicates()){
 				
-				writer.println("#"+rep.getCondName());
+				PrintWriter writer = new PrintWriter(rep.getName()+rep.getCondName()+rep.getRepName(),"UTF-8");
+				writer.println("#signalBinCounts : controlBinCounts"+"\t"+"#"+rep.getCondName());
+
 				
 				List<Float> signalSampCounts = new ArrayList<Float>();
 				List<Float> controlSampCounts = new ArrayList<Float>();
@@ -98,6 +108,8 @@ public class ChIPexoQC {
 				}
 			}
 		}
+		
+		manager.close();
 	}
 		
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
@@ -117,10 +129,12 @@ public class ChIPexoQC {
 		ArgParser ap = new ArgParser(args);
 		
 		if (ap.hasKey("binCounts") && ap.hasKey("file")){
+			
 			String outName = null;
 			outName = Args.parseString(args, "file", "count.txt");
-			exoQC.printPairedBinCounts(outName,econf.getScalingSlidingWindow());
+			exoQC.printPairedBinCounts(econf.getScalingSlidingWindow());
 		}
+		
+		manager.close();
 	}
-
 }
