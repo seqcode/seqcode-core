@@ -117,21 +117,19 @@ public class ChIPexoQC {
 		
 		/***
 		 * You need to specify --fixedpb otherwise upper count limit would be set to a random number
-		 * if you want to print binCounds --binCounts --file [file name] 
+		 * if you want to print binCounds --binCounts 
 		 ***/
 		
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		ExperimentManager manager = new ExperimentManager(econf);
 		ChIPexoQC exoQC = new ChIPexoQC(gconf, econf, manager); 
+		
 		exoQC.printQCMetrics();
 		
 		ArgParser ap = new ArgParser(args);
 		
-		if (ap.hasKey("binCounts") && ap.hasKey("file")){
-			
-			String outName = null;
-			outName = Args.parseString(args, "file", "count.txt");
+		if (ap.hasKey("binCounts")){
 			exoQC.printPairedBinCounts(econf.getScalingSlidingWindow());
 		}
 		
