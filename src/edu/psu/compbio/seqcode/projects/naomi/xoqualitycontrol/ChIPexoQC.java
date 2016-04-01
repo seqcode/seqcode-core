@@ -94,7 +94,7 @@ public class ChIPexoQC {
 			
 			for(ControlledExperiment rep : exptCond.getReplicates()){
 				
-				PrintWriter writer = new PrintWriter(rep.getName()+rep.getCondName()+rep.getRepName(),"UTF-8");
+				PrintWriter writer = new PrintWriter(rep.getName()+rep.getCondName()+".counts.txt","UTF-8");
 				writer.println("#signalBinCounts : controlBinCounts"+"\t"+"#"+rep.getCondName());
 
 				
