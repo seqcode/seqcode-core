@@ -28,8 +28,22 @@ public class AlignmentLookup {
 				SeqLocator expt = expts.get(0);
 				loader = new SeqDataLoader(false, true);
 			
-				if(loader.loadAlignments(expt, gen).size()>0)
-					System.out.println("FOUND");
+				boolean erafound=false;
+				boolean erfound=false;
+				try{
+					if(loader.loadAlignments(expt, gen).size()>0)
+						erafound = true;
+				} catch (NotFoundException e) {}
+				
+				try{
+					if(loader.loadExperiment(expt.getExptName(), expt.getReplicateString())!=null)
+						erfound=true;
+				} catch (NotFoundException e) {}
+				
+				if(erafound)
+					System.out.println("EXPTREPALIGNFOUND");
+				else if(erfound)
+					System.out.println("EXPTREPFOUND");
 				else
 					System.out.println("NOTFOUND");
 			} catch (NotFoundException e) {

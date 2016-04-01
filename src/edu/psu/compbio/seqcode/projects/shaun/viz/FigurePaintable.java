@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -136,6 +137,8 @@ public abstract class FigurePaintable extends AbstractPaintable{
 	            gx2=Math.min(rightBound, gx2);
 	            
 	            g2d.setColor(Color.black);
+	            
+	            
             	g2d.drawLine(gx1, gmy, gx2, gmy);
 	            if((g.getStrand()!='.') && (g.getFivePrime()>=options.gRegion.getStart() && g.getFivePrime()<=options.gRegion.getEnd())){
 	            	arrangeArrow(a, b, strand, halfGeneHeight, gx1, gx2, gmy);
@@ -153,8 +156,11 @@ public abstract class FigurePaintable extends AbstractPaintable{
 		
 		                int rectwidth = eright - eleft + 1;
 		                
-		                g2d.setColor(options.geneColor);
-			           
+		                if(g.getName().equals(options.specialGeneName)){
+		                	g2d.setColor(options.specialGeneColor);
+		                }else{
+		                	g2d.setColor(options.geneColor);
+		                }
 		                g2d.fillRect(eleft, gy1, rectwidth, options.geneHeight);
 		                g2d.setColor(Color.black);
 		                g2d.drawRect(eleft, gy1, rectwidth, options.geneHeight);

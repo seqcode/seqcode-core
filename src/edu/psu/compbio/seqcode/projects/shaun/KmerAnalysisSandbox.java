@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -48,6 +49,7 @@ public class KmerAnalysisSandbox {
         	
 	public static void main(String[] args) throws IOException, ParseException {
 		ArgParser ap = new ArgParser(args);
+		GenomeConfig gConfig = new GenomeConfig(args);
         if(!ap.hasKey("species") || (!ap.hasKey("k"))|| (!ap.hasKey("win"))|| (!ap.hasKey("peaks"))) { 
             System.err.println("Usage:\n " +
                                "KmerAnalysisSandbox \n" +
@@ -57,6 +59,7 @@ public class KmerAnalysisSandbox {
                                "\t--win <window around peak to examine>\n" +
                                "\t--peaks <peaks file>\n" +
                                "Options:\n" +
+                               "\t--seq <genome fasta seq directory>\n" +
                                "\t--model <ranked kmer file>\n" +
                                "\t--neg <filename or random>\n" +
                                "\t--numrand <number of random positions if random negative selected)\n" +
@@ -71,51 +74,44 @@ public class KmerAnalysisSandbox {
                                "\n");
             
         }else{
-        	try {
-    			//Load genome
-    	        Pair<Species, Genome> pair = Args.parseGenome(args);
-    	        Genome currgen = pair.cdr();
-    	        int k = ap.hasKey("k") ? new Integer(ap.getKeyValue("k")).intValue():6;
-    	        int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():200;
-    	        String peaksFile = ap.hasKey("peaks") ? ap.getKeyValue("peaks") : null;
-    	        String neg = ap.hasKey("neg") ? ap.getKeyValue("neg") : null;
-    	        String out = ap.hasKey("out") ? ap.getKeyValue("out") : "out";
-    	        int rankThres = ap.hasKey("rankthres") ? new Integer(ap.getKeyValue("rankthres")).intValue():-1;
-    	        int numrand = ap.hasKey("numrand") ? new Integer(ap.getKeyValue("numrand")).intValue():-1;
-    	        
-    	        KmerAnalysisSandbox analyzer = new KmerAnalysisSandbox(currgen, k, win, peaksFile);
-    	        analyzer.setNumRand(numrand);
-    	        
-    	        KmerModel model = null;
-    	        if(ap.hasKey("enumerate")){
-    	        	model = analyzer.estimateKmerModel(neg);
-    	        	analyzer.printKmerModel(model, out);
-    	        }else if(ap.hasKey("model")){
-    	        	model = analyzer.loadKmerModel(ap.getKeyValue("model"));
-    	        }
-    	        
-    	        if(model != null){
-    	        	if(ap.hasKey("roc")){
-    	        		analyzer.ROC(model, neg);
-    	        	}
-    	        	if(ap.hasKey("peakswithkmers") && rankThres>0){
-    	        		analyzer.printPeaksWithKmers(model, rankThres);
-    	        	}
-    	        	if(ap.hasKey("kmerhits") && rankThres>0){
-    	        		analyzer.printKmersAtPeaks(model, rankThres);
-    	        	}
-    	        	if(ap.hasKey("recenterpeaks") && rankThres>0){
-    	        		analyzer.printRecenteredPeaksWithKmers(model, rankThres, out, neg);
-    	        	}
-    	        	if(ap.hasKey("kmerdisthist") && rankThres>0){
-    	        		analyzer.peak2motifHisto(model, rankThres);
-    	        	}
-    	        }
-    	        
-        	} catch (NotFoundException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    		}
+	        Genome currgen = gConfig.getGenome();
+	        int k = ap.hasKey("k") ? new Integer(ap.getKeyValue("k")).intValue():6;
+	        int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():200;
+	        String peaksFile = ap.hasKey("peaks") ? ap.getKeyValue("peaks") : null;
+	        String neg = ap.hasKey("neg") ? ap.getKeyValue("neg") : null;
+	        String out = ap.hasKey("out") ? ap.getKeyValue("out") : "out";
+	        int rankThres = ap.hasKey("rankthres") ? new Integer(ap.getKeyValue("rankthres")).intValue():-1;
+	        int numrand = ap.hasKey("numrand") ? new Integer(ap.getKeyValue("numrand")).intValue():-1;
+	        
+	        KmerAnalysisSandbox analyzer = new KmerAnalysisSandbox(currgen, k, win, peaksFile);
+	        analyzer.setNumRand(numrand);
+	        
+	        KmerModel model = null;
+	        if(ap.hasKey("enumerate")){
+	        	model = analyzer.estimateKmerModel(neg);
+	        	analyzer.printKmerModel(model, out);
+	        }else if(ap.hasKey("model")){
+	        	model = analyzer.loadKmerModel(ap.getKeyValue("model"));
+	        }
+	        
+	        if(model != null){
+	        	if(ap.hasKey("roc")){
+	        		analyzer.ROC(model, neg);
+	        	}
+	        	if(ap.hasKey("peakswithkmers") && rankThres>0){
+	        		analyzer.printPeaksWithKmers(model, rankThres);
+	        	}
+	        	if(ap.hasKey("kmerhits") && rankThres>0){
+	        		analyzer.printKmersAtPeaks(model, rankThres);
+	        	}
+	        	if(ap.hasKey("recenterpeaks") && rankThres>0){
+	        		analyzer.printRecenteredPeaksWithKmers(model, rankThres, out, neg);
+	        	}
+	        	if(ap.hasKey("kmerdisthist") && rankThres>0){
+	        		analyzer.peak2motifHisto(model, rankThres);
+	        	}
+	        }
+	   
         }                               
 	}
 

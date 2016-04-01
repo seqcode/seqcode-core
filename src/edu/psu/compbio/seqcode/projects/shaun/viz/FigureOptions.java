@@ -42,6 +42,8 @@ public class FigureOptions {
 	public int defaultExptTrackHeight=120;
 	public int readExt = 100;
 	public Color geneColor = new Color(232,232,232);
+	public Color specialGeneColor = new Color(232,232,232);
+	public String specialGeneName = "";
 	public Color motifColor = new Color(51,102,0);
 	public Color loopColor = Color.lightGray;
 	public Color interColor = Color.red;
@@ -81,6 +83,9 @@ public class FigureOptions {
 						if(tokens.length>3){
 							if(oName.equals("geneColor")){
 								geneColor = new Color(new Integer(tokens[1]), new Integer(tokens[2]), new Integer(tokens[3]));
+							}if(oName.equals("specialGeneColor")){
+								specialGeneColor = new Color(new Integer(tokens[2]), new Integer(tokens[3]), new Integer(tokens[4]));
+								specialGeneName = tokens[1];
 							}if(oName.equals("loopColor")){
 								loopColor = new Color(new Integer(tokens[1]), new Integer(tokens[2]), new Integer(tokens[3]));
 								if(tokens.length>4){
