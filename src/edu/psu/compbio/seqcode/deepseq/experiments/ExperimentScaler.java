@@ -223,9 +223,9 @@ public class ExperimentScaler {
 			
 			//Generate images
 			ScalingPlotter plotter = new ScalingPlotter(outputFile+" NCIS plot");
-			plotter.saveXYplot(dataToPlot, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Cumulative Count Scaling Ratio", outputFile+".NCIS_scaling-ccr.png", true, 0);
+			plotter.saveXYplot(dataToPlot, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Cumulative Count Scaling Ratio", outputFile+".NCIS_scaling-ccr.png", true);
 			ScalingPlotter plotter2 = new ScalingPlotter(outputFile+" NCIS plot");
-			plotter2.saveXYplot(dataToPlot2, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Marginal Signal/Control Ratio", outputFile+".NCIS_scaling-marginal.png", true, 0.5);
+			plotter2.saveXYplot(dataToPlot2, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Marginal Signal/Control Ratio", outputFile+".NCIS_scaling-marginal.png", true);
         }
         
 		return(scalingRatio);
@@ -442,7 +442,7 @@ public class ExperimentScaler {
 		 * @param outFilename - String
 		 * @param rasterImage - boolean
 		 */
-		private void saveXYplot(Matrix datapoints, double scalingTotal, double scalingRatio, String xName, String yName, String outFilename, boolean rasterImage, double yfudge){
+		private void saveXYplot(Matrix datapoints, double scalingTotal, double scalingRatio, String xName, String yName, String outFilename, boolean rasterImage){
 			this.setWidth(800);
 			this.setHeight(800);
 			this.addDataset("other", datapoints, new Color(75,75,75,80), 3);
@@ -451,7 +451,7 @@ public class ExperimentScaler {
 			this.setXLogScale(true);
 			this.setYLogScale(true);
 			this.setXRangeFromData();
-			this.setYRangeFromData(yfudge);
+			this.setYRangeFromData();
 			this.addDomainMarker(scalingTotal);			
 			this.addRangeMarker(scalingRatio);
 			
