@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.Genome;
+import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Gene;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -33,20 +34,18 @@ public class MakeBackground {
 	public static void main(String[] args) throws NotFoundException, IOException {
 		BackgroundModel backMod;
 		CountsBackgroundModel cbm = null;
-		
-		//hardcoded args for a one-off run
-		//args = new String[] {"--species", "Mus musculus;mm5", "--genome", "mm5","--model", "count", "--k", "3", "--out", "testcount3.back", "--regions", "freqTestRegions.txt"};
-		
+				
 		ArgParser ap = new ArgParser(args);
-        if(!ap.hasKey("species") || !ap.hasKey("genome")||!ap.hasKey("k")) { 
+		GenomeConfig gConfig = new GenomeConfig(args);
+        if(!ap.hasKey("species") ||!ap.hasKey("k")) { 
             System.err.println("Usage:\n" +
                                "MakeBackground " +
                                "--model [count|freq|markov] " +
-                               "--species <organism name> " +
-                               "--genome <genome version> "+
+                               "--species <organism;version> " +
+                               "--seq <genome sequence directory> "+
                                "--k <model length> "+
                                "--out <output file name> "+
-                               "--seq <optional FASTA file> "+
+                               "--fasta <optional FASTA file> "+
                                "--regions <optional region coords file> "+
                                "--promoters "+
                                "--geneannot <annotation name: default refGene> "+
@@ -56,14 +55,13 @@ public class MakeBackground {
                                "--outseq <filename for background sequences>");
             return;
         }
-        String species = ap.getKeyValue("species");
-        String genome = ap.getKeyValue("genome");
+        Genome gen = gConfig.getGenome();
         int modLen = new Integer(ap.getKeyValue("k")).intValue();
         String modType = ap.hasKey("model") ? ap.getKeyValue("model") : "markov";
         String outFile = ap.hasKey("out") ? ap.getKeyValue("out") : "out.back";
         boolean usingRFile = ap.hasKey("regions");
-        boolean usingSeqs = ap.hasKey("seq");
-        String inSeqFile = ap.hasKey("seq") ? ap.getKeyValue("seq") : null;
+        boolean usingSeqs = ap.hasKey("fasta");
+        String inSeqFile = ap.hasKey("fasta") ? ap.getKeyValue("fasta") : null;
         boolean printSeqs = ap.hasKey("outseq");
         String seqFile = ap.hasKey("outseq") ? ap.getKeyValue("outseq") : null;
         boolean stranded = ap.hasKey("stranded");
@@ -83,28 +81,19 @@ public class MakeBackground {
                
         if(usingRFile){
         	String rFile = ap.getKeyValue("regions");
-        	Genome gen = Genome.findGenome(genome);
-        	cbm = CountsBackgroundModel.modelFromRegionList(gen, DatasetsGeneralIO.readRegionsFromFile(gen, rFile));
+        	cbm = CountsBackgroundModel.modelFromRegionList(gen, DatasetsGeneralIO.readRegionsFromFile(gen, rFile), modLen);
         }else if(usingGenes){
-        	Genome g;
-			try {
-				g = Genome.findGenome(genome);
-				RefGeneGenerator<NamedRegion> geneGen = new RefGeneGenerator<NamedRegion>(g, annotation);
-				cbm = CountsBackgroundModel.modelFromRegionList(g, MakeBackground.getTSSRegions(geneGen, tssup, tssdown));
-			} catch (NotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}        	
+        	RefGeneGenerator<NamedRegion> geneGen = new RefGeneGenerator<NamedRegion>(gen, annotation);
+        	cbm = CountsBackgroundModel.modelFromRegionList(gen, MakeBackground.getTSSRegions(geneGen, tssup, tssdown), modLen);
         }else if(usingSeqs){
         	try {
 				FASTAStream faFile = new FASTAStream(new File(inSeqFile));
-				cbm = CountsBackgroundModel.modelFromFASTAStream(faFile);
+				cbm = CountsBackgroundModel.modelFromFASTAStream(faFile, modLen);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         }else{
-          cbm = CountsBackgroundModel.modelFromWholeGenome(Genome.findGenome(genome));
+          cbm = CountsBackgroundModel.modelFromWholeGenome(gen, modLen);
         }System.out.println("Counted");
         
         if (!stranded) {
