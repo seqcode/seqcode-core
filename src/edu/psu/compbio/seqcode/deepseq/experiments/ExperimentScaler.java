@@ -445,13 +445,13 @@ public class ExperimentScaler {
 		private void saveXYplot(Matrix datapoints, double scalingTotal, double scalingRatio, String xName, String yName, String outFilename, boolean rasterImage, double yfudge){
 			this.setWidth(800);
 			this.setHeight(800);
-			this.setXLogScale(true);
-			this.setYLogScale(true);
 			this.addDataset("other", datapoints, new Color(75,75,75,80), 3);
 			this.setXAxisLabel(xName);
 			this.setYAxisLabel(yName);
 			this.setXRangeFromData();
 			this.setYRangeFromData(yfudge);
+			this.setXLogScale(true);
+			this.setYLogScale(true);
 			this.addDomainMarker(scalingTotal);			
 			this.addRangeMarker(scalingRatio);
 			
