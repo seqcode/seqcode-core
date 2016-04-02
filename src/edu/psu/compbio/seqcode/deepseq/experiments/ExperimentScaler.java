@@ -225,7 +225,7 @@ public class ExperimentScaler {
 			ScalingPlotter plotter = new ScalingPlotter(outputFile+" NCIS plot");
 			plotter.saveXYplot(dataToPlot, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Cumulative Count Scaling Ratio", outputFile+".NCIS_scaling-ccr.png", true, 0);
 			ScalingPlotter plotter2 = new ScalingPlotter(outputFile+" NCIS plot");
-			plotter2.saveXYplot(dataToPlot2, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Marginal Signal/Control Ratio", outputFile+".NCIS_scaling-marginal.png", true, 1);
+			plotter2.saveXYplot(dataToPlot2, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Marginal Signal/Control Ratio", outputFile+".NCIS_scaling-marginal.png", true, 0.5);
         }
         
 		return(scalingRatio);
@@ -448,10 +448,10 @@ public class ExperimentScaler {
 			this.addDataset("other", datapoints, new Color(75,75,75,80), 3);
 			this.setXAxisLabel(xName);
 			this.setYAxisLabel(yName);
-			this.setXRangeFromData();
-			this.setYRangeFromData(yfudge);
 			this.setXLogScale(true);
 			this.setYLogScale(true);
+			this.setXRangeFromData();
+			this.setYRangeFromData(yfudge);
 			this.addDomainMarker(scalingTotal);			
 			this.addRangeMarker(scalingRatio);
 			
