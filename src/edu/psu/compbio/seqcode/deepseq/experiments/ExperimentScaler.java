@@ -225,7 +225,7 @@ public class ExperimentScaler {
 			ScalingPlotter plotter = new ScalingPlotter(outputFile+" NCIS plot");
 			plotter.saveXYplot(dataToPlot, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Cumulative Count Scaling Ratio", outputFile+".NCIS_scaling-ccr.png", true, 0);
 			ScalingPlotter plotter2 = new ScalingPlotter(outputFile+" NCIS plot");
-			plotter2.saveXYplot(dataToPlot2, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Marginal Signal/Control Ratio", outputFile+".NCIS_scaling-marginal.png", true, 0);
+			plotter2.saveXYplot(dataToPlot2, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Marginal Signal/Control Ratio", outputFile+".NCIS_scaling-marginal.png", true, 1);
         }
         
 		return(scalingRatio);
