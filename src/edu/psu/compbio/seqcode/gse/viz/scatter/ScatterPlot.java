@@ -240,6 +240,8 @@ public class ScatterPlot {
     public void setYRange(double min, double max){raxis.setLowerBound(min); raxis.setUpperBound(max);}
     public void setXRangeFromData(){daxis.setLowerBound(data.getMin(0)); daxis.setUpperBound(data.getMax(0)+1);}
     public void setYRangeFromData(){raxis.setLowerBound(data.getMin(1)); raxis.setUpperBound(data.getMax(1)+1);}
+    public void setXRangeFromData(double fudge){daxis.setLowerBound(data.getMin(0)-fudge); daxis.setUpperBound(data.getMax(0)+1+fudge);}
+    public void setYRangeFromData(double fudge){raxis.setLowerBound(data.getMin(1)-fudge); raxis.setUpperBound(data.getMax(1)+1+fudge);}
 
     /**
      * Add a dataset to the plot
