@@ -452,6 +452,9 @@ public class ExperimentScaler {
 			this.setYLogScale(true);
 			this.setXRangeFromData();
 			this.setYRangeFromData();
+			if(raxis.getRange().getLowerBound() >0.1){
+			    raxis.setLowerBound(0.1);
+			}
 			this.addDomainMarker(scalingTotal);			
 			this.addRangeMarker(scalingRatio);
 			
@@ -462,6 +465,7 @@ public class ExperimentScaler {
 	    		((NumberAxis)daxis).setTickUnit(new NumberTickUnit(5));
 	    	double yUpper = raxis.getRange().getUpperBound();
 			double yLower = raxis.getRange().getLowerBound();
+
 	    	if(raxis instanceof org.jfree.chart.axis.NumberAxis)
 	    		((NumberAxis)raxis).setTickUnit(new NumberTickUnit(5));
 	    	
