@@ -215,17 +215,17 @@ public class ExperimentScaler {
 			}
 			Matrix dataToPlot2 = new Matrix(bintot.size(),2);
 	        count=0;
-			for(int d=0; d<bintotals.size(); d++){
-				dataToPlot.set(count, 0, bintot.get(d));
-				dataToPlot.set(count, 1, mratios.get(d));
+			for(int d=0; d<bintot.size(); d++){
+				dataToPlot2.set(count, 0, bintot.get(d));
+				dataToPlot2.set(count, 1, mratios.get(d));
 				count++;
 			}
 			
 			//Generate images
 			ScalingPlotter plotter = new ScalingPlotter(outputFile+" NCIS plot");
-			plotter.saveXYplot(dataToPlot, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Cumulative Count Ratio", outputFile+".NCIS_scaling-ccr.png", true);
+			plotter.saveXYplot(dataToPlot, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Cumulative Count Scaling Ratio", outputFile+".NCIS_scaling-ccr.png", true);
 			ScalingPlotter plotter2 = new ScalingPlotter(outputFile+" NCIS plot");
-			plotter2.saveXYplot(dataToPlot2, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Marginal Scaling Ratio", outputFile+".NCIS_scaling-marginal.png", true);
+			plotter2.saveXYplot(dataToPlot2, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Marginal Signal/Control Ratio", outputFile+".NCIS_scaling-marginal.png", true);
         }
         
 		return(scalingRatio);
