@@ -40,6 +40,8 @@ public class Discrim {
 	protected List<Point> peaks = new ArrayList<Point>();
 	/** Peaks extended into regions */
 	protected List<Region> regions = new ArrayList<Region>();
+	/** Subgroup annotation at peaks */
+	protected List<String> subGroupsAtPeaks = new ArrayList<String>();
 	/** Minimum length of K-mer in the model */
 	protected int minK;
 	/** Maximum length of K-mer in the model */ 
@@ -149,10 +151,11 @@ public class Discrim {
 	
 	public void execute() throws IOException{
 		for(String s : kmerweights.keySet()){
-			KmerModelScanner scanner = new KmerModelScanner(s);
-			scanner.execute();
+			if(!s.equals("RootRandom")){
+				KmerModelScanner scanner = new KmerModelScanner(s);
+				scanner.execute();
+			}
 		}
-		
 	}
 	
 	
@@ -167,10 +170,12 @@ public class Discrim {
 		outdir.mkdirs();
 		
 		for(String s : kmerModelNames){
-			File memeDir = new File(outdir.getAbsoluteFile()+File.separator+s+File.separator+"meme");
-			memeDir.mkdirs();
-			File kmerProfDir = new File(outdir.getAbsoluteFile()+File.separator+s+File.separator+"kmer_profiles");
-			kmerProfDir.mkdirs();
+			if(!s.equals("RootRandom")){
+				File memeDir = new File(outdir.getAbsoluteFile()+File.separator+s+File.separator+"meme");
+				memeDir.mkdirs();
+				File kmerProfDir = new File(outdir.getAbsoluteFile()+File.separator+s+File.separator+"kmer_profiles");
+				kmerProfDir.mkdirs();
+			}
 		}
 
 	}
@@ -202,8 +207,10 @@ public class Discrim {
 	
 	
 	public class KmerModelScanner {
-		
+		//Model specific features
 		protected String kmerModelName;
+		protected List<Region> modelRegions;
+		
 		protected List<Region> posHills = new ArrayList<Region>();
 		protected ArrayList<int[]> profiles = new ArrayList<int[]>();
 		protected List<Integer> clusterAssignment = new ArrayList<Integer>();
@@ -219,6 +226,29 @@ public class Discrim {
 			setKmerModName(modName);
 			basedir_profiles = new File(outdir.getAbsoluteFile()+File.separator+kmerModelName+File.separator+"kmer_profiles");
 			basedir_meme = new File(outdir.getAbsoluteFile()+File.separator+kmerModelName+File.separator+"meme");
+			
+			// Now add all the training examples that are linked to the current K-mer model
+			// First; split to get subgroup names
+			String[] subGsMod = kmerModelName.split("&");
+			// Second; remove all "Root" keywords
+			for(int s=0; s<subGsMod.length; s++){
+				if(subGsMod[s].startsWith("Root"))
+					subGsMod[s].replaceFirst("Root", "");
+			}
+			
+			for(int p=0; p< regions.size(); p++){
+				String[] pieces = subGroupsAtPeaks.get(p).split(";");
+				boolean addReg = false;
+				for(String piece : pieces){
+					for(String subGsInMod : subGsMod){
+						if(piece.equals(subGsInMod))
+							addReg = true;
+					}
+				}
+				if(addReg)
+					modelRegions.add(regions.get(p));
+			}
+			
 		}
 		
 		
