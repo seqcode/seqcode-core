@@ -148,11 +148,12 @@ public class MakeArff {
 			}
 			if(labelNames.size() == 0)
 				isRoot = true;
-			//If this subgroup is a root add the root tag to all the names in "subGroupNames"
+			//If this subgroup is a root add the root tag to all the names in  subGroupsAtPeaks
 			if(isRoot)
 				addRootTag(s);
 			designBuilder.append(index);designBuilder.append("\t"); // subgroup id
-			designBuilder.append(s+"\t"); // subgroup 
+			String sgNametmp = isRoot ? "Root"+s : s;
+			designBuilder.append(sgNametmp+"\t"); // subgroup 
 			designBuilder.append(1);designBuilder.append("\t"); // subgroup indicator
 			if(!isRoot){
 				String[] assignedLabs = s.split("&");
@@ -236,6 +237,7 @@ public class MakeArff {
 				subGroupsAtPeaks.set(i, "Root"+subGroupsAtPeaks.get(i));
 			}
 		}
+	
 	}
 	public void setPeaks(List<Point> ps){
 		peaks.addAll(ps);
@@ -279,12 +281,6 @@ public class MakeArff {
 		loader.setStringAttributes("");
 		loader.setMissingValue("?");
 		loader.setFieldSeparator("\t");
-		StringBuilder sb = new StringBuilder();
-		for(String s : subGroupNames){
-			sb.append(s);sb.append(",");
-		}
-		sb.deleteCharAt(sb.length()-1);
-		loader.setNominalLabelSpecs(new String[] {sb.toString()});
 		loader.setFile(new File("tmpCounts.mat"));
 		Instances data = loader.getDataSet();
 		
