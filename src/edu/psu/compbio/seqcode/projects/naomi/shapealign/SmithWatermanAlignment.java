@@ -37,7 +37,7 @@ public class SmithWatermanAlignment {
 	
 	static final float MINIMUM_VALUE = Float.MIN_VALUE;
 	
-	protected Map<Sample, Map<Region,float[][]>> countsArray = null;
+	protected Map<Sample, Map<Region,float[][]>> countsArray = new HashMap<Sample,Map<Region,float[][]>>();
 	
 	public SmithWatermanAlignment(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
 		gconfig = gcon;
