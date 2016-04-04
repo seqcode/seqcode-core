@@ -64,7 +64,7 @@ public class SmithWatermanAlignment {
 		//merge overlapping regions and set back to the original size				
 		List<Region> resizedRegions = new ArrayList<Region>();		
 		for (Region reg : Region.mergeRegions(regions)){ //mergeRegions is a static method	
-			resizedRegions.add(reg.resize(window));
+			resizedRegions.add(reg.resize(window-1));
 		}		
 		setRegions(resizedRegions);
 		
@@ -88,7 +88,7 @@ public class SmithWatermanAlignment {
 			
 			for (Region reg : sampleCountsMap.get(sample).keySet()){			
 				float[][] sampleCounts = new float[window][2];
-				for (int i = 0;i<window;i++){
+				for (int i = 0;i < window;i++){
 					for (int s = 0; s<2; s++)
 						sampleCounts[i][s] = 0;
 				}				
