@@ -101,7 +101,7 @@ public class SmithWatermanAlignmentMatrix {
 		int x_coord = 0;
 		int y_coord = 0;
 	
-		for (int i = Math.floorDiv(window, 2); i < window; i++){
+		for (int i = (int) Math.floor(window/2); i < window; i++){
 			if (M[i][window] > maxScore){
 				maxScore = M[i][window];
 				x_coord = i;
@@ -113,7 +113,7 @@ public class SmithWatermanAlignmentMatrix {
 				y_coord = window;
 			}
 		}
-		for (int j = Math.floorDiv(window, 2); j < window; j++){
+		for (int j = (int) Math.floor(window/2); j < window; j++){
 			if (M[j][window] > maxScore){
 				maxScore = M[j][window];
 				x_coord = j;
