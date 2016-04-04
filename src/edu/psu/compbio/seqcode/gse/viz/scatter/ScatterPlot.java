@@ -28,6 +28,7 @@ import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.ui.TextAnchor;
@@ -117,6 +118,7 @@ public class ScatterPlot {
         plot.setDomainZeroBaselineVisible(true);
         plot.setRangeZeroBaselineVisible(true);
         plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
+        
         
         this.configAxes();
     }
@@ -238,7 +240,7 @@ public class ScatterPlot {
     public void setYRange(double min, double max){raxis.setLowerBound(min); raxis.setUpperBound(max);}
     public void setXRangeFromData(){daxis.setLowerBound(data.getMin(0)); daxis.setUpperBound(data.getMax(0)+1);}
     public void setYRangeFromData(){raxis.setLowerBound(data.getMin(1)); raxis.setUpperBound(data.getMax(1)+1);}
-
+    
     /**
      * Add a dataset to the plot
      * @param name  String
@@ -294,6 +296,24 @@ public class ScatterPlot {
         data.editRenderer(data.getDatasetIndex(), dotSize, c);
         this.plot.setRenderer(data.getDatasetIndex(), data.getRenderer(data.getDatasetIndex()));
         configAxes();
+    }
+    
+    /**
+     * Add a domain marker to the plot
+     */
+    public void addDomainMarker(double position){
+    	ValueMarker marker = new ValueMarker(position);  // position is the value on the axis
+    	marker.setPaint(Color.red);
+    	plot.addDomainMarker(marker);
+    }
+    
+    /**
+     * Add a range marker to the plot
+     */
+    public void addRangeMarker(double position){
+    	ValueMarker marker = new ValueMarker(position);  // position is the value on the axis
+    	marker.setPaint(Color.red);
+    	plot.addRangeMarker(marker);
     }
     
     /**

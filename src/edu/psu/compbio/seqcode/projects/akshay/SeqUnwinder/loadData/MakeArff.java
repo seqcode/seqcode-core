@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -37,12 +38,23 @@ import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.loadData.MakeArffFrom
 
 public class MakeArff {
 	
+	// Class Structure features
 	/** The design file that contains the relationship between subgroups and labels */
 	protected String design;
-	protected List<String> subGroupNames = new ArrayList<String>();
+	/** Weight for each subgroup; estimated based on number of training instances for each subgroup in the training dataset */
 	protected HashMap<String,Double> subGroupWeights = new HashMap<String,Double>();
+	/** All the subgroup names; the order of this hash set is important*/
+	protected LinkedHashSet<String> subGroupNames = new LinkedHashSet<String>();
+	
+	// Peaks features
+	/** subgroup annotations at each each; stored into a list*/
+	protected List<String> subGroupsAtPeaks = new ArrayList<String>();
+	/** List of peaks; this has the same order as the "subGroupsAtPeaks" */
 	protected List<Point> peaks = new ArrayList<Point>();
+	/** List of regions (win/2 around the peak mid points) */
 	protected List<Region> regions = new ArrayList<Region>();
+	
+	// General features
 	protected GenomeConfig gcon;
 	protected SequenceGenerator<Region> seqgen = null;
 	protected int win = 150;
@@ -56,77 +68,7 @@ public class MakeArff {
 		seqgen = gc.getSequenceGenerator();
 	}
 	
-	/**
-	 * Use this settor method if you only have subgroups (simple multi-logistic regression)
-	 * @param labs
-	 * @param randSeqs
-	 */
-	public void setLabelsSimple(List<String> labs, List<Region> randRegs){
-		subGroupNames.addAll(labs);
-		// Now make the design file
-		StringBuilder designBuilder = new StringBuilder();
-		//First get the header
-		designBuilder.append("#Index"+"\t"+
-				"Name"+"\t"+
-				"isSubGroup" +"\t"+
-				"AssignedLabs" + "\t"+
-				"AssignedSGs" + "\t"+
-				"Layer"+"\n");
-		// Now subgroups
-		HashMap<String,Integer> subgroupNames = new HashMap<String,Integer>();
-		for(String s : subGroupNames){
-			if(!subgroupNames.containsKey(s))
-				subgroupNames.put(s, 1);
-		}
-		int index = 0;
-		for(String s : subgroupNames.keySet()){
-			designBuilder.append(index);designBuilder.append("\t"); // subgroup id
-			designBuilder.append(s+"\t"); // subgroup 
-			designBuilder.append(1);designBuilder.append("\t"); // subgroup indicator
-			designBuilder.append("-"+"\t"); // Assigned labels
-			designBuilder.append("-"+"\t"); // Assigned subgroups
-			designBuilder.append(0);designBuilder.append("\n"); // Layer
-			index++;
-		}
 
-		// Now add the random label subgroup
-		designBuilder.append(index);designBuilder.append("\t"); 
-		designBuilder.append("RootRandom"+"\t");
-		designBuilder.append(1);designBuilder.append("\t");
-		designBuilder.append("-"+"\t");
-		designBuilder.append("-"+"\t");
-		designBuilder.append(0);designBuilder.append("\n");
-
-		designBuilder.deleteCharAt(designBuilder.length()-1);
-		design = designBuilder.toString();
-		
-		// Now add the random regions to peaks and "RootRandom" label to subGroupNames
-		regions.addAll(randRegs);
-		for(Region re : randRegs){
-			peaks.add(re.getMidpoint());
-			subGroupNames.add("RootRandom");
-		}
-
-		// Finally, find the weights for each subgroup
-		for(String s : subGroupNames){
-			if(!subGroupWeights.containsKey(s))
-				subGroupWeights.put(s, 1.0);
-			else
-				subGroupWeights.put(s, subGroupWeights.get(s)+1);
-		}
-		// Now get the sorted keys
-		MapKeyComparator<Double> comp_d = new MapKeyComparator<Double>(subGroupWeights);
-		List<String> groupWeightsKeyset = comp_d.getKeyList();
-		Collections.sort(groupWeightsKeyset, comp_d);
-
-		for(int i=0; i<groupWeightsKeyset.size()-1; i++){
-			subGroupWeights.put(groupWeightsKeyset.get(i), 
-					subGroupWeights.get(groupWeightsKeyset.get(groupWeightsKeyset.size()-1))/subGroupWeights.get(groupWeightsKeyset.get(i)));
-		}
-		subGroupWeights.put(groupWeightsKeyset.get(groupWeightsKeyset.size()-1), 1.0);
-	}
-
-	
 	//Setters
 	/**
 	 * This setter methods does four things :-
@@ -139,9 +81,8 @@ public class MakeArff {
 	 */
 	@SuppressWarnings("unchecked")
 	public void setLabels(List<String> labs, List<Region> randRegs){
-		HashMap<String,Integer> subgroupNames = new HashMap<String,Integer>();
+		//HashMap<String,Integer> subgroupNames = new HashMap<String,Integer>();
 		HashMap<String,Integer> labelNames = new HashMap<String,Integer>();
-		int indSG=0;
 		for(String s : labs){
 			String[] labels = s.split(";");
 			// Now generate the sub group name
@@ -149,24 +90,20 @@ public class MakeArff {
 			for(String sname : labels){
 				subgroupSB.append(sname);subgroupSB.append("&");
 			}
-			//String subgroup = labels[0]+"&"+labels[1];
 			String subgroup = subgroupSB.toString();
-			if(!subgroupNames.containsKey(subgroup)){
-				subgroupNames.put(subgroup, indSG);
-				indSG++;
-			}
+			subGroupNames.add(subgroup);
 			for(String sname : labels){
 				if(!labelNames.containsKey(sname)){
 					labelNames.put(sname, 1);
 				}
 			}
 			
-			subGroupNames.add(subgroup);
+			subGroupsAtPeaks.add(subgroup);
 		}
 		
 		// Now remove a label that has only one subgroup to it
 		HashMap<String,Integer> tmpLabMap = new HashMap<String,Integer>(); 
-		for(String sname : subgroupNames.keySet()){
+		for(String sname : subGroupNames){
 			for(String piece : sname.split("&")){
 				if(tmpLabMap.containsKey(piece)){
 					tmpLabMap.put(piece,tmpLabMap.get(piece) + 1);
@@ -186,7 +123,7 @@ public class MakeArff {
 		// Now, adjest the indexes of the labels
 		int indLab=0;
 		for(String s : labelNames.keySet()){
-			labelNames.put(s, indLab+indSG+1);
+			labelNames.put(s, indLab+subGroupNames.size()+1);
 			indLab++;
 		}
 		
@@ -201,10 +138,8 @@ public class MakeArff {
 							 "Layer"+"\n");
 		// Now subgroups
 		int index = 0;
-		MapKeyComparator<Integer> comp = new MapKeyComparator<Integer>(subgroupNames);
-		List<String> subGs = comp.getKeyList();
-		Collections.sort(subGs, comp);
-		for(String s : subGs){
+		
+		for(String s : subGroupNames){
 			// Check if this subgroup has parents
 			boolean isRoot = true;
 			for(String labname: labelNames.keySet()){
@@ -213,11 +148,12 @@ public class MakeArff {
 			}
 			if(labelNames.size() == 0)
 				isRoot = true;
-			//If this subgroup is a root add the root tag to all the names in "subGroupNames"
+			//If this subgroup is a root add the root tag to all the names in  subGroupsAtPeaks
 			if(isRoot)
 				addRootTag(s);
 			designBuilder.append(index);designBuilder.append("\t"); // subgroup id
-			designBuilder.append(s+"\t"); // subgroup 
+			String sgNametmp = isRoot ? "Root"+s : s;
+			designBuilder.append(sgNametmp+"\t"); // subgroup 
 			designBuilder.append(1);designBuilder.append("\t"); // subgroup indicator
 			if(!isRoot){
 				String[] assignedLabs = s.split("&");
@@ -244,7 +180,7 @@ public class MakeArff {
 		
 		index++;
 		// Now Labels
-		comp = new MapKeyComparator<Integer>(labelNames);
+		MapKeyComparator<Integer> comp = new MapKeyComparator<Integer>(labelNames);
 		List<String> LABs = comp.getKeyList();
 		Collections.sort(LABs, comp);
 		for(String s : LABs){
@@ -253,10 +189,12 @@ public class MakeArff {
 			designBuilder.append(0);designBuilder.append("\t"); // subgroup indicator
 			designBuilder.append("-"+"\t"); // Assigned labels
 			
-			for(String subS : subgroupNames.keySet()){ 
+			int subSind = 0;
+			for(String subS : subGroupNames){ 
 				if(subS.startsWith(s+"&") || subS.endsWith("&"+s) || subS.contains("&"+s+"&")){
-					designBuilder.append(subgroupNames.get(subS)+","); // Assigned subgroups
+					designBuilder.append(subSind+","); // Assigned subgroups
 				}
+				subSind++;
 			}
 			designBuilder.deleteCharAt(designBuilder.length()-1);
 			designBuilder.append("\t");
@@ -266,15 +204,15 @@ public class MakeArff {
 		designBuilder.deleteCharAt(designBuilder.length()-1);
 		design = designBuilder.toString();
 		
-		// Now add the random regions to peaks and "RootRandom" label to subGroupNames
+		// Now add the random regions to peaks and "RootRandom" label to subGroupsAtPeaks
 		regions.addAll(randRegs);
 		for(Region re : randRegs){
 			peaks.add(re.getMidpoint());
-			subGroupNames.add("RootRandom");
+			subGroupsAtPeaks.add("RootRandom");
 		}
 		
 		// Finally, find the weights for each subgroup
-		for(String s : subGroupNames){
+		for(String s : subGroupsAtPeaks){
 			if(!subGroupWeights.containsKey(s))
 				subGroupWeights.put(s, 1.0);
 			else
@@ -294,11 +232,12 @@ public class MakeArff {
 		
 	}
 	public void addRootTag(String sgName){
-		for(int i=0; i<subGroupNames.size(); i++){
-			if(subGroupNames.get(i).equals(sgName)){
-				subGroupNames.set(i, "Root"+subGroupNames.get(i));
+		for(int i=0; i<subGroupsAtPeaks.size(); i++){
+			if(subGroupsAtPeaks.get(i).equals(sgName)){
+				subGroupsAtPeaks.set(i, "Root"+subGroupsAtPeaks.get(i));
 			}
 		}
+	
 	}
 	public void setPeaks(List<Point> ps){
 		peaks.addAll(ps);
@@ -342,12 +281,6 @@ public class MakeArff {
 		loader.setStringAttributes("");
 		loader.setMissingValue("?");
 		loader.setFieldSeparator("\t");
-		StringBuilder sb = new StringBuilder();
-		for(String s : subGroupNames){
-			sb.append(s);sb.append(",");
-		}
-		sb.deleteCharAt(sb.length()-1);
-		loader.setNominalLabelSpecs(new String[] {sb.toString()});
 		loader.setFile(new File("tmpCounts.mat"));
 		Instances data = loader.getDataSet();
 		
@@ -429,12 +362,7 @@ public class MakeArff {
 		}
 		
 		// Now set labels, design file string, and ranRegs to peaks
-		// Check if we have labels
-		if(ap.hasKey("simple")){
-			arffmaker.setLabelsSimple(labels, ranregs);
-		}else{
-			arffmaker.setLabels(labels, ranregs);
-		}
+		arffmaker.setLabels(labels, ranregs);
 		
 		// Now get K-mer params
 		int kmin = Args.parseInteger(args, "Kmin", 4);
@@ -649,7 +577,7 @@ public class MakeArff {
 				for (int i = 0; i < numK; i++)
 					sb.append("\t" + kmerCounts[i]);
 				sb.deleteCharAt(0);
-				sb.append("\t"+subGroupWeights.get(subGroupNames.get(r))+"\t"+subGroupNames.get(r)+"\n");
+				sb.append("\t"+subGroupWeights.get(subGroupsAtPeaks.get(r))+"\t"+subGroupsAtPeaks.get(r)+"\n");
 				bw.write(sb.toString());
 			}
 			bw.close();

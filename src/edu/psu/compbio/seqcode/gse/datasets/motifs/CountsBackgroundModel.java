@@ -20,7 +20,6 @@ import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.FASTAStream;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
-import edu.psu.compbio.seqcode.gse.utils.stats.Fmath;
 
 /**
  * @author rca
@@ -342,14 +341,15 @@ public class CountsBackgroundModel extends BackgroundModel implements Background
    * @param gen
    * @return
    */
-  public static CountsBackgroundModel modelFromWholeGenome(Genome gen){
+  public static CountsBackgroundModel modelFromWholeGenome(Genome gen, int k){
     ArrayList <Region>chromList = new ArrayList<Region>();
     Iterator<NamedRegion> chroms = new ChromRegionIterator(gen);
     while (chroms.hasNext()) {
       chromList.add(chroms.next());
     }
-    return CountsBackgroundModel.modelFromRegionList(gen, chromList);
+    return CountsBackgroundModel.modelFromRegionList(gen, chromList, k);
   } 
+  public static CountsBackgroundModel modelFromWholeGenome(Genome gen){ return modelFromWholeGenome(gen,  DEFAULT_MAX_KMER_LEN);}
   
  
   /**

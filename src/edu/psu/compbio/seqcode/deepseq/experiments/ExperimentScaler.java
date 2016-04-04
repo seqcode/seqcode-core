@@ -136,6 +136,7 @@ public class ExperimentScaler {
 	 */
 	public double scalingRatioByNCIS(List<Float> setA, List<Float> setB, String outputFile){
 		double scalingRatio=1;
+		double totalAtScaling=0;
 		if(setA.size()!=setB.size()){
 			System.err.println("ExperimentScaler is trying to scale lists of two different lengths");
 			System.exit(1);
@@ -157,6 +158,7 @@ public class ExperimentScaler {
         for(PairedCounts pc : counts){
         	cumulA+=pc.x;
         	cumulB+=pc.y;
+        	totalAtScaling = pc.x+pc.y;
         	
         	i++;
         	if(i/numPairs > 0.75 && cumulA>0 && cumulB>0){ //NCIS estimates begin using the lower 3 quartiles of the genome (based on total tags)
@@ -170,9 +172,11 @@ public class ExperimentScaler {
         }
         scalingRatio = currRatio;
         
+        
         /*Scaling plot generation*/
         if(outputFile!=null){
-        	List<Double> totalCounts=new ArrayList<Double>();
+        	//Cumulative ratio vs bin total
+        	List<Double> bintotals=new ArrayList<Double>();
             List<Double> ratios=new ArrayList<Double>();
             cumulA=0; cumulB=0;
         	for(PairedCounts pc : counts){
@@ -180,20 +184,48 @@ public class ExperimentScaler {
             	cumulB+=pc.y;
             	if(cumulA>0 && cumulB>0){
             		Double ratio  = (cumulA / cumulB); 
-            		totalCounts.add(pc.x+pc.y);
+            		bintotals.add(pc.x+pc.y);
             		ratios.add(ratio);
             	}
         	}
-	        Matrix dataToPlot = new Matrix(totalCounts.size(),2);
+	        Matrix dataToPlot = new Matrix(bintotals.size(),2);
 	        int count=0;
-			for(int d=0; d<totalCounts.size(); d++){
-				dataToPlot.set(count, 0, totalCounts.get(d));
+			for(int d=0; d<bintotals.size(); d++){
+				dataToPlot.set(count, 0, bintotals.get(d));
 				dataToPlot.set(count, 1, ratios.get(d));
 				count++;
 			}
-			//Generate image
+			//Marginal ratios vs bin totals
+			List<Double> bintot=new ArrayList<Double>();
+			List<Double> mratios=new ArrayList<Double>();
+			for(int x=0; x<counts.size(); x++){
+				PairedCounts pc = counts.get(x);
+				if(pc.x>0 || pc.y>0){
+					double currA=pc.x, currB=pc.y;
+					double currTot=pc.x+pc.y;
+					while(x<counts.size()-1 && (counts.get(x+1).x + counts.get(x+1).y)==currTot){
+						x++;
+						pc = counts.get(x);
+						currA+=pc.x; 
+						currB+=pc.y;
+					}
+					bintot.add(currTot);
+					mratios.add(currA/currB);
+				}
+			}
+			Matrix dataToPlot2 = new Matrix(bintot.size(),2);
+	        count=0;
+			for(int d=0; d<bintot.size(); d++){
+				dataToPlot2.set(count, 0, bintot.get(d));
+				dataToPlot2.set(count, 1, mratios.get(d));
+				count++;
+			}
+			
+			//Generate images
 			ScalingPlotter plotter = new ScalingPlotter(outputFile+" NCIS plot");
-			plotter.saveXYplot(dataToPlot, "Total Tag Count", "Estimated Scaling Ratio", outputFile+".NCIS_scaling.png", true);
+			plotter.saveXYplot(dataToPlot, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Cumulative Count Scaling Ratio", outputFile+".NCIS_scaling-ccr.png", true);
+			ScalingPlotter plotter2 = new ScalingPlotter(outputFile+" NCIS plot");
+			plotter2.saveXYplot(dataToPlot2, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Marginal Signal/Control Ratio", outputFile+".NCIS_scaling-marginal.png", true);
         }
         
 		return(scalingRatio);
@@ -410,16 +442,21 @@ public class ExperimentScaler {
 		 * @param outFilename - String
 		 * @param rasterImage - boolean
 		 */
-		private void saveXYplot(Matrix datapoints, String xName, String yName, String outFilename, boolean rasterImage){
+		private void saveXYplot(Matrix datapoints, double scalingTotal, double scalingRatio, String xName, String yName, String outFilename, boolean rasterImage){
 			this.setWidth(800);
 			this.setHeight(800);
-			this.setXLogScale(true);
-			this.setYLogScale(true);
 			this.addDataset("other", datapoints, new Color(75,75,75,80), 3);
 			this.setXAxisLabel(xName);
 			this.setYAxisLabel(yName);
+			this.setXLogScale(true);
+			this.setYLogScale(true);
 			this.setXRangeFromData();
 			this.setYRangeFromData();
+			if(raxis.getRange().getLowerBound() >0.1){
+			    raxis.setLowerBound(0.1);
+			}
+			this.addDomainMarker(scalingTotal);			
+			this.addRangeMarker(scalingRatio);
 			
 			//Set the tick units according to the range
 			double xUpper = daxis.getRange().getUpperBound();
@@ -428,6 +465,7 @@ public class ExperimentScaler {
 	    		((NumberAxis)daxis).setTickUnit(new NumberTickUnit(5));
 	    	double yUpper = raxis.getRange().getUpperBound();
 			double yLower = raxis.getRange().getLowerBound();
+
 	    	if(raxis instanceof org.jfree.chart.axis.NumberAxis)
 	    		((NumberAxis)raxis).setTickUnit(new NumberTickUnit(5));
 	    	

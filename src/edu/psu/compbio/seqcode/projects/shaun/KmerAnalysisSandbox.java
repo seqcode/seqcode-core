@@ -16,22 +16,18 @@ import java.util.regex.Pattern;
 
 import edu.psu.compbio.seqcode.genome.Genome;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
-import edu.psu.compbio.seqcode.genome.Species;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.CountsBackgroundModel;
-import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScoreProfile;
-import edu.psu.compbio.seqcode.gse.gsebricks.verbs.motifs.WeightMatrixScorer;
-import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
-import edu.psu.compbio.seqcode.gse.utils.NotFoundException;
-import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.RealValuedHistogram;
+import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 
 public class KmerAnalysisSandbox {
 
+	private GenomeConfig gConfig;
 	private Genome gen;
 	private int k=6;
 	private int win=200;
@@ -46,6 +42,7 @@ public class KmerAnalysisSandbox {
 	private double negPseudoCount=1;
 	private int numRand=100000; //Only used if simulating or randomly picking regions
 	private int histoBinSize=5;
+	private CountsBackgroundModel backCounts = null;
         	
 	public static void main(String[] args) throws IOException, ParseException {
 		ArgParser ap = new ArgParser(args);
@@ -61,7 +58,8 @@ public class KmerAnalysisSandbox {
                                "Options:\n" +
                                "\t--seq <genome fasta seq directory>\n" +
                                "\t--model <ranked kmer file>\n" +
-                               "\t--neg <filename or random>\n" +
+                               "\t--neg <filename/random/back>\n" +
+                               "\t--backcounts <counts background model that includes appropriate kmer counts>\n" +
                                "\t--numrand <number of random positions if random negative selected)\n" +
                                "\t--out <output filename>\n" +
                                "\t--rankthres <threshold for kmer matching>\n" +
@@ -74,16 +72,22 @@ public class KmerAnalysisSandbox {
                                "\n");
             
         }else{
-	        Genome currgen = gConfig.getGenome();
 	        int k = ap.hasKey("k") ? new Integer(ap.getKeyValue("k")).intValue():6;
 	        int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():200;
 	        String peaksFile = ap.hasKey("peaks") ? ap.getKeyValue("peaks") : null;
 	        String neg = ap.hasKey("neg") ? ap.getKeyValue("neg") : null;
+	        String backfile = null; 
+	        CountsBackgroundModel back = null;
 	        String out = ap.hasKey("out") ? ap.getKeyValue("out") : "out";
 	        int rankThres = ap.hasKey("rankthres") ? new Integer(ap.getKeyValue("rankthres")).intValue():-1;
 	        int numrand = ap.hasKey("numrand") ? new Integer(ap.getKeyValue("numrand")).intValue():-1;
 	        
-	        KmerAnalysisSandbox analyzer = new KmerAnalysisSandbox(currgen, k, win, peaksFile);
+	        if(ap.hasKey("backcounts")){
+	        	backfile = ap.getKeyValue("backcounts");
+	        	back = BackgroundModelIO.parseCountsBackgroundModel(backfile, gConfig.getGenome());
+	        }
+	        
+	        KmerAnalysisSandbox analyzer = new KmerAnalysisSandbox(gConfig, k, win, peaksFile, back);
 	        analyzer.setNumRand(numrand);
 	        
 	        KmerModel model = null;
@@ -115,14 +119,16 @@ public class KmerAnalysisSandbox {
         }                               
 	}
 
-	public KmerAnalysisSandbox(Genome g, int k, int win, String pFile){
-		gen = g;
+	public KmerAnalysisSandbox(GenomeConfig g, int k, int win, String pFile, CountsBackgroundModel back){
+		gConfig=g;
+		gen = gConfig.getGenome();
 		this.k=k;
 		this.win=win;
 		posRegions = RegionFileUtilities.loadRegionsFromPeakFile(gen, pFile, win);
 		posPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, pFile, win);
 		posLines = RegionFileUtilities.loadLinesFromFile(pFile);
-		posSeq = RegionFileUtilities.getSequencesForRegions(posRegions, null);
+		posSeq = RegionFileUtilities.getSequencesForRegions(posRegions, gConfig.getSequenceGenerator());
+		backCounts = back;
 	}
 	
 	//Accessors
@@ -137,16 +143,23 @@ public class KmerAnalysisSandbox {
 		List<Kmer> kmerList = new ArrayList<Kmer>();
 		System.err.println("Estimating Kmer models");
 		
-		loadNegativeRegions(negative);
-		
 		//Enumerate all k-mers in positive and negative sequences. 
 		//Reuse BackgroundModel code for this purpose
+		CountsBackgroundModel negCounts;
+		if(negative.equals("back") && backCounts!=null){
+			System.err.println("Loading negative kmers from background file");
+			negCounts = backCounts;
+		}else{
+			loadNegativeRegions(negative);
+			System.err.println("Counting kmers in negative sequences");
+			negCounts = CountsBackgroundModel.modelFromSeqList(gen, negSeq, k);
+			negCounts.degenerateStrands();
+		}
+		
 		System.err.println("Counting kmers in positive sequences");
 		CountsBackgroundModel posCounts = CountsBackgroundModel.modelFromSeqList(gen, posSeq, k);
 		posCounts.degenerateStrands();
-		System.err.println("Counting kmers in negative sequences");
-		CountsBackgroundModel negCounts = CountsBackgroundModel.modelFromSeqList(gen, negSeq, k);
-		negCounts.degenerateStrands();
+		
 		
 		//Go through all k-mers, and calculate pos/neg enrichment
 		System.err.println("Positive vs negative enrichment");
@@ -156,14 +169,14 @@ public class KmerAnalysisSandbox {
 			String revkmer = SequenceUtils.reverseComplement(kmer);
 			if(RegionFileUtilities.seq2int(kmer) <= RegionFileUtilities.seq2int(revkmer)){//Count each k-mer once only
 				posTotal += posCounts.getKmerCount(kmer);
-				negTotal += negCounts.getKmerCount(kmer)+negPseudoCount;
+				negTotal += negCounts.getKmerCount(kmer)>0 ? negCounts.getKmerCount(kmer) : negPseudoCount;
 			}
 		}
 		for(String kmer : kmers){
 			String revkmer = SequenceUtils.reverseComplement(kmer);
 			if(RegionFileUtilities.seq2int(kmer) <= RegionFileUtilities.seq2int(revkmer)){//Count each k-mer once only
 			    double posFreq = (double)(posCounts.getKmerCount(kmer)/posTotal); 
-			    double negFreq = (double)((negCounts.getKmerCount(kmer)+negPseudoCount)/negTotal); 
+			    double negFreq = (double)((negCounts.getKmerCount(kmer)>0 ? negCounts.getKmerCount(kmer) : negPseudoCount)/negTotal); 
 			    double eScore = posFreq/negFreq;
 			    
 			    Kmer currK = new Kmer(kmer, eScore, posFreq, negFreq);
@@ -489,11 +502,11 @@ public class KmerAnalysisSandbox {
 			if(negative==null || negative.equals("random")){
 				negRegions = RegionFileUtilities.randomRegionPick(gen, posRegions, numRand, win);
 				negPeaks = RegionFileUtilities.regions2midpoints(negRegions);
-				negSeq = RegionFileUtilities.getSequencesForRegions(negRegions, null);
+				negSeq = RegionFileUtilities.getSequencesForRegions(negRegions, gConfig.getSequenceGenerator());
 			}else{
 				negRegions = RegionFileUtilities.loadRegionsFromPeakFile(gen, negative, win);
 				negPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, negative, win);
-				negSeq = RegionFileUtilities.getSequencesForRegions(negRegions, null);
+				negSeq = RegionFileUtilities.getSequencesForRegions(negRegions, gConfig.getSequenceGenerator());
 			}
 			negLoaded=true;
 		}
