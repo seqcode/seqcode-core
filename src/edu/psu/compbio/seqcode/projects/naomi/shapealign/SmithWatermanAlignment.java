@@ -56,17 +56,27 @@ public class SmithWatermanAlignment {
 	
 	public void loadData(){
 		
-		List<Region> regions = new ArrayList<Region>();
+		List<Region> region = new ArrayList<Region>();
 		for(Point p: points){
-			regions.add(p.expand(window/2));
+			region.add(p.expand(window/2));
 		}
 		
 		//merge overlapping regions and set back to the original size				
 		List<Region> resizedRegions = new ArrayList<Region>();		
-		for (Region reg : Region.mergeRegions(regions)){ //mergeRegions is a static method	
+		for (Region reg : Region.mergeRegions(region)){ //mergeRegions is a static method	
 			resizedRegions.add(reg.resize(window-1));
 		}		
 		setRegions(resizedRegions);
+		
+		System.out.println("from resized Regions");
+		for (Region reg : resizedRegions){
+			System.out.println(reg.getLocationString());
+		}
+		System.out.println("from regions");
+		for (Region reg : regions){
+			System.out.println(reg.getLocationString());
+		}
+		
 		
 		//get StrandedBaseCount list for each regions per sample
 		Map<Sample, Map<Region,List<StrandedBaseCount>>> sampleCountsMap = new HashMap<Sample, Map<Region,List<StrandedBaseCount>>>();
@@ -110,9 +120,15 @@ public class SmithWatermanAlignment {
 //		SmithWatermanAlignment pairAlign;
 		for (Sample sample : countsArray.keySet()){
 //			for (int i = 0; i <regions.size();i++){		
+			
+			System.out.println("in excute shapeAlign");
+			System.out.println(countsArray.keySet());
+			System.out.println(countsArray.get(0));
+			
 			for (int i = 0; i <1 ; i++){	
 				for (int j = i+1; j <regions.size();j++){
 					SmithWatermanAlignment pairAlign = new SmithWatermanAlignment(gconfig, econfig, manager);
+					// giving error below ; null pointer
 					pairAlign.smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));
 				}
 			}
@@ -122,6 +138,8 @@ public class SmithWatermanAlignment {
 	public void smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
 		
 		//get counts
+		
+		// giving error below ; null pointer
 		float [][] regACounts = countsArray.get(sample).get(regA);
 		float [][] regBCounts = countsArray.get(sample).get(regB);
 		
