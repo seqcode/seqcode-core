@@ -105,6 +105,20 @@ public class SmithWatermanAlignment {
 		}
 	}
 	
+	public void excuteShapeAlign(){
+		
+//		SmithWatermanAlignment pairAlign;
+		for (Sample sample : countsArray.keySet()){
+//			for (int i = 0; i <regions.size();i++){		
+			for (int i = 0; i <1 ; i++){	
+				for (int j = i+1; j <regions.size();j++){
+					SmithWatermanAlignment pairAlign = new SmithWatermanAlignment(gconfig, econfig, manager);
+					pairAlign.smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));
+				}
+			}
+		}				
+	}
+	
 	public void smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
 		
 		//get counts
@@ -216,20 +230,6 @@ public class SmithWatermanAlignment {
 			System.out.println(alignedRegB[i][0]+" : "+alignedRegB[i][1]);
 		}		
 	}
-
-	public void excuteShapeAlign(){
-		
-//		SmithWatermanAlignment pairAlign;
-		for (Sample sample : countsArray.keySet()){
-//			for (int i = 0; i <regions.size();i++){		
-			for (int i = 0; i <1 ; i++){	
-				SmithWatermanAlignment pairAlign = null;
-				for (int j = i+1; j <regions.size();j++)
-					pairAlign.smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));
-			}
-		}				
-	}
-
 	
 	public static void main(String[] args){
 		
@@ -247,6 +247,7 @@ public class SmithWatermanAlignment {
 		profile.setPoints(points);
 		profile.setWidth(win);
 		profile.loadData();
+		profile.excuteShapeAlign();
 	
 	}
 
