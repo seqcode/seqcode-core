@@ -94,9 +94,9 @@ public class SmithWatermanAlignment {
 				}				
 				for (StrandedBaseCount hits: sampleCountsMap.get(sample).get(reg)){
 					if (hits.getStrand()=='+'){
-						sampleCounts[hits.getCoordinate()][1] = hits.getCount();
+						sampleCounts[hits.getCoordinate()][0] = hits.getCount();
 					}else{
-						sampleCounts[hits.getCoordinate()][2] = hits.getCount();
+						sampleCounts[hits.getCoordinate()][1] = hits.getCount();
 					}
 				}
 				regionCounts.put(reg, sampleCounts);
