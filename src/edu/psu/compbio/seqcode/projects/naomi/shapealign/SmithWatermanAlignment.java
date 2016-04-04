@@ -45,9 +45,11 @@ public class SmithWatermanAlignment {
 		manager = man;
 	}
 	
+	// setters
 	public void setPoints(List<Point> p){points = p;}
 	public void setRegions(List<Region> reg){regions = reg;} 
 	public void setWidth(int w){window = w;}
+	public void setCountsArray(Map<Sample, Map<Region,float[][]>> sampleCounts){countsArray = sampleCounts;}
 	
 	public float computeScore(float aVal, float bVal){
 		float score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
@@ -67,11 +69,7 @@ public class SmithWatermanAlignment {
 			resizedRegions.add(reg.resize(window-1));
 		}		
 		setRegions(resizedRegions);
-		
-		System.out.println("from resized Regions");
-		for (Region reg : resizedRegions){
-			System.out.println(reg.getLocationString());
-		}
+
 		System.out.println("from regions");
 		for (Region reg : regions){
 			System.out.println(reg.getLocationString());
@@ -80,6 +78,7 @@ public class SmithWatermanAlignment {
 		
 		//get StrandedBaseCount list for each regions per sample
 		Map<Sample, Map<Region,List<StrandedBaseCount>>> sampleCountsMap = new HashMap<Sample, Map<Region,List<StrandedBaseCount>>>();
+		Map<Sample, Map<Region,float[][]>> sampleCountsArray = new HashMap<Sample, Map<Region,float[][]>>();
 		
 		for (ExperimentCondition condition : manager.getConditions()){		
 			for (ControlledExperiment rep: condition.getReplicates()){				
@@ -111,8 +110,9 @@ public class SmithWatermanAlignment {
 				}
 				regionCounts.put(reg, sampleCounts);
 			}
-			countsArray.put(sample, regionCounts);
+			sampleCountsArray.put(sample, regionCounts);
 		}
+		setCountsArray(sampleCountsArray);
 	}
 	
 	public void excuteShapeAlign(){
