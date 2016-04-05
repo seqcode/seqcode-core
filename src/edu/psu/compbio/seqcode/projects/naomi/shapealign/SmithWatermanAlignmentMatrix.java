@@ -66,16 +66,16 @@ public class SmithWatermanAlignmentMatrix {
 		//initialization of M[][] & I[][] & H[][] matrix
 		float [][] M = new float [window+1][window+1];
 		float [][] I = new float [window+1][window+1];
-		for (int i = 0 ; i < window; i++){
-			for (int j = 0 ; j < window; j++){
+		for (int i = 0 ; i <= window; i++){
+			for (int j = 0 ; j <= window; j++){
 				M[i][j] = 0;
 				I[i][j] = 0;
 			}
 		}
 	
 		//fill in M[i][j] & I[i][j] matrix
-		for (int i = 1 ; i <window; i++){
-			for (int j = 1 ; j <window ; j++){
+		for (int i = 1 ; i <= window; i++){
+			for (int j = 1 ; j <= window ; j++){
 				float mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
 						+ computeScore(regACounts[i-1][1], regBCounts[i-1][1]);
 			
@@ -97,8 +97,8 @@ public class SmithWatermanAlignmentMatrix {
 		}
 		
 		//test
-		for (int i =0; i <window; i++){
-			for (int j = 0; j <window; j++){
+		for (int i =0; i <20; i++){
+			for (int j = 0; j <20; j++){
 				System.out.print(M[i][j]+" ");
 			}
 			System.out.print("\n");
@@ -136,6 +136,8 @@ public class SmithWatermanAlignmentMatrix {
 				y_coord = window;
 			}
 		}
+		
+		System.out.print("max score is "+maxScore+" x coord is "+x_coord+" y coord is "+y_coord);
 		
 		// back track to reconstruct the path
 		float currentScore = maxScore;
