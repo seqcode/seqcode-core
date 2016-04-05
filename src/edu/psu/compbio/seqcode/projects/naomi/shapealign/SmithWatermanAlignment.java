@@ -109,11 +109,13 @@ public class SmithWatermanAlignment {
 					}
 				}
 				regionCounts.put(reg, sampleCounts);
+				
+				//test
+				System.out.println(reg.getLocationString());
 			}
 			
 			//printing to check the content
-			System.out.println(sample);
-			System.out.println(regionCounts);
+			System.out.println(sample.getName());
 			
 			sampleCountsArray.put(sample, regionCounts);
 		}
@@ -127,8 +129,8 @@ public class SmithWatermanAlignment {
 //			for (int i = 0; i <regions.size();i++){		
 			
 			System.out.println("in excute shapeAlign");
-			System.out.println(countsArray.keySet());
-			System.out.println(countsArray.get(0));
+			System.out.println(sample.getName());
+			System.out.println(countsArray.get(sample).keySet());
 			
 			for (int i = 0; i <1 ; i++){	
 				for (int j = i+1; j <regions.size();j++){
