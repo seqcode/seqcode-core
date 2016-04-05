@@ -77,7 +77,6 @@ public class SmithWatermanAlignment {
 		for (ExperimentCondition condition : manager.getConditions()){		
 			for (ControlledExperiment rep: condition.getReplicates()){				
 				Map<Region,List<StrandedBaseCount>> regionCounts =  new HashMap<Region,List<StrandedBaseCount>>();				
-//				for (Region reg : resizedRegions){
 				for (Region reg : regions){
 					regionCounts.put(reg, rep.getSignal().getBases(reg));
 				}
@@ -113,24 +112,12 @@ public class SmithWatermanAlignment {
 	
 	public void excuteShapeAlign(){
 		
-//		SmithWatermanAlignment pairAlign;
 		for (Sample sample : countsArray.keySet()){
 //			for (int i = 0; i <regions.size();i++){		
 			
-			System.out.println("in excute shapeAlign");
-			System.out.println(sample.getName());
-			System.out.println(countsArray.get(sample).keySet());
-			
 			for (int i = 0; i <1 ; i++){	
-				for (int j = i+1; j <regions.size();j++){
-//					SmithWatermanAlignment pairAlign = new SmithWatermanAlignment(gconfig, econfig, manager);
-					
-					System.out.println(regions.get(0).getLocationString());
-					
-					// giving error below ; null pointer
-//					pairAlign.smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));
-					smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));
-				}
+				for (int j = i+1; j <regions.size();j++)
+					smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));				
 			}
 		}				
 	}
@@ -138,8 +125,6 @@ public class SmithWatermanAlignment {
 	public void smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
 		
 		//get counts
-		
-		// giving error below ; null pointer
 		float [][] regACounts = countsArray.get(sample).get(regA);
 		float [][] regBCounts = countsArray.get(sample).get(regB);
 		
@@ -170,6 +155,13 @@ public class SmithWatermanAlignment {
 				normRegBRevCounts[window-i-1][1-s] = normRegBCounts[i][s];
 			}
 		}
+		
+		//test
+		for (int i = 0 ; i <50; i++){
+			System.out.println(normRegACounts[i][0]+" : "+normRegBRevCounts[i][0]);
+		}
+		
+		
 		
 		// align using two possible ways
 		SmithWatermanAlignmentMatrix alignOne = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBCounts);
