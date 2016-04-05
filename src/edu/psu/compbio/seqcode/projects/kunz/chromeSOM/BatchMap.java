@@ -127,6 +127,19 @@ public class BatchMap
 		dot = dot/(magN*magD);
 		return dot;
 	}
+	public double cosineSim(Node nope, Node dope)							//Cosine Similarity = (A  B)/(||A||*||B||)
+	{																			//Higher values indicate more similarity (ranges from [-1, 1])
+		double dot = 0;
+		double magN = nope.mag;
+		double magD = dope.mag;
+		
+		for(int i = 0; i < nope.g.length; i++)
+		{
+			dot += (nope.g[i]) * (dope.g[i]);
+		}
+		dot = dot/(magN*magD);
+		return dot;
+	}
 	
 	//Calls iterate methods the number of times dictated by the parameter
 	public void iterater()
@@ -322,6 +335,47 @@ public class BatchMap
 			System.out.print("no way");
 		}
 	}
-	
-	
+	/*public void writeFilePoint()
+	{
+		BufferedWriter b;
+		try 
+		{
+			String g = "Pts ("+xNodes+"x"+yNodes+") , "+(int)sgm+", " + iterations +".txt";
+			System.out.println(g);
+			
+			FileWriter ff = new FileWriter(g,true);
+			b = new BufferedWriter(ff);											//ff set in constructor = the file name of the SOMlander
+			PrintWriter printer = new PrintWriter(b);
+			printer.print("Points:" + xNodes+"x"+yNodes+ "\nSigma:" + sgm +"\n");
+			for(int i = 0; i<yNodes; i++)
+			{
+				for(int j = 0; j<xNodes; j++)
+				{
+					Node node = n.get(j,i);
+					for(int o = 0; o<node.neighborHoods.size(); o++)
+					{
+						double total = 0;
+						if(node.neighborHoods.get(o).size()>0)
+						{
+							for(int p = 0; p<node.neighborHoods.get(o).size(); p++)
+							{
+								total += cosineSim(node, node.neighborHoods.get(o).get(p));
+							}
+							total = total/node.neighborHoods.get(o).size();
+							System.out.print(o+ "\t" + total + "\n");
+							printer.print(o+ "\t" + total + "\n");
+						}
+					}
+				}
+			}
+			printer.print("\n");
+			printer.close();
+		}
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+			System.out.print("no way");
+		}
+	}
+	*/
 }

@@ -12,24 +12,34 @@ import javax.swing.JPanel;
 public class DrawHex extends JPanel// implements Grid2D
 {
 	private static final long serialVersionUID = 1L;
+	public double gini;
 	public int nodes,xs,ys,xNodes,yNodes, maxDataPoints, minDataPoints, colorNum, winW, winH;
 	public ArrayList<Node> coords;
 	public ArrayList<DataPoint> dataPoints;
 	public ArrayList<MiniNode> nodeList;
 	public ArrayList<Color> colors;
 	MiniSystem nodeSystem;
-	public boolean weighting;
+	public boolean weighting, swap;
 	public DrawHex(String s)
 	{
+		swap=false;
+		gini=0;
 		weighting = false;
 		String ffs = System.getProperty("user.dir")+"/"+s;
 		yNodes=0;
 		xNodes=0;
 		reader(ffs);
 		nodes = yNodes*xNodes;
-		
     	colors = new ArrayList<Color>();
     	colorNum=100;
+	}
+	public void swap()
+	{
+		if(swap == true)
+			swap = false;
+		else
+			swap = true;
+		repaint();
 	}
 	public void search(String file)
 	{
@@ -81,9 +91,91 @@ public class DrawHex extends JPanel// implements Grid2D
 			
 		}
 		heatMapping();
+		gini();
 		repaint();
 		
 	}
+	public void gini()
+	{
+		//inequality
+		double[] unequal = new double[maxDataPoints+1];
+		for(int i=0; i<nodeList.size(); i++)
+		{
+			int o = nodeList.get(i).counting.size();
+			unequal[o]++;
+		}
+		
+		int uETotalWealth = 0;
+		for(int i=0; i<unequal.length; i++)
+		{
+			uETotalWealth += i*unequal[i];
+		}
+		
+		double[] uECumPop = new double[maxDataPoints+1];
+		double[] uECumWealth = new double[maxDataPoints+1];
+		uECumPop[0] = unequal[0]/nodeList.size();
+		uECumWealth[0] = 0;
+		for(int i = 1; i<unequal.length; i++)
+		{
+			uECumPop[i] = unequal[i]/nodeList.size() + uECumPop[i-1];
+			uECumWealth[i] = (unequal[i]*i)/uETotalWealth + uECumWealth[i-1];
+		}
+		
+		//equality baseline
+		int mdp = (int) (nodeList.get(0).dataPoints.size());
+		for(int i = 0; i<nodeList.size(); i++)
+		{
+			if(nodeList.get(i).dataPoints.size()>mdp)
+				mdp = (int) (nodeList.get(i).dataPoints.size());
+		}
+		double[] equal = new double[mdp+1];
+		for(int i=0; i<nodeList.size(); i++)
+		{
+			int o = nodeList.get(i).dataPoints.size();
+			equal[o]++;
+		}
+		
+		int eQTotalWealth = 0;
+		for(int i=0; i<equal.length; i++)
+		{
+			eQTotalWealth += i*equal[i];
+		}
+		
+		double[] eQCumPop = new double[mdp+1];
+		double[] eQCumWealth = new double[mdp+1];
+		eQCumPop[0] = equal[0]/nodeList.size();
+		eQCumWealth[0] = 0;
+		for(int i = 1; i<equal.length; i++)
+		{
+			eQCumPop[i] = equal[i]/nodeList.size() + eQCumPop[i-1];
+			eQCumWealth[i] = (equal[i]*i)/eQTotalWealth + eQCumWealth[i-1];
+		}
+		
+		//Lorenz area
+		double lArea = 0;
+		for(int i=0; i<unequal.length-1; i++)
+		{
+			for(int j=0; j<unequal.length-1; j++)
+			{
+				lArea += ((uECumPop[i]*uECumWealth[i]) + (uECumPop[i+1]*uECumWealth[i+1]))/2 ;
+			}
+		}
+		
+		//Equaliy area
+		double eArea = 0;
+		for(int i=0; i<equal.length-1; i++)
+		{
+			for(int j=0; j<equal.length-1; j++)
+			{
+				eArea += ((eQCumPop[i]*eQCumWealth[i]) + (eQCumPop[i+1]*eQCumWealth[i+1]))/2 ;
+			}
+		}
+				
+		//difference in area
+		double dArea = eArea - lArea;
+		gini = dArea / (lArea + dArea);
+	}
+	
 	public ArrayList<String> inputRead(String file)
 	{
 		ArrayList<String> StringMat = new ArrayList<String>();
@@ -125,6 +217,7 @@ public class DrawHex extends JPanel// implements Grid2D
 	    maxDataPoints = 0;
 	    minDataPoints = 0;
 		heatMapping();
+		gini();
 		repaint();
 	}
 	public void reader(String f)
@@ -181,11 +274,17 @@ public class DrawHex extends JPanel// implements Grid2D
 	    {
 	    	g.setColor(nodeList.get(i).color);
 	    	g.fillPolygon(nodeList.get(i).p);
-	    	/*g.setColor(Color.BLACK);
-	    	g.setFont(new Font("Serif", 5, 9));
-	    	g.drawString(""+nodeList.get(i).counting.size(),nodeList.get(i).xLoc, nodeList.get(i).yLoc);
-	    	g.drawPolygon(nodeList.get(i).p);*/
+	    	if(swap)
+	    	{
+	    		g.setColor(Color.BLACK);
+		    	g.setFont(new Font("Serif", 5, 9));
+		    	g.drawString(""+nodeList.get(i).counting.size(),nodeList.get(i).xLoc, nodeList.get(i).yLoc);
+		    	g.drawPolygon(nodeList.get(i).p);
+	    	}
 	    }
+	    g.setColor(Color.BLACK);
+    	g.setFont(new Font("Serif", 5, 9));
+    	g.drawString("Gini = "+gini, getWidth()-200, 15);
 	}
 	public void nodeBuild(int winW, int winH)
 	{  
