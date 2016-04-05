@@ -110,6 +110,11 @@ public class SmithWatermanAlignment {
 				}
 				regionCounts.put(reg, sampleCounts);
 			}
+			
+			//printing to check the content
+			System.out.println(sample);
+			System.out.println(regionCounts);
+			
 			sampleCountsArray.put(sample, regionCounts);
 		}
 		setCountsArray(sampleCountsArray);
