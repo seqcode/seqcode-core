@@ -111,6 +111,30 @@ public class SmithWatermanAlignment {
 		setCountsArray(sampleCountsArray);
 	}
 	
+	public void excuteShapeAlign(){
+		
+//		SmithWatermanAlignment pairAlign;
+		for (Sample sample : countsArray.keySet()){
+//			for (int i = 0; i <regions.size();i++){		
+			
+			System.out.println("in excute shapeAlign");
+			System.out.println(sample.getName());
+			System.out.println(countsArray.get(sample).keySet());
+			
+			for (int i = 0; i <1 ; i++){	
+				for (int j = i+1; j <regions.size();j++){
+//					SmithWatermanAlignment pairAlign = new SmithWatermanAlignment(gconfig, econfig, manager);
+					
+					System.out.println(regions.get(0).getLocationString());
+					
+					// giving error below ; null pointer
+//					pairAlign.smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));
+					smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));
+				}
+			}
+		}				
+	}
+	
 	public void smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
 		
 		//get counts
@@ -225,28 +249,6 @@ public class SmithWatermanAlignment {
 		}		
 	}
 	
-	public void excuteShapeAlign(){
-		
-//		SmithWatermanAlignment pairAlign;
-		for (Sample sample : countsArray.keySet()){
-//			for (int i = 0; i <regions.size();i++){		
-			
-			System.out.println("in excute shapeAlign");
-			System.out.println(sample.getName());
-			System.out.println(countsArray.get(sample).keySet());
-			
-			for (int i = 0; i <1 ; i++){	
-				for (int j = i+1; j <regions.size();j++){
-					SmithWatermanAlignment pairAlign = new SmithWatermanAlignment(gconfig, econfig, manager);
-					
-					System.out.println(regions.get(0).getLocationString());
-					
-					// giving error below ; null pointer
-					pairAlign.smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));
-				}
-			}
-		}				
-	}
 	
 	public static void main(String[] args){
 		
