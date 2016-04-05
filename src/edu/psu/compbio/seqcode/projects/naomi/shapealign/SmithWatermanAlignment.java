@@ -70,12 +70,6 @@ public class SmithWatermanAlignment {
 		}		
 		setRegions(resizedRegions);
 
-		System.out.println("from regions");
-		for (Region reg : regions){
-			System.out.println(reg.getLocationString());
-		}
-		
-		
 		//get StrandedBaseCount list for each regions per sample
 		Map<Sample, Map<Region,List<StrandedBaseCount>>> sampleCountsMap = new HashMap<Sample, Map<Region,List<StrandedBaseCount>>>();
 		Map<Sample, Map<Region,float[][]>> sampleCountsArray = new HashMap<Sample, Map<Region,float[][]>>();
@@ -83,7 +77,8 @@ public class SmithWatermanAlignment {
 		for (ExperimentCondition condition : manager.getConditions()){		
 			for (ControlledExperiment rep: condition.getReplicates()){				
 				Map<Region,List<StrandedBaseCount>> regionCounts =  new HashMap<Region,List<StrandedBaseCount>>();				
-				for (Region reg : resizedRegions){
+//				for (Region reg : resizedRegions){
+				for (Region reg : regions){
 					regionCounts.put(reg, rep.getSignal().getBases(reg));
 				}
 				sampleCountsMap.put(rep.getSignal(),regionCounts);
@@ -109,13 +104,7 @@ public class SmithWatermanAlignment {
 					}
 				}
 				regionCounts.put(reg, sampleCounts);
-				
-				//test
-				System.out.println(reg.getLocationString());
 			}
-			
-			//printing to check the content
-			System.out.println(sample.getName());
 			
 			sampleCountsArray.put(sample, regionCounts);
 		}
@@ -135,6 +124,9 @@ public class SmithWatermanAlignment {
 			for (int i = 0; i <1 ; i++){	
 				for (int j = i+1; j <regions.size();j++){
 					SmithWatermanAlignment pairAlign = new SmithWatermanAlignment(gconfig, econfig, manager);
+					
+					System.out.println(regions.get(0).getLocationString());
+					
 					// giving error below ; null pointer
 					pairAlign.smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));
 				}
