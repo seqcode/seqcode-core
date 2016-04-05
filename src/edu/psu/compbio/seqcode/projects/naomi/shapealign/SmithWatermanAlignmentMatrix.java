@@ -95,6 +95,17 @@ public class SmithWatermanAlignmentMatrix {
 				I[i][j] = max_I;
 			}
 		}
+		
+		//test
+		for (int i =0; i <window; i++){
+			for (int j = 0; j <window; j++){
+				System.out.print(M[i][j]+" ");
+			}
+			System.out.print("\n");
+		}
+		
+		
+		
 
 		// find the highest value
 		float maxScore = 0;
