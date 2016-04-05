@@ -26,7 +26,7 @@ public class Isochrome
 	{
 		protoNum = 256;
 		epochs = 2000;
-		neighborNumber = 4;
+		neighborNumber = 6;
 		protos = new ArrayList<Prototype>();
 		simMat = new double[0][0];
 	}
@@ -34,7 +34,7 @@ public class Isochrome
 	{
 		populateProtos();
 		System.out.println("Quantizing");
-		vectorQuant();
+		//vectorQuant();
 		pairWise();
 		neighborhood();
 		System.out.println("Graphing");
@@ -46,6 +46,7 @@ public class Isochrome
 	}
 	public void populateProtos()
 	{
+		//String ff = System.getProperty("user.dir")+"/cities1000_dist-matrix.txt";
 		String ff = System.getProperty("user.dir")+"/MatrixLanding.txt";
 		Reader reader = new Reader(ff);
 		protos = reader.matrixReader();

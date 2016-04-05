@@ -12,11 +12,12 @@ public class Matrixer
 	public String file, file2, lander;
 	public String lookup;
 	int[] a, a1;
+	double[][] d;
 	int[][] bigpapa;
 	
 	public Matrixer()
 	{
-		binsize = 50000;
+		binsize = 20000;
 		String ffs = System.getProperty("user.dir")+"/MatrixLanding.txt";
 		lander = ffs;
 		String ff = System.getProperty("user.dir")+"/YeastInteractions-intra.txt";
@@ -190,6 +191,10 @@ public class Matrixer
 	{
 		Matrixer m = new Matrixer();
 		m.matrixReader();
+		if(args[0].equals("norm"))
+		{
+			m.calcExpectedMatrix();
+		}
 		/*for(int i =0; i< m.inter.size();i++)
 		{
 			for(int j = 0; j< m.inter.get(i).g.length;j++)
@@ -198,6 +203,22 @@ public class Matrixer
 			}
 			System.out.print("\n");
 		}*/
+	}
+	public void calcExpectedMatrix()
+	{
+		distanceFunction();
+	}
+	//eij = f(i-j) (ni)(nj)/N
+	public void distanceFunction()
+	{
+		d = new double[bigpapa.length][bigpapa[0].length];
+		for(int i = 0; i< d.length; i++)
+		{
+			for(int j = 0; j<d[i].length; j++)
+			{
+				
+			}
+		}
 	}
 	private class Interaction
 	{

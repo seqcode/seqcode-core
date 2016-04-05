@@ -14,7 +14,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import edu.psu.compbio.seqcode.projects.kunz.chromeSOM.BatchMap;
-import edu.psu.compbio.seqcode.projects.kunz.chromeSOM.Grid;
+import edu.psu.compbio.seqcode.projects.kunz.chromeSOM.BatchTrainer;
 
 
 public class IsoGrid extends JFrame

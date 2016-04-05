@@ -241,6 +241,10 @@ public class WeightMatrix {
     	this.type = type;
     }
     
+    public void setName(String name){
+    	this.name = name;
+    }
+    
     /**
      * Return column i (indexed by A,C,G,T)
      * @param i

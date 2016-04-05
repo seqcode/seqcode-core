@@ -8,16 +8,16 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 
-public class Grid extends JFrame
+public class BatchTrainer extends JFrame
 {
-    static Grid window2;
+    static BatchTrainer window2;
     int winW, winH;
 	public BatchMap m;
 	public DrawHex d;
 	private static final long serialVersionUID = 1L;
 	public ArrayList<String> s;
 	public String find;
-	public Grid(int x, int y, String p)
+	public BatchTrainer(int x, int y, String p)
 	  {
 		 
 		//title the window
@@ -44,9 +44,12 @@ public class Grid extends JFrame
 	 {
 		 JButton search = new JButton("Search");
 	     menubar.add(search);
-		 JButton button = new JButton("Chrome");
+	     JButton view = new JButton("View Swap");
+	     menubar.add(view);
+	     JButton button = new JButton("Chrome");
 	     menubar.add(button);
-     
+	     
+	     
         final JTextField texter = new JTextField("Chrome...", 20);
 	    menubar.add(texter);
 	    menubar.add(Box.createHorizontalGlue());
@@ -68,7 +71,7 @@ public class Grid extends JFrame
             public void actionPerformed(ActionEvent e)
             {
                 //Execute when search is pressed
-            	 String trained = "";
+            	String trained = "";
  	    		JFileChooser chooser = new JFileChooser();
  	    	    FileNameExtensionFilter filter = new FileNameExtensionFilter(
  	    	        "TXT files", "txt");
@@ -83,6 +86,14 @@ public class Grid extends JFrame
  	    		d.search(trained);
             }
         }); 
+	    view.addActionListener(new ActionListener() {
+	    	 
+            public void actionPerformed(ActionEvent e)
+            {
+                //Execute when button is pressed
+                d.swap();
+            }
+        });  
 	 }
 	 public static void main(String[] args)
 	  {
@@ -93,21 +104,25 @@ public class Grid extends JFrame
 			if(args[0].equalsIgnoreCase("tester"))
 			{
 				BatchMap o = new BatchMap(6,6,2,5000); o.go();
-				o = new BatchMap(8,8,2,5000); o.go();
-				o = new BatchMap(10,10,2,5000); o.go();
-				o = new BatchMap(12,12,2,5000); o.go();
-				o = new BatchMap(6,6,3,5000); o.go();
-				o = new BatchMap(8,8,3,5000); o.go();
-				o = new BatchMap(10,10,3,5000); o.go();
-				o = new BatchMap(12,12,3,5000); o.go();
-				o = new BatchMap(6,6,4,5000); o.go();
-				o = new BatchMap(8,8,4,5000); o.go();
-				o = new BatchMap(10,10,4,5000); o.go();
-				o = new BatchMap(12,12,4,5000); o.go();
-				o = new BatchMap(6,6,5,5000); o.go();
-				o = new BatchMap(8,8,5,5000); o.go();
-				o = new BatchMap(10,10,5,5000); o.go();
-				o = new BatchMap(12,12,5,5000); o.go();
+				o = new BatchMap(8,8,2,1000); o.go();
+				o = new BatchMap(10,10,2,1000); o.go();
+				o = new BatchMap(12,12,2,1000); o.go();
+				
+				o = new BatchMap(20,20,3,1000); o.go();
+				o = new BatchMap(8,8,3,1000); o.go();
+				o = new BatchMap(10,10,3,1000); o.go();
+				o = new BatchMap(12,12,3,1000); o.go();
+				o = new BatchMap(20,20,3,5000); o.go();
+				
+				o = new BatchMap(20,20,5,1000); o.go();
+				o = new BatchMap(8,8,5,1000); o.go();
+				o = new BatchMap(10,10,5,1000); o.go();
+				o = new BatchMap(12,12,5,1000); o.go();
+				
+				o = new BatchMap(20,20,10,1000); o.go();
+				o = new BatchMap(8,8,10,1000); o.go();
+				o = new BatchMap(10,10,10,1000); o.go();
+				o = new BatchMap(12,12,10,1000); o.go();
 			}
 	    	if(args[0].equalsIgnoreCase(("train")))
 	    	{
@@ -154,7 +169,7 @@ public class Grid extends JFrame
 	    	    	trained = chooser.getSelectedFile().getName();
 	    	    	//System.out.println("You chose to open this file: " +chooser.getSelectedFile().getName());
 	    	    }
-	    		window2 = new Grid(700,700, trained);
+	    		window2 = new BatchTrainer(700,700, trained);
 	    	    JMenuBar menubar = new JMenuBar();
 	    	    window2.setJMenuBar(menubar);
 	    	    window2.drawGrid(trained);
