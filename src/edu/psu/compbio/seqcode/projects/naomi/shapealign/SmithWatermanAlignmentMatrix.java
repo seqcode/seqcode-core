@@ -81,7 +81,7 @@ public class SmithWatermanAlignmentMatrix {
 			
 				M[i][j] = Math.max(M[i-1][j-1] + mScore, I[i-1][j-1] + mScore);
 			
-				float temp_I[] = new float[3];
+				float temp_I[] = new float[4];
 				temp_I[0] = M[i][j-1] - GAP_OPEN;
 				temp_I[1] = I[i][j-1] - GAP_EXT;
 				temp_I[2] = M[i-1][j] - GAP_OPEN;
