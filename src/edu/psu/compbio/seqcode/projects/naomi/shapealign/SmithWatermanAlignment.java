@@ -166,6 +166,8 @@ public class SmithWatermanAlignment {
 		// align using two possible ways
 		SmithWatermanAlignmentMatrix alignOne = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBCounts);
 		SmithWatermanAlignmentMatrix alignTwo = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBRevCounts);
+		alignOne.buildMatrix();
+		alignTwo.buildMatrix();
 		
 		Stack<Integer> traceBack = new Stack<Integer>();
 		float[][] regBarray = new float[window][2];
