@@ -26,6 +26,7 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.clusterkmerprofile.ClusterProfiles;
 import edu.psu.compbio.seqcode.projects.akshay.utils.MemeER;
+import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 
 public class Discrim {
 	
@@ -61,6 +62,12 @@ public class Discrim {
 	protected double thresold_hills = 0.1;
 	/** Window around peaks to scan for finding motifs */
 	protected int win=150;
+	
+	/** List of all discriminative motifs for all the lables*/ 
+	protected List<WeightMatrix> discrimMotifs = new ArrayList<WeightMatrix>();
+	
+	/** The ROC value of the identified motifs that indicates their significance */
+	protected HashMap<String, Double> discrimMotifsRocs = new HashMap<String,Double>();
 	
 	// K-mer hills clustering parameters
 	/** The number of hills to consider for clustering and motif finding for a given K-mer model */
@@ -123,6 +130,9 @@ public class Discrim {
 		peaks.addAll(RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), peaksFileName, win));
 		regions.addAll(RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), peaksFileName, win));
 	}
+	public void setLabelsAtPeaks(List<String> labsAtPeaks){
+		subGroupsAtPeaks.addAll(labsAtPeaks);
+	}
 	public void setNumKmerClusters(int c){numClus_CLUS = c;}
 	public void setNumClusteringItrs(int itrs){its_CLUS = itrs;}
 	public void setOutbase(String o){outbase=o;}
@@ -156,8 +166,34 @@ public class Discrim {
 				scanner.execute();
 			}
 		}
+
+		// Now print the selected discrim motifs.
+		File motifsTransfac = new File(outdir.getAbsoluteFile()+File.separator+"Discrim_motifs.transfac");
+		FileWriter fw = new FileWriter(motifsTransfac);
+		BufferedWriter bw = new BufferedWriter(fw);
+
+		for(int m =0; m<discrimMotifs.size(); m++){
+			String out = WeightMatrix.printTransfacMatrix(discrimMotifs.get(m),discrimMotifs.get(m).getName());
+			bw.write(out);
+		}
+		bw.close();
+		
+		// Next, print the ROC values
+		File motifsROC = new File(outdir.getAbsoluteFile()+File.separator+"Discrim_motifs_roc.tab");
+		fw = new FileWriter(motifsROC);
+		bw = new BufferedWriter(fw);
+		for(String s : discrimMotifsRocs.keySet()){
+			bw.write(s+"\t"+Double.toString(discrimMotifsRocs.get(s))+"\n");
+		}
+		bw.close();
+		
+		// Finally, draw the motif logos
+		for(WeightMatrix fm : discrimMotifs){
+			File motifFileName = new File(outdir.getAbsoluteFile()+File.separator+fm.getName()+".png");
+			Utils.printMotifLogo(fm, motifFileName, 150, fm.getName(), true);
+		}
 	}
-	
+
 	
 	//Slave methods
 	public void makeOutPutDirs(String out_name){
@@ -273,7 +309,7 @@ public class Discrim {
 							}
 						}
 					}
-					List<WeightMatrix> selectedMotifs = new ArrayList<WeightMatrix>();
+					//List<WeightMatrix> selectedMotifs = new ArrayList<WeightMatrix>();
 					File meme_outFile = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_meme");
 
 					System.err.println("Running meme now");
@@ -281,6 +317,9 @@ public class Discrim {
 					System.err.println("Finished running meme, Now evaluating motif significance");
 					List<WeightMatrix> wm = matrices.car();
 					List<WeightMatrix> fm = matrices.cdr();
+					// Index for all the selected motifs
+					int motInd = 0;
+					
 					if(wm.size()>0){
 						//Evaluate the significance of the discovered motifs
 						double rocScores[] = meme.motifROCScores(wm,seqs,randomSequences);
@@ -290,21 +329,24 @@ public class Discrim {
 								System.err.println("\t"+fm.get(w).getName()+"\t"+ WeightMatrix.getConsensus(fm.get(w))+"\tROC:"+String.format("%.2f",rocScores[w]));
 							}
 							if(rocScores[w] > MemeER.MOTIF_MIN_ROC){
-								selectedMotifs.add(fm.get(w));
+								//selectedMotifs.add(fm.get(w));
+								fm.get(w).setName(kmerModelName+"_"+Integer.toString(motInd));
+								discrimMotifs.add(fm.get(w));
+								discrimMotifsRocs.put(kmerModelName+"_"+Integer.toString(motInd), rocScores[w]);
 							}
 						}
 					}
 
 					// Print ROC values into a file names "Motifs.ROC"
-					File motifs_roc = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_motifs.roc");
-					FileWriter fw = new FileWriter(motifs_roc);
-					BufferedWriter bw = new BufferedWriter(fw);
+					//File motifs_roc = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_motifs.roc");
+					//FileWriter fw = new FileWriter(motifs_roc);
+					//BufferedWriter bw = new BufferedWriter(fw);
 
-					for(int m =0; m<selectedMotifs.size(); m++){
-						String out = WeightMatrix.printTransfacMatrix(selectedMotifs.get(m),"Motif_"+Integer.toString(m));
-						bw.write(out);
-					}
-					bw.close();
+					//for(int m =0; m<selectedMotifs.size(); m++){
+					//	String out = WeightMatrix.printTransfacMatrix(selectedMotifs.get(m),"Motif_"+Integer.toString(m));
+					//	bw.write(out);
+					//}
+					//bw.close();
 				}
 			}
 		
@@ -414,7 +456,7 @@ public class Discrim {
 			
 			List<Pair<Region,Double>> ret = new ArrayList<Pair<Region,Double>>();
 			
-			for(Region r : regions){
+			for(Region r : modelRegions){
 				String seq = seqgen.execute(r).toUpperCase();
 				if(seq.contains("N"))
 					continue;
@@ -536,6 +578,18 @@ public class Discrim {
 			System.err.println("Provide peaks file");
 			System.exit(1);
 		}
+		FileReader fr = new FileReader(peaksfilename);
+		BufferedReader br = new BufferedReader(fr);
+		String line;
+		List<String> labels = new ArrayList<String>();
+		while((line = br.readLine()) != null){
+			if(!line.contains("#")){
+				String[] pieces = line.split("\t");
+				labels.add(pieces[1]);
+			}
+		}
+		br.close();
+		runner.setLabelsAtPeaks(labels);
 		runner.setPeaks(peaksfilename);
 		
 		// Set number of clusters while clustering K-mer profiles
