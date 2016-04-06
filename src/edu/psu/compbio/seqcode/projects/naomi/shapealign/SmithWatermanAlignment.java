@@ -237,22 +237,33 @@ public class SmithWatermanAlignment {
 		}
 		
 		System.out.println("before alignment reg A");
-		for (int i = 0; i < normRegACounts.length; i++){
-			System.out.println(normRegACounts[i][0]+" : "+normRegACounts[i][1]);
-		}
-		System.out.println("before alignment reg B");
-		for (int i = 0; i < regBarray.length; i++){
-			System.out.println(regBarray[i][0]+" : "+regBarray[i][1]);
-		}				
+		for (int i = 0; i < normRegACounts.length; i++)
+			System.out.print(normRegACounts[i][0]+",");
+		for (int i = 0; i < normRegACounts.length; i++)
+			System.out.print(normRegACounts[i][1]+",");	
+		System.out.println();
 		
-		System.out.println("aglined reg A");
-		for (int i = 0; i < alignedRegA.length; i++){
-			System.out.println(alignedRegA[i][0]+" : "+alignedRegA[i][1]);
-		}
-		System.out.println("aglined reg B");
-		for (int i = 0; i < alignedRegB.length; i++){
-			System.out.println(alignedRegB[i][0]+" : "+alignedRegB[i][1]);
-		}		
+		System.out.println("before alignment reg B");
+		for (int i = 0; i < regBarray.length; i++)
+			System.out.print(regBarray[i][0]+",");
+		for (int i = 0; i < regBarray.length; i++)
+			System.out.print(regBarray[i][1]+",");	
+		System.out.println();
+		
+		System.out.println("aligned reg A");
+		for (int i = 0; i < alignedRegA.length; i++)
+			System.out.print(alignedRegA[i][0]+",");
+		for (int i = 0; i < alignedRegA.length; i++)
+			System.out.print(alignedRegA[i][1]+",");	
+		System.out.println();
+
+		System.out.println("aligned reg B");
+		for (int i = 0; i < alignedRegB.length; i++)
+			System.out.print(alignedRegB[i][0]+",");
+		for (int i = 0; i < alignedRegB.length; i++)
+			System.out.print(alignedRegB[i][1]+",");	
+		System.out.println();
+		
 	}
 	
 	

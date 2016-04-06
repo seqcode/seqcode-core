@@ -98,12 +98,12 @@ public class SmithWatermanAlignmentMatrix {
 		}
 		
 		//test
-		for (int i =0; i <20; i++){
-			for (int j = 0; j <20; j++){
-				System.out.print(M[i][j]+" ");
-			}
-			System.out.print("\n");
-		}
+//		for (int i =0; i <20; i++){
+//			for (int j = 0; j <20; j++){
+//				System.out.print(M[i][j]+" ");
+//			}
+//			System.out.print("\n");
+//		}
 		
 		// find the highest value
 		double maxScore = 0;
