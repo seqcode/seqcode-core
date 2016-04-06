@@ -289,7 +289,7 @@ public class SmithWatermanAlignment {
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		ExperimentManager manager = new ExperimentManager(econf);
 			
-		econf.setPerBaseReadLimit(100000);
+//		econf.setPerBaseReadLimit(100000);
 		
 		SmithWatermanAlignment profile = new SmithWatermanAlignment(gconf, econf, manager); 
 		
