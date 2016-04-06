@@ -134,7 +134,7 @@ public class SmithWatermanAlignmentMatrix {
 			}
 		}
 		
-		System.out.print("max score is "+maxScore+" x coord is "+x_coord+" y coord is "+y_coord);
+		System.out.println("max score is "+maxScore+" x coord is "+x_coord+" y coord is "+y_coord);
 		
 		// back track to reconstruct the path
 		float currentScore = maxScore;
@@ -145,7 +145,7 @@ public class SmithWatermanAlignmentMatrix {
 		int i = x_coord;
 		int j = y_coord;
 		
-		while ( i != 1 || j != 1){
+		while ( i != 1 && j != 1){
 
 			float mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
 					+ computeScore(regACounts[i-1][1], regBCounts[i-1][1]);
