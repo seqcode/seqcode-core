@@ -104,9 +104,6 @@ public class SmithWatermanAlignmentMatrix {
 			System.out.print("\n");
 		}
 		
-		
-		
-
 		// find the highest value
 		float maxScore = 0;
 		int x_coord = 0;
@@ -148,7 +145,7 @@ public class SmithWatermanAlignmentMatrix {
 		int i = x_coord;
 		int j = y_coord;
 		
-		while ( i != 0 || j != 0){
+		while ( i != 1 || j != 1){
 
 			float mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
 					+ computeScore(regACounts[i-1][1], regBCounts[i-1][1]);
