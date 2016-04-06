@@ -269,6 +269,11 @@ public class SmithWatermanAlignment {
 	
 	public static void main(String[] args){
 		
+		/***
+		* Must be run with --fixedpb option; set it to high number >1000
+		*
+		***/
+		
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		ExperimentManager manager = new ExperimentManager(econf);
