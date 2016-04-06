@@ -200,8 +200,8 @@ public class SmithWatermanAlignment {
 		
 		float[][] alignedRegA = new float[e_x_coord-s_x_coord+1][2];
 		float[][] alignedRegB = new float[e_y_coord-s_y_coord+1][2];
-		int current_x = e_x_coord;
-		int current_y = e_y_coord;
+		int current_x = e_x_coord-1;
+		int current_y = e_y_coord-1;
 		
 		for (int i = e_x_coord-s_x_coord; i >= 0 ; i--){	
 			
