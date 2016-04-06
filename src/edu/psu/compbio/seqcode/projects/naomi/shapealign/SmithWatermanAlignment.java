@@ -281,16 +281,18 @@ public class SmithWatermanAlignment {
 	public static void main(String[] args){
 		
 		/***
-		* Must be run with --fixedpb option; set it to high number >1000
+		* Needs to be run with --fixedpb option; set it to high number >1000
 		*
 		***/
 		
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
-		ExperimentManager manager = new ExperimentManager(econf);
 			
-		econf.setPerBaseReadLimit(100000);
-//		econf.setPerBaseReadFiltering(false);
+		//setter is not working for some reason
+//		econf.setPerBaseReadLimit(100000);
+		econf.setPerBaseReadFiltering(false);
+		
+		ExperimentManager manager = new ExperimentManager(econf);
 		
 		SmithWatermanAlignment profile = new SmithWatermanAlignment(gconf, econf, manager); 
 		
