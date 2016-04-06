@@ -210,7 +210,7 @@ public class SmithWatermanAlignment {
 			for (int s = 0 ; s <2; s++)
 				alignedRegA[i][s] = normRegACounts[current_x][s];
 			
-			if (traceBackTable.pop() != null && (traceBackTable.pop() == DIAG || traceBackTable.pop() == LEFT))
+			if (traceBackTable.pop() != null || (traceBackTable.pop() == DIAG || traceBackTable.pop() == LEFT))
 				current_x --;			
 		}
 		for (int i = e_y_coord-s_y_coord; i >= 0 ; i--){	
@@ -220,7 +220,7 @@ public class SmithWatermanAlignment {
 			for (int s = 0 ; s <2; s++)
 				alignedRegB[i][s] = normRegACounts[current_y][s];
 			
-			if (traceBackTable.pop() != null && (traceBackTable.pop() == DIAG || traceBackTable.pop() == UP))
+			if (traceBackTable.pop() != null || (traceBackTable.pop() == DIAG || traceBackTable.pop() == UP))
 				current_y --;			
 		}
 		
