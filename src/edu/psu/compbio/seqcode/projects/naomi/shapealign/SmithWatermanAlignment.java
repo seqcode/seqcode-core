@@ -20,6 +20,13 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
+/**
+ * SmithWatermanAlignment: Aligns ChIP-exo reads using affine gaped Smith Waterman local alignment
+ * 
+ * @author naomi yamada
+ *
+ */
+
 public class SmithWatermanAlignment {
 	
 	protected GenomeConfig gconfig;
@@ -114,7 +121,8 @@ public class SmithWatermanAlignment {
 		for (Sample sample : countsArray.keySet()){
 //			for (int i = 0; i <regions.size();i++){		
 			
-			for (int i = 0; i <1 ; i++){	
+//			for (int i = 0; i <1 ; i++){	
+			for (int i = 1; i <1 ; i++){
 				for (int j = i+1; j <regions.size();j++)
 					smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));				
 			}
@@ -202,6 +210,8 @@ public class SmithWatermanAlignment {
 		int current_x = e_x_coord-1;
 		int current_y = e_y_coord-1;
 		
+		// need to re-visit here. this is not working
+		
 		Stack<Integer> xTraceBack = traceBack;
 		
 		for (int i = e_x_coord-s_x_coord; i >= 0 ; i--){	
@@ -216,6 +226,7 @@ public class SmithWatermanAlignment {
 				}
 			}				
 		}
+		
 		
 		Stack<Integer> yTraceBack = traceBack;
 		
@@ -277,6 +288,8 @@ public class SmithWatermanAlignment {
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 		ExperimentManager manager = new ExperimentManager(econf);
+		
+		econf.setPerBaseReadFiltering(false);
 		
 		SmithWatermanAlignment profile = new SmithWatermanAlignment(gconf, econf, manager); 
 		

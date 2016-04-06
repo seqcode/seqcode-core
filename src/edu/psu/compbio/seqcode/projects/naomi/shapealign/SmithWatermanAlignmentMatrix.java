@@ -3,7 +3,7 @@ package edu.psu.compbio.seqcode.projects.naomi.shapealign;
 import java.util.Stack;
 
 /**
- * SmithWatermanAlignmentMatrix: build M and I matrix using SmithWaterman algorithms
+ * SmithWatermanAlignmentMatrix: builds M and I matrix using SmithWaterman algorithms
  * 
  * @author naomi yamada
  *
