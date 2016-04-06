@@ -122,7 +122,7 @@ public class SmithWatermanAlignment {
 //			for (int i = 0; i <regions.size();i++){		
 			
 //			for (int i = 0; i <1 ; i++){	
-			for (int i = 1; i <1 ; i++){
+			for (int i = 1; i <2 ; i++){
 				for (int j = i+1; j <regions.size();j++)
 					smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));				
 			}
@@ -290,6 +290,7 @@ public class SmithWatermanAlignment {
 		ExperimentManager manager = new ExperimentManager(econf);
 			
 //		econf.setPerBaseReadLimit(100000);
+		econf.setPerBaseReadFiltering(false);
 		
 		SmithWatermanAlignment profile = new SmithWatermanAlignment(gconf, econf, manager); 
 		
