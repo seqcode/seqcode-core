@@ -98,15 +98,15 @@ public class SmithWatermanAlignmentMatrix {
 		}
 		
 		//test
-//		for (int i =0; i <20; i++){
-//			for (int j = 0; j <20; j++){
-//				System.out.print(M[i][j]+" ");
-//			}
-//			System.out.print("\n");
-//		}
+		for (int i =0; i <20; i++){
+			for (int j = 0; j <20; j++){
+				System.out.print(M[i][j]+" ");
+			}
+			System.out.print("\n");
+		}
 		
 		// find the highest value
-		double maxScore = 0;
+		double maxScore = MINIMUM_VALUE;
 		int x_coord = 0;
 		int y_coord = 0;
 	
@@ -146,7 +146,7 @@ public class SmithWatermanAlignmentMatrix {
 		int i = x_coord;
 		int j = y_coord;
 		
-		while ( i != 1 || j != 1){
+		while ( i != 1 && j != 1){
 
 			double mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
 					+ computeScore(regACounts[i-1][1], regBCounts[i-1][1]);
