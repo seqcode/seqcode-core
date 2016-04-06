@@ -1,9 +1,8 @@
 package edu.psu.compbio.seqcode.projects.naomi.shapealign;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -35,9 +34,9 @@ public class SmithWatermanAlignment {
 	static final int LEFT = 2;
 	static final int UP = 4;
 	
-	static final float MINIMUM_VALUE = Float.MIN_VALUE;
+	static final double MINIMUM_VALUE = -10000;
 	
-	protected Map<Sample, Map<Region,float[][]>> countsArray = new HashMap<Sample,Map<Region,float[][]>>();
+	protected Map<Sample, Map<Region,double[][]>> countsArray = new HashMap<Sample,Map<Region,double[][]>>();
 	
 	public SmithWatermanAlignment(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
 		gconfig = gcon;
@@ -49,10 +48,10 @@ public class SmithWatermanAlignment {
 	public void setPoints(List<Point> p){points = p;}
 	public void setRegions(List<Region> reg){regions = reg;} 
 	public void setWidth(int w){window = w;}
-	public void setCountsArray(Map<Sample, Map<Region,float[][]>> sampleCounts){countsArray = sampleCounts;}
+	public void setCountsArray(Map<Sample, Map<Region,double[][]>> sampleCounts){countsArray = sampleCounts;}
 	
-	public float computeScore(float aVal, float bVal){
-		float score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
+	public double computeScore(double aVal, double bVal){
+		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
 		return score;		
 	}
 	
@@ -72,7 +71,7 @@ public class SmithWatermanAlignment {
 
 		//get StrandedBaseCount list for each regions per sample
 		Map<Sample, Map<Region,List<StrandedBaseCount>>> sampleCountsMap = new HashMap<Sample, Map<Region,List<StrandedBaseCount>>>();
-		Map<Sample, Map<Region,float[][]>> sampleCountsArray = new HashMap<Sample, Map<Region,float[][]>>();
+		Map<Sample, Map<Region,double[][]>> sampleCountsArray = new HashMap<Sample, Map<Region,double[][]>>();
 		
 		for (ExperimentCondition condition : manager.getConditions()){		
 			for (ControlledExperiment rep: condition.getReplicates()){				
@@ -87,10 +86,10 @@ public class SmithWatermanAlignment {
 		//StrandedBasedCount object contains positive and negative strand separately
 		for (Sample sample : sampleCountsMap.keySet()){
 			
-			Map<Region,float[][]> regionCounts = new HashMap<Region,float[][]>();
+			Map<Region,double[][]> regionCounts = new HashMap<Region,double[][]>();
 			
 			for (Region reg : sampleCountsMap.get(sample).keySet()){			
-				float[][] sampleCounts = new float[window][2];
+				double[][] sampleCounts = new double[window][2];
 				for (int i = 0;i < window;i++){
 					for (int s = 0; s<2; s++)
 						sampleCounts[i][s] = 0;
@@ -125,13 +124,13 @@ public class SmithWatermanAlignment {
 	public void smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
 		
 		//get counts
-		float [][] regACounts = countsArray.get(sample).get(regA);
-		float [][] regBCounts = countsArray.get(sample).get(regB);
+		double [][] regACounts = countsArray.get(sample).get(regA);
+		double [][] regBCounts = countsArray.get(sample).get(regB);
 		
 		//normalize the arrays to set the max value 1
 		//should I be normalizing using max of either strand ?
-		float maxA = MINIMUM_VALUE;
-		float maxB = MINIMUM_VALUE;
+		double maxA = MINIMUM_VALUE;
+		double maxB = MINIMUM_VALUE;
 		for (int i = 0; i <window ; i++){
 			for (int s = 0 ; s < 2 ; s++){
 				if (regACounts[i][s] > maxA){maxA = regACounts[i][s];}
@@ -139,9 +138,11 @@ public class SmithWatermanAlignment {
 			}
 		}
 		
-		float [][] normRegACounts = new float [window][2];
-		float [][] normRegBCounts = new float [window][2];
-		float [][] normRegBRevCounts = new float[window][2];
+		System.out.println("max counts are "+maxA+" : "+maxB);
+		
+		double [][] normRegACounts = new double [window][2];
+		double [][] normRegBCounts = new double [window][2];
+		double [][] normRegBRevCounts = new double[window][2];
 		for (int i = 0 ; i <window; i++){
 			for (int s = 0 ; s < 2 ; s++){
 				normRegACounts[i][s] = regACounts[i][s]/maxA;
@@ -155,14 +156,7 @@ public class SmithWatermanAlignment {
 				normRegBRevCounts[window-i-1][1-s] = normRegBCounts[i][s];
 			}
 		}
-		
-		//test
-		for (int i = 0 ; i <50; i++){
-			System.out.println(normRegACounts[i][0]+" : "+normRegBRevCounts[i][0]);
-		}
-		
-		
-		
+
 		// align using two possible ways
 		SmithWatermanAlignmentMatrix alignOne = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBCounts);
 		SmithWatermanAlignmentMatrix alignTwo = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBRevCounts);
@@ -170,7 +164,8 @@ public class SmithWatermanAlignment {
 		alignTwo.buildMatrix();
 		
 		Stack<Integer> traceBack = new Stack<Integer>();
-		float[][] regBarray = new float[window][2];
+		double[][] regBarray = new double[window][2];
+		boolean reverseB;
 		int s_x_coord = 0;
 		int s_y_coord = 0;
 		int e_x_coord = 0;
@@ -183,7 +178,8 @@ public class SmithWatermanAlignment {
 			s_x_coord = alignOne.getStartX();
 			s_y_coord = alignOne.getStartY();
 			e_x_coord = alignOne.getEndX();
-			e_y_coord = alignOne.getEndY();			
+			e_y_coord = alignOne.getEndY();		
+			reverseB = false;
 			
 		}else{	
 			
@@ -192,36 +188,52 @@ public class SmithWatermanAlignment {
 			s_x_coord = alignTwo.getStartX();
 			s_y_coord = alignTwo.getStartY();
 			e_x_coord = alignTwo.getEndX();
-			e_y_coord = alignTwo.getEndY();				
+			e_y_coord = alignTwo.getEndY();	
+			reverseB = true;
 		}
 		
 		System.out.println("alignment start coordinates "+ s_x_coord + " : " + s_y_coord);
 		System.out.println("alignment end coordinates "+ e_x_coord + " : " + e_y_coord);
 		
-		float[][] alignedRegA = new float[e_x_coord-s_x_coord+1][2];
-		float[][] alignedRegB = new float[e_y_coord-s_y_coord+1][2];
+		System.out.println(Arrays.toString(traceBack.toArray()));
+		
+		double[][] alignedRegA = new double[e_x_coord-s_x_coord+1][2];
+		double[][] alignedRegB = new double[e_y_coord-s_y_coord+1][2];
 		int current_x = e_x_coord-1;
 		int current_y = e_y_coord-1;
 		
+		Stack<Integer> xTraceBack = traceBack;
+		
 		for (int i = e_x_coord-s_x_coord; i >= 0 ; i--){	
-			
-			Stack<Integer> traceBackTable = traceBack;
 			
 			for (int s = 0 ; s <2; s++)
 				alignedRegA[i][s] = normRegACounts[current_x][s];
 			
-			if (traceBackTable.pop() != null || (traceBackTable.pop() == DIAG || traceBackTable.pop() == LEFT))
-				current_x --;			
+			if ( !xTraceBack.empty() ){
+				if (xTraceBack.peek() == DIAG || xTraceBack.peek() == LEFT){
+				current_x --;
+				xTraceBack.pop();
+				}
+			}				
 		}
+		
+		Stack<Integer> yTraceBack = traceBack;
+		
 		for (int i = e_y_coord-s_y_coord; i >= 0 ; i--){	
 			
-			Stack<Integer> traceBackTable = traceBack;
-			
-			for (int s = 0 ; s <2; s++)
-				alignedRegB[i][s] = normRegACounts[current_y][s];
-			
-			if (traceBackTable.pop() != null || (traceBackTable.pop() == DIAG || traceBackTable.pop() == UP))
-				current_y --;			
+			for (int s = 0 ; s <2; s++){
+				if (reverseB == false){
+					alignedRegB[i][s] = normRegBCounts[current_y][s];
+				}else{
+					alignedRegB[i][s] = normRegBRevCounts[current_y][s];
+				}
+			}
+			if ( !yTraceBack.empty() ){
+				if (yTraceBack.peek() == DIAG || yTraceBack.peek() == UP){
+				current_y --;	
+				yTraceBack.pop();
+				}
+			}
 		}
 		
 		System.out.println("before alignment reg A");
