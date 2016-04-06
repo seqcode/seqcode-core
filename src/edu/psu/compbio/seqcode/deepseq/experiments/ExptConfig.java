@@ -323,7 +323,6 @@ public class ExptConfig {
 	public void setLoadType2Reads(boolean l){loadType2Reads = l;}
 	public void setLoadRead2(boolean l){loadRead2 = l;}
 	public void setLoadPairs(boolean l){loadPairs = l;}
-	public void setPerBaseReadLimit(float pbmax){perBaseReadLimit = pbmax;}
 	
 	
 	/**
