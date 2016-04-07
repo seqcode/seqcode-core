@@ -221,8 +221,11 @@ public class SmithWatermanAlignment {
 			
 			if ( !xTraceBack.empty() ){
 				if (xTraceBack.peek() == DIAG || xTraceBack.peek() == LEFT){
-				current_x --;
-				xTraceBack.pop();
+					current_x --;
+					xTraceBack.pop();
+					
+					System.out.println(" DIAG or LEFT");
+					
 				}
 			}				
 		}
@@ -241,8 +244,10 @@ public class SmithWatermanAlignment {
 			}
 			if ( !yTraceBack.empty() ){
 				if (yTraceBack.peek() == DIAG || yTraceBack.peek() == UP){
-				current_y --;	
-				yTraceBack.pop();
+					current_y --;	
+					yTraceBack.pop();
+					
+					System.out.println(" DIAG or UP");
 				}
 			}
 		}
@@ -250,6 +255,7 @@ public class SmithWatermanAlignment {
 		System.out.println("before alignment reg A");
 		for (int i = 0; i < normRegACounts.length; i++)
 			System.out.print(normRegACounts[i][0]+",");
+		System.out.println();
 		for (int i = 0; i < normRegACounts.length; i++)
 			System.out.print(normRegACounts[i][1]+",");	
 		System.out.println();
@@ -257,6 +263,7 @@ public class SmithWatermanAlignment {
 		System.out.println("before alignment reg B");
 		for (int i = 0; i < regBarray.length; i++)
 			System.out.print(regBarray[i][0]+",");
+		System.out.println();
 		for (int i = 0; i < regBarray.length; i++)
 			System.out.print(regBarray[i][1]+",");	
 		System.out.println();
@@ -264,6 +271,7 @@ public class SmithWatermanAlignment {
 		System.out.println("aligned reg A");
 		for (int i = 0; i < alignedRegA.length; i++)
 			System.out.print(alignedRegA[i][0]+",");
+		System.out.println();
 		for (int i = 0; i < alignedRegA.length; i++)
 			System.out.print(alignedRegA[i][1]+",");	
 		System.out.println();
@@ -271,6 +279,7 @@ public class SmithWatermanAlignment {
 		System.out.println("aligned reg B");
 		for (int i = 0; i < alignedRegB.length; i++)
 			System.out.print(alignedRegB[i][0]+",");
+		System.out.println();
 		for (int i = 0; i < alignedRegB.length; i++)
 			System.out.print(alignedRegB[i][1]+",");	
 		System.out.println();
@@ -288,8 +297,6 @@ public class SmithWatermanAlignment {
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 			
-		//setter is not working for some reason
-//		econf.setPerBaseReadLimit(100000);
 		econf.setPerBaseReadFiltering(false);
 		
 		ExperimentManager manager = new ExperimentManager(econf);
