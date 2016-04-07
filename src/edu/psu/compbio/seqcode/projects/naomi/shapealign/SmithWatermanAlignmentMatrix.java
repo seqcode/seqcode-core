@@ -128,8 +128,8 @@ public class SmithWatermanAlignmentMatrix {
 				temp_I[3] = I[i-1][j] - GAP_EXT;
 			
 				double max_I = MINIMUM_VALUE;
-				for (int k = 0 ; i < 4 ; i++){
-					if (temp_I[k] > max_I){ max_I = temp_I[i];}
+				for (int k = 0 ; k < 4 ; i++){
+					if (temp_I[k] > max_I){ max_I = temp_I[k];}
 				}
 				
 				I[i][j] = max_I;
@@ -148,8 +148,8 @@ public class SmithWatermanAlignmentMatrix {
 				temp_I[2] = M[i-1][j] - GAP_OPEN;
 			
 				double max_I = temp_I[0];
-				for (int k = 1 ; i < 3 ; i++){
-					if (temp_I[k] > max_I){ max_I = temp_I[i];}
+				for (int k = 1 ; k < 3 ; k++){
+					if (temp_I[k] > max_I){ max_I = temp_I[k];}
 				}
 				
 				M[i][j] = max_I;
