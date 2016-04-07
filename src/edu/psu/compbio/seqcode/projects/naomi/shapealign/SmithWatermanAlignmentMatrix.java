@@ -24,8 +24,8 @@ public class SmithWatermanAlignmentMatrix {
 
 	//constants for Smith-Waterman Algorithms
 	// possible matched score values are -1 to 2
-	final static double GAP_OPEN = 0.8;
-	final static double GAP_EXT = 0.4;
+	final static double GAP_OPEN = 1.4;
+	final static double GAP_EXT = 0.7;
 	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
@@ -57,10 +57,22 @@ public class SmithWatermanAlignmentMatrix {
 	public void setEndXCoord(int endXCoord){alignEndXCoord = endXCoord;}
 	public void setEndYCoord(int endYCoord){alignEndYCoord = endYCoord;}
 	
+//	public double computeScore(double aVal, double bVal){
+//		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
+//		return score;		
+//	}
+	
 	public double computeScore(double aVal, double bVal){
-		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
-		return score;		
-	}
+		
+		double score = MINIMUM_VALUE;
+		if (aVal != bVal  || !Double.isInfinite(1/Math.sqrt(Math.pow(aVal, 2)-Math.pow(bVal, 2))) ){			
+			score = 1/Math.sqrt(Math.pow(aVal, 2)-Math.pow(bVal, 2))*(aVal+bVal)/2-Math.abs(aVal-bVal);
+		}else{
+			score = 10*(aVal+bVal)/2-Math.abs(aVal-bVal);
+		}		
+		return score;
+	}	
+	
 	
 	public void buildMatrix(){
 	
@@ -95,14 +107,6 @@ public class SmithWatermanAlignmentMatrix {
 				
 				I[i][j] = max_I;
 			}
-		}
-		
-		//test
-		for (int i =0; i <20; i++){
-			for (int j = 0; j <20; j++){
-				System.out.print(M[i][j]+" ");
-			}
-			System.out.print("\n");
 		}
 		
 		// find the highest value

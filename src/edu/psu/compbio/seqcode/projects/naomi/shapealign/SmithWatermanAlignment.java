@@ -57,11 +57,6 @@ public class SmithWatermanAlignment {
 	public void setWidth(int w){window = w;}
 	public void setCountsArray(Map<Sample, Map<Region,double[][]>> sampleCounts){countsArray = sampleCounts;}
 	
-	public double computeScore(double aVal, double bVal){
-		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
-		return score;		
-	}
-	
 	public void loadData(){
 		
 		List<Region> region = new ArrayList<Region>();
@@ -212,6 +207,7 @@ public class SmithWatermanAlignment {
 		
 		// need to re-visit here. this is not working
 		
+		@SuppressWarnings("unchecked")
 		Stack<Integer> xTraceBack = (Stack<Integer>) traceBack.clone();
 		
 		for (int i = e_x_coord-s_x_coord; i >= 0 ; i--){	
@@ -219,10 +215,8 @@ public class SmithWatermanAlignment {
 			for (int s = 0 ; s <2; s++)
 				alignedRegA[i][s] = normRegACounts[current_x][s];
 			
-			if ( !xTraceBack.empty() ){
-				
+			if ( !xTraceBack.empty() ){			
 				if (xTraceBack.peek() == DIAG || xTraceBack.peek() == LEFT){
-					System.out.println(" DIAG or LEFT");
 					current_x --;
 				}			
 				xTraceBack.pop();
@@ -230,6 +224,7 @@ public class SmithWatermanAlignment {
 		}
 		
 		
+		@SuppressWarnings("unchecked")
 		Stack<Integer> yTraceBack = (Stack<Integer>) traceBack.clone();;
 		
 		for (int i = e_y_coord-s_y_coord; i >= 0 ; i--){	
@@ -241,12 +236,8 @@ public class SmithWatermanAlignment {
 					alignedRegB[i][s] = normRegBRevCounts[current_y][s];
 				}
 			}
-			if ( !yTraceBack.empty() ){
-				
-				System.out.println(" y traceback is not empty");
-				
+			if ( !yTraceBack.empty() ){				
 				if (yTraceBack.peek() == DIAG || yTraceBack.peek() == UP){
-					System.out.println(" DIAG or UP");
 					current_y --;	
 				}
 				yTraceBack.pop();			
