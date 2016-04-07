@@ -216,6 +216,8 @@ public class SmithWatermanAlignment {
 		
 		for (int i = e_x_coord-s_x_coord; i >= 0 ; i--){	
 			
+			System.out.println("copying xTraceBack");
+			
 			for (int s = 0 ; s <2; s++)
 				alignedRegA[i][s] = normRegACounts[current_x][s];
 			
