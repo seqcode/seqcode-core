@@ -334,6 +334,7 @@ public class Discrim {
 								discrimMotifs.add(fm.get(w));
 								discrimMotifsRocs.put(kmerModelName+"_c"+Integer.toString(c)+"_"+Integer.toString(motInd), rocScores[w]);
 							}
+							motInd++;
 						}
 					}
 
