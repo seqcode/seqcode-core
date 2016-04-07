@@ -222,6 +222,10 @@ public class SmithWatermanAlignment {
 				alignedRegA[i][s] = normRegACounts[current_x][s];
 			
 			if ( !xTraceBack.empty() ){
+				
+				System.out.println("xtraceBack is not empty "+xTraceBack.size());
+
+				
 				if (xTraceBack.peek() == DIAG || xTraceBack.peek() == LEFT){
 					current_x --;
 					xTraceBack.pop();
