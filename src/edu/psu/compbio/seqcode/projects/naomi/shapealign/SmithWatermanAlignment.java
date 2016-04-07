@@ -212,7 +212,7 @@ public class SmithWatermanAlignment {
 		
 		// need to re-visit here. this is not working
 		
-		Stack<Integer> xTraceBack = traceBack;
+		Stack<Integer> xTraceBack = (Stack<Integer>) traceBack.clone();
 		
 		for (int i = e_x_coord-s_x_coord; i >= 0 ; i--){	
 
@@ -230,7 +230,7 @@ public class SmithWatermanAlignment {
 		}
 		
 		
-		Stack<Integer> yTraceBack = traceBack;
+		Stack<Integer> yTraceBack = (Stack<Integer>) traceBack.clone();;
 		
 		for (int i = e_y_coord-s_y_coord; i >= 0 ; i--){	
 			
@@ -242,6 +242,9 @@ public class SmithWatermanAlignment {
 				}
 			}
 			if ( !yTraceBack.empty() ){
+				
+				System.out.println(" y traceback is not empty");
+				
 				if (yTraceBack.peek() == DIAG || yTraceBack.peek() == UP){
 					System.out.println(" DIAG or UP");
 					current_y --;	
