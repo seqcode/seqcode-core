@@ -245,7 +245,7 @@ public class Discrim {
 	public class KmerModelScanner {
 		//Model specific features
 		protected String kmerModelName;
-		protected List<Region> modelRegions;
+		protected List<Region> modelRegions = new ArrayList<Region>();
 		
 		protected List<Region> posHills = new ArrayList<Region>();
 		protected ArrayList<int[]> profiles = new ArrayList<int[]>();
@@ -265,11 +265,11 @@ public class Discrim {
 			
 			// Now add all the training examples that are linked to the current K-mer model
 			// First; split to get subgroup names
-			String[] subGsMod = kmerModelName.split("&");
+			String[] subGsMod = kmerModelName.split("_");
 			// Second; remove all "Root" keywords
 			for(int s=0; s<subGsMod.length; s++){
 				if(subGsMod[s].startsWith("Root"))
-					subGsMod[s].replaceFirst("Root", "");
+					subGsMod[s] = subGsMod[s].replaceFirst("Root", "");
 			}
 			
 			for(int p=0; p< regions.size(); p++){
@@ -330,9 +330,9 @@ public class Discrim {
 							}
 							if(rocScores[w] > MemeER.MOTIF_MIN_ROC){
 								//selectedMotifs.add(fm.get(w));
-								fm.get(w).setName(kmerModelName+"_"+Integer.toString(motInd));
+								fm.get(w).setName(kmerModelName+"_c"+Integer.toString(c)+"_"+Integer.toString(motInd));
 								discrimMotifs.add(fm.get(w));
-								discrimMotifsRocs.put(kmerModelName+"_"+Integer.toString(motInd), rocScores[w]);
+								discrimMotifsRocs.put(kmerModelName+"_c"+Integer.toString(c)+"_"+Integer.toString(motInd), rocScores[w]);
 							}
 						}
 					}
