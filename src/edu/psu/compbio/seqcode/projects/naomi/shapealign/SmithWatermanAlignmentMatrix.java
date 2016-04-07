@@ -23,9 +23,8 @@ public class SmithWatermanAlignmentMatrix {
 	protected int alignEndYCoord;
 
 	//constants for Smith-Waterman Algorithms
-	// possible matched score values are -1 to 2
-	final static double GAP_OPEN = 1.4;
-	final static double GAP_EXT = 0.7;
+	final static double GAP_OPEN = 0.6;
+	final static double GAP_EXT = 0.3;
 	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
@@ -66,7 +65,7 @@ public class SmithWatermanAlignmentMatrix {
 		
 		double score = MINIMUM_VALUE;
 		if (aVal != bVal ){	
-			score = 1/Math.sqrt(Math.abs(Math.pow(aVal, 2)-Math.pow(bVal, 2)))*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
+			score = 1/Math.sqrt(Math.pow(aVal-bVal, 2))*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
 		}else{
 			score = 10*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
 		}		
