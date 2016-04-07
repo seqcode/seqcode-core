@@ -93,6 +93,7 @@ public class SmithWatermanAlignmentMatrix {
 		for (int i = 0 ; i <window ; i++){
 			System.out.print(regACounts[i][1]);
 		}
+		System.out.println();
 		for (int i = 0 ; i <window ; i++){
 			System.out.print(regBCounts[i][0]);
 		}
@@ -100,6 +101,7 @@ public class SmithWatermanAlignmentMatrix {
 		for (int i = 0 ; i <window ; i++){
 			System.out.print(regBCounts[i][1]);
 		}
+		System.out.println();
 
 	
 		//initialization of M[][] & I[][] & H[][] matrix
@@ -112,7 +114,7 @@ public class SmithWatermanAlignmentMatrix {
 			}
 		}
 		
-		/***
+
 		//fill in M[i][j] & I[i][j] matrix
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
@@ -136,7 +138,7 @@ public class SmithWatermanAlignmentMatrix {
 			}
 		}
 		
-		***/
+		/***
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
 				double mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
@@ -155,6 +157,7 @@ public class SmithWatermanAlignmentMatrix {
 				M[i][j] = max_I;
 			}
 		}
+		***/
 		
 
 		System.out.println("M matrix");
