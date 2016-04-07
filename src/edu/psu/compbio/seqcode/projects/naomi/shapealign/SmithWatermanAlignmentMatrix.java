@@ -23,8 +23,8 @@ public class SmithWatermanAlignmentMatrix {
 	protected int alignEndYCoord;
 
 	//constants for Smith-Waterman Algorithms
-	final static double GAP_OPEN = 0.6;
-	final static double GAP_EXT = 0.3;
+	final static double GAP_OPEN = 1;
+	final static double GAP_EXT = 0.5;
 	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
@@ -95,7 +95,8 @@ public class SmithWatermanAlignmentMatrix {
 				I[i][j] = 0;
 			}
 		}
-	
+		
+		/***
 		//fill in M[i][j] & I[i][j] matrix
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
@@ -118,6 +119,29 @@ public class SmithWatermanAlignmentMatrix {
 				I[i][j] = max_I;
 			}
 		}
+		
+		***/
+		for (int i = 1 ; i <= window; i++){
+			for (int j = 1 ; j <= window ; j++){
+				double mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
+						+ computeScore(regACounts[i-1][1], regBCounts[i-1][1]);
+			
+				M[i][j] = Math.max(M[i-1][j-1] + mScore, I[i-1][j-1] + mScore);
+			
+				double temp_I[] = new double[3];
+				temp_I[0] = M[i-1][j-1] + mScore;
+				temp_I[1] = M[i][j-1] - GAP_OPEN;
+				temp_I[2] = M[i-1][j] - GAP_OPEN;
+			
+				double max_I = MINIMUM_VALUE;
+				for (int k = 0 ; i < 3 ; i++){
+					if (temp_I[k] > max_I){ max_I = temp_I[i];}
+				}
+				
+				M[i][j] = max_I;
+			}
+		}
+		
 
 		System.out.println("M matrix");
 		for (int i = 1; i<window;i++){
