@@ -65,7 +65,7 @@ public class SmithWatermanAlignmentMatrix {
 	public double computeScore(double aVal, double bVal){
 		
 		double score = MINIMUM_VALUE;
-		if (aVal != bVal  || !Double.isInfinite(1/Math.sqrt(Math.pow(aVal, 2)-Math.pow(bVal, 2))) ){			
+		if (aVal != bVal  && !Double.isInfinite(1/Math.sqrt(Math.pow(aVal, 2)-Math.pow(bVal, 2))) ){			
 			score = 1/Math.sqrt(Math.pow(aVal, 2)-Math.pow(bVal, 2))*(aVal+bVal)/2-Math.abs(aVal-bVal);
 		}else{
 			score = 10*(aVal+bVal)/2-Math.abs(aVal-bVal);
