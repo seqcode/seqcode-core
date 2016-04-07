@@ -57,11 +57,6 @@ public class SmithWatermanAlignment {
 	public void setWidth(int w){window = w;}
 	public void setCountsArray(Map<Sample, Map<Region,double[][]>> sampleCounts){countsArray = sampleCounts;}
 	
-	public double computeScore(double aVal, double bVal){
-		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
-		return score;		
-	}
-	
 	public void loadData(){
 		
 		List<Region> region = new ArrayList<Region>();
@@ -219,10 +214,8 @@ public class SmithWatermanAlignment {
 			for (int s = 0 ; s <2; s++)
 				alignedRegA[i][s] = normRegACounts[current_x][s];
 			
-			if ( !xTraceBack.empty() ){
-				
+			if ( !xTraceBack.empty() ){			
 				if (xTraceBack.peek() == DIAG || xTraceBack.peek() == LEFT){
-					System.out.println(" DIAG or LEFT");
 					current_x --;
 				}			
 				xTraceBack.pop();
@@ -241,12 +234,8 @@ public class SmithWatermanAlignment {
 					alignedRegB[i][s] = normRegBRevCounts[current_y][s];
 				}
 			}
-			if ( !yTraceBack.empty() ){
-				
-				System.out.println(" y traceback is not empty");
-				
+			if ( !yTraceBack.empty() ){				
 				if (yTraceBack.peek() == DIAG || yTraceBack.peek() == UP){
-					System.out.println(" DIAG or UP");
 					current_y --;	
 				}
 				yTraceBack.pop();			
