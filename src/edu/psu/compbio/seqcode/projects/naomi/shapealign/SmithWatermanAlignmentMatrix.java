@@ -118,6 +118,15 @@ public class SmithWatermanAlignmentMatrix {
 				I[i][j] = max_I;
 			}
 		}
+
+		System.out.println("M matrix");
+		for (int i = 1; i<window;i++){
+			for (int j = 1; j<window;j ++){
+				System.out.print(M[i][j]+" ");
+			}
+			System.out.println();
+		}
+		
 		
 		// find the highest value
 		double maxScore = MINIMUM_VALUE;
