@@ -57,7 +57,6 @@ public class SmithWatermanAlignmentMatrix {
 	public void setEndXCoord(int endXCoord){alignEndXCoord = endXCoord;}
 	public void setEndYCoord(int endYCoord){alignEndYCoord = endYCoord;}
 	
-	
 //	public double computeScore(double aVal, double bVal){
 //		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
 //		return score;		
@@ -66,8 +65,8 @@ public class SmithWatermanAlignmentMatrix {
 	public double computeScore(double aVal, double bVal){
 		
 		double score = MINIMUM_VALUE;
-		if (aVal != bVal){			
-			score = 1/Math.sqrt((Math.pow(aVal, 2)-Math.pow(bVal, 2)))*(aVal+bVal)/2-Math.abs(aVal-bVal);
+		if (aVal != bVal  || !Double.isInfinite(1/Math.sqrt(Math.pow(aVal, 2)-Math.pow(bVal, 2))) ){			
+			score = 1/Math.sqrt(Math.pow(aVal, 2)-Math.pow(bVal, 2))*(aVal+bVal)/2-Math.abs(aVal-bVal);
 		}else{
 			score = 10*(aVal+bVal)/2-Math.abs(aVal-bVal);
 		}		
