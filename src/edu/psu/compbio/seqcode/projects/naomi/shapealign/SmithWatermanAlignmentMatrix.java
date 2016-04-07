@@ -85,6 +85,20 @@ public class SmithWatermanAlignmentMatrix {
 	
 	
 	public void buildMatrix(){
+		
+		for (int i = 0 ; i <window ; i++){
+			for (int s = 0 ; s <2 ; s++){
+				System.out.print(regACounts[i][s]);
+			}
+			System.out.println();
+		}
+		for (int i = 0 ; i <window ; i++){
+			for (int s = 0 ; s <2 ; s++){
+				System.out.print(regBCounts[i][s]);
+			}
+			System.out.println();
+		}
+		
 	
 		//initialization of M[][] & I[][] & H[][] matrix
 		double [][] M = new double [window+1][window+1];
@@ -125,8 +139,6 @@ public class SmithWatermanAlignmentMatrix {
 			for (int j = 1 ; j <= window ; j++){
 				double mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
 						+ computeScore(regACounts[i-1][1], regBCounts[i-1][1]);
-			
-				M[i][j] = Math.max(M[i-1][j-1] + mScore, I[i-1][j-1] + mScore);
 			
 				double temp_I[] = new double[3];
 				temp_I[0] = M[i-1][j-1] + mScore;
