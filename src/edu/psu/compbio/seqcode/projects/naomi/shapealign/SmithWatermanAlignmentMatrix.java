@@ -88,6 +88,113 @@ public class SmithWatermanAlignmentMatrix {
 	
 	public void buildMatrix(){
 		
+		//initialization of M matrix
+		double [][] M = new double [window+1][window+1];
+		for (int i = 0 ; i <= window; i++){
+			for (int j = 0 ; j <= window; j++)
+				M[i][j] = 0;
+		}	
+		
+		for (int i = 1 ; i <= window; i++){
+			for (int j = 1 ; j <= window ; j++){
+				double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
+						+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
+			
+				double temp_M[] = new double[3];
+				temp_M[0] = M[i-1][j-1] + mScore;
+				temp_M[1] = M[i][j-1] - GAP_OPEN;
+				temp_M[2] = M[i-1][j] - GAP_OPEN;
+			
+				double max_I = temp_M[0];
+				for (int k = 1 ; k < 3 ; k++){
+
+					if (temp_M[k] > max_I){ max_I = temp_M[k];}
+				}
+				M[i][j] = max_I;
+			}
+		}		
+
+		System.out.println("printing M matrix");
+		for (int i = 0; i <=window ; i++){
+			for (int j = 0; j <=window; j++){
+				System.out.print(M[i][j]+" ");
+			}
+			System.out.println();
+		}			
+
+		// find the highest value
+		double maxScore = MINIMUM_VALUE;
+		int x_coord = 0;
+		int y_coord = 0;
+	
+		for (int i = (int) Math.floor(window/2); i <= window; i++){
+			if (M[i][window] > maxScore){
+				maxScore = M[i][window];
+				x_coord = i;
+				y_coord = window;	
+			}
+		}
+		for (int j = (int) Math.floor(window/2); j <= window; j++){
+			if (M[window][j] > maxScore){
+				maxScore = M[window][j];
+				x_coord = window;
+				y_coord = j;	
+			}
+		}
+		
+		System.out.println("max score is "+maxScore+" x coord is "+x_coord+" y coord is "+y_coord);
+		
+		// back track to reconstruct the path
+		double currentScore = maxScore;
+		int current_x = x_coord;
+		int current_y = y_coord;
+		Stack<Integer> traceBack = new Stack<Integer>();
+		
+		int i = x_coord;
+		int j = y_coord;
+		
+		while ( i != 0 && j != 0){
+
+			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
+					+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
+			
+			// diagonal case
+			if ( M[i-1][j-1] + mScore == currentScore ){
+				traceBack.push(DIAG);		
+				currentScore = M[i-1][j-1];
+			
+			// left case
+			}else if( M[i][j-1]-GAP_OPEN == currentScore ){
+				traceBack.push(LEFT);
+				currentScore = M[i][j-1];
+			
+			// right case
+			}else{
+				System.out.println("current score is "+currentScore);
+				System.out.println("M value is"+M[i-1][j]);
+				traceBack.push(UP);
+				currentScore = M[i-1][j];
+			}
+			
+			current_x = i;
+			current_y = j;
+			
+			i--;
+			j--;
+		}
+		
+		setMaxScore(maxScore);
+		setTraceBack(traceBack);
+		setStartXCoord(current_x);
+		setStartYCoord(current_y);
+		setEndXCoord(x_coord);
+		setEndYCoord(y_coord);
+	}
+
+
+	// builds M and I matrix; this is currently not working
+	public void buildGappedMatrix(){
+		
 		//initialization of M[][] & I[][] & H[][] matrix
 		double [][] M = new double [window+1][window+1];
 		double [][] I = new double [window+1][window+1];
@@ -98,7 +205,7 @@ public class SmithWatermanAlignmentMatrix {
 			}
 		}	
 
-		/***
+
 		//fill in M[i][j] & I[i][j] matrix
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
@@ -121,29 +228,8 @@ public class SmithWatermanAlignmentMatrix {
 				I[i][j] = max_I;
 			}
 		}
-		 ***/
-		
-		
-		for (int i = 1 ; i <= window; i++){
-			for (int j = 1 ; j <= window ; j++){
-				double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
-						+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
-			
-				double temp_I[] = new double[3];
-				temp_I[0] = M[i-1][j-1] + mScore;
-				temp_I[1] = M[i][j-1] - GAP_OPEN;
-				temp_I[2] = M[i-1][j] - GAP_OPEN;
-			
-				double max_I = temp_I[0];
-				for (int k = 1 ; k < 3 ; k++){
 
-					if (temp_I[k] > max_I){ max_I = temp_I[k];}
-				}
-				M[i][j] = max_I;
-			}
-		}
 		
-
 		System.out.println("printing M matrix");
 		for (int i = 0; i <=window ; i++){
 			for (int j = 0; j <=window; j++){
@@ -165,11 +251,11 @@ public class SmithWatermanAlignmentMatrix {
 				x_coord = i;
 				y_coord = window;	
 			}
-//			if (I[i][window] > maxScore){
-//				maxScore = I[i][window];
-//				x_coord = i;
-//				y_coord = window;
-//			}
+			if (I[i][window] > maxScore){
+				maxScore = I[i][window];
+				x_coord = i;
+				y_coord = window;
+			}
 		}
 		for (int j = (int) Math.floor(window/2); j <= window; j++){
 			if (M[window][j] > maxScore){
@@ -177,11 +263,11 @@ public class SmithWatermanAlignmentMatrix {
 				x_coord = j;
 				y_coord = window;	
 			}
-//			if (I[window][j] > maxScore){
-//				maxScore = I[window][j];
-//				x_coord = j;
-//				y_coord = window;
-//			}
+			if (I[window][j] > maxScore){
+				maxScore = I[window][j];
+				x_coord = j;
+				y_coord = window;
+			}
 		}
 		
 		System.out.println("max score is "+maxScore+" x coord is "+x_coord+" y coord is "+y_coord);
@@ -203,20 +289,17 @@ public class SmithWatermanAlignmentMatrix {
 			// diagonal case
 			if ( (M[i-1][j-1] + mScore == currentScore) || (I[i-1][j-1] + mScore == currentScore)){
 				traceBack.push(DIAG);		
-//				currentScore = Math.max(M[i-1][j-1], I[i-1][j-1]);
-				currentScore = M[i-1][j-1];
+				currentScore = Math.max(M[i-1][j-1], I[i-1][j-1]);
 			
 			// left case
 			}else if( (M[i][j-1]-GAP_OPEN == currentScore) || (I[i][j-1]-GAP_EXT == currentScore)){
 				traceBack.push(LEFT);
-//				currentScore = Math.max(M[i][j-1], I[i][j-1]);
-				currentScore = M[i][j-1];
+				currentScore = Math.max(M[i][j-1], I[i][j-1]);
 			
 			// right case
 			}else{
 				traceBack.push(UP);
-//				currentScore = Math.max(M[i-1][j], I[i-1][j]);
-				currentScore = M[i-1][j];
+				currentScore = Math.max(M[i-1][j], I[i-1][j]);
 			}
 			
 			current_x = i;
