@@ -56,21 +56,21 @@ public class SmithWatermanAlignmentMatrix {
 	public void setEndXCoord(int endXCoord){alignEndXCoord = endXCoord;}
 	public void setEndYCoord(int endYCoord){alignEndYCoord = endYCoord;}
 	
-//	public double computeScore(double aVal, double bVal){
-//		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
-//		return score;		
-//	}
-	
 	public double computeScore(double aVal, double bVal){
+		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
+		return score;		
+	}
+	
+//	public double computeScore(double aVal, double bVal){
 		
-		double score = MINIMUM_VALUE;
-		if (aVal != bVal ){	
-			score = 1/Math.sqrt(Math.pow(aVal-bVal, 2))*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
-		}else{
-			score = 10*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
-		}		
-		return score;
-	}	
+//		double score = MINIMUM_VALUE;
+//		if (aVal != bVal ){	
+//			score = 1/Math.sqrt(Math.pow(aVal-bVal, 2))*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
+//		}else{
+//			score = 10*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
+//		}		
+//		return score;
+//	}	
 	
 //	public double computeScore(double aVal, double bVal){
 	
@@ -183,7 +183,7 @@ public class SmithWatermanAlignmentMatrix {
 		int x_coord = 0;
 		int y_coord = 0;
 	
-		for (int i = (int) Math.floor(window/2); i < window; i++){
+		for (int i = (int) Math.floor(window/2); i <= window; i++){
 			if (M[i][window] > maxScore){
 				maxScore = M[i][window];
 				x_coord = i;
@@ -195,14 +195,14 @@ public class SmithWatermanAlignmentMatrix {
 //				y_coord = window;
 //			}
 		}
-		for (int j = (int) Math.floor(window/2); j < window; j++){
-			if (M[j][window] > maxScore){
-				maxScore = M[j][window];
+		for (int j = (int) Math.floor(window/2); j <= window; j++){
+			if (M[window][j] > maxScore){
+				maxScore = M[window][j];
 				x_coord = j;
 				y_coord = window;	
 			}
-//			if (I[j][window] > maxScore){
-//				maxScore = I[j][window];
+//			if (I[window][j] > maxScore){
+//				maxScore = I[window][j];
 //				x_coord = j;
 //				y_coord = window;
 //			}
