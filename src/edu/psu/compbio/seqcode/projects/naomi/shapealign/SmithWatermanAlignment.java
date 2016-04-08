@@ -255,11 +255,11 @@ public class SmithWatermanAlignment {
 		System.out.println();
 		
 		System.out.println("before alignment reg B");
-		for (int i = 0; i < regBarray.length; i++)
-			System.out.print(regBarray[i][0]+",");
+		for (int i = 0; i < normRegBCounts.length; i++)
+			System.out.print(normRegBCounts[i][0]+",");
 		System.out.println();
-		for (int i = 0; i < regBarray.length; i++)
-			System.out.print(regBarray[i][1]+",");	
+		for (int i = 0; i < normRegBCounts.length; i++)
+			System.out.print(normRegBCounts[i][1]+",");	
 		System.out.println();
 		
 		System.out.println("aligned reg A");

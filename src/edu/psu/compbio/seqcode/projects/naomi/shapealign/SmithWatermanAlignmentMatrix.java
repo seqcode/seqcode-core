@@ -23,8 +23,11 @@ public class SmithWatermanAlignmentMatrix {
 	protected int alignEndYCoord;
 
 	//constants for Smith-Waterman Algorithms
-	final static double GAP_OPEN = 2;
-	final static double GAP_EXT = 1;
+//	final static double GAP_OPEN = 2;
+//	final static double GAP_EXT = 1;
+	
+	final static double GAP_OPEN = 10;
+	final static double GAP_EXT = 5;
 	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
@@ -56,10 +59,21 @@ public class SmithWatermanAlignmentMatrix {
 	public void setEndXCoord(int endXCoord){alignEndXCoord = endXCoord;}
 	public void setEndYCoord(int endYCoord){alignEndYCoord = endYCoord;}
 	
+//	public double computeScore(double aVal, double bVal){
+//		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
+//		return score;		
+//	}
+	
 	public double computeScore(double aVal, double bVal){
-		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
-		return score;		
-	}
+	
+	double score = MINIMUM_VALUE;
+	if (aVal != bVal ){	
+		score = 1/Math.sqrt(Math.abs(Math.pow(aVal,2)-Math.pow(bVal, 2)))*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
+	}else{
+		score = 10*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
+	}		
+	return score;
+	}	
 	
 	// this needs to go with big GAP_OPEN and GAP_EXT
 //	public double computeScore(double aVal, double bVal){
@@ -68,21 +82,9 @@ public class SmithWatermanAlignmentMatrix {
 //		if (aVal != bVal ){	
 //			score = 1/Math.sqrt(Math.pow(aVal-bVal, 2))*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
 //		}else{
-//			score = 10*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
+//			score = 100*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
 //		}		
 //		return score;
-//	}	
-	
-	// this needs to go with big GAP_OPEN and GAP_EXT
-//	public double computeScore(double aVal, double bVal){
-	
-//	double score = MINIMUM_VALUE;
-//	if (aVal != bVal ){	
-//		score = 1/Math.sqrt(Math.abs(Math.pow(aVal,2)-Math.pow(bVal, 2)))*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
-//	}else{
-//		score = 10*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
-//	}		
-//	return score;
 //	}	
 	
 	
