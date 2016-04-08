@@ -118,7 +118,7 @@ public class SmithWatermanAlignmentMatrix {
 			}
 		}	
 
-
+		/***
 		//fill in M[i][j] & I[i][j] matrix
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
@@ -141,9 +141,9 @@ public class SmithWatermanAlignmentMatrix {
 				I[i][j] = max_I;
 			}
 		}
-
+		 ***/
 		
-		/***
+		
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
 				double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
@@ -162,7 +162,7 @@ public class SmithWatermanAlignmentMatrix {
 				M[i][j] = max_I;
 			}
 		}
-		***/
+
 		
 
 		System.out.println("M matrix");
@@ -223,17 +223,20 @@ public class SmithWatermanAlignmentMatrix {
 			// diagonal case
 			if ( (M[i-1][j-1] + mScore == currentScore) || (I[i-1][j-1] + mScore == currentScore)){
 				traceBack.push(DIAG);		
-				currentScore = Math.max(M[i-1][j-1], I[i-1][j-1]);
+//				currentScore = Math.max(M[i-1][j-1], I[i-1][j-1]);
+				currentScore = M[i-1][j-1];
 			
 			// left case
 			}else if( (M[i][j-1]-GAP_OPEN == currentScore) || (I[i][j-1]-GAP_EXT == currentScore)){
 				traceBack.push(LEFT);
-				currentScore = Math.max(M[i][j-1]-1, I[i][j-1]);
+//				currentScore = Math.max(M[i][j-1], I[i][j-1]);
+				currentScore = M[i][j-1];
 			
 			// right case
 			}else{
 				traceBack.push(UP);
-				currentScore = Math.max(M[i-1][j], I[i-1][j]);
+//				currentScore = Math.max(M[i-1][j], I[i-1][j]);
+				currentScore = M[i-1][j];
 			}
 			
 			current_x = i;
