@@ -88,26 +88,6 @@ public class SmithWatermanAlignmentMatrix {
 	
 	public void buildMatrix(){
 		
-		System.out.println("regACounts and regB counts ");
-		
-		for (int i = 0 ; i <window ; i++){
-			System.out.print(regACounts[i][0]+" ");
-		}
-		System.out.println();
-		for (int i = 0 ; i <window ; i++){
-			System.out.print(regACounts[i][1]+" ");
-		}
-		System.out.println();
-		for (int i = 0 ; i <window ; i++){
-			System.out.print(regBCounts[i][0]+" ");
-		}
-		System.out.println();
-		for (int i = 0 ; i <window ; i++){
-			System.out.print(regBCounts[i][1]+" ");
-		}
-		System.out.println();
-
-	
 		//initialization of M[][] & I[][] & H[][] matrix
 		double [][] M = new double [window+1][window+1];
 		double [][] I = new double [window+1][window+1];
@@ -162,18 +142,17 @@ public class SmithWatermanAlignmentMatrix {
 				M[i][j] = max_I;
 			}
 		}
-
 		
-
-		System.out.println("M matrix");
-		for (int i = 1; i<window;i++){
-			for (int j = 1; j<window;j ++){
-				System.out.print(M[i][j]+" ");
+		System.out.println("printing M matrix");
+		for (int i = 0; i <=window ; i++){
+			for (int j = 0; j <=window; j++){
+				System.out.print(M[i][j]);
 			}
 			System.out.println();
 		}
 		
 		
+
 		// find the highest value
 		double maxScore = MINIMUM_VALUE;
 		int x_coord = 0;
