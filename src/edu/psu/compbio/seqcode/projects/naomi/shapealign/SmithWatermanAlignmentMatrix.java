@@ -28,6 +28,7 @@ public class SmithWatermanAlignmentMatrix {
 	
 	final static double GAP_OPEN = 2;
 	final static double GAP_EXT = 1;
+	final static double WEIGHT = 30;
 	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
@@ -70,7 +71,7 @@ public class SmithWatermanAlignmentMatrix {
 	if (aVal != bVal ){	
 		score = 1/Math.sqrt(Math.abs(Math.pow(aVal,2)-Math.pow(bVal, 2)))*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
 	}else{
-		score = 20*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
+		score = WEIGHT*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
 	}		
 	return score;
 	}	
