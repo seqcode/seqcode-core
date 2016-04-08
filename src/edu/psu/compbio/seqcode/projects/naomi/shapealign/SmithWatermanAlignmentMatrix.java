@@ -240,8 +240,6 @@ public class SmithWatermanAlignmentMatrix {
 			System.out.println();
 		}
 		
-		
-
 		// find the highest value
 		double maxScore = MINIMUM_VALUE;
 		int x_coord = 0;
@@ -292,23 +290,24 @@ public class SmithWatermanAlignmentMatrix {
 			if ( (M[i-1][j-1] + mScore == currentScore) || (I[i-1][j-1] + mScore == currentScore)){
 				traceBack.push(DIAG);		
 				currentScore = Math.max(M[i-1][j-1], I[i-1][j-1]);
+				i--;
+				j--;
 			
 			// left case
 			}else if( (M[i][j-1]-GAP_OPEN == currentScore) || (I[i][j-1]-GAP_EXT == currentScore)){
 				traceBack.push(LEFT);
 				currentScore = Math.max(M[i][j-1], I[i][j-1]);
+				j--;
 			
 			// right case
 			}else{
 				traceBack.push(UP);
 				currentScore = Math.max(M[i-1][j], I[i-1][j]);
+				i--;
 			}
 			
 			current_x = i;
 			current_y = j;
-			
-			i--;
-			j--;
 		}
 		
 		setMaxScore(maxScore);
