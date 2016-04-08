@@ -61,6 +61,7 @@ public class SmithWatermanAlignmentMatrix {
 		return score;		
 	}
 	
+	// this needs to go with big GAP_OPEN and GAP_EXT
 //	public double computeScore(double aVal, double bVal){
 		
 //		double score = MINIMUM_VALUE;
@@ -72,6 +73,7 @@ public class SmithWatermanAlignmentMatrix {
 //		return score;
 //	}	
 	
+	// this needs to go with big GAP_OPEN and GAP_EXT
 //	public double computeScore(double aVal, double bVal){
 	
 //	double score = MINIMUM_VALUE;
@@ -219,7 +221,7 @@ public class SmithWatermanAlignmentMatrix {
 		int i = x_coord;
 		int j = y_coord;
 		
-		while ( i != 1 && j != 1){
+		while ( i != 0 || j != 0){
 
 			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
 					+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
