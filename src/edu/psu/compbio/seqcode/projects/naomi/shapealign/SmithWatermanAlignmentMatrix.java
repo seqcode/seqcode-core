@@ -221,7 +221,7 @@ public class SmithWatermanAlignmentMatrix {
 		int i = x_coord;
 		int j = y_coord;
 		
-		while ( i != 0 || j != 0){
+		while ( i != 0 && j != 0){
 
 			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
 					+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
