@@ -213,16 +213,19 @@ public class SmithWatermanAlignment {
 		Stack<Integer> xTraceBack = (Stack<Integer>) traceBack.clone();
 		
 		for (int i = e_x_coord-s_x_coord; i >= 0 ; i--){	
-
-			for (int s = 0 ; s <2; s++)
-				alignedRegA[i][s] = normRegACounts[current_x][s];
 			
-			if ( !xTraceBack.empty() ){			
-				if (xTraceBack.peek() == DIAG || xTraceBack.peek() == LEFT){
-					current_x --;
-				}			
-				xTraceBack.pop();
-			}				
+			while (current_x != 0){
+
+				for (int s = 0 ; s <2; s++)
+					alignedRegA[i][s] = normRegACounts[current_x][s];
+			
+				if ( !xTraceBack.empty() ){			
+					if (xTraceBack.peek() == DIAG || xTraceBack.peek() == LEFT){
+						current_x --;
+					}			
+					xTraceBack.pop();
+				}	
+			}
 		}
 		
 		
@@ -231,18 +234,21 @@ public class SmithWatermanAlignment {
 		
 		for (int i = e_y_coord-s_y_coord; i >= 0 ; i--){	
 			
-			for (int s = 0 ; s <2; s++){
-				if (reverseB == false){
-					alignedRegB[i][s] = normRegBCounts[current_y][s];
-				}else{
-					alignedRegB[i][s] = normRegBRevCounts[current_y][s];
+			while (current_y != 0){
+			
+				for (int s = 0 ; s <2; s++){
+					if (reverseB == false){
+						alignedRegB[i][s] = normRegBCounts[current_y][s];
+					}else{
+						alignedRegB[i][s] = normRegBRevCounts[current_y][s];
+					}
 				}
-			}
-			if ( !yTraceBack.empty() ){				
-				if (yTraceBack.peek() == DIAG || yTraceBack.peek() == UP){
-					current_y --;	
+				if ( !yTraceBack.empty() ){				
+					if (yTraceBack.peek() == DIAG || yTraceBack.peek() == UP){
+						current_y --;	
+					}
+					yTraceBack.pop();			
 				}
-				yTraceBack.pop();			
 			}
 		}
 		
