@@ -26,8 +26,8 @@ public class SmithWatermanAlignmentMatrix {
 //	final static double GAP_OPEN = 1;
 //	final static double GAP_EXT = 0.5;
 	
-	final static double GAP_OPEN = 2;
-	final static double GAP_EXT = 1;
+	final static double GAP_OPEN = 5;
+	final static double GAP_EXT = 2;
 	final static double WEIGHT = 40;
 	
 	static final int DIAG = 1;
@@ -117,13 +117,13 @@ public class SmithWatermanAlignmentMatrix {
 			}
 		}		
 
-//		System.out.println("printing M matrix");
-//		for (int i = 0; i <=window ; i++){
-//			for (int j = 0; j <=window; j++){
-//				System.out.print(M[i][j]+" ");
-//			}
-//			System.out.println();
-//		}			
+		System.out.println("printing M matrix");
+		for (int i = 0; i <=window ; i++){
+			for (int j = 0; j <=window; j++){
+				System.out.print(M[i][j]+" ");
+			}
+			System.out.println();
+		}			
 
 		// find the highest value
 		double maxScore = MINIMUM_VALUE;
