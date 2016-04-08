@@ -28,7 +28,7 @@ public class SmithWatermanAlignmentMatrix {
 	
 	final static double GAP_OPEN = 2;
 	final static double GAP_EXT = 1;
-	final static double WEIGHT = 30;
+	final static double WEIGHT = 40;
 	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
