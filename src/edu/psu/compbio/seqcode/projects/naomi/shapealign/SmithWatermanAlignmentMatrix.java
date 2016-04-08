@@ -164,11 +164,14 @@ public class SmithWatermanAlignmentMatrix {
 			if ( M[i-1][j-1] + mScore == currentScore ){
 				traceBack.push(DIAG);		
 				currentScore = M[i-1][j-1];
+				i--;
+				j--;
 			
 			// left case
 			}else if( M[i][j-1]-GAP_OPEN == currentScore ){
 				traceBack.push(LEFT);
 				currentScore = M[i][j-1];
+				j--;
 			
 			// right case
 			}else{
@@ -176,13 +179,11 @@ public class SmithWatermanAlignmentMatrix {
 				System.out.println("M value is"+M[i-1][j]);
 				traceBack.push(UP);
 				currentScore = M[i-1][j];
+				i--;
 			}
 			
 			current_x = i;
 			current_y = j;
-			
-			i--;
-			j--;
 		}
 		
 		setMaxScore(maxScore);
