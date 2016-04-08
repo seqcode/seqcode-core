@@ -214,7 +214,7 @@ public class SmithWatermanAlignment {
 		
 		for (int i = e_x_coord-s_x_coord; i >= 0 ; i--){	
 			
-			while (current_x != 0){
+			if (current_x >= 0){
 
 				for (int s = 0 ; s <2; s++)
 					alignedRegA[i][s] = normRegACounts[current_x][s];
@@ -234,7 +234,7 @@ public class SmithWatermanAlignment {
 		
 		for (int i = e_y_coord-s_y_coord; i >= 0 ; i--){	
 			
-			while (current_y != 0){
+			if (current_y >= 0){
 			
 				for (int s = 0 ; s <2; s++){
 					if (reverseB == false){
