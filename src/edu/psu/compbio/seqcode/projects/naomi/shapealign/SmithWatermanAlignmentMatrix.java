@@ -145,7 +145,7 @@ public class SmithWatermanAlignmentMatrix {
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
 				double mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
-						+ computeScore(regACounts[i-1][1], regBCounts[i-1][1]);
+						+ computeScore(regACounts[j-1][1], regBCounts[j-1][1]);
 				
 				System.out.println("mScore is "+mScore);
 			
