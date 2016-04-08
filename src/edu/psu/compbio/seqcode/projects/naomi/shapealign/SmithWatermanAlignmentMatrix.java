@@ -23,8 +23,8 @@ public class SmithWatermanAlignmentMatrix {
 	protected int alignEndYCoord;
 
 	//constants for Smith-Waterman Algorithms
-	final static double GAP_OPEN = 1;
-	final static double GAP_EXT = 0.5;
+	final static double GAP_OPEN = 2;
+	final static double GAP_EXT = 1;
 	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
@@ -144,8 +144,8 @@ public class SmithWatermanAlignmentMatrix {
 
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
-				double mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
-						+ computeScore(regACounts[j-1][1], regBCounts[j-1][1]);
+				double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
+						+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
 				
 				System.out.println("mScore is "+mScore);
 			
@@ -221,8 +221,8 @@ public class SmithWatermanAlignmentMatrix {
 		
 		while ( i != 1 && j != 1){
 
-			double mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
-					+ computeScore(regACounts[j-1][1], regBCounts[j-1][1]);
+			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
+					+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
 			
 			// diagonal case
 			if ( (M[i-1][j-1] + mScore == currentScore) || (I[i-1][j-1] + mScore == currentScore)){
