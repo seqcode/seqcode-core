@@ -136,17 +136,18 @@ public class SmithWatermanAlignmentMatrix {
 			
 				double max_I = temp_I[0];
 				for (int k = 1 ; k < 3 ; k++){
-					System.out.print(temp_I[k]+" ");
+
 					if (temp_I[k] > max_I){ max_I = temp_I[k];}
 				}
 				M[i][j] = max_I;
 			}
 		}
 		
+
 		System.out.println("printing M matrix");
 		for (int i = 0; i <=window ; i++){
 			for (int j = 0; j <=window; j++){
-				System.out.print(M[i][j]);
+				System.out.print(M[i][j]+" ");
 			}
 			System.out.println();
 		}
