@@ -86,6 +86,8 @@ public class SmithWatermanAlignmentMatrix {
 	
 	public void buildMatrix(){
 		
+		System.out.println("regACounts and regB counts ");
+		
 		for (int i = 0 ; i <window ; i++){
 			System.out.print(regACounts[i][0]+" ");
 		}
@@ -112,9 +114,9 @@ public class SmithWatermanAlignmentMatrix {
 				M[i][j] = 0;
 				I[i][j] = 0;
 			}
-		}
-		
+		}	
 
+		/***
 		//fill in M[i][j] & I[i][j] matrix
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
@@ -137,12 +139,15 @@ public class SmithWatermanAlignmentMatrix {
 				I[i][j] = max_I;
 			}
 		}
+		***/
 		
-		/***
+
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
 				double mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
 						+ computeScore(regACounts[i-1][1], regBCounts[i-1][1]);
+				
+				System.out.println("mScore is "+mScore);
 			
 				double temp_I[] = new double[3];
 				temp_I[0] = M[i-1][j-1] + mScore;
@@ -151,13 +156,17 @@ public class SmithWatermanAlignmentMatrix {
 			
 				double max_I = temp_I[0];
 				for (int k = 1 ; k < 3 ; k++){
+					System.out.print(temp_I[k]+" ");
 					if (temp_I[k] > max_I){ max_I = temp_I[k];}
 				}
+				System.out.println();
+				System.out.println(max_I);
+				
 				
 				M[i][j] = max_I;
 			}
 		}
-		***/
+
 		
 
 		System.out.println("M matrix");
@@ -180,11 +189,11 @@ public class SmithWatermanAlignmentMatrix {
 				x_coord = i;
 				y_coord = window;	
 			}
-			if (I[i][window] > maxScore){
-				maxScore = I[i][window];
-				x_coord = i;
-				y_coord = window;
-			}
+//			if (I[i][window] > maxScore){
+//				maxScore = I[i][window];
+//				x_coord = i;
+//				y_coord = window;
+//			}
 		}
 		for (int j = (int) Math.floor(window/2); j < window; j++){
 			if (M[j][window] > maxScore){
@@ -192,11 +201,11 @@ public class SmithWatermanAlignmentMatrix {
 				x_coord = j;
 				y_coord = window;	
 			}
-			if (I[j][window] > maxScore){
-				maxScore = I[j][window];
-				x_coord = j;
-				y_coord = window;
-			}
+//			if (I[j][window] > maxScore){
+//				maxScore = I[j][window];
+//				x_coord = j;
+//				y_coord = window;
+//			}
 		}
 		
 		System.out.println("max score is "+maxScore+" x coord is "+x_coord+" y coord is "+y_coord);
