@@ -119,7 +119,7 @@ public class SmithWatermanAlignment {
 			for (int i = 0; i <1 ; i++){	
 //			for (int i = 2; i <3 ; i++){
 				for (int j = i+1; j <regions.size();j++){
-	//				System.out.println(regions.get(j).getLocationString());
+					System.out.println("region is "+regions.get(j).getLocationString());
 					smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));		
 				}
 			}

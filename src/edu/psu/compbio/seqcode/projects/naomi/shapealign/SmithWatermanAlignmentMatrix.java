@@ -165,11 +165,11 @@ public class SmithWatermanAlignmentMatrix {
 				x_coord = i;
 				y_coord = window;	
 			}
-			if (I[i][window] > maxScore){
-				maxScore = I[i][window];
-				x_coord = i;
-				y_coord = window;
-			}
+//			if (I[i][window] > maxScore){
+//				maxScore = I[i][window];
+//				x_coord = i;
+//				y_coord = window;
+//			}
 		}
 		for (int j = (int) Math.floor(window/2); j <= window; j++){
 			if (M[window][j] > maxScore){
@@ -177,11 +177,11 @@ public class SmithWatermanAlignmentMatrix {
 				x_coord = j;
 				y_coord = window;	
 			}
-			if (I[window][j] > maxScore){
-				maxScore = I[window][j];
-				x_coord = j;
-				y_coord = window;
-			}
+//			if (I[window][j] > maxScore){
+//				maxScore = I[window][j];
+//				x_coord = j;
+//				y_coord = window;
+//			}
 		}
 		
 		System.out.println("max score is "+maxScore+" x coord is "+x_coord+" y coord is "+y_coord);
