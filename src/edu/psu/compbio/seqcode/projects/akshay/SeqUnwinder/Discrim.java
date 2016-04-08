@@ -486,7 +486,7 @@ public class Discrim {
 							Pair<Region,Double> pr = it.next();
 							Region currHill = pr.car();
 							Double currScore = pr.cdr();
-							if(currHill.overlaps(hill) && currScore<score){
+							if(currHill.overlaps(hill) && currScore<=score){
 								it.remove();
 								add=true;
 							}else if(currHill.overlaps(hill) && currScore> score){
