@@ -207,7 +207,6 @@ public class SmithWatermanAlignment {
 		int current_x = e_x_coord-1;
 		int current_y = e_y_coord-1;
 		
-		// need to re-visit here. this is not working
 		
 		@SuppressWarnings("unchecked")
 		Stack<Integer> xTraceBack = (Stack<Integer>) traceBack.clone();
