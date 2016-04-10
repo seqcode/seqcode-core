@@ -21,7 +21,7 @@ import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 /**
- * SmithWatermanAlignment: Aligns ChIP-exo reads using affine gaped Smith Waterman local alignment
+ * SmithWatermanAlignment: Aligns ChIP-exo reads using Smith Waterman local alignment
  * 
  * @author naomi yamada
  *
@@ -126,7 +126,7 @@ public class SmithWatermanAlignment {
 		}				
 	}
 	
-	public void smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
+	public Region smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
 		
 		//get counts
 		double [][] regACounts = countsArray.get(sample).get(regA);
@@ -207,7 +207,6 @@ public class SmithWatermanAlignment {
 		int current_x = e_x_coord-1;
 		int current_y = e_y_coord-1;
 		
-		// need to re-visit here. this is not working
 		
 		@SuppressWarnings("unchecked")
 		Stack<Integer> xTraceBack = (Stack<Integer>) traceBack.clone();
@@ -226,8 +225,7 @@ public class SmithWatermanAlignment {
 					xTraceBack.pop();
 				}	
 			}
-		}
-		
+		}		
 		
 		@SuppressWarnings("unchecked")
 		Stack<Integer> yTraceBack = (Stack<Integer>) traceBack.clone();;
@@ -283,6 +281,36 @@ public class SmithWatermanAlignment {
 		for (int i = 0; i < alignedRegB.length; i++)
 			System.out.print(alignedRegB[i][1]+",");	
 		System.out.println();
+		
+		// check that stack only contains DIAG
+		if ( traceBack.contains(LEFT) || traceBack.contains(UP) ){
+			System.out.println("stack contains LEFT or UP");
+			return null;
+		}else{
+			// get region offset
+			
+			if (reverseB == false){
+			
+				regA.getMidpoint().getLocation();
+			
+			
+			
+			
+				return regA;
+			
+			}else{ // if regionB is reversed
+				
+				return regA;
+				
+			}
+			
+			
+			
+			
+		}
+		
+		
+		// get region offset
 		
 	}
 	
