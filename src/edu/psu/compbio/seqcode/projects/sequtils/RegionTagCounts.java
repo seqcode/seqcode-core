@@ -13,7 +13,6 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
-import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -33,15 +32,13 @@ public class RegionTagCounts {
 	private List<Region> testRegs;
 	private ExperimentManager manager=null;
 	private String outName = "out";
-	private Integer readLen = 36;
 	
-	public RegionTagCounts(GenomeConfig gcon, ExptConfig econ, List<Region> regs, int readLength){
+	public RegionTagCounts(GenomeConfig gcon, ExptConfig econ, List<Region> regs, String out){
 		gConfig = gcon;
 		eConfig = econ;
 		testRegs = regs;
 		manager = new ExperimentManager(eConfig);
-		readLen = readLength;
-		
+		outName = out;
 	}
 	
 	
@@ -50,7 +47,7 @@ public class RegionTagCounts {
 			for(ControlledExperiment rep : c.getReplicates()){
 				System.err.println("Condition "+c.getName()+":\tRep "+rep.getName());
 				try {
-					FileWriter fw = new FileWriter(outName+"."+c.getName()+"."+rep.getName()+".point-coverage.txt");
+					FileWriter fw = new FileWriter(outName+".region-counts.txt");
 													       			
 					ChromRegionIterator chroms = new ChromRegionIterator(gConfig.getGenome());
 					while(chroms.hasNext()){
@@ -131,7 +128,7 @@ public class RegionTagCounts {
 					"\t--geninfo <genome info file> AND --seq <fasta seq directory>\n" +
 					"Coverage Testing:\n" +
 					"\t--reg <region coords>\n" +
-					"\t--readlen <read length>\n"
+					"\t--out <output file root>"
 					);
 		}else{
 			
@@ -142,10 +139,9 @@ public class RegionTagCounts {
 			Collection<String> regFiles = Args.parseStrings(args, "reg");
 			for(String rf : regFiles)
 				testSites.addAll(Utils.loadRegionsFromFile(rf, gcon.getGenome(), -1));
+			String outName = Args.parseString(args, "out", "out");
 			
-			Integer readL = Args.parseInteger(args, "readlen", 36);
-			
-			RegionTagCounts rct = new RegionTagCounts(gcon, econ, testSites, readL);
+			RegionTagCounts rct = new RegionTagCounts(gcon, econ, testSites, outName);
 			rct.execute();
 			rct.close();
 		}	
