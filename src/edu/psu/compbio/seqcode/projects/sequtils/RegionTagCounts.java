@@ -72,7 +72,7 @@ public class RegionTagCounts {
 									for(int o=offsetStart; o<=offsetEnd; o++)
 										sum+=stackedTagStarts[o];
 									
-									fw.write("chr"+r.getLocationString()+"\t"+String.format("%.0f", sum) +"\n");
+									fw.write(r.getLocationString()+"\t"+String.format("%.0f", sum) +"\n");
 									
 		                    	}
 							}
