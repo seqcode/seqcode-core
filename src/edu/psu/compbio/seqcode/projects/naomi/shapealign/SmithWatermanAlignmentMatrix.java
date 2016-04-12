@@ -26,8 +26,8 @@ public class SmithWatermanAlignmentMatrix {
 //	final static double GAP_OPEN = 1;
 //	final static double GAP_EXT = 0.5;
 	
-	final static double GAP_OPEN = 5;
-	final static double GAP_EXT = 2;
+	final static double GAP_OPEN = 10;
+	final static double GAP_EXT = 5;
 	final static double WEIGHT = 40;
 	
 	static final int DIAG = 1;
@@ -63,7 +63,13 @@ public class SmithWatermanAlignmentMatrix {
 	
 	public double computeSimilarityScore(double x1, double x2, double y1, double y2){
 		
-		double score = 1/Math.sqrt(Math.abs(Math.pow(x1-x2, 2)+Math.pow(y1-y2,2)))*((x1+x2+y1+y2)/4)-Math.abs(x1-x2)-Math.abs(y1-y2);		
+		double score = 0;
+
+		if ( ( x1 == x2 ) && (y1 == y2)){
+			 score = 0;
+		}else{
+			 score = 1/Math.sqrt(Math.abs(Math.pow(x1-x2, 2)+Math.pow(y1-y2,2)))*((x1+x2+y1+y2)/4)-Math.abs(x1-x2)-Math.abs(y1-y2);
+		}	
 		return score;
 	
 	}
