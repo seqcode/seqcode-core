@@ -26,8 +26,8 @@ public class SmithWatermanAlignmentMatrix {
 //	final static double GAP_OPEN = 1;
 //	final static double GAP_EXT = 0.5;
 	
-	final static double GAP_OPEN = 10;
-	final static double GAP_EXT = 5;
+	final static double GAP_OPEN = 5;
+	final static double GAP_EXT = 2;
 	final static double WEIGHT = 40;
 	
 	static final int DIAG = 1;
@@ -170,8 +170,10 @@ public class SmithWatermanAlignmentMatrix {
 		
 		while ( i != 0 && j != 0){
 
-			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
-					+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
+			double mScore = computeSimilarityScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
+			
+//			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
+//					+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
 			
 			// diagonal case
 			if ( M[i-1][j-1] + mScore == currentScore ){
