@@ -31,6 +31,7 @@ public abstract class HitLoader {
 	protected boolean hasPairs = false; //Flag to say there are pairs in the sample 
 	protected double totalHits; //totalHits is the sum of alignment weights
 	protected String sourceName=""; //String describing the source
+	
 	/**
 	 * Five prime ends of the read hits. <br>
 	 * HashMap is indexed by chromosome name. <br>

@@ -13,7 +13,6 @@ import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.NamedRegion;
-import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
@@ -21,27 +20,25 @@ import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 
 /**
- * This class aims to test the sequencing read coverage at a set of points (e.g. coverage overlapping a set of SNPs). 
+ * This class aims to count tags overlapping a set of regions. 
  *   
  * @author mahony
  *
  */
-public class ReadCoverageTester {
+public class RegionTagCounts {
 
 	private GenomeConfig gConfig;
 	private ExptConfig eConfig;
-	private List<Point> testSites;
+	private List<Region> testRegs;
 	private ExperimentManager manager=null;
 	private String outName = "out";
-	private Integer readLen = 36;
 	
-	public ReadCoverageTester(GenomeConfig gcon, ExptConfig econ, List<Point> sites, int readLength){
+	public RegionTagCounts(GenomeConfig gcon, ExptConfig econ, List<Region> regs, String out){
 		gConfig = gcon;
 		eConfig = econ;
-		testSites = sites;
+		testRegs = regs;
 		manager = new ExperimentManager(eConfig);
-		readLen = readLength;
-		
+		outName = out;
 	}
 	
 	
@@ -50,7 +47,7 @@ public class ReadCoverageTester {
 			for(ControlledExperiment rep : c.getReplicates()){
 				System.err.println("Condition "+c.getName()+":\tRep "+rep.getName());
 				try {
-					FileWriter fw = new FileWriter(outName+"."+c.getName()+"."+rep.getName()+".point-coverage.txt");
+					FileWriter fw = new FileWriter(outName+".region-counts.txt");
 													       			
 					ChromRegionIterator chroms = new ChromRegionIterator(gConfig.getGenome());
 					while(chroms.hasNext()){
@@ -63,16 +60,19 @@ public class ReadCoverageTester {
 							Region currSubRegion = new Region(gConfig.getGenome(), currentRegion.getChrom(), x, y);
 							
 							List<StrandedBaseCount> hits = rep.getSignal().getBases(currSubRegion);
-		                    double stackedReadCoverage[] = makeReadCoverageLandscape(hits, currSubRegion);
+		                    double stackedTagStarts[] = makeTagStartLandscape(hits, currSubRegion);
 		                    
 		                    //Get coverage of points that lie within the current region
-		                    for(Point pt : testSites){
-		                    	if(currSubRegion.contains(pt)){
+		                    for(Region r : testRegs){
+		                    	if(currSubRegion.contains(r)){
 			                    
-									int offset = pt.getLocation()-currSubRegion.getStart();
-									double sum=stackedReadCoverage[offset];
+									int offsetStart = inBounds(r.getStart()-currSubRegion.getStart(), 0, currSubRegion.getWidth()-1);
+									int offsetEnd =inBounds(r.getEnd()-currSubRegion.getStart(), 0, currSubRegion.getWidth()-1);
+									double sum=0;
+									for(int o=offsetStart; o<=offsetEnd; o++)
+										sum+=stackedTagStarts[o];
 									
-									fw.write("chr"+pt.getChrom()+":"+pt.getLocation()+"\t"+String.format("%.0f", sum) +"\n");
+									fw.write(r.getLocationString()+"\t"+String.format("%.0f", sum) +"\n");
 									
 		                    	}
 							}
@@ -87,22 +87,13 @@ public class ReadCoverageTester {
 		}
 	}
 	
-	protected double[] makeReadCoverageLandscape(List<StrandedBaseCount> hits, Region currReg){
+	protected double[] makeTagStartLandscape(List<StrandedBaseCount> hits, Region currReg){
 		double[] counts = new double[(int)currReg.getWidth()+1];
         for(int i=0; i<=currReg.getWidth(); i++){counts[i]=0;}
         for(StrandedBaseCount r : hits){
         	if(r.getCoordinate()>=currReg.getStart() && r.getCoordinate()<=currReg.getEnd()){
-	        	if(r.getStrand()=='+'){
-	        		int offsetStart=inBounds(r.getCoordinate()-currReg.getStart(),0,currReg.getWidth());
-	        		int offsetEnd=inBounds(r.getCoordinate()+readLen-currReg.getStart(),0,currReg.getWidth());
-	        		for(int o=offsetStart; o<offsetEnd; o++)
-	        			counts[o]+=r.getCount();
-	            }else{
-	            	int offsetStart=inBounds(r.getCoordinate()-readLen+1-currReg.getStart(),0,currReg.getWidth());
-	            	int offsetEnd=inBounds(r.getCoordinate()-currReg.getStart()+1,0,currReg.getWidth());
-	            	for(int o=offsetStart; o<offsetEnd; o++)
-	            		counts[o]+=r.getCount();
-	            }
+	        	int offset=inBounds(r.getCoordinate()-currReg.getStart(),0,currReg.getWidth());
+	        	counts[offset]+=r.getCount();
         	}
         }
         return(counts);
@@ -130,28 +121,27 @@ public class ReadCoverageTester {
 	public static void main(String[] args) {
 		ArgParser ap = new ArgParser(args);
 		if(args.length==0 || ap.hasKey("h")){
-			System.err.println("ReadCoverageTester:");
+			System.err.println("RegionTagCounts:");
 			System.err.println("Genome:" +
 					"\t--species <Species;Genome>\n" +
 					"\tOR\n" +
 					"\t--geninfo <genome info file> AND --seq <fasta seq directory>\n" +
 					"Coverage Testing:\n" +
-					"\t--sites <test site coords>\n" +
-					"\t--readlen <read length>\n"
+					"\t--reg <region coords>\n" +
+					"\t--out <output file root>"
 					);
 		}else{
 			
 			GenomeConfig gcon = new GenomeConfig(args);
 			ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
 		
-			List<Point> testSites = new ArrayList<Point>();
-			Collection<String> siteFiles = Args.parseStrings(args, "sites");
-			for(String sf : siteFiles)
-				testSites.addAll(Utils.loadPointsFromFile(sf, gcon.getGenome()));
+			List<Region> testSites = new ArrayList<Region>();
+			Collection<String> regFiles = Args.parseStrings(args, "reg");
+			for(String rf : regFiles)
+				testSites.addAll(Utils.loadRegionsFromFile(rf, gcon.getGenome(), -1));
+			String outName = Args.parseString(args, "out", "out");
 			
-			Integer readL = Args.parseInteger(args, "readlen", 36);
-			
-			ReadCoverageTester rct = new ReadCoverageTester(gcon, econ, testSites, readL);
+			RegionTagCounts rct = new RegionTagCounts(gcon, econ, testSites, outName);
 			rct.execute();
 			rct.close();
 		}	
