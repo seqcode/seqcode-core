@@ -50,10 +50,7 @@ public class ChIPexoQC {
 				if (IPstrength<0)
 					IPstrength=0;
 				System.out.println("Condition:"+rep.getCondName()+"\tSignal:"+signalHits+"\tControl:"+controlHits+"\tScalingFactor:"+ncis+"\tIPstrength: "+IPstrength);
-				
-				if (printBinCounts ==true){
-					
-				}
+
 			}
 		}
 		manager.close();
@@ -116,12 +113,18 @@ public class ChIPexoQC {
 		
 		
 		/***
-		 * You need to specify --fixedpb otherwise upper count limit would be set to a random number
+		 * example: 
+		 * java edu.psu.compbio.seqcode.projects.naomi.xoqualitycontrol.ChIPexoQC --species "Homo sapiens;hg19" --design Ikaros20160328.design --scalewin 5000 --plotscaling >NCIS.out
+		 *  
 		 * if you want to print binCounds --binCounts 
+		 * if you want to plot scaling --plotscaling
 		 ***/
 		
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
+		
+		econf.setPerBaseReadFiltering(false);
+		
 		ExperimentManager manager = new ExperimentManager(econf);
 		ChIPexoQC exoQC = new ChIPexoQC(gconf, econf, manager); 
 		
