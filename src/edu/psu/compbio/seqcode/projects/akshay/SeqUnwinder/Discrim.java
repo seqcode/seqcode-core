@@ -110,7 +110,7 @@ public class Discrim {
             if(words[0].charAt(0) == '#' || words[0].contains("Variable") || words[0].contains("Class")){
             	header = true;
             	for(int i=1; i<words.length; i++){
-            		//words[i] = words[i].replace('&', '_');
+            		words[i] = words[i].replace('&', '_');
             		kmerModelNames.add(words[i]);
             		kmerweights.put(words[i], new double[numK]);
             	}
@@ -266,7 +266,7 @@ public class Discrim {
 			
 			// Now add all the training examples that are linked to the current K-mer model
 			// First; split to get subgroup names
-			String[] subGsMod = kmerModelName.split("&");
+			String[] subGsMod = kmerModelName.split("_");
 			// Second; remove all "Root" keywords
 			for(int s=0; s<subGsMod.length; s++){
 				if(subGsMod[s].startsWith("Root"))
