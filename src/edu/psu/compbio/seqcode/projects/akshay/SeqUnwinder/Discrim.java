@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
@@ -109,7 +110,7 @@ public class Discrim {
             if(words[0].charAt(0) == '#' || words[0].contains("Variable") || words[0].contains("Class")){
             	header = true;
             	for(int i=1; i<words.length; i++){
-            		words[i] = words[i].replace('&', '_');
+            		//words[i] = words[i].replace('&', '_');
             		kmerModelNames.add(words[i]);
             		kmerweights.put(words[i], new double[numK]);
             	}
@@ -265,7 +266,7 @@ public class Discrim {
 			
 			// Now add all the training examples that are linked to the current K-mer model
 			// First; split to get subgroup names
-			String[] subGsMod = kmerModelName.split("_");
+			String[] subGsMod = kmerModelName.split("&");
 			// Second; remove all "Root" keywords
 			for(int s=0; s<subGsMod.length; s++){
 				if(subGsMod[s].startsWith("Root"))
