@@ -96,13 +96,17 @@ public class ExperimentManager {
 				String name = source.car();
 				String type = source.cdr();
 				if(type.equals("READDB")){ //ReadDB HitLoader
-					HitLoader hl = makeReadDBHitLoader(sdloader, name);
-					//hit loader does not have to be sourced here -- that happens in the samples part below
-					loaders.put(name, hl);
+					if(!loaders.containsKey(name)){
+						HitLoader hl = makeReadDBHitLoader(sdloader, name);
+						//hit loader does not have to be sourced here -- that happens in the samples part below
+						loaders.put(name, hl);
+					}
 				}else{  //Assume File HitLoader
-					HitLoader hl = makeFileHitLoader(name, type, econfig.getNonUnique());
-					//hit loader does not have to be sourced here -- that happens in the samples part below
-					loaders.put(name, hl);
+					if(!loaders.containsKey(name)){
+						HitLoader hl = makeFileHitLoader(name, type, econfig.getNonUnique());
+						//hit loader does not have to be sourced here -- that happens in the samples part below
+						loaders.put(name, hl);
+					}
 				}
 			}
 		}

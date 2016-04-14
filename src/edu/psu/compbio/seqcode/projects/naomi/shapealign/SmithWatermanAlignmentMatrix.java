@@ -26,8 +26,8 @@ public class SmithWatermanAlignmentMatrix {
 //	final static double GAP_OPEN = 1;
 //	final static double GAP_EXT = 0.5;
 	
-	final static double GAP_OPEN = 5;
-	final static double GAP_EXT = 2;
+	final static double GAP_OPEN = 10;
+	final static double GAP_EXT = 5;
 	final static double WEIGHT = 40;
 	
 	static final int DIAG = 1;
@@ -60,21 +60,36 @@ public class SmithWatermanAlignmentMatrix {
 	public void setEndXCoord(int endXCoord){alignEndXCoord = endXCoord;}
 	public void setEndYCoord(int endYCoord){alignEndYCoord = endYCoord;}
 	
-//	public double computeScore(double aVal, double bVal){
-//		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
-//		return score;		
-//	}
+	
+	public double computeSimilarityScore(double x1, double x2, double y1, double y2){
+		
+		double score = 0;
+
+		if ( ( x1 == x2 ) && (y1 == y2)){
+			 score = 0;
+		}else{
+			 score = 1/Math.sqrt(Math.abs(Math.pow(x1-x2, 2)+Math.pow(y1-y2,2)))*((x1+x2+y1+y2)/4)-Math.abs(x1-x2)-Math.abs(y1-y2);
+		}	
+		return score;
+	
+	}
+	
 	
 	public double computeScore(double aVal, double bVal){
+		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
+		return score;		
+	}
 	
-	double score = MINIMUM_VALUE;
-	if (aVal != bVal ){	
-		score = 1/Math.sqrt(Math.abs(Math.pow(aVal,2)-Math.pow(bVal, 2)))*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
-	}else{
-		score = WEIGHT*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
-	}		
-	return score;
-	}	
+//	public double computeScore(double aVal, double bVal){
+	
+//	double score = MINIMUM_VALUE;
+//	if (aVal != bVal ){	
+//		score = 1/Math.sqrt(Math.abs(Math.pow(aVal,2)-Math.pow(bVal, 2)))*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
+//	}else{
+//		score = WEIGHT*Math.pow((aVal+bVal)/2, 2)-Math.abs(aVal-bVal);
+//	}		
+//	return score;
+//	}	
 	
 	// this needs to go with big GAP_OPEN and GAP_EXT
 //	public double computeScore(double aVal, double bVal){
@@ -100,8 +115,11 @@ public class SmithWatermanAlignmentMatrix {
 		
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
-				double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
-						+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
+				
+				double mScore = computeSimilarityScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
+				
+//				double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
+//						+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
 			
 				double temp_M[] = new double[3];
 				temp_M[0] = M[i-1][j-1] + mScore;
@@ -158,8 +176,10 @@ public class SmithWatermanAlignmentMatrix {
 		
 		while ( i != 0 && j != 0){
 
-			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
-					+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
+			double mScore = computeSimilarityScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
+			
+//			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
+//					+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
 			
 			// diagonal case
 			if ( M[i-1][j-1] + mScore == currentScore ){

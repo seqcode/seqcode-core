@@ -1211,7 +1211,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
     }
     
 	public void close() {
-        if (client != null) {
+        if (!closed && client != null) {
             client.close();
             client = null;
         }
