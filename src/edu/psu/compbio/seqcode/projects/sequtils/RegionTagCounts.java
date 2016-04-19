@@ -49,7 +49,8 @@ public class RegionTagCounts {
 			for(ControlledExperiment rep : c.getReplicates()){
 				System.err.println("Condition "+c.getName()+":\tRep "+rep.getName());
 				double scaling = rep.getControlScaling();
-				double IPstrength = 1-(scaling/(rep.getSignal().getHitCount()/rep.getControl().getHitCount()));
+				double sigStrength = 1-(scaling/(rep.getSignal().getHitCount()/rep.getControl().getHitCount()));
+				double sigCount = sigStrength * rep.getSignal().getHitCount();
 				
 				try {
 					FileWriter fw = new FileWriter(outName+".region-counts.txt");
@@ -79,7 +80,7 @@ public class RegionTagCounts {
 									}
 									
 									if(normCounts)
-										fw.write(r.getLocationString()+"\t"+String.format("%f", sum/IPstrength) +"\n");
+										fw.write(r.getLocationString()+"\t"+String.format("%e", sum/sigCount) +"\n");
 									else
 										fw.write(r.getLocationString()+"\t"+String.format("%.0f", sum) +"\n");
 									
