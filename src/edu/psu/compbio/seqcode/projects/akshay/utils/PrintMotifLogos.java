@@ -3,6 +3,7 @@ package edu.psu.compbio.seqcode.projects.akshay.utils;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
@@ -16,7 +17,7 @@ import edu.psu.compbio.seqcode.projects.shaun.FreqMatrixImport;
 
 public class PrintMotifLogos {
 	
-	protected List<WeightMatrix> motifs;
+	protected List<WeightMatrix> motifs=new ArrayList<WeightMatrix>();
 	
 	// Load freq matrices
 	public void loadMotifsFromFile(String filename, MarkovBackgroundModel b) {
