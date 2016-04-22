@@ -200,7 +200,8 @@ public class LOne extends Optimizer {
 				xs.add(sm_x[cid*dim+w]);
 			}
 			Collections.sort(xs);
-			sm_x[nOffset+w] = (xs.size() % 2 == 0) ? (xs.get(xs.size()/2) + xs.get((xs.size()/2)-1))/2 : xs.get(xs.size()/2);
+			//sm_x[nOffset+w] = (xs.size() % 2 == 0) ? (xs.get(xs.size()/2) + xs.get((xs.size()/2)-1))/2 : xs.get(xs.size()/2);
+			sm_x[nOffset+w] = (xs.size() % 2 == 0) ? xs.get((xs.size()/2)-1) : xs.get(xs.size()/2);
 			//	int midInd = xs.size()/2;
 			//	sm_x[nOffset+w] = xs.get(midInd);
 		}
