@@ -32,13 +32,15 @@ public class RegionTagCounts {
 	private List<Region> testRegs;
 	private ExperimentManager manager=null;
 	private String outName = "out";
+	private boolean normCounts=false; //normalize to signal proportion
 	
-	public RegionTagCounts(GenomeConfig gcon, ExptConfig econ, List<Region> regs, String out){
+	public RegionTagCounts(GenomeConfig gcon, ExptConfig econ, List<Region> regs, String out, boolean norm){
 		gConfig = gcon;
 		eConfig = econ;
 		testRegs = regs;
 		manager = new ExperimentManager(eConfig);
 		outName = out;
+		normCounts = norm;
 	}
 	
 	
@@ -46,6 +48,10 @@ public class RegionTagCounts {
 		for(ExperimentCondition c : manager.getConditions()){
 			for(ControlledExperiment rep : c.getReplicates()){
 				System.err.println("Condition "+c.getName()+":\tRep "+rep.getName());
+				double scaling = rep.getControlScaling();
+				double sigStrength = 1-(scaling/(rep.getSignal().getHitCount()/rep.getControl().getHitCount()));
+				double sigCount = sigStrength * rep.getSignal().getHitCount();
+				
 				try {
 					FileWriter fw = new FileWriter(outName+".region-counts.txt");
 													       			
@@ -69,10 +75,14 @@ public class RegionTagCounts {
 									int offsetStart = inBounds(r.getStart()-currSubRegion.getStart(), 0, currSubRegion.getWidth()-1);
 									int offsetEnd =inBounds(r.getEnd()-currSubRegion.getStart(), 0, currSubRegion.getWidth()-1);
 									double sum=0;
-									for(int o=offsetStart; o<=offsetEnd; o++)
+									for(int o=offsetStart; o<=offsetEnd; o++){
 										sum+=stackedTagStarts[o];
+									}
 									
-									fw.write(r.getLocationString()+"\t"+String.format("%.0f", sum) +"\n");
+									if(normCounts)
+										fw.write(r.getLocationString()+"\t"+String.format("%e", sum/sigCount) +"\n");
+									else
+										fw.write(r.getLocationString()+"\t"+String.format("%.0f", sum) +"\n");
 									
 		                    	}
 							}
@@ -128,7 +138,8 @@ public class RegionTagCounts {
 					"\t--geninfo <genome info file> AND --seq <fasta seq directory>\n" +
 					"Coverage Testing:\n" +
 					"\t--reg <region coords>\n" +
-					"\t--out <output file root>"
+					"\t--out <output file root>\n" +
+					"\t--normcounts [flag to normalize counts]\n"
 					);
 		}else{
 			
@@ -140,8 +151,9 @@ public class RegionTagCounts {
 			for(String rf : regFiles)
 				testSites.addAll(Utils.loadRegionsFromFile(rf, gcon.getGenome(), -1));
 			String outName = Args.parseString(args, "out", "out");
+			boolean norm = Args.parseFlags(args).contains("normcounts");
 			
-			RegionTagCounts rct = new RegionTagCounts(gcon, econ, testSites, outName);
+			RegionTagCounts rct = new RegionTagCounts(gcon, econ, testSites, outName, norm);
 			rct.execute();
 			rct.close();
 		}	
