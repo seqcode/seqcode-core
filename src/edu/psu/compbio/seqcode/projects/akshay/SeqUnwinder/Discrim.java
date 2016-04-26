@@ -275,13 +275,24 @@ public class Discrim {
 			
 			for(int p=0; p< regions.size(); p++){
 				String[] pieces = subGroupsAtPeaks.get(p).split(";");
-				boolean addReg = false;
-				for(String piece : pieces){
-					for(String subGsInMod : subGsMod){
-						if(piece.equals(subGsInMod))
-							addReg = true;
+				boolean addReg = true;
+				
+				for(String subGsInMod : subGsMod){
+					boolean SGinPeak = false;
+					for(String piece : pieces){
+						if(subGsInMod.equals(piece)){
+							SGinPeak = true;
+						}
 					}
+					if(!SGinPeak)
+						addReg = false;
 				}
+				//for(String piece : pieces){
+				//	for(String subGsInMod : subGsMod){
+				//		if(piece.equals(subGsInMod))
+				//			addReg = true;
+				//	}
+				//}
 				if(addReg)
 					modelRegions.add(regions.get(p));
 			}

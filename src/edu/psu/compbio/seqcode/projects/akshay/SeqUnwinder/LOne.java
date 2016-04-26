@@ -26,7 +26,7 @@ public class LOne extends Optimizer {
 	// Fixed SeqUnwinder parameters
 
 	/** Tolerence for internal Nodes convergence */
-	public final double NODES_tol = 1E-1;
+	public final double NODES_tol = 1E-2;
 
 	// Tunable ADMM parameters
 
