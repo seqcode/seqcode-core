@@ -122,8 +122,8 @@ public class HillsAnalysisSandbox {
 					String currk = hillSeq.substring(j, j+k);
 					String revcurrk = SequenceUtils.reverseComplement(currk);
 					if(motifKmers.contains(currk) || motifKmers.contains(revcurrk)){
-						int  currKInt = RegionFileUtilities.seq2int(currk);
-						int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
+						int  currKInt = RegionFileUtilities.seq2int(currk.toUpperCase());
+						int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk.toUpperCase());
 						int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
 						int baseInd = this.getKmerBaseInd(currk);
 						score = score+kmerweights.get(modName)[baseInd+kmer];
