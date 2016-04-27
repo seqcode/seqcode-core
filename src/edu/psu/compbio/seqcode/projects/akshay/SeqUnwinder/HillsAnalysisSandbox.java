@@ -212,6 +212,11 @@ public class HillsAnalysisSandbox {
 			System.exit(1);
 		}
 		runner.setKmerWeights(weights);
+		
+		// Load hills
+		String hillsFile = ap.getKeyValue("hillsFile");
+		List<Region> regs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), hillsFile, -1);
+		runner.setHills(regs);
 
 		// Now load K-mer models
 		String motifFile = ap.getKeyValue("motiffile");
