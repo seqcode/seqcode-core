@@ -123,11 +123,12 @@ public class LOne extends Optimizer {
 	}
 
 	public void execute() throws Exception{
-
+		System.err.println("Training SeqUnwinder model!!");
+		long SeqUnwinderStartTime = System.currentTimeMillis();
+		
 		for(int it=0; it<NODES_maxItr; it++){
-
-			System.err.println("Running SeqUnwinder for Iteration: "+ it);
-
+			System.err.println("Iteration: "+ it+1);
+			
 			double[] sm_x_old = new double[sm_x.length];
 
 			for(int i=0; i<sm_x.length; i++){
@@ -135,11 +136,18 @@ public class LOne extends Optimizer {
 			}
 
 			// First, run admm on leaf nodes
+			System.err.println("Updating sub-class feature weights using ADMM!!");
+			long admmStartTime = System.currentTimeMillis();
 			ADMMrunner admm = new ADMMrunner();
 			admm.execute();
-
+			long admmEndTime = System.currentTimeMillis();
+			long duraiton = admmEndTime - admmStartTime;
+			System.err.println("Finished updating sub-class feature weights!! "+"Time taken: "+duraiton);
+			
+			
 			// Now update the internal nodes
 			updateInternalNodes();
+			System.err.println("Updated label feature weights!!");
 
 			// Check Convergence
 			boolean converged = true;
@@ -150,9 +158,9 @@ public class LOne extends Optimizer {
 				}
 				diff = Math.sqrt(diff);
 				if(sm_Debug){
-					System.err.println("Hierarchy update diff: Node: "+n.nodeIndex + " diff is: "+  diff);
+					System.err.println("delta(label/sublcass-weights) for class with index: "+n.nodeIndex + " is: "+  diff);
 					double tmp = NODES_tol*getL2NormX(n.nodeIndex);
-					System.err.println("Target diff : Node: " + n.nodeIndex + " is "+ tmp);
+					System.err.println("Target to reach for this node is: " + n.nodeIndex + " is "+ tmp);
 				}
 				if( diff > NODES_tol*getL2NormX(n.nodeIndex)){
 					converged=false;
@@ -167,7 +175,10 @@ public class LOne extends Optimizer {
 			}
 
 		}
-
+		
+		long SeqUnwinderEndTime = System.currentTimeMillis();
+		long seqDuration =  SeqUnwinderEndTime - SeqUnwinderStartTime;
+		System.err.println("Finished training SeqUnwinder!! "+"Time taken: "+seqDuration);
 	}
 
 	// Slave methods
@@ -569,15 +580,15 @@ public class LOne extends Optimizer {
 			}
 
 			while(ADMM_currItr_value.get() < ADMM_maxItr){
-				if(sm_Debug)
-					System.err.print(". "+ ADMM_currItr_value.get() + " .");
+				//if(sm_Debug)
+					//System.err.print(". "+ ADMM_currItr_value.get() + " .");
 
 
 				// Update pho 
 				if(ADMM_currItr_value.get() >0 && !ranADMM && ADMM_pho < ADMM_pho_max)
 					updatePhoAndFold(ADMM_currItr_value.get()-1);
-				if(sm_Debug)
-					System.err.print(" "+ADMM_pho+" ");
+				//if(sm_Debug)
+				//	System.err.print(" "+ADMM_pho+" ");
 
 				//make sure all of finished_linesrch[] are set to false before you begin the linesearch.
 				synchronized(finished_linesrch){
@@ -616,13 +627,13 @@ public class LOne extends Optimizer {
 				// Print the primal and dual residuals
 				if(ADMM_currItr_value.get()>0){
 					if(sm_Debug && !ADMMconverged.get()){
-						double primal = 0.0;
-						double dual = 0.0;
-						for(int i=0; i<(numNodes*numNodes); i++){
-							primal += history_primal[ADMM_currItr_value.get()-1][i];
-							dual += history_dual[ADMM_currItr_value.get()-1][i];
-						}
-						System.err.println("Primal residual "+ primal + " , Dual residual "+ dual);
+						//double primal = 0.0;
+						//double dual = 0.0;
+						//for(int i=0; i<(numNodes*numNodes); i++){
+							//primal += history_primal[ADMM_currItr_value.get()-1][i];
+							//dual += history_dual[ADMM_currItr_value.get()-1][i];
+						//}
+						//System.err.println("Primal residual "+ primal + " , Dual residual "+ dual);
 					}else{
 						System.err.println();
 						System.err.println("ADMM has converged after "+ADMM_currItr_value.get()+" iterations !!");
@@ -707,6 +718,15 @@ public class LOne extends Optimizer {
 					}
 				}
 			}
+			
+			//Print the primal and dual residuals
+			double primal = 0.0;
+			double dual = 0.0;
+			for(int i=0; i<(numNodes*numNodes); i++){
+				primal += history_primal[ADMM_currItr_value.get()-1][i];
+				dual += history_dual[ADMM_currItr_value.get()-1][i];
+			}
+			System.err.println("Primal residual "+ primal + " , Dual residual "+ dual);
 
 			// Now copy the leaf node weights (i.e x) to sm_x
 			for(Node n: classStructure.leafs){
@@ -787,7 +807,7 @@ public class LOne extends Optimizer {
 					}
 					
 					numberOfReleasedThreads.incrementAndGet();
-					System.out.println("Thread "+ threadName + " realeased!!");
+					//System.out.println("Thread "+ threadName + " realeased!!");
 					
 					if(ADMM_currItr_value.get() >= ADMM_maxItr)
 						break;
@@ -835,6 +855,9 @@ public class LOne extends Optimizer {
 					int m = 5;
 					double[] diag = new double[t_b_x.length];
 					int[] iprint = new int[2];
+					// No output needed
+					iprint[0] = -1;
+					
 					double eps = 0.1;
 					double xtol = 10e-16;
 
