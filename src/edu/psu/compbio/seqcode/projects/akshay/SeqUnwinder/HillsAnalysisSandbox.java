@@ -149,8 +149,9 @@ public class HillsAnalysisSandbox {
 	
 	public void scoreHills(String modName){
 		System.out.println("#Hill\t"+"HillSeq\t"+modName+"_MotifScore");
-		double score=0.0;
+		
 		for(Region hillreg : hills){
+			double score=0.0;
 			String hillSeq = seqgen.execute(hillreg).toUpperCase();
 			for(int k=Kmin; k<=Kmax; k++){
 				for(int j=0; j<hillSeq.length()-k+1; j++){
