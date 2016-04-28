@@ -108,6 +108,7 @@ public class HillsAnalysisSandbox {
 	
 	// Prints the CG hills that do not score highly for the given list of motifs (usually primary motifs)
 	public void printCGhills(String modName){
+		System.out.println("#Hill\t"+"HillSeq\t"+modName+"_MotifScore\t"+"fractionCG");
 		//First get the k-mer for the given list of motifs
 		HashSet<String> motifKmers = new HashSet<String>();
 		for(WeightMatrix mot : motifs){
@@ -115,15 +116,15 @@ public class HillsAnalysisSandbox {
 		}
 		
 		for(Region hillreg : hills){
-			String hillSeq = seqgen.execute(hillreg);
+			String hillSeq = seqgen.execute(hillreg).toUpperCase();
 			double score=0.0;
 			for(int k=Kmin; k<=Kmax; k++){
 				for(int j=0; j<hillSeq.length()-k+1; j++){
 					String currk = hillSeq.substring(j, j+k);
 					String revcurrk = SequenceUtils.reverseComplement(currk);
 					if(motifKmers.contains(currk) || motifKmers.contains(revcurrk)){
-						int  currKInt = RegionFileUtilities.seq2int(currk.toUpperCase());
-						int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk.toUpperCase());
+						int  currKInt = RegionFileUtilities.seq2int(currk);
+						int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
 						int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
 						int baseInd = this.getKmerBaseInd(currk);
 						score = score+kmerweights.get(modName)[baseInd+kmer];
@@ -139,17 +140,38 @@ public class HillsAnalysisSandbox {
 				int total = profile.getCGcount();
 				double perc = total/(double)MaxCG;
 				if(perc > CGPercCutoff)
-					System.out.println(hillreg.toString());
+					System.out.println(hillreg.toString()+"\t"+hillSeq+"\t"+Double.toString(score)+"\t"+Double.toString(perc));
 			}
 			
 		}
 	
+	}
+	
+	public void scoreHills(String modName){
+		System.out.println("#Hill\t"+"HillSeq\t"+modName+"_MotifScore");
+		double score=0.0;
+		for(Region hillreg : hills){
+			String hillSeq = seqgen.execute(hillreg).toUpperCase();
+			for(int k=Kmin; k<=Kmax; k++){
+				for(int j=0; j<hillSeq.length()-k+1; j++){
+					String currk = hillSeq.substring(j, j+k);
+					String revcurrk = SequenceUtils.reverseComplement(currk);
+					int  currKInt = RegionFileUtilities.seq2int(currk);
+					int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
+					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+					int baseInd = this.getKmerBaseInd(currk);
+					score += kmerweights.get(modName)[baseInd+kmer];
+				}
+			}
+			System.out.println(hillreg.toString()+"\t"+hillSeq+"\t"+Double.toString(score));
+		}
 	}
 		
 
 	
 	// Prints all the hills that are high scoring for the given list of motifs
 	public void printMotifHills(String modName){
+		System.out.println("#Hill\t"+"HillSeq\t"+modName+"_Score\t");
 		//First get the k-mer for the given list of motifs
 		HashSet<String> motifKmers = new HashSet<String>();
 		for(WeightMatrix mot : motifs){
@@ -157,7 +179,7 @@ public class HillsAnalysisSandbox {
 		}
 
 		for(Region hillreg : hills){
-			String hillSeq = seqgen.execute(hillreg);
+			String hillSeq = seqgen.execute(hillreg).toUpperCase();
 			double score=0.0;
 			for(int k=Kmin; k<=Kmax; k++){
 				for(int j=0; j<hillSeq.length()-k+1; j++){
@@ -174,7 +196,7 @@ public class HillsAnalysisSandbox {
 			}
 			
 			if(score > motifScoreThresh){
-				System.out.println(hillreg.toString());
+				System.out.println(hillreg.toString()+"\t"+hillSeq+"\t"+Double.toString(score));
 			}
 		}
 	}
@@ -215,12 +237,17 @@ public class HillsAnalysisSandbox {
 		
 		// Load hills
 		String hillsFile = ap.getKeyValue("hillsFile");
+		if(hillsFile == null){
+			System.err.println("Provide hills file");
+			System.exit(1);
+		}
 		List<Region> regs = RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), hillsFile, -1);
 		runner.setHills(regs);
 
 		// Now load K-mer models
 		String motifFile = ap.getKeyValue("motiffile");
-		runner.loadMotifsFromFile(motifFile,back);
+		if(ap.hasKey("motiffile"))
+			runner.loadMotifsFromFile(motifFile,back);
 		
 		double cgThresh = Args.parseDouble(args, "cgThresh", 0.25);
 		runner.setCGpercCutoff(cgThresh);
@@ -229,7 +256,13 @@ public class HillsAnalysisSandbox {
 		runner.setMotifThresh(motThresh);
 		
 		String modName = ap.getKeyValue("modname");
-		
+		if(modName == null){
+			System.err.println("Which modelname to scan? Please provide and re-run");
+			System.exit(1);
+		}
+			
+		if(ap.hasKey("scoreHills"))
+			runner.scoreHills(modName);
 		if(ap.hasKey("printCGhills"))
 			runner.printCGhills(modName);
 		if(ap.hasKey("printMotHills"))
