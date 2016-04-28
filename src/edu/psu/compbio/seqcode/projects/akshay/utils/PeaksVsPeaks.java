@@ -44,6 +44,29 @@ public class PeaksVsPeaks {
 	public void setRegionsBSet(List<List<Region>> rset){regionsBSet = rset;}
 	
 	
+	public void printClosestOffsetPeak(){
+		for(Point pa : peaksA){
+			int mind=Integer.MAX_VALUE;
+			Point nearestPeak=null;
+			for(Point pb : peaksB){
+				if(pb.getChrom().equals(pa.getChrom())){
+					if(pa.distance(pb) < Math.abs(mind)){
+						mind = pa.offset(pb);
+						nearestPeak = pb;
+					}
+				}
+			}
+			if(mind <= overlapD){
+				System.out.println(pa.getLocationString()+"\t"+nearestPeak.getLocationString()+"\t"+Integer.toString(mind));
+			}else{
+				System.out.println(pa.getLocationString()+"\t-");
+			}
+
+		}
+
+	}
+	
+	
 	public void printClosestPeaks(){
 		// Need not hash by chrom. Usually lists are very small
 		for(Point pa : peaksA){
@@ -151,10 +174,12 @@ public class PeaksVsPeaks {
 		int overlapD = Args.parseInteger(args, "overlapD", 100);
 		analyzer.setOverlapD(overlapD);
 		
-		if(ap.hasKey("peaksB"))
+		if(ap.hasKey("peaksB") && !ap.hasKey("printoffset"))
 			analyzer.printClosestPeaks();
 		if(ap.hasKey("peaksBset"))
 			analyzer.printPeakSets();
+		if(ap.hasKey("peaksB") && ap.hasKey("printoffset"))
+			analyzer.printClosestOffsetPeak();
 	}
 	
 	
