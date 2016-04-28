@@ -56,10 +56,10 @@ public class PeaksVsPeaks {
 					}
 				}
 			}
-			if(mind <= overlapD){
+			if(Math.abs(mind) <= overlapD){
 				System.out.println(pa.getLocationString()+"\t"+nearestPeak.getLocationString()+"\t"+Integer.toString(mind));
 			}else{
-				System.out.println(pa.getLocationString()+"\t-");
+				System.out.println(pa.getLocationString()+"\tNA");
 			}
 
 		}
