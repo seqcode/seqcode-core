@@ -147,6 +147,32 @@ public class HillsAnalysisSandbox {
 	
 	}
 	
+	public void scoreHillsWithCGKmers(String modName){
+		System.out.println("#Hill\t"+"HillSeq\t"+modName+"_CGKmerScore");
+		
+		for(Region hillreg : hills){
+			double score=0.0;
+			String hillSeq = seqgen.execute(hillreg).toUpperCase();
+			for(int k=Kmin; k<=Kmax; k++){
+				for(int j=0; j<hillSeq.length()-k+1; j++){
+					String currk = hillSeq.substring(j, j+k);
+					String revcurrk = SequenceUtils.reverseComplement(currk);
+					if(currk.contains("CG") || revcurrk.contains("CG")){
+						int  currKInt = RegionFileUtilities.seq2int(currk);
+						int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
+						int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+						int baseInd = this.getKmerBaseInd(currk);
+						score = score+kmerweights.get(modName)[baseInd+kmer];
+					}
+				}
+			}
+			System.out.println(hillreg.toString()+"\t"+hillSeq+"\t"+Double.toString(score));
+		}
+		
+		
+	}
+	
+	
 	public void scoreHills(String modName){
 		System.out.println("#Hill\t"+"HillSeq\t"+modName+"_MotifScore");
 		
@@ -268,6 +294,8 @@ public class HillsAnalysisSandbox {
 			runner.printCGhills(modName);
 		if(ap.hasKey("printMotHills"))
 			runner.printMotifHills(modName);
+		if(ap.hasKey("scoreHillsWithCGKmers"))
+			runner.scoreHillsWithCGKmers(modName);
 
 	}
 
