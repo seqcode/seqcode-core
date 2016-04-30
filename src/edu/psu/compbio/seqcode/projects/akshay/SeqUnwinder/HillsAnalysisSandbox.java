@@ -147,39 +147,39 @@ public class HillsAnalysisSandbox {
 					}
 					//AT-Score
 					if(currk.contains("AT") || revcurrk.contains("AT") || kmerweights.get(modName)[baseInd+kmer] < 0){
-						AAScore += kmerweights.get(modName)[baseInd+kmer];
+						ATScore += kmerweights.get(modName)[baseInd+kmer];
 					}
 					//AC-Score
 					if(currk.contains("AC") || revcurrk.contains("AC") || kmerweights.get(modName)[baseInd+kmer] < 0){
-						AAScore += kmerweights.get(modName)[baseInd+kmer];
+						ACScore += kmerweights.get(modName)[baseInd+kmer];
 					}
 					//AG-Score
 					if(currk.contains("AG") || revcurrk.contains("AG") || kmerweights.get(modName)[baseInd+kmer] < 0){
-						AAScore += kmerweights.get(modName)[baseInd+kmer];
+						AGScore += kmerweights.get(modName)[baseInd+kmer];
 					}
 					//CA-Score
 					if(currk.contains("CA") || revcurrk.contains("CA") || kmerweights.get(modName)[baseInd+kmer] < 0){
-						AAScore += kmerweights.get(modName)[baseInd+kmer];
+						CAScore += kmerweights.get(modName)[baseInd+kmer];
 					}
 					//CC-Score
 					if(currk.contains("CC") || revcurrk.contains("CC") || kmerweights.get(modName)[baseInd+kmer] < 0){
-						AAScore += kmerweights.get(modName)[baseInd+kmer];
+						CCScore += kmerweights.get(modName)[baseInd+kmer];
 					}
 					//CG-Score
 					if(currk.contains("CG") || revcurrk.contains("CG") || kmerweights.get(modName)[baseInd+kmer] < 0){
-						AAScore += kmerweights.get(modName)[baseInd+kmer];
+						CGScore += kmerweights.get(modName)[baseInd+kmer];
 					}
 					//GA-Score
 					if(currk.contains("GA") || revcurrk.contains("GA") || kmerweights.get(modName)[baseInd+kmer] < 0){
-						AAScore += kmerweights.get(modName)[baseInd+kmer];
+						GAScore += kmerweights.get(modName)[baseInd+kmer];
 					}
 					//GC-Score
 					if(currk.contains("GC") || revcurrk.contains("GC") || kmerweights.get(modName)[baseInd+kmer] < 0){
-						AAScore += kmerweights.get(modName)[baseInd+kmer];
+						GCScore += kmerweights.get(modName)[baseInd+kmer];
 					}
 					//TA-Score
 					if(currk.contains("TA") || revcurrk.contains("TA") || kmerweights.get(modName)[baseInd+kmer] < 0){
-						AAScore += kmerweights.get(modName)[baseInd+kmer];
+						TAScore += kmerweights.get(modName)[baseInd+kmer];
 					}
 				}
 			}
