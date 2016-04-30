@@ -184,16 +184,16 @@ public class HillsAnalysisSandbox {
 				}
 			}
 			System.out.println(hillreg.toString()+"\t"+hillSeq+"\t"+Double.toString(motifScore)
-					+"\t"+Double.toString(AAScore)+
-					"\t"+Double.toString(ATScore)+
-					"\t"+Double.toString(ACScore)+
-					"\t"+Double.toString(AGScore)+
-					"\t"+Double.toString(CAScore)+
-					"\t"+Double.toString(CCScore)+
-					"\t"+Double.toString(CGScore)+
-					"\t"+Double.toString(GAScore)+
-					"\t"+Double.toString(GCScore)+
-					"\t"+Double.toString(TAScore));
+					+"\t"+Double.toString(Math.round(AAScore*100)/100)+
+					"\t"+Double.toString(Math.round(ATScore*100)/100)+
+					"\t"+Double.toString(Math.round(ACScore*100)/100)+
+					"\t"+Double.toString(Math.round(AGScore*100)/100)+
+					"\t"+Double.toString(Math.round(CAScore*100)/100)+
+					"\t"+Double.toString(Math.round(CCScore*100)/100)+
+					"\t"+Double.toString(Math.round(CGScore*100)/100)+
+					"\t"+Double.toString(Math.round(GAScore*100)/100)+
+					"\t"+Double.toString(Math.round(GCScore*100)/100)+
+					"\t"+Double.toString(Math.round(TAScore*100)/100));
 		}
 
 	}
