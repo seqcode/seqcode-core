@@ -106,6 +106,98 @@ public class HillsAnalysisSandbox {
 		seqgen = gcon.getSequenceGenerator();
 	}
 	
+	
+	public void printHillStats(String modName){
+		System.out.println("#Hill\t"+"HillSeq\t"+modName+"_MotifScore\t"+modName+"_AA-KmerScore\t"+
+				modName+"AT-KmerScore\t"+
+				modName+"AC-KmerScore\t"+
+				modName+"AG-KmerScore\t"+
+				modName+"CA-KmerScore\t"+
+				modName+"CC-KmerScore\t"+
+				modName+"CG-KmerScore\t"+
+				modName+"GA-KmerScore\t"+
+				modName+"GC-KmerScore\t"+
+				modName+"TA-KmerScore\t");
+
+		//First get the k-mer for the given list of motifs
+		HashSet<String> motifKmers = new HashSet<String>();
+		for(WeightMatrix mot : motifs){
+			motifKmers.addAll(WeightMatrix.getConsensusKmers(mot, Kmin, Kmax));
+		}
+		
+		for(Region hillreg : hills){
+			String hillSeq = seqgen.execute(hillreg).toUpperCase();
+			double motifScore=0.0, AAScore=0.0, ATScore=0.0, ACScore =0.0, AGScore=0.0, CAScore=0.0, CCScore=0.0, CGScore=0.0, GAScore=0.0, GCScore=0.0, TAScore=0.0;
+			for(int k=Kmin; k<=Kmax; k++){
+				for(int j=0; j<hillSeq.length()-k+1; j++){
+					String currk = hillSeq.substring(j, j+k);
+					String revcurrk = SequenceUtils.reverseComplement(currk);
+					int  currKInt = RegionFileUtilities.seq2int(currk);
+					int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
+					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+					int baseInd = this.getKmerBaseInd(currk);
+					
+					//Motif-Score
+					if(motifKmers.contains(currk) || motifKmers.contains(revcurrk) || kmerweights.get(modName)[baseInd+kmer] < 0){
+						motifScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+					//AA-Score
+					if(currk.contains("AA") || revcurrk.contains("AA") || kmerweights.get(modName)[baseInd+kmer] < 0){
+						AAScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+					//AT-Score
+					if(currk.contains("AT") || revcurrk.contains("AT") || kmerweights.get(modName)[baseInd+kmer] < 0){
+						AAScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+					//AC-Score
+					if(currk.contains("AC") || revcurrk.contains("AC") || kmerweights.get(modName)[baseInd+kmer] < 0){
+						AAScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+					//AG-Score
+					if(currk.contains("AG") || revcurrk.contains("AG") || kmerweights.get(modName)[baseInd+kmer] < 0){
+						AAScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+					//CA-Score
+					if(currk.contains("CA") || revcurrk.contains("CA") || kmerweights.get(modName)[baseInd+kmer] < 0){
+						AAScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+					//CC-Score
+					if(currk.contains("CC") || revcurrk.contains("CC") || kmerweights.get(modName)[baseInd+kmer] < 0){
+						AAScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+					//CG-Score
+					if(currk.contains("CG") || revcurrk.contains("CG") || kmerweights.get(modName)[baseInd+kmer] < 0){
+						AAScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+					//GA-Score
+					if(currk.contains("GA") || revcurrk.contains("GA") || kmerweights.get(modName)[baseInd+kmer] < 0){
+						AAScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+					//GC-Score
+					if(currk.contains("GC") || revcurrk.contains("GC") || kmerweights.get(modName)[baseInd+kmer] < 0){
+						AAScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+					//TA-Score
+					if(currk.contains("TA") || revcurrk.contains("TA") || kmerweights.get(modName)[baseInd+kmer] < 0){
+						AAScore += kmerweights.get(modName)[baseInd+kmer];
+					}
+				}
+			}
+			System.out.println(hillreg.toString()+"\t"+hillSeq+"\t"+Double.toString(motifScore)
+					+"\t"+Double.toString(AAScore)+
+					"\t"+Double.toString(ATScore)+
+					"\t"+Double.toString(ACScore)+
+					"\t"+Double.toString(AGScore)+
+					"\t"+Double.toString(CAScore)+
+					"\t"+Double.toString(CCScore)+
+					"\t"+Double.toString(CGScore)+
+					"\t"+Double.toString(GAScore)+
+					"\t"+Double.toString(GCScore)+
+					"\t"+Double.toString(TAScore));
+		}
+
+	}
+	
 	// Prints the CG hills that do not score highly for the given list of motifs (usually primary motifs)
 	public void printCGhills(String modName){
 		System.out.println("#Hill\t"+"HillSeq\t"+modName+"_MotifScore\t"+"fractionCG");
@@ -157,11 +249,12 @@ public class HillsAnalysisSandbox {
 				for(int j=0; j<hillSeq.length()-k+1; j++){
 					String currk = hillSeq.substring(j, j+k);
 					String revcurrk = SequenceUtils.reverseComplement(currk);
-					if(currk.contains("CG") || revcurrk.contains("CG")){
-						int  currKInt = RegionFileUtilities.seq2int(currk);
-						int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
-						int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
-						int baseInd = this.getKmerBaseInd(currk);
+					int  currKInt = RegionFileUtilities.seq2int(currk);
+					int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
+					int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+					int baseInd = this.getKmerBaseInd(currk);
+					
+					if(currk.contains("CG") || revcurrk.contains("CG") || kmerweights.get(modName)[baseInd+kmer]<0){
 						score = score+kmerweights.get(modName)[baseInd+kmer];
 					}
 				}
@@ -296,6 +389,8 @@ public class HillsAnalysisSandbox {
 			runner.printMotifHills(modName);
 		if(ap.hasKey("scoreHillsWithCGKmers"))
 			runner.scoreHillsWithCGKmers(modName);
+		if(ap.hasKey("stats"))
+			runner.printHillStats(modName);
 
 	}
 
