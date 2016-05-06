@@ -678,7 +678,7 @@ public class SeqDataLoader implements edu.psu.compbio.seqcode.gse.utils.Closeabl
         ResultSet rs = null;
         try {
             cxn = DatabaseConnectionManager.getConnection(role);
-			String query = "select id, expt, name, genome from seqalignment";
+			String query = "select id, expt, name, genome, permissions, aligntype, numhits, totalweight, numtype2hits, totaltype2weight, numpairs, totalpairweight, aligndir, alignfile, idxfile, collabalignid  from seqalignment";
 	        if (name != null || replicate != null || align != null || exptType!=null || lab!=null || condition!=null || target != null || cells != null || readType != null || genome != null) {
 	            query += " where ";
 	        }
