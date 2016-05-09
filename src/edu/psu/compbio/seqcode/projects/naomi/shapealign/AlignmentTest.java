@@ -130,8 +130,8 @@ public class AlignmentTest {
 	public void smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
 		
 		//get midpoints
-		double regAmid = regA.getMidpoint().getLocation();
-		double regBmid = regB.getMidpoint().getLocation();
+//		double regAmid = regA.getMidpoint().getLocation();
+//		double regBmid = regB.getMidpoint().getLocation();
 		
 		//get counts
 		double [][] regACounts = countsArray.get(sample).get(regA);
@@ -292,14 +292,11 @@ public class AlignmentTest {
 		
 		// incrementing error 
 		totalNum =+ 1;
-		System.out.print("regAmid: "+regAmid + " x_mid: "+x_mid + " regBmid: "+regBmid+ " y_mid: "+y_mid);
-		System.out.println();
-		
 		if ( traceBack.contains(LEFT) || traceBack.contains(UP) ){ // check that stack only contains DIAG
 			System.out.println("stack contains LEFT or UP");
 			error =+ 1;
 		}else{			
-			if (regAmid - x_mid != regBmid - y_mid)
+			if (x_mid != y_mid)
 				error =+ 1;
 		}
 	}
