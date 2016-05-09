@@ -292,6 +292,9 @@ public class AlignmentTest {
 		
 		// incrementing error 
 		totalNum =+ 1;
+		System.out.print("regAmid: "+regAmid + " x_mid: "+x_mid + " regBmid: "+regBmid+ " y_mid: "+y_mid);
+		System.out.println();
+		
 		if ( traceBack.contains(LEFT) || traceBack.contains(UP) ){ // check that stack only contains DIAG
 			System.out.println("stack contains LEFT or UP");
 			error =+ 1;
