@@ -21,19 +21,12 @@ public class SmithWatermanAlignmentMatrix {
 	protected int alignStartYCoord;
 	protected int alignEndXCoord;
 	protected int alignEndYCoord;
-
-	//constants for Smith-Waterman Algorithms
-//	final static double GAP_OPEN = 1;
-//	final static double GAP_EXT = 0.5;
 	
-	final static double GAP_OPEN = 100;
-	final static double GAP_EXT = 50;
-	
+	static final double GAP_OPEN = 200;	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
-	static final int UP = 4;
-	
-	final static double MINIMUM_VALUE = -10000;
+	static final int UP = 4;	
+	static final double MINIMUM_VALUE = -10000;
 	
 	public SmithWatermanAlignmentMatrix (double[][] regAarray, double[][] regBarray){
 		
