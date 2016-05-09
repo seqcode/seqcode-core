@@ -75,8 +75,9 @@ public class SmithWatermanAlignmentMatrix {
 	}
 	
 	
-	public double computeScore(double aVal, double bVal){
-		double score = (aVal + bVal)/2 - Math.abs(aVal - bVal);
+	public double computeScore(double x1, double x2, double y1, double y2){
+		
+		double score = (x1 + x2)/2 + (y1 + y2)/2 - (Math.abs(x1 - x2) + Math.abs(y1 - y2));
 		return score;		
 	}
 	
@@ -116,10 +117,7 @@ public class SmithWatermanAlignmentMatrix {
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
 				
-				double mScore = computeSimilarityScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
-				
-//				double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
-//						+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
+				double mScore = computeScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
 			
 				double temp_M[] = new double[3];
 				temp_M[0] = M[i-1][j-1] + mScore;
@@ -176,10 +174,7 @@ public class SmithWatermanAlignmentMatrix {
 		
 		while ( i != 0 && j != 0){
 
-			double mScore = computeSimilarityScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
-			
-//			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
-//					+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
+			double mScore = computeScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
 			
 			// diagonal case
 			if ( M[i-1][j-1] + mScore == currentScore ){
@@ -233,8 +228,7 @@ public class SmithWatermanAlignmentMatrix {
 		//fill in M[i][j] & I[i][j] matrix
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
-				double mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0])
-						+ computeScore(regACounts[j-1][1], regBCounts[j-1][1]);
+				double mScore = computeScore(regACounts[i-1][0], regBCounts[i-1][0],regACounts[j-1][1], regBCounts[j-1][1]);
 			
 				M[i][j] = Math.max(M[i-1][j-1] + mScore, I[i-1][j-1] + mScore);
 			
@@ -305,8 +299,7 @@ public class SmithWatermanAlignmentMatrix {
 		
 		while ( i != 0 && j != 0){
 
-			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0])
-					+ computeScore(regACounts[i-1][1], regBCounts[j-1][1]);
+			double mScore = computeScore(regACounts[i-1][0], regBCounts[j-1][0],regACounts[i-1][1], regBCounts[j-1][1]);
 			
 			// diagonal case
 			if ( (M[i-1][j-1] + mScore == currentScore) || (I[i-1][j-1] + mScore == currentScore)){

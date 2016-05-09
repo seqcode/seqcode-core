@@ -21,13 +21,14 @@ import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 /**
- * SmithWatermanAlignment: Aligns ChIP-exo reads using Smith Waterman local alignment
+ * Alignment Test: derived from SmithWaterman Alignment.java 
+ * This code does not merge gff for near by regions
  * 
  * @author naomi yamada
  *
  */
 
-public class SmithWatermanAlignment {
+public class AlignmentTest {
 	
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
@@ -37,6 +38,9 @@ public class SmithWatermanAlignment {
 	protected List<Region> regions;
 	protected int window;
 	
+	protected double error;
+	protected double totalNum;
+	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
 	static final int UP = 4;
@@ -45,7 +49,7 @@ public class SmithWatermanAlignment {
 	
 	protected Map<Sample, Map<Region,double[][]>> countsArray = new HashMap<Sample,Map<Region,double[][]>>();
 	
-	public SmithWatermanAlignment(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
+	public AlignmentTest(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
 		gconfig = gcon;
 		econfig = econ;
 		manager = man;
@@ -57,19 +61,16 @@ public class SmithWatermanAlignment {
 	public void setWidth(int w){window = w;}
 	public void setCountsArray(Map<Sample, Map<Region,double[][]>> sampleCounts){countsArray = sampleCounts;}
 	
-	public void loadData(){ // 
+	// prints error rate
+	public void printErrorRate(){System.out.println("error rate is "+ (error/totalNum));}
+	
+	public void loadData(){
 		
 		List<Region> region = new ArrayList<Region>();
 		for(Point p: points){
 			region.add(p.expand(window/2));
 		}
-		
-		//merge overlapping regions and set back to the original size				
-		List<Region> resizedRegions = new ArrayList<Region>();		
-		for (Region reg : Region.mergeRegions(region)){ //mergeRegions is a static method	
-			resizedRegions.add(reg.resize(window-1));
-		}		
-		setRegions(resizedRegions);
+		setRegions(region);
 
 		//get StrandedBaseCount list for each regions per sample
 		Map<Sample, Map<Region,List<StrandedBaseCount>>> sampleCountsMap = new HashMap<Sample, Map<Region,List<StrandedBaseCount>>>();
@@ -126,14 +127,17 @@ public class SmithWatermanAlignment {
 		}				
 	}
 	
-	public Region smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
+	public void smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
+		
+		//get midpoints
+		double regAmid = regA.getMidpoint().getLocation();
+		double regBmid = regB.getMidpoint().getLocation();
 		
 		//get counts
 		double [][] regACounts = countsArray.get(sample).get(regA);
 		double [][] regBCounts = countsArray.get(sample).get(regB);
 		
 		//normalize the arrays to set the max value 1
-		//should I be normalizing using max of either strand ?
 		double maxA = MINIMUM_VALUE;
 		double maxB = MINIMUM_VALUE;
 		for (int i = 0; i <window ; i++){
@@ -197,6 +201,9 @@ public class SmithWatermanAlignment {
 			reverseB = true;
 		}
 		
+		double x_mid = (s_x_coord + e_x_coord)/2;
+		double y_mid = (s_y_coord + e_y_coord)/2;
+		
 		System.out.println("alignment start coordinates "+ s_x_coord + " : " + s_y_coord);
 		System.out.println("alignment end coordinates "+ e_x_coord + " : " + e_y_coord);
 		
@@ -207,7 +214,7 @@ public class SmithWatermanAlignment {
 		int current_x = e_x_coord-1;
 		int current_y = e_y_coord-1;
 		
-		
+		// trace back for x 
 		@SuppressWarnings("unchecked")
 		Stack<Integer> xTraceBack = (Stack<Integer>) traceBack.clone();
 		
@@ -227,6 +234,7 @@ public class SmithWatermanAlignment {
 			}
 		}		
 		
+		// trace back for y 
 		@SuppressWarnings("unchecked")
 		Stack<Integer> yTraceBack = (Stack<Integer>) traceBack.clone();;
 		
@@ -249,7 +257,8 @@ public class SmithWatermanAlignment {
 				}
 			}
 		}
-		
+	
+		/**
 		System.out.println("before alignment reg A");
 		for (int i = 0; i < normRegACounts.length; i++)
 			System.out.print(normRegACounts[i][0]+",");
@@ -281,43 +290,21 @@ public class SmithWatermanAlignment {
 		for (int i = 0; i < alignedRegB.length; i++)
 			System.out.print(alignedRegB[i][1]+",");	
 		System.out.println();
+		**/
 		
-		// check that stack only contains DIAG
-		if ( traceBack.contains(LEFT) || traceBack.contains(UP) ){
+		// incrementing error 
+		totalNum =+ 1;
+		if ( traceBack.contains(LEFT) || traceBack.contains(UP) ){ // check that stack only contains DIAG
 			System.out.println("stack contains LEFT or UP");
-			return null;
-		}else{
-			// get region offset
-			
-			if (reverseB == false){
-			
-				regA.getMidpoint().getLocation();
-			
-			
-			
-			
-				return regA;
-			
-			}else{ // if regionB is reversed
-				
-				return regA;
-				
-			}
-			
-			
-			
-			
+			error =+ 1;
+		}else{			
+			if (regAmid - x_mid != regBmid - y_mid)
+				error =+ 1;
 		}
-		
-		
-		// get region offset
-		
 	}
 	
-	
 	public static void main(String[] args){
-		
-		
+				
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
 			
@@ -325,7 +312,7 @@ public class SmithWatermanAlignment {
 		
 		ExperimentManager manager = new ExperimentManager(econf);
 		
-		SmithWatermanAlignment profile = new SmithWatermanAlignment(gconf, econf, manager); 
+		AlignmentTest profile = new AlignmentTest(gconf, econf, manager); 
 		
 		ArgParser ap = new ArgParser(args);		
 		int win = Args.parseInteger(args, "win", 200);
@@ -336,7 +323,6 @@ public class SmithWatermanAlignment {
 		profile.setWidth(win);
 		profile.loadData();
 		profile.excuteShapeAlign();
-	
+		profile.printErrorRate();	
 	}
-
 }
