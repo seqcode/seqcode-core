@@ -38,8 +38,8 @@ public class AlignmentTest {
 	protected List<Region> regions;
 	protected int window;
 	
-	protected double error;
-	protected double totalNum;
+	protected double error = 0;
+	protected double totalNum = 0;
 	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
@@ -62,7 +62,7 @@ public class AlignmentTest {
 	public void setCountsArray(Map<Sample, Map<Region,double[][]>> sampleCounts){countsArray = sampleCounts;}
 	
 	// prints error rate
-	public void printErrorRate(){System.out.println("error rate is "+ (error/totalNum));}
+	public void printErrorRate(){System.out.println("error is "+error+ " totalNum is "+ totalNum+ " error rate is "+ (error/totalNum));}
 	
 	public void loadData(){
 		
