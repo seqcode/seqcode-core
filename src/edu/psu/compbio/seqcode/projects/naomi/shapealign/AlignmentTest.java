@@ -92,8 +92,8 @@ public class AlignmentTest {
 			Map<Region,double[][]> regionCounts = new HashMap<Region,double[][]>();
 			
 			for (Region reg : sampleCountsMap.get(sample).keySet()){			
-				double[][] sampleCounts = new double[window][2];
-				for (int i = 0;i < window;i++){
+				double[][] sampleCounts = new double[window+1][2];
+				for (int i = 0;i <= window;i++){
 					for (int s = 0; s<2; s++)
 						sampleCounts[i][s] = 0;
 				}				
@@ -140,7 +140,7 @@ public class AlignmentTest {
 		//normalize the arrays to set the max value 1
 		double maxA = MINIMUM_VALUE;
 		double maxB = MINIMUM_VALUE;
-		for (int i = 0; i <window ; i++){
+		for (int i = 0; i <=window ; i++){
 			for (int s = 0 ; s < 2 ; s++){
 				if (regACounts[i][s] > maxA){maxA = regACounts[i][s];}
 				if (regBCounts[i][s] > maxB){maxB = regBCounts[i][s];}
@@ -149,10 +149,10 @@ public class AlignmentTest {
 		
 		System.out.println("max counts are "+maxA+" : "+maxB);
 		
-		double [][] normRegACounts = new double [window][2];
-		double [][] normRegBCounts = new double [window][2];
-		double [][] normRegBRevCounts = new double[window][2];
-		for (int i = 0 ; i <window; i++){
+		double [][] normRegACounts = new double [window+1][2];
+		double [][] normRegBCounts = new double [window+1][2];
+		double [][] normRegBRevCounts = new double[window+1][2];
+		for (int i = 0 ; i <= window; i++){
 			for (int s = 0 ; s < 2 ; s++){
 				normRegACounts[i][s] = regACounts[i][s]/maxA;
 				normRegBCounts[i][s] = regBCounts[i][s]/maxB;
@@ -160,9 +160,9 @@ public class AlignmentTest {
 		}
 		
 		//reversing normRegBCounts
-		for (int i = 0; i <window; i++){
+		for (int i = 0; i <= window; i++){
 			for (int s = 0; s < 2 ;s++){
-				normRegBRevCounts[window-i-1][1-s] = normRegBCounts[i][s];
+				normRegBRevCounts[window-i][1-s] = normRegBCounts[i][s];
 			}
 		}
 
@@ -173,7 +173,7 @@ public class AlignmentTest {
 		alignTwo.buildMatrix();
 		
 		Stack<Integer> traceBack = new Stack<Integer>();
-		double[][] regBarray = new double[window][2];
+		double[][] regBarray = new double[window+1][2];
 		boolean reverseB;
 		int s_x_coord = 0;
 		int s_y_coord = 0;
@@ -256,9 +256,8 @@ public class AlignmentTest {
 					yTraceBack.pop();			
 				}
 			}
-		}
-	
-		/**
+		}	
+
 		System.out.println("before alignment reg A");
 		for (int i = 0; i < normRegACounts.length; i++)
 			System.out.print(normRegACounts[i][0]+",");
@@ -290,7 +289,6 @@ public class AlignmentTest {
 		for (int i = 0; i < alignedRegB.length; i++)
 			System.out.print(alignedRegB[i][1]+",");	
 		System.out.println();
-		**/
 		
 		// incrementing error 
 		totalNum =+ 1;
