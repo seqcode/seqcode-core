@@ -291,13 +291,13 @@ public class AlignmentTest {
 		System.out.println();
 		
 		// incrementing error 
-		totalNum =+ 1;
+		totalNum += 1;
 		if ( traceBack.contains(LEFT) || traceBack.contains(UP) ){ // check that stack only contains DIAG
 			System.out.println("stack contains LEFT or UP");
-			error =+ 1;
+			error += 1;
 		}else{			
 			if (x_mid != y_mid)
-				error =+ 1;
+				error += 1;
 		}
 	}
 	
