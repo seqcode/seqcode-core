@@ -24,7 +24,7 @@ public class SmithWatermanAlignmentMatrix {
 	protected int alignEndXCoord;
 	protected int alignEndYCoord;
 	
-	static final double GAP_OPEN = 1000;	
+	static final double GAP_OPEN = 10;	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
 	static final int UP = 4;	
@@ -70,8 +70,6 @@ public class SmithWatermanAlignmentMatrix {
 			for (int j = 1 ; j <= window ; j++){
 				
 				double mScore = similarity_s.computeScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
-				
-				System.out.println("simlarityscore is "+mScore);
 			
 				double temp_M[] = new double[3];
 				temp_M[0] = M[i-1][j-1] + mScore;
@@ -87,13 +85,13 @@ public class SmithWatermanAlignmentMatrix {
 			}
 		}		
 
-		System.out.println("printing M matrix");
-		for (int i = 0; i <=window ; i++){
-			for (int j = 0; j <=window; j++){
-				System.out.print(M[i][j]+" ");
-			}
-			System.out.println();
-		}			
+//		System.out.println("printing M matrix");
+//		for (int i = 0; i <=window ; i++){
+//			for (int j = 0; j <=window; j++){
+//				System.out.print(M[i][j]+" ");
+//			}
+//			System.out.println();
+//		}			
 
 		// find the highest value
 		double maxScore = MINIMUM_VALUE;
