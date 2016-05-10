@@ -117,9 +117,9 @@ public class AlignmentTest {
 	public void excuteShapeAlign(){
 		
 		for (Sample sample : countsArray.keySet()){
-			for (int i = 0; i <regions.size();i++){		
+//			for (int i = 0; i <regions.size();i++){		
 			
-//			for (int i = 0; i <1 ; i++){	
+			for (int i = 0; i <1 ; i++){	
 				for (int j = i+1; j <regions.size();j++){
 					System.out.println("region is "+regions.get(j).getLocationString());
 					smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));		
@@ -259,6 +259,7 @@ public class AlignmentTest {
 			}
 		}	
 
+		/**
 		System.out.println("before alignment reg A");
 		for (int i = 0; i < normRegACounts.length; i++)
 			System.out.print(normRegACounts[i][0]+",");
@@ -289,6 +290,9 @@ public class AlignmentTest {
 		System.out.println();
 		for (int i = 0; i < alignedRegB.length; i++)
 			System.out.print(alignedRegB[i][1]+",");	
+			
+		**/
+		
 		System.out.println();
 		
 		// incrementing error 
