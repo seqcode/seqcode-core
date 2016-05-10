@@ -62,14 +62,16 @@ public class SmithWatermanAlignmentMatrix {
 				M[i][j] = 0;
 		}	
 		
+		SimilarityScore similarity_s = new SimilarityScore();
+		
+		// setting options
+		similarity_s.setEuclideanL2();
+		
+		
 		for (int i = 1 ; i <= window; i++){
 			for (int j = 1 ; j <= window ; j++){
 				
-				SimilarityScore similarity_s = new SimilarityScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
-				
-				similarity_s.setEuclideanL2();
-				
-				double mScore = similarity_s.computeScore();
+				double mScore = similarity_s.computeScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
 			
 				double temp_M[] = new double[3];
 				temp_M[0] = M[i-1][j-1] + mScore;
@@ -125,12 +127,8 @@ public class SmithWatermanAlignmentMatrix {
 		int j = y_coord;
 		
 		while ( i != 0 && j != 0){
-
-			SimilarityScore similarity_s = new SimilarityScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
 			
-			similarity_s.setEuclideanL2();
-			
-			double mScore = similarity_s.computeScore();
+			double mScore = similarity_s.computeScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
 			
 			// diagonal case
 			if ( M[i-1][j-1] + mScore == currentScore ){

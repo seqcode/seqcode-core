@@ -23,12 +23,7 @@ public class SimilarityScore {
 	protected boolean divergence = false;
 	protected boolean clark = false;
 	
-	public SimilarityScore(double x_1, double x_2, double y_1, double y_2){
-		
-		this.x1 = x_1;
-		this.x2 = x_2;
-		this.y1 = y_1;
-		this.y2 = y_2;				
+	public SimilarityScore(){		
 	}
 	
 	// accessors
@@ -44,8 +39,13 @@ public class SimilarityScore {
 	public void setDivergence(){divergence = true;}
 	public void setClark(){clark = true;}
 	
-	public double computeScore(){
+	public double computeScore(double x_1, double x_2, double y_1, double y_2){
 		
+		this.x1 = x_1;
+		this.x2 = x_2;
+		this.y1 = y_1;
+		this.y2 = y_2;
+				
 		double score = 0;
 		if ( (x1 != x2) || (y1 != y2)){	
 			if (euclidean_L2 == true){score = euclideanL2();}

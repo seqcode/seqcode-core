@@ -309,6 +309,7 @@ public class AlignmentTest {
 		econf.setPerBaseReadFiltering(false);
 		
 		ExperimentManager manager = new ExperimentManager(econf);
+
 		
 		AlignmentTest profile = new AlignmentTest(gconf, econf, manager); 
 		
