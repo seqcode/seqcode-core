@@ -33,7 +33,8 @@ public class AlignmentTest {
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
 	protected ExperimentManager manager;
-	
+	protected SimilarityScore similarity_s;
+		
 	protected List<Point> points;
 	protected List<Region> regions;
 	protected int window;
@@ -49,10 +50,11 @@ public class AlignmentTest {
 	
 	protected Map<Sample, Map<Region,double[][]>> countsArray = new HashMap<Sample,Map<Region,double[][]>>();
 	
-	public AlignmentTest(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
+	public AlignmentTest(GenomeConfig gcon, ExptConfig econ, ExperimentManager man, SimilarityScore sc){	
 		gconfig = gcon;
 		econfig = econ;
 		manager = man;
+		similarity_s = sc;
 	}
 	
 	// setters
@@ -167,8 +169,8 @@ public class AlignmentTest {
 		}
 
 		// align using two possible ways
-		SmithWatermanAlignmentMatrix alignOne = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBCounts);
-		SmithWatermanAlignmentMatrix alignTwo = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBRevCounts);
+		SmithWatermanAlignmentMatrix alignOne = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBCounts, similarity_s);
+		SmithWatermanAlignmentMatrix alignTwo = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBRevCounts, similarity_s);
 		alignOne.buildMatrix();
 		alignTwo.buildMatrix();
 		
@@ -302,19 +304,28 @@ public class AlignmentTest {
 	}
 	
 	public static void main(String[] args){
-				
-		GenomeConfig gconf = new GenomeConfig(args);
-		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);
-			
-		econf.setPerBaseReadFiltering(false);
-		
-		ExperimentManager manager = new ExperimentManager(econf);
-
-		
-		AlignmentTest profile = new AlignmentTest(gconf, econf, manager); 
 		
 		ArgParser ap = new ArgParser(args);		
 		int win = Args.parseInteger(args, "win", 200);
+		
+		SimilarityScore sc = new SimilarityScore();
+		
+		GenomeConfig gconf = new GenomeConfig(args);
+		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);		
+		econf.setPerBaseReadFiltering(false);
+		
+		ExperimentManager manager = new ExperimentManager(econf);
+		
+		if (Args.parseFlags(args).contains("euclidean")){ sc.setEuclideanL2();}
+		if (Args.parseFlags(args).contains("sorensen")){ sc.setSorensen();}
+		if (Args.parseFlags(args).contains("soergel")){ sc.setSoergel();}
+		if (Args.parseFlags(args).contains("lorentzian")){ sc.setLorentzian();}
+		if (Args.parseFlags(args).contains("pce")){ sc.setPCE();}
+		if (Args.parseFlags(args).contains("squaredChi")){ sc.setSquaredChi();}
+		if (Args.parseFlags(args).contains("divergence")){ sc.setDivergence();}
+		if (Args.parseFlags(args).contains("clark")){ sc.setClark();}
+
+		AlignmentTest profile = new AlignmentTest(gconf, econf, manager, sc); 		
 		
 		List<Point> points = RegionFileUtilities.loadPeaksFromPeakFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
 		

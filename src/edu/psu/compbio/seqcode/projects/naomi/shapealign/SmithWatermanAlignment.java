@@ -161,10 +161,13 @@ public class SmithWatermanAlignment {
 				normRegBRevCounts[window-i-1][1-s] = normRegBCounts[i][s];
 			}
 		}
+		
+		SimilarityScore sc = new SimilarityScore();
+		
 
 		// align using two possible ways
-		SmithWatermanAlignmentMatrix alignOne = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBCounts);
-		SmithWatermanAlignmentMatrix alignTwo = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBRevCounts);
+		SmithWatermanAlignmentMatrix alignOne = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBCounts,sc);
+		SmithWatermanAlignmentMatrix alignTwo = new SmithWatermanAlignmentMatrix(normRegACounts,normRegBRevCounts,sc);
 		alignOne.buildMatrix();
 		alignTwo.buildMatrix();
 		

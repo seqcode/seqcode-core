@@ -14,6 +14,7 @@ public class SimilarityScore {
 	double x1,x2,y1,y2;
 	double similarity_score;
 	
+	
 	protected boolean euclidean_L2 = false;
 	protected boolean sorensen = false;
 	protected boolean soergel = false;
@@ -23,8 +24,7 @@ public class SimilarityScore {
 	protected boolean divergence = false;
 	protected boolean clark = false;
 	
-	public SimilarityScore(){		
-	}
+	public SimilarityScore(){}		
 	
 	// accessors
 	public double getScore(){return similarity_score;}
@@ -35,7 +35,7 @@ public class SimilarityScore {
 	public void setSoergel(){soergel = true;}
 	public void setLorentzian(){lorentzian = true;}
 	public void setPCE(){pce = true;}
-	public void setSquared_chi(){squared_chi = true;}
+	public void setSquaredChi(){squared_chi = true;}
 	public void setDivergence(){divergence = true;}
 	public void setClark(){clark = true;}
 	
@@ -62,58 +62,58 @@ public class SimilarityScore {
 
 	}
 	
-	public double linear(){
+	protected double linear(){
 
 		double score = (x1 + x2)/2 + (y1 + y2)/2 - (Math.abs(x1 - x2) + Math.abs(y1 - y2));
 		return score;
 		
 	}
 		
-	public double euclideanL2(){
+	protected double euclideanL2(){
 		
 		double score = 1 - Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1-y2, 2)) - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;		
 	}
 	
-	public double sorensen(){
+	protected double sorensen(){
 		
 		double score = (x1+x2+y1+y2)/(Math.abs(x1-x2) + Math.abs(y1-y2)) - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;		
 	}
 	
-	public double soergel(){
+	protected double soergel(){
 		
 		double score = (Math.max(x1, x2) + Math.max(y1, y2))/(Math.abs(x1-x2) + Math.abs(y1-y2)) - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;		
 	}
 	
-	public double lorentzian(){
+	protected double lorentzian(){
 		
 		double score = 1/(Math.log(1+Math.abs(x1-y2))+Math.log(1+Math.abs(y1-y2))) - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;		
 	}
 	
-	public double PCE(){
+	protected double PCE(){
 		
 		double pce =  (x1*x2 + y1*y2)/(Math.pow(x1, 2) + Math.pow(y1, 2) + Math.pow(x2, 2) + Math.pow(y2, 2) - ( x1*x2 + y1*y2 ));				
 		double score = pce - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;		
 	}
 	
-	public double squared_chi(){
+	protected double squared_chi(){
 
 		double score =  1/(Math.pow(x1-x2, 2)/(x1+x2) + Math.pow(y1-y2, 2)/(y1+y2)) - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;
 	}
 	
-	public double divergence(){
+	protected double divergence(){
 
 		double denom =  2*(Math.pow(x1-x2, 2)/Math.pow(x1+x2,2) + Math.pow(y1-y2, 2)/Math.pow(y1+y2,2));				
 		double score = 1/denom - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;
 	}
 	
-	public double clark(){
+	protected double clark(){
 
 		double denom =  Math.sqrt(Math.pow(Math.abs(x1-x2)/(x1+x2), 2) + Math.pow(Math.abs(y1-y2)/(y1+y2), 2));				
 		double score = 1/denom - Math.abs(x1-x2)-Math.abs(y1-y2);		

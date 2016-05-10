@@ -11,6 +11,8 @@ import java.util.Stack;
 
 public class SmithWatermanAlignmentMatrix {
 	
+	protected SimilarityScore similarity_s;
+	
 	protected double [][] regACounts;
 	protected double [][] regBCounts;
 	protected int window;
@@ -28,11 +30,12 @@ public class SmithWatermanAlignmentMatrix {
 	static final int UP = 4;	
 	static final double MINIMUM_VALUE = -10000;
 	
-	public SmithWatermanAlignmentMatrix (double[][] regAarray, double[][] regBarray){
+	public SmithWatermanAlignmentMatrix (double[][] regAarray, double[][] regBarray, SimilarityScore sc){
 		
 		regACounts = regAarray;
 		regBCounts = regBarray;
 		window = regAarray.length;
+		similarity_s = sc;
 		
 	}
 	
@@ -60,12 +63,7 @@ public class SmithWatermanAlignmentMatrix {
 		for (int i = 0 ; i <= window; i++){
 			for (int j = 0 ; j <= window; j++)
 				M[i][j] = 0;
-		}	
-		
-		SimilarityScore similarity_s = new SimilarityScore();
-		
-		// setting options
-		similarity_s.setEuclideanL2();
+		}			
 		
 		
 		for (int i = 1 ; i <= window; i++){
