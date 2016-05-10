@@ -77,19 +77,19 @@ public class SimilarityScore {
 	
 	protected double sorensen(){
 		
-		double score = (x1+x2+y1+y2)/(Math.abs(x1-x2) + Math.abs(y1-y2)) - Math.abs(x1-x2)-Math.abs(y1-y2);		
+		double score = 1 - (Math.abs(x1-x2) + Math.abs(y1-y2))/(x1+x2+y1+y2) - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;		
 	}
 	
 	protected double soergel(){
 		
-		double score = (Math.max(x1, x2) + Math.max(y1, y2))/(Math.abs(x1-x2) + Math.abs(y1-y2)) - Math.abs(x1-x2)-Math.abs(y1-y2);		
+		double score = 1 - (Math.abs(x1-x2) + Math.abs(y1-y2))/(Math.max(x1, x2) + Math.max(y1, y2)) - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;		
 	}
 	
 	protected double lorentzian(){
 		
-		double score = 1/(Math.log(1+Math.abs(x1-y2))+Math.log(1+Math.abs(y1-y2))) - Math.abs(x1-x2)-Math.abs(y1-y2);		
+		double score = 1 - (Math.log(1+Math.abs(x1-y2))+Math.log(1+Math.abs(y1-y2))) - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;		
 	}
 	
@@ -102,7 +102,7 @@ public class SimilarityScore {
 	
 	protected double squared_chi(){
 
-		double score =  1/(Math.pow(x1-x2, 2)/(x1+x2) + Math.pow(y1-y2, 2)/(y1+y2)) - Math.abs(x1-x2)-Math.abs(y1-y2);		
+		double score =  1 - (Math.pow(x1-x2, 2)/(x1+x2) + Math.pow(y1-y2, 2)/(y1+y2)) - Math.abs(x1-x2)-Math.abs(y1-y2);		
 		return score;
 	}
 	
