@@ -35,6 +35,8 @@ public class PearsonCorrAlignment {
 	protected List<Region> regions;
 	protected int window;
 	
+	protected boolean isWeighted = false;
+	
 	protected double error = 0;
 	protected double totalNum = 0;
 	
@@ -53,6 +55,7 @@ public class PearsonCorrAlignment {
 	public void setRegions(List<Region> reg){regions = reg;} 
 	public void setWidth(int w){window = w;}
 	public void setCountsArray(Map<Sample, Map<Region,double[][]>> sampleCounts){countsArray = sampleCounts;}
+	public void setWeighted(){ isWeighted = true;}
 	
 	// prints error rate
 	public void printErrorRate(){System.out.println("error is "+error+ " totalNum is "+ totalNum+ " error rate is "+ (error/totalNum));}
@@ -163,13 +166,20 @@ public class PearsonCorrAlignment {
 					normRegBCounts[i][s] = regBCounts[slidingW+i][s]/maxB;
 				}
 			}
-
 			
 			//calculate Pearson Correlation
 			PearsonCorrelation pc = new PearsonCorrelation(normRegACounts,normRegBCounts);
-			double r = pc.computePearsonCorr();
-			boolean fromReverse = pc.isReverse();
 			
+			double r = -1;
+			boolean fromReverse = false;
+			if (isWeighted !=true){
+				r = pc.computePearsonCorr();
+				fromReverse = pc.isReverse();
+			}else{
+				r = pc.computeWeightedPearsonCorr();
+				fromReverse = pc.isReverse();				
+			}
+		
 			if (r > maxCorr ){
 				maxCorr = r;
 				reverse = fromReverse;
@@ -259,7 +269,8 @@ public class PearsonCorrAlignment {
 		
 		ExperimentManager manager = new ExperimentManager(econf);
 
-		PearsonCorrAlignment profile = new PearsonCorrAlignment(gconf, econf, manager); 		
+		PearsonCorrAlignment profile = new PearsonCorrAlignment(gconf, econf, manager); 
+		if (Args.parseFlags(args).contains("weighted")){profile.setWeighted();}
 		
 		List<Point> points = RegionFileUtilities.loadPeaksFromPeakFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
 		
