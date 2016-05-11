@@ -115,7 +115,6 @@ public class SimilarityScore {
 	
 	protected double divergence(){
 		
-		/**
 		double score = 0;
 		if (x1 == x2 && x1 == 0){
 			score = 2 - 2*Math.pow(y1-y2, 2)/Math.pow(y1+y2,2) - Math.abs(y1-y2);
@@ -123,17 +122,7 @@ public class SimilarityScore {
 			score = 2 - 2*Math.pow(x1-x2, 2)/Math.pow(x1+x2,2) - Math.abs(x1-x2);
 		}else{
 			score = 2 - 2*(Math.pow(x1-x2, 2)/Math.pow(x1+x2,2) + Math.pow(y1-y2, 2)/Math.pow(y1+y2,2))- Math.abs(x1-x2)-Math.abs(y1-y2);
-		}			
-		**/
-		double score = 0;
-		if (x1 == x2 && x1 == 0){
-			score = 1/(2*Math.pow(y1+y2,2)/Math.pow(y1-y2, 2)) - Math.abs(y1-y2);
-		}else if (y1 == y2 && y2 == 0){
-			score = 1/(2*Math.pow(x1+x2,2)/Math.pow(x1-x2, 2)) - Math.abs(x1-x2);
-		}else{
-			double denom = 2*(Math.pow(x1-x2, 2)/Math.pow(x1+x2,2) + Math.pow(y1-y2, 2)/Math.pow(y1+y2,2));
-			score = 1/denom - Math.abs(x1-x2)-Math.abs(y1-y2);
-		}			
+		}				
 		
 		return score;
 	}
