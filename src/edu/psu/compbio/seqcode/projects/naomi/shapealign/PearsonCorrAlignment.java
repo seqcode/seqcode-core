@@ -163,8 +163,7 @@ public class PearsonCorrAlignment {
 					normRegBCounts[i][s] = regBCounts[slidingW+i][s]/maxB;
 				}
 			}
-			
-			System.out.println("max counts are "+maxA+" : "+maxB);
+
 			
 			//calculate Pearson Correlation
 			PearsonCorrelation pc = new PearsonCorrelation(normRegACounts,normRegBCounts);
@@ -174,9 +173,10 @@ public class PearsonCorrAlignment {
 			if (r > maxCorr ){
 				maxCorr = r;
 				reverse = fromReverse;
-				offset = slidingW - 100;
+				offset = slidingW - window/2;
 			}					
 		}
+		System.out.println("offsets is "+offset);
 
 		double[][] alignedRegB = new double[window+1][2];
 		double max_b = MINIMUM_VALUE;
