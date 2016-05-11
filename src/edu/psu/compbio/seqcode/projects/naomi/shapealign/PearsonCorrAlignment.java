@@ -187,7 +187,7 @@ public class PearsonCorrAlignment {
 		}
 		for (int i = 0; i <= window; i++){
 			for (int s = 0; s <2 ; s++){
-				alignedRegB[i][s] = regBCounts[window/2+offset][2]/max_b;
+				alignedRegB[i][s] = regBCounts[window/2+offset][s]/max_b;
 			}
 		}
 
