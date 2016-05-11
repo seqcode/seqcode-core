@@ -14,7 +14,9 @@ public class PearsonCorrelation {
 		normAarray = arrayA;
 		normBarray = arrayB;
 		window = arrayB.length;
-
+		
+		revNormBarray = new double [window][2];
+		
 		for (int i = 0; i <= window; i++){
 			for (int s = 0; s < 2 ;s++){
 				revNormBarray[window-i][1-s] = arrayB[i][s];
