@@ -227,10 +227,10 @@ public class PearsonCorrAlignment {
 		System.out.println("aligned reg B");
 		if (reverse == true){
 			for (int i = 0; i <alignedRegB.length; i++)
-				System.out.println(alignedRegB[alignedRegB.length-1-i][0]+",");
+				System.out.print(alignedRegB[alignedRegB.length-1-i][0]+",");
 			System.out.println();
 			for (int i = 0; i <alignedRegB.length; i++)
-				System.out.println(alignedRegB[alignedRegB.length-1-i][1]+",");						
+				System.out.print(alignedRegB[alignedRegB.length-1-i][1]+",");						
 		}else{
 			for (int i = 0; i < alignedRegB.length; i++)
 				System.out.print(alignedRegB[i][0]+",");
