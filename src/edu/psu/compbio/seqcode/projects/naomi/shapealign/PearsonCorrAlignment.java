@@ -134,7 +134,7 @@ public class PearsonCorrAlignment {
 		double maxA = MINIMUM_VALUE;
 		for (int i = 0 ; i <=window ; i++){
 			for (int s = 0 ; s <2 ; s++){
-				if (regACounts[i+window/2][s] > maxA){maxA = regACounts[i][s];}
+				if (regACounts[i+window/2][s] > maxA){maxA = regACounts[i+window/2][s];}
 			}
 		}
 		double [][] normRegACounts = new double[window+1][2];
@@ -188,11 +188,9 @@ public class PearsonCorrAlignment {
 		}
 		
 		System.out.println("max_b is "+max_b);
-		
-		System.out.println("regBcounts");
+
 		for (int i = 0; i <= window; i++){
 			for (int s = 0; s <2 ; s++){
-				System.out.print(regBCounts[window/2+offset+i][s]+",");
 				alignedRegB[i][s] = regBCounts[window/2+offset+i][s]/max_b;
 			}
 		}
