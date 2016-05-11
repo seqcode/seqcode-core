@@ -194,7 +194,20 @@ public class PearsonCorrAlignment {
 				alignedRegB[i][s] = regBCounts[window/2+offset+i][s]/max_b;
 			}
 		}
-
+		
+		double temp_max_b = MINIMUM_VALUE;
+		double [][] norm_b = new double[window+1][2];
+		for (int i = 0; i <=window; i++){
+			for (int s = 0; s <2 ; s++){
+				if (regBCounts[window/2+i][s] > temp_max_b){temp_max_b = regBCounts[window/2+i][s];}
+			}
+		}
+		for (int i = 0; i <=window; i++){
+			for (int s = 0; s <2 ; s++){
+				norm_b[i][s] = regBCounts[window/2+i][s]/temp_max_b;
+			}
+		}		
+		
 		System.out.println("before alignment reg A");
 		for (int i = 0; i < normRegACounts.length; i++)
 			System.out.print(normRegACounts[i][0]+",");
@@ -205,10 +218,10 @@ public class PearsonCorrAlignment {
 		
 		System.out.println("before alignment reg B");
 		for (int i = 0; i < normRegACounts.length; i++)
-			System.out.print(regBCounts[i+window/2][0]+",");
+			System.out.print(norm_b[i][0]+",");
 		System.out.println();
 		for (int i = 0; i < normRegACounts.length; i++)
-			System.out.print(regBCounts[i+window/2][1]+",");	
+			System.out.print(norm_b[i][1]+",");	
 		System.out.println();
 
 		System.out.println("aligned reg B");
