@@ -63,8 +63,8 @@ public class PearsonCorrelation {
 			double bi_f = catBarray[i] - aveB;
 			double bi_r = catRevBarray[i] - aveB;
 			
-			covf += covf + ai*bi_f;
-			covr += covr + ai*bi_r;
+			covf += ai*bi_f;
+			covr += ai*bi_r;
 			varA += ai*ai;
 			varBf += bi_f*bi_f;
 			varBr += bi_r*bi_r;
