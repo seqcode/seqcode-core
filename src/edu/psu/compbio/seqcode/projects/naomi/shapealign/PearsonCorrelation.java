@@ -13,7 +13,7 @@ public class PearsonCorrelation {
 		
 		normAarray = arrayA;
 		normBarray = arrayB;
-		window = arrayB.length;
+		window = arrayB.length-1;
 		
 		revNormBarray = new double [window+1][2];
 		
