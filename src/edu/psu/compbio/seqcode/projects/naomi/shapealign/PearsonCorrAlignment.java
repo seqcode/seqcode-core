@@ -274,7 +274,7 @@ public class PearsonCorrAlignment {
 	public void printPairwiseDistance(){
 		
 		for (int i = 0 ; i < regions.size(); i++){
-			System.out.print(regions.get(i).getLocationString());
+			System.out.println(regions.get(i).getLocationString());
 		}
 		
 		for (int i = 0 ; i < regions.size();i++){
