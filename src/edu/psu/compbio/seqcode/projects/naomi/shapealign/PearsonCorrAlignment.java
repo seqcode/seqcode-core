@@ -44,6 +44,8 @@ public class PearsonCorrAlignment {
 	
 	protected Map<Sample, Map<Region,double[][]>> countsArray = new HashMap<Sample,Map<Region,double[][]>>();
 	
+	protected double [][] pairwiseDistance;
+	
 	public PearsonCorrAlignment(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
 		gconfig = gcon;
 		econfig = econ;
@@ -67,6 +69,13 @@ public class PearsonCorrAlignment {
 			region.add(p.expand(window));
 		}
 		setRegions(region);
+		
+		pairwiseDistance = new double [region.size()][region.size()];
+		
+		for (int i = 0 ; i< region.size(); i++){
+			for (int j = 0 ; j < region.size(); j++)
+				pairwiseDistance[i][j] = 1;
+		}
 
 		//get StrandedBaseCount list for each regions per sample
 		Map<Sample, Map<Region,List<StrandedBaseCount>>> sampleCountsMap = new HashMap<Sample, Map<Region,List<StrandedBaseCount>>>();
@@ -116,13 +125,14 @@ public class PearsonCorrAlignment {
 //			for (int i = 0; i <1 ; i++){	
 				for (int j = i+1; j <regions.size();j++){
 //					System.out.println("region is "+regions.get(j).getLocationString());
-					pearsonCorrelation(sample, regions.get(i), regions.get(j));		
+					double corr = pearsonCorrelation(sample, regions.get(i), regions.get(j));	
+					pairwiseDistance[i][j] = corr;
 				}
 			}
 		}				
 	}
 	
-	public void pearsonCorrelation(Sample sample, Region regA, Region regB){
+	public double pearsonCorrelation(Sample sample, Region regA, Region regB){
 		
 		//get midpoints
 //		double regAmid = regA.getMidpoint().getLocation();
@@ -248,10 +258,8 @@ public class PearsonCorrAlignment {
 			System.out.println();
 			for (int i = 0; i < alignedRegB.length; i++)
 				System.out.print(alignedRegB[i][1]+",");			
-		}
-		
-		System.out.println();
-		
+		}		
+		System.out.println();		
 		**/
 		
 		// incrementing error 
@@ -259,6 +267,21 @@ public class PearsonCorrAlignment {
 		if (offset !=0){
 			error += 1;
 		}
+		
+		return maxCorr;	
+	}
+	
+	public void printPairwiseDistance(){
+		
+		for (int i = 0 ; i < regions.size(); i++){
+			System.out.print(regions.get(i).getLocationString());
+		}
+		
+		for (int i = 0 ; i < regions.size();i++){
+			for (int j = 0 ; j <regions.size(); j++)
+				System.out.print(pairwiseDistance[i][j]+"\t");
+		}
+		System.out.println();	
 	}
 	
 	public static void main(String[] args){
@@ -282,5 +305,6 @@ public class PearsonCorrAlignment {
 		profile.loadData();
 		profile.excutePearsonCorrAlign();
 		profile.printErrorRate();	
+		profile.printPairwiseDistance();
 	}
 }
