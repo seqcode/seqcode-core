@@ -127,6 +127,7 @@ public class PearsonCorrAlignment {
 //					System.out.println("region is "+regions.get(j).getLocationString());
 					double corr = pearsonCorrelation(sample, regions.get(i), regions.get(j));	
 					pairwiseDistance[i][j] = corr;
+					pairwiseDistance[j][i] = corr;
 				}
 			}
 		}				
