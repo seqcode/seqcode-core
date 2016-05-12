@@ -121,7 +121,7 @@ public class AlignmentTest {
 			
 //			for (int i = 0; i <1 ; i++){	
 				for (int j = i+1; j <regions.size();j++){
-					System.out.println("region is "+regions.get(j).getLocationString());
+//					System.out.println("region is "+regions.get(j).getLocationString());
 					smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));		
 				}
 			}
@@ -148,7 +148,7 @@ public class AlignmentTest {
 			}
 		}
 		
-		System.out.println("max counts are "+maxA+" : "+maxB);
+//		System.out.println("max counts are "+maxA+" : "+maxB);
 		
 		double [][] normRegACounts = new double [window+1][2];
 		double [][] normRegBCounts = new double [window+1][2];
@@ -205,10 +205,10 @@ public class AlignmentTest {
 		double x_mid = (s_x_coord + e_x_coord)/2;
 		double y_mid = (s_y_coord + e_y_coord)/2;
 		
-		System.out.println("alignment start coordinates "+ s_x_coord + " : " + s_y_coord);
-		System.out.println("alignment end coordinates "+ e_x_coord + " : " + e_y_coord);
+//		System.out.println("alignment start coordinates "+ s_x_coord + " : " + s_y_coord);
+//		System.out.println("alignment end coordinates "+ e_x_coord + " : " + e_y_coord);
 		
-		System.out.println(Arrays.toString(traceBack.toArray()));
+//		System.out.println(Arrays.toString(traceBack.toArray()));
 		
 		double[][] alignedRegA = new double[e_x_coord-s_x_coord+1][2];
 		double[][] alignedRegB = new double[e_y_coord-s_y_coord+1][2];
@@ -293,12 +293,12 @@ public class AlignmentTest {
 			
 		**/
 		
-		System.out.println();
+//		System.out.println();
 		
 		// incrementing error 
 		totalNum += 1;
 		if ( traceBack.contains(LEFT) || traceBack.contains(UP) ){ // check that stack only contains DIAG
-			System.out.println("stack contains LEFT or UP");
+//			System.out.println("stack contains LEFT or UP");
 			error += 1;
 		}else{			
 			if (x_mid != y_mid)

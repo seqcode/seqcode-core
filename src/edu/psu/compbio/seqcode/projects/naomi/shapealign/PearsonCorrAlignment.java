@@ -115,7 +115,7 @@ public class PearsonCorrAlignment {
 			
 //			for (int i = 0; i <1 ; i++){	
 				for (int j = i+1; j <regions.size();j++){
-					System.out.println("region is "+regions.get(j).getLocationString());
+//					System.out.println("region is "+regions.get(j).getLocationString());
 					pearsonCorrelation(sample, regions.get(i), regions.get(j));		
 				}
 			}
@@ -186,8 +186,8 @@ public class PearsonCorrAlignment {
 				offset = slidingW - window/2;
 			}					
 		}
-		System.out.println("offsets is "+offset);
-		System.out.println("correlation is "+maxCorr);
+//		System.out.println("offsets is "+offset);
+//		System.out.println("correlation is "+maxCorr);
 
 		double[][] alignedRegB = new double[window+1][2];
 		double max_b = MINIMUM_VALUE;
@@ -197,7 +197,7 @@ public class PearsonCorrAlignment {
 			}
 		}
 		
-		System.out.println("max_b is "+max_b);
+//		System.out.println("max_b is "+max_b);
 
 		for (int i = 0; i <= window; i++){
 			for (int s = 0; s <2 ; s++){
@@ -217,7 +217,8 @@ public class PearsonCorrAlignment {
 				norm_b[i][s] = regBCounts[window/2+i][s]/temp_max_b;
 			}
 		}		
-		
+	
+		/**
 		System.out.println("before alignment reg A");
 		for (int i = 0; i < normRegACounts.length; i++)
 			System.out.print(normRegACounts[i][0]+",");
@@ -250,6 +251,8 @@ public class PearsonCorrAlignment {
 		}
 		
 		System.out.println();
+		
+		**/
 		
 		// incrementing error 
 		totalNum += 1;
