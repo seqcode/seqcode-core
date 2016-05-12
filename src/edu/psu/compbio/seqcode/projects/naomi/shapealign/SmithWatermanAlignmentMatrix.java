@@ -18,11 +18,11 @@ public class SmithWatermanAlignmentMatrix {
 	protected int window;
 	
 	protected Stack<Integer> traceBackTable = new Stack<Integer>();
-	protected double maxScore;
-	protected int alignStartXCoord;
-	protected int alignStartYCoord;
-	protected int alignEndXCoord;
-	protected int alignEndYCoord;
+	protected double maxScore = MINIMUM_VALUE;
+	protected int alignStartXCoord = 0;
+	protected int alignStartYCoord = 0;
+	protected int alignEndXCoord = 0;
+	protected int alignEndYCoord = 0;
 	
 	static final double GAP_OPEN = 10000;	
 	static final int DIAG = 1;
@@ -46,15 +46,6 @@ public class SmithWatermanAlignmentMatrix {
 	public int getStartY(){return alignStartYCoord;}
 	public int getEndX(){return alignEndXCoord;}
 	public int getEndY(){return alignEndYCoord;}
-	
-	//setters
-	public void setMaxScore(double max){maxScore = max;}
-	public void setTraceBack(Stack<Integer> traceBack){traceBackTable = traceBack;}
-	public void setStartXCoord(int startXCoord){alignStartXCoord = startXCoord;}
-	public void setStartYCoord(int startYCoord){alignStartYCoord = startYCoord;}
-	public void setEndXCoord(int endXCoord){alignEndXCoord = endXCoord;}
-	public void setEndYCoord(int endYCoord){alignEndYCoord = endYCoord;}
-	
 
 	public void buildMatrix(){
 		
@@ -94,35 +85,30 @@ public class SmithWatermanAlignmentMatrix {
 //		}			
 
 		// find the highest value
-		double maxScore = MINIMUM_VALUE;
-		int x_coord = 0;
-		int y_coord = 0;
-	
 		for (int i = (int) Math.floor(window/2); i <= window; i++){
 			if (M[i][window] > maxScore){
 				maxScore = M[i][window];
-				x_coord = i;
-				y_coord = window;	
+				alignEndXCoord = i;
+				alignEndYCoord = window;	
 			}
 		}
 		for (int j = (int) Math.floor(window/2); j <= window; j++){
 			if (M[window][j] > maxScore){
 				maxScore = M[window][j];
-				x_coord = window;
-				y_coord = j;	
+				alignEndXCoord = window;
+				alignEndYCoord = j;	
 			}
 		}
 		
-		System.out.println("max score is "+maxScore+" x coord is "+x_coord+" y coord is "+y_coord);
+//		System.out.println("max score is "+maxScore+" x coord is "+alignEndXCoord+" y coord is "+alignEndYCoord);
 		
 		// back track to reconstruct the path
 		double currentScore = maxScore;
-		int current_x = x_coord;
-		int current_y = y_coord;
-		Stack<Integer> traceBack = new Stack<Integer>();
+		alignStartXCoord = alignEndXCoord;
+		alignStartYCoord = alignEndYCoord;
 		
-		int i = x_coord;
-		int j = y_coord;
+		int i = alignEndXCoord;
+		int j = alignEndYCoord;
 		
 		while ( i != 0 && j != 0){
 			
@@ -130,14 +116,14 @@ public class SmithWatermanAlignmentMatrix {
 			
 			// diagonal case
 			if ( M[i-1][j-1] + mScore == currentScore ){
-				traceBack.push(DIAG);		
+				traceBackTable.push(DIAG);		
 				currentScore = M[i-1][j-1];
 				i--;
 				j--;
 			
 			// left case
 			}else if( M[i][j-1]-GAP_OPEN == currentScore ){
-				traceBack.push(LEFT);
+				traceBackTable.push(LEFT);
 				currentScore = M[i][j-1];
 				j--;
 			
@@ -145,20 +131,13 @@ public class SmithWatermanAlignmentMatrix {
 			}else{
 				System.out.println("current score is "+currentScore);
 				System.out.println("M value is"+M[i-1][j]);
-				traceBack.push(UP);
+				traceBackTable.push(UP);
 				currentScore = M[i-1][j];
 				i--;
 			}
 			
-			current_x = i;
-			current_y = j;
+			alignStartXCoord = i;
+			alignStartYCoord = j;
 		}
-		
-		setMaxScore(maxScore);
-		setTraceBack(traceBack);
-		setStartXCoord(current_x);
-		setStartYCoord(current_y);
-		setEndXCoord(x_coord);
-		setEndYCoord(y_coord);
 	}
 }
