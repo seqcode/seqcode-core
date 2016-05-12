@@ -1351,6 +1351,10 @@ public class HitCache {
 	 */
 	private void initializeBackground(){
 		perBaseBack=new BackgroundCollection();
+		if(econfig.getGenome()==null){
+			System.err.println("Genome chromosome lengths not specified. Please define using --geninfo.");
+			System.exit(1);
+		}
 		perBaseBack.addBackgroundModel(
 				new PoissonBackgroundModel(-1, econfig.getPerBaseLogConf(), getHitCount(), econfig.getGenome().getGenomeLength(), econfig.getMappableGenomeProp(), 1, '.', 1, true));
 	}

@@ -99,6 +99,11 @@ public class GenomeConfig {
 					}
 				}
 				
+				if(gen==null){
+					System.err.println("WARNING: please provide chromosome length information in a genome info file (option --geninfo). " +
+							"MultiGPS will attempt to estimate chromosome lengths from data, but this may not work or may not be accurate.");
+				}
+				
 				//Cache genome sequence
 				if(ap.hasKey("seq")){
 					genomeSequencePath = ap.getKeyValue("seq");
