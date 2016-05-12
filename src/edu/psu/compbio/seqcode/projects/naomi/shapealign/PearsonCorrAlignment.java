@@ -278,10 +278,11 @@ public class PearsonCorrAlignment {
 		}
 		
 		for (int i = 0 ; i < regions.size();i++){
-			for (int j = 0 ; j <regions.size(); j++)
+			for (int j = 0 ; j <regions.size(); j++){
 				System.out.print(pairwiseDistance[i][j]+"\t");
+			}
+			System.out.println();	
 		}
-		System.out.println();	
 	}
 	
 	public static void main(String[] args){
