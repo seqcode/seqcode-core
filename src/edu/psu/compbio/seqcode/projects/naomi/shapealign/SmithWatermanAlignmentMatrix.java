@@ -100,7 +100,7 @@ public class SmithWatermanAlignmentMatrix {
 			}
 		}
 		
-		System.out.println("max score is "+maxScore+" x coord is "+alignEndXCoord+" y coord is "+alignEndYCoord);
+//		System.out.println("max score is "+maxScore+" x coord is "+alignEndXCoord+" y coord is "+alignEndYCoord);
 		
 		// back track to reconstruct the path
 		double currentScore = maxScore;
