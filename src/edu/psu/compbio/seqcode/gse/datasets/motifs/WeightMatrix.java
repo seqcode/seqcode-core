@@ -674,6 +674,9 @@ public class WeightMatrix {
     		for(int k=Kmin; k<=KCap; k++){
     			for (int i = 0; i < (consensus.length() - k + 1); i++) {
     				String sub = consensus.substring(i, i+k);
+    				int numNs = sub.split("N", -1).length - 1;
+    				if((numNs*1.0)/sub.length() > 0.5)
+    					continue;
     				if(sub.contains("R") || sub.contains("Y") || sub.contains("S") || sub.contains("W") || sub.contains("K") || sub.contains("M") || sub.contains("N")){
     					List<StringBuilder> mers = new ArrayList<StringBuilder>();
     					StringBuilder sb = new StringBuilder();
