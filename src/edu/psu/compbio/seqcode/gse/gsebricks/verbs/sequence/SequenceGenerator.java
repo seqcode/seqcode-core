@@ -74,9 +74,21 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
         	if (genomePath==null)
         		genomePath = "/scratch/" + region.getGenome().getVersion();
             File f = new File( genomePath + "/chr" + region.getChrom() + ".fa");
-            if (!f.exists()) {
+            if (!f.exists())
                 f = new File( genomePath+ "/chr" + region.getChrom() + ".fasta");
-            }
+            if (!f.exists())
+                f = new File( genomePath+ "/" + region.getChrom() + ".fa");
+            if (!f.exists())
+                f = new File( genomePath+ "/" + region.getChrom() + ".fasta");
+            if (!f.exists())
+                f = new File( genomePath+ "/chromosome" + region.getChrom() + ".fa");
+            if (!f.exists())
+                f = new File( genomePath+ "/chromosome" + region.getChrom() + ".fasta");
+            if (!f.exists())
+                f = new File( genomePath+ "/chrom" + region.getChrom() + ".fa");
+            if (!f.exists())
+                f = new File( genomePath+ "/chrom" + region.getChrom() + ".fasta");
+            
             if (f.exists()) {
                 FASTAStream stream = new FASTAStream(f);
                 while (stream.hasNext()) {
@@ -88,9 +100,8 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
                     }                    
                 }
                 stream.close();                
-            }
-            else{
-            	System.out.print("Genome is not found at "+genomePath+". \n");
+            }else{
+            	System.out.print("FASTA file for chromosome "+region.getChrom() +" is not found at "+genomePath+". \n");
             	System.exit(-1);
             }
             
