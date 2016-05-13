@@ -31,9 +31,9 @@ public class LOne extends Optimizer {
 	// Tunable ADMM parameters
 
 	/** The maximum number of allowed iterations for the ADMM algorithm */
-	public int ADMM_maxItr = 30;
+	public int ADMM_maxItr = 500;
 	/** Augmented Lagrangian parameter rho */
-	public double ADMM_pho = 0.001;
+	public double ADMM_pho = 1.7;
 	public double ADMM_pho_fold = 1.0;
 	/** The maximum allowed value for pho */
 	public double ADMM_pho_max = 100000000;
