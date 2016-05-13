@@ -72,6 +72,10 @@ public class MultiGPS {
 		potentialFilter = new PotentialRegionFilter(mgpsconfig, econfig, manager, bindingManager);
 		List<Region> potentials = potentialFilter.execute();
 		System.err.println(potentials.size()+" potential regions found.");
+		if(potentials.size()==0){
+			System.err.println("No potential regions - exiting.");
+			System.exit(1);
+		}
 		potentialFilter.printPotentialRegionsToFile();
 	}
 	
@@ -233,11 +237,14 @@ public class MultiGPS {
 				"\t--fixedpb <fixed per base limit>\n" +
 				"\t--poissongausspb <filter per base using a Poisson threshold parameterized by a local Gaussian sliding window>\n" +
 				"\t--nonunique [flag to use non-unique reads]\n" +
-				" Scaling data:\n"+
-				"\t--noscaling [flag to turn off signal vs control scaling (default = scaling by regression)]\n" +
-				"\t--medianscale [flag to use scaling by median (default = scaling by regression)]\n" +
-				"\t--sesscale [flag to use scaling by SES (default = scaling by regression)]\n" +
-				"\t--scalewin <window size for scaling procedure>\n" +
+				"Scaling control vs signal counts:\n" +
+				"\t--noscaling [flag to turn off auto estimation of signal vs control scaling factor]\n" +
+				"\t--medianscale [flag to use scaling by median ratio (default = scaling by NCIS)]\n" +
+				"\t--regressionscale [flag to use scaling by regression (default = scaling by NCIS)]\n" +
+				"\t--sesscale [flag to use scaling by SES (default = scaling by NCIS)]\n" +
+				"\t--fixedscaling <multiply control counts by total tag count ratio and then by this factor if not estimating scaling>\n" +
+				"\t--scalewin <window size for scaling procedure (default=10000)>\n" +
+				"\t--plotscaling [flag to plot diagnostic information for the chosen scaling method]\n" +
 				" Running MultiGPS:\n" +
 				"\t--d <binding event read distribution file>\n" +
 				"\t--r <max. model update rounds>\n" +

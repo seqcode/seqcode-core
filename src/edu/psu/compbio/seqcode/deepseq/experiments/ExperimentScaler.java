@@ -200,7 +200,7 @@ public class ExperimentScaler {
 			List<Double> mratios=new ArrayList<Double>();
 			for(int x=0; x<counts.size(); x++){
 				PairedCounts pc = counts.get(x);
-				if(pc.x>0 || pc.y>0){
+				if(pc.x>0 && pc.y>0){
 					double currA=pc.x, currB=pc.y;
 					double currTot=pc.x+pc.y;
 					while(x<counts.size()-1 && (counts.get(x+1).x + counts.get(x+1).y)==currTot){
@@ -219,8 +219,9 @@ public class ExperimentScaler {
 				dataToPlot2.set(count, 0, bintot.get(d));
 				dataToPlot2.set(count, 1, mratios.get(d));
 				count++;
+				
 			}
-			
+
 			//Generate images
 			ScalingPlotter plotter = new ScalingPlotter(outputFile+" NCIS plot");
 			plotter.saveXYplot(dataToPlot, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Cumulative Count Scaling Ratio", outputFile+".NCIS_scaling-ccr.png", true);
