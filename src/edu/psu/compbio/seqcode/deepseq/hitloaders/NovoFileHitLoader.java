@@ -68,7 +68,7 @@ public class NovoFileHitLoader extends FileHitLoader {
 		            	}
             			chr = words[7];
             			String[] tmp = chr.split("\\.");
-            			chr=tmp[0].replaceFirst("chr", "");
+            			chr=tmp[0].replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", "");
             			chr=chr.replaceFirst("^>", "");
             			start = new Integer(words[8]).intValue();
             			end =start+readLength-1;
