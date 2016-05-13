@@ -46,10 +46,10 @@ public class ScoreMotif {
 		}
 	}
 	// Load freq matrices
-	public void loadMotifsFromFile(String filename, MarkovBackgroundModel b) {
+	public void loadMotifsFromFile(String filename, MarkovBackgroundModel b) throws NumberFormatException, IOException {
 		FreqMatrixImport motifImport = new FreqMatrixImport();
-    	motifImport.setBackground(b);
-		motifs.addAll(motifImport.readTransfacMatrices(filename));
+    	//motifImport.setBackground(b);
+		motifs.addAll(motifImport.readTransfacMatricesAsFreqMatrices(filename));
 	}
 
 	// Gettors
