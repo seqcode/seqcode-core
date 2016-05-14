@@ -115,6 +115,8 @@ public class PearsonCorrAlignment {
 			sampleCountsArray.put(sample, regionCounts);
 		}
 		setCountsArray(sampleCountsArray);
+		
+		manager.close();
 	}
 	
 	public void excutePearsonCorrAlign(){
@@ -308,5 +310,7 @@ public class PearsonCorrAlignment {
 		profile.excutePearsonCorrAlign();
 		profile.printErrorRate();	
 		profile.printPairwiseDistance();
+		
+		manager.close();
 	}
 }

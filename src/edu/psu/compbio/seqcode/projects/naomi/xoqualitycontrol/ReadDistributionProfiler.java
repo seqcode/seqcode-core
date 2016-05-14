@@ -133,6 +133,7 @@ public class ReadDistributionProfiler {
 			}
 			sampleComposite.put(sample, nonstrandedComposite);		
 		}
+		manager.close();
 	}
 		
 	public void computeStandardDeviation(){
@@ -157,7 +158,7 @@ public class ReadDistributionProfiler {
 			}
 			weightedVar = (window*sumWeightedVar)/((window-1)*sumWeights);
 			weightedSD = Math.sqrt(weightedVar);				
-			distributionScore[0] = maxIndex;
+			distributionScore[0] = window/2 - maxIndex;
 			distributionScore[1] = weightedSD;
 			
 			sampleStandardDeviation.put(sample, distributionScore);
@@ -176,7 +177,7 @@ public class ReadDistributionProfiler {
 			double [] composite = sampleComposite.get(sample);
 			System.out.println(sample.getName());
 			for (int i = 0; i < composite.length; i++){
-				System.out.println(composite[i]+"\t");
+				System.out.print(composite[i]+"\t");
 			}
 			System.out.println();			
 		}		
@@ -203,5 +204,7 @@ public class ReadDistributionProfiler {
 		profile.computeStandardDeviation();
 		profile.printSampleStandardDeviation();		
 		if (Args.parseFlags(args).contains("printComposite")){profile.printSampleComposite();}
+		
+		manager.close();
 	}
 }
