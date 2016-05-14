@@ -97,19 +97,21 @@ public class ReadDistributionProfiler {
 						sampleCounts[i][s] = 0;
 				}	
 				if (reg.getStrand() == '+'){ // regions(features) are positive strand
+					reg.getMidpoint().getLocation();
+					
 					for (StrandedBaseCount hits: sampleCountsMap.get(sample).get(reg)){	
 						if (hits.getStrand()=='+'){
-							sampleCounts[hits.getCoordinate()-reg.getStart()][0] = hits.getCount();
+							sampleCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+window/2][0] = hits.getCount();
 						}else{
-							sampleCounts[hits.getCoordinate()-reg.getStart()][1] = hits.getCount();
+							sampleCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+window/2][1] = hits.getCount();
 						}					
 					}
 				}else{ // if regions (features) are reverse strand, I need to flip the strands and locations
 					for (StrandedBaseCount hits: sampleCountsMap.get(sample).get(reg)){	
 						if (hits.getStrand()=='-'){
-							sampleCounts[reg.getEnd()-hits.getCoordinate()][1] = hits.getCount();
+							sampleCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()][1] = hits.getCount();
 						}else{
-							sampleCounts[reg.getEnd()-hits.getCoordinate()][0] = hits.getCount();	
+							sampleCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()][0] = hits.getCount();	
 						}			
 					}		
 				}
