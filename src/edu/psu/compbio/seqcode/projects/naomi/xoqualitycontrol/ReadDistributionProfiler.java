@@ -38,7 +38,7 @@ public class ReadDistributionProfiler {
 	protected List<StrandedPoint> strandedPoints;
 	protected List<StrandedRegion> strandedRegions;
 	
-	protected int fivePrimeShift = 0;
+	protected int fivePrimeShift = 6;
 	protected int expandSize = 40;
 	protected int window = 1000;
 	
@@ -95,21 +95,23 @@ public class ReadDistributionProfiler {
 				for (int i = 0;i <= window+expandSize;i++){
 					for (int s = 0; s<2; s++)
 						sampleCounts[i][s] = 0;
-				}				
-				for (StrandedBaseCount hits: sampleCountsMap.get(sample).get(reg)){				
-					if (reg.getStrand() == '+'){
+				}	
+				if (reg.getStrand() == '+'){ // regions(features) are positive strand
+					for (StrandedBaseCount hits: sampleCountsMap.get(sample).get(reg)){	
 						if (hits.getStrand()=='+'){
 							sampleCounts[hits.getCoordinate()-reg.getStart()][0] = hits.getCount();
 						}else{
 							sampleCounts[hits.getCoordinate()-reg.getStart()][1] = hits.getCount();
-						}
-					}else{ // if the features are forward stranded, array needs to be reversed with reversed strand
+						}					
+					}
+				}else{ // if regions (features) are reverse strand, I need to flip the strands and locations
+					for (StrandedBaseCount hits: sampleCountsMap.get(sample).get(reg)){	
 						if (hits.getStrand()=='-'){
 							sampleCounts[reg.getEnd()-hits.getCoordinate()][1] = hits.getCount();
 						}else{
-							sampleCounts[reg.getEnd()-hits.getCoordinate()][0] = hits.getCount();						
-						}
-					}
+							sampleCounts[reg.getEnd()-hits.getCoordinate()][0] = hits.getCount();	
+						}			
+					}		
 				}
 				regionCounts.put(reg, sampleCounts);
 			}
