@@ -149,16 +149,17 @@ public class ReadDistributionProfiler {
 			double[] composite = sampleComposite.get(sample);			
 			sampleStandardDeviation.put(sample, computeStandardDeviation(composite));
 			
-			//shuffle the data points and calculate standard deviation from null
-			double[] shuffledComposite = composite;
+			//shuffle the data points and calculate standard deviation from null		
+			double[] shuffledComposite =  new double[composite.length];
+			System.arraycopy(composite, 0, shuffledComposite, 0, composite.length);	
+			
 			Random rand = ThreadLocalRandom.current();
 			for (int i = shuffledComposite.length - 1; i >0; i--){
 				int index = rand.nextInt(i+1);
 				double counts = shuffledComposite[index];
 				shuffledComposite[index] = shuffledComposite[i];
 				shuffledComposite[i] = counts;				
-			}
-			
+			}		
 			//printing shuffledComposite
 			for (int i = 0 ; i < shuffledComposite.length; i++){
 				System.out.print(shuffledComposite[i]+"\t");
