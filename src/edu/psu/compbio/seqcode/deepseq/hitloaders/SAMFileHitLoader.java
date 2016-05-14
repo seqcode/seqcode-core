@@ -67,11 +67,11 @@ public class SAMFileHitLoader extends FileHitLoader{
 		    	boolean neg = record.getReadNegativeStrandFlag();
                 boolean mateneg = record.getMateNegativeStrandFlag();
                 HitPair hp = new HitPair((neg ? record.getAlignmentEnd() : record.getAlignmentStart()),
-                		record.getMateReferenceName().replaceFirst("^chr", ""),
+                		record.getMateReferenceName().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", ""),
                 		(mateneg ? record.getMateAlignmentStart()+record.getReadLength()-1 : record.getMateAlignmentStart()), 
                 		mateneg ? 1 : 0,
                 		1);
-                addPair(record.getReferenceName().replaceFirst("^chr", ""), neg ? '-':'+', hp);
+                addPair(record.getReferenceName().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", ""), neg ? '-':'+', hp);
 		    }
 	    }
 
@@ -97,7 +97,7 @@ public class SAMFileHitLoader extends FileHitLoader{
 		    int start = record.getAlignmentStart();
 		    int end = record.getAlignmentEnd();
 		    ReadHit currHit = new ReadHit(
-						  record.getReferenceName().replaceFirst("^chr", ""), 
+						  record.getReferenceName().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", ""), 
 						  start, end, 
 						  record.getReadNegativeStrandFlag() ? '-' : '+',
 						  weight);

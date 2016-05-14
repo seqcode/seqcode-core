@@ -93,7 +93,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
                 FASTAStream stream = new FASTAStream(f);
                 while (stream.hasNext()) {
                     Pair<String,String> pair = stream.next();
-                    String pairchrom = pair.car().replaceFirst("^chr","");
+                    String pairchrom = pair.car().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr","");
                     if (pairchrom.equals(region.getChrom())) {
                         chromseq = pair.cdr();
                         break;

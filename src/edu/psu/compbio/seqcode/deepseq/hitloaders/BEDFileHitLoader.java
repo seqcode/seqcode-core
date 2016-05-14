@@ -54,7 +54,7 @@ public class BEDFileHitLoader extends FileHitLoader {
 	            	try{
             			chr = words[0];
             			String[] tmp = chr.split("\\.");
-            			chr=tmp[0].replaceFirst("chr", "");
+            			chr=tmp[0].replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", "");
             			chr=chr.replaceFirst("^>", "");
             			// http://genome.ucsc.edu/FAQ/FAQformat.html#format1
             			// BED format is half open - The chromEnd base is not included  

@@ -66,6 +66,7 @@ public class TestExptLoading {
 			float totalCount = 0;
 			Iterator<Region> chroms = new ChromosomeGenerator().execute(gen);
 			while (chroms.hasNext()) {
+				double chrCount =0;
 				Region currentRegion = chroms.next();
 				//Split the job up into large chunks
 	            for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=MAXSECTION){
@@ -74,9 +75,12 @@ public class TestExptLoading {
 	                Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 				
 					List<StrandedBaseCount> ipHits = expt.getSignal().getBases(currSubRegion);
-					for(StrandedBaseCount z : ipHits)
+					for(StrandedBaseCount z : ipHits){
 						totalCount+=z.getCount();
+						chrCount += z.getCount();
+					}
 	            }
+	            System.out.println("\t"+currentRegion.getLocationString()+"\t"+chrCount);
 			}
 			System.out.println(expt.getName()+"\t"+expt.getSignal().getHitCount()+"\t"+totalCount);
 			

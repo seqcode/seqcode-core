@@ -70,7 +70,7 @@ public class TophatFileHitLoader extends FileHitLoader{
 		    	}
 		    	
 		    	ReadHit currHit = new ReadHit(
-		    			record.getReferenceName().replaceFirst("^chr", ""),
+		    			record.getReferenceName().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", ""),
 		    			aStart, aEnd,
 		    			record.getReadNegativeStrandFlag() ? '-' : '+',
 		    			weight);

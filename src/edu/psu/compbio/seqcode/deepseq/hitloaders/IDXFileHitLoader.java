@@ -46,7 +46,7 @@ public class IDXFileHitLoader extends FileHitLoader {
 		            try{
             			chr = words[0];
             			String[] tmp = chr.split("\\.");
-            			chr=tmp[0].replaceFirst("chr", "");
+            			chr=tmp[0].replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", "");
             			chr=chr.replaceFirst("^>", "");
             			fivePrime = new Integer(words[1]).intValue();
             			posWeight = new Integer(words[2]).floatValue();

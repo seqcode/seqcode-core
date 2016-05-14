@@ -68,7 +68,7 @@ public class BowtieFileHitLoader extends FileHitLoader {
 	            	}
 	            	chr = words[2];
         			String[] tmp = chr.split("\\.");
-        			chr=tmp[0].replaceFirst("chr", "");
+        			chr=tmp[0].replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", "");
         			chr=chr.replaceFirst("^>", "");
         			start = new Integer(words[3]).intValue()+1; //Bowtie raw output is 0-based, we want 1-based
         			end =start+readLength-1;
