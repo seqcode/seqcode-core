@@ -46,7 +46,7 @@ public class ReadDistributionProfiler {
 	
 	Map<Sample,double[]> sampleComposite = new HashMap<Sample,double[]>();
 	Map<Sample,double[]> sampleStandardDeviation = new HashMap<Sample,double[]>();
-	Map<Sample,double[]> nullStandardDeviation = new HashMap<Sample,double[]>();
+	Map<Sample,Double> nullStandardDeviation = new HashMap<Sample,Double>();
 	
 	public ReadDistributionProfiler(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
 		gconfig = gcon;
@@ -181,6 +181,8 @@ public class ReadDistributionProfiler {
 			double z_score = (x - mu)/aveSD;
 			double p_val = 0.5*Erf.erfc(z_score/Math.sqrt(2));
 			
+			nullStandardDeviation.put(sample, aveSD);
+			
 			if ((x < mu) && p_val <0.05){
 				System.out.println("significant with p-valu of "+p_val);
 			}else{
@@ -218,8 +220,8 @@ public class ReadDistributionProfiler {
 		for (Sample sample : sampleStandardDeviation.keySet()){			
 			double [] distributionScore = sampleStandardDeviation.get(sample);			
 			System.out.println(sample.getName()+"\t"+distributionScore[0]+"\t"+distributionScore[1]);	
-			double [] nullScore = nullStandardDeviation.get(sample);	
-			System.out.println("null_score\t"+nullScore[0]+"\t"+nullScore[1]);	
+			double nullScore = nullStandardDeviation.get(sample);	
+			System.out.println("null_score\t"+nullScore);	
 		}		
 	}	
 	
