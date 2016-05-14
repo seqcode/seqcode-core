@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.commons.math3.special.Erf;
+
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
@@ -40,7 +42,6 @@ public class ReadDistributionProfiler {
 	protected List<StrandedRegion> strandedRegions;
 	
 	protected int fivePrimeShift = 6;
-	protected int expandSize = 40;
 	protected int window = 1000;
 	
 	Map<Sample,double[]> sampleComposite = new HashMap<Sample,double[]>();
@@ -60,6 +61,9 @@ public class ReadDistributionProfiler {
 	public void setFivePrimeShift(int s){fivePrimeShift = s;}
 	
 	public void getCountsfromStrandedRegions(){
+		
+		// Because shift will shorten the array, edge will ensure that windows are covered with reads
+		int edge = 40;
 		
 		// StrandedBaseCount list for each stranded regions for each sample
 		Map<Sample, Map<StrandedRegion,List<StrandedBaseCount>>> sampleCountsMap = new HashMap<Sample, Map<StrandedRegion,List<StrandedBaseCount>>>();
@@ -93,8 +97,8 @@ public class ReadDistributionProfiler {
 			Map<StrandedRegion,double[][]> regionCounts = new HashMap<StrandedRegion,double[][]>();
 			
 			for (StrandedRegion reg : sampleCountsMap.get(sample).keySet()){			
-				double[][] sampleCounts = new double[window+expandSize+1][2];
-				for (int i = 0;i <= window+expandSize;i++){
+				double[][] sampleCounts = new double[window+edge+1][2];
+				for (int i = 0;i <= window+edge;i++){
 					for (int s = 0; s<2; s++)
 						sampleCounts[i][s] = 0;
 				}	
@@ -103,17 +107,17 @@ public class ReadDistributionProfiler {
 					
 					for (StrandedBaseCount hits: sampleCountsMap.get(sample).get(reg)){	
 						if (hits.getStrand()=='+'){
-							sampleCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+(window+expandSize)/2][0] = hits.getCount();
+							sampleCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+(window+edge)/2][0] = hits.getCount();
 						}else{
-							sampleCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+(window+expandSize)/2][1] = hits.getCount();
+							sampleCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+(window+edge)/2][1] = hits.getCount();
 						}					
 					}
 				}else{ // if regions (features) are reverse strand, I need to flip the strands and locations
 					for (StrandedBaseCount hits: sampleCountsMap.get(sample).get(reg)){	
 						if (hits.getStrand()=='+'){
-							sampleCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()+(window+expandSize)/2][1] = hits.getCount();
+							sampleCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()+(window+edge)/2][1] = hits.getCount();
 						}else{
-							sampleCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()+(window+expandSize)/2][0] = hits.getCount();	
+							sampleCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()+(window+edge)/2][0] = hits.getCount();	
 						}			
 					}		
 				}
@@ -133,8 +137,8 @@ public class ReadDistributionProfiler {
 				double[][] regionCounts = sampleCountsArray.get(sample).get(reg);				
 				// get shifted composite for forward and reverse strands
 				for (int j = 0 ; j <=window ; j++){
-					nonstrandedComposite[j] += regionCounts[j-fivePrimeShift+expandSize/2][0]; 
-					nonstrandedComposite[j] += regionCounts[j+fivePrimeShift+expandSize/2][1];
+					nonstrandedComposite[j] += regionCounts[j-fivePrimeShift+edge/2][0]; 
+					nonstrandedComposite[j] += regionCounts[j+fivePrimeShift+edge/2][1];
 				}
 			}
 			sampleComposite.put(sample, nonstrandedComposite);		
@@ -143,31 +147,45 @@ public class ReadDistributionProfiler {
 	}
 		
 	public void StandardDeviationFromExpAndNull(){
+		
+		int iterations = 1000;
 			
 		for (Sample sample : sampleComposite.keySet()){
 			// calculate standard deviation from sample
 			double[] composite = sampleComposite.get(sample);			
 			sampleStandardDeviation.put(sample, computeStandardDeviation(composite));
-			
-			//shuffle the data points and calculate standard deviation from null		
-			double[] shuffledComposite =  new double[composite.length];
-			System.arraycopy(composite, 0, shuffledComposite, 0, composite.length);	
-			
-			Random rand = ThreadLocalRandom.current();
-			for (int i = shuffledComposite.length - 1; i >0; i--){
-				int index = rand.nextInt(i+1);
-				double counts = shuffledComposite[index];
-				shuffledComposite[index] = shuffledComposite[i];
-				shuffledComposite[i] = counts;				
-			}		
-			//printing shuffledComposite
-			for (int i = 0 ; i < shuffledComposite.length; i++){
-				System.out.print(shuffledComposite[i]+"\t");
+		
+			//shuffle the data points and calculate standard deviation from null	
+			double [] arrNullSD = new double [iterations]; 
+			for (int itr = 0 ; itr < iterations; itr++){
+				
+				double[] shuffledComposite =  new double[composite.length];
+				System.arraycopy(composite, 0, shuffledComposite, 0, composite.length);	
+				
+				Random rand = ThreadLocalRandom.current();
+				for (int i = shuffledComposite.length - 1; i >0; i--){
+					int index = rand.nextInt(i+1);
+					double counts = shuffledComposite[index];
+					shuffledComposite[index] = shuffledComposite[i];
+					shuffledComposite[i] = counts;				
+				}		
+				arrNullSD[itr] = computeStandardDeviation(shuffledComposite)[1];
 			}
-			System.out.println();
-			//end of test printing
+			double sum = 0;
+			for (int j = 0 ; j < arrNullSD.length; j ++){
+				sum += arrNullSD[j];
+			}
+			double mu = sum/arrNullSD.length;
+			double aveSD = computeStandardDeviation(arrNullSD)[1];		
+			double x = sampleStandardDeviation.get(sample)[1];
+			double z_score = (x - mu)/aveSD;
+			double p_val = 0.5*Erf.erfc(z_score/Math.sqrt(2));
 			
-			nullStandardDeviation.put(sample, computeStandardDeviation(shuffledComposite));
+			if ((x < mu) && p_val <0.05){
+				System.out.println("significant with p-valu of "+p_val);
+			}else{
+				System.out.println("not significant with p-value of "+p_val);
+			}	
 		}
 	}
 	
