@@ -194,23 +194,25 @@ public class ReadDistributionProfiler {
 	// calculate standard deviation
 	public double[] computeStandardDeviation(double[] composite){
 		
+		int N = composite.length;
 		double sumWeightedVar = 0 ; double sumWeights = 0; double weightedVar = 0; double weightedSD = 0 ;
 		double [] distributionScore = new double [2]; 		
 		int maxIndex = -1;
-		double maxCount = 0;			
-		for (int i = 0 ; i <=window; i ++){
+		double maxCount = 0;	
+		
+		for (int i = 0 ; i < N; i ++){
 			if (composite[i] > maxCount){
 				maxCount = composite[i];
 				maxIndex = i;
 			}
 		}			
-		for (int i = 0; i <=window; i++){
+		for (int i = 0; i < N ; i++){
 			sumWeightedVar += composite[i]*(i-maxIndex)*(i-maxIndex);
 			sumWeights += composite[i];
 		}
-		weightedVar = (window*sumWeightedVar)/((window-1)*sumWeights);
+		weightedVar = (N*sumWeightedVar)/((N-1)*sumWeights);
 		weightedSD = Math.sqrt(weightedVar);				
-		distributionScore[0] = window/2 - maxIndex;
+		distributionScore[0] = N/2 - maxIndex;
 		distributionScore[1] = weightedSD;
 		
 		return distributionScore;
