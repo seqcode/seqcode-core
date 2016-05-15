@@ -179,9 +179,9 @@ public class ReadDistributionProfiler {
 			double sd = computeStandardDeviation(arrNullSD);		
 			double x = sampleStandardDeviation.get(sample)[1];
 			double z_score = (x - mu)/sd;
-			double p_val = Erf.erfc(z_score/Math.sqrt(2));
+			double p_val = Erf.erfc(Math.abs(z_score)/Math.sqrt(2));
 			
-			nullStandardDeviation.put(sample, sd);
+			nullStandardDeviation.put(sample, mu);
 			
 			if ((x < mu) && p_val <0.05){
 				System.out.println("significant with p-valu of "+p_val+": z score is "+z_score);
