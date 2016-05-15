@@ -184,7 +184,7 @@ public class ReadDistributionProfiler {
 			nullStandardDeviation.put(sample, mu);
 			
 			if ((x < mu) && p_val <0.05){
-				System.out.println("significant with p-valu of "+p_val+": z score is "+z_score);
+				System.out.println("significant with p-value of "+p_val+": z score is "+z_score);
 			}else{
 				System.out.println("not significant with p-value of "+p_val+": z score is "+z_score);
 			}	
