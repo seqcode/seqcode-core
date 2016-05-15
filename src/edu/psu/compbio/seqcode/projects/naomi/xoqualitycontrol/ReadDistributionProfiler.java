@@ -153,7 +153,7 @@ public class ReadDistributionProfiler {
 		for (Sample sample : sampleComposite.keySet()){
 			// calculate standard deviation from sample
 			double[] composite = sampleComposite.get(sample);			
-			sampleStandardDeviation.put(sample, computeStandardDeviation(composite));
+			sampleStandardDeviation.put(sample, computeWeightedStandardDeviation(composite));
 		
 			//shuffle the data points and calculate standard deviation from null	
 			double [] arrNullSD = new double [iterations]; 
@@ -169,19 +169,19 @@ public class ReadDistributionProfiler {
 					shuffledComposite[index] = shuffledComposite[i];
 					shuffledComposite[i] = counts;				
 				}		
-				arrNullSD[itr] = computeStandardDeviation(shuffledComposite)[1];
+				arrNullSD[itr] = computeWeightedStandardDeviation(shuffledComposite)[1];
 			}
 			double sum = 0;
 			for (int j = 0 ; j < arrNullSD.length; j ++){
 				sum += arrNullSD[j];
 			}
 			double mu = sum/arrNullSD.length;
-			double aveSD = computeStandardDeviation(arrNullSD)[1];		
+			double sd = computeStandardDeviation(arrNullSD);		
 			double x = sampleStandardDeviation.get(sample)[1];
-			double z_score = (x - mu)/aveSD;
-			double p_val = 0.5*Erf.erfc(z_score/Math.sqrt(2));
+			double z_score = (x - mu)/sd;
+			double p_val = Erf.erfc(z_score/Math.sqrt(2));
 			
-			nullStandardDeviation.put(sample, aveSD);
+			nullStandardDeviation.put(sample, sd);
 			
 			if ((x < mu) && p_val <0.05){
 				System.out.println("significant with p-valu of "+p_val+": z score is "+z_score);
@@ -191,8 +191,8 @@ public class ReadDistributionProfiler {
 		}
 	}
 	
-	// calculate standard deviation
-	public double[] computeStandardDeviation(double[] composite){
+	// calculate weighted standard deviation
+	public double[] computeWeightedStandardDeviation(double[] composite){
 		
 		int N = composite.length;
 		double sumWeightedVar = 0 ; double sumWeights = 0; double weightedVar = 0; double weightedSD = 0 ;
@@ -216,6 +216,23 @@ public class ReadDistributionProfiler {
 		distributionScore[1] = weightedSD;
 		
 		return distributionScore;
+	}
+	
+	// calculate standard deviation
+	public double computeStandardDeviation(double[] x){
+		
+		int N = x.length;
+		double var = 0 ; double sd = 0;	double sum = 0;	double mu = 0;
+		for (int i = 0; i < N; i++){
+			sum += x[i];
+		}
+		mu = sum/N;	
+		for (int i = 0; i < N ; i++){
+			var += (x[i]-mu)*(x[i]-mu);
+		}
+		sd = Math.sqrt(var/N);
+		
+		return sd;
 	}
 	
 	public void printSampleStandardDeviation(){		
