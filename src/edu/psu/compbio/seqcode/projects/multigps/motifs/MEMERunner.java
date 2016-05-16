@@ -77,7 +77,7 @@ public class MEMERunner {
 			StreamGobbler(proc.getErrorStream(), "MEME_ERR", true);
 			// any output? 
 			StreamGobbler outputGobbler = new 
-			StreamGobbler(proc.getInputStream(), "MEME_OUT", true);
+			StreamGobbler(proc.getInputStream(), "MEME_OUT", false);
 			// kick them off 
 			errorGobbler.start(); 
 			outputGobbler.start(); 
