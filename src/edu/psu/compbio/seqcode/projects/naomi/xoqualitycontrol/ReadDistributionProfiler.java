@@ -46,7 +46,7 @@ public class ReadDistributionProfiler {
 	
 	Map<Sample,double[]> sampleComposite = new HashMap<Sample,double[]>();
 	Map<Sample,double[]> sampleStandardDeviation = new HashMap<Sample,double[]>();
-	Map<Sample,Double> nullStandardDeviation = new HashMap<Sample,Double>();
+	Map<Sample,double[]> sampleStatsAndNull = new HashMap<Sample,double[]>();
 	
 	public ReadDistributionProfiler(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
 		gconfig = gcon;
@@ -176,19 +176,20 @@ public class ReadDistributionProfiler {
 			for (int j = 0 ; j < arrNullSD.length; j ++){
 				sum += arrNullSD[j];
 			}
+			double [] statistics = new double [5];
 			double mu = sum/arrNullSD.length;
 			double sd = computeStandardDeviation(arrNullSD);		
 			double x = sampleStandardDeviation.get(sample)[1];
 			double z_score = (x - mu)/sd;
 			double p_val = Erf.erfc(Math.abs(z_score)/Math.sqrt(2));
 			
-			nullStandardDeviation.put(sample, mu);
+			statistics[0] = p_val;
+			if ((x < mu) && p_val <0.05){statistics[1]=1;}else{statistics[1] = 0;}
+			statistics[2] = z_score;
+			statistics[3] = mu;
+			statistics[4] = sd;			
 			
-			if ((x < mu) && p_val <0.05){
-				System.out.println("significant with p-value of "+p_val+": z score is "+z_score);
-			}else{
-				System.out.println("not significant with p-value of "+p_val+": z score is "+z_score);
-			}	
+			sampleStatsAndNull.put(sample, statistics);
 		}
 	}
 	
@@ -236,12 +237,12 @@ public class ReadDistributionProfiler {
 		return sd;
 	}
 	
-	public void printSampleStandardDeviation(){		
+	public void printWeighteStandardDeviationStatistics(){		
+		System.out.println("#sampleName\tMaxPos\tsampleWeightedSD\tp_val\tSignificant?\tz_score\tnullMu\tnullSD");
 		for (Sample sample : sampleStandardDeviation.keySet()){			
-			double [] distributionScore = sampleStandardDeviation.get(sample);			
-			System.out.println(sample.getName()+"\t"+distributionScore[0]+"\t"+distributionScore[1]);	
-			double nullScore = nullStandardDeviation.get(sample);	
-			System.out.println("null_score\t"+nullScore);	
+			double [] distributionScore = sampleStandardDeviation.get(sample);		
+			double [] stats = sampleStatsAndNull.get(sample);
+			System.out.println(sample.getName()+"\t"+distributionScore[0]+"\t"+distributionScore[1]+"\t"+stats[0]+"\t"+stats[1]+"\t"+stats[2]+stats[3]+stats[4]);		
 		}		
 	}	
 	
@@ -275,7 +276,7 @@ public class ReadDistributionProfiler {
 		profile.setFivePrimeShift(fivePrimeShift);
 		profile.getCountsfromStrandedRegions();
 		profile.StandardDeviationFromExpAndNull();
-		profile.printSampleStandardDeviation();		
+		profile.printWeighteStandardDeviationStatistics();		
 		if (Args.parseFlags(args).contains("printComposite")){profile.printSampleComposite();}
 		
 		manager.close();
