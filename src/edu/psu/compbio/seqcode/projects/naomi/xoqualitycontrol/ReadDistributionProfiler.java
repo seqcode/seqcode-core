@@ -134,7 +134,10 @@ public class ReadDistributionProfiler {
 				nonstrandedComposite[i] = 0;
 			
 			for (Region reg : sampleCountsArray.get(sample).keySet()){				
-				double[][] regionCounts = sampleCountsArray.get(sample).get(reg);				
+				double[][] regionCounts = sampleCountsArray.get(sample).get(reg);		
+				
+				System.out.println("size of regionCounts is "+regionCounts.length);
+				
 				// get shifted composite for forward and reverse strands
 				for (int j = 0 ; j <=window ; j++){
 					nonstrandedComposite[j] += regionCounts[j-fivePrimeShift+edge/2][0]; 
