@@ -137,12 +137,20 @@ public class ReadDistributionProfiler {
 				double[][] regionCounts = sampleCountsArray.get(sample).get(reg);		
 				
 				System.out.println("size of regionCounts is "+regionCounts.length);
+				for (int i = 0 ; i <50; i++){
+					System.out.print(regionCounts[i][0]+"\t");
+				}
 				
 				// get shifted composite for forward and reverse strands
 				for (int j = 0 ; j <=window ; j++){
 					nonstrandedComposite[j] += regionCounts[j-fivePrimeShift+edge/2][0]; 
 					nonstrandedComposite[j] += regionCounts[j+fivePrimeShift+edge/2][1];
 				}
+				System.out.println("nonstrandedComposite");
+				for (int i = 0 ; i <50; i++){
+					System.out.print(nonstrandedComposite[i]);
+				}
+				
 			}
 			sampleComposite.put(sample, nonstrandedComposite);		
 		}
