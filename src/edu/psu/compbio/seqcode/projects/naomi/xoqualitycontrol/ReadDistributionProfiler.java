@@ -213,7 +213,7 @@ public class ReadDistributionProfiler {
 		}
 		weightedVar = (N*sumWeightedVar)/((N-1)*sumWeights);
 		weightedSD = Math.sqrt(weightedVar);				
-		distributionScore[0] = N/2 - maxIndex;
+		distributionScore[0] = maxIndex - N/2;
 		distributionScore[1] = weightedSD;
 		
 		return distributionScore;
