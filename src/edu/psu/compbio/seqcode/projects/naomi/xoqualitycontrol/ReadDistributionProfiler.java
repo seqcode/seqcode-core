@@ -242,7 +242,7 @@ public class ReadDistributionProfiler {
 		for (Sample sample : sampleStandardDeviation.keySet()){			
 			double [] distributionScore = sampleStandardDeviation.get(sample);		
 			double [] stats = sampleStatsAndNull.get(sample);
-			System.out.println(sample.getName()+"\t"+distributionScore[0]+"\t"+distributionScore[1]+"\t"+stats[0]+"\t"+stats[1]+"\t"+stats[2]+stats[3]+stats[4]);		
+			System.out.println(sample.getName()+"\t"+distributionScore[0]+"\t"+distributionScore[1]+"\t"+stats[0]+"\t"+stats[1]+"\t"+stats[2]+"\t"+stats[3]+"\t"+stats[4]);		
 		}		
 	}	
 	
