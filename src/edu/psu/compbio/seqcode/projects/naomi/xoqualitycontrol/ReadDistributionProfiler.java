@@ -73,8 +73,8 @@ public class ReadDistributionProfiler {
 				
 		List<StrandedRegion> regionList = new ArrayList<StrandedRegion>();
 		for(Point p: strandedPoints){		
-			int start = Math.max(1, p.getLocation() - window/2);
-			int end = Math.min(p.getLocation() + window/2, p.getGenome().getChromLength(p.getChrom()));				
+			int start = Math.max(1, p.getLocation() - (window+edge)/2 );
+			int end = Math.min(p.getLocation() + (window+edge)/2, p.getGenome().getChromLength(p.getChrom()));				
 			StrandedRegion strandedReg = new StrandedRegion(p.getGenome(), p.getChrom(), start, end, p.getStrand());					
 			regionList.add(strandedReg);
 		}
@@ -148,9 +148,9 @@ public class ReadDistributionProfiler {
 				}
 				System.out.println("nonstrandedComposite");
 				for (int i = 0 ; i <50; i++){
-					System.out.print(nonstrandedComposite[i]);
+					System.out.print(nonstrandedComposite[i]+"\t");
 				}
-				
+				System.out.println();
 			}
 			sampleComposite.put(sample, nonstrandedComposite);		
 		}
