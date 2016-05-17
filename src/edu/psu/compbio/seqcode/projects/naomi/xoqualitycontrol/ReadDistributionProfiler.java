@@ -43,6 +43,8 @@ public class ReadDistributionProfiler {
 	
 	protected int fivePrimeShift = 6;
 	protected int window = 1000;
+	int iterations = 1000;	
+	protected boolean printSampleComposite = false;
 	
 	Map<Sample,double[]> sampleComposite = new HashMap<Sample,double[]>();
 	Map<Sample,double[]> sampleStandardDeviation = new HashMap<Sample,double[]>();
@@ -59,6 +61,7 @@ public class ReadDistributionProfiler {
 	public void setStrandedRegions(List<StrandedRegion> reg){strandedRegions = reg;} 
 	public void setWindowSize(int w){window = w;}
 	public void setFivePrimeShift(int s){fivePrimeShift = s;}
+	public void turnOnPrintComposite(){printSampleComposite = true;}
 	
 	public void getCountsfromStrandedRegions(){
 		
@@ -148,41 +151,34 @@ public class ReadDistributionProfiler {
 	}
 		
 	public void StandardDeviationFromExpAndNull(){
-		
-		int iterations = 1000;
-			
+
 		for (Sample sample : sampleComposite.keySet()){
 			// calculate standard deviation from sample
 			double[] composite = sampleComposite.get(sample);			
 			sampleStandardDeviation.put(sample, computeWeightedStandardDeviation(composite));
+			if (printSampleComposite==true){
+				System.out.println(sample.getName());
+				printArray(composite);
+			}
 		
 			//shuffle the data points and calculate standard deviation from null	
 			double [] arrNullSD = new double [iterations]; 
-			for (int itr = 0 ; itr < iterations; itr++){
-				
-				double[] shuffledComposite =  new double[composite.length];
-				System.arraycopy(composite, 0, shuffledComposite, 0, composite.length);	
-				
-				Random rand = ThreadLocalRandom.current();
-				for (int i = shuffledComposite.length - 1; i >0; i--){
-					int index = rand.nextInt(i+1);
-					double counts = shuffledComposite[index];
-					shuffledComposite[index] = shuffledComposite[i];
-					shuffledComposite[i] = counts;				
-				}		
+			for (int itr = 0 ; itr < iterations; itr++){				
+				double[] shuffledComposite =  shuffleComposite(composite);		
 				arrNullSD[itr] = computeWeightedStandardDeviation(shuffledComposite)[1];
 			}
-			double sum = 0;
-			for (int j = 0 ; j < arrNullSD.length; j ++){
-				sum += arrNullSD[j];
-			}
-			double [] statistics = new double [5];
-			double mu = sum/arrNullSD.length;
+			
+			//for test purpose
+			System.out.println("sd from null distribution");
+			printArray(arrNullSD);		
+			
+			double mu = TotalCounts(arrNullSD)/arrNullSD.length;
 			double sd = computeStandardDeviation(arrNullSD);		
 			double x = sampleStandardDeviation.get(sample)[1];
 			double z_score = (x - mu)/sd;
 			double p_val = Erf.erfc(Math.abs(z_score)/Math.sqrt(2));
 			
+			double [] statistics = new double [5];
 			statistics[0] = p_val;
 			if ((x < mu) && p_val <0.05){statistics[1]=1;}else{statistics[1] = 0;}
 			statistics[2] = z_score;
@@ -193,15 +189,66 @@ public class ReadDistributionProfiler {
 		}
 	}
 	
+	// This is for test purpose
+	public void StandardDeviationFromRandomReads(){
+		
+		for (Sample sample : sampleComposite.keySet()){
+			double[] composite = sampleComposite.get(sample);	
+			double [] randomReadsSD = new double[iterations];
+			for (int itr = 0 ; itr <iterations; itr++){
+				double[] randomReads = randomelyAssignReads(composite);
+				randomReadsSD[itr] = computeWeightedStandardDeviation(randomReads)[1];
+			}
+			System.out.println("standard deviation from random reads");
+			printArray(randomReadsSD);
+		}
+	}//end of test
+	
+	public double TotalCounts(double[] array){	
+		int totalCounts = 0;
+		for (int i = 0; i <array.length;i++){totalCounts+=array[i];}
+		return totalCounts;
+	}
+	
+	public void printArray(double[] array){
+		for (int i = 0; i < array.length; i++){System.out.println(array[i]+"\t");}
+		System.out.println();
+	}
+	
+	public double[] randomelyAssignReads(double[] composite){	
+		
+		double totalCounts = TotalCounts(composite);		
+		double randomReads[] = new double[composite.length];
+		for (int i = 0 ; i < totalCounts; i++){
+			randomReads[ThreadLocalRandom.current().nextInt(0, composite.length)] += 1;
+		}				
+		return randomReads;
+	}
+	
+	public double[] shuffleComposite(double[] composite){
+		
+		double[] shuffledComposite =  new double[composite.length];
+		Random rand = ThreadLocalRandom.current();
+		for (int i = shuffledComposite.length - 1; i >0; i--){
+			int index = rand.nextInt(i+1);
+			double counts = shuffledComposite[index];
+			shuffledComposite[index] = shuffledComposite[i];
+			shuffledComposite[i] = counts;				
+		}	
+		return shuffledComposite;	 
+	}
+	
 	// calculate weighted standard deviation
 	public double[] computeWeightedStandardDeviation(double[] composite){
 		
-		int N = composite.length;
 		double sumWeightedVar = 0 ; double sumWeights = 0; double weightedVar = 0; double weightedSD = 0 ;
 		double [] distributionScore = new double [2]; 		
-		int maxIndex = -1;
-		double maxCount = 0;	
+	
+		int N = composite.length;
+		double M = TotalCounts(composite);
 		
+		int maxIndex = -1;
+		double maxCount = 0;
 		for (int i = 0 ; i < N; i ++){
 			if (composite[i] > maxCount){
 				maxCount = composite[i];
@@ -212,7 +259,7 @@ public class ReadDistributionProfiler {
 			sumWeightedVar += composite[i]*(i-maxIndex)*(i-maxIndex);
 			sumWeights += composite[i];
 		}
-		weightedVar = (N*sumWeightedVar)/((N-1)*sumWeights);
+		weightedVar = (M*sumWeightedVar)/((M-1)*sumWeights);
 		weightedSD = Math.sqrt(weightedVar);				
 		distributionScore[0] = maxIndex - N/2;
 		distributionScore[1] = weightedSD;
@@ -237,23 +284,12 @@ public class ReadDistributionProfiler {
 		return sd;
 	}
 	
-	public void printWeighteStandardDeviationStatistics(){		
+	public void printWeightedStandardDeviationStatistics(){		
 		System.out.println("#sampleName\tMaxPos\tsampleWeightedSD\tp_val\tSignificant?\tz_score\tnullMu\tnullSD");
 		for (Sample sample : sampleStandardDeviation.keySet()){			
 			double [] distributionScore = sampleStandardDeviation.get(sample);		
 			double [] stats = sampleStatsAndNull.get(sample);
 			System.out.println(sample.getName()+"\t"+distributionScore[0]+"\t"+distributionScore[1]+"\t"+stats[0]+"\t"+stats[1]+"\t"+stats[2]+"\t"+stats[3]+"\t"+stats[4]);		
-		}		
-	}	
-	
-	public void printSampleComposite(){		
-		for (Sample sample : sampleComposite.keySet()){			
-			double [] composite = sampleComposite.get(sample);
-			System.out.println(sample.getName());
-			for (int i = 0; i < composite.length; i++){
-				System.out.print(composite[i]+"\t");
-			}
-			System.out.println();			
 		}		
 	}	
 	
@@ -276,8 +312,9 @@ public class ReadDistributionProfiler {
 		profile.setFivePrimeShift(fivePrimeShift);
 		profile.getCountsfromStrandedRegions();
 		profile.StandardDeviationFromExpAndNull();
-		profile.printWeighteStandardDeviationStatistics();		
-		if (Args.parseFlags(args).contains("printComposite")){profile.printSampleComposite();}
+		profile.StandardDeviationFromRandomReads();
+		profile.printWeightedStandardDeviationStatistics();		
+		if (Args.parseFlags(args).contains("printComposite")){profile.turnOnPrintComposite();}
 		
 		manager.close();
 	}
