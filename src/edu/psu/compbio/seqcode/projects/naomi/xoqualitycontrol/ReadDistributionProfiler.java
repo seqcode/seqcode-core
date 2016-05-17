@@ -44,7 +44,7 @@ public class ReadDistributionProfiler {
 	
 	protected int fivePrimeShift = 6;
 	protected int window = 1000;
-	int iterations = 10000;	
+	int iterations = 1000;	
 	protected boolean printSampleComposite = false;
 	
 	Map<Sample,double[]> sampleComposite = new HashMap<Sample,double[]>();
