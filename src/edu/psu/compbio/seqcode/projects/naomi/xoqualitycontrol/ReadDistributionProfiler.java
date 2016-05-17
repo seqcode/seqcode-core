@@ -211,14 +211,17 @@ public class ReadDistributionProfiler {
 	}
 	
 	public void printArray(double[] array){
-		for (int i = 0; i < array.length; i++){System.out.println(array[i]+"\t");}
+		for (int i = 0; i < array.length; i++){System.out.print(array[i]+"\t");}
 		System.out.println();
 	}
 	
 	public double[] randomelyAssignReads(double[] composite){	
-		
-		double totalCounts = TotalCounts(composite);		
+			
 		double randomReads[] = new double[composite.length];
+		for (int i = 0 ; i < randomReads.length; i++){ 
+			randomReads[i] = 0;
+		}	
+		double totalCounts = TotalCounts(composite);	
 		for (int i = 0 ; i < totalCounts; i++){
 			randomReads[ThreadLocalRandom.current().nextInt(0, composite.length)] += 1;
 		}				
