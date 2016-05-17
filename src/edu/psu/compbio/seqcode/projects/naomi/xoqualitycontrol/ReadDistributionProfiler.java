@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.math3.special.Erf;
+import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
@@ -169,12 +170,21 @@ public class ReadDistributionProfiler {
 			}
 			
 			//for test purpose
-			System.out.println("sd from null distribution");
-			printArray(arrNullSD);		
+//			System.out.println("sd from null distribution");
+//			printArray(arrNullSD);		
 			
 			double mu = TotalCounts(arrNullSD)/arrNullSD.length;
 			double sd = computeStandardDeviation(arrNullSD);		
 			double x = sampleStandardDeviation.get(sample)[1];
+			
+			double[] x2 = new double [1];
+			x2[0] = x;
+			
+			//Mann-Whitney test
+			MannWhitneyUTest mw = new MannWhitneyUTest();
+			double mannWP = mw.mannWhitneyUTest(x2,arrNullSD);
+			System.out.println("MannWhitney p value is "+mannWP);
+			
 			double z_score = (x - mu)/sd;
 			double p_val = Erf.erfc(Math.abs(z_score)/Math.sqrt(2));
 			
@@ -199,8 +209,8 @@ public class ReadDistributionProfiler {
 				double[] randomReads = randomelyAssignReads(composite);
 				randomReadsSD[itr] = computeWeightedStandardDeviation(randomReads)[1];
 			}
-			System.out.println("standard deviation from random reads");
-			printArray(randomReadsSD);
+//			System.out.println("standard deviation from random reads");
+//			printArray(randomReadsSD);
 		}
 	}//end of test
 	
