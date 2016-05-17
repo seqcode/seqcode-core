@@ -231,6 +231,8 @@ public class ReadDistributionProfiler {
 	public double[] shuffleComposite(double[] composite){
 		
 		double[] shuffledComposite =  new double[composite.length];
+		System.arraycopy(composite, 0, shuffledComposite, 0, composite.length);
+		
 		Random rand = ThreadLocalRandom.current();
 		for (int i = shuffledComposite.length - 1; i >0; i--){
 			int index = rand.nextInt(i+1);
