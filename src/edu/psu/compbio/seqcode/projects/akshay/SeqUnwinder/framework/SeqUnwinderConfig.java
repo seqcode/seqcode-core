@@ -204,9 +204,14 @@ public class SeqUnwinderConfig {
 		
 		// Set windown size around peaks
 		win = Args.parseInteger(args, "win", 150);
-		
+
 		minK = Args.parseInteger(args, "minK", 4);
 		maxK = Args.parseInteger(args, "maxK", 5);
+
+		// Get outdir and outbase and make them; delete dirs that exist with the same
+		outbase = Args.parseString(args, "out", "seqUnwinder_out");
+		outdir = new File(outbase);
+		makeOutPutDirs();
 		
 		numK = 0;
 		for(int k=minK; k<=maxK; k++ ){
@@ -290,9 +295,9 @@ public class SeqUnwinderConfig {
 		else
 			wekaOptsString=new String[19];
 		
-		wekaOptsString[0] = "-t"; wekaOptsString[1] = outArffFileName;
+		wekaOptsString[0] = "-t"; wekaOptsString[1] = outdir.getAbsolutePath()+File.separator+outArffFileName;
 		wekaOptsString[2] = "-x"; wekaOptsString[3] = Integer.toString(numCrossValidation);
-		wekaOptsString[4] = "-CLS"; wekaOptsString[5] = designFileName;
+		wekaOptsString[4] = "-CLS"; wekaOptsString[5] = outdir.getAbsolutePath()+File.separator+designFileName;
 		wekaOptsString[6] = "-NL";wekaOptsString[7] = Integer.toString(sm_NumLayers);
 		wekaOptsString[8] = "-TY";wekaOptsString[9] = "L1";
 		wekaOptsString[10] = "-A";wekaOptsString[11] = Integer.toString(m_ADMM_MaxIts);
@@ -301,11 +306,6 @@ public class SeqUnwinderConfig {
 		wekaOptsString[16] = "-threads";wekaOptsString[17]=Integer.toString(m_ADMM_numThreads);
 		if(debugMode)
 			wekaOptsString[18] = "-DEBUG";
-		
-		// Get outdir and outbase and make them; delete dirs that exist with the same
-		outbase = Args.parseString(args, "out", "seqUnwinder_out");
-		outdir = new File(outbase);
-		makeOutPutDirs();
 		
 		// use the base to name the arff file
 		outArffFileName = outbase+".arff";

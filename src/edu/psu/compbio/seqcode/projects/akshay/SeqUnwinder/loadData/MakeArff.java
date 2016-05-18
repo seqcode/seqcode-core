@@ -282,7 +282,7 @@ public class MakeArff {
 			}
 			int[] kmerCounts = new int[numK];
 			
-			FileWriter of = new FileWriter(outfilename);
+			FileWriter of = new FileWriter(seqConfig.getOutDir().getAbsolutePath()+File.separator+outfilename);
 			BufferedWriter bw = new BufferedWriter(of);
 			
 			StringBuilder sb = new StringBuilder();
