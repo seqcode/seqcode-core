@@ -63,8 +63,8 @@ public class ReadDistributionProfiler {
 			double[] composite = sampleComposite.get(sample);	
 			double[] contComposite = controlComposite.get(sample);	
 			
-			System.out.println("control composite ");
-			printArray(contComposite);
+//			System.out.println("control composite ");
+//			printArray(contComposite);
 			
 			sampleStandardDeviation.put(sample, computeWeightedStandardDeviation(composite));
 			controlStandardDeviation.put(sample, computeWeightedStandardDeviation(contComposite));
@@ -103,7 +103,7 @@ public class ReadDistributionProfiler {
 			double minNullVar = minSD*minSD;
 			FDistribution fdist = new FDistribution(window-1, window-1);
 			double Fpval = 1- fdist.cumulativeProbability(minNullVar/sampleVar);
-			System.out.println("F statistics p-val is "+Fpval);
+			System.out.println(sample.getName()+": F statistics p-val is "+Fpval);
 			
 			/// Z score calculation
 			double z_score = (x - mu)/sd;
