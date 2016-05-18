@@ -17,6 +17,14 @@ import edu.psu.compbio.seqcode.genome.location.Region;
 import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
 import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 
+/**
+ * FeatureCountsLoader : load counts from stranded feature
+ * 
+ * input : reference point
+ * 
+ * @author naomi yamada
+ */
+
 public class FeatureCountsLoader {
 	
 	protected GenomeConfig gconfig;
@@ -26,7 +34,7 @@ public class FeatureCountsLoader {
 	protected List<StrandedPoint> strandedPoints;
 	protected List<StrandedRegion> strandedRegions;
 	
-	protected int edge = 40; // Because shift will shorten the array, edge will ensure that windows are covered with reads
+	protected int edge = 0; // Because shift will shorten the array, edge will ensure that windows are covered with reads
 	protected int fivePrimeShift = 0;
 	protected int window = 1000;	
 	
@@ -45,12 +53,14 @@ public class FeatureCountsLoader {
 	public void setStrandedRegions(List<StrandedRegion> reg){strandedRegions = reg;} 
 	public void setWindowSize(int w){window = w;}
 	public void setFivePrimeShift(int s){fivePrimeShift = s;}
+	public void setEdge(){edge = 40;}
 	
 	public Map<Sample, Map<StrandedRegion,double[][]>> strandedRegionSampleCounts(){
 		
 		// StrandedBaseCount list for each stranded regions for each sample
 		Map<Sample, Map<StrandedRegion,List<StrandedBaseCount>>> sampleCountsMap = new HashMap<Sample, Map<StrandedRegion,List<StrandedBaseCount>>>();
-				
+		Map<Sample, Map<StrandedRegion,double[][]>> strandedRegionSampleCounts = new HashMap<Sample, Map<StrandedRegion,double[][]>>();	
+		
 		List<StrandedRegion> regionList = new ArrayList<StrandedRegion>();
 		for(Point p: strandedPoints){		
 			int start = Math.max(1, p.getLocation() - (window+edge)/2 );
@@ -105,7 +115,7 @@ public class FeatureCountsLoader {
 			}
 			strandedRegionSampleCounts.put(sample, regionCounts);
 		}
-		return strandedRegionSampleCounts;	
+		return strandedRegionSampleCounts;
 	}
 	
 	public Map<Sample,double[]> sampleComposite(){

@@ -29,10 +29,6 @@ import edu.psu.compbio.seqcode.projects.naomi.FeatureCountsLoader;
  */
 
 public class ReadDistributionProfiler {
-	
-	protected GenomeConfig gconfig;
-	protected ExptConfig econfig;
-	protected ExperimentManager manager;
 	protected FeatureCountsLoader featureCountsLoader;
 		
 	protected List<StrandedPoint> strandedPoints;
@@ -46,12 +42,6 @@ public class ReadDistributionProfiler {
 	protected Map<Sample,double[]> sampleComposite = new HashMap<Sample,double[]>();
 	protected Map<Sample,double[]> sampleStandardDeviation = new HashMap<Sample,double[]>();
 	protected Map<Sample,double[]> sampleStatsAndNull = new HashMap<Sample,double[]>();
-	
-	public ReadDistributionProfiler(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
-		gconfig = gcon;
-		econfig = econ;
-		manager = man;
-	}
 	
 	public ReadDistributionProfiler(FeatureCountsLoader fcloader){	
 		featureCountsLoader = fcloader;
@@ -230,13 +220,15 @@ public class ReadDistributionProfiler {
 		// parsing command line arguments
 		ArgParser ap = new ArgParser(args);		
 		int win = Args.parseInteger(args, "win", 1000);
-		int fivePrimeShift = Args.parseInteger(args,"readshift", 6);
+		int fivePrimeShift = 0;
+		fivePrimeShift = Args.parseInteger(args,"readshift", 6);
 		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromMotifFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
 		
 		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, econf, manager);
 		fcLoader.setStrandedPoints(spoints);
 		fcLoader.setWindowSize(win);
 		fcLoader.setFivePrimeShift(fivePrimeShift);
+		if (fivePrimeShift !=0){fcLoader.setEdge();}
 
 		ReadDistributionProfiler profile = new ReadDistributionProfiler(fcLoader); 	
 		profile.StandardDeviationFromExpAndNull();
