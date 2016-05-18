@@ -41,7 +41,7 @@ public class FeatureCountsLoader {
 	// sample counts array for each stranded region for each sample
 //	protected Map<Sample, Map<StrandedRegion,double[][]>> strandedRegionSampleCounts = new HashMap<Sample, Map<StrandedRegion,double[][]>>();
 	protected Map<Sample, Map<StrandedRegion,double[][]>> strandedRegionControlCounts = new HashMap<Sample, Map<StrandedRegion,double[][]>>();
-	protected Map<Sample,double[]> controlComposite = new HashMap<Sample,double[]>();
+	protected Map<Sample, double[]> controlCompositeMap = new HashMap<Sample,double[]>();
 	
 	public FeatureCountsLoader(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
 		gconfig = gcon;
@@ -56,7 +56,7 @@ public class FeatureCountsLoader {
 	public void setFivePrimeShift(int s){fivePrimeShift = s;}
 	
 	public Map<Sample, Map<StrandedRegion,double[][]>> getControlStrandedRegionCounts(){return strandedRegionControlCounts;}
-	public Map<Sample, double[]> controlComposite(){return controlComposite;}
+	public Map<Sample, double[]> controlComposite(){return controlCompositeMap;}
 	
 	public Map<Sample, Map<StrandedRegion,double[][]>> strandedRegionSampleCounts(){
 		
@@ -155,7 +155,6 @@ public class FeatureCountsLoader {
 		Map<Sample, Map<StrandedRegion,double[][]>> controlRegionComposite = getControlStrandedRegionCounts();
 		
 		Map<Sample,double[]> sampleCompositeMap = new HashMap<Sample,double[]>();
-		Map<Sample, double[]> controlCompositeMap = new HashMap<Sample,double[]>();
 					
 		// nonstrandedComposite is a shifted and strand merged composite to be used to measure standard deviation
 		for (Sample sample : sampleRegionComposite.keySet()){

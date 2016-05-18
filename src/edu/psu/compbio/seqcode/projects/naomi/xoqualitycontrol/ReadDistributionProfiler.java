@@ -62,6 +62,10 @@ public class ReadDistributionProfiler {
 			// calculate standard deviation from sample
 			double[] composite = sampleComposite.get(sample);	
 			double[] contComposite = controlComposite.get(sample);	
+			
+			System.out.println("control composite ");
+			printArray(contComposite);
+			
 			sampleStandardDeviation.put(sample, computeWeightedStandardDeviation(composite));
 			controlStandardDeviation.put(sample, computeWeightedStandardDeviation(contComposite));
 			if (printSampleComposite==true){
