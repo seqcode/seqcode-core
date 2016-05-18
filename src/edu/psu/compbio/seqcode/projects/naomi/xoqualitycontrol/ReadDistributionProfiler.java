@@ -208,8 +208,8 @@ public class ReadDistributionProfiler {
 			}
 		}			
 		for (int i = 0; i < N ; i++){
-			sumWeightedVar += composite[i]*(i-maxIndex)*(i-maxIndex);
-			sumWeights += composite[i];
+			sumWeightedVar += Math.abs(composite[i])*(i-maxIndex)*(i-maxIndex);
+			sumWeights += Math.abs(composite[i]);
 		}
 		weightedVar = (M*sumWeightedVar)/((M-1)*sumWeights);
 		weightedSD = Math.sqrt(weightedVar);				
