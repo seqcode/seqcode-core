@@ -204,9 +204,14 @@ public class SeqUnwinderConfig {
 		
 		// Set windown size around peaks
 		win = Args.parseInteger(args, "win", 150);
-		
+
 		minK = Args.parseInteger(args, "minK", 4);
 		maxK = Args.parseInteger(args, "maxK", 5);
+
+		// Get outdir and outbase and make them; delete dirs that exist with the same
+		outbase = Args.parseString(args, "out", "seqUnwinder_out");
+		outdir = new File(outbase);
+		makeOutPutDirs();
 		
 		numK = 0;
 		for(int k=minK; k<=maxK; k++ ){
@@ -301,11 +306,6 @@ public class SeqUnwinderConfig {
 		wekaOptsString[16] = "-threads";wekaOptsString[17]=Integer.toString(m_ADMM_numThreads);
 		if(debugMode)
 			wekaOptsString[18] = "-DEBUG";
-		
-		// Get outdir and outbase and make them; delete dirs that exist with the same
-		outbase = Args.parseString(args, "out", "seqUnwinder_out");
-		outdir = new File(outbase);
-		makeOutPutDirs();
 		
 		// use the base to name the arff file
 		outArffFileName = outbase+".arff";
