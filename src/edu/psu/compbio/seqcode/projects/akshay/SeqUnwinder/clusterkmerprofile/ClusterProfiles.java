@@ -17,12 +17,9 @@ import java.util.Random;
 import java.util.Vector;
 
 import org.tc33.jheatchart.HeatChart;
-
-import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.machinelearning.clustering.Cluster;
 import edu.psu.compbio.seqcode.machinelearning.clustering.ClusterRepresentative;
-import edu.psu.compbio.seqcode.machinelearning.clustering.ClusteringMethod;
 import edu.psu.compbio.seqcode.machinelearning.clustering.PairwiseElementMetric;
 import edu.psu.compbio.seqcode.machinelearning.clustering.kmeans.KMeansClustering;
 import edu.psu.compbio.seqcode.machinelearning.clustering.vectorcluster.DefaultVectorClusterElement;

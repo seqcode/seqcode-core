@@ -1,6 +1,6 @@
-package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework;
 
-import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.SeqUnwinder.ClassRelationStructure;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework.Classifier.ClassRelationStructure;
 
 public abstract class Optimizer {
 	

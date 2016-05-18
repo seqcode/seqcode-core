@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework;
 
 /* Mcsrch.java
  * Copyright (C) 1999, Robert Dodier (robert_dodier@yahoo.com)

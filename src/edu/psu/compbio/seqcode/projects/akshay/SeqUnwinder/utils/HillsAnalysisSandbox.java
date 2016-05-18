@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.utils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

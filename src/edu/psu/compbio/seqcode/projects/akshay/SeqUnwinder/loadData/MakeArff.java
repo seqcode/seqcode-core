@@ -1,71 +1,38 @@
 package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.loadData;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVLoader;
-import weka.core.converters.ConverterUtils.DataSource;
-
-import edu.psu.compbio.seqcode.genome.GenomeConfig;
-import edu.psu.compbio.seqcode.genome.location.NamedRegion;
-import edu.psu.compbio.seqcode.genome.location.Point;
-import edu.psu.compbio.seqcode.genome.location.Region;
-import edu.psu.compbio.seqcode.genome.location.RepeatMaskedRegion;
-import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.ChromRegionIterator;
-import edu.psu.compbio.seqcode.gse.gsebricks.verbs.location.RepeatMaskedGenerator;
-import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
-import edu.psu.compbio.seqcode.gse.tools.utils.Args;
-import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
-import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.loadData.MakeArffFromFasta.MapKeyComparator;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework.SeqUnwinderConfig;
 
 public class MakeArff {
 	
-	// Class Structure features
+	protected SeqUnwinderConfig seqConfig;
 	/** The design file that contains the relationship between subgroups and labels */
 	protected String design;
 	/** Weight for each subgroup; estimated based on number of training instances for each subgroup in the training dataset */
 	protected HashMap<String,Double> subGroupWeights = new HashMap<String,Double>();
-	/** All the subgroup names; the order of this hash set is important*/
+	/** All the subgroup names*/
 	protected LinkedHashSet<String> subGroupNames = new LinkedHashSet<String>();
-	
-	// Peaks features
 	/** subgroup annotations at each each; stored into a list*/
 	protected List<String> subGroupsAtPeaks = new ArrayList<String>();
-	/** List of peaks; this has the same order as the "subGroupsAtPeaks" */
-	protected List<Point> peaks = new ArrayList<Point>();
-	/** List of regions (win/2 around the peak mid points) */
-	protected List<Region> regions = new ArrayList<Region>();
+
 	
-	// General features
-	protected GenomeConfig gcon;
-	protected SequenceGenerator<Region> seqgen = null;
-	protected int win = 150;
-	protected String outArffFileName="out.arff";
-	protected int Kmin=4;
-	protected int Kmax=6;
-	
-	@SuppressWarnings("unchecked")
-	public MakeArff(GenomeConfig gc) {
-		gcon = gc;
-		seqgen = gc.getSequenceGenerator();
+	public MakeArff(SeqUnwinderConfig sconf) {
+		seqConfig = sconf;
 	}
 	
 
@@ -80,15 +47,15 @@ public class MakeArff {
 	 * @param randRegs
 	 */
 	@SuppressWarnings("unchecked")
-	public void setLabels(List<String> labs, List<Region> randRegs){
+	public void setLabels(){
 		//HashMap<String,Integer> subgroupNames = new HashMap<String,Integer>();
 		HashMap<String,Integer> labelNames = new HashMap<String,Integer>();
-		for(String s : labs){
+		for(String s : seqConfig.getPeakAnnotations()){
 			String[] labels = s.split(";");
 			// Now generate the sub group name
 			StringBuilder subgroupSB = new StringBuilder();
 			for(String sname : labels){
-				subgroupSB.append(sname);subgroupSB.append("&");
+				subgroupSB.append(sname);subgroupSB.append("#");
 			}
 			String subgroup = subgroupSB.toString();
 			subGroupNames.add(subgroup);
@@ -104,7 +71,7 @@ public class MakeArff {
 		// Now remove a label that has only one subgroup to it
 		HashMap<String,Integer> tmpLabMap = new HashMap<String,Integer>(); 
 		for(String sname : subGroupNames){
-			for(String piece : sname.split("&")){
+			for(String piece : sname.split("#")){
 				if(tmpLabMap.containsKey(piece)){
 					tmpLabMap.put(piece,tmpLabMap.get(piece) + 1);
 				}else{
@@ -123,10 +90,17 @@ public class MakeArff {
 		// Now, adjest the indexes of the labels
 		int indLab=0;
 		for(String s : labelNames.keySet()){
-			labelNames.put(s, indLab+subGroupNames.size()+1);
+			labelNames.put(s, indLab+subGroupNames.size());
 			indLab++;
 		}
 		
+		// Set the number of layers to the config file
+		if(labelNames.size() == 0){
+			seqConfig.setNumLayers(1);
+		}else{
+			seqConfig.setNumLayers(2);
+		}
+			
 		// Now make the design file
 		StringBuilder designBuilder = new StringBuilder();
 		//First get the header
@@ -143,20 +117,17 @@ public class MakeArff {
 			// Check if this subgroup has parents
 			boolean isRoot = true;
 			for(String labname: labelNames.keySet()){
-				if(s.startsWith(labname+"&") || s.endsWith("&"+labname) || s.contains("&"+labname+"&"))
+				if(s.startsWith(labname+"#") || s.endsWith("#"+labname) || s.contains("#"+labname+"#"))
 					isRoot = false;
 			}
 			if(labelNames.size() == 0)
 				isRoot = true;
-			//If this subgroup is a root add the root tag to all the names in  subGroupsAtPeaks
-			if(isRoot)
-				addRootTag(s);
+			
 			designBuilder.append(index);designBuilder.append("\t"); // subgroup id
-			String sgNametmp = isRoot ? "Root"+s : s;
-			designBuilder.append(sgNametmp+"\t"); // subgroup 
+			designBuilder.append(s+"\t"); // subgroup 
 			designBuilder.append(1);designBuilder.append("\t"); // subgroup indicator
 			if(!isRoot){
-				String[] assignedLabs = s.split("&");
+				String[] assignedLabs = s.split("#");
 				for(String aS : assignedLabs){
 					designBuilder.append(labelNames.get(aS)+",");// Assigned labels
 				}
@@ -170,28 +141,19 @@ public class MakeArff {
 			index++;
 		}
 		
-		// Now add the random label subgroup
-		designBuilder.append(index);designBuilder.append("\t"); 
-		designBuilder.append("RootRandom"+"\t");
-		designBuilder.append(1);designBuilder.append("\t");
-		designBuilder.append("-"+"\t");
-		designBuilder.append("-"+"\t");
-		designBuilder.append(0);designBuilder.append("\n");
-		
-		index++;
 		// Now Labels
 		MapKeyComparator<Integer> comp = new MapKeyComparator<Integer>(labelNames);
 		List<String> LABs = comp.getKeyList();
 		Collections.sort(LABs, comp);
 		for(String s : LABs){
 			designBuilder.append(index);designBuilder.append("\t"); // label id
-			designBuilder.append("Root"+s+"\t"); // label name
+			designBuilder.append(s+"\t"); // label name
 			designBuilder.append(0);designBuilder.append("\t"); // subgroup indicator
 			designBuilder.append("-"+"\t"); // Assigned labels
 			
 			int subSind = 0;
 			for(String subS : subGroupNames){ 
-				if(subS.startsWith(s+"&") || subS.endsWith("&"+s) || subS.contains("&"+s+"&")){
+				if(subS.startsWith(s+"#") || subS.endsWith("#"+s) || subS.contains("#"+s+"#")){
 					designBuilder.append(subSind+","); // Assigned subgroups
 				}
 				subSind++;
@@ -203,13 +165,6 @@ public class MakeArff {
 		}
 		designBuilder.deleteCharAt(designBuilder.length()-1);
 		design = designBuilder.toString();
-		
-		// Now add the random regions to peaks and "RootRandom" label to subGroupsAtPeaks
-		regions.addAll(randRegs);
-		for(Region re : randRegs){
-			peaks.add(re.getMidpoint());
-			subGroupsAtPeaks.add("RootRandom");
-		}
 		
 		// Finally, find the weights for each subgroup
 		for(String s : subGroupsAtPeaks){
@@ -228,48 +183,27 @@ public class MakeArff {
 					subGroupWeights.get(groupWeightsKeyset.get(groupWeightsKeyset.size()-1))/subGroupWeights.get(groupWeightsKeyset.get(i)));
 		}
 		subGroupWeights.put(groupWeightsKeyset.get(groupWeightsKeyset.size()-1), 1.0);
+	}
+	//Gettors
 	
-		
-	}
-	public void addRootTag(String sgName){
-		for(int i=0; i<subGroupsAtPeaks.size(); i++){
-			if(subGroupsAtPeaks.get(i).equals(sgName)){
-				subGroupsAtPeaks.set(i, "Root"+subGroupsAtPeaks.get(i));
-			}
-		}
-	
-	}
-	public void setPeaks(List<Point> ps){
-		peaks.addAll(ps);
-		for(Point p : peaks){
-			regions.add(p.expand(win/2));
-		}
-	}
-	public void setArffOutFileName(String arffOut){outArffFileName = arffOut;}
-	public void setKmin(int kmin){Kmin = kmin;}
-	public void setKmax(int kmax){Kmax = kmax;}
-	public void setWin(int w){win = w;}
-	
-	//Getters
-	public List<Region> getRandRegs(int n){
-		List<Region> ret = new ArrayList<Region>();
-		RandRegionsGenerator randReger = new RandRegionsGenerator(true, n);
-		ret.addAll(randReger.execute());
-		return ret;
-	}
 	
 	public void execute() throws Exception{
+		
+		setLabels();
 		// First count K-mers and generate the .mat file
 		KmerCounter counter = new KmerCounter();
-		counter.printPeakSeqKmerRange(Kmin, Kmax);
+		counter.printPeakSeqKmerRange(seqConfig.getKmin(), seqConfig.getKmax());
 		
 		// Now read the mat file and generate the arff file
 		generateArff();
 		
 		// Also, print the desgin file
-		BufferedWriter bw = new BufferedWriter(new FileWriter("SeqUnwinder.design"));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(seqConfig.getDesignFileName()));
 		bw.write(design);
 		bw.close();
+		
+		// now up-date cofig with the Subgroup/label names 
+		seqConfig.setSubGroupNames(subGroupNames);
 	}
 	
 	public void generateArff() throws Exception{
@@ -300,87 +234,11 @@ public class MakeArff {
 		
 		//Save the arff file
 		ArffSaver saver = new ArffSaver();
-		saver.setFile(new File(outArffFileName));
+		saver.setFile(new File(seqConfig.getArffOutName()));
 		saver.setInstances(data);
 		saver.writeBatch();
 		
 		
-	}
-	
-	
-	
-	public static void main(String[] args) throws Exception{
-		
-		// Reading genmome objects
-		GenomeConfig gc = new GenomeConfig(args);
-		MakeArff arffmaker = new MakeArff(gc);
-		ArgParser ap = new ArgParser(args);
-		
-		// Get peak window size
-		int win = Args.parseInteger(args, "win", 150);
-		arffmaker.setWin(win);
-		
-		// Reading peaks files
-		String eventsFile = ap.getKeyValue("peaks");
-		
-		FileReader fr = new FileReader(eventsFile);
-		BufferedReader br = new BufferedReader(fr);
-		String line;
-		List<String> labels = new ArrayList<String>();
-		while((line = br.readLine()) != null){
-			if(!line.contains("#")){
-				String[] pieces = line.split("\t");
-				labels.add(pieces[1]);
-			}
-		}
-		br.close();
-		
-		List<Point> peaks = new ArrayList<Point>();
-		peaks.addAll(RegionFileUtilities.loadPeaksFromPeakFile(gc.getGenome(), eventsFile, -1));
-		
-		// Set peaks and regions
-		arffmaker.setPeaks(peaks);
-		
-		// See if random regions/background regions are provide, if not generate them
-		List<Region> ranregs = new ArrayList<Region>();
-		
-		if(ap.hasKey("randregs")){
-			ranregs.addAll(RegionFileUtilities.loadRegionsFromPeakFile(gc.getGenome(), ap.getKeyValue("randregs"), win));
-		}else{
-			// First find how many rand regions are needed
-			int numRand = Integer.MAX_VALUE; // This should be the size of the subgroup with minimum no of. instances
-			Set<String> subgroupNames = new HashSet<String>();
-			for(String s : labels){
-				if(subgroupNames.add(s)){}
-			}
-			
-			for(String s : subgroupNames){
-				if(Collections.frequency(labels, s) < numRand)
-					numRand = Collections.frequency(labels, s);
-			}
-			ranregs.addAll(arffmaker.getRandRegs(numRand));
-		}
-		
-		// Now set labels, design file string, and ranRegs to peaks
-		arffmaker.setLabels(labels, ranregs);
-		
-		// Now get K-mer params
-		int kmin = Args.parseInteger(args, "Kmin", 4);
-		int kmax = Args.parseInteger(args, "Kmax", 6);
-		arffmaker.setKmin(kmin);
-		arffmaker.setKmax(kmax);
-		
-		// Name to write the arff file
-		String arffOut = Args.parseString(args, "arffOut", "out.arff");
-		if(!arffOut.endsWith(".arff"))
-			arffOut = arffOut+".arff";
-		
-		arffmaker.setArffOutFileName(arffOut);
-		
-		// Now execute: Prints the SeqUnwinder design file and the arff file
-		arffmaker.execute();
-		
-			
 	}
 	
 	public class MapKeyComparator<X extends Number> implements Comparator<String>{
@@ -404,117 +262,6 @@ public class MakeArff {
 			//return (map.get(o1).intValue()).compareTo(map.get(o2).intValue());
 			return Integer.compare(map.get(o1).intValue(), map.get(o2).intValue());
 		}
-		
-	}
-	
-	public class RandRegionsGenerator{
-		
-		private int numSamples = 1000;
-		private int validSamples=0;
-		
-		private RepeatMaskedGenerator<Region> repMask;
-		private double genomeSize=0;
-		private long [] chromoSize;
-		private String [] chromoNames;
-		private int numChroms=0;
-		private Random rand = new Random();
-		private double repPropLimit=0.5;
-		private boolean screenRepeats=false;
-		
-		//Settors
-		public void setNum(int n){numSamples=n;}
-		public void setScreenRepeats(boolean s){screenRepeats=s;}
-		
-		public RandRegionsGenerator(boolean screenReps, int num) {
-			repMask = new RepeatMaskedGenerator<Region>(gcon.getGenome());
-			setScreenRepeats(screenReps);
-			setNum(num);
-			
-			
-		}
-		
-		
-		public List<Region> execute() {
-			
-			List<Region>regList = new ArrayList<Region>();
-			// First see how big the genome is:
-			chromoSize = new long[gcon.getGenome().getChromList().size()];
-			chromoNames = new String[gcon.getGenome().getChromList().size()];
-			Iterator<NamedRegion> chroms = new ChromRegionIterator(gcon.getGenome());
-			while (chroms.hasNext()) {
-				NamedRegion currentChrom = chroms.next();
-				genomeSize += (double) currentChrom.getWidth();
-				chromoSize[numChroms] = currentChrom.getWidth();
-				chromoNames[numChroms] = currentChrom.getChrom();
-				// System.out.println(chromoNames[numChroms]+"\t"+chromoSize[numChroms]);
-				numChroms++;
-			}// System.out.println(genomeSize);
-
-			// Now, iteratively generate random positions and check if they are
-			// valid
-			while (validSamples < numSamples) {
-				Region potential;
-				long randPos = (long) (1 + (rand.nextDouble() * genomeSize));
-				// find the chr
-				boolean found = false;
-				long total = 0;
-				for (int c = 0; c < numChroms && !found; c++) {
-					if (randPos < total + chromoSize[c]) {
-						found = true;
-						if (randPos + win < total + chromoSize[c]) {
-							potential = new Region(gcon.getGenome(), chromoNames[c], (int) (randPos - total), (int) (randPos+ win - total - 1));
-							boolean regionOK = true;
-
-							// screen repeats
-							if (screenRepeats) {
-								// is this overlapping a repeat?
-								double repLen = 0;
-								Iterator<RepeatMaskedRegion> repItr = repMask.execute(potential);
-								while (repItr.hasNext()) {
-									RepeatMaskedRegion currRep = repItr.next();
-									if (currRep.overlaps(potential)) {
-										repLen += (double) currRep.getWidth();
-									}
-								}
-								if (repLen / (double) potential.getWidth() > repPropLimit)
-									regionOK = false;
-
-								// Is the sequence free from N's?
-								String potSeq = seqgen.execute(potential);
-								if (potSeq.indexOf('N') >= 0) {
-									regionOK = false;
-								}
-							}
-							// Screen dupicates
-							for (Region r : regList) {
-								if (potential.overlaps(r))
-									regionOK = false;
-							}
-
-							// Screen for any exclude regions provided
-							if (regions.size() != 0) {
-								for (Region ex : regions) {
-									if (potential.overlaps(ex)) {
-										regionOK = false;
-									}
-								}
-							}
-
-							if (regionOK) {
-								validSamples++;
-								regList.add(potential);
-								System.out.println(potential.getChrom() + ":"
-										+ potential.getStart() + "-"
-										+ potential.getEnd());
-							}
-						}
-					}
-					total += chromoSize[c];
-				}
-			}
-			return (regList);
-		}
-		
 		
 	}
 	
@@ -551,11 +298,11 @@ public class MakeArff {
 			bw.write(sb.toString());
 
 			//for (Region r : regs) {
-			for(int r=0; r<regions.size(); r++){
+			for(int r=0; r<seqConfig.getRegions().size(); r++){
 				for (int i = 0; i < numK; i++)
 					kmerCounts[i] = 0;
 
-				String seq = seqgen.execute(regions.get(r)).toUpperCase();
+				String seq = seqConfig.getSeqGen().execute(seqConfig.getRegions().get(r)).toUpperCase();
 				// Check if the sequence (seq) contains any N's if present ignore
 				// them
 				if (seq.contains("N"))
