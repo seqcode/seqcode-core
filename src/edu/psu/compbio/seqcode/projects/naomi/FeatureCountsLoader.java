@@ -53,9 +53,11 @@ public class FeatureCountsLoader {
 	public void setStrandedRegions(List<StrandedRegion> reg){strandedRegions = reg;} 
 	public void setWindowSize(int w){window = w;}
 	public void setFivePrimeShift(int s){fivePrimeShift = s;}
-	public void setEdge(){edge = 40;}
 	
 	public Map<Sample, Map<StrandedRegion,double[][]>> strandedRegionSampleCounts(){
+		
+		// if there tag shift is needed, set the edge to 40 to obtain counts from extra region
+		if (fivePrimeShift > 0){edge=40;}
 		
 		// StrandedBaseCount list for each stranded regions for each sample
 		Map<Sample, Map<StrandedRegion,List<StrandedBaseCount>>> sampleCountsMap = new HashMap<Sample, Map<StrandedRegion,List<StrandedBaseCount>>>();

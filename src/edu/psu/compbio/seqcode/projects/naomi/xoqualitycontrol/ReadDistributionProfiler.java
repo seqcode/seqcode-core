@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 
@@ -78,14 +79,21 @@ public class ReadDistributionProfiler {
 			double sd = computeStandardDeviation(arrNullSD);		
 			double x = sampleStandardDeviation.get(sample)[1];
 			
-			double[] x2 = new double [1];
-			x2[0] = x;
+			double sampleVar = x*x;
+			double minNullSD = 100000;
+			for (int i = 0; i < arrNullSD.length; i++){
+				if (arrNullSD[i] <minNullSD){
+					minNullSD = arrNullSD[i];
+				}
+			}
 			
-			//Mann-Whitney test
-//			MannWhitneyUTest mw = new MannWhitneyUTest();
-//			double mannWP = mw.mannWhitneyUTest(x2,arrNullSD);
-//			System.out.println("MannWhitney p value is "+mannWP);
+			// F statistics
+			double minNullVar = minNullSD*minNullSD;
+			FDistribution fdist = new FDistribution(window-1, window-1);
+			double Fpval = 1- fdist.cumulativeProbability(minNullVar/sampleVar);
+			System.out.println("F statistics p-val is "+Fpval);
 			
+			/// Z score calculation
 			double z_score = (x - mu)/sd;
 			double p_val = Erf.erfc(Math.abs(z_score)/Math.sqrt(2));
 			
@@ -97,6 +105,7 @@ public class ReadDistributionProfiler {
 			statistics[4] = sd;			
 			
 			sampleStatsAndNull.put(sample, statistics);
+			// End of Z score calculation
 		}
 	}
 	
@@ -187,11 +196,8 @@ public class ReadDistributionProfiler {
 	public double computeStandardDeviation(double[] x){
 		
 		int N = x.length;
-		double var = 0 ; double sd = 0;	double sum = 0;	double mu = 0;
-		for (int i = 0; i < N; i++){
-			sum += x[i];
-		}
-		mu = sum/N;	
+		double var = 0 ; double sd = 0;
+		double mu = TotalCounts(x)/N;
 		for (int i = 0; i < N ; i++){
 			var += (x[i]-mu)*(x[i]-mu);
 		}
@@ -227,7 +233,6 @@ public class ReadDistributionProfiler {
 		fcLoader.setStrandedPoints(spoints);
 		fcLoader.setWindowSize(win);
 		fcLoader.setFivePrimeShift(fivePrimeShift);
-		if (fivePrimeShift !=0){fcLoader.setEdge();}
 
 		ReadDistributionProfiler profile = new ReadDistributionProfiler(fcLoader); 	
 		if (Args.parseFlags(args).contains("printComposite")){profile.turnOnPrintComposite();}
