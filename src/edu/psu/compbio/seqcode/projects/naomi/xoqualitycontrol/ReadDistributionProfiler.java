@@ -72,17 +72,14 @@ public class ReadDistributionProfiler {
 			double scaling = rep.getControlScaling();
 			
 			double[] normalizedComposite = new double[composite.length];
-			for (int i = 0 ; i <composite.length ; i++){
-				if (composite[i] > scaling*contComposite[i]){
-					normalizedComposite[i] = composite[i] - scaling*contComposite[i];
-				}else{
-					normalizedComposite[i] = 0;
-				}
+			normalizedComposite[0] = composite[0] - scaling*(contComposite[0]+contComposite[1])*1/2;
+			normalizedComposite[composite.length-1] = composite[composite.length-1] - scaling*(contComposite[0]+contComposite[1])*1/2;		
+			for (int i = 1 ; i <composite.length-1 ; i++){
+				normalizedComposite[i] = composite[i] - scaling*(contComposite[i-1]+contComposite[i]+contComposite[i+1])*1/3;
 			}
 			
 			System.out.println("normalized composite ");
-			printArray(normalizedComposite);
-			
+			printArray(normalizedComposite);		
 			
 			sampleStandardDeviation.put(rep, computeWeightedStandardDeviation(composite));
 			controlStandardDeviation.put(rep, computeWeightedStandardDeviation(contComposite));
