@@ -8,7 +8,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.special.Erf;
-import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
@@ -41,6 +40,7 @@ public class ReadDistributionProfiler {
 	protected boolean printSampleComposite = false;
 	
 	protected Map<Sample,double[]> sampleComposite = new HashMap<Sample,double[]>();
+	protected Map<Sample,double[]> controlComposite = new HashMap<Sample,double[]>();
 	protected Map<Sample,double[]> sampleStandardDeviation = new HashMap<Sample,double[]>();
 	protected Map<Sample,double[]> sampleStatsAndNull = new HashMap<Sample,double[]>();
 	
@@ -53,12 +53,17 @@ public class ReadDistributionProfiler {
 		
 	public void StandardDeviationFromExpAndNull(){
 		
+		Map<Sample,double[]> controlStandardDeviation = new HashMap<Sample,double[]>();
+		
 		sampleComposite = featureCountsLoader.sampleComposite();
+		controlComposite = featureCountsLoader.controlComposite();
 	
 		for (Sample sample : sampleComposite.keySet()){
 			// calculate standard deviation from sample
-			double[] composite = sampleComposite.get(sample);			
+			double[] composite = sampleComposite.get(sample);	
+			double[] contComposite = controlComposite.get(sample);	
 			sampleStandardDeviation.put(sample, computeWeightedStandardDeviation(composite));
+			controlStandardDeviation.put(sample, computeWeightedStandardDeviation(contComposite));
 			if (printSampleComposite==true){
 				System.out.println(sample.getName());
 				printArray(composite);
@@ -78,6 +83,7 @@ public class ReadDistributionProfiler {
 			double mu = TotalCounts(arrNullSD)/arrNullSD.length;
 			double sd = computeStandardDeviation(arrNullSD);		
 			double x = sampleStandardDeviation.get(sample)[1];
+			double controlSD = controlStandardDeviation.get(sample)[1];
 			
 			double sampleVar = x*x;
 			double minNullSD = 100000;
@@ -86,9 +92,11 @@ public class ReadDistributionProfiler {
 					minNullSD = arrNullSD[i];
 				}
 			}
+			double minSD = minNullSD;
+			if (controlSD<minSD){minSD = controlSD;}	
 			
 			// F statistics
-			double minNullVar = minNullSD*minNullSD;
+			double minNullVar = minSD*minSD;
 			FDistribution fdist = new FDistribution(window-1, window-1);
 			double Fpval = 1- fdist.cumulativeProbability(minNullVar/sampleVar);
 			System.out.println("F statistics p-val is "+Fpval);
