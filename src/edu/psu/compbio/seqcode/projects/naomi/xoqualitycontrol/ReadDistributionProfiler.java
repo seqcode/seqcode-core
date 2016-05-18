@@ -53,8 +53,7 @@ public class ReadDistributionProfiler {
 	public void StandardDeviationFromExpAndNull(){
 		
 		sampleComposite = featureCountsLoader.sampleComposite();
-		
-
+	
 		for (Sample sample : sampleComposite.keySet()){
 			// calculate standard deviation from sample
 			double[] composite = sampleComposite.get(sample);			
@@ -72,8 +71,8 @@ public class ReadDistributionProfiler {
 			}
 			
 			//for test purpose
-			System.out.println("sd from null distribution");
-			printArray(arrNullSD);		
+//			System.out.println("sd from null distribution");
+//			printArray(arrNullSD);		
 			
 			double mu = TotalCounts(arrNullSD)/arrNullSD.length;
 			double sd = computeStandardDeviation(arrNullSD);		
@@ -112,7 +111,7 @@ public class ReadDistributionProfiler {
 				randomReadsSD[itr] = computeWeightedStandardDeviation(randomReads)[1];
 			}
 			System.out.println("standard deviation from random reads");
-			printArray(randomReadsSD);
+//			printArray(randomReadsSD);
 		}
 	}//end of test
 	
@@ -231,10 +230,10 @@ public class ReadDistributionProfiler {
 		if (fivePrimeShift !=0){fcLoader.setEdge();}
 
 		ReadDistributionProfiler profile = new ReadDistributionProfiler(fcLoader); 	
+		if (Args.parseFlags(args).contains("printComposite")){profile.turnOnPrintComposite();}
 		profile.StandardDeviationFromExpAndNull();
 		profile.StandardDeviationFromRandomReads();
 		profile.printWeightedStandardDeviationStatistics();		
-		if (Args.parseFlags(args).contains("printComposite")){profile.turnOnPrintComposite();}
 		
 		manager.close();
 	}
