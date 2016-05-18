@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.special.Erf;
 
+import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
@@ -29,6 +30,8 @@ import edu.psu.compbio.seqcode.projects.naomi.FeatureCountsLoader;
  */
 
 public class ReadDistributionProfiler {
+	protected ExperimentManager manager;
+	protected ExptConfig exptConfig;
 	protected FeatureCountsLoader featureCountsLoader;
 		
 	protected List<StrandedPoint> strandedPoints;
@@ -38,14 +41,14 @@ public class ReadDistributionProfiler {
 	protected int window = 1000;
 	protected int iterations = 1000;	
 	protected boolean printSampleComposite = false;
-	
-	protected Map<Sample,double[]> sampleComposite = new HashMap<Sample,double[]>();
-	protected Map<Sample,double[]> controlComposite = new HashMap<Sample,double[]>();
-	protected Map<Sample,double[]> sampleStandardDeviation = new HashMap<Sample,double[]>();
+
+	protected Map<ControlledExperiment,double[]> sampleStandardDeviation = new HashMap<ControlledExperiment,double[]>();
 	protected Map<Sample,double[]> sampleStatsAndNull = new HashMap<Sample,double[]>();
 	
-	public ReadDistributionProfiler(FeatureCountsLoader fcloader){	
+	public ReadDistributionProfiler(ExptConfig econf, ExperimentManager man, FeatureCountsLoader fcloader){	
 		featureCountsLoader = fcloader;
+		exptConfig = econf;
+		manager = man;
 	}
 	
 	// setters
@@ -53,23 +56,38 @@ public class ReadDistributionProfiler {
 		
 	public void StandardDeviationFromExpAndNull(){
 		
-		Map<Sample,double[]> controlStandardDeviation = new HashMap<Sample,double[]>();
+		Map<ControlledExperiment,double[]> sampleComposite = new HashMap<ControlledExperiment,double[]>();
+		Map<ControlledExperiment,double[]> controlComposite = new HashMap<ControlledExperiment,double[]>();
+		
+		Map<ControlledExperiment,double[]> controlStandardDeviation = new HashMap<ControlledExperiment,double[]>();
 		
 		sampleComposite = featureCountsLoader.sampleComposite();
 		controlComposite = featureCountsLoader.controlComposite();
 	
-		for (Sample sample : sampleComposite.keySet()){
+		for (ControlledExperiment rep : sampleComposite.keySet()){
 			// calculate standard deviation from sample
-			double[] composite = sampleComposite.get(sample);	
-			double[] contComposite = controlComposite.get(sample);	
+			double[] composite = sampleComposite.get(rep);	
+			double[] contComposite = controlComposite.get(rep);	
 			
-//			System.out.println("control composite ");
-//			printArray(contComposite);
+			double scaling = rep.getControlScaling();
 			
-			sampleStandardDeviation.put(sample, computeWeightedStandardDeviation(composite));
-			controlStandardDeviation.put(sample, computeWeightedStandardDeviation(contComposite));
+			double[] normalizedComposite = new double[composite.length];
+			for (int i = 0 ; i <composite.length ; i++){
+				if (composite[i] > scaling*contComposite[i]){
+					normalizedComposite[i] = composite[i] - scaling*contComposite[i];
+				}else{
+					normalizedComposite[i] = 0;
+				}
+			}
+			
+			System.out.println("normalized composite ");
+			printArray(normalizedComposite);
+			
+			
+			sampleStandardDeviation.put(rep, computeWeightedStandardDeviation(composite));
+			controlStandardDeviation.put(rep, computeWeightedStandardDeviation(contComposite));
 			if (printSampleComposite==true){
-				System.out.println(sample.getName());
+				System.out.println(rep.getSignal().getName());
 				printArray(composite);
 			}
 		
@@ -86,8 +104,8 @@ public class ReadDistributionProfiler {
 			
 			double mu = TotalCounts(arrNullSD)/arrNullSD.length;
 			double sd = computeStandardDeviation(arrNullSD);		
-			double x = sampleStandardDeviation.get(sample)[1];
-			double controlSD = controlStandardDeviation.get(sample)[1];
+			double x = sampleStandardDeviation.get(rep)[1];
+			double controlSD = controlStandardDeviation.get(rep)[1];
 			
 			double sampleVar = x*x;
 			double minNullSD = 100000;
@@ -103,7 +121,7 @@ public class ReadDistributionProfiler {
 			double minNullVar = minSD*minSD;
 			FDistribution fdist = new FDistribution(window-1, window-1);
 			double Fpval = 1- fdist.cumulativeProbability(minNullVar/sampleVar);
-			System.out.println(sample.getName()+": F statistics p-val is "+Fpval);
+			System.out.println(rep.getSignal().getName()+": F statistics p-val is "+Fpval);
 			
 			/// Z score calculation
 			double z_score = (x - mu)/sd;
@@ -116,7 +134,7 @@ public class ReadDistributionProfiler {
 			statistics[3] = mu;
 			statistics[4] = sd;			
 			
-			sampleStatsAndNull.put(sample, statistics);
+			sampleStatsAndNull.put(rep.getSignal(), statistics);
 			// End of Z score calculation
 		}
 	}
@@ -124,8 +142,8 @@ public class ReadDistributionProfiler {
 	// This is for test purpose
 	public void StandardDeviationFromRandomReads(){
 		
-		for (Sample sample : sampleComposite.keySet()){
-			double[] composite = sampleComposite.get(sample);	
+		for (ControlledExperiment rep : sampleStandardDeviation.keySet()){
+			double[] composite = sampleStandardDeviation.get(rep);	
 			double [] randomReadsSD = new double[iterations];
 			for (int itr = 0 ; itr <iterations; itr++){
 				double[] randomReads = randomelyAssignReads(composite);
@@ -220,10 +238,10 @@ public class ReadDistributionProfiler {
 	
 	public void printWeightedStandardDeviationStatistics(){		
 		System.out.println("#sampleName\tMaxPos\tsampleWeightedSD\tp_val\tSignificant?\tz_score\tnullMu\tnullSD");
-		for (Sample sample : sampleStandardDeviation.keySet()){			
-			double [] distributionScore = sampleStandardDeviation.get(sample);		
-			double [] stats = sampleStatsAndNull.get(sample);
-			System.out.println(sample.getName()+"\t"+distributionScore[0]+"\t"+distributionScore[1]+"\t"+stats[0]+"\t"+stats[1]+"\t"+stats[2]+"\t"+stats[3]+"\t"+stats[4]);		
+		for (ControlledExperiment rep : sampleStandardDeviation.keySet()){			
+			double [] distributionScore = sampleStandardDeviation.get(rep);		
+			double [] stats = sampleStatsAndNull.get(rep.getSignal());
+			System.out.println(rep.getSignal().getName()+"\t"+distributionScore[0]+"\t"+distributionScore[1]+"\t"+stats[0]+"\t"+stats[1]+"\t"+stats[2]+"\t"+stats[3]+"\t"+stats[4]);		
 		}		
 	}	
 	
@@ -246,7 +264,7 @@ public class ReadDistributionProfiler {
 		fcLoader.setWindowSize(win);
 		fcLoader.setFivePrimeShift(fivePrimeShift);
 
-		ReadDistributionProfiler profile = new ReadDistributionProfiler(fcLoader); 	
+		ReadDistributionProfiler profile = new ReadDistributionProfiler(econf,manager, fcLoader); 	
 		if (Args.parseFlags(args).contains("printComposite")){profile.turnOnPrintComposite();}
 		profile.StandardDeviationFromExpAndNull();
 		profile.StandardDeviationFromRandomReads();
