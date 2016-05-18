@@ -87,7 +87,7 @@ public class FeatureCountsLoader {
 					controlRegionCounts.put(reg, rep.getControl().getBases(reg));
 				}
 				sampleCountsMap.put(rep.getSignal(),sampleRegionCounts);
-				controlCountsMap.put(rep.getControl(),sampleRegionCounts);
+				controlCountsMap.put(rep.getSignal(),controlRegionCounts);
 			}					
 		}
 		
