@@ -290,9 +290,9 @@ public class SeqUnwinderConfig {
 		else
 			wekaOptsString=new String[19];
 		
-		wekaOptsString[0] = "-t"; wekaOptsString[1] = outArffFileName;
+		wekaOptsString[0] = "-t"; wekaOptsString[1] = outdir.getAbsolutePath()+File.separator+outArffFileName;
 		wekaOptsString[2] = "-x"; wekaOptsString[3] = Integer.toString(numCrossValidation);
-		wekaOptsString[4] = "-CLS"; wekaOptsString[5] = designFileName;
+		wekaOptsString[4] = "-CLS"; wekaOptsString[5] = outdir.getAbsolutePath()+File.separator+designFileName;
 		wekaOptsString[6] = "-NL";wekaOptsString[7] = Integer.toString(sm_NumLayers);
 		wekaOptsString[8] = "-TY";wekaOptsString[9] = "L1";
 		wekaOptsString[10] = "-A";wekaOptsString[11] = Integer.toString(m_ADMM_MaxIts);
