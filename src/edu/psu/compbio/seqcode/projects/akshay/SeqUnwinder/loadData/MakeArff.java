@@ -198,7 +198,7 @@ public class MakeArff {
 		generateArff();
 		
 		// Also, print the desgin file
-		BufferedWriter bw = new BufferedWriter(new FileWriter(seqConfig.getDesignFileName()));
+		BufferedWriter bw = new BufferedWriter(new FileWriter(seqConfig.getOutDir().getAbsolutePath()+File.separator+seqConfig.getDesignFileName()));
 		bw.write(design);
 		bw.close();
 		
@@ -215,7 +215,7 @@ public class MakeArff {
 		loader.setStringAttributes("");
 		loader.setMissingValue("?");
 		loader.setFieldSeparator("\t");
-		loader.setFile(new File("tmpCounts.mat"));
+		loader.setFile(new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+"tmpCounts.mat"));
 		Instances data = loader.getDataSet();
 		
 		//Set subgroup index
@@ -234,7 +234,7 @@ public class MakeArff {
 		
 		//Save the arff file
 		ArffSaver saver = new ArffSaver();
-		saver.setFile(new File(seqConfig.getArffOutName()));
+		saver.setFile(new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+seqConfig.getArffOutName()));
 		saver.setInstances(data);
 		saver.writeBatch();
 		

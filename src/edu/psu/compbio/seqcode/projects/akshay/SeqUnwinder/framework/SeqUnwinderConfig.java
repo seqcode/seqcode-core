@@ -193,9 +193,10 @@ public class SeqUnwinderConfig {
 		// Loading general options
 		args = arguments;
 		ArgParser ap = new ArgParser(args);
-		if(ap.hasKey("h") || ap.hasKey("help") || args.length == 0)
-			SeqUnwinderConfig.getSeqUnwinderArgsList();
-		
+		if(ap.hasKey("h") || ap.hasKey("help") || args.length == 0){
+			System.err.println(SeqUnwinderConfig.getSeqUnwinderArgsList());
+			System.exit(1);
+		}
 		gcon = new GenomeConfig(args);
 		seqgen = gcon.getSequenceGenerator();
 		
