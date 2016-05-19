@@ -295,6 +295,7 @@ public class AlignmentTest {
 		profile.setWidth(win);
 		profile.excuteShapeAlign();
 		profile.printErrorRate();	
+		if (Args.parseFlags(args).contains("printOffset")){profile.printOffsetArray();}
 		
 		manager.close();
 	}
