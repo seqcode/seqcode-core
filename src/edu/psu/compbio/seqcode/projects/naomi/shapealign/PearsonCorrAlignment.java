@@ -221,7 +221,7 @@ public class PearsonCorrAlignment {
 		offsetArray[offset+window/2]++;				
 		// incrementing error allowing offset of +-1
 		totalNum += 1;
-		if (offset < -1 && offset > 1){
+		if (offset >= -1 && offset <= 1){
 			error += 1;
 		}
 		
@@ -243,7 +243,7 @@ public class PearsonCorrAlignment {
 	public void printOffsetArray(){
 		System.out.println("offset array");
 		for (int i = 0; i <= window ; i++)
-			System.out.print(offsetArray[i]);
+			System.out.print(offsetArray[i]+"\t");
 		System.out.println();
 	}
 	
