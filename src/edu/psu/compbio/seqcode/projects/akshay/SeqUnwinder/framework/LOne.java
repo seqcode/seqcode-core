@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,36 +7,19 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.LBFGS;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework.LBFGS;
 import weka.core.Utils;
-import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.LBFGS.ExceptionWithIflag;
-import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.SeqUnwinder.ClassRelationStructure;
-import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.SeqUnwinder.ClassRelationStructure.Node;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework.LBFGS.ExceptionWithIflag;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework.Classifier.ClassRelationStructure;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework.Classifier.ClassRelationStructure.Node;
 
 public class LOne extends Optimizer {
-	// Fixed ADMM parameters
-
-	/** Relaxation parameter (to help faster convergence) */
-	public final double ADMM_ALPHA = 1.9;
-	/** Absolute feasibility tolerance for the primal and dual feasibility conditions */
-	public final double ADMM_ABSTOL = 1E-2; 
-	/** Relative  feasibility tolerance for the primal and dual feasibility conditions */
-	public final double ADMM_RELTOL = 1E-2;
-
-	// Fixed SeqUnwinder parameters
-
-	/** Tolerence for internal Nodes convergence */
-	public final double NODES_tol = 1E-2;
-
-	// Tunable ADMM parameters
 
 	/** The maximum number of allowed iterations for the ADMM algorithm */
 	public int ADMM_maxItr = 500;
 	/** Augmented Lagrangian parameter rho */
 	public double ADMM_pho = 1.7;
 	public double ADMM_pho_fold = 1.0;
-	/** The maximum allowed value for pho */
-	public double ADMM_pho_max = 100000000;
 	/** Number of threads to run ADMM on */
 	public int ADMM_numThreads = 5;
 
@@ -127,7 +110,7 @@ public class LOne extends Optimizer {
 		long SeqUnwinderStartTime = System.currentTimeMillis();
 		
 		for(int it=0; it<NODES_maxItr; it++){
-			System.err.println("Iteration: "+ it+1);
+			System.err.println("Iteration: "+ Integer.toString(it+1));
 			
 			double[] sm_x_old = new double[sm_x.length];
 
@@ -141,8 +124,8 @@ public class LOne extends Optimizer {
 			ADMMrunner admm = new ADMMrunner();
 			admm.execute();
 			long admmEndTime = System.currentTimeMillis();
-			long duraiton = admmEndTime - admmStartTime;
-			System.err.println("Finished updating sub-class feature weights!! "+"Time taken: "+duraiton);
+			long duration = admmEndTime - admmStartTime;
+			System.err.println("Finished updating sub-class feature weights!! "+"Time taken (mins): "+Double.toString(duration/(1000.0*60)));
 			
 			
 			// Now update the internal nodes
@@ -159,10 +142,10 @@ public class LOne extends Optimizer {
 				diff = Math.sqrt(diff);
 				if(sm_Debug){
 					System.err.println("delta(label/sublcass-weights) for class with index: "+n.nodeIndex + " is: "+  diff);
-					double tmp = NODES_tol*getL2NormX(n.nodeIndex);
+					double tmp = SeqUnwinderConfig.NODES_tol*getL2NormX(n.nodeIndex);
 					System.err.println("Target to reach for this node is: " + n.nodeIndex + " is "+ tmp);
 				}
-				if( diff > NODES_tol*getL2NormX(n.nodeIndex)){
+				if( diff > SeqUnwinderConfig.NODES_tol*getL2NormX(n.nodeIndex)){
 					converged=false;
 					break;
 				}
@@ -170,7 +153,7 @@ public class LOne extends Optimizer {
 
 			if(converged){
 				System.err.println();
-				System.err.println("SeqUnwinder has converged after "+it+1+" iterations !!");
+				System.err.println("SeqUnwinder has converged after "+Integer.toString(it+1)+" iterations !!");
 				break;
 			}
 
@@ -178,7 +161,7 @@ public class LOne extends Optimizer {
 		
 		long SeqUnwinderEndTime = System.currentTimeMillis();
 		long seqDuration =  SeqUnwinderEndTime - SeqUnwinderStartTime;
-		System.err.println("Finished training SeqUnwinder!! "+"Time taken: "+seqDuration);
+		System.err.println("Finished training SeqUnwinder!! "+"Time taken (mins): "+Double.toString(seqDuration/(1000.0*60)));
 	}
 
 	// Slave methods
@@ -497,7 +480,7 @@ public class LOne extends Optimizer {
 
 			if(primal_residuals > mu*dual_residuals){ // if primal residual are greater than dual by a factor of mu; decrease pho 
 				double old_pho = ADMM_pho;
-				ADMM_pho = Math.min(ADMM_pho_max,ADMM_pho*tao);
+				ADMM_pho = Math.min(SeqUnwinderConfig.ADMM_pho_max,ADMM_pho*tao);
 				ADMM_pho_fold =  ADMM_pho/old_pho;
 			}else if(dual_residuals > primal_residuals*mu){
 				ADMM_pho = ADMM_pho/tao;
@@ -530,15 +513,15 @@ public class LOne extends Optimizer {
 						double znorm = history_znorm[itr][zOffset];
 						double unorm = history_unorm[itr][zOffset];
 						double cnorm = getL2NormX(pid);
-						primal_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*ADMM_RELTOL*Math.max(xnorm, Math.max(znorm, cnorm));
-						dual_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*ADMM_RELTOL*ADMM_pho*unorm;
+						primal_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*SeqUnwinderConfig.ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*SeqUnwinderConfig.ADMM_RELTOL*Math.max(xnorm, Math.max(znorm, cnorm));
+						dual_tol[n.nodeIndex*numNodes+pid] = Math.sqrt(dim)*SeqUnwinderConfig.ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*SeqUnwinderConfig.ADMM_RELTOL*ADMM_pho*unorm;
 					}
 				}else{
 					int zOffset = (n.nodeIndex*numNodes)+(n.nodeIndex);
 					double znorm = history_znorm[itr][zOffset];
 					double unorm = history_unorm[itr][zOffset];
-					primal_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*ADMM_RELTOL*Math.max(xnorm, znorm);
-					dual_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*ADMM_RELTOL*ADMM_pho*unorm;
+					primal_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*SeqUnwinderConfig.ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*SeqUnwinderConfig.ADMM_RELTOL*Math.max(xnorm, znorm);
+					dual_tol[n.nodeIndex*numNodes+n.nodeIndex] = Math.sqrt(dim)*SeqUnwinderConfig.ADMM_ABSTOL + Math.sqrt(ADMM_numThreads)*SeqUnwinderConfig.ADMM_RELTOL*ADMM_pho*unorm;
 				}
 			}
 
@@ -585,7 +568,7 @@ public class LOne extends Optimizer {
 
 
 				// Update pho 
-				if(ADMM_currItr_value.get() >0 && !ranADMM && ADMM_pho < ADMM_pho_max)
+				if(ADMM_currItr_value.get() >0 && !ranADMM && ADMM_pho < SeqUnwinderConfig.ADMM_pho_max)
 					updatePhoAndFold(ADMM_currItr_value.get()-1);
 				//if(sm_Debug)
 				//	System.err.print(" "+ADMM_pho+" ");
@@ -672,13 +655,13 @@ public class LOne extends Optimizer {
 							int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
 							int pOffset = pid*dim;
 							for(int w=0; w<dim; w++){
-								xhat[zOffset+w] = ADMM_ALPHA*(x[nOffset+w])+(1-ADMM_ALPHA)*zold[zOffset+w]-ADMM_ALPHA*sm_x[pOffset+w];
+								xhat[zOffset+w] = SeqUnwinderConfig.ADMM_ALPHA*(x[nOffset+w])+(1-SeqUnwinderConfig.ADMM_ALPHA)*zold[zOffset+w]-SeqUnwinderConfig.ADMM_ALPHA*sm_x[pOffset+w];
 							}
 						}
 					}else{
 						int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 						for(int w=0; w<dim; w++){
-							xhat[zOffset+w] = ADMM_ALPHA*x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w];
+							xhat[zOffset+w] = SeqUnwinderConfig.ADMM_ALPHA*x[nOffset+w]+(1-SeqUnwinderConfig.ADMM_ALPHA)*zold[zOffset+w];
 						}
 					}
 				}
@@ -826,14 +809,14 @@ public class LOne extends Optimizer {
 								int zOffset = (n.nodeIndex*numNodes*dim)+(pid*dim);
 								int pOffset = pid*dim;
 								for(int w=0; w<dim; w++){
-									t_b_xhat[zOffset+w] = ADMM_ALPHA*(t_b_x[nOffset+w])+(1-ADMM_ALPHA)*zold[zOffset+w]-ADMM_ALPHA*sm_x[pOffset+w];
+									t_b_xhat[zOffset+w] = SeqUnwinderConfig.ADMM_ALPHA*(t_b_x[nOffset+w])+(1-SeqUnwinderConfig.ADMM_ALPHA)*zold[zOffset+w]-SeqUnwinderConfig.ADMM_ALPHA*sm_x[pOffset+w];
 								}
 							}
 						}else{
 							int zOffset = (n.nodeIndex*numNodes*dim)+(n.nodeIndex*dim);
 							for(int w=0; w<dim; w++){
 								//xrel[zOffset+w] = ADMM_ALPHA*sm_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w]+u[zOffset+w];
-								t_b_xhat[zOffset+w] = ADMM_ALPHA*t_b_x[nOffset+w]+(1-ADMM_ALPHA)*zold[zOffset+w];
+								t_b_xhat[zOffset+w] = SeqUnwinderConfig.ADMM_ALPHA*t_b_x[nOffset+w]+(1-SeqUnwinderConfig.ADMM_ALPHA)*zold[zOffset+w];
 							}
 						}
 					}

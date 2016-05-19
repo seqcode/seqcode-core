@@ -1,12 +1,12 @@
-package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder;
+package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.motifs;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -18,19 +18,19 @@ import java.util.Random;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.gse.datasets.motifs.MarkovBackgroundModel;
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
+import edu.psu.compbio.seqcode.gse.utils.io.BackgroundModelIO;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.clusterkmerprofile.ClusterProfiles;
 import edu.psu.compbio.seqcode.projects.akshay.utils.MemeER;
-import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 
-public class Discrim {
-	
+public class DiscrimFromSeq {
 	protected GenomeConfig gcon;
 	/** Stores the weights of the K-mers
 	 *  Keys are the model name
@@ -38,12 +38,8 @@ public class Discrim {
 	protected HashMap<String,double[]> kmerweights = new HashMap<String,double[]>();
 	/** Model names */
 	protected List<String> kmerModelNames = new ArrayList<String>();
-	/** All the peaks from all classes */
-	protected List<Point> peaks = new ArrayList<Point>();
-	/** Peaks extended into regions */
-	protected List<Region> regions = new ArrayList<Region>();
-	/** Subgroup annotation at peaks */
-	protected List<String> subGroupsAtPeaks = new ArrayList<String>();
+	/** All the Seqs from all classes */
+	protected List<String> Seqs = new ArrayList<String>();
 	/** Minimum length of K-mer in the model */
 	protected int minK;
 	/** Maximum length of K-mer in the model */ 
@@ -58,18 +54,14 @@ public class Discrim {
 	protected String outbase;
 	/** The output directory file */
 	protected File outdir;
-	SequenceGenerator<Region> seqgen = null;
 	/** The minimum value of model scan score to consider form motif finding */
 	protected double thresold_hills = 0.1;
 	/** Window around peaks to scan for finding motifs */
 	protected int win=150;
 	
-	/** List of all discriminative motifs for all the lables*/ 
-	protected List<WeightMatrix> discrimMotifs = new ArrayList<WeightMatrix>();
-	
-	/** The ROC value of the identified motifs that indicates their significance */
-	protected HashMap<String, Double> discrimMotifsRocs = new HashMap<String,Double>();
-	
+	protected MarkovBackgroundModel markov;
+	public Random rand = new Random();
+
 	// K-mer hills clustering parameters
 	/** The number of hills to consider for clustering and motif finding for a given K-mer model */
 	public final int numHills = 1500;
@@ -77,7 +69,7 @@ public class Discrim {
 	protected int its_CLUS=10;
 	/** Number of cluster; ideally each cluster corresponds to a motif */
 	protected int numClus_CLUS=3;
-	
+
 	// Meme parameters
 	protected String MEMEpath;
 	protected String MEMEargs = " -dna -mod zoops -revcomp -nostatus ";
@@ -86,10 +78,11 @@ public class Discrim {
 	protected int MEMEnmotifs = 3;
 	protected int MEMEwin = 16;
 	protected String[] randomSequences = new String[5000];
-	
-	
+
+
 	// Settors
 	public void setWin(int w){win=w;}
+	public void setBack(MarkovBackgroundModel b){markov = b;}
 	public void setMinM(int m){minM = m;}
 	public void setMaxM(int m){maxM = m;}
 	public void setKmerMin(int k){minK = k;}
@@ -102,47 +95,41 @@ public class Discrim {
 	}
 	public void setKmerWeights(String weightFileName) throws NumberFormatException, IOException{
 		BufferedReader reader = new BufferedReader(new FileReader(weightFileName));
-        String line;
-        boolean header = false;
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-            String[] words = line.split("\t");
-            if(words[0].charAt(0) == '#' || words[0].contains("Variable") || words[0].contains("Class")){
-            	header = true;
-            	for(int i=1; i<words.length; i++){
-            		words[i] = words[i].replace('&', '#');
-            		kmerModelNames.add(words[i]);
-            		kmerweights.put(words[i], new double[numK]);
-            	}
-            }else{
-            	if(!header){
-            		System.err.println("Please provide a header in the K-mer weight file");
-            		System.exit(1);
-            	}
-            	int ind = getKmerBaseInd(words[0]) + RegionFileUtilities.seq2int(words[0]);
-            	for(int i = 1; i < words.length; i++ ){
-            		kmerweights.get(kmerModelNames.get(i-1))[ind] = Double.parseDouble(words[i]);
-            	}
-            }
-           
-        }reader.close();
+		String line;
+		boolean header = false;
+		while ((line = reader.readLine()) != null) {
+			line = line.trim();
+			String[] words = line.split("\t");
+			if(words[0].charAt(0) == '#' || words[0].contains("Variable") || words[0].contains("Class")){
+				header = true;
+				for(int i=1; i<words.length; i++){
+					words[i] = words[i].replace('&', '_');
+					kmerModelNames.add(words[i]);
+					kmerweights.put(words[i], new double[numK]);
+				}
+			}else{
+				if(!header){
+					System.err.println("Please provide a header in the K-mer weight file");
+					System.exit(1);
+				}
+				int ind = getKmerBaseInd(words[0]) + RegionFileUtilities.seq2int(words[0]);
+				for(int i = 1; i < words.length; i++ ){
+					kmerweights.get(kmerModelNames.get(i-1))[ind] = Double.parseDouble(words[i]);
+				}
+			}
+
+		}reader.close();
 	}
-	public void setPeaks(String peaksFileName){
-		peaks.addAll(RegionFileUtilities.loadPeaksFromPeakFile(gcon.getGenome(), peaksFileName, win));
-		regions.addAll(RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), peaksFileName, win));
-	}
-	public void setLabelsAtPeaks(List<String> labsAtPeaks){
-		subGroupsAtPeaks.addAll(labsAtPeaks);
+	public void setSeqs(List<String> allSeqs){
+		Seqs = allSeqs;
 	}
 	public void setNumKmerClusters(int c){numClus_CLUS = c;}
 	public void setNumClusteringItrs(int itrs){its_CLUS = itrs;}
 	public void setOutbase(String o){outbase=o;}
 	public void setRandomRegs(){
-		// Generate random sequences later need for meme analysis to assess motifs
-		
-		List<Region> randomRegions = MemeER.randomRegionPick(gcon.getGenome(), null, MemeER.MOTIF_FINDING_NEGSEQ,win);
-		for(int i=0; i<randomRegions.size(); i++){
-			randomSequences[i] = seqgen.execute(randomRegions.get(i));
+		for(int i=0; i<randomSequences.length; i++){
+			String rs = generateASeq();
+			randomSequences[i] = rs;
 		}
 	}
 	// Settors for MEME params
@@ -152,50 +139,22 @@ public class Discrim {
 	public void setMEMEsearchWin(int w){MEMEwin = w;}
 	public void setMEMEnmotifs(int n){MEMEnmotifs = n;}
 	public void setHillThreshold(double t){thresold_hills = t;}
-	
-	
+
+
 	@SuppressWarnings("unchecked")
-	public Discrim(GenomeConfig gc) {
+	public DiscrimFromSeq(GenomeConfig gc) {
 		gcon = gc;
-		seqgen = gcon.getSequenceGenerator();
 	}
-	
+
 	public void execute() throws IOException{
 		for(String s : kmerweights.keySet()){
-			if(!s.equals("RootRandom")){
-				KmerModelScanner scanner = new KmerModelScanner(s);
-				scanner.execute();
-			}
+			KmerModelScanner scanner = new KmerModelScanner(s);
+			scanner.execute();
 		}
 
-		// Now print the selected discrim motifs.
-		File motifsTransfac = new File(outdir.getAbsoluteFile()+File.separator+"Discrim_motifs.transfac");
-		FileWriter fw = new FileWriter(motifsTransfac);
-		BufferedWriter bw = new BufferedWriter(fw);
-
-		for(int m =0; m<discrimMotifs.size(); m++){
-			String out = WeightMatrix.printTransfacMatrix(discrimMotifs.get(m),discrimMotifs.get(m).getName());
-			bw.write(out);
-		}
-		bw.close();
-		
-		// Next, print the ROC values
-		File motifsROC = new File(outdir.getAbsoluteFile()+File.separator+"Discrim_motifs_roc.tab");
-		fw = new FileWriter(motifsROC);
-		bw = new BufferedWriter(fw);
-		for(String s : discrimMotifsRocs.keySet()){
-			bw.write(s+"\t"+Double.toString(discrimMotifsRocs.get(s))+"\n");
-		}
-		bw.close();
-		
-		// Finally, draw the motif logos
-		for(WeightMatrix fm : discrimMotifs){
-			File motifFileName = new File(outdir.getAbsoluteFile()+File.separator+fm.getName()+".png");
-			Utils.printMotifLogo(fm, motifFileName, 150, fm.getName(), true);
-		}
 	}
 
-	
+
 	//Slave methods
 	public void makeOutPutDirs(String out_name){
 		//Test if output directory already exists. If it does,  recursively delete contents
@@ -205,18 +164,16 @@ public class Discrim {
 		outbase = outdir.getName();
 		//(re)make the output directory
 		outdir.mkdirs();
-		
+
 		for(String s : kmerModelNames){
-			if(!s.equals("RootRandom")){
-				File memeDir = new File(outdir.getAbsoluteFile()+File.separator+s+File.separator+"meme");
-				memeDir.mkdirs();
-				File kmerProfDir = new File(outdir.getAbsoluteFile()+File.separator+s+File.separator+"kmer_profiles");
-				kmerProfDir.mkdirs();
-			}
+			File memeDir = new File(outdir.getAbsoluteFile()+File.separator+s+File.separator+"meme");
+			memeDir.mkdirs();
+			File kmerProfDir = new File(outdir.getAbsoluteFile()+File.separator+s+File.separator+"kmer_profiles");
+			kmerProfDir.mkdirs();
 		}
 
 	}
-	
+
 	public boolean deleteDirectory(File path) {
 		if( path.exists() ) {
 			File[] files = path.listFiles();
@@ -228,10 +185,10 @@ public class Discrim {
 					files[i].delete();
 				}
 			}
-	    }
+		}
 		return( path.delete() );
 	}
-	
+
 	// Gettors
 	public int getKmerBaseInd(String kmer){
 		int baseInd = 0;
@@ -240,22 +197,20 @@ public class Discrim {
 		}
 		return baseInd;
 	}
-	
-	
-	
+
+
+
 	public class KmerModelScanner {
-		//Model specific features
+
 		protected String kmerModelName;
-		protected List<Region> modelRegions = new ArrayList<Region>();
-		
-		protected List<Region> posHills = new ArrayList<Region>();
+		protected List<String> posHills = new ArrayList<String>();
 		protected ArrayList<int[]> profiles = new ArrayList<int[]>();
 		protected List<Integer> clusterAssignment = new ArrayList<Integer>();
 		protected HashMap<Integer,String> posHillsToIndex =new HashMap<Integer,String>();
 		protected HashMap<Integer,Double> posHillScores =new HashMap<Integer,Double>();
 		protected File basedir_profiles;
 		protected File basedir_meme;
-		
+
 		/** 
 		 * Constructor
 		 */
@@ -263,43 +218,9 @@ public class Discrim {
 			setKmerModName(modName);
 			basedir_profiles = new File(outdir.getAbsoluteFile()+File.separator+kmerModelName+File.separator+"kmer_profiles");
 			basedir_meme = new File(outdir.getAbsoluteFile()+File.separator+kmerModelName+File.separator+"meme");
-			
-			// Now add all the training examples that are linked to the current K-mer model
-			// First; split to get subgroup names
-			String[] subGsMod = kmerModelName.split("#");
-			// Second; remove all "Root" keywords
-			for(int s=0; s<subGsMod.length; s++){
-				if(subGsMod[s].startsWith("Root"))
-					subGsMod[s] = subGsMod[s].replaceFirst("Root", "");
-			}
-			
-			for(int p=0; p< regions.size(); p++){
-				String[] pieces = subGroupsAtPeaks.get(p).split(";");
-				boolean addReg = true;
-				
-				for(String subGsInMod : subGsMod){
-					boolean SGinPeak = false;
-					for(String piece : pieces){
-						if(subGsInMod.equals(piece)){
-							SGinPeak = true;
-						}
-					}
-					if(!SGinPeak)
-						addReg = false;
-				}
-				//for(String piece : pieces){
-				//	for(String subGsInMod : subGsMod){
-				//		if(piece.equals(subGsInMod))
-				//			addReg = true;
-				//	}
-				//}
-				if(addReg)
-					modelRegions.add(regions.get(p));
-			}
-			
 		}
-		
-		
+
+
 		public void execute() throws IOException{
 			// First, find, cluster and print the hills
 			clusterKmerProfilesAtMountains();
@@ -314,14 +235,13 @@ public class Discrim {
 					List<String> seqs = new ArrayList<String>();
 					for(int p=0; p<posHills.size(); p++){
 						if(clusterAssignment.get(p) == c){
-							Region tmpR = posHills.get(p).getMidpoint().expand(MEMEwin/2);
-							String s = seqgen.execute(tmpR);
+							String s = posHills.get(p);
 							if(MemeER.lowercaseFraction(s)<=MemeER.MOTIF_FINDING_ALLOWED_REPETITIVE){
 								seqs.add(s);
 							}
 						}
 					}
-					//List<WeightMatrix> selectedMotifs = new ArrayList<WeightMatrix>();
+					List<WeightMatrix> selectedMotifs = new ArrayList<WeightMatrix>();
 					File meme_outFile = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_meme");
 
 					System.err.println("Running meme now");
@@ -329,9 +249,6 @@ public class Discrim {
 					System.err.println("Finished running meme, Now evaluating motif significance");
 					List<WeightMatrix> wm = matrices.car();
 					List<WeightMatrix> fm = matrices.cdr();
-					// Index for all the selected motifs
-					int motInd = 0;
-					
 					if(wm.size()>0){
 						//Evaluate the significance of the discovered motifs
 						double rocScores[] = meme.motifROCScores(wm,seqs,randomSequences);
@@ -341,34 +258,30 @@ public class Discrim {
 								System.err.println("\t"+fm.get(w).getName()+"\t"+ WeightMatrix.getConsensus(fm.get(w))+"\tROC:"+String.format("%.2f",rocScores[w]));
 							}
 							if(rocScores[w] > MemeER.MOTIF_MIN_ROC){
-								//selectedMotifs.add(fm.get(w));
-								fm.get(w).setName(kmerModelName+"_c"+Integer.toString(c)+"_"+Integer.toString(motInd));
-								discrimMotifs.add(fm.get(w));
-								discrimMotifsRocs.put(kmerModelName+"_c"+Integer.toString(c)+"_"+Integer.toString(motInd), rocScores[w]);
+								selectedMotifs.add(fm.get(w));
 							}
-							motInd++;
 						}
 					}
 
 					// Print ROC values into a file names "Motifs.ROC"
-					//File motifs_roc = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_motifs.roc");
-					//FileWriter fw = new FileWriter(motifs_roc);
-					//BufferedWriter bw = new BufferedWriter(fw);
+					File motifs_roc = new File(basedir_meme+File.separator+"Cluster-"+Integer.toString(c)+"_motifs.roc");
+					FileWriter fw = new FileWriter(motifs_roc);
+					BufferedWriter bw = new BufferedWriter(fw);
 
-					//for(int m =0; m<selectedMotifs.size(); m++){
-					//	String out = WeightMatrix.printTransfacMatrix(selectedMotifs.get(m),"Motif_"+Integer.toString(m));
-					//	bw.write(out);
-					//}
-					//bw.close();
+					for(int m =0; m<selectedMotifs.size(); m++){
+						String out = WeightMatrix.printTransfacMatrix(selectedMotifs.get(m),"Motif_"+Integer.toString(m));
+						bw.write(out);
+					}
+					bw.close();
 				}
 			}
-		
+
 		}
-		
-		
+
+
 		//Settors
 		public void setKmerModName(String name){kmerModelName = name;}
-		
+
 		//Gettors
 		public int getKmerBaseInd(String kmer){
 			int len = kmer.length();
@@ -378,38 +291,35 @@ public class Discrim {
 			}
 			return baseInd;
 		}
-		
+
 		//Fillers
 		private void fillHills() throws IOException{
-			List<Pair<Region,Double>> hills= new ArrayList<Pair<Region,Double>>();
+			List<Pair<String,Double>> hills= new ArrayList<Pair<String,Double>>();
 			hills= findHills();
-			List<Pair<Region,Double>> top_hills = sorthills(hills);
+			List<Pair<String,Double>> top_hills = sorthills(hills);
 			int index=0;
-			HashMap<String,Integer> addedHills = new HashMap<String,Integer>();
-			for(Pair<Region,Double> pr : top_hills){
-				if(!addedHills.containsKey(pr.car().getLocationString())){
-					posHills.add(pr.car());
-					posHillsToIndex.put(index,pr.car().getLocationString() );
-					posHillScores.put(index++, pr.cdr());
-					addedHills.put(pr.car().getLocationString(), 1);
-				}
+			//HashMap<String,Integer> addedHills = new HashMap<String,Integer>();
+			for(Pair<String,Double> pr : top_hills){
+				posHills.add(pr.car());
+				posHillsToIndex.put(index, "chr:"+index);
+				posHillScores.put(index++, pr.cdr());
 			}
 			profiles = getProfilesAtPeaks(posHills);
 		}
-		
-		private List<Pair<Region,Double>> sorthills(List<Pair<Region,Double>> hlls){
-			List<Pair<Region,Double>> ret = new ArrayList<Pair<Region,Double>>();
+
+		private List<Pair<String,Double>> sorthills(List<Pair<String,Double>> hlls){
+			List<Pair<String,Double>> ret = new ArrayList<Pair<String,Double>>();
 			HillsIndexComparator comp = new HillsIndexComparator(hlls);
 			Integer[] indicies = comp.createIndexArray();
 			Arrays.sort(indicies, comp);
-			
+
 			for(int i=0; i<Math.min(hlls.size(),numHills); i++){
 				ret.add(hlls.get(indicies[i]));
 			}
-			
+
 			return ret;
 		}
-		
+
 		/**
 		 * Prints the mountain composition
 		 * @param useCache
@@ -424,17 +334,16 @@ public class Discrim {
 				clusterAssignment = clusterManager.execute();
 			}
 		}
-		
-		private ArrayList<int[]> getProfilesAtPeaks(List<Region> rs){
+
+		private ArrayList<int[]> getProfilesAtPeaks(List<String> rs){
 			ArrayList<int[]> ret = new ArrayList<int[]>();
-			
-			for(Region r: rs){
+
+			for(String seq : rs){
 				int numK = 0;
 				for(int k=minK; k<=maxK; k++){
 					numK += (int)Math.pow(4, k);
 				}
 				int[] pfl = new int[numK];
-				String seq = seqgen.execute(r).toUpperCase();
 				for(int k=minK; k<=maxK; k++){
 					for(int i=0; i<(seq.length()-k+1); i++){
 						String currk = seq.substring(i, i+k);
@@ -448,12 +357,12 @@ public class Discrim {
 				}
 				ret.add(pfl);
 			}
-			
+
 			return ret;
 		}
-		
-		
-		
+
+
+
 		/**
 		 * Finds mountains for a given list of regions and given scoring threshold
 		 * Odds threshold can be -ve when scanning the model at negPeaks. +ve when scanning the model at posPeaks
@@ -462,15 +371,14 @@ public class Discrim {
 		 * @param genpath
 		 * @param oddsThresh
 		 */
-		private List<Pair<Region,Double>> findHills(){
-			
+		private List<Pair<String,Double>> findHills(){
+
 			// Detects if scanning is done for the positive or neg set from the sign of oddsThresh
 			//int classDetector = oddsThresh>0 ? 1:-1;
-			
-			List<Pair<Region,Double>> ret = new ArrayList<Pair<Region,Double>>();
-			
-			for(Region r : modelRegions){
-				String seq = seqgen.execute(r).toUpperCase();
+
+			List<Pair<String,Double>> ret = new ArrayList<Pair<String,Double>>();
+
+			for(String seq : Seqs){
 				if(seq.contains("N"))
 					continue;
 				List<Pair<Region,Double>> mountains = new ArrayList<Pair<Region,Double>>();
@@ -490,15 +398,16 @@ public class Discrim {
 							}
 						}
 						
-						Region hill = new Region(gcon.getGenome(),r.getChrom(),r.getStart()+i,r.getStart()+i+l-1);
-						
+						// Generating a dummy region; easy to overlap
+						Region hill = new Region(gcon.getGenome(),"chr1",i,i+l-1);
+
 						Iterator<Pair<Region,Double>> it = mountains.iterator();
 						boolean add=true;
 						while(it.hasNext() && add){
 							Pair<Region,Double> pr = it.next();
 							Region currHill = pr.car();
 							Double currScore = pr.cdr();
-							if(currHill.overlaps(hill) && currScore<=score){
+							if(currHill.overlaps(hill) && currScore<score){
 								it.remove();
 								add=true;
 							}else if(currHill.overlaps(hill) && currScore> score){
@@ -508,22 +417,32 @@ public class Discrim {
 						if(add && score > thresold_hills){
 							mountains.add(new Pair<Region,Double>(hill,score));
 						}
-						
+
 					}
 				}
-				ret.addAll(mountains);	
+				
+				// Now convert these dummy regions into seqs
+				for(Pair<Region,Double> pr : mountains){
+					int subStrStart = pr.car().getStart();
+					int subStrEnd = pr.car().getEnd()+1;
+					String subStr = seq.substring(subStrStart, subStrEnd);
+					Pair<String,Double> seqPair = new Pair<String,Double>(subStr,pr.cdr());
+					ret.add(seqPair);	
+				}
+				
+				
 			}
 			return ret;
 		}
-		
+
 		public class HillsIndexComparator implements Comparator<Integer>{
-			
-			List<Pair<Region,Double>> hill;
-			
-			public HillsIndexComparator(List<Pair<Region,Double>> h) {
+
+			List<Pair<String,Double>> hill;
+
+			public HillsIndexComparator(List<Pair<String,Double>> h) {
 				hill = h;
 			}
-			
+
 			public Integer[] createIndexArray(){
 				Integer[] indexes = new Integer[hill.size()];
 				for(int i=0; i<indexes.length; i++){
@@ -536,37 +455,37 @@ public class Discrim {
 			public int compare(Integer o1, Integer o2) {
 				return -1*(hill.get(o1).cdr().compareTo(hill.get(o2).cdr()));
 			}
-			
+
 		}
 	}
-	
-	public static void main(String[] args) throws IOException{
+
+	public static void main(String[] args) throws IOException, ParseException{
 		ArgParser ap = new ArgParser(args);
 		GenomeConfig gc = new GenomeConfig(args);
-		Discrim runner = new Discrim(gc);
-		
+		DiscrimFromSeq runner = new DiscrimFromSeq(gc);
+
 		// Size of the window to scan the K-mer models
 		int win = Args.parseInteger(args, "win", 150);
 		runner.setWin(win);
-		
+
 		// Minimum length of the region to find hills
 		int minM = Args.parseInteger(args, "minM", 4);
 		runner.setMinM(minM);
-		
+
 		// Maximum length of the region to find hills
 		int maxM = Args.parseInteger(args, "maxM", 10);
 		runner.setMaxM(maxM);
-		
+
 		// Length of the smallest K-mer in the K-mer models
 		int minK = Args.parseInteger(args, "minK", 4);
 		runner.setKmerMin(minK);
-		
+
 		// Length of the largest K-mer in the K-mer models
 		int maxK = Args.parseInteger(args, "maxK", 6);
 		runner.setKmerMax(maxK);
-		
+
 		runner.setNumK();
-		
+
 		// K-mer models file / weights file
 		String weights = Args.parseString(args, "weights", null);
 		if(weights == null){
@@ -574,47 +493,54 @@ public class Discrim {
 			System.exit(1);
 		}
 		runner.setKmerWeights(weights);
-		
+
 		// Name of the output folder to write all the output file names
 		String out = Args.parseString(args, "out", "out");
 		runner.setOutbase(out);
-		
+
 		runner.makeOutPutDirs(out);
-		
+
 		// Threshold for calling hills
 		double threshold = Args.parseDouble(args, "hillsThres", 0.1);
 		runner.setHillThreshold(threshold);
-		
-		// Peaks file name
-		String peaksfilename = Args.parseString(args, "peaks", null);
+
+		// Seqs file name
+		String peaksfilename = Args.parseString(args, "Seqs", null);
 		if(peaksfilename == null){
-			System.err.println("Provide peaks file");
+			System.err.println("Provide Seqs file");
 			System.exit(1);
 		}
+		
 		FileReader fr = new FileReader(peaksfilename);
 		BufferedReader br = new BufferedReader(fr);
-		String line;
-		List<String> labels = new ArrayList<String>();
-		while((line = br.readLine()) != null){
-			if(!line.contains("#")){
-				String[] pieces = line.split("\t");
-				labels.add(pieces[1]);
-			}
-		}
-		br.close();
-		runner.setLabelsAtPeaks(labels);
-		runner.setPeaks(peaksfilename);
 		
+		String line;
+		List<String> seqs = new ArrayList<String>();
+		while((line = br.readLine()) != null){
+			String[] pieces = line.split("\t");
+			seqs.add(pieces[0]);
+		}
+		runner.setSeqs(seqs);
+
 		// Set number of clusters while clustering K-mer profiles
 		int numClus = Args.parseInteger(args, "numClusters", 3);
 		runner.setNumKmerClusters(numClus);
-		
+
 		// Seq number of iterations for K-means clustering of K-mer profiles
 		int itrs_Clus = Args.parseInteger(args, "itrsClustering", 10);
 		runner.setNumClusteringItrs(itrs_Clus);
-		
+
+		// Get the background model to generate random seqs
+		String backFile =ap.getKeyValue("back");
+		if(!ap.hasKey("back")){
+			System.err.println("Please provide a background model file!!");
+			System.exit(0);
+		}
+
+		MarkovBackgroundModel back = BackgroundModelIO.parseMarkovBackgroundModel(backFile, gc.getGenome());
+		runner.setBack(back);
 		runner.setRandomRegs();
-		
+
 		// Path to MEME binary
 		String memePATH = Args.parseString(args, "memePath", null);
 		if(memePATH == null){
@@ -622,21 +548,73 @@ public class Discrim {
 			System.exit(1);
 		}
 		runner.setMEMEPath(memePATH);
-		
+
 		// minimum size of motif for meme
 		int memeMinW = Args.parseInteger(args, "MEME_minW", 6);
 		runner.setMEMEminW(memeMinW);
-		
+
 		//maximum size of motif for meme
 		int memeMaxW = Args.parseInteger(args, "MEME_maxW", 11);
 		runner.setMEMEmaxW(memeMaxW);
-		
+
 		//Size of the focussed meme search win
 		int memeWin = Args.parseInteger(args, "memeSearchWin", 15);
 		runner.setMEMEsearchWin(memeWin);
-	
-		
+
+
 		runner.execute();
 
 	}
+	
+	private String generateASeq(){
+		String s = new String();
+		//Preliminary bases
+		for(int i=1; i<markov.getMaxKmerLen() && i<=win; i++){
+			double prob = rand.nextDouble();
+			double sum=0; int j=0;
+			while(sum<prob){
+				String test = s.concat(int2base(j));
+				sum += markov.getMarkovProb(test);
+				if(sum>=prob){
+					s = test;
+					break;
+				}
+				j++;
+			}
+		}
+		//Remaining bases
+		for(int i=markov.getMaxKmerLen(); i<=win; i++){
+			String lmer = s.substring(s.length()-(markov.getMaxKmerLen() -1));
+			double prob = rand.nextDouble();
+			double sum=0; int j=0;
+			while(sum<prob){
+				String test = lmer.concat(int2base(j));
+				sum += markov.getMarkovProb(test);
+				if(sum>=prob){
+					s =s.concat(int2base(j));
+					break;
+				}
+				j++;
+			}
+		}
+		return s;
+	}
+
+	private String int2base(int x){
+		String c;
+		switch(x){
+		case 0:
+			c="A"; break;
+		case 1:
+			c="C"; break;
+		case 2:
+			c="G"; break;
+		case 3:
+			c="T"; break;
+		default:
+			c="N";
+		}
+		return(c);
+	}
+
 }
