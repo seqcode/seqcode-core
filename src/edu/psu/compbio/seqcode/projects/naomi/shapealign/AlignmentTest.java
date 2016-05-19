@@ -1,24 +1,21 @@
 package edu.psu.compbio.seqcode.projects.naomi.shapealign;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
-import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
-import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
+import edu.psu.compbio.seqcode.projects.naomi.FeatureCountsLoader;
 
 /**
  * Alignment Test: derived from SmithWaterman Alignment.java 
@@ -30,13 +27,10 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class AlignmentTest {
 	
-	protected GenomeConfig gconfig;
-	protected ExptConfig econfig;
-	protected ExperimentManager manager;
+	protected FeatureCountsLoader featureCountsLoader;
 	protected SimilarityScore similarity_s;
 		
-	protected List<Point> points;
-	protected List<Region> regions;
+	protected List<StrandedRegion> strandeRegions;
 	protected int window;
 	
 	protected double error = 0;
@@ -48,24 +42,20 @@ public class AlignmentTest {
 	
 	static final double MINIMUM_VALUE = -10000;
 	
-	protected Map<Sample, Map<Region,double[][]>> countsArray = new HashMap<Sample,Map<Region,double[][]>>();
+	protected Map<ControlledExperiment, Map<StrandedRegion, double[][]>> strandedRegionSampleCounts = new HashMap<ControlledExperiment, Map<StrandedRegion,double[][]>>();
 	
-	public AlignmentTest(GenomeConfig gcon, ExptConfig econ, ExperimentManager man, SimilarityScore sc){	
-		gconfig = gcon;
-		econfig = econ;
-		manager = man;
+	public AlignmentTest(FeatureCountsLoader fcLoader, SimilarityScore sc){	
+		featureCountsLoader = fcLoader;
 		similarity_s = sc;
 	}
 	
 	// setters
-	public void setPoints(List<Point> p){points = p;}
-	public void setRegions(List<Region> reg){regions = reg;} 
-	public void setWidth(int w){window = w;}
-	public void setCountsArray(Map<Sample, Map<Region,double[][]>> sampleCounts){countsArray = sampleCounts;}
+	public void setWidth(int w){window = w;}	
 	
 	// prints error rate
 	public void printErrorRate(){System.out.println("error is "+error+ " totalNum is "+ totalNum+ " error rate is "+ (error/totalNum));}
-	
+
+	/**
 	public void loadData(){
 		
 		List<Region> region = new ArrayList<Region>();
@@ -113,30 +103,34 @@ public class AlignmentTest {
 		}
 		setCountsArray(sampleCountsArray);
 	}
+	**/
 	
 	public void excuteShapeAlign(){
 		
-		for (Sample sample : countsArray.keySet()){
-			for (int i = 0; i <regions.size();i++){		
+		strandedRegionSampleCounts = featureCountsLoader.strandedRegionSampleCounts();
+		strandeRegions = featureCountsLoader.getStrandedRegions();
+		
+		for (ControlledExperiment cExpt : strandedRegionSampleCounts.keySet()){
+			for (int i = 0; i <strandeRegions.size();i++){		
 			
 //			for (int i = 0; i <1 ; i++){	
-				for (int j = i+1; j <regions.size();j++){
+				for (int j = i+1; j <strandeRegions.size();j++){
 //					System.out.println("region is "+regions.get(j).getLocationString());
-					smithWatermanAlgorithm(sample, regions.get(i), regions.get(j));		
+					smithWatermanAlgorithm(cExpt, strandeRegions.get(i), strandeRegions.get(j));		
 				}
 			}
 		}				
 	}
 	
-	public void smithWatermanAlgorithm(Sample sample, Region regA, Region regB){
+	public void smithWatermanAlgorithm(ControlledExperiment cExpt, Region regA, Region regB){
 		
 		//get midpoints
 //		double regAmid = regA.getMidpoint().getLocation();
 //		double regBmid = regB.getMidpoint().getLocation();
 		
 		//get counts
-		double [][] regACounts = countsArray.get(sample).get(regA);
-		double [][] regBCounts = countsArray.get(sample).get(regB);
+		double [][] regACounts = strandedRegionSampleCounts.get(cExpt).get(regA);
+		double [][] regBCounts = strandedRegionSampleCounts.get(cExpt).get(regB);
 		
 		//normalize the arrays to set the max value 1
 		double maxA = MINIMUM_VALUE;
@@ -308,16 +302,21 @@ public class AlignmentTest {
 	
 	public static void main(String[] args){
 		
+		GenomeConfig gconf = new GenomeConfig(args);
+		ExptConfig econf = new ExptConfig(gconf.getGenome(), args);		
+		econf.setPerBaseReadFiltering(false);		
+		ExperimentManager manager = new ExperimentManager(econf);
+		
+		// parsing command line arguments
 		ArgParser ap = new ArgParser(args);		
 		int win = Args.parseInteger(args, "win", 200);
+		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromMotifFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
 		
+		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, econf, manager);
+		fcLoader.setStrandedPoints(spoints);
+		fcLoader.setWindowSize(win); // window size must be twice bigger so it can slide window size times
+
 		SimilarityScore sc = new SimilarityScore();
-		
-		GenomeConfig gconf = new GenomeConfig(args);
-		ExptConfig  econf = new ExptConfig(gconf.getGenome(), args);		
-		econf.setPerBaseReadFiltering(false);
-		
-		ExperimentManager manager = new ExperimentManager(econf);
 		
 		if (Args.parseFlags(args).contains("euclidean")){ sc.setEuclideanL2();}
 		if (Args.parseFlags(args).contains("sorensen")){ sc.setSorensen();}
@@ -327,15 +326,13 @@ public class AlignmentTest {
 		if (Args.parseFlags(args).contains("squaredChi")){ sc.setSquaredChi();}
 		if (Args.parseFlags(args).contains("divergence")){ sc.setDivergence();}
 		if (Args.parseFlags(args).contains("clark")){ sc.setClark();}
+		
 
-		AlignmentTest profile = new AlignmentTest(gconf, econf, manager, sc); 		
-		
-		List<Point> points = RegionFileUtilities.loadPeaksFromPeakFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
-		
-		profile.setPoints(points);
+		AlignmentTest profile = new AlignmentTest(fcLoader, sc); 		
 		profile.setWidth(win);
-		profile.loadData();
 		profile.excuteShapeAlign();
 		profile.printErrorRate();	
+		
+		manager.close();
 	}
 }
