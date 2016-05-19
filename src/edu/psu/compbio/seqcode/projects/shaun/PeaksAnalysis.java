@@ -890,9 +890,9 @@ public class PeaksAnalysis {
 							int offset=h.getFivePrime()-r.getStart()<0 ? 0 : h.getFivePrime()-r.getStart();
 							if(offset>r.getWidth())
 								offset=r.getWidth();
-							counts[offset]++;
+							counts[offset]+=h.getWeight();
 							if(!needleFiltering || (counts[offset] <= perBaseMax)){
-								score++;
+								score+=h.getWeight();
 							}
 						}
 					}	

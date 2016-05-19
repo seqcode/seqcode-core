@@ -30,11 +30,7 @@ public class TestExptLoading {
 	GenomeConfig gconfig;
 	ExptConfig econfig;
 	ExperimentManager manager;
-	float[] startcounts =null;
-	float densityWindow = 500;
-	double testQuantile = 1.0; //Base per-read count distribution on this proportion of the lowest-ranked densities
-	int histoMax = 100;
-
+	
 	public static void main(String[] args){
 		GenomeConfig gconfig = new GenomeConfig(args);
 		ExptConfig econfig = new ExptConfig(gconfig.getGenome(), args);
