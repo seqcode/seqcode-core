@@ -1,22 +1,20 @@
 package edu.psu.compbio.seqcode.projects.naomi.shapealign;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
-import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
-import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
+import edu.psu.compbio.seqcode.genome.location.StrandedPoint;
+import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
+import edu.psu.compbio.seqcode.projects.naomi.FeatureCountsLoader;
 
 /**
  * PearsonCorrAlignment : use Pearson correlation to get the best alignment
@@ -27,12 +25,13 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 
 public class PearsonCorrAlignment {
 	
+	protected FeatureCountsLoader fcloader;
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
 	protected ExperimentManager manager;
 		
-	protected List<Point> points;
-	protected List<Region> regions;
+//	protected List<Point> points;
+	protected List<StrandedRegion> strandeRegions;
 	protected int window;
 	
 	protected boolean isWeighted = false;
@@ -42,26 +41,31 @@ public class PearsonCorrAlignment {
 	
 	static final double MINIMUM_VALUE = -10000;
 	
-	protected Map<Sample, Map<Region,double[][]>> countsArray = new HashMap<Sample,Map<Region,double[][]>>();
+	protected Map<ControlledExperiment, Map<StrandedRegion, double[][]>> strandedRegionSampleCounts = new HashMap<ControlledExperiment, Map<StrandedRegion,double[][]>>(); 
 	
 	protected double [][] pairwiseDistance;
 	
-	public PearsonCorrAlignment(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
-		gconfig = gcon;
-		econfig = econ;
-		manager = man;
+	public PearsonCorrAlignment(FeatureCountsLoader featureCountsLoader){	
+		fcloader = featureCountsLoader;
 	}
 	
+//	public PearsonCorrAlignment(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
+//		gconfig = gcon;
+//		econfig = econ;
+//		manager = man;
+//	}
+	
 	// setters
-	public void setPoints(List<Point> p){points = p;}
-	public void setRegions(List<Region> reg){regions = reg;} 
+//	public void setPoints(List<Point> p){points = p;}
+//	public void setRegions(List<Region> reg){regions = reg;} 
 	public void setWidth(int w){window = w;}
-	public void setCountsArray(Map<Sample, Map<Region,double[][]>> sampleCounts){countsArray = sampleCounts;}
+//	public void setCountsArray(Map<Sample, Map<Region,double[][]>> sampleCounts){countsArray = sampleCounts;}
 	public void setWeighted(){ isWeighted = true;}
 	
 	// prints error rate
 	public void printErrorRate(){System.out.println("error is "+error+ " totalNum is "+ totalNum+ " error rate is "+ (error/totalNum));}
 	
+	/**
 	public void loadData(){
 		
 		List<Region> region = new ArrayList<Region>();
@@ -119,15 +123,27 @@ public class PearsonCorrAlignment {
 		manager.close();
 	}
 	
+	**/
+	
 	public void excutePearsonCorrAlign(){
 		
-		for (Sample sample : countsArray.keySet()){
-			for (int i = 0; i <regions.size();i++){		
+		strandedRegionSampleCounts = fcloader.strandedRegionSampleCounts();
+		
+		List<StrandedRegion> strandeRegions = fcloader.getStrandedRegions();
+		pairwiseDistance = new double [strandeRegions.size()][strandeRegions.size()];
+		for (int i = 0 ; i< strandeRegions.size(); i++){
+			for (int j = 0 ; j < strandeRegions.size(); j++)
+				pairwiseDistance[i][j] = 1;
+		}
+		
+		
+		for (ControlledExperiment cexpt : strandedRegionSampleCounts.keySet()){
+			for (int i = 0; i <strandeRegions.size();i++){		
 			
 //			for (int i = 0; i <1 ; i++){	
-				for (int j = i+1; j <regions.size();j++){
+				for (int j = i+1; j <strandeRegions.size();j++){
 //					System.out.println("region is "+regions.get(j).getLocationString());
-					double corr = pearsonCorrelation(sample, regions.get(i), regions.get(j));	
+					double corr = pearsonCorrelation(cexpt, strandeRegions.get(i), strandeRegions.get(j));	
 					pairwiseDistance[i][j] = corr;
 					pairwiseDistance[j][i] = corr;
 				}
@@ -135,15 +151,16 @@ public class PearsonCorrAlignment {
 		}				
 	}
 	
-	public double pearsonCorrelation(Sample sample, Region regA, Region regB){
+	
+	public double pearsonCorrelation(ControlledExperiment controlledExpt, Region regA, Region regB){
 		
 		//get midpoints
 //		double regAmid = regA.getMidpoint().getLocation();
 //		double regBmid = regB.getMidpoint().getLocation();
 		
 		//get counts
-		double [][] regACounts = countsArray.get(sample).get(regA);
-		double [][] regBCounts = countsArray.get(sample).get(regB);
+		double [][] regACounts = strandedRegionSampleCounts.get(controlledExpt).get(regA);
+		double [][] regBCounts = strandedRegionSampleCounts.get(controlledExpt).get(regB);
 		
 		//normalize the regAarray to set the max value 1
 		// size of normRegACounts is [window_size][2]
@@ -276,12 +293,12 @@ public class PearsonCorrAlignment {
 	
 	public void printPairwiseDistance(){
 		
-		for (int i = 0 ; i < regions.size(); i++){
-			System.out.println(regions.get(i).getLocationString());
+		for (int i = 0 ; i < strandeRegions.size(); i++){
+			System.out.println(strandeRegions.get(i).getLocationString());
 		}
 		
-		for (int i = 0 ; i < regions.size();i++){
-			for (int j = 0 ; j <regions.size(); j++){
+		for (int i = 0 ; i < strandeRegions.size();i++){
+			for (int j = 0 ; j <strandeRegions.size(); j++){
 				System.out.print(pairwiseDistance[i][j]+"\t");
 			}
 			System.out.println();	
@@ -290,6 +307,30 @@ public class PearsonCorrAlignment {
 	
 	public static void main(String[] args){
 		
+		
+		GenomeConfig gconf = new GenomeConfig(args);
+		ExptConfig econf = new ExptConfig(gconf.getGenome(), args);		
+		econf.setPerBaseReadFiltering(false);		
+		ExperimentManager manager = new ExperimentManager(econf);
+		
+		// parsing command line arguments
+		ArgParser ap = new ArgParser(args);		
+		int win = Args.parseInteger(args, "win", 200);
+		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromMotifFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
+		
+		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, econf, manager);
+		fcLoader.setStrandedPoints(spoints);
+		fcLoader.setWindowSize(win*2); // window size must be twice bigger so it can slide window size times
+
+		PearsonCorrAlignment profile = new PearsonCorrAlignment(fcLoader); 	
+		profile.setWidth(win);
+		profile.excutePearsonCorrAlign();
+		profile.printErrorRate();	
+		profile.printPairwiseDistance();
+		
+		manager.close();
+		
+		/**
 		ArgParser ap = new ArgParser(args);		
 		int win = Args.parseInteger(args, "win", 200);
 		
@@ -312,5 +353,6 @@ public class PearsonCorrAlignment {
 		profile.printPairwiseDistance();
 		
 		manager.close();
+		**/
 	}
 }

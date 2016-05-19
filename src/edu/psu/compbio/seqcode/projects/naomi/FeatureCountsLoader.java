@@ -55,6 +55,7 @@ public class FeatureCountsLoader {
 	public void setWindowSize(int w){window = w;}
 	public void setFivePrimeShift(int s){fivePrimeShift = s;}
 	
+	public List<StrandedRegion> getStrandedRegions(){return strandedRegions;}
 	public Map<ControlledExperiment, Map<StrandedRegion,double[][]>> getControlStrandedRegionCounts(){return strandedRegionControlCounts;}
 	public Map<ControlledExperiment, double[]> controlComposite(){return controlCompositeMap;}
 	
