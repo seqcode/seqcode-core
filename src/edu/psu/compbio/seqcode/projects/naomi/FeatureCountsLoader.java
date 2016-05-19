@@ -55,6 +55,7 @@ public class FeatureCountsLoader {
 	public void setWindowSize(int w){window = w;}
 	public void setFivePrimeShift(int s){fivePrimeShift = s;}
 	
+	public List<StrandedRegion> getStrandedRegions(){return strandedRegions;}
 	public Map<ControlledExperiment, Map<StrandedRegion,double[][]>> getControlStrandedRegionCounts(){return strandedRegionControlCounts;}
 	public Map<ControlledExperiment, double[]> controlComposite(){return controlCompositeMap;}
 	
@@ -87,7 +88,6 @@ public class FeatureCountsLoader {
 					if (rep.hasControl()){
 						controlRegionCounts.put(reg, rep.getControl().getBases(reg));
 					}
-					controlRegionCounts.put(reg, rep.getControl().getBases(reg));
 				}
 				sampleCountsMap.put(rep,sampleRegionCounts);
 				controlCountsMap.put(rep,controlRegionCounts);
@@ -110,23 +110,14 @@ public class FeatureCountsLoader {
 						controlCounts[i][s] = 0;
 					}
 				}	
-				if (reg.getStrand() == '+'){ // regions(features) are positive strand
-					reg.getMidpoint().getLocation();
-					
+				if (reg.getStrand() == '+'){ // regions(features) are positive strand					
 					for (StrandedBaseCount hits: sampleCountsMap.get(replicates).get(reg)){	
 						if (hits.getStrand()=='+'){
 							sampleCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+(window+edge)/2][0] = hits.getCount();
 						}else{
 							sampleCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+(window+edge)/2][1] = hits.getCount();
 						}					
-					}				
-					for (StrandedBaseCount hits: controlCountsMap.get(replicates).get(reg)){	
-						if (hits.getStrand()=='+'){
-							controlCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+(window+edge)/2][0] = hits.getCount();
-						}else{
-							controlCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+(window+edge)/2][1] = hits.getCount();
-						}					
-					}				
+					}
 				}else{ // if regions (features) are reverse strand, I need to flip the strands and locations
 					for (StrandedBaseCount hits: sampleCountsMap.get(replicates).get(reg)){	
 						if (hits.getStrand()=='+'){
@@ -135,14 +126,29 @@ public class FeatureCountsLoader {
 							sampleCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()+(window+edge)/2][0] = hits.getCount();	
 						}			
 					}	
-					for (StrandedBaseCount hits: controlCountsMap.get(replicates).get(reg)){	
-						if (hits.getStrand()=='+'){
-							controlCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()+(window+edge)/2][1] = hits.getCount();
-						}else{
-							controlCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()+(window+edge)/2][0] = hits.getCount();	
-						}			
-					}	
-				}				
+				}
+				
+				// only execute if controls are loaded
+				if (replicates.hasControl()){
+					if (reg.getStrand() == '+'){ 				
+						for (StrandedBaseCount hits: controlCountsMap.get(replicates).get(reg)){	
+							if (hits.getStrand()=='+'){
+								controlCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+(window+edge)/2][0] = hits.getCount();
+							}else{
+								controlCounts[hits.getCoordinate()-reg.getMidpoint().getLocation()+(window+edge)/2][1] = hits.getCount();
+							}					
+						}	
+					}else{
+						for (StrandedBaseCount hits: controlCountsMap.get(replicates).get(reg)){	
+							if (hits.getStrand()=='+'){
+								controlCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()+(window+edge)/2][1] = hits.getCount();
+							}else{
+								controlCounts[reg.getMidpoint().getLocation()-hits.getCoordinate()+(window+edge)/2][0] = hits.getCount();	
+							}			
+						}	
+					}
+				} // end of control
+				
 				sampleRegionCounts.put(reg, sampleCounts);
 				controlRegionCounts.put(reg, controlCounts);
 			}
