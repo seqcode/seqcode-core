@@ -30,7 +30,7 @@ public class SeqUnwinder {
 		arffmaker.execute();
 		
 		// Now run the classifier
-		Classifier classifier = new Classifier(sequnwinder.getConfig());
+		Classifier classifier = new Classifier(sequnwinder.getConfig().getKmin(),sequnwinder.getConfig().getNumK());
 		String classifierout = "";
 		try {
 			classifierout = Evaluation.evaluateModel(classifier, sequnwinder.getConfig().getWekaOptions());
