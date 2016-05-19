@@ -129,7 +129,7 @@ public class PearsonCorrAlignment {
 		
 		strandedRegionSampleCounts = fcloader.strandedRegionSampleCounts();
 		
-		List<StrandedRegion> strandeRegions = fcloader.getStrandedRegions();
+		strandeRegions = fcloader.getStrandedRegions();
 		pairwiseDistance = new double [strandeRegions.size()][strandeRegions.size()];
 		for (int i = 0 ; i< strandeRegions.size(); i++){
 			for (int j = 0 ; j < strandeRegions.size(); j++)
