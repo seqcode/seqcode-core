@@ -221,9 +221,7 @@ public class PearsonCorrAlignment {
 		offsetArray[offset+window/2]++;				
 		// incrementing error allowing offset of +-1
 		totalNum += 1;
-		if (offset >= -1 && offset <= 1){
-			error += 1;
-		}
+		if (Math.abs(offset) > 1){error += 1;}
 		
 		return maxCorr;	
 	}

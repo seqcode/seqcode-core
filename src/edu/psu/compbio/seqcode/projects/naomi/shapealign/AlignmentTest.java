@@ -43,6 +43,7 @@ public class AlignmentTest {
 	static final double MINIMUM_VALUE = -10000;
 	
 	protected Map<ControlledExperiment, Map<StrandedRegion, double[][]>> strandedRegionSampleCounts = new HashMap<ControlledExperiment, Map<StrandedRegion,double[][]>>();
+	protected double [] offsetArray;
 	
 	public AlignmentTest(FeatureCountsLoader fcLoader, SimilarityScore sc){	
 		featureCountsLoader = fcLoader;
@@ -287,17 +288,24 @@ public class AlignmentTest {
 			
 		**/
 		
-//		System.out.println();
-		
-		// incrementing error 
+		// increment offset array
+		offsetArray[(int) (y_mid-x_mid+window/2)]++;				
+		// incrementing error allowing offset of +-1
 		totalNum += 1;
 		if ( traceBack.contains(LEFT) || traceBack.contains(UP) ){ // check that stack only contains DIAG
-//			System.out.println("stack contains LEFT or UP");
 			error += 1;
-		}else{			
-			if (x_mid != y_mid)
-				error += 1;
+		}else{
+			if (Math.abs(y_mid-x_mid) >1){
+				error +=1;
+			}
 		}
+	}
+	
+	public void printOffsetArray(){
+		System.out.println("offset array");
+		for (int i = 0; i <= window ; i++)
+			System.out.print(offsetArray[i]+"\t");
+		System.out.println();
 	}
 	
 	public static void main(String[] args){
