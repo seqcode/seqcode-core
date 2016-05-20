@@ -49,9 +49,9 @@ public class Outputwriter {
 		// Finally, draw the motif logos
 		for(WeightMatrix fm : seqConfig.getDiscrimMotifs()){
 			File motifFileName = new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+"motif_logos"+File.separator+fm.getName().replaceAll("#", "")+".png");
-			Utils.printMotifLogo(fm, motifFileName, 150, fm.getName(), true);
+			Utils.printMotifLogo(fm, motifFileName, 75, fm.getName(), true);
 			File motifFileNameRC = new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+"motif_logos"+File.separator+fm.getName().replaceAll("#", "")+"_rc.png");
-			Utils.printMotifLogo(WeightMatrix.reverseComplement(fm), motifFileNameRC, 150, fm.getName().replaceAll("#", ""), true);
+			Utils.printMotifLogo(WeightMatrix.reverseComplement(fm), motifFileNameRC, 75, fm.getName().replaceAll("#", ""), true);
 		}
 	}
 
@@ -60,6 +60,28 @@ public class Outputwriter {
 		FileWriter fw = new FileWriter(classifierOutFile);
 		BufferedWriter bw= new BufferedWriter(fw);
 		bw.write(seqConfig.getClassifierOutput());
+		bw.close();
+	}
+	
+	public void writeKmerWeights() throws IOException{
+		File weightFile = new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+"kmer_weights.mat");
+		FileWriter fw = new FileWriter(weightFile);
+		StringBuilder weightSB = new StringBuilder();
+		weightSB.append("Kmer");
+		for(String s : seqConfig.getKmerWeights().keySet()){
+			weightSB.append(s);weightSB.append("\t");
+		}
+		weightSB.deleteCharAt(weightSB.length()-1);
+		weightSB.append("\n");
+		for(String s : seqConfig.getKmerWeights().keySet()){
+			for(int c=0;c<seqConfig.getKmerWeights().get(s).length; c++){
+				weightSB.append(seqConfig.getKmerWeights().get(s)[c]);weightSB.append("\t");
+			}
+			weightSB.deleteCharAt(weightSB.length()-1);
+			weightSB.append("\n");
+		}
+		BufferedWriter bw= new BufferedWriter(fw);
+		bw.write(weightSB.toString());
 		bw.close();
 	}
 	
@@ -137,7 +159,7 @@ public class Outputwriter {
 		
 		// Now run the R script
 		String Rscriptcmd = seqConfig.getRpath()+"Rscript ";
-		Process proc = Runtime.getRuntime().exec(Rscriptcmd+" "+seqConfig.getOutDir().getAbsolutePath()+"/plotHeatmap.R"+" "+seqConfig.getOutDir().getAbsolutePath()+"/Discrim_motifs.scores"+" Discrim_motifs_heatmap.png");
+		Process proc = Runtime.getRuntime().exec(Rscriptcmd+" "+seqConfig.getOutDir().getAbsolutePath()+"/plotHeatmap.R"+" "+seqConfig.getOutDir().getAbsolutePath()+"/Discrim_motifs.scores"+" "+seqConfig.getOutDir().getAbsolutePath()+"/Discrim_motifs_heatmap.png");
 		// any error message? 
 		StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
 		// any output? 
@@ -149,7 +171,7 @@ public class Outputwriter {
 		System.err.println("R ExitValue: " + exitVal);
 		proc.destroy();
 		
-		proc = Runtime.getRuntime().exec(Rscriptcmd+" "+seqConfig.getOutDir().getAbsolutePath()+"/plotHeatmap.R"+" "+seqConfig.getOutDir().getAbsolutePath()+"/Discrim_motifs_simple.scores"+" Discrim_motifs_simple_heatmap.png");
+		proc = Runtime.getRuntime().exec(Rscriptcmd+" "+seqConfig.getOutDir().getAbsolutePath()+"/plotHeatmap.R"+" "+seqConfig.getOutDir().getAbsolutePath()+"/Discrim_motifs_simple.scores"+" "+seqConfig.getOutDir().getAbsolutePath()+"/Discrim_motifs_simple_heatmap.png");
 		// any error message? 
 		errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
 		// any output? 
@@ -236,6 +258,8 @@ public class Outputwriter {
     		fout.write("\t\t</tr>\n");
     	}
     	fout.write("\t</table>\n");
+    	
+    	fout.write("\t<p><a href='kmer_weights.mat'> Weighted K-mer model.</a>\n");
     	
     	// Print the de novo identified motifs
     	fout.write("\t<h2>De novo identified motifs</h2>\n");

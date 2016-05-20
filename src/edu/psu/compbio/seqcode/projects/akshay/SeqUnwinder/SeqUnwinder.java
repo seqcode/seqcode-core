@@ -47,6 +47,7 @@ public class SeqUnwinder {
 		sequnwinder.getConfig().setModelNames(classifier.getModelNames());
 		sequnwinder.getConfig().setClassifierOut(classifierout);
 		sequnwinder.getConfig().setWeights(classifier.getWeights());
+		scribe.writeKmerWeights();
 		
 		//Now parse the classifier output and extract the classifier statistics
 		HashMap<String,double[]> trainStats = new HashMap<String,double[]>();
