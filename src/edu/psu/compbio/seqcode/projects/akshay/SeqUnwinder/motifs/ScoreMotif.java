@@ -21,7 +21,7 @@ public class ScoreMotif {
 	
 	public void execute(){
 		for(WeightMatrix wm : seqConfig.getDiscrimMotifs()){
-			scores.put(wm.getName(), new double[seqConfig.getDiscrimMotifs().size()]);
+			scores.put(wm.getName(), new double[seqConfig.getMNames().size()]);
 		}
 		
 		for(WeightMatrix mot : seqConfig.getDiscrimMotifs()){

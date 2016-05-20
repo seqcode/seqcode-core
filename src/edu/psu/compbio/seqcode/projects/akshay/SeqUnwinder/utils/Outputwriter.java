@@ -71,12 +71,12 @@ public class Outputwriter {
 		sb.append("MotifName");sb.append("\t");
 		//First header
 		for(String s : seqConfig.getMNames()){
-			sb.append(s);sb.append("\t");
+			sb.append(s.replaceAll("#", ""));sb.append("\t");
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");
 		for(String s : seqConfig.getDiscrimMotsScore().keySet()){
-			sb.append(s);sb.append("\t");
+			sb.append(s.replaceAll("#", ""));sb.append("\t");
 			for(double scr : seqConfig.getDiscrimMotsScore().get(s)){
 				sb.append(scr);sb.append("\t");
 			}
@@ -94,22 +94,22 @@ public class Outputwriter {
 		//First header
 		for(String s:seqConfig.getMNames()){
 			String[] pieces = s.split("#");
-			if(pieces.length > 1){
-				sb.append(s);sb.append("\t");
+			if(pieces.length < 2){
+				sb.append(s.replaceAll("#", ""));sb.append("\t");
 			}
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");
 		for(String s : seqConfig.getDiscrimMotsScore().keySet()){
 			String[] piecesMotName = s.split("#");
-			if(piecesMotName.length<2)
+			if(piecesMotName.length>1)
 				continue;
-			sb.append(s);sb.append("\t");
+			sb.append(s.replaceAll("#", ""));sb.append("\t");
 			int i=0;
 			for(double scr : seqConfig.getDiscrimMotsScore().get(s)){
 				String[] piecesModName = seqConfig.getMNames().get(i).split("#");
 				i++;
-				if(piecesModName.length<2)
+				if(piecesModName.length>1)
 					continue;
 				sb.append(scr);sb.append("\t");
 			}
@@ -126,10 +126,11 @@ public class Outputwriter {
 		FileWriter fw = new FileWriter(rScript);
 		BufferedWriter bw = new BufferedWriter(fw);
 		bw.write("library(gplots) \n");
+		bw.write("args <- commandArgs(TRUE) \n");
 		bw.write("data <- as.matrix(read.table(args[1], header=TRUE, sep = \"\t\", row.names = 1,as.is=TRUE)) \n");
 		bw.write("colors = c(seq(0,0.5,length=6),seq(0.51,3,length=6)) \n");
 		bw.write("my_palette <- colorRampPalette(c(\"lightblue\",\"red\"))(n = 11) \n");
-		bw.write("png(file=\"args[2]\",width=600, height=800, bg = \"transparent\") \n");
+		bw.write("png(file=args[2],width=600, height=800, bg = \"transparent\") \n");
 		bw.write("heatmap.2(data,Rowv=FALSE,Colv=FALSE,breaks=colors,col=my_palette,symm=F,symkey=F,symbreaks=T,dendrogram=\"none\",trace=\"none\") \n");
 		bw.write("dev.off()");
 		bw.close();
@@ -166,7 +167,7 @@ public class Outputwriter {
 		File htmlOut = new File(seqConfig.getOutDir().getAbsoluteFile()+File.separator+"SeqUnwinder_results.html");
 		FileWriter fout = new FileWriter(htmlOut);
     	fout.write("<html>\n" +
-    			"\t<head><title>MultiGPS results ("+seqConfig.getOutbase()+")</title></head>\n" +
+    			"\t<head><title>SeqUnwinder results ("+seqConfig.getOutbase()+")</title></head>\n" +
     			"\t<style type='text/css'>/* <![CDATA[ */ table, th{border-color: #600;border-style: solid;} td{border-color: #600;border-style: solid;} table{border-width: 0 0 1px 1px; border-spacing: 0;border-collapse: collapse;} th{margin: 0;padding: 4px;border-width: 1px 1px 0 0;} td{margin: 0;padding: 4px;border-width: 1px 1px 0 0;} /* ]]> */</style>\n" +
     			"\t<script language='javascript' type='text/javascript'><!--\nfunction motifpopitup(url) {	newwindow=window.open(url,'name','height=75');	if (window.focus) {newwindow.focus()}	return false;}// --></script>\n" +
     			"\t<script language='javascript' type='text/javascript'><!--\nfunction fullpopitup(url) {	newwindow=window.open(url,'name');	if (window.focus) {newwindow.focus()}	return false;}// --></script>\n" +
@@ -175,7 +176,7 @@ public class Outputwriter {
     			"");
     	DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     	Date date = new Date();
-    	fout.write("\t<p>MultiGPS version "+SeqUnwinderConfig.version+" run completed on: "+dateFormat.format(date));
+    	fout.write("\t<p>SeqUnwinder version "+SeqUnwinderConfig.version+" run completed on: "+dateFormat.format(date));
     	fout.write(" with arguments:\n "+seqConfig.getArgs()+"\n</p>\n");
 
     	// Write the error on training dataset
@@ -194,9 +195,10 @@ public class Outputwriter {
     	fout.write("\t\t</tr>\n");
     	for(String s : seqConfig.getTrainSetStats().keySet()){
     		fout.write("\t\t<tr>" +
-    				"\t\t<td>s</th>\n" +
+    				"\t\t<td>"+s+"</th>\n" +
     				"\t\t<td>"+Double.toString(seqConfig.getTrainSetStats().get(s)[0])+"</td>\n" +
     				"\t\t<td>"+Double.toString(seqConfig.getTrainSetStats().get(s)[1])+"</td>\n" +
+    				"\t\t<td>"+Double.toString(seqConfig.getTrainSetStats().get(s)[2])+"</td>\n" +
     				"\t\t<td>"+Double.toString(seqConfig.getTrainSetStats().get(s)[3])+"</td>\n" +
     				"\t\t<td>"+Double.toString(seqConfig.getTrainSetStats().get(s)[4])+"</td>\n" +
     				"\t\t<td>"+Double.toString(seqConfig.getTrainSetStats().get(s)[5])+"</td>\n" +
@@ -222,9 +224,10 @@ public class Outputwriter {
     	fout.write("\t\t</tr>\n");
     	for(String s : seqConfig.getTestSetStats().keySet()){
     		fout.write("\t\t<tr>" +
-    				"\t\t<td>s</td>\n" +
+    				"\t\t<td>"+s+"</td>\n" +
     				"\t\t<td>"+Double.toString(seqConfig.getTestSetStats().get(s)[0])+"</td>\n" +
     				"\t\t<td>"+Double.toString(seqConfig.getTestSetStats().get(s)[1])+"</td>\n" +
+    				"\t\t<td>"+Double.toString(seqConfig.getTestSetStats().get(s)[2])+"</td>\n" +
     				"\t\t<td>"+Double.toString(seqConfig.getTestSetStats().get(s)[3])+"</td>\n" +
     				"\t\t<td>"+Double.toString(seqConfig.getTestSetStats().get(s)[4])+"</td>\n" +
     				"\t\t<td>"+Double.toString(seqConfig.getTestSetStats().get(s)[5])+"</td>\n" +
@@ -244,7 +247,7 @@ public class Outputwriter {
 
     	for(String s: seqConfig.getMNames()){
     		fout.write("\t\t<tr>" +
-    				"\t\t<td>s</td>\n");
+    				"\t\t<td>"+s+"</td>\n");
     		List<String> selectedMotifNames = new ArrayList<String>();
     		for(String motName : seqConfig.getDiscrimMotifRocs().keySet()){
     			if(motName.contains(s+"+c"))
