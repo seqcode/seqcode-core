@@ -34,14 +34,12 @@ public class PearsonCorrAlignment {
 	protected int window;
 	
 	protected boolean isWeighted = false;
-	
 	protected double error = 0;
-	protected double totalNum = 0;
-	
+	protected double totalNum = 0;	
 	static final double MINIMUM_VALUE = -10000;
 	
 	protected Map<ControlledExperiment, Map<StrandedRegion, double[][]>> strandedRegionSampleCounts = new HashMap<ControlledExperiment, Map<StrandedRegion,double[][]>>(); 	
-	protected double [][] pairwiseDistance;
+	protected double [][] pairwiseCorrelation;
 	protected double [] offsetArray;
 	
 	public PearsonCorrAlignment(FeatureCountsLoader featureCountsLoader){	
@@ -61,12 +59,11 @@ public class PearsonCorrAlignment {
 		strandeRegions = fcloader.getStrandedRegions();
 
 		// initialize pairwiseDistance
-		pairwiseDistance = new double [strandeRegions.size()][strandeRegions.size()];
+		pairwiseCorrelation = new double [strandeRegions.size()][strandeRegions.size()];
 		for (int i = 0 ; i< strandeRegions.size(); i++){
 			for (int j = 0 ; j < strandeRegions.size(); j++)
-				pairwiseDistance[i][j] = 1;
-		}	
-		
+				pairwiseCorrelation[i][j] = 1;
+		}			
 		//initiazlie offsetArray
 		offsetArray = new double [window+1];
 		for (int i = 0 ; i <= window ; i++)
@@ -80,8 +77,8 @@ public class PearsonCorrAlignment {
 				for (int j = i+1; j <strandeRegions.size();j++){
 //					System.out.println("region is "+regions.get(j).getLocationString());
 					double corr = pearsonCorrelation(cexpt, strandeRegions.get(i), strandeRegions.get(j));	
-					pairwiseDistance[i][j] = corr;
-					pairwiseDistance[j][i] = corr;
+					pairwiseCorrelation[i][j] = corr;
+					pairwiseCorrelation[j][i] = corr;
 				}
 			}
 		}				
@@ -116,8 +113,7 @@ public class PearsonCorrAlignment {
 		boolean reverse = false;
 		int offset = 0; 
 		
-		for (int slidingW = 0; slidingW <=window; slidingW++){
-			
+		for (int slidingW = 0; slidingW <=window; slidingW++){			
 			// copy and normalize B array
 			double maxB = MINIMUM_VALUE;
 			for (int i = 0; i <=window; i++){
@@ -143,8 +139,7 @@ public class PearsonCorrAlignment {
 			}else{
 				r = pc.computeWeightedPearsonCorr();
 				fromReverse = pc.isReverse();				
-			}
-		
+			}	
 			if (r > maxCorr ){
 				maxCorr = r;
 				reverse = fromReverse;
@@ -160,8 +155,7 @@ public class PearsonCorrAlignment {
 			for (int s = 0; s <2 ; s++){
 				if (regBCounts[window/2+offset+i][s] > max_b){max_b = regBCounts[window/2+offset+i][s];}
 			}
-		}
-		
+		}		
 //		System.out.println("max_b is "+max_b);
 
 		for (int i = 0; i <= window; i++){
@@ -182,8 +176,8 @@ public class PearsonCorrAlignment {
 				norm_b[i][s] = regBCounts[window/2+i][s]/temp_max_b;
 			}
 		}		
-	
-		/**
+/**	
+		if (Math.abs(offset) > 1){ // printing in case where alignment fails
 		System.out.println("before alignment reg A");
 		for (int i = 0; i < normRegACounts.length; i++)
 			System.out.print(normRegACounts[i][0]+",");
@@ -215,28 +209,28 @@ public class PearsonCorrAlignment {
 				System.out.print(alignedRegB[i][1]+",");			
 		}		
 		System.out.println();		
-		**/
-		
+		}
+**/		
 		// increment offset array
 		offsetArray[offset+window/2]++;				
 		// incrementing error allowing offset of +-1
 		totalNum += 1;
 		if (Math.abs(offset) > 1){
 			error += 1;
-			System.out.println(regA.getLocationString());
-			System.out.println(regB.getLocationString());
+//			System.out.println(regA.getLocationString());
+//			System.out.println(regB.getLocationString());
 			}
 		
 		return maxCorr;	
 	}
 	
-	public void printPairwiseDistance(){		
+	public void printPairwiseCorrelation(){		
 		for (int i = 0 ; i < strandeRegions.size(); i++){
 			System.out.println(strandeRegions.get(i).getLocationString());
 		}		
 		for (int i = 0 ; i < strandeRegions.size();i++){
 			for (int j = 0 ; j <strandeRegions.size(); j++){
-				System.out.print(pairwiseDistance[i][j]+"\t");
+				System.out.print(pairwiseCorrelation[i][j]+"\t");
 			}
 			System.out.println();	
 		}
@@ -270,7 +264,7 @@ public class PearsonCorrAlignment {
 		profile.setWidth(win);
 		profile.excutePearsonCorrAlign();
 		profile.printErrorRate();	
-		if (Args.parseFlags(args).contains("printDistance")){profile.printPairwiseDistance();}
+		if (Args.parseFlags(args).contains("printCorrelation")){profile.printPairwiseCorrelation();}
 		if (Args.parseFlags(args).contains("printOffset")){profile.printOffsetArray();}
 		
 		manager.close();

@@ -18,31 +18,26 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.projects.naomi.FeatureCountsLoader;
 
 /**
- * Alignment Test: derived from SmithWaterman Alignment.java 
+ * Aligns ChIP-exo reads using Smith Waterman overlap alignment.
  * This code does not merge gff for near by regions
  * 
  * @author naomi yamada
  *
  */
 
-public class AlignmentTest {
-	
+public class AlignmentTest {	
 	protected FeatureCountsLoader featureCountsLoader;
-	protected SimilarityScore similarity_s;
-		
+	protected SimilarityScore similarity_s;		
 	protected List<StrandedRegion> strandeRegions;
-	protected int window;
-	
+	protected int window;	
 	protected double error = 0;
-	protected double totalNum = 0;
-	
+	protected double totalNum = 0;	
 	static final int DIAG = 1;
 	static final int LEFT = 2;
-	static final int UP = 4;
-	
-	static final double MINIMUM_VALUE = -10000;
-	
+	static final int UP = 4;	
+	static final double MINIMUM_VALUE = -10000;	
 	protected Map<ControlledExperiment, Map<StrandedRegion, double[][]>> strandedRegionSampleCounts = new HashMap<ControlledExperiment, Map<StrandedRegion,double[][]>>();
+	protected double [][] pairwiseSimilarityScore;
 	protected double [] offsetArray;
 	
 	public AlignmentTest(FeatureCountsLoader fcLoader, SimilarityScore sc){	
@@ -61,25 +56,31 @@ public class AlignmentTest {
 		strandedRegionSampleCounts = featureCountsLoader.strandedRegionSampleCounts();
 		strandeRegions = featureCountsLoader.getStrandedRegions();
 		
+		// initialize pairwiseDistance
+		pairwiseSimilarityScore = new double [strandeRegions.size()][strandeRegions.size()];
+		for (int i = 0 ; i< strandeRegions.size(); i++){
+			for (int j = 0 ; j < strandeRegions.size(); j++)
+				pairwiseSimilarityScore[i][j] = 100;
+		}			
 		//initiazlie offsetArray
 		offsetArray = new double [window+1];
 		for (int i = 0 ; i <= window ; i++)
 			offsetArray[i] = 0;
 		
 		for (ControlledExperiment cExpt : strandedRegionSampleCounts.keySet()){
-			for (int i = 0; i <strandeRegions.size();i++){		
-			
+			for (int i = 0; i <strandeRegions.size();i++){					
 //			for (int i = 0; i <1 ; i++){	
 				for (int j = i+1; j <strandeRegions.size();j++){
 //					System.out.println("region is "+regions.get(j).getLocationString());
-					smithWatermanAlgorithm(cExpt, strandeRegions.get(i), strandeRegions.get(j));		
+					double maxScore = smithWatermanAlgorithm(cExpt, strandeRegions.get(i), strandeRegions.get(j));	
+					pairwiseSimilarityScore[i][j] = maxScore;
+					pairwiseSimilarityScore[j][i] = maxScore;
 				}
 			}
 		}				
 	}
 	
-	public void smithWatermanAlgorithm(ControlledExperiment cExpt, Region regA, Region regB){
-		
+	public double smithWatermanAlgorithm(ControlledExperiment cExpt, Region regA, Region regB){		
 		//get midpoints
 //		double regAmid = regA.getMidpoint().getLocation();
 //		double regBmid = regB.getMidpoint().getLocation();
@@ -96,8 +97,7 @@ public class AlignmentTest {
 				if (regACounts[i][s] > maxA){maxA = regACounts[i][s];}
 				if (regBCounts[i][s] > maxB){maxB = regBCounts[i][s];}
 			}
-		}
-		
+		}		
 //		System.out.println("max counts are "+maxA+" : "+maxB);
 		
 		double [][] normRegACounts = new double [window+1][2];
@@ -108,8 +108,7 @@ public class AlignmentTest {
 				normRegACounts[i][s] = regACounts[i][s]/maxA;
 				normRegBCounts[i][s] = regBCounts[i][s]/maxB;
 			}
-		}
-		
+		}		
 		//reversing normRegBCounts
 		for (int i = 0; i <= window; i++){
 			for (int s = 0; s < 2 ;s++){
@@ -125,6 +124,7 @@ public class AlignmentTest {
 		
 		Stack<Integer> traceBack = new Stack<Integer>();
 		double[][] regBarray = new double[window+1][2];
+		double maxScore = MINIMUM_VALUE;
 		boolean reverseB;
 		int s_x_coord = 0;
 		int s_y_coord = 0;
@@ -132,17 +132,16 @@ public class AlignmentTest {
 		int e_y_coord = 0;
 		
 		if (alignOne.getMaxScore() > alignTwo.getMaxScore()){	
-			
 			regBarray = normRegBCounts;
+			maxScore = alignOne.getMaxScore();
 			traceBack = alignOne.getTraceBack();
 			s_x_coord = alignOne.getStartX();
 			s_y_coord = alignOne.getStartY();
 			e_x_coord = alignOne.getEndX();
 			e_y_coord = alignOne.getEndY();		
-			reverseB = false;
-			
+			reverseB = false;		
 		}else{	
-			
+			maxScore = alignTwo.getMaxScore();
 			regBarray = normRegBRevCounts;
 			traceBack = alignTwo.getTraceBack();
 			s_x_coord = alignTwo.getStartX();
@@ -150,14 +149,11 @@ public class AlignmentTest {
 			e_x_coord = alignTwo.getEndX();
 			e_y_coord = alignTwo.getEndY();	
 			reverseB = true;
-		}
-		
+		}		
 		double x_mid = (s_x_coord + e_x_coord)/2;
-		double y_mid = (s_y_coord + e_y_coord)/2;
-		
+		double y_mid = (s_y_coord + e_y_coord)/2;		
 //		System.out.println("alignment start coordinates "+ s_x_coord + " : " + s_y_coord);
-//		System.out.println("alignment end coordinates "+ e_x_coord + " : " + e_y_coord);
-		
+//		System.out.println("alignment end coordinates "+ e_x_coord + " : " + e_y_coord);		
 //		System.out.println(Arrays.toString(traceBack.toArray()));
 		
 		double[][] alignedRegA = new double[e_x_coord-s_x_coord+1][2];
@@ -167,15 +163,11 @@ public class AlignmentTest {
 		
 		// trace back for x 
 		@SuppressWarnings("unchecked")
-		Stack<Integer> xTraceBack = (Stack<Integer>) traceBack.clone();
-		
-		for (int i = e_x_coord-s_x_coord; i >= 0 ; i--){	
-			
+		Stack<Integer> xTraceBack = (Stack<Integer>) traceBack.clone();		
+		for (int i = e_x_coord-s_x_coord; i >= 0 ; i--){				
 			if (current_x >= 0){
-
 				for (int s = 0 ; s <2; s++)
-					alignedRegA[i][s] = normRegACounts[current_x][s];
-			
+					alignedRegA[i][s] = normRegACounts[current_x][s];			
 				if ( !xTraceBack.empty() ){			
 					if (xTraceBack.peek() == DIAG || xTraceBack.peek() == LEFT){
 						current_x --;
@@ -189,10 +181,8 @@ public class AlignmentTest {
 		@SuppressWarnings("unchecked")
 		Stack<Integer> yTraceBack = (Stack<Integer>) traceBack.clone();;
 		
-		for (int i = e_y_coord-s_y_coord; i >= 0 ; i--){	
-			
-			if (current_y >= 0){
-			
+		for (int i = e_y_coord-s_y_coord; i >= 0 ; i--){				
+			if (current_y >= 0){			
 				for (int s = 0 ; s <2; s++){
 					if (reverseB == false){
 						alignedRegB[i][s] = normRegBCounts[current_y][s];
@@ -254,6 +244,19 @@ public class AlignmentTest {
 				error +=1;
 			}
 		}
+		return maxScore;
+	}
+	
+	public void printSimilarityScore(){		
+		for (int i = 0 ; i < strandeRegions.size(); i++){
+			System.out.println(strandeRegions.get(i).getLocationString());
+		}		
+		for (int i = 0 ; i < strandeRegions.size();i++){
+			for (int j = 0 ; j <strandeRegions.size(); j++){
+				System.out.print(pairwiseSimilarityScore[i][j]+"\t");
+			}
+			System.out.println();	
+		}
 	}
 	
 	public void printOffsetArray(){
@@ -279,8 +282,8 @@ public class AlignmentTest {
 		fcLoader.setStrandedPoints(spoints);
 		fcLoader.setWindowSize(win); // window size must be twice bigger so it can slide window size times
 
-		SimilarityScore sc = new SimilarityScore();
-		
+		SimilarityScore sc = new SimilarityScore();		
+		if (Args.parseFlags(args).contains("linear")){ sc.setLinear();}
 		if (Args.parseFlags(args).contains("euclidean")){ sc.setEuclideanL2();}
 		if (Args.parseFlags(args).contains("sorensen")){ sc.setSorensen();}
 		if (Args.parseFlags(args).contains("soergel")){ sc.setSoergel();}
@@ -290,11 +293,11 @@ public class AlignmentTest {
 		if (Args.parseFlags(args).contains("divergence")){ sc.setDivergence();}
 		if (Args.parseFlags(args).contains("clark")){ sc.setClark();}
 		
-
 		AlignmentTest profile = new AlignmentTest(fcLoader, sc); 		
 		profile.setWidth(win);
 		profile.excuteShapeAlign();
 		profile.printErrorRate();	
+		if (Args.parseFlags(args).contains("printScore")){profile.printSimilarityScore();}
 		if (Args.parseFlags(args).contains("printOffset")){profile.printOffsetArray();}
 		
 		manager.close();

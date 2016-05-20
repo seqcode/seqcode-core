@@ -30,13 +30,11 @@ public class SmithWatermanAlignmentMatrix {
 	static final int UP = 4;	
 	static final double MINIMUM_VALUE = -10000;
 	
-	public SmithWatermanAlignmentMatrix (double[][] regAarray, double[][] regBarray, SimilarityScore sc){
-		
+	public SmithWatermanAlignmentMatrix (double[][] regAarray, double[][] regBarray, SimilarityScore sc){		
 		regACounts = regAarray;
 		regBCounts = regBarray;
 		window = regAarray.length;
-		similarity_s = sc;
-		
+		similarity_s = sc;		
 	}
 	
 	// accessors
@@ -47,35 +45,28 @@ public class SmithWatermanAlignmentMatrix {
 	public int getEndX(){return alignEndXCoord;}
 	public int getEndY(){return alignEndYCoord;}
 
-	public void buildMatrix(){
-		
+	public void buildMatrix(){		
 		//initialization of M matrix
 		double [][] M = new double [window+1][window+1];
 		for (int i = 0 ; i <= window; i++){
 			for (int j = 0 ; j <= window; j++)
 				M[i][j] = 0;
-		}			
-		
+		}					
 		
 		for (int i = 1 ; i <= window; i++){
-			for (int j = 1 ; j <= window ; j++){
-				
-				double mScore = similarity_s.computeScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
-			
+			for (int j = 1 ; j <= window ; j++){				
+				double mScore = similarity_s.computeScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);			
 				double temp_M[] = new double[3];
 				temp_M[0] = M[i-1][j-1] + mScore;
 				temp_M[1] = M[i][j-1] - GAP_OPEN;
-				temp_M[2] = M[i-1][j] - GAP_OPEN;
-			
+				temp_M[2] = M[i-1][j] - GAP_OPEN;		
 				double max_I = temp_M[0];
 				for (int k = 1 ; k < 3 ; k++){
-
 					if (temp_M[k] > max_I){ max_I = temp_M[k];}
 				}
 				M[i][j] = max_I;
 			}
 		}		
-
 //		System.out.println("printing M matrix");
 //		for (int i = 0; i <=window ; i++){
 //			for (int j = 0; j <=window; j++){
@@ -98,35 +89,29 @@ public class SmithWatermanAlignmentMatrix {
 				alignEndXCoord = window;
 				alignEndYCoord = j;	
 			}
-		}
-		
+		}		
 //		System.out.println("max score is "+maxScore+" x coord is "+alignEndXCoord+" y coord is "+alignEndYCoord);
 		
 		// back track to reconstruct the path
 		double currentScore = maxScore;
 		alignStartXCoord = alignEndXCoord;
-		alignStartYCoord = alignEndYCoord;
-		
+		alignStartYCoord = alignEndYCoord;		
 		int i = alignEndXCoord;
 		int j = alignEndYCoord;
 		
-		while ( i != 0 && j != 0){
-			
-			double mScore = similarity_s.computeScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);
-			
+		while ( i != 0 && j != 0){			
+			double mScore = similarity_s.computeScore(regACounts[i-1][0],regBCounts[j-1][0],regACounts[i-1][1],regBCounts[j-1][1]);			
 			// diagonal case
 			if ( M[i-1][j-1] + mScore == currentScore ){
 				traceBackTable.push(DIAG);		
 				currentScore = M[i-1][j-1];
 				i--;
-				j--;
-			
+				j--;			
 			// left case
 			}else if( M[i][j-1]-GAP_OPEN == currentScore ){
 				traceBackTable.push(LEFT);
 				currentScore = M[i][j-1];
-				j--;
-			
+				j--;			
 			// right case
 			}else{
 				System.out.println("current score is "+currentScore);
@@ -134,8 +119,7 @@ public class SmithWatermanAlignmentMatrix {
 				traceBackTable.push(UP);
 				currentScore = M[i-1][j];
 				i--;
-			}
-			
+			}			
 			alignStartXCoord = i;
 			alignStartYCoord = j;
 		}
