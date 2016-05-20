@@ -29,7 +29,7 @@ public class Outputwriter {
 		BufferedWriter bw = new BufferedWriter(fw);
 
 		for(int m =0; m<seqConfig.getDiscrimMotifs().size(); m++){
-			String out = WeightMatrix.printTransfacMatrix(seqConfig.getDiscrimMotifs().get(m),seqConfig.getDiscrimMotifs().get(m).getName());
+			String out = WeightMatrix.printTransfacMatrix(seqConfig.getDiscrimMotifs().get(m),seqConfig.getDiscrimMotifs().get(m).getName().replaceAll("#", ""));
 			bw.write(out);
 		}
 		bw.close();
@@ -39,7 +39,7 @@ public class Outputwriter {
 		fw = new FileWriter(motifsROC);
 		bw = new BufferedWriter(fw);
 		for(String s : seqConfig.getDiscrimMotifRocs().keySet()){
-			bw.write(s+"\t"+Double.toString(seqConfig.getDiscrimMotifRocs().get(s))+"\n");
+			bw.write(s.replaceAll("#", "")+"\t"+Double.toString(seqConfig.getDiscrimMotifRocs().get(s))+"\n");
 		}
 		bw.close();
 
@@ -48,10 +48,10 @@ public class Outputwriter {
 		motifLogos.mkdirs();
 		// Finally, draw the motif logos
 		for(WeightMatrix fm : seqConfig.getDiscrimMotifs()){
-			File motifFileName = new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+"motif_logos"+File.separator+fm.getName()+".png");
+			File motifFileName = new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+"motif_logos"+File.separator+fm.getName().replaceAll("#", "")+".png");
 			Utils.printMotifLogo(fm, motifFileName, 150, fm.getName(), true);
-			File motifFileNameRC = new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+"motif_logos"+File.separator+fm.getName()+"_rc.png");
-			Utils.printMotifLogo(WeightMatrix.reverseComplement(fm), motifFileNameRC, 150, fm.getName(), true);
+			File motifFileNameRC = new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+"motif_logos"+File.separator+fm.getName().replaceAll("#", "")+"_rc.png");
+			Utils.printMotifLogo(WeightMatrix.reverseComplement(fm), motifFileNameRC, 150, fm.getName().replaceAll("#", ""), true);
 		}
 	}
 
@@ -137,7 +137,7 @@ public class Outputwriter {
 		
 		// Now run the R script
 		String Rscriptcmd = seqConfig.getRpath()+"Rscript ";
-		Process proc = Runtime.getRuntime().exec(Rscriptcmd+" "+seqConfig.getOutDir().getAbsolutePath()+"/plotHeatmap.R"+" Discrim_motifs.scores"+" Discrim_motifs_heatmap.png");
+		Process proc = Runtime.getRuntime().exec(Rscriptcmd+" "+seqConfig.getOutDir().getAbsolutePath()+"/plotHeatmap.R"+" "+seqConfig.getOutDir().getAbsolutePath()+"/Discrim_motifs.scores"+" Discrim_motifs_heatmap.png");
 		// any error message? 
 		StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
 		// any output? 
@@ -149,7 +149,7 @@ public class Outputwriter {
 		System.err.println("R ExitValue: " + exitVal);
 		proc.destroy();
 		
-		proc = Runtime.getRuntime().exec(Rscriptcmd+" "+seqConfig.getOutDir().getAbsolutePath()+"/plotHeatmap.R"+" Discrim_motifs_simple.scores"+" Discrim_motifs_simple_heatmap.png");
+		proc = Runtime.getRuntime().exec(Rscriptcmd+" "+seqConfig.getOutDir().getAbsolutePath()+"/plotHeatmap.R"+" "+seqConfig.getOutDir().getAbsolutePath()+"/Discrim_motifs_simple.scores"+" Discrim_motifs_simple_heatmap.png");
 		// any error message? 
 		errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
 		// any output? 
@@ -256,7 +256,7 @@ public class Outputwriter {
     		if(selectedMotifNames.size()>0){
     			fout.write("\t\t<td>");
     			for(String selecMotName : selectedMotifNames){
-    				fout.write("\t\t<img src='motif_logos/"+selecMotName+".png'><a href='#' onclick='return motifpopitup(\"motif_logos/"+selecMotName+"_rc.png\")'>rc</a>");
+    				fout.write("\t\t<img src='motif_logos/"+selecMotName.replaceAll("#", "")+".png'><a href='#' onclick='return motifpopitup(\"motif_logos/"+selecMotName.replaceAll("#", "")+"_rc.png\")'>rc</a>");
     				fout.write("<br>\n");
     			}
     			fout.write("</td>\n");
