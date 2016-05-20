@@ -57,7 +57,7 @@ public class Classifier extends AbstractClassifier implements OptionHandler, Wei
 	protected int m_NumClasses;
 
 	/** The regularization parameter, Is multiplied to the logit part of the loss function */
-	protected double m_Ridge = 100;
+	protected double m_Ridge = 10;
 
 	/** The index of the class attribute. Usually the last attribute */
 	protected int m_ClassIndex;
@@ -762,7 +762,7 @@ public class Classifier extends AbstractClassifier implements OptionHandler, Wei
 		if (ridgeString.length() != 0) {
 			m_Ridge = Double.parseDouble(ridgeString);
 		} else {
-			m_Ridge = 1.0e-8;
+			m_Ridge = 10.0;
 		}
 
 		String threadString = Utils.getOption("threads", options);
