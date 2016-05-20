@@ -150,9 +150,9 @@ public class Outputwriter {
 		bw.write("library(gplots) \n");
 		bw.write("args <- commandArgs(TRUE) \n");
 		bw.write("data <- as.matrix(read.table(args[1], header=TRUE, sep = \"\t\", row.names = 1,as.is=TRUE)) \n");
-		bw.write("colors = c(seq(0,0.5,length=6),seq(0.51,3,length=6)) \n");
+		bw.write("colors = c(seq(0,0.5,length=6),seq(0.51,1,length=6)) \n");
 		bw.write("my_palette <- colorRampPalette(c(\"lightblue\",\"red\"))(n = 11) \n");
-		bw.write("png(file=args[2],width=600, height=800, bg = \"transparent\") \n");
+		bw.write("png(file=args[2],width=1000, height=1000, bg = \"transparent\") \n");
 		bw.write("heatmap.2(data,Rowv=FALSE,Colv=FALSE,breaks=colors,col=my_palette,symm=F,symkey=F,symbreaks=T,dendrogram=\"none\",trace=\"none\") \n");
 		bw.write("dev.off()");
 		bw.close();
@@ -274,7 +274,7 @@ public class Outputwriter {
     				"\t\t<td>"+s+"</td>\n");
     		List<String> selectedMotifNames = new ArrayList<String>();
     		for(String motName : seqConfig.getDiscrimMotifRocs().keySet()){
-    			if(motName.contains(s+"_c"))
+    			if(motName.startsWith(s+"_c"))
     				selectedMotifNames.add(motName);
     		}
     		if(selectedMotifNames.size()>0){
