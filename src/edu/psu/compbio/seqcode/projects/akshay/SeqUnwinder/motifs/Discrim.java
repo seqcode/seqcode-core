@@ -70,7 +70,7 @@ public class Discrim {
 	
 	//Slave methods
 	public void makeMemeDirs(){
-		for(String s : seqConfig.getModelNames()){
+		for(String s : seqConfig.getMNames()){
 			if(!s.equals("Random")){
 				File memeDir = new File(seqConfig.getOutDir().getAbsoluteFile()+File.separator+s+File.separator+"meme");
 				memeDir.mkdirs();

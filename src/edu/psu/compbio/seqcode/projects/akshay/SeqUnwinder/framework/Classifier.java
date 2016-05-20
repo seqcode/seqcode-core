@@ -158,6 +158,14 @@ public class Classifier extends AbstractClassifier implements OptionHandler, Wei
 		}
 		return baseInd;
 	}
+	
+	public List<String> getModelNames(){
+		List<String> ret = new ArrayList<String>();
+		for(Node n : sm_ClassStructure.allNodes.values()){
+			ret.add(n.nodeName);
+		}
+		return ret;
+	}
 
 	public HashMap<String,double[]> getWeights(){
 		HashMap<String,double[]> ret = new HashMap<String,double[]>();

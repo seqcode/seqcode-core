@@ -70,7 +70,7 @@ public class Outputwriter {
 		StringBuilder sb = new StringBuilder();
 		sb.append("MotifName");sb.append("\t");
 		//First header
-		for(String s : seqConfig.getModelNames()){
+		for(String s : seqConfig.getMNames()){
 			sb.append(s);sb.append("\t");
 		}
 		sb.deleteCharAt(sb.length()-1);
@@ -92,7 +92,7 @@ public class Outputwriter {
 		bw = new BufferedWriter(fw);
 		sb = new StringBuilder();
 		//First header
-		for(String s:seqConfig.getModelNames()){
+		for(String s:seqConfig.getMNames()){
 			String[] pieces = s.split("#");
 			if(pieces.length > 1){
 				sb.append(s);sb.append("\t");
@@ -107,7 +107,7 @@ public class Outputwriter {
 			sb.append(s);sb.append("\t");
 			int i=0;
 			for(double scr : seqConfig.getDiscrimMotsScore().get(s)){
-				String[] piecesModName = seqConfig.getModelNames().get(i).split("#");
+				String[] piecesModName = seqConfig.getMNames().get(i).split("#");
 				i++;
 				if(piecesModName.length<2)
 					continue;
@@ -242,7 +242,7 @@ public class Outputwriter {
     			"\t\t<th>Motif</th>\n");
     	fout.write("\t\t</tr>\n");
 
-    	for(String s: seqConfig.getModelNames()){
+    	for(String s: seqConfig.getMNames()){
     		fout.write("\t\t<tr>" +
     				"\t\t<td>s</td>\n");
     		List<String> selectedMotifNames = new ArrayList<String>();

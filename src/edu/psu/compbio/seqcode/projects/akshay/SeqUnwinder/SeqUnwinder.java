@@ -43,6 +43,8 @@ public class SeqUnwinder {
 				System.err.println(e.getMessage());
 			}
 		}
+		
+		sequnwinder.getConfig().setModelNames(classifier.getModelNames());
 		sequnwinder.getConfig().setClassifierOut(classifierout);
 		sequnwinder.getConfig().setWeights(classifier.getWeights());
 		

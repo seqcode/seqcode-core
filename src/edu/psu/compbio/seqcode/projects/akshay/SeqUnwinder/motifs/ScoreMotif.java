@@ -27,7 +27,7 @@ public class ScoreMotif {
 		for(WeightMatrix mot : seqConfig.getDiscrimMotifs()){
 			HashSet<String> motKmers = WeightMatrix.getConsensusKmers(mot, seqConfig.getKmin(), seqConfig.getKmax());
 			int j=0;
-			for(String modName : seqConfig.getModelNames()){
+			for(String modName : seqConfig.getMNames()){
 				double weight=0.0;
 				for(String s : motKmers){
 					String revS = SequenceUtils.reverseComplement(s);

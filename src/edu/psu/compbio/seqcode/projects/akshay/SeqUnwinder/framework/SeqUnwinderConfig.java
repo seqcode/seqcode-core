@@ -124,8 +124,10 @@ public class SeqUnwinderConfig implements Serializable{
 	public static final double MOTIF_FINDING_ALLOWED_REPETITIVE = 0.2;
 	
 	// Following are filled during the course of a SeqUnwinder run
-	/** Model names */
-	protected List<String> kmerModelNames = new ArrayList<String>();
+	/** Model names **/
+	protected List<String> modelNames = new ArrayList<String>();
+	/** SubGroup names */
+	protected List<String> kmerSubGroupNames = new ArrayList<String>();
 	/** Stores the weights of the K-mers
 	 *  Keys are the model name
 	 * 	Values are the K-mers weights for a given model */ 
@@ -138,7 +140,8 @@ public class SeqUnwinderConfig implements Serializable{
 	protected HashMap<String,double[]> trainSetStats = new HashMap<String,double[]>();
 	
 	//Settors
-	public void setSubGroupNames(LinkedHashSet<String> sGNs){kmerModelNames.addAll(sGNs);}
+	public void setSubGroupNames(LinkedHashSet<String> sGNs){kmerSubGroupNames.addAll(sGNs);}
+	public void setModelNames(List<String> modNames){modelNames.addAll(modNames);}
 	public void setNumLayers(int n){sm_NumLayers = n;}
 	public void setWeights(HashMap<String,double[]> wts){kmerweights.putAll(wts);}
 	public void setDiscrimMotifs(List<WeightMatrix> mots){discrimMotifs.addAll(mots);}
@@ -166,7 +169,8 @@ public class SeqUnwinderConfig implements Serializable{
 	public HashMap<String,double[]> getKmerWeights(){return kmerweights;}
 	public File getOutDir(){return outdir;}
 	public String getOutbase(){return outbase;}
-	public List<String> getModelNames(){return kmerModelNames;}
+	public List<String> getSubGroupNames(){return kmerSubGroupNames;}
+	public List<String> getMNames(){return modelNames;}
 	public String getMemeArgs(){String memeargs = MEMEargs+" -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw; return memeargs;}
 	public String getMemePath(){return MEMEpath;}
 	public int getNumDiscrimClusters(){return numClus_CLUS;}
