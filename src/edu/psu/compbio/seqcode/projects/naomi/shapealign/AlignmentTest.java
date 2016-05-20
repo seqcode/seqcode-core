@@ -60,7 +60,7 @@ public class AlignmentTest {
 		pairwiseSimilarityScore = new double [strandeRegions.size()][strandeRegions.size()];
 		for (int i = 0 ; i< strandeRegions.size(); i++){
 			for (int j = 0 ; j < strandeRegions.size(); j++)
-				pairwiseSimilarityScore[i][j] = 1000;
+				pairwiseSimilarityScore[i][j] = 100;
 		}			
 		//initiazlie offsetArray
 		offsetArray = new double [window+1];

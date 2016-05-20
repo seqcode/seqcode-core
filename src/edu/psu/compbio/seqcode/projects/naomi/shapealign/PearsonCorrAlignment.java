@@ -176,7 +176,7 @@ public class PearsonCorrAlignment {
 				norm_b[i][s] = regBCounts[window/2+i][s]/temp_max_b;
 			}
 		}		
-	
+/**	
 		if (Math.abs(offset) > 1){ // printing in case where alignment fails
 		System.out.println("before alignment reg A");
 		for (int i = 0; i < normRegACounts.length; i++)
@@ -210,15 +210,15 @@ public class PearsonCorrAlignment {
 		}		
 		System.out.println();		
 		}
-		
+**/		
 		// increment offset array
 		offsetArray[offset+window/2]++;				
 		// incrementing error allowing offset of +-1
 		totalNum += 1;
 		if (Math.abs(offset) > 1){
 			error += 1;
-			System.out.println(regA.getLocationString());
-			System.out.println(regB.getLocationString());
+//			System.out.println(regA.getLocationString());
+//			System.out.println(regB.getLocationString());
 			}
 		
 		return maxCorr;	
