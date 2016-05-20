@@ -183,7 +183,7 @@ public class PearsonCorrAlignment {
 			}
 		}		
 	
-		/**
+		if (Math.abs(offset) > 1){ // printing in case where alignment fails
 		System.out.println("before alignment reg A");
 		for (int i = 0; i < normRegACounts.length; i++)
 			System.out.print(normRegACounts[i][0]+",");
@@ -215,7 +215,7 @@ public class PearsonCorrAlignment {
 				System.out.print(alignedRegB[i][1]+",");			
 		}		
 		System.out.println();		
-		**/
+		}
 		
 		// increment offset array
 		offsetArray[offset+window/2]++;				
