@@ -234,7 +234,8 @@ public class AlignmentTest {
 		**/
 		
 		// increment offset array
-		offsetArray[(int) (y_mid-x_mid+window/2)]++;				
+		if (y_mid-x_mid >= - window/2 && y_mid-x_mid <=  window/2)
+			offsetArray[(int) (y_mid-x_mid+window/2)]++;				
 		// incrementing error allowing offset of +-1
 		totalNum += 1;
 		if ( traceBack.contains(LEFT) || traceBack.contains(UP) ){ // check that stack only contains DIAG
