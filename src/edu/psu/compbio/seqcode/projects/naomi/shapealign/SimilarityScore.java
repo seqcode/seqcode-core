@@ -14,8 +14,8 @@ public class SimilarityScore {
 	double x1,x2,y1,y2;
 	double similarity_score;
 	
-	
-	protected boolean euclidean_L2 = false;
+	protected boolean linear = false;
+	protected boolean euclidean_L2 = true;
 	protected boolean sorensen = false;
 	protected boolean soergel = false;
 	protected boolean lorentzian = false;
@@ -30,6 +30,7 @@ public class SimilarityScore {
 	public double getScore(){return similarity_score;}
 	
 	// setter
+	public void setLinear(){linear = true;}
 	public void setEuclideanL2(){euclidean_L2 = true;}
 	public void setSorensen(){sorensen = true;}
 	public void setSoergel(){soergel = true;}
@@ -48,7 +49,7 @@ public class SimilarityScore {
 				
 		double score = 0;
 		if ( (x1 != x2) || (y1 != y2)){	
-			if (euclidean_L2 == true){score = euclideanL2();}
+			if (linear == true){score = linear();}
 			else if (sorensen == true){score = sorensen();}
 			else if (soergel == true){score = soergel();}
 			else if (lorentzian == true){score = lorentzian();}
@@ -56,7 +57,7 @@ public class SimilarityScore {
 			else if (squared_chi == true){score = squared_chi();}
 			else if (divergence == true){score = divergence();}
 			else if (clark == true){score = clark();}
-			else{ score = linear();}			
+			else{ score = euclideanL2();}			
 		}
 		return score;
 
