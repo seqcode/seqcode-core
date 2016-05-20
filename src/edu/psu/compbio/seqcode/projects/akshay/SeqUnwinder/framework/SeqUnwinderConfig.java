@@ -301,9 +301,9 @@ public class SeqUnwinderConfig implements Serializable{
 		
 		// Now make the weka options string
 		if(!debugMode)
-			wekaOptsString=new String[18];
+			wekaOptsString=new String[20];
 		else
-			wekaOptsString=new String[19];
+			wekaOptsString=new String[21];
 		
 		wekaOptsString[0] = "-t"; wekaOptsString[1] = outdir.getAbsolutePath()+File.separator+outArffFileName;
 		wekaOptsString[2] = "-x"; wekaOptsString[3] = Integer.toString(numCrossValidation);
@@ -314,8 +314,9 @@ public class SeqUnwinderConfig implements Serializable{
 		wekaOptsString[12] = "-S";wekaOptsString[13]= Integer.toString(m_SeqUnwinder_MaxIts);
 		wekaOptsString[14] = "-PHO";wekaOptsString[15]=Double.toString(m_ADMM_pho);
 		wekaOptsString[16] = "-threads";wekaOptsString[17]=Integer.toString(m_ADMM_numThreads);
+		wekaOptsString[18] = "-R";wekaOptsString[19]=Double.toString(m_Ridge);
 		if(debugMode)
-			wekaOptsString[18] = "-DEBUG";
+			wekaOptsString[20] = "-DEBUG";
 
 		// Load all MEME arguments
 		// Path to MEME binary
