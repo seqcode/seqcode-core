@@ -57,6 +57,7 @@ public class MakeArff {
 			for(String sname : labels){
 				subgroupSB.append(sname);subgroupSB.append("#");
 			}
+			subgroupSB.deleteCharAt(subgroupSB.length()-1);
 			String subgroup = subgroupSB.toString();
 			subGroupNames.add(subgroup);
 			for(String sname : labels){

@@ -55,8 +55,9 @@ public class Discrim {
 	
 	public void execute() throws IOException{
 		setRandomRegs();
+		makeMemeDirs();
 		for(String s : seqConfig.getKmerWeights().keySet()){
-			if(!s.equals("RootRandom")){
+			if(!s.equals("Random")){
 				KmerModelScanner scanner = new KmerModelScanner(s);
 				scanner.execute();
 			}
@@ -70,7 +71,7 @@ public class Discrim {
 	//Slave methods
 	public void makeMemeDirs(){
 		for(String s : seqConfig.getModelNames()){
-			if(!s.equals("RootRandom")){
+			if(!s.equals("Random")){
 				File memeDir = new File(seqConfig.getOutDir().getAbsoluteFile()+File.separator+s+File.separator+"meme");
 				memeDir.mkdirs();
 				File kmerProfDir = new File(seqConfig.getOutDir().getAbsoluteFile()+File.separator+s+File.separator+"kmer_profiles");
@@ -236,11 +237,7 @@ public class Discrim {
 			ArrayList<int[]> ret = new ArrayList<int[]>();
 			
 			for(Region r: rs){
-				int numK = 0;
-				for(int k=seqConfig.getKmin(); k<seqConfig.getKmax(); k++){
-					numK += (int)Math.pow(4, k);
-				}
-				int[] pfl = new int[numK];
+				int[] pfl = new int[seqConfig.getNumK()];
 				String seq = seqConfig.getSeqGen().execute(r).toUpperCase();
 				for(int k=seqConfig.getKmin(); k<=seqConfig.getKmax(); k++){
 					for(int i=0; i<(seq.length()-k+1); i++){

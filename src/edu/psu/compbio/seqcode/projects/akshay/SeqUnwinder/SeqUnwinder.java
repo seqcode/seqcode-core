@@ -59,7 +59,7 @@ public class SeqUnwinder {
 				beginLoadingTrainSetStats = true;
 			}else if(beginLoadingTrainSetStats && !loadedTrainSetStats){
 				if(!classifierOutputLine[s].trim().startsWith("Weighted")){
-					if(classifierOutputLine[s].equals(""))
+					if(classifierOutputLine[s].equals("") || classifierOutputLine[s].contains("TP Rate"))
 						continue;
 					String[] pieces = classifierOutputLine[s].trim().split("\\s\\s+");
 					trainStats.put(pieces[8], new double[8]);
@@ -73,7 +73,7 @@ public class SeqUnwinder {
 				beginLoadingTestSetStats = true;
 			}else if(beginLoadingTestSetStats && !loadedTestSetStats){
 				if(!classifierOutputLine[s].trim().startsWith("Weighted")){
-					if(classifierOutputLine[s].equals(""))
+					if(classifierOutputLine[s].equals("") || classifierOutputLine[s].contains("TP Rate"))
 						continue;
 					String[] pieces = classifierOutputLine[s].trim().split("\\s\\s+");
 					testStats.put(pieces[8], new double[8]);
