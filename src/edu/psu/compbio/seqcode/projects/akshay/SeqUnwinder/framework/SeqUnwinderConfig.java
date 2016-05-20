@@ -320,7 +320,7 @@ public class SeqUnwinderConfig implements Serializable{
 
 		// Load all MEME arguments
 		// Path to MEME binary
-		MEMEpath = Args.parseString(args, "memePath", "");
+		MEMEpath = Args.parseString(args, "memepath", "");
 		MEMEargs = Args.parseString(args, "memeargs", MEMEargs);
 		
 		MEMEminw = Args.parseInteger(args, "mememinw", 6);
