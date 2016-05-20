@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
+import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework.SeqUnwinderConfig;
 import edu.psu.compbio.seqcode.projects.multigps.stats.StreamGobbler;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
@@ -68,17 +69,23 @@ public class Outputwriter {
 		FileWriter fw = new FileWriter(weightFile);
 		StringBuilder weightSB = new StringBuilder();
 		weightSB.append("Kmer");
-		for(String s : seqConfig.getKmerWeights().keySet()){
+		for(String s : seqConfig.getMNames()){
 			weightSB.append(s);weightSB.append("\t");
 		}
 		weightSB.deleteCharAt(weightSB.length()-1);
 		weightSB.append("\n");
-		for(String s : seqConfig.getKmerWeights().keySet()){
-			for(int c=0;c<seqConfig.getKmerWeights().get(s).length; c++){
-				weightSB.append(seqConfig.getKmerWeights().get(s)[c]);weightSB.append("\t");
+		for(int k=seqConfig.getKmin(); k<=seqConfig.getKmax(); k++){
+			int N = (int) Math.pow(4, k);
+			for (int i = 0; i < N; i++){
+				weightSB.append(RegionFileUtilities.int2seq(i, k));weightSB.append("\t");
+				int base = seqConfig.getKmerBaseInd(RegionFileUtilities.int2seq(i, k));
+				int kind = base + RegionFileUtilities.seq2int(RegionFileUtilities.int2seq(i, k)); 
+				for(int l=0; l<seqConfig.getMNames().size(); l++){
+					weightSB.append(seqConfig.getKmerWeights().get(seqConfig.getMNames().get(l))[kind]);weightSB.append("\t");
+				}
+				weightSB.deleteCharAt(weightSB.length()-1);
+				weightSB.append("\n");
 			}
-			weightSB.deleteCharAt(weightSB.length()-1);
-			weightSB.append("\n");
 		}
 		BufferedWriter bw= new BufferedWriter(fw);
 		bw.write(weightSB.toString());
@@ -295,8 +302,8 @@ public class Outputwriter {
     	fout.write("\t<h2>Label specific score of identified de novo motifs</h2>\n");
     	fout.write("\t<table>\n");
     	fout.write("\t\t<tr>\n");
-		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\"Discrim_motifs_heatmap.png\")'><img src='Discrim_motifs_heatmap.png' height='200'></a></td>\n");
-		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\"Discrim_motifs_simple_heatmap.png\")'><img src='Discrim_motifs_simple_heatmap.png' height='200'></a></td>\n");
+		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\"Discrim_motifs_heatmap.png\")'><img src='Discrim_motifs_heatmap.png' height='450'></a></td>\n");
+		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\"Discrim_motifs_simple_heatmap.png\")'><img src='Discrim_motifs_simple_heatmap.png' height='450'></a></td>\n");
 		fout.write("\t\t</tr>\n");
 		fout.write("\t</table>\n");
 		
