@@ -29,9 +29,9 @@ public class TSNE_testing {
 	private double[][] data=null;
 	private int numCols=0;
 	private int numRows=0;
-	private List<String> colNames;
-	private List<String> labels;
-	private List<String> coords;
+	private List<String> colNames=new ArrayList<String>();
+	private List<String> labels=new ArrayList<String>();
+	private List<String> coords=new ArrayList<String>();
 	private double perplexity=20;
 	private int initialDims=10;
 	private int iters=1000;
@@ -93,7 +93,6 @@ public class TSNE_testing {
 	 * @param infile
 	 */
 	private void loadDataFile(String infile){
-		double [][] data;
 		List<String> dataLines = new ArrayList<String>();
 		String header;
 		
@@ -102,7 +101,7 @@ public class TSNE_testing {
 			File pFile = new File(infile);
 			if(!pFile.isFile()){System.err.println("Invalid file name "+infile);System.exit(1);}
 	        BufferedReader reader = new BufferedReader(new FileReader(pFile));
-	        header = reader.readLine();
+	        header = reader.readLine(); 
 	        String line;
 	        while ((line = reader.readLine()) != null) {
 	            dataLines.add(line.trim());
