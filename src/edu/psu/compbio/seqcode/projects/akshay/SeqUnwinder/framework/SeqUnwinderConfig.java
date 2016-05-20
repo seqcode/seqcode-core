@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,14 +28,20 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
+import edu.psu.compbio.seqcode.gse.utils.strings.StringUtils;
 
 /**
  * @author akshaykakumanu
  * @twitter ikaka89
  * @email auk262@psu.edu
  */
-public class SeqUnwinderConfig {
+public class SeqUnwinderConfig implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public static String version = "0.1";
 	
 	// General options
@@ -212,6 +219,9 @@ public class SeqUnwinderConfig {
 		outbase = Args.parseString(args, "out", "seqUnwinder_out");
 		outdir = new File(outbase);
 		makeOutPutDirs();
+
+		// use the base to name the arff file
+		outArffFileName = outbase+".arff";
 		
 		numK = 0;
 		for(int k=minK; k<=maxK; k++ ){
@@ -306,10 +316,7 @@ public class SeqUnwinderConfig {
 		wekaOptsString[16] = "-threads";wekaOptsString[17]=Integer.toString(m_ADMM_numThreads);
 		if(debugMode)
 			wekaOptsString[18] = "-DEBUG";
-		
-		// use the base to name the arff file
-		outArffFileName = outbase+".arff";
-		
+
 		// Load all MEME arguments
 		// Path to MEME binary
 		MEMEpath = Args.parseString(args, "memePath", "");
@@ -330,9 +337,11 @@ public class SeqUnwinderConfig {
 		// Get R path
 		Rpath = Args.parseString(args, "rpath", Rpath);
 		if(!Rpath.equals("") && !Rpath.endsWith("/")){ Rpath= Rpath+"/";}
+		
 
 	}
 
+	
 
 	public void makeOutPutDirs(){
 		//Test if output directory already exists. If it does,  recursively delete contents

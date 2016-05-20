@@ -42,6 +42,7 @@ public class PearsonCorrAlignment {
 	
 	protected Map<ControlledExperiment, Map<StrandedRegion, double[][]>> strandedRegionSampleCounts = new HashMap<ControlledExperiment, Map<StrandedRegion,double[][]>>(); 	
 	protected double [][] pairwiseDistance;
+	protected double [] offsetArray;
 	
 	public PearsonCorrAlignment(FeatureCountsLoader featureCountsLoader){	
 		fcloader = featureCountsLoader;
@@ -56,15 +57,22 @@ public class PearsonCorrAlignment {
 	
 	public void excutePearsonCorrAlign(){
 		
-		strandedRegionSampleCounts = fcloader.strandedRegionSampleCounts();
-		
+		strandedRegionSampleCounts = fcloader.strandedRegionSampleCounts();		
 		strandeRegions = fcloader.getStrandedRegions();
+
+		// initialize pairwiseDistance
 		pairwiseDistance = new double [strandeRegions.size()][strandeRegions.size()];
 		for (int i = 0 ; i< strandeRegions.size(); i++){
 			for (int j = 0 ; j < strandeRegions.size(); j++)
 				pairwiseDistance[i][j] = 1;
-		}		
+		}	
 		
+		//initiazlie offsetArray
+		offsetArray = new double [window+1];
+		for (int i = 0 ; i <= window ; i++)
+			offsetArray[i] = 0;
+		
+		// loop through all possible pairwise region to do Pearson correlation
 		for (ControlledExperiment cexpt : strandedRegionSampleCounts.keySet()){
 			for (int i = 0; i <strandeRegions.size();i++){		
 			
@@ -209,27 +217,32 @@ public class PearsonCorrAlignment {
 		System.out.println();		
 		**/
 		
-		// incrementing error 
+		// increment offset array
+		offsetArray[offset+window/2]++;				
+		// incrementing error allowing offset of +-1
 		totalNum += 1;
-		if (offset !=0){
-			error += 1;
-		}
+		if (Math.abs(offset) > 1){error += 1;}
 		
 		return maxCorr;	
 	}
 	
-	public void printPairwiseDistance(){
-		
+	public void printPairwiseDistance(){		
 		for (int i = 0 ; i < strandeRegions.size(); i++){
 			System.out.println(strandeRegions.get(i).getLocationString());
-		}
-		
+		}		
 		for (int i = 0 ; i < strandeRegions.size();i++){
 			for (int j = 0 ; j <strandeRegions.size(); j++){
 				System.out.print(pairwiseDistance[i][j]+"\t");
 			}
 			System.out.println();	
 		}
+	}
+	
+	public void printOffsetArray(){
+		System.out.println("offset array");
+		for (int i = 0; i <= window ; i++)
+			System.out.print(offsetArray[i]+"\t");
+		System.out.println();
 	}
 	
 	public static void main(String[] args){
@@ -254,6 +267,7 @@ public class PearsonCorrAlignment {
 		profile.excutePearsonCorrAlign();
 		profile.printErrorRate();	
 		if (Args.parseFlags(args).contains("printDistance")){profile.printPairwiseDistance();}
+		if (Args.parseFlags(args).contains("printOffset")){profile.printOffsetArray();}
 		
 		manager.close();
 	}

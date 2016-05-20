@@ -43,6 +43,7 @@ public class AlignmentTest {
 	static final double MINIMUM_VALUE = -10000;
 	
 	protected Map<ControlledExperiment, Map<StrandedRegion, double[][]>> strandedRegionSampleCounts = new HashMap<ControlledExperiment, Map<StrandedRegion,double[][]>>();
+	protected double [] offsetArray;
 	
 	public AlignmentTest(FeatureCountsLoader fcLoader, SimilarityScore sc){	
 		featureCountsLoader = fcLoader;
@@ -54,61 +55,16 @@ public class AlignmentTest {
 	
 	// prints error rate
 	public void printErrorRate(){System.out.println("error is "+error+ " totalNum is "+ totalNum+ " error rate is "+ (error/totalNum));}
-
-	/**
-	public void loadData(){
-		
-		List<Region> region = new ArrayList<Region>();
-		for(Point p: points){
-			region.add(p.expand(window/2));
-		}
-		setRegions(region);
-
-		//get StrandedBaseCount list for each regions per sample
-		Map<Sample, Map<Region,List<StrandedBaseCount>>> sampleCountsMap = new HashMap<Sample, Map<Region,List<StrandedBaseCount>>>();
-		Map<Sample, Map<Region,double[][]>> sampleCountsArray = new HashMap<Sample, Map<Region,double[][]>>();
-		
-		for (ExperimentCondition condition : manager.getConditions()){		
-			for (ControlledExperiment rep: condition.getReplicates()){				
-				Map<Region,List<StrandedBaseCount>> regionCounts =  new HashMap<Region,List<StrandedBaseCount>>();				
-				for (Region reg : regions){
-					regionCounts.put(reg, rep.getSignal().getBases(reg));
-				}
-				sampleCountsMap.put(rep.getSignal(),regionCounts);
-			}					
-		}
-		
-		//StrandedBasedCount object contains positive and negative strand separately
-		for (Sample sample : sampleCountsMap.keySet()){
-			
-			Map<Region,double[][]> regionCounts = new HashMap<Region,double[][]>();
-			
-			for (Region reg : sampleCountsMap.get(sample).keySet()){			
-				double[][] sampleCounts = new double[window+1][2];
-				for (int i = 0;i <= window;i++){
-					for (int s = 0; s<2; s++)
-						sampleCounts[i][s] = 0;
-				}				
-				for (StrandedBaseCount hits: sampleCountsMap.get(sample).get(reg)){
-					if (hits.getStrand()=='+'){
-						sampleCounts[hits.getCoordinate()-reg.getStart()][0] = hits.getCount();
-					}else{
-						sampleCounts[hits.getCoordinate()-reg.getStart()][1] = hits.getCount();
-					}
-				}
-				regionCounts.put(reg, sampleCounts);
-			}
-			
-			sampleCountsArray.put(sample, regionCounts);
-		}
-		setCountsArray(sampleCountsArray);
-	}
-	**/
 	
 	public void excuteShapeAlign(){
 		
 		strandedRegionSampleCounts = featureCountsLoader.strandedRegionSampleCounts();
 		strandeRegions = featureCountsLoader.getStrandedRegions();
+		
+		//initiazlie offsetArray
+		offsetArray = new double [window+1];
+		for (int i = 0 ; i <= window ; i++)
+			offsetArray[i] = 0;
 		
 		for (ControlledExperiment cExpt : strandedRegionSampleCounts.keySet()){
 			for (int i = 0; i <strandeRegions.size();i++){		
@@ -287,17 +243,24 @@ public class AlignmentTest {
 			
 		**/
 		
-//		System.out.println();
-		
-		// incrementing error 
+		// increment offset array
+		offsetArray[(int) (y_mid-x_mid+window/2)]++;				
+		// incrementing error allowing offset of +-1
 		totalNum += 1;
 		if ( traceBack.contains(LEFT) || traceBack.contains(UP) ){ // check that stack only contains DIAG
-//			System.out.println("stack contains LEFT or UP");
 			error += 1;
-		}else{			
-			if (x_mid != y_mid)
-				error += 1;
+		}else{
+			if (Math.abs(y_mid-x_mid) >1){
+				error +=1;
+			}
 		}
+	}
+	
+	public void printOffsetArray(){
+		System.out.println("offset array");
+		for (int i = 0; i <= window ; i++)
+			System.out.print(offsetArray[i]+"\t");
+		System.out.println();
 	}
 	
 	public static void main(String[] args){
@@ -332,6 +295,7 @@ public class AlignmentTest {
 		profile.setWidth(win);
 		profile.excuteShapeAlign();
 		profile.printErrorRate();	
+		if (Args.parseFlags(args).contains("printOffset")){profile.printOffsetArray();}
 		
 		manager.close();
 	}

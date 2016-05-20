@@ -139,7 +139,7 @@ public class RegionTagCounts {
 					"Coverage Testing:\n" +
 					"\t--reg <region coords>\n" +
 					"\t--out <output file root>\n" +
-					"\t--normcounts [flag to normalize counts]\n"
+					"\t--normcounts [flag to normalize counts based on inferred signal strength]\n"
 					);
 		}else{
 			
