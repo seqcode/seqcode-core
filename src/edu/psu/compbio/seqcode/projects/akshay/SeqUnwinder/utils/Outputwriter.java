@@ -137,7 +137,7 @@ public class Outputwriter {
 		
 		// Now run the R script
 		String Rscriptcmd = seqConfig.getRpath()+"Rscript ";
-		Process proc = Runtime.getRuntime().exec(Rscriptcmd+" plotHeatmap.R"+" Discrim_motifs.scores"+" Discrim_motifs_heatmap.png");
+		Process proc = Runtime.getRuntime().exec(Rscriptcmd+" "+seqConfig.getOutDir().getAbsolutePath()+"/plotHeatmap.R"+" Discrim_motifs.scores"+" Discrim_motifs_heatmap.png");
 		// any error message? 
 		StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
 		// any output? 
@@ -149,7 +149,7 @@ public class Outputwriter {
 		System.err.println("R ExitValue: " + exitVal);
 		proc.destroy();
 		
-		proc = Runtime.getRuntime().exec(Rscriptcmd+" plotHeatmap.R"+" Discrim_motifs_simple.scores"+" Discrim_motifs_simple_heatmap.png");
+		proc = Runtime.getRuntime().exec(Rscriptcmd+" "+seqConfig.getOutDir().getAbsolutePath()+"/plotHeatmap.R"+" Discrim_motifs_simple.scores"+" Discrim_motifs_simple_heatmap.png");
 		// any error message? 
 		errorGobbler = new StreamGobbler(proc.getErrorStream(), "R_ERR", true); 
 		// any output? 
@@ -250,7 +250,7 @@ public class Outputwriter {
     				"\t\t<td>"+s+"</td>\n");
     		List<String> selectedMotifNames = new ArrayList<String>();
     		for(String motName : seqConfig.getDiscrimMotifRocs().keySet()){
-    			if(motName.contains(s+"+c"))
+    			if(motName.contains(s+"_c"))
     				selectedMotifNames.add(motName);
     		}
     		if(selectedMotifNames.size()>0){
