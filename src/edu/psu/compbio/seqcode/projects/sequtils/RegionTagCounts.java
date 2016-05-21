@@ -32,16 +32,19 @@ public class RegionTagCounts {
 	private List<Region> testRegs;
 	private ExperimentManager manager=null;
 	private String outName = "out";
-	private boolean normCounts=false; //normalize to signal proportion
+	private boolean totalTagNorm=false; //normalize to total tags
+	private boolean sigPropNorm=false; //normalize to signal proportion
 	
-	public RegionTagCounts(GenomeConfig gcon, ExptConfig econ, List<Region> regs, String out, boolean norm){
+	public RegionTagCounts(GenomeConfig gcon, ExptConfig econ, List<Region> regs, String out){
 		gConfig = gcon;
 		eConfig = econ;
 		testRegs = regs;
 		manager = new ExperimentManager(eConfig);
 		outName = out;
-		normCounts = norm;
 	}
+	
+	public void setTotalTagNorm(boolean n){totalTagNorm=n;}
+	public void setSigPropNorm(boolean n){sigPropNorm=n;}
 	
 	
 	public void execute(){
@@ -79,7 +82,9 @@ public class RegionTagCounts {
 										sum+=stackedTagStarts[o];
 									}
 									
-									if(normCounts)
+									if(totalTagNorm)
+										fw.write(r.getLocationString()+"\t"+String.format("%e", sum/rep.getSignal().getHitCount()) +"\n");
+									else if(sigPropNorm)
 										fw.write(r.getLocationString()+"\t"+String.format("%e", sum/sigCount) +"\n");
 									else
 										fw.write(r.getLocationString()+"\t"+String.format("%.0f", sum) +"\n");
@@ -139,7 +144,8 @@ public class RegionTagCounts {
 					"Coverage Testing:\n" +
 					"\t--reg <region coords>\n" +
 					"\t--out <output file root>\n" +
-					"\t--normcounts [flag to normalize counts]\n"
+					"\t--signormcounts [flag to normalize counts by inferred signal proportion]\n" +
+					"\t--totalnormcounts [flag to normalize counts by total tags]\n"
 					);
 		}else{
 			
@@ -151,9 +157,11 @@ public class RegionTagCounts {
 			for(String rf : regFiles)
 				testSites.addAll(Utils.loadRegionsFromFile(rf, gcon.getGenome(), -1));
 			String outName = Args.parseString(args, "out", "out");
-			boolean norm = Args.parseFlags(args).contains("normcounts");
+			boolean signorm = Args.parseFlags(args).contains("signormcounts");
+			boolean totnorm = Args.parseFlags(args).contains("totalnormcounts");
 			
-			RegionTagCounts rct = new RegionTagCounts(gcon, econ, testSites, outName, norm);
+			RegionTagCounts rct = new RegionTagCounts(gcon, econ, testSites, outName);
+			rct.setSigPropNorm(signorm); rct.setTotalTagNorm(totnorm);
 			rct.execute();
 			rct.close();
 		}	
