@@ -9,6 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+
 
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
@@ -68,7 +70,7 @@ public class Outputwriter {
 		File weightFile = new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+"kmer_weights.mat");
 		FileWriter fw = new FileWriter(weightFile);
 		StringBuilder weightSB = new StringBuilder();
-		weightSB.append("Kmer");
+		weightSB.append("#Kmer");weightSB.append("\t");
 		for(String s : seqConfig.getMNames()){
 			weightSB.append(s);weightSB.append("\t");
 		}
@@ -104,7 +106,16 @@ public class Outputwriter {
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");
-		for(String s : seqConfig.getDiscrimMotsScore().keySet()){
+		
+		List<String> orderdMotifNames = new ArrayList<String>(); 
+		for(String modname : seqConfig.getMNames()){
+			for(String motname : seqConfig.getDiscrimMotsScore().keySet()){
+				if(motname.startsWith(modname+"_c"))
+					orderdMotifNames.add(motname);
+			}
+		}
+		
+		for(String s : orderdMotifNames){
 			sb.append(s.replaceAll("#", ""));sb.append("\t");
 			for(double scr : seqConfig.getDiscrimMotsScore().get(s)){
 				sb.append(scr);sb.append("\t");
@@ -120,6 +131,7 @@ public class Outputwriter {
 		fw = new FileWriter(discrimScoreFileSimple);
 		bw = new BufferedWriter(fw);
 		sb = new StringBuilder();
+		sb.append("MotifName");sb.append("\t");
 		//First header
 		for(String s:seqConfig.getMNames()){
 			String[] pieces = s.split("#");
@@ -129,7 +141,23 @@ public class Outputwriter {
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");
-		for(String s : seqConfig.getDiscrimMotsScore().keySet()){
+		
+		orderdMotifNames = new ArrayList<String>(); 
+		for(String modname : seqConfig.getMNames()){
+			String[] pieces = modname.split("#");
+			if(pieces.length > 1)
+				continue;
+			for(String motname : seqConfig.getDiscrimMotsScore().keySet()){
+				String[] piecesMotname = modname.split("#");
+				if(piecesMotname.length >1)
+					continue;
+				if(motname.startsWith(modname+"_c"))
+					orderdMotifNames.add(motname);
+			}
+		}
+		
+		
+		for(String s : orderdMotifNames){
 			String[] piecesMotName = s.split("#");
 			if(piecesMotName.length>1)
 				continue;
@@ -160,7 +188,7 @@ public class Outputwriter {
 		bw.write("colors = c(seq(0,0.5,length=6),seq(0.51,1,length=6)) \n");
 		bw.write("my_palette <- colorRampPalette(c(\"lightblue\",\"red\"))(n = 11) \n");
 		bw.write("png(file=args[2],width=1000, height=1000, bg = \"transparent\") \n");
-		bw.write("heatmap.2(data,Rowv=FALSE,Colv=FALSE,breaks=colors,col=my_palette,symm=F,symkey=F,symbreaks=T,dendrogram=\"none\",trace=\"none\") \n");
+		bw.write("heatmap.2(data,Rowv=FALSE,Colv=FALSE,breaks=colors,col=my_palette,symm=F,symkey=F,symbreaks=T,dendrogram=\"none\",trace=\"none\",margins=c(14,14),keysize = 0.65,density.info=c(\"none\"),cexRow=2,cexCol=2) \n");
 		bw.write("dev.off()");
 		bw.close();
 		
