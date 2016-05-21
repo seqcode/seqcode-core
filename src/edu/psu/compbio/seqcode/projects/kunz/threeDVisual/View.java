@@ -156,8 +156,8 @@ public class View extends JPanel implements ActionListener
 		double rads = degree * .0174532925;
 		/*	for rotating around x axis
 		 *  |1     0           0| |x|   |        x        |   |x'|
-    		|0   cos θ    -sin θ| |y| = |y cos θ - z sin θ| = |y'|
-    		|0   sin θ     cos θ| |z|   |y sin θ + z cos θ|   |z'|
+    		|0   cos    -sin | |y| = |y cos - z sin | = |y'|
+    		|0   sin      cos | |z|   |y sin + z cos|   |z'|
 		 */
 		if(way == 0)
 		{
@@ -169,9 +169,9 @@ public class View extends JPanel implements ActionListener
 		    }
 		}
 		/* for rotating around Y
-		    | cos θ    0   sin θ| |x|   | x cos θ + z sin θ|   |x'|
+		    | cos     0   sin | |x|   | x cos  + z sin |   |x'|
 		    |   0      1       0| |y| = |         y        | = |y'|
-		    |-sin θ    0   cos θ| |z|   |-x sin θ + z cos θ|   |z'|
+		    |-sin     0   cos | |z|   |-x sin + z cos |   |z'|
 		 */
 		if(way == 1)
 		{
@@ -183,8 +183,8 @@ public class View extends JPanel implements ActionListener
 		    }
 		}
 		/* for rotating around Z
-		    |cos θ   -sin θ   0| |x|   |x cos θ - y sin θ|   |x'|
-    		|sin θ    cos θ   0| |y| = |x sin θ + y cos θ| = |y'|
+		    |cos    -sin    0| |x|   |x cos  - y sin |   |x'|
+    		|sin     cos    0| |y| = |x sin  + y cos | = |y'|
     		|  0       0      1| |z|   |        z        |   |z'|
 		 */
 		if(way == 2)

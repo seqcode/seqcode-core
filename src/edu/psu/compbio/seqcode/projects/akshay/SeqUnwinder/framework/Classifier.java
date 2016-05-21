@@ -36,7 +36,11 @@ public class Classifier extends AbstractClassifier implements OptionHandler, Wei
 
 	// Model parameters compatible with a normal Multinomial logit model
 	
-	protected SeqUnwinderConfig seqConfig;
+	//protected SeqUnwinderConfig seqConfig;
+	
+	protected int minK = 4;
+	
+	protected int numK = 0;
 
 	private static final long serialVersionUID = -6260376163872744102L;
 
@@ -53,7 +57,7 @@ public class Classifier extends AbstractClassifier implements OptionHandler, Wei
 	protected int m_NumClasses;
 
 	/** The regularization parameter, Is multiplied to the logit part of the loss function */
-	protected double m_Ridge = 100;
+	protected double m_Ridge = 10;
 
 	/** The index of the class attribute. Usually the last attribute */
 	protected int m_ClassIndex;
@@ -147,17 +151,33 @@ public class Classifier extends AbstractClassifier implements OptionHandler, Wei
 		return sm_Debug;
 	}
 
+	public int getKmerBaseInd(String kmer){
+		int baseInd = 0;
+		for(int k=minK; k<kmer.length(); k++){
+			baseInd += (int)Math.pow(4, k);
+		}
+		return baseInd;
+	}
+	
+	public List<String> getModelNames(){
+		List<String> ret = new ArrayList<String>();
+		for(Node n : sm_ClassStructure.allNodes.values()){
+			ret.add(n.nodeName);
+		}
+		return ret;
+	}
+
 	public HashMap<String,double[]> getWeights(){
 		HashMap<String,double[]> ret = new HashMap<String,double[]>();
 		for(int n=0; n<sm_ClassStructure.allNodes.size(); n++){
-			ret.put(sm_ClassStructure.allNodes.get(n).nodeName, new double[seqConfig.getNumK()]);
+			ret.put(sm_ClassStructure.allNodes.get(n).nodeName, new double[numK]);
 		}
 		
 		int j=1;
 		for (int i = 0; i < m_structure.numAttributes(); i++) {
 			if (i != m_structure.classIndex()) {
 
-				int base = seqConfig.getKmerBaseInd(m_structure.attribute(i).name());
+				int base = getKmerBaseInd(m_structure.attribute(i).name());
 				int kind =  base + RegionFileUtilities.seq2int(m_structure.attribute(i).name());
 				for (Node n : sm_ClassStructure.allNodes.values()) {
 					ret.get(n.nodeName)[kind] = sm_Par[j][n.nodeIndex];
@@ -186,8 +206,9 @@ public class Classifier extends AbstractClassifier implements OptionHandler, Wei
 		return sm_Par;
 	}
 	
-	public Classifier(SeqUnwinderConfig scon) {
-		seqConfig = scon;
+	public Classifier(int mK, int nK) {
+		minK= mK;
+		numK= nK;
 	}
 
 
@@ -637,14 +658,14 @@ public class Classifier extends AbstractClassifier implements OptionHandler, Wei
 					Node currNode = new Node(Integer.parseInt(pieces[0]), pieces[1],Integer.parseInt(pieces[2]) == 1? true : false);
 					// Add parents indexes
 					//if(!currNode.nodeName.contains("Root")){
-					if(currNode.isLeaf){
+					if(currNode.isLeaf && !pieces[3].equals("-")){
 						String[] pInds = pieces[3].split(",");
 						for(String s : pInds){
 							currNode.addParent(Integer.parseInt(s));
 						}
 					}
 					// Add children indexes
-					if(!currNode.isLeaf){
+					if(!currNode.isLeaf && !pieces[4].equals("-")){
 						String[] cInds = pieces[4].split(",");
 						for(String s : cInds){
 							currNode.addChild(Integer.parseInt(s));
@@ -749,7 +770,7 @@ public class Classifier extends AbstractClassifier implements OptionHandler, Wei
 		if (ridgeString.length() != 0) {
 			m_Ridge = Double.parseDouble(ridgeString);
 		} else {
-			m_Ridge = 1.0e-8;
+			m_Ridge = 10.0;
 		}
 
 		String threadString = Utils.getOption("threads", options);

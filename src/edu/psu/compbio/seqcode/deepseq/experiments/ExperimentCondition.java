@@ -186,8 +186,10 @@ public class ExperimentCondition {
 				pooledSampleControlScaling = scaler.scalingRatioBySES(pooledSignal, pooledControl);
 			else if(econfig.getScalingByRegression())
 				pooledSampleControlScaling = scaler.scalingRatioByRegression(pooledSignal, pooledControl);
-			else
+			else if(econfig.getScalingByMedian())
 				pooledSampleControlScaling = scaler.scalingRatioByMedian(pooledSignal, pooledControl);
+			else
+				pooledSampleControlScaling = scaler.scalingRatioByNCIS(pooledSignal, pooledControl, null);
 			
 			if(econfig.getPrintLoadingProgress())
 				System.err.println("\tComplete.");

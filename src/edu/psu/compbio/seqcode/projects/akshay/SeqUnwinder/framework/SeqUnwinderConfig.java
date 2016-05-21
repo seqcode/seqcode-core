@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,14 +28,20 @@ import edu.psu.compbio.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
+import edu.psu.compbio.seqcode.gse.utils.strings.StringUtils;
 
 /**
  * @author akshaykakumanu
  * @twitter ikaka89
  * @email auk262@psu.edu
  */
-public class SeqUnwinderConfig {
+public class SeqUnwinderConfig implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public static String version = "0.1";
 	
 	// General options
@@ -117,8 +124,10 @@ public class SeqUnwinderConfig {
 	public static final double MOTIF_FINDING_ALLOWED_REPETITIVE = 0.2;
 	
 	// Following are filled during the course of a SeqUnwinder run
-	/** Model names */
-	protected List<String> kmerModelNames = new ArrayList<String>();
+	/** Model names **/
+	protected List<String> modelNames = new ArrayList<String>();
+	/** SubGroup names */
+	protected List<String> kmerSubGroupNames = new ArrayList<String>();
 	/** Stores the weights of the K-mers
 	 *  Keys are the model name
 	 * 	Values are the K-mers weights for a given model */ 
@@ -131,7 +140,8 @@ public class SeqUnwinderConfig {
 	protected HashMap<String,double[]> trainSetStats = new HashMap<String,double[]>();
 	
 	//Settors
-	public void setSubGroupNames(LinkedHashSet<String> sGNs){kmerModelNames.addAll(sGNs);}
+	public void setSubGroupNames(LinkedHashSet<String> sGNs){kmerSubGroupNames.addAll(sGNs);}
+	public void setModelNames(List<String> modNames){modelNames.addAll(modNames);}
 	public void setNumLayers(int n){sm_NumLayers = n;}
 	public void setWeights(HashMap<String,double[]> wts){kmerweights.putAll(wts);}
 	public void setDiscrimMotifs(List<WeightMatrix> mots){discrimMotifs.addAll(mots);}
@@ -159,7 +169,8 @@ public class SeqUnwinderConfig {
 	public HashMap<String,double[]> getKmerWeights(){return kmerweights;}
 	public File getOutDir(){return outdir;}
 	public String getOutbase(){return outbase;}
-	public List<String> getModelNames(){return kmerModelNames;}
+	public List<String> getSubGroupNames(){return kmerSubGroupNames;}
+	public List<String> getMNames(){return modelNames;}
 	public String getMemeArgs(){String memeargs = MEMEargs+" -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw; return memeargs;}
 	public String getMemePath(){return MEMEpath;}
 	public int getNumDiscrimClusters(){return numClus_CLUS;}
@@ -212,6 +223,9 @@ public class SeqUnwinderConfig {
 		outbase = Args.parseString(args, "out", "seqUnwinder_out");
 		outdir = new File(outbase);
 		makeOutPutDirs();
+
+		// use the base to name the arff file
+		outArffFileName = outbase+".arff";
 		
 		numK = 0;
 		for(int k=minK; k<=maxK; k++ ){
@@ -291,9 +305,9 @@ public class SeqUnwinderConfig {
 		
 		// Now make the weka options string
 		if(!debugMode)
-			wekaOptsString=new String[18];
+			wekaOptsString=new String[20];
 		else
-			wekaOptsString=new String[19];
+			wekaOptsString=new String[21];
 		
 		wekaOptsString[0] = "-t"; wekaOptsString[1] = outdir.getAbsolutePath()+File.separator+outArffFileName;
 		wekaOptsString[2] = "-x"; wekaOptsString[3] = Integer.toString(numCrossValidation);
@@ -304,15 +318,13 @@ public class SeqUnwinderConfig {
 		wekaOptsString[12] = "-S";wekaOptsString[13]= Integer.toString(m_SeqUnwinder_MaxIts);
 		wekaOptsString[14] = "-PHO";wekaOptsString[15]=Double.toString(m_ADMM_pho);
 		wekaOptsString[16] = "-threads";wekaOptsString[17]=Integer.toString(m_ADMM_numThreads);
+		wekaOptsString[18] = "-R";wekaOptsString[19]=Double.toString(m_Ridge);
 		if(debugMode)
-			wekaOptsString[18] = "-DEBUG";
-		
-		// use the base to name the arff file
-		outArffFileName = outbase+".arff";
-		
+			wekaOptsString[20] = "-DEBUG";
+
 		// Load all MEME arguments
 		// Path to MEME binary
-		MEMEpath = Args.parseString(args, "memePath", "");
+		MEMEpath = Args.parseString(args, "memepath", "");
 		MEMEargs = Args.parseString(args, "memeargs", MEMEargs);
 		
 		MEMEminw = Args.parseInteger(args, "mememinw", 6);
@@ -330,9 +342,11 @@ public class SeqUnwinderConfig {
 		// Get R path
 		Rpath = Args.parseString(args, "rpath", Rpath);
 		if(!Rpath.equals("") && !Rpath.endsWith("/")){ Rpath= Rpath+"/";}
+		
 
 	}
 
+	
 
 	public void makeOutPutDirs(){
 		//Test if output directory already exists. If it does,  recursively delete contents

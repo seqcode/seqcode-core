@@ -30,7 +30,7 @@ public class SeqUnwinder {
 		arffmaker.execute();
 		
 		// Now run the classifier
-		Classifier classifier = new Classifier(sequnwinder.getConfig());
+		Classifier classifier = new Classifier(sequnwinder.getConfig().getKmin(),sequnwinder.getConfig().getNumK());
 		String classifierout = "";
 		try {
 			classifierout = Evaluation.evaluateModel(classifier, sequnwinder.getConfig().getWekaOptions());
@@ -43,8 +43,11 @@ public class SeqUnwinder {
 				System.err.println(e.getMessage());
 			}
 		}
+		
+		sequnwinder.getConfig().setModelNames(classifier.getModelNames());
 		sequnwinder.getConfig().setClassifierOut(classifierout);
 		sequnwinder.getConfig().setWeights(classifier.getWeights());
+		scribe.writeKmerWeights();
 		
 		//Now parse the classifier output and extract the classifier statistics
 		HashMap<String,double[]> trainStats = new HashMap<String,double[]>();
@@ -59,6 +62,8 @@ public class SeqUnwinder {
 				beginLoadingTrainSetStats = true;
 			}else if(beginLoadingTrainSetStats && !loadedTrainSetStats){
 				if(!classifierOutputLine[s].trim().startsWith("Weighted")){
+					if(classifierOutputLine[s].equals("") || classifierOutputLine[s].contains("TP Rate"))
+						continue;
 					String[] pieces = classifierOutputLine[s].trim().split("\\s\\s+");
 					trainStats.put(pieces[8], new double[8]);
 					for(int p=0; p<pieces.length-1; p++){
@@ -71,6 +76,8 @@ public class SeqUnwinder {
 				beginLoadingTestSetStats = true;
 			}else if(beginLoadingTestSetStats && !loadedTestSetStats){
 				if(!classifierOutputLine[s].trim().startsWith("Weighted")){
+					if(classifierOutputLine[s].equals("") || classifierOutputLine[s].contains("TP Rate"))
+						continue;
 					String[] pieces = classifierOutputLine[s].trim().split("\\s\\s+");
 					testStats.put(pieces[8], new double[8]);
 					for(int p=0; p<pieces.length-1; p++){

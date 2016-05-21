@@ -20,14 +20,14 @@ public class ScoreMotif {
 	}
 	
 	public void execute(){
-		for(String s : seqConfig.getModelNames()){
-			scores.put(s, new double[seqConfig.getDiscrimMotifs().size()]);
+		for(WeightMatrix wm : seqConfig.getDiscrimMotifs()){
+			scores.put(wm.getName(), new double[seqConfig.getMNames().size()]);
 		}
 		
 		for(WeightMatrix mot : seqConfig.getDiscrimMotifs()){
 			HashSet<String> motKmers = WeightMatrix.getConsensusKmers(mot, seqConfig.getKmin(), seqConfig.getKmax());
 			int j=0;
-			for(String modName : seqConfig.getModelNames()){
+			for(String modName : seqConfig.getMNames()){
 				double weight=0.0;
 				for(String s : motKmers){
 					String revS = SequenceUtils.reverseComplement(s);
