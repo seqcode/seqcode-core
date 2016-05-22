@@ -113,10 +113,12 @@ public class RegionTagCounts {
 					Collections.sort(allRepCounts);
 					double ceiling = allRepCounts.get((int)(allRepCounts.size()*scalePercentile)); 
 					for(Region r : testRegs){
-						if(regCounts.get(r)[rep.getIndex()]>ceiling)
-							regCounts.get(r)[rep.getIndex()] = 1.0;
-						else
-							regCounts.get(r)[rep.getIndex()] /=ceiling;
+						if(regCounts.containsKey(r)){
+							if(regCounts.get(r)[rep.getIndex()]>ceiling)
+								regCounts.get(r)[rep.getIndex()] = 1.0;
+							else
+								regCounts.get(r)[rep.getIndex()] /=ceiling;
+						}
 					}
 				}
 			}
