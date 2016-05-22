@@ -60,8 +60,11 @@ public class RegionTagCounts {
 	
 	public void execute(){
 		Map<Region, Double[]> regCounts = new HashMap<Region, Double[]>();
-		for(Region r : testRegs)
+		for(Region r : testRegs){
 			regCounts.put(r, new Double[manager.getReplicates().size()]);
+			for(int i=0; i<manager.getReplicates().size(); i++)
+			    regCounts.get(r)[i] = 0.0;
+		}
 		
 		for(ExperimentCondition c : manager.getConditions()){
 			for(ControlledExperiment rep : c.getReplicates()){
@@ -133,10 +136,10 @@ public class RegionTagCounts {
 					fw.write("\t"+rep.getName());
 			fw.write("\n");
 			for(Region r : testRegs){
-				fw.write("\t"+r.getLocationString());
+				fw.write(r.getLocationString());
 				for(ExperimentCondition c : manager.getConditions())
 					for(ControlledExperiment rep : c.getReplicates())
-						fw.write("\t"+String.format("%.0f", regCounts.get(r)[rep.getIndex()]));
+						fw.write("\t"+String.format("%f", regCounts.get(r)[rep.getIndex()]));
 				fw.write("\n");
 			}
 			fw.close();
