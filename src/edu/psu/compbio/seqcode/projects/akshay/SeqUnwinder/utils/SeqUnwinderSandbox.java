@@ -22,7 +22,7 @@ public class SeqUnwinderSandbox {
 	/** Learned k-mer weights */
 	protected HashMap<String,double[]> weights = new HashMap<String,double[]>();
 	protected List<String> kmerModelNames = new ArrayList<String>();
-	protected List<WeightMatrix> motifs;
+	protected List<WeightMatrix> motifs = new ArrayList<WeightMatrix>();
 	
 	public int minK =4;
 	public int maxK =5;
@@ -95,6 +95,7 @@ public class SeqUnwinderSandbox {
 			HashSet<String> motKmers = WeightMatrix.getConsensusKmers(mot, minK, maxK);
 			
 			// Print the k-mers
+			System.out.println(mot.getName());
 			for(String s : motKmers){
 				System.out.println(s);
 			}

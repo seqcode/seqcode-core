@@ -1,5 +1,8 @@
 package edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.motifs;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -19,13 +22,24 @@ public class ScoreMotif {
 		seqConfig = seqcon;
 	}
 	
-	public void execute(){
+	public void execute() throws IOException{
 		for(WeightMatrix wm : seqConfig.getDiscrimMotifs()){
 			scores.put(wm.getName(), new double[seqConfig.getMNames().size()]);
 		}
+		// Write the motif associated k-mers to a file
+		FileWriter fw = new FileWriter(new File(seqConfig.getOutDir().getAbsolutePath()+File.separator+"kmer_at_motigs.tab"));
+		BufferedWriter bw = new BufferedWriter(fw);
+		StringBuilder sb = new StringBuilder();
+		sb.append("#Kmers used to to score motifs"); sb.append("\n");
 		
 		for(WeightMatrix mot : seqConfig.getDiscrimMotifs()){
+			sb.append(mot.getName());sb.append("\n");
 			HashSet<String> motKmers = WeightMatrix.getConsensusKmers(mot, seqConfig.getKmin(), seqConfig.getKmax());
+			
+			for(String s: motKmers){
+				sb.append(s);sb.append("\n");
+			}
+			
 			int j=0;
 			for(String modName : seqConfig.getMNames()){
 				double weight=0.0;
@@ -42,6 +56,8 @@ public class ScoreMotif {
 			}
 		}
 		
+		bw.write(sb.toString());
+		bw.close();
 		seqConfig.setDiscrimMotifScores(scores);
 		
 	}
