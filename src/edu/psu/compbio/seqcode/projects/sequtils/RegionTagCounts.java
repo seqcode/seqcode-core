@@ -4,7 +4,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
@@ -34,6 +37,8 @@ public class RegionTagCounts {
 	private String outName = "out";
 	private boolean totalTagNorm=false; //normalize to total tags
 	private boolean sigPropNorm=false; //normalize to signal proportion
+	private boolean scaleToPercentile=false; //scale to Xth percentile of observed counts
+	private double scalePercentile=0.99; //Percentile to scale to
 	
 	public RegionTagCounts(GenomeConfig gcon, ExptConfig econ, List<Region> regs, String out){
 		gConfig = gcon;
@@ -45,9 +50,19 @@ public class RegionTagCounts {
 	
 	public void setTotalTagNorm(boolean n){totalTagNorm=n;}
 	public void setSigPropNorm(boolean n){sigPropNorm=n;}
+	public void setPercentileScale(double perc){
+		if(perc>0 && perc<=1){
+			scalePercentile=perc;
+			scaleToPercentile=true;
+		}
+	}
 	
 	
 	public void execute(){
+		Map<Region, Double[]> regCounts = new HashMap<Region, Double[]>();
+		for(Region r : testRegs)
+			regCounts.put(r, new Double[manager.getReplicates().size()]);
+		
 		for(ExperimentCondition c : manager.getConditions()){
 			for(ControlledExperiment rep : c.getReplicates()){
 				System.err.println("Condition "+c.getName()+":\tRep "+rep.getName());
@@ -55,51 +70,78 @@ public class RegionTagCounts {
 				double sigStrength = 1-(scaling/(rep.getSignal().getHitCount()/rep.getControl().getHitCount()));
 				double sigCount = sigStrength * rep.getSignal().getHitCount();
 				
-				try {
-					FileWriter fw = new FileWriter(outName+".region-counts.txt");
-													       			
-					ChromRegionIterator chroms = new ChromRegionIterator(gConfig.getGenome());
-					while(chroms.hasNext()){
-						NamedRegion currentRegion = chroms.next();
+				ArrayList<Double> allRepCounts= new ArrayList<Double>();
+				ChromRegionIterator chroms = new ChromRegionIterator(gConfig.getGenome());
+				while(chroms.hasNext()){
+					NamedRegion currentRegion = chroms.next();
+					
+					//Split the job up into chunks of 100Mbp
+					for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=100000000){
+						int y = x+100000000; 
+						if(y>currentRegion.getEnd()){y=currentRegion.getEnd();}
+						Region currSubRegion = new Region(gConfig.getGenome(), currentRegion.getChrom(), x, y);
 						
-						//Split the job up into chunks of 100Mbp
-						for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=100000000){
-							int y = x+100000000; 
-							if(y>currentRegion.getEnd()){y=currentRegion.getEnd();}
-							Region currSubRegion = new Region(gConfig.getGenome(), currentRegion.getChrom(), x, y);
-							
-							List<StrandedBaseCount> hits = rep.getSignal().getBases(currSubRegion);
-		                    double stackedTagStarts[] = makeTagStartLandscape(hits, currSubRegion);
+						List<StrandedBaseCount> hits = rep.getSignal().getBases(currSubRegion);
+	                    double stackedTagStarts[] = makeTagStartLandscape(hits, currSubRegion);
+	                    
+	                    //Get coverage of points that lie within the current region
+	                    for(Region r : testRegs){
+	                    	if(currSubRegion.contains(r)){
 		                    
-		                    //Get coverage of points that lie within the current region
-		                    for(Region r : testRegs){
-		                    	if(currSubRegion.contains(r)){
-			                    
-									int offsetStart = inBounds(r.getStart()-currSubRegion.getStart(), 0, currSubRegion.getWidth()-1);
-									int offsetEnd =inBounds(r.getEnd()-currSubRegion.getStart(), 0, currSubRegion.getWidth()-1);
-									double sum=0;
-									for(int o=offsetStart; o<=offsetEnd; o++){
-										sum+=stackedTagStarts[o];
-									}
-									
-									if(totalTagNorm)
-										fw.write(r.getLocationString()+"\t"+String.format("%e", sum/rep.getSignal().getHitCount()) +"\n");
-									else if(sigPropNorm)
-										fw.write(r.getLocationString()+"\t"+String.format("%e", sum/sigCount) +"\n");
-									else
-										fw.write(r.getLocationString()+"\t"+String.format("%.0f", sum) +"\n");
-									
-		                    	}
-							}
+								int offsetStart = inBounds(r.getStart()-currSubRegion.getStart(), 0, currSubRegion.getWidth()-1);
+								int offsetEnd =inBounds(r.getEnd()-currSubRegion.getStart(), 0, currSubRegion.getWidth()-1);
+								double sum=0;
+								for(int o=offsetStart; o<=offsetEnd; o++){
+									sum+=stackedTagStarts[o];
+								}
+								
+								double count = 0;
+								if(totalTagNorm)
+									count=sum/rep.getSignal().getHitCount();
+								else if(sigPropNorm)
+									count=sum/sigCount;
+								else
+									count=sum;
+								
+								regCounts.get(r)[rep.getIndex()]=count;
+								allRepCounts.add(count);
+	                    	}
 						}
 					}
-					System.out.print("\n");
-					fw.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+				}	
+				if(scaleToPercentile){
+					Collections.sort(allRepCounts);
+					double ceiling = allRepCounts.get((int)(allRepCounts.size()*scalePercentile)); 
+					for(Region r : testRegs){
+						if(regCounts.get(r)[rep.getIndex()]>ceiling)
+							regCounts.get(r)[rep.getIndex()] = 1.0;
+						else
+							regCounts.get(r)[rep.getIndex()] /=ceiling;
+					}
 				}
 			}
 		}
+	
+		//Write to file
+		try {
+			FileWriter fw = new FileWriter(outName+".region-counts.txt");
+			fw.write("Coord");
+			for(ExperimentCondition c : manager.getConditions())
+				for(ControlledExperiment rep : c.getReplicates())
+					fw.write("\t"+rep.getName());
+			fw.write("\n");
+			for(Region r : testRegs){
+				fw.write("\t"+r.getLocationString());
+				for(ExperimentCondition c : manager.getConditions())
+					for(ControlledExperiment rep : c.getReplicates())
+						fw.write("\t"+String.format("%.0f", regCounts.get(r)[rep.getIndex()]));
+				fw.write("\n");
+			}
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	
 	}
 	
 	protected double[] makeTagStartLandscape(List<StrandedBaseCount> hits, Region currReg){
@@ -143,25 +185,29 @@ public class RegionTagCounts {
 					"\t--geninfo <genome info file> AND --seq <fasta seq directory>\n" +
 					"Coverage Testing:\n" +
 					"\t--reg <region coords>\n" +
+					"\t--win <win size bp>\n" +
 					"\t--out <output file root>\n" +
 					"\t--signormcounts [flag to normalize counts by inferred signal proportion]\n" +
-					"\t--totalnormcounts [flag to normalize counts by total tags]\n"
+					"\t--totalnormcounts [flag to normalize counts by total tags]\n" +
+					"\t--percscale <fraction> : scale counts to this percentile of observed counts\n"
 					);
 		}else{
 			
 			GenomeConfig gcon = new GenomeConfig(args);
 			ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
 		
+			Integer win = Args.parseInteger(args, "win", -1);
 			List<Region> testSites = new ArrayList<Region>();
 			Collection<String> regFiles = Args.parseStrings(args, "reg");
 			for(String rf : regFiles)
-				testSites.addAll(Utils.loadRegionsFromFile(rf, gcon.getGenome(), -1));
+				testSites.addAll(Utils.loadRegionsFromFile(rf, gcon.getGenome(), win));
 			String outName = Args.parseString(args, "out", "out");
 			boolean signorm = Args.parseFlags(args).contains("signormcounts");
 			boolean totnorm = Args.parseFlags(args).contains("totalnormcounts");
+			double scalePercentile = Args.parseDouble(args, "percscale", -1); 
 			
 			RegionTagCounts rct = new RegionTagCounts(gcon, econ, testSites, outName);
-			rct.setSigPropNorm(signorm); rct.setTotalTagNorm(totnorm);
+			rct.setSigPropNorm(signorm); rct.setTotalTagNorm(totnorm); rct.setPercentileScale(scalePercentile);
 			rct.execute();
 			rct.close();
 		}	
