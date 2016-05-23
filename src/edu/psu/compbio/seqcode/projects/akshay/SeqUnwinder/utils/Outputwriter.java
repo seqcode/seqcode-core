@@ -297,7 +297,7 @@ public class Outputwriter {
     	fout.write("\t<p><a href='kmer_weights.mat'> Weighted K-mer model.</a>\n");
     	
     	// Print the de novo identified motifs
-    	fout.write("\t<h2>De novo identified motifs</h2>\n");
+    	fout.write("\t<h2>De novo motifs</h2>\n");
     	fout.write("\t<table>\n");
     	fout.write("\t\t<tr>" +
     			"\t\t<th>Class</th>\n" +
@@ -327,8 +327,12 @@ public class Outputwriter {
     	fout.write("\t</table>\n");
     	
     	// Print motif score heatmaps for both complete and simple versions
-    	fout.write("\t<h2>Label specific score of identified de novo motifs</h2>\n");
+    	fout.write("\t<h2>Label specific scores of de novo motifs</h2>\n");
     	fout.write("\t<table>\n");
+    	fout.write("\t\t<tr>\n");
+    	fout.write("\t\t<th>Extended version</th>\n");
+    	fout.write("\t\t<th>Compact version</th>\n");
+    	fout.write("\t\t</tr>\n");
     	fout.write("\t\t<tr>\n");
 		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\"Discrim_motifs_heatmap.png\")'><img src='Discrim_motifs_heatmap.png' height='450'></a></td>\n");
 		fout.write("\t\t<td><a href='#' onclick='return fullpopitup(\"Discrim_motifs_simple_heatmap.png\")'><img src='Discrim_motifs_simple_heatmap.png' height='450'></a></td>\n");

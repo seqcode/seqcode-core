@@ -449,7 +449,7 @@ public class WeightMatrix {
         islogodds = false;
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < allLetters.length; j++) {
-                matrix[i][allLetters[j]] = (float)(Math.pow((double)(matrix[i][allLetters[j]]),2) * .25);
+                matrix[i][allLetters[j]] = (float)(Math.pow(2,(double)(matrix[i][allLetters[j]])) * .25);
             }
         }
     }
@@ -459,7 +459,7 @@ public class WeightMatrix {
         islogodds = false;
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < allLetters.length; j++) {
-                matrix[i][allLetters[j]] = (float)(Math.pow((double)(matrix[i][allLetters[j]]),2) * bgModel.getMarkovProb(("" + allLetters[j]).toUpperCase()));
+                matrix[i][allLetters[j]] = (float)(Math.pow(2,(double)(matrix[i][allLetters[j]])) * bgModel.getMarkovProb(("" + allLetters[j]).toUpperCase()));
             }
         }
     }

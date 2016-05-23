@@ -34,6 +34,11 @@ public class ScoreMotif {
 		
 		for(WeightMatrix mot : seqConfig.getDiscrimMotifs()){
 			sb.append(mot.getName());sb.append("\n");
+			// Make sure you a freq matrix instead of a log-odds matrix
+			mot.toFrequency();
+			String consensusMotif = WeightMatrix.getConsensus(mot);
+			sb.append(consensusMotif);sb.append("\n");
+			sb.append(WeightMatrix.printTransfacMatrix(mot,mot.getName()));
 			HashSet<String> motKmers = WeightMatrix.getConsensusKmers(mot, seqConfig.getKmin(), seqConfig.getKmax());
 			
 			for(String s: motKmers){
