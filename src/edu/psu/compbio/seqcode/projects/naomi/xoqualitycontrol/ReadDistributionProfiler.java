@@ -274,18 +274,11 @@ public class ReadDistributionProfiler {
 		}		
 	}	
 	
-	public void printRelativeEntropy(){	
-		System.out.println("#sampleName\trelativeEntropy");
+	public void printStatistics(){	
+		System.out.println("#sampleName\tFstatistics\trelativeEntropy");
 		for (Sample rep : sampleRelativeEntropy.keySet())			
-			System.out.println(rep.getName()+"\t"+sampleRelativeEntropy.get(rep)); 
+			System.out.println(rep.getName()+"\t"+Fstatistics.get(rep)+sampleRelativeEntropy.get(rep)); 
 	}
-	
-	public void printFstatisticsDistribution(){
-		System.out.println("#sampleName\tFstatistics");
-		for (Sample rep : Fstatistics.keySet())			
-			System.out.println(rep.getName()+"\t"+Fstatistics.get(rep)); 		
-	}
-	
 	
 	public static void main(String[] args){
 		
@@ -309,13 +302,8 @@ public class ReadDistributionProfiler {
 		ReadDistributionProfiler profile = new ReadDistributionProfiler(econf,manager, fcLoader); 	
 		if (Args.parseFlags(args).contains("printComposite")){profile.turnOnPrintComposite();}
 		profile.computeReadDistributionStatistics();
-		if (Args.parseFlags(args).contains("entropy")){
-			profile.printRelativeEntropy();
-		}
-		if (Args.parseFlags(args).contains("Fstat")){
-			profile.printFstatisticsDistribution();
-		}
-		
+		profile.printStatistics();
+
 		manager.close();
 	}
 }
