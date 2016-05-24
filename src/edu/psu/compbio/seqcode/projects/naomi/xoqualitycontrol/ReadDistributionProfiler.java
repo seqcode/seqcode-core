@@ -277,7 +277,7 @@ public class ReadDistributionProfiler {
 	public void printStatistics(){	
 		System.out.println("#sampleName\tFstatistics\trelativeEntropy");
 		for (Sample rep : sampleRelativeEntropy.keySet())			
-			System.out.println(rep.getName()+"\t"+Fstatistics.get(rep)+sampleRelativeEntropy.get(rep)); 
+			System.out.println(rep.getName()+"\t"+Fstatistics.get(rep)+"\t"+sampleRelativeEntropy.get(rep)); 
 	}
 	
 	public static void main(String[] args){
