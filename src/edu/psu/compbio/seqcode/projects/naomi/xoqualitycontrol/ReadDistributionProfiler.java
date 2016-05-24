@@ -251,7 +251,8 @@ public class ReadDistributionProfiler {
 	public double computeRelativeEntropy(double[] p, double [] q){
 		double relativeEntropy = 0;
 		for (int i = 0; i< p.length; i++){
-			relativeEntropy += p[i]*Math.log(p[i]/q[i]);
+			if (p[i] == 0){relativeEntropy +=0;}
+			else{relativeEntropy += p[i]*Math.log(p[i]/q[i]);}
 		}
 		return relativeEntropy;		
 	}
