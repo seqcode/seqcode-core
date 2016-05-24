@@ -674,10 +674,9 @@ public class WeightMatrix {
     		for(int k=Kmin; k<=KCap; k++){
     			for (int i = 0; i < (consensus.length() - k + 1); i++) {
     				String sub = consensus.substring(i, i+k);
-    				int numNs = sub.split("N", -1).length - 1;
-    				if((numNs*1.0)/sub.length() > 0.5)
+    				if(sub.contains("N"))
     					continue;
-    				if(sub.contains("R") || sub.contains("Y") || sub.contains("S") || sub.contains("W") || sub.contains("K") || sub.contains("M") || sub.contains("N")){
+    				if(sub.contains("R") || sub.contains("Y") || sub.contains("S") || sub.contains("W") || sub.contains("K") || sub.contains("M")){
     					List<StringBuilder> mers = new ArrayList<StringBuilder>();
     					StringBuilder sb = new StringBuilder();
     					mers.add(sb);
@@ -712,13 +711,6 @@ public class WeightMatrix {
     							for(StringBuilder tb : mers){
     								newMers.add(new StringBuilder(tb.toString()+"C"));
     								tb.append('A');
-    							}
-    						}else if(sub.charAt(s) == 'N'){
-    							for(StringBuilder tb : mers){
-    								newMers.add(new StringBuilder(tb.toString()+"A"));
-    								newMers.add(new StringBuilder(tb.toString()+"C"));
-    								newMers.add(new StringBuilder(tb.toString()+"G"));
-    								tb.append("T");
     							}
     						}else{
     							for(StringBuilder tb : mers){
