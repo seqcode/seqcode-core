@@ -655,8 +655,9 @@ public class WeightMatrix {
         return new String(out[0]);
     }
     
-    public static HashSet<String> getConsensusKmers(WeightMatrix matrix, int Kmin, int Kmax){
-    	HashSet<String> ret = new HashSet<String>();
+    
+    public static List<String> getConsensusKmerList(WeightMatrix matrix, int Kmin, int Kmax ){
+    	List<String> ret = new ArrayList<String>();
     	String consensus = WeightMatrix.getConsensus(matrix);
     	// Now trim the edges 
     	// Trim the front chars first
@@ -726,9 +727,9 @@ public class WeightMatrix {
     					ret.add(sub);
     				}
     			}
-        	}
+    		}
     		return ret;
-    	}   	
+    	}
     }
     
     

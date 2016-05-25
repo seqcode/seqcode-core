@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+
 import edu.psu.compbio.seqcode.gse.datasets.motifs.WeightMatrix;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
@@ -39,10 +41,11 @@ public class ScoreMotif {
 			String consensusMotif = WeightMatrix.getConsensus(mot);
 			sb.append(consensusMotif);sb.append("\n");
 			sb.append(WeightMatrix.printTransfacMatrix(mot,mot.getName()));
-			HashSet<String> motKmers = WeightMatrix.getConsensusKmers(mot, seqConfig.getKmin(), seqConfig.getKmax());
+			List<String> motKmers = WeightMatrix.getConsensusKmerList(mot, seqConfig.getKmin(), seqConfig.getKmax());
 			
 			for(String s: motKmers){
 				sb.append(s);sb.append("\n");
+				sb.append(SequenceUtils.reverseComplement(s));
 			}
 			
 			int j=0;

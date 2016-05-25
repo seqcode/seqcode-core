@@ -92,12 +92,13 @@ public class SeqUnwinderSandbox {
 		sb.append("\n");
 		for(WeightMatrix mot : motifs){
 			sb.append(mot.getName());sb.append("\t");
-			HashSet<String> motKmers = WeightMatrix.getConsensusKmers(mot, minK, maxK);
+			List<String> motKmers = WeightMatrix.getConsensusKmerList(mot, minK, maxK);
 			
 			// Print the k-mers
 			System.out.println(mot.getName());
 			for(String s : motKmers){
 				System.out.println(s);
+				System.out.println(SequenceUtils.reverseComplement(s));
 			}
 			
 			for(String modName : modNames){
