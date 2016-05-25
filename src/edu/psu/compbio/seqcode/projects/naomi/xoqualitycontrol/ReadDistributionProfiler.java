@@ -22,7 +22,10 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.projects.naomi.FeatureCountsLoader;
 
 /**
- * ReadDistributionProfiler : calculates weighted standard deviation around the reference point as in Rohit thesis
+ * Holds methods to quantify non-uniform distributions around reference features
+ * - Weighted standard deviation around the max counts as in Rohit thesis
+ * - F statistics, which compares variance of control over samples
+ * - Relative entropy measure for randomness
  * 
  * input : reference point
  * 
@@ -44,6 +47,8 @@ public class ReadDistributionProfiler {
 
 	protected Map<ControlledExperiment,double[]> sampleStandardDeviation = new HashMap<ControlledExperiment,double[]>();
 	protected Map<Sample,double[]> sampleStatsAndNull = new HashMap<Sample,double[]>();
+	protected Map<Sample,Double> Fstatistics = new HashMap<Sample,Double>();
+	protected Map<Sample,Double> sampleRelativeEntropy = new HashMap<Sample,Double>();
 	
 	public ReadDistributionProfiler(ExptConfig econf, ExperimentManager man, FeatureCountsLoader fcloader){	
 		featureCountsLoader = fcloader;
@@ -54,7 +59,7 @@ public class ReadDistributionProfiler {
 	// setters
 	public void turnOnPrintComposite(){printSampleComposite = true;}
 		
-	public void StandardDeviationFromExpAndNull(){
+	public void computeReadDistributionStatistics(){
 		
 		Map<ControlledExperiment,double[]> sampleComposite = new HashMap<ControlledExperiment,double[]>();
 		Map<ControlledExperiment,double[]> controlComposite = new HashMap<ControlledExperiment,double[]>();
@@ -69,24 +74,31 @@ public class ReadDistributionProfiler {
 			double[] composite = sampleComposite.get(rep);	
 			double[] contComposite = controlComposite.get(rep);	
 			
-			double scaling = rep.getControlScaling();
+			if (printSampleComposite==true){ // print composites
+				System.out.println(rep.getSignal().getName());
+				printArray(composite);
+				System.out.println(rep.getControl().getName());
+				printArray(contComposite);
+			}
 			
+			/// relative entropy calculation
+			double [] fracSampleProfile = counts2Probability(composite);
+			double [] fracContProfile = counts2Probability(contComposite);			
+			sampleRelativeEntropy.put(rep.getSignal(), computeRelativeEntropy(fracSampleProfile,fracContProfile));	
+			
+			///normalizing counts
+			double scaling = rep.getControlScaling();			
 			double[] normalizedComposite = new double[composite.length];
 			normalizedComposite[0] = composite[0] - scaling*(contComposite[0]+contComposite[1])*1/2;
 			normalizedComposite[composite.length-1] = composite[composite.length-1] - scaling*(contComposite[0]+contComposite[1])*1/2;		
 			for (int i = 1 ; i <composite.length-1 ; i++){
 				normalizedComposite[i] = composite[i] - scaling*(contComposite[i-1]+contComposite[i]+contComposite[i+1])*1/3;
-			}
-			
-			System.out.println("normalized composite ");
-			printArray(normalizedComposite);		
+			}			
+//			System.out.println("normalized composite ");
+//			printArray(normalizedComposite);		
 			
 			sampleStandardDeviation.put(rep, computeWeightedStandardDeviation(composite));
 			controlStandardDeviation.put(rep, computeWeightedStandardDeviation(contComposite));
-			if (printSampleComposite==true){
-				System.out.println(rep.getSignal().getName());
-				printArray(composite);
-			}
 		
 			//shuffle the data points and calculate standard deviation from null	
 			double [] arrNullSD = new double [iterations]; 
@@ -115,10 +127,12 @@ public class ReadDistributionProfiler {
 			if (controlSD<minSD){minSD = controlSD;}	
 			
 			// F statistics
-			double minNullVar = minSD*minSD;
-			FDistribution fdist = new FDistribution(window-1, window-1);
-			double Fpval = 1- fdist.cumulativeProbability(minNullVar/sampleVar);
-			System.out.println(rep.getSignal().getName()+": F statistics p-val is "+Fpval);
+			double minNullVar = minSD*minSD;		
+			double Fstat = minNullVar/sampleVar;
+			Fstatistics.put(rep.getSignal(), Fstat);		
+//			FDistribution fdist = new FDistribution(window-1, window-1);
+//			double Fpval = 1- fdist.cumulativeProbability(Fstat);
+//			System.out.println(rep.getSignal().getName()+": F statistics p-val is "+Fpval);
 			
 			/// Z score calculation
 			double z_score = (x - mu)/sd;
@@ -137,8 +151,7 @@ public class ReadDistributionProfiler {
 	}
 	
 	// This is for test purpose
-	public void StandardDeviationFromRandomReads(){
-		
+	public void StandardDeviationFromRandomReads(){		
 		for (ControlledExperiment rep : sampleStandardDeviation.keySet()){
 			double[] composite = sampleStandardDeviation.get(rep);	
 			double [] randomReadsSD = new double[iterations];
@@ -146,24 +159,21 @@ public class ReadDistributionProfiler {
 				double[] randomReads = randomelyAssignReads(composite);
 				randomReadsSD[itr] = computeWeightedStandardDeviation(randomReads)[1];
 			}
-			System.out.println("standard deviation from random reads");
+//			System.out.println("standard deviation from random reads");
 //			printArray(randomReadsSD);
 		}
 	}//end of test
 	
+	/***************************
+	**  Housekeeping methods  **
+	****************************/
 	public double TotalCounts(double[] array){	
 		int totalCounts = 0;
 		for (int i = 0; i <array.length;i++){totalCounts+=array[i];}
 		return totalCounts;
 	}
 	
-	public void printArray(double[] array){
-		for (int i = 0; i < array.length; i++){System.out.print(array[i]+"\t");}
-		System.out.println();
-	}
-	
-	public double[] randomelyAssignReads(double[] composite){	
-			
+	public double[] randomelyAssignReads(double[] composite){				
 		double randomReads[] = new double[composite.length];
 		for (int i = 0 ; i < randomReads.length; i++){ 
 			randomReads[i] = 0;
@@ -175,8 +185,7 @@ public class ReadDistributionProfiler {
 		return randomReads;
 	}
 	
-	public double[] shuffleComposite(double[] composite){
-		
+	public double[] shuffleComposite(double[] composite){		
 		double[] shuffledComposite =  new double[composite.length];
 		System.arraycopy(composite, 0, shuffledComposite, 0, composite.length);
 		
@@ -191,8 +200,7 @@ public class ReadDistributionProfiler {
 	}
 	
 	// calculate weighted standard deviation
-	public double[] computeWeightedStandardDeviation(double[] composite){
-		
+	public double[] computeWeightedStandardDeviation(double[] composite){		
 		double sumWeightedVar = 0 ; double sumWeights = 0; double weightedVar = 0; double weightedSD = 0 ;
 		double [] distributionScore = new double [2]; 		
 	
@@ -220,17 +228,41 @@ public class ReadDistributionProfiler {
 	}
 	
 	// calculate standard deviation
-	public double computeStandardDeviation(double[] x){
-		
+	public double computeStandardDeviation(double[] x){	
 		int N = x.length;
 		double var = 0 ; double sd = 0;
 		double mu = TotalCounts(x)/N;
 		for (int i = 0; i < N ; i++){
 			var += (x[i]-mu)*(x[i]-mu);
 		}
-		sd = Math.sqrt(var/N);
-		
+		sd = Math.sqrt(var/N);		
 		return sd;
+	}
+	
+	public double[] counts2Probability(double [] array){		
+		double totalCounts=TotalCounts(array);
+		double[] probability = new double [array.length];
+		for (int i = 0; i <array.length; i++){
+			probability[i] = array[i]/totalCounts;
+		}
+		return probability;
+	}
+	
+	public double computeRelativeEntropy(double[] p, double [] q){
+		double relativeEntropy = 0;
+		for (int i = 0; i< p.length; i++){
+			if (p[i] == 0){relativeEntropy +=0;}
+			else{relativeEntropy += p[i]*Math.log(p[i]/q[i]);}
+		}
+		return relativeEntropy;		
+	}
+	
+	/***********************
+	**  Printing Options  **
+	************************/	
+	public void printArray(double[] array){
+		for (int i = 0; i < array.length; i++){System.out.print(array[i]+"\t");}
+		System.out.println();
 	}
 	
 	public void printWeightedStandardDeviationStatistics(){		
@@ -241,6 +273,12 @@ public class ReadDistributionProfiler {
 			System.out.println(rep.getSignal().getName()+"\t"+distributionScore[0]+"\t"+distributionScore[1]+"\t"+stats[0]+"\t"+stats[1]+"\t"+stats[2]+"\t"+stats[3]+"\t"+stats[4]);		
 		}		
 	}	
+	
+	public void printStatistics(){	
+		System.out.println("#sampleName\tFstatistics\trelativeEntropy");
+		for (Sample rep : sampleRelativeEntropy.keySet())			
+			System.out.println(rep.getName()+"\t"+Fstatistics.get(rep)+"\t"+sampleRelativeEntropy.get(rep)); 
+	}
 	
 	public static void main(String[] args){
 		
@@ -263,10 +301,9 @@ public class ReadDistributionProfiler {
 
 		ReadDistributionProfiler profile = new ReadDistributionProfiler(econf,manager, fcLoader); 	
 		if (Args.parseFlags(args).contains("printComposite")){profile.turnOnPrintComposite();}
-		profile.StandardDeviationFromExpAndNull();
-		profile.StandardDeviationFromRandomReads();
-		profile.printWeightedStandardDeviationStatistics();		
-		
+		profile.computeReadDistributionStatistics();
+		profile.printStatistics();
+
 		manager.close();
 	}
 }
