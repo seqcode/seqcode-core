@@ -666,7 +666,7 @@ public class WeightMatrix {
     	}
     	// Now trim the ends
     	while(consensus.endsWith("N")){
-    		consensus = consensus.substring(0, consensus.length()-2);
+    		consensus = consensus.substring(0, consensus.length()-1);
     	}
     	if(consensus.length() < Kmin){ // Return an empty set if Kmin is gt than motif length
     		return ret;

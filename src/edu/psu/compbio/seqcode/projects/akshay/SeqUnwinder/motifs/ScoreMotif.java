@@ -45,7 +45,7 @@ public class ScoreMotif {
 			
 			for(String s: motKmers){
 				sb.append(s);sb.append("\n");
-				sb.append(SequenceUtils.reverseComplement(s));
+				sb.append(SequenceUtils.reverseComplement(s));sb.append("\n");
 			}
 			
 			int j=0;
