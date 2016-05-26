@@ -55,7 +55,7 @@ public class SimulateData {
 			if(motifs.containsKey(labels[0])){
 				mots.add(motifs.get(labels[0]));
 			}
-			if(motifs.containsKey(labels[1])){
+			if(labels.length > 1 && motifs.containsKey(labels[1])){
 				mots.add(motifs.get(labels[1]));
 			}
 			List<Double> insrtRate = new ArrayList<Double>();
@@ -107,6 +107,8 @@ public class SimulateData {
 		motsWithLabs.put("A", mots.get(0));
 		motsWithLabs.put("B", mots.get(1));
 		motsWithLabs.put("C", mots.get(2));
+		motsWithLabs.put("X", mots.get(3));
+		motsWithLabs.put("Y", mots.get(4));
 		
 		SimulateData sd = new SimulateData(gc);
 		sd.setMotifs(motsWithLabs);

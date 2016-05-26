@@ -118,7 +118,7 @@ public class MakeArff {
 			// Check if this subgroup has parents
 			boolean isRoot = true;
 			for(String labname: labelNames.keySet()){
-				if(s.startsWith(labname+"#") || s.endsWith("#"+labname) || s.contains("#"+labname+"#"))
+				if(s.startsWith(labname+"#") || s.endsWith("#"+labname) || s.contains("#"+labname+"#") || s.equals(labname))
 					isRoot = false;
 			}
 			if(labelNames.size() == 0)
