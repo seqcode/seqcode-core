@@ -21,8 +21,11 @@ public class SimulateData {
 	//public int[] subclasses = {1700,1200,1100,1400,1200,3400};
 	//public String[] classNames = {"I;B","I;A","I;C","II;C","II;A","II;B"};
 	
-	public int[] subclasses = {4000,1000,1000,2000,1500,500};
-	public String[] classNames = {"I;A","I;B","I;C","II;C","II;B","II;A"};
+	//public int[] subclasses = {2000,2000,2000,2000,2000};
+	//public String[] classNames = {"A","B","C","X","Y"};
+	
+	public int[] subclasses = {1400,200,200,200,200,1600,400,1600,200,200};
+	public String[] classNames = {"A;X","A;Y","B;X","B;Y","C;X","C;Y","A","B","C","X"};
 	
 	
 	/** Motifs to inset */
@@ -56,7 +59,7 @@ public class SimulateData {
 				mots.add(motifs.get(labels[1]));
 			}
 			List<Double> insrtRate = new ArrayList<Double>();
-			insrtRate.add(1.0);insrtRate.add(1.0);
+			insrtRate.add(0.8);insrtRate.add(0.8);
 			bs.setBack(markov);
 			bs.setInsertRate(insrtRate);
 			bs.setLen(win);

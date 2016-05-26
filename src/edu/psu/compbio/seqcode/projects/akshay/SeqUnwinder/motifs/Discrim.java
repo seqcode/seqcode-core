@@ -27,6 +27,7 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.sequence.SequenceUtils;
 import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.clusterkmerprofile.ClusterProfiles;
 import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.framework.SeqUnwinderConfig;
+import edu.psu.compbio.seqcode.projects.akshay.SeqUnwinder.motifs.DiscrimFromSeq.KmerModelScanner.HillsIndexComparator;
 import edu.psu.compbio.seqcode.projects.akshay.utils.MemeER;
 import edu.psu.compbio.seqcode.projects.multigps.utilities.Utils;
 
@@ -86,8 +87,11 @@ public class Discrim {
 		//Model specific features
 		protected String kmerModelName;
 		protected List<Region> modelRegions = new ArrayList<Region>();
+		protected List<String> modelSeqs = new ArrayList<String>();
 		
 		protected List<Region> posHills = new ArrayList<Region>();
+		protected List<String> posHillsSeqs = new ArrayList<String>();
+		
 		protected ArrayList<int[]> profiles = new ArrayList<int[]>();
 		protected List<Integer> clusterAssignment = new ArrayList<Integer>();
 		protected HashMap<Integer,String> posHillsToIndex =new HashMap<Integer,String>();
@@ -107,7 +111,7 @@ public class Discrim {
 			// First; split to get subgroup names
 			String[] subGsMod = kmerModelName.split("#");
 			
-			for(int p=0; p< seqConfig.getRegions().size(); p++){
+			for(int p=0; p< seqConfig.getPeakAnnotations().size(); p++){
 				String[] pieces = seqConfig.getPeakAnnotations().get(p).split(";");
 				boolean addReg = true;
 				
@@ -122,8 +126,13 @@ public class Discrim {
 						addReg = false;
 				}
 				
-				if(addReg)
-					modelRegions.add(seqConfig.getRegions().get(p));
+				if(addReg){
+					if(seqConfig.getRegions().size() > 0){
+						modelRegions.add(seqConfig.getRegions().get(p));
+					}else{
+						modelSeqs.add(seqConfig.getSeqs().get(p));
+					}
+				}
 			}
 			
 		}
@@ -132,7 +141,7 @@ public class Discrim {
 		public void execute() throws IOException{
 			// First, find, cluster and print the hills
 			clusterKmerProfilesAtMountains();
-			if(posHills.size() > 100){
+			if(posHills.size() > 100 || posHillsSeqs.size() >100){
 				System.err.println("Finished clustering K-mer profiles for model: "+kmerModelName);
 
 				// Now do meme search on each clusters separately
@@ -141,10 +150,9 @@ public class Discrim {
 				for(int c=0; c<seqConfig.getNumDiscrimClusters(); c++){ // Over each cluster
 					System.err.println("Loading sequences for meme analysis : "+kmerModelName+ "Cluster"+c);
 					List<String> seqs = new ArrayList<String>();
-					for(int p=0; p<posHills.size(); p++){
+					for(int p=0; p<(seqConfig.getRegions().size() > 0? posHills.size(): posHillsSeqs.size()); p++){
 						if(clusterAssignment.get(p) == c){
-							Region tmpR = posHills.get(p).getMidpoint().expand(seqConfig.getMemeSearchWin()/2);
-							String s = seqConfig.getSeqGen().execute(tmpR);
+							String s = seqConfig.getRegions().size() > 0 ? seqConfig.getSeqGen().execute(posHills.get(p).getMidpoint().expand(seqConfig.getMemeSearchWin()/2)) : posHillsSeqs.get(p);
 							if(MemeER.lowercaseFraction(s)<= SeqUnwinderConfig.MOTIF_FINDING_ALLOWED_REPETITIVE){
 								seqs.add(s);
 							}
@@ -190,19 +198,43 @@ public class Discrim {
 		//Fillers
 		private void fillHills() throws IOException{
 			List<Pair<Region,Double>> hills= new ArrayList<Pair<Region,Double>>();
-			hills= findHills();
-			List<Pair<Region,Double>> top_hills = sorthills(hills);
-			int index=0;
-			HashMap<String,Integer> addedHills = new HashMap<String,Integer>();
-			for(Pair<Region,Double> pr : top_hills){
-				if(!addedHills.containsKey(pr.car().getLocationString())){
-					posHills.add(pr.car());
-					posHillsToIndex.put(index,pr.car().getLocationString() );
-					posHillScores.put(index++, pr.cdr());
-					addedHills.put(pr.car().getLocationString(), 1);
-				}
+			List<Pair<String,Double>> seqlets = new ArrayList<Pair<String,Double>>();
+			if(seqConfig.getRegions().size() > 0){
+				hills= findHills();
+			}else{
+				seqlets = findSeqlets();
 			}
-			profiles = getProfilesAtPeaks(posHills);
+			
+			List<Pair<Region,Double>> top_hills = new ArrayList<Pair<Region,Double>>();
+			List<Pair<String,Double>> top_seqlets = new ArrayList<Pair<String,Double>>();
+			if(seqConfig.getRegions().size() > 0){		
+				sorthills(hills);
+			}else{
+				sortseqlets(seqlets);
+			}
+			
+			if(seqConfig.getRegions().size() > 0){
+				int index=0;
+				HashMap<String,Integer> addedHills = new HashMap<String,Integer>();
+				for(Pair<Region,Double> pr : top_hills){
+					if(!addedHills.containsKey(pr.car().getLocationString())){
+						posHills.add(pr.car());
+						posHillsToIndex.put(index,pr.car().getLocationString() );
+						posHillScores.put(index++, pr.cdr());
+						addedHills.put(pr.car().getLocationString(), 1);
+					}
+				}
+				profiles = getProfilesAtHills(posHills);
+			}else{
+				int index=0;
+				//HashMap<String,Integer> addedHills = new HashMap<String,Integer>();
+				for(Pair<String,Double> pr : top_seqlets){
+					posHillsSeqs.add(pr.car());
+					posHillsToIndex.put(index, "chr:"+index);
+					posHillScores.put(index++, pr.cdr());
+				}
+				profiles = getProfilesAtSeqlets(posHillsSeqs);
+			}
 		}
 		
 		private List<Pair<Region,Double>> sorthills(List<Pair<Region,Double>> hlls){
@@ -217,7 +249,20 @@ public class Discrim {
 			
 			return ret;
 		}
-		
+
+		private List<Pair<String,Double>> sortseqlets(List<Pair<String,Double>> hlls){
+			List<Pair<String,Double>> ret = new ArrayList<Pair<String,Double>>();
+			SeqletsIndexComparator comp = new SeqletsIndexComparator(hlls);
+			Integer[] indicies = comp.createIndexArray();
+			Arrays.sort(indicies, comp);
+
+			for(int i=0; i<Math.min(hlls.size(),SeqUnwinderConfig.NUM_HILLS); i++){
+				ret.add(hlls.get(indicies[i]));
+			}
+
+			return ret;
+		}
+
 		/**
 		 * Prints the mountain composition
 		 * @param useCache
@@ -227,15 +272,42 @@ public class Discrim {
 		public void clusterKmerProfilesAtMountains() throws IOException{
 			fillHills();
 			System.err.println("No of hills for K-mer model "+kmerModelName+" are :"+posHills.size());
-			if(posHills.size() > 100){
+			if(posHills.size() > 100 || posHillsSeqs.size() > 100){
 				ClusterProfiles clusterManager = new ClusterProfiles(SeqUnwinderConfig.ITRS_CLUS,seqConfig.getNumDiscrimClusters(),profiles,posHillsToIndex,seqConfig.getMinM(),seqConfig.getMaxM(),posHillScores,basedir_profiles);
 				clusterAssignment = clusterManager.execute();
 			}
 		}
 		
-		private ArrayList<int[]> getProfilesAtPeaks(List<Region> rs){
+
+		private ArrayList<int[]> getProfilesAtSeqlets(List<String> rs){
 			ArrayList<int[]> ret = new ArrayList<int[]>();
-			
+
+			for(String seq : rs){
+				int numK = 0;
+				for(int k=seqConfig.getKmin(); k<=seqConfig.getKmax(); k++){
+					numK += (int)Math.pow(4, k);
+				}
+				int[] pfl = new int[numK];
+				for(int k=seqConfig.getKmin(); k<=seqConfig.getKmax(); k++){
+					for(int i=0; i<(seq.length()-k+1); i++){
+						String currk = seq.substring(i, i+k);
+						String revcurrk = SequenceUtils.reverseComplement(currk);
+						int currKInt = RegionFileUtilities.seq2int(currk);
+						int revcurrKInt = RegionFileUtilities.seq2int(revcurrk);
+						int kmer = currKInt<revcurrKInt ? currKInt : revcurrKInt;
+						int baseind = seqConfig.getKmerBaseInd(currk);	
+						pfl[baseind+kmer]++;
+					}
+				}
+				ret.add(pfl);
+			}
+
+			return ret;
+		}
+
+		private ArrayList<int[]> getProfilesAtHills(List<Region> rs){
+			ArrayList<int[]> ret = new ArrayList<int[]>();
+
 			for(Region r: rs){
 				int[] pfl = new int[seqConfig.getNumK()];
 				String seq = seqConfig.getSeqGen().execute(r).toUpperCase();
@@ -320,6 +392,70 @@ public class Discrim {
 			return ret;
 		}
 		
+		private List<Pair<String,Double>> findSeqlets(){
+
+			// Detects if scanning is done for the positive or neg set from the sign of oddsThresh
+			//int classDetector = oddsThresh>0 ? 1:-1;
+
+			List<Pair<String,Double>> ret = new ArrayList<Pair<String,Double>>();
+
+			for(String seq : seqConfig.getSeqs()){
+				if(seq.contains("N"))
+					continue;
+				List<Pair<Region,Double>> mountains = new ArrayList<Pair<Region,Double>>();
+				for(int l=seqConfig.getMinM(); l<=seqConfig.getMaxM(); l++){
+					for(int i=0; i<(seq.length()-l+1); i++){
+						String motif = seq.substring(i, i+l);
+						double score=0.0;
+						for(int k=seqConfig.getKmin(); k<=seqConfig.getKmax(); k++){
+							for(int j=0; j<motif.length()-k+1; j++){
+								String currk = motif.substring(j, j+k);
+								String revcurrk = SequenceUtils.reverseComplement(currk);
+								int  currKInt = RegionFileUtilities.seq2int(currk);
+								int  revCurrKInt = RegionFileUtilities.seq2int(revcurrk);
+								int kmer = currKInt<revCurrKInt ? currKInt : revCurrKInt;
+								int baseInd = seqConfig.getKmerBaseInd(currk);
+								score = score+seqConfig.getKmerWeights().get(kmerModelName)[baseInd+kmer];
+							}
+						}
+						
+						// Generating a dummy region; easy to overlap
+						Region hill = new Region(seqConfig.getGenome(),"chr1",i,i+l-1);
+
+						Iterator<Pair<Region,Double>> it = mountains.iterator();
+						boolean add=true;
+						while(it.hasNext() && add){
+							Pair<Region,Double> pr = it.next();
+							Region currHill = pr.car();
+							Double currScore = pr.cdr();
+							if(currHill.overlaps(hill) && currScore<score){
+								it.remove();
+								add=true;
+							}else if(currHill.overlaps(hill) && currScore> score){
+								add=false;
+							}
+						}
+						if(add && score > seqConfig.getHillsThresh()){
+							mountains.add(new Pair<Region,Double>(hill,score));
+						}
+
+					}
+				}
+				
+				// Now convert these dummy regions into seqs
+				for(Pair<Region,Double> pr : mountains){
+					int subStrStart = pr.car().getStart();
+					int subStrEnd = pr.car().getEnd()+1;
+					String subStr = seq.substring(subStrStart, subStrEnd);
+					Pair<String,Double> seqPair = new Pair<String,Double>(subStr,pr.cdr());
+					ret.add(seqPair);	
+				}
+				
+				
+			}
+			return ret;
+		}
+		
 		public class HillsIndexComparator implements Comparator<Integer>{
 			
 			List<Pair<Region,Double>> hill;
@@ -341,6 +477,29 @@ public class Discrim {
 				return -1*(hill.get(o1).cdr().compareTo(hill.get(o2).cdr()));
 			}
 			
+		}
+		
+		public class SeqletsIndexComparator implements Comparator<Integer>{
+
+			List<Pair<String,Double>> hill;
+
+			public SeqletsIndexComparator(List<Pair<String,Double>> h) {
+				hill = h;
+			}
+
+			public Integer[] createIndexArray(){
+				Integer[] indexes = new Integer[hill.size()];
+				for(int i=0; i<indexes.length; i++){
+					indexes[i] = i;
+				}
+				return indexes;
+			}
+
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				return -1*(hill.get(o1).cdr().compareTo(hill.get(o2).cdr()));
+			}
+
 		}
 	}
 

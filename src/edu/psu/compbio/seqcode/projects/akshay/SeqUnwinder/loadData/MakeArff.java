@@ -299,11 +299,11 @@ public class MakeArff {
 			bw.write(sb.toString());
 
 			//for (Region r : regs) {
-			for(int r=0; r<seqConfig.getRegions().size(); r++){
+			for(int r=0; r< (seqConfig.getRegions().size() > 0 ? seqConfig.getRegions().size() : seqConfig.getSeqs().size()); r++){
 				for (int i = 0; i < numK; i++)
 					kmerCounts[i] = 0;
 
-				String seq = seqConfig.getSeqGen().execute(seqConfig.getRegions().get(r)).toUpperCase();
+				String seq = (seqConfig.getRegions().size() > 0 ? seqConfig.getSeqGen().execute(seqConfig.getRegions().get(r)).toUpperCase() : seqConfig.getSeqs().get(r));
 				// Check if the sequence (seq) contains any N's if present ignore
 				// them
 				if (seq.contains("N"))

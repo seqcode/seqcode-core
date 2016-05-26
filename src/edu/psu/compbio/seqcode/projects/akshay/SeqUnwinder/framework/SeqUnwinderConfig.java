@@ -66,6 +66,8 @@ public class SeqUnwinderConfig implements Serializable{
 	protected List<Point> peaks = new ArrayList<Point>();
 	/** List of regions (win/2 around the peak mid points) */
 	protected List<Region> regions = new ArrayList<Region>();
+	/** List of sequences around peaks*/
+	protected List<String> seqs = new ArrayList<String>();
 	/** Flag to include random/background regions in the model */
 	protected boolean generateRandRegs=false;
 	/** Flag to mask repeats while generating random regions */
@@ -155,6 +157,7 @@ public class SeqUnwinderConfig implements Serializable{
 	public List<Point> getPeaks(){return peaks;}
 	public List<String> getPeakAnnotations(){return annotations;}
 	public List<Region> getRegions(){return regions;}
+	public List<String> getSeqs(){return seqs;}
 	public Genome getGenome(){return gcon.getGenome();}
 	public SequenceGenerator<Region> getSeqGen(){return seqgen;}
 	public int getWin(){return win;}
@@ -233,11 +236,11 @@ public class SeqUnwinderConfig implements Serializable{
 		}
 
 		// Load peaks and annotations
-		if(!ap.hasKey("peaks")){
+		if(!ap.hasKey("peaks") && !ap.hasKey("seqs")){
 			System.err.println("Please provide ChIP-Seq binding locations and try again !!");
 			SeqUnwinderConfig.getSeqUnwinderArgsList();
 			System.exit(1);
-		}else{
+		}else if(ap.hasKey("peaks")){
 			// Reading peaks files and storing annotations
 			String peaksFile = ap.getKeyValue("peaks");
 
@@ -258,12 +261,33 @@ public class SeqUnwinderConfig implements Serializable{
 			
 			// Converting peaks to regions
 			regions.addAll(RegionFileUtilities.loadRegionsFromPeakFile(gcon.getGenome(), peaksFile, win));
+		}else if(ap.hasKey("seqs")){
+			// Reading peaks files and storing annotations
+			String seqsFile = ap.getKeyValue("seqs");
+
+			FileReader fr = new FileReader(seqsFile);
+			BufferedReader br = new BufferedReader(fr);
+			String line;
+			while((line = br.readLine()) != null){
+				if(!line.startsWith("#")){
+					String[] pieces = line.split("\t");
+					annotations.add(pieces[1]);
+					seqs.add(pieces[0]);
+				}
+			}
+			br.close();
 		}
 
 
 		// Check id random regions are needed to be created 
-		if(ap.hasKey("makerandregs"))
-			generateRandRegs = true;
+		if(ap.hasKey("makerandregs")){
+			if(ap.hasKey("geninfo") || ap.hasKey("genome") || ap.hasKey("seq")){
+				generateRandRegs = true;
+			}else{
+				System.err.println("Please provide genome files!!!");
+				System.exit(1);
+			}
+		}
 		if(ap.hasKey("screenRepeats"))
 			screenReps = true;
 		
@@ -376,9 +400,10 @@ public class SeqUnwinderConfig implements Serializable{
 				" Genome:\n" +
 				"\t--geninfo <genome info file> AND --seq <fasta seq directory reqd if using motif prior>\n" +
 				" Loading Data:\n" +
-				"\t--peaks <List of TF binding sites with annotations; eg: chr1:151736000  Shared;Proximal>\n" +
+				"\t--peaks <List of TF binding sites with annotations; eg: chr1:151736000  Shared;Proximal> OR" +
+				"\t--seqs <DNA sequences around at TF binding sites; eg: ATGC...TGC	Shared;Proximal>\n"+
 				"\t--win <window around peaks to consider for k-mer counting>\n" +
-				"\t--makerandregs <flag to make random genomic regions as an extra outgroup class in classification>\n" +
+				"\t--makerandregs <Flag to make random genomic regions as an extra outgroup class in classification (Only applicable when genome is provide.)>\n" +
 				"\t--screenRepeats <flag to screen replicates while creating random genomic regions>\n" +
 				" Running SeqUnwinder:\n" +
 				"\t--minK <minimum length of k-mer (default = 4)>\n" + 
