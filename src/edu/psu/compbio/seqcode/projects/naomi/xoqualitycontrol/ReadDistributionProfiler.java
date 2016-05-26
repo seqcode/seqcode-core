@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.special.Erf;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
@@ -19,7 +18,7 @@ import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
-import edu.psu.compbio.seqcode.projects.naomi.FeatureCountsLoader;
+import edu.psu.compbio.seqcode.projects.naomi.sequtils.FeatureCountsLoader;
 
 /**
  * Holds methods to quantify non-uniform distributions around reference features
@@ -164,9 +163,9 @@ public class ReadDistributionProfiler {
 		}
 	}//end of test
 	
-	/***************************
-	**  Housekeeping methods  **
-	****************************/
+	/**************
+	**  Methods  **
+	***************/
 	public double TotalCounts(double[] array){	
 		int totalCounts = 0;
 		for (int i = 0; i <array.length;i++){totalCounts+=array[i];}
@@ -281,14 +280,27 @@ public class ReadDistributionProfiler {
 	}
 	
 	public static void main(String[] args){
+		ArgParser ap = new ArgParser(args);		
+        if((!ap.hasKey("peaks") && !ap.hasKey("regions")) ) { 
+            System.err.println("Usage:\n " +
+                               "ReadDistributionProfiler " +
+                               "--species <organism;genome> OR\n" +
+                               "--geninfo <genome info> AND --seq <path to seqs>\n" +
+                               "--peaks <file containing coordinates of peaks> \n" +
+                               "--win <window of sequence to take around peaks> \n" +
+                               "\nOPTIONS:\n" +
+                               "--readshift \n" +
+                               "--printComposite \n" +
+                               "");
+            System.exit(0);
+        }
 		
 		GenomeConfig gconf = new GenomeConfig(args);
 		ExptConfig econf = new ExptConfig(gconf.getGenome(), args);		
 		econf.setPerBaseReadFiltering(false);		
 		ExperimentManager manager = new ExperimentManager(econf);
 		
-		// parsing command line arguments
-		ArgParser ap = new ArgParser(args);		
+		// parsing command line arguments	
 		int win = Args.parseInteger(args, "win", 1000);
 		int fivePrimeShift = 0;
 		fivePrimeShift = Args.parseInteger(args,"readshift", 6);

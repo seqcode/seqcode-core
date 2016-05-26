@@ -15,7 +15,7 @@ import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
 import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
-import edu.psu.compbio.seqcode.projects.naomi.FeatureCountsLoader;
+import edu.psu.compbio.seqcode.projects.naomi.sequtils.FeatureCountsLoader;
 
 /**
  * Aligns ChIP-exo reads using Smith Waterman overlap alignment.

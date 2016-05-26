@@ -1,4 +1,4 @@
-package edu.psu.compbio.seqcode.projects.naomi;
+package edu.psu.compbio.seqcode.projects.naomi.sequtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
