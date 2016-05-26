@@ -154,7 +154,7 @@ public class MakeArff {
 			
 			int subSind = 0;
 			for(String subS : subGroupNames){ 
-				if(subS.startsWith(s+"#") || subS.endsWith("#"+s) || subS.contains("#"+s+"#")){
+				if(subS.startsWith(s+"#") || subS.endsWith("#"+s) || subS.contains("#"+s+"#") || subS.equals(s)){
 					designBuilder.append(subSind+","); // Assigned subgroups
 				}
 				subSind++;
