@@ -26,6 +26,7 @@ public class MotifEM {
 	protected GenomeConfig gconfig;	
 	protected List<StrandedPoint> strandedPoints;
 	protected int window;
+	protected List<String> sequences;
 	
 	int q = 10 ; // number of iterations
 	int N; // number of sequences
@@ -34,6 +35,7 @@ public class MotifEM {
 	double[][][] z; // estimate after q iterations of EM of the probabilities that the site begins at position j in sequence i given the model and the data.  
 	double[][][] p; // estimate after q iterations of EM of the probabilities of letter l appearing in position k of the motif
 	double[][] po; // estimate after q iterations of EM of the base frequencies of outside of motif
+	double[][][] Y; // indicator variable that equals if the site starts at pos j in sequence i, and 0 otherwise
 	
 	public MotifEM(GenomeConfig gcon, List<StrandedPoint> spoints, int win, double[][] pwm){
 		gconfig = gcon;	
@@ -45,6 +47,7 @@ public class MotifEM {
 		z = new double[N][L-W+1][q];
 		p = new double[4][W][q];
 		po = new double [4][q];	
+		Y = new double[4][L][N];
 		// initialize all the matrix
 		for (int i = 0; i <N ; i++)
 			for (int j = 0; j <= L-W; j ++)
@@ -60,9 +63,12 @@ public class MotifEM {
 		for (int base = 0; base <=4; base++)
 			for (int itr = 0; itr <q ; itr++)
 				po[base][itr] = 0;
+		for (int base = 0; base <=4; base++)
+			for (int l = 0; l <L; l++){}
+		
 	}
 	
-	public void runMotifEM(){
+	public void loadSequencesFromRegions(){
 		// converting stranded points to stranded regions
 		List<StrandedRegion> regionList = new ArrayList<StrandedRegion>();
 		for(Point p: strandedPoints){		
@@ -73,7 +79,6 @@ public class MotifEM {
 		}
 		
 		// get sequences from regions
-		List<String> sequences = new ArrayList<String>();
 		SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>(gconfig.getGenome());		
 		for (StrandedRegion reg : regionList){
 			String seq = seqgen.execute(reg);
@@ -85,7 +90,10 @@ public class MotifEM {
 			for (int w = 0; w <W ; w++)
 				System.out.print(p[base][w][0]+"\t");
 			System.out.println();
-		}		
+		}	
+	}
+	
+	public void runMotifEM(){
 		
 		int round = 0;
 		boolean converged = false;
@@ -106,24 +114,64 @@ public class MotifEM {
 			//Maximization		
 	}
 	
-	public void updatePositions(int round){
-		// for each sequence
-		for (int i = 0; i <N ; i++){
-			for (int j = 0; j <= L-W; j ++){
-				
+	public void updatePositions(int round){	// make sure this is correct
+		double[] z_n = new double[L-W+1];
+		for (int j = 0 ; j <= L-W; j ++)
+			z_n[j] = 1;
+		double z_d = 0;
+		int n = 0;
+		for (String seq : sequences){ // for each sequence
+			for (int j = 0; j <= L-W; j++){
+				for(int w = 0; w < W; w++)
+					z_n[j] *= p[getBaseIndex(seq,j+w)][w][round];
+				z_d += z_n[j];
 			}
-			
-			
+			for (int j = 0 ; j <= L-W; j++)
+				z[n][j][round] = z_n[j]/z_d;
+			n++;
+		}
+	}
+	
+	public void updateMotifFrequencies(int round){
+		double[][] epsilon = new double [4][W];
+		for (int base = 0; base <4; base++)
+			for (int w = 0 ; w <W ; w++)
+				epsilon[base][w] = 0;
+		int n = 0;
+		for (String seq : sequences){ // for each sequence
+			for (int j = 0; j <= L-W; j++){
+				for(int w = 0; w < W; w++){
+					epsilon[getBaseIndex(seq,j+w)][w] += z[n][j][round]; // make sure that this is correct
+				}
+			}			
+			n++;
+		}
+		for (int base = 0; base < 4; base++){
+			for (int w = 0; w <W ; w++)
+				p[base][w][round] = epsilon[base][w]/sequences.size();
 		}
 		
 	}
 	
-	public void updateMotifFrequencies(int round){
-		
+	public void updateBackgroundBaseFrequencies(int round){
+		double[] epsilon_o = new double[4];
 	}
 	
-	public void updateBackgroundBaseFrequencies(int round){
-		
+	public int getBaseIndex(String seq, int j){
+		int basePos = -1;
+		if (seq.charAt(j) == 'A'){
+			basePos = 0;
+		}else if (seq.charAt(j) == 'C'){
+			basePos = 1;
+		}else if (seq.charAt(j) == 'G'){
+			basePos = 2;
+		}else if (seq.charAt(j) == 'T'){
+			basePos = 3;
+		}else{
+			System.err.println("only include ACGT bases");
+			System.exit(0);
+		}
+		return basePos;		
 	}
 	
 
