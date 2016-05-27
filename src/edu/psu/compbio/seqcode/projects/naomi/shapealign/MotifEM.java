@@ -45,24 +45,24 @@ public class MotifEM {
 		N = strandedPoints.size();
 	//	L = window+1;
 		
-		z = new double[N][L-W+1][q];
-		p = new double[4][W][q];
-		po = new double [4][q];		
+		z = new double[N][L-W+1][q+1];
+		p = new double[4][W][q+1];
+		po = new double [4][q+1];		
 		
 		// initialize all the matrix
 		for (int i = 0; i <N ; i++)
 			for (int j = 0; j <= L-W; j ++)
-				for (int itr = 0 ; itr <q ; itr++)
+				for (int itr = 0 ; itr <= q ; itr++)
 					z[i][j][itr] = 0;		
 		for (int base = 0 ; base < 4; base++){
 			for (int w = 0; w <W ; w++){
 				p[base][w][0] = pwm[base][w];
-				for (int itr = 1 ; itr <q ; itr++)
+				for (int itr = 1 ; itr <= q ; itr++)
 					p[base][w][itr] = 0;
 			}
 		}
 		for (int base = 0; base <4; base++)
-			for (int itr = 0; itr <q ; itr++)
+			for (int itr = 0; itr <= q ; itr++)
 				po[base][itr] = 0;
 	}
 	
@@ -167,25 +167,23 @@ public class MotifEM {
 		}
 		for (int base = 0; base < 4; base++){
 			for (int w = 0; w <W ; w++)
-				p[base][w][round] = expectedMotifFreq[base][w]/sequences.size();
+				p[base][w][round+1] = expectedMotifFreq[base][w]/sequences.size();
 		}
 		
 		//printing for test
 		System.out.println("printing p : iteration # "+round);
 		for (int i = 0; i <p.length; i++){
 			for (int j = 0; j < p[0].length; j++){
-				System.out.print(p[i][j][round]+"\t");
+				System.out.print(p[i][j][round+1]+"\t");
 			}
 			System.out.println();
 		}
 		
 		// check for convergence based on values in p
-		if (round != 0){
-			for (int i = 0; i <p.length; i++){
-				for (int j = 0; j < p[0].length; j++){
-					if (Math.abs(p[i][j][round] - p[i][j][round-1]) < epsilon)
-						converged = true;
-				}
+		for (int i = 0; i <p.length; i++){
+			for (int j = 0; j < p[0].length; j++){
+				if (Math.abs(p[i][j][round+1] - p[i][j][round]) < epsilon)
+					converged = true;
 			}
 		}
 	}
@@ -215,12 +213,12 @@ public class MotifEM {
 			n++;			
 		}
 		for (int base = 0; base <4 ; base++)
-			po[base][round] = background[base]/(sequences.size()*(L-W)); // po total should add up to 1 !!
+			po[base][round+1] = background[base]/(sequences.size()*(L-W)); // po total should add up to 1 !!
 		
 		//printing for test
 		System.out.println("printing po : iteration # "+round);
 		for (int i = 0; i <po.length; i++){
-			System.out.println(po[i][round]);
+			System.out.println(po[i][round+1]);
 		}
 	}
 	
