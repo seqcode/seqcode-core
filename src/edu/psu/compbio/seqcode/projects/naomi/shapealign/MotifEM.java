@@ -42,7 +42,8 @@ public class MotifEM {
 		strandedPoints = spoints;
 		window = win;	
 		N = strandedPoints.size();
-		L = window+1;
+	//	L = window+1;
+		L = 6;
 		
 		z = new double[N][L-W+1][q];
 		p = new double[4][W][q];
@@ -136,8 +137,9 @@ public class MotifEM {
 		int n = 0;
 		for (String seq : sequences){ // for each sequence
 			for (int j = 0; j <= L-W; j++){
-				for(int w = 0; w < W; w++)
-					z_n[j] *= p[getBaseIndex(seq,j+w)][w][round];
+				for(int w = 0; w < W; w++){
+					z_n[j] *= p[getBaseIndex(seq,j+w)][w][round];  // error
+				}
 				z_d += z_n[j];
 			}
 			for (int j = 0 ; j <= L-W; j++)
