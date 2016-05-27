@@ -257,7 +257,7 @@ public class MotifEM {
 	    String gLine = " g  0.166 0.167 0.167";
 	    String tLine = " t  0.500 0.166 0.500"; 
 		
-	    DenseDoubleMatrix2D pwm  = PWMParser.parsePWM(6, aLine, cLine, gLine, tLine);
+	    DenseDoubleMatrix2D pwm  = PWMParser.parsePWM(3, aLine, cLine, gLine, tLine);
 	    System.out.println(pwm.toString());
 
 	    
