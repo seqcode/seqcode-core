@@ -49,12 +49,12 @@ public class MotifEM {
 		po = new double [4][q];	
 		Y = new double[4][L][N];
 		
-		for (int i = 0; i <pwm.length; i++)
-			for (int j = 0; j <pwm[0].length; j++)
-				System.out.print(pwm[i][j]);
-			System.out.println();
-		
-		
+		for (int i = 0; i <pwm.length; i++){
+			for (int j = 0; j <pwm[0].length; j++){
+				System.out.print(pwm[i][j]+"\t");		
+			}
+			System.out.println();		
+		}		
 		
 		// initialize all the matrix
 		for (int i = 0; i <N ; i++)
@@ -71,9 +71,6 @@ public class MotifEM {
 		for (int base = 0; base <4; base++)
 			for (int itr = 0; itr <q ; itr++)
 				po[base][itr] = 0;
-		for (int base = 0; base <4; base++)
-			for (int l = 0; l <L; l++){}
-		
 	}
 	
 	public void loadSequencesFromRegions(){
@@ -97,7 +94,7 @@ public class MotifEM {
 	public void loadTestSequence(){
 		String seq1 = "TATTTG";
 		String seq2 = "TTATTC";
-		String seq3 = "GATTT";
+		String seq3 = "GATTTG";
 		sequences.add(seq1.toUpperCase());
 		sequences.add(seq2.toUpperCase());
 		sequences.add(seq3.toUpperCase());
