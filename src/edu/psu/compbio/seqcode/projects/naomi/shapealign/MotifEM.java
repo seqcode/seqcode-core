@@ -26,7 +26,7 @@ public class MotifEM {
 	protected GenomeConfig gconfig;	
 	protected List<StrandedPoint> strandedPoints;
 	protected int window;
-	protected List<String> sequences;
+	protected List<String> sequences = new ArrayList<String>();
 	
 	int q = 10 ; // number of iterations
 	int N; // number of sequences
@@ -264,7 +264,6 @@ public class MotifEM {
 		
 	    DenseDoubleMatrix2D pwm  = PWMParser.parsePWM(3, aLine, cLine, gLine, tLine);
 	    System.out.println(pwm.toString());
-
 	    
 		MotifEM motifEM = new MotifEM(gconf, strandedPoints, win, pwm.toArray());
 		motifEM.loadTestSequence();
