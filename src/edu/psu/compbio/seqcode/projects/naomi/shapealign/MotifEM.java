@@ -28,14 +28,15 @@ public class MotifEM {
 	protected int window;
 	protected List<String> sequences = new ArrayList<String>();
 	
-	int q = 10 ; // number of iterations
+	boolean converged = false;
+	final static double epsilon = 0.01;  // parameter for convergence	
+	final static int  q = 10 ; // maximum number of EM iterations
 	int N; // number of sequences
 	int W = 3; // length of the motif    /** hard coded
-	int L; // length of each sequences
+	int L = 6; // length of each sequences /** hard coded
 	double[][][] z; // estimate after q iterations of EM of the probabilities that the site begins at position j in sequence i given the model and the data.  
 	double[][][] p; // estimate after q iterations of EM of the probabilities of letter l appearing in position k of the motif
 	double[][] po; // estimate after q iterations of EM of the base frequencies of outside of motif
-	double[][][] Y; // indicator variable that equals if the site starts at pos j in sequence i, and 0 otherwise
 	
 	public MotifEM(GenomeConfig gcon, List<StrandedPoint> spoints, int win, double[][] pwm){
 		gconfig = gcon;	
@@ -43,12 +44,10 @@ public class MotifEM {
 		window = win;	
 		N = strandedPoints.size();
 	//	L = window+1;
-		L = 6; // /** hard coded
 		
 		z = new double[N][L-W+1][q];
 		p = new double[4][W][q];
-		po = new double [4][q];	
-		Y = new double[4][L][N];	
+		po = new double [4][q];		
 		
 		// initialize all the matrix
 		for (int i = 0; i <N ; i++)
@@ -108,8 +107,7 @@ public class MotifEM {
 	
 	public void runMotifEM(){		
 		int round = 0;
-		boolean converged = false;
- //       while (!converged || round <q){
+        while (!converged || round <q){
         	
         	updatePositions(round);
         	
@@ -117,8 +115,10 @@ public class MotifEM {
         	
         	updateBackgroundBaseFrequencies(round);
         	
+        	computeMaximumLikelihood(round);
+        	
         	round ++;
- //       }	
+        }	
         	
 	}
 	
@@ -142,49 +142,59 @@ public class MotifEM {
 		}
 		
 		// printing for test
-		System.out.println("printing z");
+		System.out.println("printing z: iteration # "+round);
 		for (int i = 0; i <z.length; i++){
 			for (int j = 0; j < z[0].length; j++){
-				System.out.print(z[i][j][0]+"\t");
+				System.out.print(z[i][j][round]+"\t");
 			}
 			System.out.println();
 		}		
 	}
 	
 	public void updateMotifFrequencies(int round){
-		double[][] epsilon = new double [4][W];
+		double[][] expectedMotifFreq = new double [4][W];
 		for (int base = 0; base <4; base++)
 			for (int w = 0 ; w <W ; w++)
-				epsilon[base][w] = 0;
+				expectedMotifFreq[base][w] = 0;
 		int n = 0;
 		for (String seq : sequences){ // for each sequence
 			for (int j = 0; j <= L-W; j++){
 				for(int w = 0; w < W; w++){
-					epsilon[getBaseIndex(seq,j+w)][w] += z[n][j][round]; // make sure that this is correct
+					expectedMotifFreq[getBaseIndex(seq,j+w)][w] += z[n][j][round]; // make sure that this is correct
 				}
 			}			
 			n++;
 		}
 		for (int base = 0; base < 4; base++){
 			for (int w = 0; w <W ; w++)
-				p[base][w][round] = epsilon[base][w]/sequences.size();
+				p[base][w][round] = expectedMotifFreq[base][w]/sequences.size();
 		}
 		
 		//printing for test
-		System.out.println("printing p");
+		System.out.println("printing p : iteration # "+round);
 		for (int i = 0; i <p.length; i++){
 			for (int j = 0; j < p[0].length; j++){
-				System.out.print(p[i][j][0]+"\t");
+				System.out.print(p[i][j][round]+"\t");
 			}
 			System.out.println();
 		}
 		
+		// check for convergence based on values in p
+		if (round != 0){
+			for (int i = 0; i <p.length; i++){
+				for (int j = 0; j < p[0].length; j++){
+					if (Math.abs(p[i][j][round] - p[i][j][round-1]) < epsilon)
+						converged = true;
+				}
+			}
+		}
 	}
 	
+	// make sure that this is correct
 	public void updateBackgroundBaseFrequencies(int round){
-		double[] epsilon_o = new double[4];
+		double[] background = new double[4];
 		for (int base = 0; base <4; base++)
-			epsilon_o[base] = 0;
+			background[base] = 0;
 		int n = 0;
 		for (String seq : sequences){
 			double[] totalBaseCounts = new double[4];
@@ -199,20 +209,27 @@ public class MotifEM {
 					seqBaseCounts[getBaseIndex(seq,w+j)]--;
 				}
 				for (int base = 0; base <4; base++){
-					epsilon_o[base] += seqBaseCounts[base]*z[n][j][round];
+					background[base] += seqBaseCounts[base]*z[n][j][round];
 				}
 			}
 			n++;			
 		}
 		for (int base = 0; base <4 ; base++)
-			po[base][round] = epsilon_o[base]/(sequences.size()*(L-W)); // po total should add up to 1 !!
+			po[base][round] = background[base]/(sequences.size()*(L-W)); // po total should add up to 1 !!
 		
 		//printing for test
-		System.out.println("printing po");
+		System.out.println("printing po : iteration # "+round);
 		for (int i = 0; i <po.length; i++){
-			System.out.println(po[i][0]);
+			System.out.println(po[i][round]);
 		}
 	}
+	
+	public void computeMaximumLikelihood(int round){
+		
+	}
+	
+	
+	
 	
 	public int getBaseIndex(String seq, int j){
 		int basePos = -1;
