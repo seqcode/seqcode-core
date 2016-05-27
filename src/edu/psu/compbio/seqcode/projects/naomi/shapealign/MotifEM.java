@@ -84,8 +84,22 @@ public class MotifEM {
 			String seq = seqgen.execute(reg);
 			sequences.add(seq.toUpperCase());
 		}	
+	}
+	
+	public void loadTestSequence(){
+		String seq1 = "TATTTG";
+		String seq2 = "TTATTC";
+		String seq3 = "GATTT";
+		sequences.add(seq1.toUpperCase());
+		sequences.add(seq2.toUpperCase());
+		sequences.add(seq3.toUpperCase());
 		
-		// checking how pwm 2d matrix is arranged
+		System.out.println("printing test sequences");
+		for (String seq : sequences){
+			System.out.println(seq);
+		}
+		
+		System.out.println("checking how pwm 2d matrix is arranged");
 		for (int base = 0 ; base < p.length; base++ ){
 			for (int w = 0; w <W ; w++)
 				System.out.print(p[base][w][0]+"\t");
@@ -93,11 +107,10 @@ public class MotifEM {
 		}	
 	}
 	
-	public void runMotifEM(){
-		
+	public void runMotifEM(){		
 		int round = 0;
 		boolean converged = false;
-        while (!converged || round <q){
+ //       while (!converged || round <q){
         	
         	updatePositions(round);
         	
@@ -105,13 +118,9 @@ public class MotifEM {
         	
         	updateBackgroundBaseFrequencies(round);
         	
-        	
         	round ++;
-        }
-        
-			//Expectation
-			
-			//Maximization		
+ //       }	
+        	
 	}
 	
 	public void updatePositions(int round){	// make sure this is correct
@@ -130,6 +139,15 @@ public class MotifEM {
 				z[n][j][round] = z_n[j]/z_d;
 			n++;
 		}
+		
+		// printing for test
+		System.out.println("printing z");
+		for (int i = 0; i <z.length; i++){
+			for (int j = 0; j < z[0].length; j++){
+				System.out.print(z[i][j][0]);
+			}
+			System.out.println();
+		}		
 	}
 	
 	public void updateMotifFrequencies(int round){
@@ -151,10 +169,48 @@ public class MotifEM {
 				p[base][w][round] = epsilon[base][w]/sequences.size();
 		}
 		
+		//printing for test
+		System.out.println("printing p");
+		for (int i = 0; i <p.length; i++){
+			for (int j = 0; j < p[0].length; j++){
+				System.out.print(p[i][j][0]);
+			}
+			System.out.println();
+		}
+		
 	}
 	
 	public void updateBackgroundBaseFrequencies(int round){
 		double[] epsilon_o = new double[4];
+		for (int base = 0; base <4; base++)
+			epsilon_o[base] = 0;
+		int n = 0;
+		for (String seq : sequences){
+			double[] totalBaseCounts = new double[4];
+			for (int base = 0; base <4 ; base++)
+				totalBaseCounts[base] = 0;
+			for (int l = 0; l < L ; l++)
+				totalBaseCounts[getBaseIndex(seq,l)] ++;  //total base counts for one sequence
+			for (int j = 0; j <= L-W ; j ++){ // subtract bases for the window size W each time for j times
+				double[] seqBaseCounts = new double[4];
+				System.arraycopy(totalBaseCounts, 0, seqBaseCounts, 0, totalBaseCounts.length);
+				for (int w = 0; w < W; w++){
+					seqBaseCounts[getBaseIndex(seq,w+j)]--;
+				}
+				for (int base = 0; base <4; base++){
+					epsilon_o[base] += seqBaseCounts[base]*z[n][j][round];
+				}
+			}
+			n++;			
+		}
+		for (int base = 0; base <4 ; base++)
+			po[base][q] = epsilon_o[base]/(sequences.size()*(L-W)); // po total should add up to 1 !!
+		
+		//printing for test
+		System.out.println("printing po");
+		for (int i = 0; i <po.length; i++){
+			System.out.println(po[i]);
+		}
 	}
 	
 	public int getBaseIndex(String seq, int j){
@@ -196,16 +252,17 @@ public class MotifEM {
 		int win = Args.parseInteger(args, "win", 100);
 		List<StrandedPoint> strandedPoints = RegionFileUtilities.loadStrandedPointsFromMotifFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
 		
-	    String aLine = " a  1.0000 0.9487 0.5641 0.0000 0.0000 0.7949"; 
-	    String cLine = " c  0.0000 0.0513 0.2051 0.3590 1.0000 0.0000"; 
-	    String gLine = " g  0.0000 0.0000 0.1538 0.2436 0.0000 0.0641";
-	    String tLine = " t  0.0000 0.0000 0.0769 0.3974 0.0000 0.1410"; 
+	    String aLine = " a  0.167 0.500 0.166"; 
+	    String cLine = " c  0.167 0.167 0.167"; 
+	    String gLine = " g  0.166 0.167 0.167";
+	    String tLine = " t  0.500 0.166 0.500"; 
 		
 	    DenseDoubleMatrix2D pwm  = PWMParser.parsePWM(6, aLine, cLine, gLine, tLine);
 	    System.out.println(pwm.toString());
 
 	    
 		MotifEM motifEM = new MotifEM(gconf, strandedPoints, win, pwm.toArray());
+		motifEM.loadTestSequence();
 		motifEM.runMotifEM();
 	}
 
