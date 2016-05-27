@@ -30,7 +30,7 @@ public class MotifEM {
 	
 	int q = 10 ; // number of iterations
 	int N; // number of sequences
-	int W = 3; // length of the motif
+	int W = 3; // length of the motif    /** hard coded
 	int L; // length of each sequences
 	double[][][] z; // estimate after q iterations of EM of the probabilities that the site begins at position j in sequence i given the model and the data.  
 	double[][][] p; // estimate after q iterations of EM of the probabilities of letter l appearing in position k of the motif
@@ -43,19 +43,19 @@ public class MotifEM {
 		window = win;	
 		N = strandedPoints.size();
 	//	L = window+1;
-		L = 6;
+		L = 6; // /** hard coded
 		
 		z = new double[N][L-W+1][q];
 		p = new double[4][W][q];
 		po = new double [4][q];	
 		Y = new double[4][L][N];
 		
-		for (int i = 0; i <pwm.length; i++){
-			for (int j = 0; j <pwm[0].length; j++){
-				System.out.print(pwm[i][j]+"\t");		
-			}
-			System.out.println();		
-		}		
+//		for (int i = 0; i <pwm.length; i++){
+//			for (int j = 0; j <pwm[0].length; j++){
+//				System.out.print(pwm[i][j]+"\t");		
+//			}
+//			System.out.println();		
+//		}		
 		
 		// initialize all the matrix
 		for (int i = 0; i <N ; i++)
@@ -130,12 +130,13 @@ public class MotifEM {
 	}
 	
 	public void updatePositions(int round){	// make sure this is correct
-		double[] z_n = new double[L-W+1];
-		for (int j = 0 ; j <= L-W; j ++)
-			z_n[j] = 1;
-		double z_d = 0;
 		int n = 0;
 		for (String seq : sequences){ // for each sequence
+			double z_d = 0; // initialize denominator
+			double[] z_n = new double[L-W+1];
+			for (int j = 0 ; j <= L-W; j ++) //initialize numerator
+				z_n[j] = 1;		
+			
 			for (int j = 0; j <= L-W; j++){
 				for(int w = 0; w < W; w++){
 					z_n[j] *= p[getBaseIndex(seq,j+w)][w][round];  // error
@@ -151,7 +152,7 @@ public class MotifEM {
 		System.out.println("printing z");
 		for (int i = 0; i <z.length; i++){
 			for (int j = 0; j < z[0].length; j++){
-				System.out.print(z[i][j][0]);
+				System.out.print(z[i][j][0]+"\t");
 			}
 			System.out.println();
 		}		
@@ -180,7 +181,7 @@ public class MotifEM {
 		System.out.println("printing p");
 		for (int i = 0; i <p.length; i++){
 			for (int j = 0; j < p[0].length; j++){
-				System.out.print(p[i][j][0]);
+				System.out.print(p[i][j][0]+"\t");
 			}
 			System.out.println();
 		}
@@ -264,7 +265,7 @@ public class MotifEM {
 	    String gLine = " g  0.166 0.167 0.167";
 	    String tLine = " t  0.500 0.166 0.500"; 
 		
-	    DenseDoubleMatrix2D pwm  = PWMParser.parsePWM(3, aLine, cLine, gLine, tLine);
+	    DenseDoubleMatrix2D pwm  = PWMParser.parsePWM(3, aLine, cLine, gLine, tLine); ///** 3 is hard coded
 	    System.out.println(pwm.toString());
 	    
 		MotifEM motifEM = new MotifEM(gconf, strandedPoints, win, pwm.toArray());
