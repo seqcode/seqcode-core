@@ -48,22 +48,30 @@ public class MotifEM {
 		p = new double[4][W][q];
 		po = new double [4][q];	
 		Y = new double[4][L][N];
+		
+		for (int i = 0; i <pwm.length; i++)
+			for (int j = 0; j <pwm[0].length; j++)
+				System.out.print(pwm[i][j]);
+			System.out.println();
+		
+		
+		
 		// initialize all the matrix
 		for (int i = 0; i <N ; i++)
 			for (int j = 0; j <= L-W; j ++)
 				for (int itr = 0 ; itr <q ; itr++)
 					z[i][j][itr] = 0;		
-		for (int base = 0 ; base <= 4; base++){
+		for (int base = 0 ; base < 4; base++){
 			for (int w = 0; w <W ; w++){
 				p[base][w][0] = pwm[base][w];
 				for (int itr = 1 ; itr <q ; itr++)
 					p[base][w][itr] = 0;
 			}
 		}
-		for (int base = 0; base <=4; base++)
+		for (int base = 0; base <4; base++)
 			for (int itr = 0; itr <q ; itr++)
 				po[base][itr] = 0;
-		for (int base = 0; base <=4; base++)
+		for (int base = 0; base <4; base++)
 			for (int l = 0; l <L; l++){}
 		
 	}
