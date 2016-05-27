@@ -48,14 +48,7 @@ public class MotifEM {
 		z = new double[N][L-W+1][q];
 		p = new double[4][W][q];
 		po = new double [4][q];	
-		Y = new double[4][L][N];
-		
-//		for (int i = 0; i <pwm.length; i++){
-//			for (int j = 0; j <pwm[0].length; j++){
-//				System.out.print(pwm[i][j]+"\t");		
-//			}
-//			System.out.println();		
-//		}		
+		Y = new double[4][L][N];	
 		
 		// initialize all the matrix
 		for (int i = 0; i <N ; i++)
@@ -139,7 +132,7 @@ public class MotifEM {
 			
 			for (int j = 0; j <= L-W; j++){
 				for(int w = 0; w < W; w++){
-					z_n[j] *= p[getBaseIndex(seq,j+w)][w][round];  // error
+					z_n[j] *= p[getBaseIndex(seq,j+w)][w][round];  
 				}
 				z_d += z_n[j];
 			}
@@ -212,12 +205,12 @@ public class MotifEM {
 			n++;			
 		}
 		for (int base = 0; base <4 ; base++)
-			po[base][q] = epsilon_o[base]/(sequences.size()*(L-W)); // po total should add up to 1 !!
+			po[base][round] = epsilon_o[base]/(sequences.size()*(L-W)); // po total should add up to 1 !!
 		
 		//printing for test
 		System.out.println("printing po");
 		for (int i = 0; i <po.length; i++){
-			System.out.println(po[i]);
+			System.out.println(po[i][0]);
 		}
 	}
 	
