@@ -107,7 +107,7 @@ public class MotifEM {
 	
 	public void runMotifEM(){		
 		int round = 0;
-        while (!converged || round <q){
+        while (!converged && round <q){
         	
         	updatePositions(round);
         	
@@ -180,10 +180,13 @@ public class MotifEM {
 		}
 		
 		// check for convergence based on values in p
+		converged = true;
 		for (int i = 0; i <p.length; i++){
 			for (int j = 0; j < p[0].length; j++){
-				if (Math.abs(p[i][j][round+1] - p[i][j][round]) < epsilon)
-					converged = true;
+				if (Math.abs(p[i][j][round+1] - p[i][j][round]) > epsilon){
+					converged = false;
+					break;
+				}
 			}
 		}
 	}
