@@ -30,7 +30,7 @@ public class MotifEM {
 	
 	int q = 10 ; // number of iterations
 	int N; // number of sequences
-	int W = 6; // length of the motif
+	int W = 3; // length of the motif
 	int L; // length of each sequences
 	double[][][] z; // estimate after q iterations of EM of the probabilities that the site begins at position j in sequence i given the model and the data.  
 	double[][][] p; // estimate after q iterations of EM of the probabilities of letter l appearing in position k of the motif
