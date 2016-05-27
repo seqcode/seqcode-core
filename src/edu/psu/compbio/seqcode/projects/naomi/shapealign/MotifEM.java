@@ -30,10 +30,10 @@ public class MotifEM {
 	
 	boolean converged = false;
 	final static double epsilon = 0.01;  // parameter for convergence	
-	final static int  q = 10 ; // maximum number of EM iterations
+	final static int  q = 100 ; // maximum number of EM iterations
 	int N; // number of sequences
-	int W = 3; // length of the motif    /** hard coded
-	int L = 6; // length of each sequences /** hard coded
+	int W = 10; // length of the motif    /** hard coded
+	int L; // length of each sequences /** hard coded
 	double[][][] z; // estimate after q iterations of EM of the probabilities that the site begins at position j in sequence i given the model and the data.  
 	double[][][] p; // estimate after q iterations of EM of the probabilities of letter l appearing in position k of the motif
 	double[][] po; // estimate after q iterations of EM of the base frequencies of outside of motif
@@ -43,7 +43,7 @@ public class MotifEM {
 		strandedPoints = spoints;
 		window = win;	
 		N = strandedPoints.size();
-	//	L = window+1;
+		L = window+1;
 		
 		z = new double[N][L-W+1][q+1];
 		p = new double[4][W][q+1];
@@ -84,6 +84,7 @@ public class MotifEM {
 		}	
 	}
 	
+	// This is created to test the EM with very simple example
 	public void loadTestSequence(){
 		String seq1 = "TATTTG";
 		String seq2 = "TTATTC";
@@ -143,7 +144,7 @@ public class MotifEM {
 		
 		// printing for test
 		System.out.println("printing z: iteration # "+round);
-		for (int i = 0; i <z.length; i++){
+		for (int i = 0; i < 10; i++){
 			for (int j = 0; j < z[0].length; j++){
 				System.out.print(z[i][j][round]+"\t");
 			}
@@ -225,12 +226,8 @@ public class MotifEM {
 		}
 	}
 	
-	public void computeMaximumLikelihood(int round){
+	public void computeMaximumLikelihood(int round){}
 		
-	}
-	
-	
-	
 	
 	public int getBaseIndex(String seq, int j){
 		int basePos = -1;
@@ -247,8 +244,7 @@ public class MotifEM {
 			System.exit(0);
 		}
 		return basePos;		
-	}
-	
+	}	
 
 	// method test
 	public static void main(String[] args) throws IOException, ParseException{
@@ -271,17 +267,25 @@ public class MotifEM {
 		int win = Args.parseInteger(args, "win", 100);
 		List<StrandedPoint> strandedPoints = RegionFileUtilities.loadStrandedPointsFromMotifFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
 		
-	    String aLine = " a  0.167 0.500 0.166"; 
-	    String cLine = " c  0.167 0.167 0.167"; 
-	    String gLine = " g  0.166 0.167 0.167";
-	    String tLine = " t  0.500 0.166 0.500"; 
+		// This matrix goes with loadTestSequence()
+//	    String aLine = " a  0.167 0.500 0.166"; 
+//	    String cLine = " c  0.167 0.167 0.167"; 
+//	    String gLine = " g  0.166 0.167 0.167";
+//	    String tLine = " t  0.500 0.166 0.500"; 
+		 
+		// PWM for FoxA2 with noise
+		// pos			   	1	    2	  3		4	  5		6	  7		8	  9		10
+	    String aLine = " a  0.167 0.300 0.166 0.167 0.200 0.300 0.200 0.300 0.250 0.300"; 
+	    String cLine = " c  0.167 0.200 0.167 0.167 0.200 0.200 0.300 0.200 0.250 0.200"; 
+	    String gLine = " g  0.166 0.300 0.167 0.166 0.300 0.300 0.200 0.200 0.250 0.200";
+	    String tLine = " t  0.500 0.200 0.500 0.500 0.300 0.200 0.300 0.300 0.250 0.300"; 
 		
-	    DenseDoubleMatrix2D pwm  = PWMParser.parsePWM(3, aLine, cLine, gLine, tLine); ///** 3 is hard coded
+	    DenseDoubleMatrix2D pwm  = PWMParser.parsePWM(10, aLine, cLine, gLine, tLine); ///** 3 is hard coded
 	    System.out.println(pwm.toString());
 	    
 		MotifEM motifEM = new MotifEM(gconf, strandedPoints, win, pwm.toArray());
-		motifEM.loadTestSequence();
+//		motifEM.loadTestSequence();
+		motifEM.loadSequencesFromRegions();
 		motifEM.runMotifEM();
 	}
-
 }
