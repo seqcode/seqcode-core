@@ -45,6 +45,7 @@ public class ReadDistributionProfiler {
 	protected int window = 1000;
 	protected int iterations = 1000;	
 	protected boolean printSampleComposite = false;
+	protected boolean zscore = false;
 
 	protected Map<ControlledExperiment,double[]> sampleStandardDeviation = new HashMap<ControlledExperiment,double[]>();
 	protected Map<Sample,double[]> sampleStatsAndNull = new HashMap<Sample,double[]>();
@@ -60,6 +61,7 @@ public class ReadDistributionProfiler {
 	
 	// setters
 	public void turnOnPrintComposite(){printSampleComposite = true;}
+	public void turnOnZscore(){zscore = true;}
 		
 	public void computeReadDistributionStatistics(){
 		
@@ -112,6 +114,8 @@ public class ReadDistributionProfiler {
 //				FDistribution fdist = new FDistribution(window-1, window-1);
 //				double Fpval = 1- fdist.cumulativeProbability(Fstat);
 //				System.out.println(rep.getSignal().getName()+": F statistics p-val is "+Fpval);		
+				
+				if (zscore = true){Zscore(rep,composite);}				
 			}
 		}
 	}
@@ -122,11 +126,12 @@ public class ReadDistributionProfiler {
 		double [] arrNullSD = new double [iterations]; 
 		for (int itr = 0 ; itr < iterations; itr++){				
 			double[] shuffledComposite =  shuffleComposite(composite);		
+			if (itr == 1){printArray(shuffledComposite);}
 			arrNullSD[itr] = computeWeightedStandardDeviation(shuffledComposite)[1];
 		}		
 		//for test purpose
-		System.out.println("sd from null distribution");
-		printArray(arrNullSD);	
+//		System.out.println("sd from null distribution");
+//		printArray(arrNullSD);	
 		
 		double mu = TotalCounts(arrNullSD)/arrNullSD.length;
 		double sd = computeStandardDeviation(arrNullSD);		
@@ -306,6 +311,7 @@ public class ReadDistributionProfiler {
                                "\nOPTIONS:\n" +
                                "--readshift \n" +
                                "--printComposite \n" +
+                               "--zScore \n" +
                                "");
             System.exit(0);
         }
@@ -327,6 +333,7 @@ public class ReadDistributionProfiler {
 		ReadDistributionProfiler profile = new ReadDistributionProfiler(econf,manager, fcLoader); 	
 		if (Args.parseFlags(args).contains("printComposite")){profile.turnOnPrintComposite();}
 		profile.computeReadDistributionStatistics();
+		if (Args.parseFlags(args).contains("zScore")){profile.turnOnZscore();}
 		profile.printStatistics();
 
 		manager.close();
