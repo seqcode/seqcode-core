@@ -275,10 +275,10 @@ public class MotifEM {
 		 
 		// PWM for FoxA2 with noise
 		// pos			   	1	    2	  3		4	  5		6	  7		8	  9		10
-	    String aLine = " a  0.167 0.300 0.166 0.167 0.200 0.300 0.200 0.300 0.250 0.300"; 
-	    String cLine = " c  0.167 0.200 0.167 0.167 0.200 0.200 0.300 0.200 0.250 0.200"; 
-	    String gLine = " g  0.166 0.300 0.167 0.166 0.300 0.300 0.200 0.200 0.250 0.200";
-	    String tLine = " t  0.500 0.200 0.500 0.500 0.300 0.200 0.300 0.300 0.250 0.300"; 
+	    String aLine = " a  0.300 0.167 0.300 0.166 0.167 0.200 0.300 0.200 0.300 0.250"; 
+	    String cLine = " c  0.200 0.167 0.200 0.167 0.167 0.200 0.200 0.300 0.200 0.250"; 
+	    String gLine = " g  0.300 0.166 0.300 0.167 0.166 0.300 0.300 0.200 0.200 0.250";
+	    String tLine = " t  0.200 0.500 0.200 0.500 0.500 0.300 0.200 0.300 0.300 0.250"; 
 		
 	    DenseDoubleMatrix2D pwm  = PWMParser.parsePWM(10, aLine, cLine, gLine, tLine); ///** 3 is hard coded
 	    System.out.println(pwm.toString());

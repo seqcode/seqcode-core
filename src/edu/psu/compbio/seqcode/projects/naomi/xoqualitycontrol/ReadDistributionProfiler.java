@@ -25,6 +25,7 @@ import edu.psu.compbio.seqcode.projects.naomi.sequtils.FeatureCountsLoader;
  * - Weighted standard deviation around the max counts as in Rohit thesis
  * - F statistics, which compares variance of control over samples
  * - Relative entropy measure for randomness
+ * - Information content : difference between the entropy before and after the message I(X) = H_before - H_after
  * 
  * input : reference point
  * 
@@ -48,6 +49,7 @@ public class ReadDistributionProfiler {
 	protected Map<Sample,double[]> sampleStatsAndNull = new HashMap<Sample,double[]>();
 	protected Map<Sample,Double> Fstatistics = new HashMap<Sample,Double>();
 	protected Map<Sample,Double> sampleRelativeEntropy = new HashMap<Sample,Double>();
+	protected Map<Sample,double[]> informationContent = new HashMap<Sample,double[]>();
 	
 	public ReadDistributionProfiler(ExptConfig econf, ExperimentManager man, FeatureCountsLoader fcloader){	
 		featureCountsLoader = fcloader;
@@ -84,6 +86,9 @@ public class ReadDistributionProfiler {
 			double [] fracSampleProfile = counts2Probability(composite);
 			double [] fracContProfile = counts2Probability(contComposite);			
 			sampleRelativeEntropy.put(rep.getSignal(), computeRelativeEntropy(fracSampleProfile,fracContProfile));	
+			
+			// information content calculation
+			informationContent.put(rep.getSignal(), computeInformation(fracSampleProfile, fracContProfile));
 			
 			///normalizing counts
 			double scaling = rep.getControlScaling();			
@@ -256,6 +261,22 @@ public class ReadDistributionProfiler {
 		return relativeEntropy;		
 	}
 	
+	// returns I(X) in index 0, Hbefore in index 1, Hafter in index 2
+	public double[] computeInformation(double[] p, double [] q){
+		double[] information = new double[3]; 
+		double negHbefore = 0 ; // control distribution
+		double negHafter = 0 ; // signal distribution
+		for (int i = 0 ; i < p.length; i++){
+			negHbefore += q[i]*Math.log(q[i]);
+			negHafter += p[i]*Math.log(p[i]);
+		}
+		information[0] = - negHbefore + negHafter;
+		information[1] = - negHbefore;
+		information[2] = - negHafter;
+		return information;
+	}
+	
+	
 	/***********************
 	**  Printing Options  **
 	************************/	
@@ -274,9 +295,10 @@ public class ReadDistributionProfiler {
 	}	
 	
 	public void printStatistics(){	
-		System.out.println("#sampleName\tFstatistics\trelativeEntropy");
+		System.out.println("#sampleName\tFstatistics\trelativeEntropy\tinformationContent\tHbefore\tHafter");
 		for (Sample rep : sampleRelativeEntropy.keySet())			
-			System.out.println(rep.getName()+"\t"+Fstatistics.get(rep)+"\t"+sampleRelativeEntropy.get(rep)); 
+			System.out.println(rep.getName()+"\t"+Fstatistics.get(rep)+"\t"+sampleRelativeEntropy.get(rep)+"\t"+
+		informationContent.get(rep)[0]+"\t"+informationContent.get(rep)[1]+"\t"+informationContent.get(rep)[2]); 
 	}
 	
 	public static void main(String[] args){
