@@ -40,6 +40,8 @@ public class ReadDistributionProfiler {
 	protected List<StrandedPoint> strandedPoints;
 	protected List<StrandedRegion> strandedRegions;
 	
+	
+	
 	protected int fivePrimeShift = 6;
 	protected int window = 1000;
 	protected int iterations = 1000;	
@@ -255,9 +257,8 @@ public class ReadDistributionProfiler {
 	public double computeRelativeEntropy(double[] p, double [] q){
 		double relativeEntropy = 0;
 		for (int i = 0; i< p.length; i++){
-			if (p[i] == 0){relativeEntropy +=0;}
-			else{relativeEntropy += p[i]*Math.log(p[i]/q[i]);}
-		}
+			if (p[i] != 0){relativeEntropy += p[i]*Math.log(p[i]/q[i]);}
+		}	
 		return relativeEntropy;		
 	}
 	
@@ -267,15 +268,14 @@ public class ReadDistributionProfiler {
 		double negHbefore = 0 ; // control distribution
 		double negHafter = 0 ; // signal distribution
 		for (int i = 0 ; i < p.length; i++){
-			negHbefore += q[i]*Math.log(q[i]);
-			negHafter += p[i]*Math.log(p[i]);
+			if (q[i] != 0){negHbefore += q[i]*Math.log(q[i]);}
+			if (p[i] != 0){negHafter += p[i]*Math.log(p[i]);}
 		}
 		information[0] = - negHbefore + negHafter;
 		information[1] = - negHbefore;
 		information[2] = - negHafter;
 		return information;
-	}
-	
+	}	
 	
 	/***********************
 	**  Printing Options  **
