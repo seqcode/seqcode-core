@@ -39,9 +39,7 @@ public class ReadDistributionProfiler {
 		
 	protected List<StrandedPoint> strandedPoints;
 	protected List<StrandedRegion> strandedRegions;
-	
-	
-	
+		
 	protected int fivePrimeShift = 6;
 	protected int window = 1000;
 	protected int iterations = 1000;	
@@ -66,7 +64,6 @@ public class ReadDistributionProfiler {
 		
 		Map<ControlledExperiment,double[]> sampleComposite = new HashMap<ControlledExperiment,double[]>();
 		Map<ControlledExperiment,double[]> controlComposite = new HashMap<ControlledExperiment,double[]>();
-		
 		Map<ControlledExperiment,double[]> controlStandardDeviation = new HashMap<ControlledExperiment,double[]>();
 		
 		sampleComposite = featureCountsLoader.sampleComposite();
@@ -101,60 +98,56 @@ public class ReadDistributionProfiler {
 				normalizedComposite[i] = composite[i] - scaling*(contComposite[i-1]+contComposite[i]+contComposite[i+1])*1/3;
 			}			
 //			System.out.println("normalized composite ");
-//			printArray(normalizedComposite);		
+//			printArray(normalizedComposite);					
 			
 			sampleStandardDeviation.put(rep, computeWeightedStandardDeviation(composite));
 			controlStandardDeviation.put(rep, computeWeightedStandardDeviation(contComposite));
-		
-			//shuffle the data points and calculate standard deviation from null	
-			double [] arrNullSD = new double [iterations]; 
-			for (int itr = 0 ; itr < iterations; itr++){				
-				double[] shuffledComposite =  shuffleComposite(composite);		
-				arrNullSD[itr] = computeWeightedStandardDeviation(shuffledComposite)[1];
-			}
-			
-			//for test purpose
-//			System.out.println("sd from null distribution");
-//			printArray(arrNullSD);		
-			
-			double mu = TotalCounts(arrNullSD)/arrNullSD.length;
-			double sd = computeStandardDeviation(arrNullSD);		
+						
+			// F statistics
 			double x = sampleStandardDeviation.get(rep)[1];
 			double controlSD = controlStandardDeviation.get(rep)[1];
-			
-			double sampleVar = x*x;
-			double minNullSD = 100000;
-			for (int i = 0; i < arrNullSD.length; i++){
-				if (arrNullSD[i] <minNullSD){
-					minNullSD = arrNullSD[i];
-				}
-			}
-			double minSD = minNullSD;
-			if (controlSD<minSD){minSD = controlSD;}	
-			
-			// F statistics
-			double minNullVar = minSD*minSD;		
-			double Fstat = minNullVar/sampleVar;
+			double sampleVar = x*x;			
+			double controlVar = controlSD*controlSD;		
+			double Fstat = controlVar/sampleVar;
 			Fstatistics.put(rep.getSignal(), Fstat);		
 //			FDistribution fdist = new FDistribution(window-1, window-1);
 //			double Fpval = 1- fdist.cumulativeProbability(Fstat);
-//			System.out.println(rep.getSignal().getName()+": F statistics p-val is "+Fpval);
-			
-			/// Z score calculation
-			double z_score = (x - mu)/sd;
-			double p_val = Erf.erfc(Math.abs(z_score)/Math.sqrt(2));
-			
-			double [] statistics = new double [5];
-			statistics[0] = p_val;
-			if ((x < mu) && p_val <0.05){statistics[1]=1;}else{statistics[1] = 0;}
-			statistics[2] = z_score;
-			statistics[3] = mu;
-			statistics[4] = sd;			
-			
-			sampleStatsAndNull.put(rep.getSignal(), statistics);
-			// End of Z score calculation
+//			System.out.println(rep.getSignal().getName()+": F statistics p-val is "+Fpval);			
 		}
 	}
+	
+	public void Zscore(ControlledExperiment rep, double[] composite){
+		
+		//shuffle the data points and calculate standard deviation from null	
+		double [] arrNullSD = new double [iterations]; 
+		for (int itr = 0 ; itr < iterations; itr++){				
+			double[] shuffledComposite =  shuffleComposite(composite);		
+			arrNullSD[itr] = computeWeightedStandardDeviation(shuffledComposite)[1];
+		}		
+		//for test purpose
+		System.out.println("sd from null distribution");
+		printArray(arrNullSD);	
+		
+		double mu = TotalCounts(arrNullSD)/arrNullSD.length;
+		double sd = computeStandardDeviation(arrNullSD);		
+		double x = sampleStandardDeviation.get(rep)[1];		
+		double minNullSD = 100000;
+		for (int i = 0; i < arrNullSD.length; i++){
+			if (arrNullSD[i] <minNullSD){
+				minNullSD = arrNullSD[i];
+			}
+		}		
+		/// Z score calculation
+		double z_score = (x - mu)/sd;
+		double p_val = Erf.erfc(Math.abs(z_score)/Math.sqrt(2));		
+		double [] statistics = new double [5];
+		statistics[0] = p_val;
+		if ((x < mu) && p_val <0.05){statistics[1]=1;}else{statistics[1] = 0;}
+		statistics[2] = z_score;
+		statistics[3] = mu;
+		statistics[4] = sd;					
+		sampleStatsAndNull.put(rep.getSignal(), statistics);		
+	}// End of Z score calculation	
 	
 	// This is for test purpose
 	public void StandardDeviationFromRandomReads(){		
@@ -170,9 +163,9 @@ public class ReadDistributionProfiler {
 		}
 	}//end of test
 	
-	/**************
-	**  Methods  **
-	***************/
+	/**************************
+	**  Calculation Methods  **
+	***************************/
 	public double TotalCounts(double[] array){	
 		int totalCounts = 0;
 		for (int i = 0; i <array.length;i++){totalCounts+=array[i];}
@@ -278,7 +271,7 @@ public class ReadDistributionProfiler {
 	}	
 	
 	/***********************
-	**  Printing Options  **
+	**  Printing methods  **
 	************************/	
 	public void printArray(double[] array){
 		for (int i = 0; i < array.length; i++){System.out.print(array[i]+"\t");}
