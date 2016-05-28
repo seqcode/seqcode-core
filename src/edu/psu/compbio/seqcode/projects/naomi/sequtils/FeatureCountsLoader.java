@@ -7,10 +7,6 @@ import java.util.Map;
 
 import edu.psu.compbio.seqcode.deepseq.StrandedBaseCount;
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
-import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
-import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
 import edu.psu.compbio.seqcode.genome.location.Point;
 import edu.psu.compbio.seqcode.genome.location.Region;
@@ -25,12 +21,8 @@ import edu.psu.compbio.seqcode.genome.location.StrandedRegion;
  * @author naomi yamada
  */
 
-public class FeatureCountsLoader {
-	
-	protected GenomeConfig gconfig;
-	protected ExptConfig econfig;
-	protected ExperimentManager manager;
-		
+public class FeatureCountsLoader {	
+	protected GenomeConfig gconfig;		
 	protected List<StrandedPoint> strandedPoints;
 	protected List<StrandedRegion> strandedRegions;
 	
@@ -42,16 +34,14 @@ public class FeatureCountsLoader {
 	protected Map<StrandedRegion,double[][]> controlRegionCounts = new HashMap<StrandedRegion,double[][]>();
 	protected double [] controlComposite;
 	
-	public FeatureCountsLoader(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
+	public FeatureCountsLoader(GenomeConfig gcon, List<StrandedPoint> p, int win){	
 		gconfig = gcon;
-		econfig = econ;
-		manager = man;
+		strandedPoints = p;
+		window = win;
 	}
 	
 	// setters
-	public void setStrandedPoints(List<StrandedPoint> p){strandedPoints = p;}
 	public void setStrandedRegions(List<StrandedRegion> reg){strandedRegions = reg;} 
-	public void setWindowSize(int w){window = w;}
 	public void setFivePrimeShift(int s){fivePrimeShift = s;}
 	
 	public List<StrandedRegion> getStrandedRegions(){return strandedRegions;}
@@ -82,11 +72,8 @@ public class FeatureCountsLoader {
 		}
 		
 		//StrandedBasedCount object contains positive and negative strand separately
-		// Reverse the array depending of strand of features	
-			
-		Map<StrandedRegion,double[][]> sampleRegionCounts = new HashMap<StrandedRegion,double[][]>();
-		Map<StrandedRegion,double[][]> controlRegionCounts = new HashMap<StrandedRegion,double[][]>();
-			
+		// Reverse the array depending of strand of features			
+		Map<StrandedRegion,double[][]> sampleRegionCounts = new HashMap<StrandedRegion,double[][]>();			
 		for (StrandedRegion reg : sampleCountsMap.keySet()){			
 			double[][] sampleCounts = new double[window+edge+1][2];
 			double[][] controlCounts = new double[window+edge+1][2];

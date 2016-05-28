@@ -60,7 +60,7 @@ public class AlignmentTest {
 			for (ControlledExperiment rep: condition.getReplicates()){			
 				strandedRegionSampleCounts.put(rep, featureCountsLoader.strandedRegionSampleCounts(rep));
 			}
-		}
+		}	
 		strandeRegions = featureCountsLoader.getStrandedRegions();
 		
 		// initialize pairwiseDistance
@@ -286,9 +286,7 @@ public class AlignmentTest {
 		int win = Args.parseInteger(args, "win", 200);
 		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromMotifFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
 		
-		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, econf, manager);
-		fcLoader.setStrandedPoints(spoints);
-		fcLoader.setWindowSize(win); // window size must be twice bigger so it can slide window size times
+		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, spoints, win);
 
 		SimilarityScore sc = new SimilarityScore();		
 		if (Args.parseFlags(args).contains("linear")){ sc.setLinear();}

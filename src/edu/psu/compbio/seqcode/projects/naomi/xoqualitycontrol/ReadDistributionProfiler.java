@@ -321,9 +321,7 @@ public class ReadDistributionProfiler {
 		fivePrimeShift = Args.parseInteger(args,"readshift", 6);
 		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromMotifFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
 		
-		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, econf, manager);
-		fcLoader.setStrandedPoints(spoints);
-		fcLoader.setWindowSize(win);
+		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, spoints, win);
 		fcLoader.setFivePrimeShift(fivePrimeShift);
 
 		ReadDistributionProfiler profile = new ReadDistributionProfiler(econf,manager, fcLoader); 	

@@ -259,9 +259,8 @@ public class PearsonCorrAlignment {
 		int win = Args.parseInteger(args, "win", 200);
 		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromMotifFile(gconf.getGenome(), ap.getKeyValue("peaks"), win);
 		
-		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, econf, manager);
-		fcLoader.setStrandedPoints(spoints);
-		fcLoader.setWindowSize(win*2); // window size must be twice bigger so it can slide window size times
+		// window size must be twice bigger so it can slide window size times
+		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, spoints, win*2);
 
 		PearsonCorrAlignment profile = new PearsonCorrAlignment(fcLoader, manager); 	
 		if (Args.parseFlags(args).contains("weighted")){profile.setWeighted();}
