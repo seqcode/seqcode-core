@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
@@ -26,6 +27,7 @@ import edu.psu.compbio.seqcode.projects.naomi.sequtils.FeatureCountsLoader;
  */
 
 public class AlignmentTest {	
+	protected ExperimentManager manager;
 	protected FeatureCountsLoader featureCountsLoader;
 	protected SimilarityScore similarity_s;		
 	protected List<StrandedRegion> strandeRegions;
@@ -40,9 +42,10 @@ public class AlignmentTest {
 	protected double [][] pairwiseSimilarityScore;
 	protected double [] offsetArray;
 	
-	public AlignmentTest(FeatureCountsLoader fcLoader, SimilarityScore sc){	
+	public AlignmentTest(FeatureCountsLoader fcLoader, SimilarityScore sc, ExperimentManager man){	
 		featureCountsLoader = fcLoader;
 		similarity_s = sc;
+		manager = man;
 	}
 	
 	// setters
@@ -53,7 +56,11 @@ public class AlignmentTest {
 	
 	public void excuteShapeAlign(){
 		
-		strandedRegionSampleCounts = featureCountsLoader.strandedRegionSampleCounts();
+		for (ExperimentCondition condition : manager.getConditions()){		
+			for (ControlledExperiment rep: condition.getReplicates()){			
+				strandedRegionSampleCounts.put(rep, featureCountsLoader.strandedRegionSampleCounts(rep));
+			}
+		}
 		strandeRegions = featureCountsLoader.getStrandedRegions();
 		
 		// initialize pairwiseDistance
@@ -294,7 +301,7 @@ public class AlignmentTest {
 		if (Args.parseFlags(args).contains("divergence")){ sc.setDivergence();}
 		if (Args.parseFlags(args).contains("clark")){ sc.setClark();}
 		
-		AlignmentTest profile = new AlignmentTest(fcLoader, sc); 		
+		AlignmentTest profile = new AlignmentTest(fcLoader, sc, manager); 		
 		profile.setWidth(win);
 		profile.excuteShapeAlign();
 		profile.printErrorRate();	

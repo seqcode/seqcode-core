@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.math3.special.Erf;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.deepseq.experiments.Sample;
@@ -62,57 +63,56 @@ public class ReadDistributionProfiler {
 		
 	public void computeReadDistributionStatistics(){
 		
-		Map<ControlledExperiment,double[]> sampleComposite = new HashMap<ControlledExperiment,double[]>();
-		Map<ControlledExperiment,double[]> controlComposite = new HashMap<ControlledExperiment,double[]>();
+		double[] composite = new double[window+1];
+		double[] contComposite = new double[window+1];
 		Map<ControlledExperiment,double[]> controlStandardDeviation = new HashMap<ControlledExperiment,double[]>();
 		
-		sampleComposite = featureCountsLoader.sampleComposite();
-		controlComposite = featureCountsLoader.controlComposite();
-	
-		for (ControlledExperiment rep : sampleComposite.keySet()){
-			// calculate standard deviation from sample
-			double[] composite = sampleComposite.get(rep);	
-			double[] contComposite = controlComposite.get(rep);	
+		for (ExperimentCondition condition : manager.getConditions()){		
+			for (ControlledExperiment rep: condition.getReplicates()){
+				composite = featureCountsLoader.sampleComposite(rep); 
+				contComposite = featureCountsLoader.controlComposite();
+					
+				// calculate standard deviation from sample
+				if (printSampleComposite==true){ // print composites
+					System.out.println(rep.getSignal().getName());
+					printArray(composite);
+					System.out.println(rep.getControl().getName());
+					printArray(contComposite);
+				}
 			
-			if (printSampleComposite==true){ // print composites
-				System.out.println(rep.getSignal().getName());
-				printArray(composite);
-				System.out.println(rep.getControl().getName());
-				printArray(contComposite);
-			}
+				/// relative entropy calculation
+				double [] fracSampleProfile = counts2Probability(composite);
+				double [] fracContProfile = counts2Probability(contComposite);			
+				sampleRelativeEntropy.put(rep.getSignal(), computeRelativeEntropy(fracSampleProfile,fracContProfile));	
 			
-			/// relative entropy calculation
-			double [] fracSampleProfile = counts2Probability(composite);
-			double [] fracContProfile = counts2Probability(contComposite);			
-			sampleRelativeEntropy.put(rep.getSignal(), computeRelativeEntropy(fracSampleProfile,fracContProfile));	
+				// information content calculation
+				informationContent.put(rep.getSignal(), computeInformation(fracSampleProfile, fracContProfile));
 			
-			// information content calculation
-			informationContent.put(rep.getSignal(), computeInformation(fracSampleProfile, fracContProfile));
+				///normalizing counts
+				double scaling = rep.getControlScaling();			
+				double[] normalizedComposite = new double[composite.length];
+				normalizedComposite[0] = composite[0] - scaling*(contComposite[0]+contComposite[1])*1/2;
+				normalizedComposite[composite.length-1] = composite[composite.length-1] - scaling*(contComposite[0]+contComposite[1])*1/2;		
+				for (int i = 1 ; i <composite.length-1 ; i++){
+					normalizedComposite[i] = composite[i] - scaling*(contComposite[i-1]+contComposite[i]+contComposite[i+1])*1/3;
+				}			
+//				System.out.println("normalized composite ");
+//				printArray(normalizedComposite);					
 			
-			///normalizing counts
-			double scaling = rep.getControlScaling();			
-			double[] normalizedComposite = new double[composite.length];
-			normalizedComposite[0] = composite[0] - scaling*(contComposite[0]+contComposite[1])*1/2;
-			normalizedComposite[composite.length-1] = composite[composite.length-1] - scaling*(contComposite[0]+contComposite[1])*1/2;		
-			for (int i = 1 ; i <composite.length-1 ; i++){
-				normalizedComposite[i] = composite[i] - scaling*(contComposite[i-1]+contComposite[i]+contComposite[i+1])*1/3;
-			}			
-//			System.out.println("normalized composite ");
-//			printArray(normalizedComposite);					
-			
-			sampleStandardDeviation.put(rep, computeWeightedStandardDeviation(composite));
-			controlStandardDeviation.put(rep, computeWeightedStandardDeviation(contComposite));
+				sampleStandardDeviation.put(rep, computeWeightedStandardDeviation(composite));
+				controlStandardDeviation.put(rep, computeWeightedStandardDeviation(contComposite));
 						
-			// F statistics
-			double x = sampleStandardDeviation.get(rep)[1];
-			double controlSD = controlStandardDeviation.get(rep)[1];
-			double sampleVar = x*x;			
-			double controlVar = controlSD*controlSD;		
-			double Fstat = controlVar/sampleVar;
-			Fstatistics.put(rep.getSignal(), Fstat);		
-//			FDistribution fdist = new FDistribution(window-1, window-1);
-//			double Fpval = 1- fdist.cumulativeProbability(Fstat);
-//			System.out.println(rep.getSignal().getName()+": F statistics p-val is "+Fpval);			
+				// F statistics
+				double x = sampleStandardDeviation.get(rep)[1];
+				double controlSD = controlStandardDeviation.get(rep)[1];
+				double sampleVar = x*x;			
+				double controlVar = controlSD*controlSD;		
+				double Fstat = controlVar/sampleVar;
+				Fstatistics.put(rep.getSignal(), Fstat);		
+//				FDistribution fdist = new FDistribution(window-1, window-1);
+//				double Fpval = 1- fdist.cumulativeProbability(Fstat);
+//				System.out.println(rep.getSignal().getName()+": F statistics p-val is "+Fpval);		
+			}
 		}
 	}
 	

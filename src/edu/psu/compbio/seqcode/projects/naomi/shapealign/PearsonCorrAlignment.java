@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
+import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentCondition;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExptConfig;
 import edu.psu.compbio.seqcode.genome.GenomeConfig;
@@ -26,8 +27,6 @@ import edu.psu.compbio.seqcode.projects.naomi.sequtils.FeatureCountsLoader;
 public class PearsonCorrAlignment {
 	
 	protected FeatureCountsLoader fcloader;
-	protected GenomeConfig gconfig;
-	protected ExptConfig econfig;
 	protected ExperimentManager manager;
 		
 	protected List<StrandedRegion> strandeRegions;
@@ -42,8 +41,9 @@ public class PearsonCorrAlignment {
 	protected double [][] pairwiseCorrelation;
 	protected double [] offsetArray;
 	
-	public PearsonCorrAlignment(FeatureCountsLoader featureCountsLoader){	
+	public PearsonCorrAlignment(FeatureCountsLoader featureCountsLoader,ExperimentManager man){	
 		fcloader = featureCountsLoader;
+		manager = man;
 	}
 
 	// setters
@@ -55,7 +55,11 @@ public class PearsonCorrAlignment {
 	
 	public void excutePearsonCorrAlign(){
 		
-		strandedRegionSampleCounts = fcloader.strandedRegionSampleCounts();		
+		for (ExperimentCondition condition : manager.getConditions()){		
+			for (ControlledExperiment rep: condition.getReplicates()){			
+				strandedRegionSampleCounts.put(rep, fcloader.strandedRegionSampleCounts(rep));
+			}
+		}
 		strandeRegions = fcloader.getStrandedRegions();
 
 		// initialize pairwiseDistance
@@ -259,7 +263,7 @@ public class PearsonCorrAlignment {
 		fcLoader.setStrandedPoints(spoints);
 		fcLoader.setWindowSize(win*2); // window size must be twice bigger so it can slide window size times
 
-		PearsonCorrAlignment profile = new PearsonCorrAlignment(fcLoader); 	
+		PearsonCorrAlignment profile = new PearsonCorrAlignment(fcLoader, manager); 	
 		if (Args.parseFlags(args).contains("weighted")){profile.setWeighted();}
 		profile.setWidth(win);
 		profile.excutePearsonCorrAlign();
