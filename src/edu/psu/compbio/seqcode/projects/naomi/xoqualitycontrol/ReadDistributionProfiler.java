@@ -115,7 +115,7 @@ public class ReadDistributionProfiler {
 //				double Fpval = 1- fdist.cumulativeProbability(Fstat);
 //				System.out.println(rep.getSignal().getName()+": F statistics p-val is "+Fpval);		
 				
-				if (zscore = true){Zscore(rep,composite);}				
+				if (zscore == true){Zscore(rep,composite);}				
 			}
 		}
 	}
