@@ -18,11 +18,12 @@ import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
 import edu.psu.compbio.seqcode.gse.utils.io.parsing.PWMParser;
 
 /**
- * MEME algorithm to find a motif given a prior, meant to be integrated with shapeEM. 
+ * EM algorithm to find a motif given a prior, meant to be integrated with ChIP-exo shape component. 
+ * Reference: Lawrence and Reilly (1990) An Expectation Maximization (EM) Algorithm for the Identification and Characterization of Common Sites in Unaligned Biopolymer Sequences. 
  * @author naomi yamada
  */
 
-public class MotifEM {
+public class MotifComponent {
 	protected GenomeConfig gconfig;	
 	protected List<StrandedPoint> strandedPoints;
 	protected int window;
@@ -38,7 +39,7 @@ public class MotifEM {
 	double[][][] p; // estimate after q iterations of EM of the probabilities of letter l appearing in position k of the motif
 	double[][] po; // estimate after q iterations of EM of the base frequencies of outside of motif
 	
-	public MotifEM(GenomeConfig gcon, List<StrandedPoint> spoints, int win, double[][] pwm){
+	public MotifComponent(GenomeConfig gcon, List<StrandedPoint> spoints, int win, double[][] pwm){
 		gconfig = gcon;	
 		strandedPoints = spoints;
 		window = win;	
@@ -54,7 +55,7 @@ public class MotifEM {
 			for (int j = 0; j <= L-W; j ++)
 				for (int itr = 0 ; itr <= q ; itr++)
 					z[i][j][itr] = 0;		
-		for (int base = 0 ; base < 4; base++){
+		for (int base = 0 ; base < 4; base++){ // copy PWM to the p matrix
 			for (int w = 0; w <W ; w++){
 				p[base][w][0] = pwm[base][w];
 				for (int itr = 1 ; itr <= q ; itr++)
@@ -300,7 +301,7 @@ public class MotifEM {
 	    DenseDoubleMatrix2D pwm  = PWMParser.parsePWM(10, aLine, cLine, gLine, tLine); ///** 3 is hard coded
 	    System.out.println(pwm.toString());
 	    
-		MotifEM motifEM = new MotifEM(gconf, strandedPoints, win, pwm.toArray());
+	    MotifComponent motifEM = new MotifComponent(gconf, strandedPoints, win, pwm.toArray());
 //		motifEM.loadTestSequence();
 		motifEM.loadSequencesFromRegions();
 		motifEM.runMotifEM();
