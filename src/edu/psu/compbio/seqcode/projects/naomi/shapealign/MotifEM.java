@@ -110,17 +110,37 @@ public class MotifEM {
 		int round = 0;
         while (!converged && round <q){
         	
+        	computeLogLikelihood(round);
+        	
         	updatePositions(round);
         	
         	updateMotifFrequencies(round);
         	
         	updateBackgroundBaseFrequencies(round);
         	
-        	computeMaximumLikelihood(round);
-        	
         	round ++;
         }	
         	
+	}
+	
+	public double computeLogLikelihood(int round){
+		double logLikelihood = 0;
+		double motifLikelihood = 0;
+		double backgroundLikelihood = 0;
+		for (int w = 0 ; w <L ; w++){ // compute likelihood from motif
+			for (int b = 0; b <4; b++){
+				motifLikelihood += p[b][w][round];
+			}
+		}
+		for (int b = 0; b <4 ; b++){ // compute likelihood from background
+			backgroundLikelihood += po[b][round];
+		}
+		logLikelihood = N*(motifLikelihood + backgroundLikelihood*(L-W));
+		
+		//printing for test
+		System.out.println("log likelihood is "+logLikelihood);
+		
+		return logLikelihood;		
 	}
 	
 	public void updatePositions(int round){	// make sure this is correct
@@ -224,10 +244,7 @@ public class MotifEM {
 		for (int i = 0; i <po.length; i++){
 			System.out.println(po[i][round+1]);
 		}
-	}
-	
-	public void computeMaximumLikelihood(int round){}
-		
+	}	
 	
 	public int getBaseIndex(String seq, int j){
 		int basePos = -1;
