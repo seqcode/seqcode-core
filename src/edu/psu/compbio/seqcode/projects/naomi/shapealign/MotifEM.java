@@ -127,7 +127,7 @@ public class MotifEM {
 		double logLikelihood = 0;
 		double motifLikelihood = 0;
 		double backgroundLikelihood = 0;
-		for (int w = 0 ; w <L ; w++){ // compute likelihood from motif
+		for (int w = 0 ; w < W ; w++){ // compute likelihood from motif
 			for (int b = 0; b <4; b++){
 				motifLikelihood += p[b][w][round];
 			}
