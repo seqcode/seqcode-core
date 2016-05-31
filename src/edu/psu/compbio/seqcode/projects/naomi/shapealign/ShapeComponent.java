@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import edu.psu.compbio.seqcode.deepseq.experiments.ControlledExperiment;
 import edu.psu.compbio.seqcode.deepseq.experiments.ExperimentManager;
@@ -20,6 +22,7 @@ import edu.psu.compbio.seqcode.gse.tools.utils.Args;
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
 import edu.psu.compbio.seqcode.gse.utils.Pair;
 import edu.psu.compbio.seqcode.gse.utils.io.RegionFileUtilities;
+import edu.psu.compbio.seqcode.gse.utils.stats.StatUtil;
 import edu.psu.compbio.seqcode.projects.naomi.sequtils.FeatureCountsLoader;
 
 /**
@@ -131,6 +134,34 @@ public class ShapeComponent {
 	
 	//Set a probability landscape according to the data. 
 	protected void makeProbabilities(){
+		double totalVal=0, minProb=Double.MAX_VALUE;
+		for(int i=min; i<=max; i++){
+			for (int s = 0 ; s< 2 ; s++){
+				totalVal+=data[i][s];
+			}
+		}
+		for(int i=min; i<=max; i++){
+			for (int s = 0 ; s <2 ; s++){
+				probs[i-min][s] = data[i][s]/totalVal; 
+				if (probs[i-min][s] <minProb)
+					minProb = probs[i-min][s];
+			}
+		}
+
+//		Pair<Double, TreeSet<Integer>> sorted = StatUtil.findMax(probs);
+//		summit = sorted.cdr().first()+min;
+		
+		// update empiricalDistribution with normalized probability
+		List<Pair<Integer, Double>> newDist = new ArrayList<Pair<Integer, Double>> ();
+		for(int i=min; i<=max; i++){
+			//			newDist.add(new Pair<Integer, Double>(i, probability(i)));
+		}
+		//		empiricalDistribution=newDist;
+		//		bgProb = minProb/1000;
+		//		logBgProb = Math.log(bgProb)/LOG2;
+
+		//		updateInfluenceRange();
+		
 
 	}
 	
