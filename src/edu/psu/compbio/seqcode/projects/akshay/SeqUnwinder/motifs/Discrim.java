@@ -208,9 +208,9 @@ public class Discrim {
 			List<Pair<Region,Double>> top_hills = new ArrayList<Pair<Region,Double>>();
 			List<Pair<String,Double>> top_seqlets = new ArrayList<Pair<String,Double>>();
 			if(seqConfig.getRegions().size() > 0){		
-				sorthills(hills);
+				top_hills.addAll(sorthills(hills));
 			}else{
-				sortseqlets(seqlets);
+				top_seqlets.addAll(sortseqlets(seqlets));
 			}
 			
 			if(seqConfig.getRegions().size() > 0){
@@ -271,7 +271,7 @@ public class Discrim {
 		 */
 		public void clusterKmerProfilesAtMountains() throws IOException{
 			fillHills();
-			System.err.println("No of hills for K-mer model "+kmerModelName+" are :"+posHills.size());
+			System.err.println("No of hills for K-mer model "+kmerModelName+" are :"+(seqConfig.getRegions().size() > 0 ? posHills.size() : posHillsSeqs.size()));
 			if(posHills.size() > 100 || posHillsSeqs.size() > 100){
 				ClusterProfiles clusterManager = new ClusterProfiles(SeqUnwinderConfig.ITRS_CLUS,seqConfig.getNumDiscrimClusters(),profiles,posHillsToIndex,seqConfig.getMinM(),seqConfig.getMaxM(),posHillScores,basedir_profiles);
 				clusterAssignment = clusterManager.execute();
