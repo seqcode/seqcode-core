@@ -122,7 +122,7 @@ public class HillsAnalysisSandbox {
 		//First get the k-mer for the given list of motifs
 		HashSet<String> motifKmers = new HashSet<String>();
 		for(WeightMatrix mot : motifs){
-			motifKmers.addAll(WeightMatrix.getConsensusKmers(mot, Kmin, Kmax));
+			motifKmers.addAll(WeightMatrix.getConsensusKmerList(mot, Kmin, Kmax));
 		}
 		
 		for(Region hillreg : hills){
@@ -204,7 +204,7 @@ public class HillsAnalysisSandbox {
 		//First get the k-mer for the given list of motifs
 		HashSet<String> motifKmers = new HashSet<String>();
 		for(WeightMatrix mot : motifs){
-			motifKmers.addAll(WeightMatrix.getConsensusKmers(mot, Kmin, Kmax));
+			motifKmers.addAll(WeightMatrix.getConsensusKmerList(mot, Kmin, Kmax));
 		}
 		
 		for(Region hillreg : hills){
@@ -295,7 +295,7 @@ public class HillsAnalysisSandbox {
 		//First get the k-mer for the given list of motifs
 		HashSet<String> motifKmers = new HashSet<String>();
 		for(WeightMatrix mot : motifs){
-			motifKmers.addAll(WeightMatrix.getConsensusKmers(mot, Kmin, Kmax));
+			motifKmers.addAll(WeightMatrix.getConsensusKmerList(mot, Kmin, Kmax));
 		}
 
 		for(Region hillreg : hills){
