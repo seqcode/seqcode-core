@@ -21,8 +21,9 @@ import com.jujutsu.tsne.FastTSne;
 import com.jujutsu.tsne.MatrixOps;
 import com.jujutsu.tsne.TSne;
 
-import edu.psu.compbio.seqcode.gse.tools.utils.Args;
+import edu.psu.compbio.seqcode.gse.tools.utils.Args; 
 import edu.psu.compbio.seqcode.gse.utils.ArgParser;
+
 
 public class TSNE_testing {
 
@@ -61,7 +62,10 @@ public class TSNE_testing {
 	        saveFile(new File(outFilename), MatrixOps.doubleArrayToString(Y));
 	        Plot2DPanel plot = new Plot2DPanel();
 	        
-	        String[] labelArr = (String[]) labels.toArray();
+	        String[] labelArr = new String[labels.size()];
+	        int i=0;
+	        for(String l : labels){labelArr[i]=l; i++;}
+	        
 	        ColoredScatterPlot dataPlot = new ColoredScatterPlot("data", Y, labelArr);
 	        plot.plotCanvas.setNotable(true);
 	        plot.plotCanvas.setNoteCoords(true);
