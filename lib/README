@@ -1,92 +1,96 @@
-The GSE Code Base
+This file contains descriptions and license information for all libraries referenced by SeqCode
+
+Copies of applicable license are stored in ./licenses. 
+ 
+
+SeqCode
 -----------------
-http://cgs.csail.mit.edu/gse
-
-
-Oracle
-------
-http://www.oracle.com/technology/software/tech/java/sqlj_jdbc/htdocs/jdbc_10201.html
-http://www.oracle.com/technology/software/popup-license/distribution-license.html
-Export Controls on the Programs
-Selecting the "Accept License Agreement" button is a confirmation of
-your agreement that you comply, now and during the trial term, with each
-of the following statements:
-
--You are not a citizen, national, or resident of, and are not under
- control of, the government of Cuba, Iran, Sudan, Libya, North Korea,
- Syria, nor any country to which the United States has prohibited
- export.
--You will not download or otherwise export or re-export the Programs,
- directly or indirectly, to the above mentioned countries nor to
- citizens, nationals or residents of those countries.
--You are not listed on the United States Department of Treasury lists of
- Specially Designated Nationals, Specially Designated Terrorists, and
- Specially Designated Narcotic Traffickers, nor are you listed on the
- United States Department of Commerce Table of Denial Orders.
-
-You will not download or otherwise export or re-export the Programs,
-directly or indirectly, to persons on the above mentioned lists.
-
-You will not use the Programs for, and will not allow the Programs to be
-used for, any purposes prohibited by United States law, including,
-without limitation, for the development, design, manufacture or
-production of nuclear, chemical or biological weapons of mass
-destruction.
-
-EXPORT RESTRICTIONS
-You agree that U.S. export control laws and other applicable export and
-import laws govern your use of the programs, including technical data;
-additional information can be found on Oracle's Global Trade Compliance
-web site (http://www.oracle.com/products/export). 
-
-./ojdbc-1.4/ojdbc14.jar
-./orai18n/orai18n.jar
-./ocrs12/ocrs12.jar
-
-VecMath
--------
-from Sun
-http://download.java.net/media/java3d/builds/release/1.5.2/LICENSE-Java3D-v1_5_2.txt
-./vecmath-1.4.0_01/vecmath.jar
-
-Batik
------
-http://xmlgraphics.apache.org/batik/
-Apache License, v2
-
-./batik/batik-1.6.jar
-
-BioJava
--------
-http://biojava.org
-LGPL
-
-./biojava-1.5/biojava-1.5-beta2.jar
-./biojava-1.5/apps-1.5.jar
-./biojava-1.5/biojava-1.5.jar
-./biojava-1.5/bytecode.jar
-./biojava-1.5/commons-cli.jar
-./biojava-1.5/commons-collections-2.1.jar
-./biojava-1.5/commons-dbcp-1.1.jar
-./biojava-1.5/commons-pool-1.1.jar
-./biojava-1.5/demos-1.5.jar
+http://seqcode.org
+License: MIT.
 
 
 AffxFusion
 ----------
-http://www.affymetrix.com/support/developer/fusion/index.affx
-LGPL
+Library used for loading affymetrix expression array data from CEL files. 
+http://www.affymetrix.com/estore/partners_programs/programs/developer/fusion/index.affx?terms=no
+License: LGPL v2.1
+Packages: affymetrix.*
+Jars:
+	./affxfusion/AffxFusion-1.09.jar
 
-./AffxFusion-1.09/AffxFusion.jar
+
+Apache Commons
+--------------
+Broad collection of reusable components.
+	CLI = command-line args parser
+	Lang = extra functionality for classes in java.lang
+	Math = Math & stats components
+https://commons.apache.org/
+License: Apache v2.0
+Packages: org.apache.commons.*
+Jars:
+	./apachecommons/commons-cli-1.3.1.jar
+	./apachecommons/commons-lang3-3.4.jar
+	./apachecommons/commons-math3-3.6.1.jar
+
+
+Apache HTTP Components
+----------------------
+Toolset of low level Java components focused on HTTP and associated protocols.
+https://hc.apache.org/
+License: Apache v2.0 
+Packages: org.apache.http.*
+Jars:
+	./apache-httpcomponents/httpclient-4.5.2.jar
+	./apache-httpcomponents/httpcore-4.4.4.jar
+
+
+Apache Logging
+--------------
+Application logging services.
+https://logging.apache.org/
+License: Apache v2.0 
+Packages: org.apache.logging.*
+Jars:
+	./apache-logging/log4j-api-2.6.jar
+	./apache-logging/log4j-core-2.6.jar
+	
+
+Batik
+-----
+Apache toolset for images in the Scalable Vector Graphics (SVG) format 
+http://xmlgraphics.apache.org/batik/
+License: Apache v2.0 
+Packages: org.apache.batik.*
+Jars:
+	./batik/batik-1.8/batik*-1.8.jar
+
+
+BioJava
+-------
+http://biojava.org
+License: LGPL
+Packages: org.biojava.*
+Jars:
+	./biojava-1.5/biojava-1.5-beta2.jar
+	./biojava-1.5/apps-1.5.jar
+	./biojava-1.5/biojava-1.5.jar
+	./biojava-1.5/bytecode.jar
+	./biojava-1.5/commons-cli.jar
+	./biojava-1.5/commons-collections-2.1.jar
+	./biojava-1.5/commons-dbcp-1.1.jar
+	./biojava-1.5/commons-pool-1.1.jar
+	./biojava-1.5/demos-1.5.jar
+
 
 COLT
 ----
-http://acs.lbl.gov/~hoschek/colt/
+Libraries for High Performance Scientific and Technical Computing
+https://dst.lbl.gov/ACSSoftware/colt/
+License:
     Packages cern.colt* , cern.jet*, cern.clhep
-
         Copyright (c) 1999 CERN - European Organization for Nuclear
         Research.
-
         Permission to use, copy, modify, distribute and sell this
         software and its documentation for any purpose is hereby granted
         without fee, provided that the above copyright notice appear in
@@ -95,9 +99,7 @@ http://acs.lbl.gov/~hoschek/colt/
         no representations about the suitability of this software for
         any purpose. It is provided "as is" without expressed or implied
         warranty.
-
     Packages hep.aida.*
-
         Written by Pavel Binko, Dino Ferrero Merlino, Wolfgang Hoschek,
         Tony Johnson, Andreas Pfeiffer, and others. Check the FreeHEP
         home page for more info. Permission to use and/or redistribute
@@ -106,125 +108,203 @@ http://acs.lbl.gov/~hoschek/colt/
         expressly forbidden. The software and documentation made
         available under the terms of this license are provided with no
         warranty. 
+Packages: cern.colt.*, cern.jet.*, cern.clhep.*
+Jars:
+	./colt/colt-1.2.0.jar
 
 
+HTSJDK
+------
+Java API for high-throughput sequencing data (HTS) formats.
+https://github.com/samtools/htsjdk
+License: MIT
+Packages: htsjdk.*
+Jars:
+	./htsjdk/htsjdk-1.125.jar
+	
 
-./colt-1.2.0/colt.jar
+JAHMM
+-----
+Java Hidden Markov Model implementation
+http://www.run.montefiore.ulg.ac.be/~francois/software/jahmm/
+Packages: be.ac.ulg.montefiore.*
+Jars:
+	./jahmm/jahmm-0.6.1-with-mvg.jar
+
+
+JAMA
+----
+Basic linear algebra package
+http://math.nist.gov/javanumerics/jama/
+License: Public Domain
+Packages: Jama.*
+Jars:
+	./jama/Jama-1.0.3.jar
+
+
+JavaML
+------
+Java machine-learning library
+http://java-ml.sourceforge.net/
+License: GPL v2
+Packages: net.sf.javaml.*
+Jars:
+	./javaml/javaml-0.1.7.jar
+
 
 JFreeChart
 ----------
+Java chart library
 http://www.jfree.org/
-LGPL
+License: LGPL
+Packages: org.jfree.* 
+Jars:
+	./jfreechart/jfreechart-1.0.13/jfreechart-1.0.13.jar
+	./jfreechart/jfreechart-1.0.13/jcommon-1.0.10.jar
 
-./jfreechart/jfreechart-1.0.0.jar
-./jfreechart/jcommon-1.0.8.jar
-./jfreechart/jfreechart-1.0.6.jar
+
+JHeatChart
+----------
+Java HeatMap library
+http://www.javaheatmap.com/
+License: LGPL
+Packages: org.tc33.jheatchart
+Jars:
+	./jheatchart/jheatchart-0.6.jar
+
+
+JMathPlot
+---------
+Provides interactive 2D/3D plots
+https://github.com/yannrichet/jmathplot
+License: BSD
+Packages: org.math.io.*, org.math.plot.*
+Jars:
+	./jmathplot/jmathplot-1.0.0.jar
+	
+
+JUnit
+-----
+Unit testing package
+http://junit.org/junit4
+License: Eclipse Public License v1.0
+Packages: org.junit, org.hamcrest
+Jars:
+	./junit/junit-4.12.jar
+	./junit/hamcrest-core-1.3.jar
+
+
+LIBSVM
+------
+Java port of libsvm (https://www.csie.ntu.edu.tw/~cjlin/libsvm)
+https://github.com/cjlin1/
+License:
+	Copyright (c) 2000-2014 Chih-Chung Chang and Chih-Jen Lin
+	All rights reserved.
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions
+	are met:
+	1. Redistributions of source code must retain the above copyright
+	notice, this list of conditions and the following disclaimer.
+	2. Redistributions in binary form must reproduce the above copyright
+	notice, this list of conditions and the following disclaimer in the
+	documentation and/or other materials provided with the distribution.
+	3. Neither name of copyright holders nor the names of its contributors
+	may be used to endorse or promote products derived from this software
+	without specific prior written permission.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+	``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+	A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR
+	CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+	EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+	PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+	PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+	LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+	NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Packages: libsvm, liblinear
+Jars:
+	./libsvm/libsvm.jar
+	./libsvm/liblinear-1.7.jar
+
 
 
 MYSQL
 -----
-http://downloads.mysql.com/archives.php?p=mysql-connector-java-3.1&v=3.1.12
-newer versions at
-http://dev.mysql.com/downloads/connector/j/5.1.html
-GPL
+Connection management & official JDBC driver for mySQL. 
+http://dev.mysql.com/downloads/connector/j
+License: GPL, but Oracle FOSS exception allows MIT license (described here: http://www.mysql.com/about/legal/licensing/foss-exception)
+Packages: com.mysql.jdbc
+Jars:
+	./mysql-connector/mysql-connector-java-5.1.25-bin.jar
 
-./mysql-connector-3.1.12/mysql-connector-java-3.1.12-bin.jar
 
-JAHMM
------
-http://www.run.montefiore.ulg.ac.be/~francois/software/jahmm/
+OJDBC
+------
+Oracle Database 10g Release 2 JDBC Drivers
+http://www.oracle.com/technetwork/apps-tech/jdbc-10201-088211.html
+License: Oracle Technology Network Development and Distribution License
+Packages: oracle.jdbc.*, oracle.sql.* 
+Jars:
+	./ojdbc/ojdbc14.jar
+	
 
-./jahmm/jahmm-0.6.1-with-mvg.jar
-./jahmm-0.6.1.jar
+SSJ
+---
+Stochastic Simulation in Java. Developed at Pierre L'Ecuyer's Simulation and Optimization Laboratory, Universite de Montreal.
+https://github.com/umontreal-simul/ssj
+License: Apache v2.0
+Included dependencies:
+	concurrent (http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html) - Public Domain
+	nonlinear optimization (http://www1.fpl.fs.fed.us/optimization.html) - Public Domain
+Packages: umontreal.ssj.*
+Jars:
+	./ssj/ssj-3.0.0-rc1.jar
 
-Log4J
------
-http://logging.apache.org/log4j/1.2
-Apache License, v2
 
-./log4j/log4j-1.2.15.jar
+T-SNE-Java
+----------
+Pure Java implementation of Van Der Maaten and Hinton's t-sne clustering algorithm.
+https://github.com/lejon/T-SNE-Java
+License:
+	This Java port of t-SNE is is Copyright (c) Leif Jonsson 2014. The original Python implementation is Copyright (c) 
+	Laurens van der Maaten on 20-12-08, Tilburg University. All rights reserved.
+	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+	following conditions are met:
+		- Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+		- Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer
+		  in the documentation and/or other materials provided with the distribution.
+		- Neither the name of Tilburg University nor the names of its contributors may be used to endorse or promote products derived 
+		  from this software without specific prior written permission.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Leif 
+	Jonsson or Laurens van der Maaten BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
+	HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Packages: com.jujutsu.tsne.*
+Jars:
+	./t-sne-java/tsne-0.0.2.jar
+	./t-sne-java/tsne-demos-0.1.jar
+	
 
-XML-RPC
--------
-http://ws.apache.org/xmlrpc/
-Apache License, v2
+Tomcat
+------
+Apache Tomcat: open source implementation of the Java Servlet, JavaServer Pages, Java Expression Language and Java WebSocket technologies.
+http://tomcat.apache.org/
+License: Apache v2.0
+Packages: org.apache.tomcat.*
+Jars:
+	./tomcat/
 
-./xml-rpc/apache-xml-rpc-3.0/xmlrpc-server-3.0.jar
-./xml-rpc/apache-xml-rpc-3.0/ws-commons-util-1.0.1.jar
-./xml-rpc/apache-xml-rpc-3.0/xmlrpc-common-3.0.jar
-./xml-rpc/apache-xml-rpc-3.0/commons-logging-1.1.jar
-./xml-rpc/apache-xml-rpc-3.0/xmlrpc-client-3.0.jar
 
-JAMA
+Weka
 ----
-Public Domain
-./jama/Jama-1.0.2.jar
+Collection of machine learning algorithms for data mining tasks.
+http://www.cs.waikato.ac.nz/ml/weka/
+License: GPL
+Packages: weka.*
+Jars:
+	./weka/weka-3-7-12.jar
 
-JENA
-----
-http://jena.sourceforge.net/license.html
- Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
- Hewlett-Packard Development Company, LP
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-   1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-   2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-   3. The name of the author may not be used to endorse or promote
-   products derived from this software without specific prior written
-   permission.
-
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
-INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
-
-Jena includes software developed by the Apache Software Foundation
-(http://www.apache.org/).
-
-Jena is built on top of other sub-systems which we gratefully
-acknowledge: details of these systems and their version numbers.
-
-    * Xerces
-    * JUnit
-    * Jakarta ORO
-    * ICU4J
-    * util.concurrent from Doug Lea
-
-
-./Jena/Jena-2.5.3/arq-extra.jar
-./Jena/Jena-2.5.3/json.jar
-./Jena/Jena-2.5.3/xercesImpl.jar
-./Jena/Jena-2.5.3/jenatest.jar
-./Jena/Jena-2.5.3/jena.jar
-./Jena/Jena-2.5.3/wstx-asl-3.0.0.jar
-./Jena/Jena-2.5.3/stax-api-1.0.jar
-./Jena/Jena-2.5.3/concurrent.jar
-./Jena/Jena-2.5.3/iri.jar
-./Jena/Jena-2.5.3/icu4j_3_4.jar
-./Jena/Jena-2.5.3/arq.jar
-./Jena/Jena-2.5.3/antlr-2.7.5.jar
-./Jena/Jena-2.5.3/junit.jar
-./Jena/Jena-2.5.3/xml-apis.jar
-./Jena/Jena-2.5.3/lucene-core-2.0.0.jar
-./Jena/Jena-2.5.3/commons-logging-1.1.jar
-./Jena/Jena-2.5.3/log4j-1.2.12.jar
-
-JAligner
--------
-http://jaligner.sourceforge.net/
-GPL
-
-./jaligner-1.0/jaligner-1.0.jar

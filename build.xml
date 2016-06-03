@@ -109,36 +109,13 @@
     <property name="pwfiles.path" value="${pwfiles.basepath}/${pwset}"/>
   </target>
 
-  <target name="unjarwd" unless="build.unjar.dir.present">
-    <mkdir dir="${build.unjar.dir}.tmp" />
-    <unjar dest="${build.unjar.dir}.tmp">
-      <fileset dir="${lib.dir}">
-    	<include name="ApacheCommons/*.jar"/>
-      	<include name="batik/batik-1.7/*.jar"/>
-    	<include name="biojava/biojava-1.5/*.jar"/>
-   	 	<include name="colt/*.jar"/>
-    	<include name="flanagan/*.jar"/>
-      	<include name="jahmm/*.jar"/>
-      	<include name="jfreechart/jfreechar-1.0.6/*.jar"/>
-      	<include name="junit/*.jar"/>
-      	<include name="libsvm/*.jar"/>
-      	<include name="pal-1.5.1/*.jar"/>
-      	<include name="picard/*.jar"/>
-		<include name="ojdbc/ojdbc14.jar"/>
-		<include name="mysql-connector/mysql-connector-java-3.1.12-bin.jar"/>
-		<include name="log4j/*.jar"/>
-      </fileset>
-    </unjar>
-    <move file="${build.unjar.dir}.tmp" tofile="${build.unjar.dir}" />
-  </target>
-
-	<!-- ======================================================================= -->
+  	<!-- ======================================================================= -->
 	<!-- Target: makemultigpsjar                                                  -->
-	<!-- Depends: build, unjarwd, setpwfilespath                         		 -->
+	<!-- Depends: build, unjarall, setpwfilespath                         		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
 	<!--              for MultiGPS. ant -Dpwset=mahonylab makemultigpsjar     -->
 	<!-- ======================================================================= -->
-  <target name="makemultigpsjar" depends="build, unjarwd, setpwfilespath">
+  <target name="makemultigpsjar" depends="build, unjarall, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
     <jar destfile="${build.dist.dir}/multigps.${pwset}.jar" manifest="manifests/multigps_manifest.txt">	    
       <fileset dir="${build.classes.dir}" includes="**/*.class"/>
@@ -153,11 +130,11 @@
 
 	<!-- ======================================================================= -->
 	<!-- Target: makeseqviewjar                                                  -->
-	<!-- Depends: build, unjarwd, setpwfilespath                         		 -->
+	<!-- Depends: build, unjarall, setpwfilespath                         		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
 	<!--              for the seqview browser. ant -Dpwset=mahonylab makeseqviewjar     -->
 	<!-- ======================================================================= -->
-  <target name="makeseqviewjar" depends="build, unjarwd, setpwfilespath">
+  <target name="makeseqviewjar" depends="build, unjarall, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
     <jar destfile="${build.dist.dir}/seqview.${pwset}.jar" manifest="manifests/seqview_manifest.txt">	    
       <fileset dir="${build.classes.dir}" includes="**/*.class"/>
@@ -172,11 +149,11 @@
 
 	<!-- ======================================================================= -->
 	<!-- Target: makesigniftestjar                                                  -->
-	<!-- Depends: build, unjarwd, setpwfilespath                         		 -->
+	<!-- Depends: build, unjarall, setpwfilespath                         		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
 	<!--              for the seqview browser. ant -Dpwset=pughlab makesigniftestjar     -->
 	<!-- ======================================================================= -->
-  <target name="makesigniftestjar" depends="build, unjarwd, setpwfilespath">
+  <target name="makesigniftestjar" depends="build, unjarall, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
     <jar destfile="${build.dist.dir}/SignificanceTester.${pwset}.jar" manifest="manifests/signiftest_manifest.txt">	    
       <fileset dir="${build.classes.dir}" includes="**/*.class"/>
@@ -213,7 +190,7 @@
     <mkdir dir="${build.unjar.dir}.tmp" />
     <unjar dest="${build.unjar.dir}.tmp">
       <fileset dir="${lib.dir}">
-	<include name="ApacheCommons/commons-cli-1.2.jar"/>
+	<include name="apache-commons/commons-cli-1.3.1.jar"/>
       </fileset>
     </unjar>
     <move file="${build.unjar.dir}.tmp" tofile="${build.unjar.dir}" />
@@ -228,7 +205,7 @@
 	   deprecation="yes"
 	   compiler="modern"
 	   verbose="no">		  
-      <include name="edu/psu/compbio/seqcode/gse/projects/readdb/*.java"/>
+      <include name="org/seqcode/gse/projects/readdb/*.java"/>
     </javac>
   </target>
   <target name="makereaddbjar" depends="compilereaddb, unjarcli">
@@ -240,9 +217,9 @@
 	    tofile="${build.unjar.dir}/Apache-Commons-Cli-LICENSE.txt"/>
     <move file="${build.unjar.dir}/META-INF/NOTICE.txt"
 	    tofile="${build.unjar.dir}/Apache-Commons-Cli-NOTICE.txt"/>
-    <copy file="${src.dir}/edu/psu/compbio/seqcode/gse/projects/readdb/HOWTO"
+    <copy file="${src.dir}/org/seqcode/gse/projects/readdb/HOWTO"
 	  tofile="${build.classes.dir}/HOWTO"/>
-    <copy file="${src.dir}/edu/psu/compbio/seqcode/gse/projects/readdb/LICENSE"
+    <copy file="${src.dir}/org/seqcode/gse/projects/readdb/LICENSE"
 	  tofile="${build.classes.dir}/LICENSE"/>
     <delete dir="${build.unjar.dir}/META-INF"/>
     <jar destfile="${build.dist.dir}/gse-readdb.jar">	    

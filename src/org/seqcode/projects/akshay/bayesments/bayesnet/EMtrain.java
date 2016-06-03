@@ -1,0 +1,834 @@
+package org.seqcode.projects.akshay.bayesments.bayesnet;
+
+import java.util.Arrays;
+import java.util.Random;
+
+import org.seqcode.deepseq.experiments.ExperimentCondition;
+import org.seqcode.deepseq.experiments.ExperimentManager;
+import org.seqcode.gse.utils.probability.NormalDistribution;
+import org.seqcode.projects.akshay.bayesments.features.GenomicLocations;
+import org.seqcode.projects.akshay.bayesments.features.Sequences;
+import org.seqcode.projects.akshay.bayesments.features.Simulate;
+import org.seqcode.projects.akshay.bayesments.framework.BayesmentsConfig;
+import org.seqcode.projects.akshay.bayesments.framework.BayesmentsEMan;
+import org.seqcode.projects.akshay.bayesments.utils.BayesmentsSandbox;
+import org.seqcode.projects.akshay.bayesments.utils.Cubic;
+
+
+/**
+ * EMtrain class the initializes and trains the parameters of the Bayesian network using the EM framework
+ * @author akshaykakumanu
+ *
+ */
+
+public class EMtrain {
+
+	protected BayesmentsConfig config;
+	protected boolean Simulate;
+	
+	//The following 4 lines are variables needed when the model is in seq state. The should be initiated using a setter method(setSeqMode)
+	protected double[][] Xs;
+	protected double[][] MUs;
+	protected double[][] SIGMAs;
+	
+	//boolean variable, turns on when the model is in seqState. Once, the model is in seqState it can't go back to non-seq state mode
+	// Initially it is false. That is the EM always stars in non-seq state
+	protected boolean seqState;
+	
+	// True if only chromatin features are used. i.e sequence features are never used
+	//protected boolean onlyChrom;
+	
+	// 2-d array of chromatin counts, with rows as locations and columns as conditions
+	protected float[][] Xc;
+	//2-d array of factor countts, with rows as locations and columns as conditions
+	protected float[][] Xf;
+	//2-d array of means, with rows as chromatin states and columns as conditions
+	protected double[][] MUc;
+	//2-d array of means, with rows as factor stats and columns as conditions
+	protected double[][] MUf;
+	//2-d array of variance, with rows as chromatin states and columns as conditions
+	protected double[][] SIGMAc;
+	//2-d array of variance, with rows as factor stats and columns as conditions
+	protected double[][] SIGMAf;
+	//2-d array of transition probabilities, with rows as chromatin states and colums as factor states
+	protected double[][] Bjk;
+	//Expectation of unobserved variables for the E step in EM algorithm
+	protected double[][][] Qijk;
+	//no of chromatin states
+	protected int numChromStates;
+	//number of factor states
+	protected int numFacBindingStates;
+	protected int N; // number of training examples
+	protected int C; // number of chromatin conditions
+	protected int F; // number of factor conditions (alomost always 1)
+	protected int M; // number of motifs to be included as features (this number is initialized when the models enters the seq state mode (setSeqMode))
+	// flag to turn on plotting of the parameters as the function of iterations step in EM
+	
+	//The 3-d arrays store the values of seq parameters over all iterations of EM.
+	
+	protected double[][][] trainMUs;
+	protected double[][][] trainMUc; 
+	protected double[][][] trainMUf; 
+	
+	protected double[][][] trainBjk;
+	
+	protected double[] capSIGMAc;
+	protected double[] capSIGMAf;
+	protected double[] capSIGMAs;
+	
+	protected double[] WCnorm;
+	protected double[] WSnorm;
+	
+	protected String[] condition_names;
+	
+	protected double lambda;
+	
+	protected boolean regularize;
+	
+	protected boolean printIntialVals;
+
+	//Total number of EM iterations
+	protected int total_itrs=0;
+	
+	/**
+	 * This constructor is used only for real data. (Use the other constructor for simulated datasets)
+	 * @param config
+	 * @param trainingData
+	 * @param manager
+	 */
+	public EMtrain(BayesmentsConfig config, GenomicLocations trainingData, Sequences seqs, ExperimentManager manager, BayesmentsEMan bmanager, int nChromStates, int nFacStates, boolean Regularize, boolean printVals, boolean SeqState) {
+		this.config = config;
+		//this.trainingData = trainingData;
+		this.regularize = Regularize;
+		if(regularize){
+			this.lambda = config.getLambda();
+		}
+		
+		N = trainingData.getNumTrainingExamples();
+		C= trainingData.getNumChromatinCons();
+		F = trainingData.getNumFacCons();
+		this.numChromStates = nChromStates;
+		this.numFacBindingStates = nFacStates;
+		
+		//Initializing and loading X's
+		this.Xc = new float[N][C];
+		this.Xf = new float[N][F];
+		this.Xc = trainingData.getChromatinCounts();
+		this.Xf = trainingData.getFactorCounts();
+		
+		this.condition_names = new String[C];
+		int c =0;
+		for(ExperimentCondition ec :bmanager.getChromatinConditionList()){
+			this.condition_names[c] = ec.getName();
+			c++;
+		}
+		
+		this.printIntialVals = printVals;
+		//Initializing the model
+		initializeEM(this.printIntialVals);
+		this.total_itrs = config.getNumItrs();
+		this.seqState = SeqState;
+		if(SeqState){
+			this.setSeqMode(seqs, manager);
+			this.initializeSeqParams(manager);
+		}
+		this.Simulate = false;
+		
+	}
+	
+	public EMtrain(BayesmentsConfig config, int nChromStates, int nFacStates, boolean Regularize, boolean printVals) {
+		this.config = config;
+		//this.trainingData = null;
+		this.regularize = Regularize;
+		if(regularize){
+			this.lambda = config.getLambda();
+		}
+		Simulate sim = new Simulate();
+		sim.simulate();
+		this.C = sim.getNumChromCondition();
+		this.N = sim.getNumTrainingEgs();
+		this.F =1;
+		this.numChromStates = nChromStates;
+		this.numFacBindingStates = nFacStates;
+		this.seqState = false;
+		this.total_itrs = this.config.getNumItrs();
+		
+		//Initializing and loading X's
+		this.Xc = new float[N][C];
+		this.Xf = new float[N][F];
+		
+		this.Xc = sim.getSimXc();
+		this.Xf = sim.getSimXf();
+		
+		this.condition_names = new String[C];
+		for(int c=0; c<C; c++){
+			this.condition_names[c] = "Sim-"+Integer.toString(c);
+		}
+		this.printIntialVals = printVals;
+		this.initializeEM(this.printIntialVals);
+		
+		this.total_itrs = config.getNumItrs();
+		this.seqState = false;
+		this.Simulate = true;
+		
+		
+	}
+	
+	/**
+	 * Method that initializes all the parameters for the Bayesian network
+	 * @param manager
+	 */
+	private void initializeEM(boolean printVals){
+		
+		//Initializing mu's
+		MUc = new double[numChromStates][C];
+		MUf = new double[numFacBindingStates][F];
+		
+		if(regularize){
+			WCnorm = new double[C];
+			// Setting all initial weights to 1
+			for(int c=0; c<C; c++){
+				WCnorm[c] = 0.0;
+			}
+		}
+		
+		this.capSIGMAc = new double[C];
+		this.capSIGMAf = new double[F];
+		
+		//Initialization from emperical means
+		
+		for(int c=0; c< C; c++){
+			float[] observedValues = new float[N];
+			for(int i=0; i<N; i++){
+				observedValues[i] = Xc[i][c];
+			}
+			double[] means = this.getEmpMeanValues(numChromStates, observedValues);
+			for(int j=0; j<numChromStates; j++){
+				MUc[j][c] = means[j];
+			}
+		}
+		
+		for(int f=0; f< F; f++){
+			float[] observedValues = new float[N];
+			for(int i=0; i<N; i++){
+				observedValues[i] = Xf[i][f];
+			}
+			double[] means = this.getEmpMeanValues(numFacBindingStates, observedValues);
+			for(int k=0; k<numFacBindingStates; k++){
+				MUf[k][f] = means[k];
+			}
+		}
+		
+		//Printing the initial Mu's
+		if(this.printIntialVals){
+			System.out.println("----------------------------------Intial MUc and MUf values----------------------------------------");
+			BayesmentsSandbox.printArray(MUc, "MUc", "MUc", this.condition_names);
+			BayesmentsSandbox.printArray(MUf, "MUf", "MUf", this.condition_names);
+			System.out.println("---------------------------------------------------------------------------------------------------");
+		}
+		//Initializing sigma's
+		SIGMAc = new double[numChromStates][C];
+		SIGMAf = new double[numFacBindingStates][F];
+		
+		// Initializing from emperical data... (Max-Min) 
+		for(int c=0; c< C; c++){
+			double[] observedValues = new double[N];
+			for(int i=0; i<N; i++){
+				observedValues[i] = Xc[i][c];
+			}
+			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
+			double max = observedValues[this.getPercentileIndex(85, observedValues)];
+			for(int j=0; j<numChromStates; j++){
+				SIGMAc[j][c] = (max-min)/(this.numChromStates+config.getBufferSigmaVal());
+				this.capSIGMAc[c] = (max-min)/(this.numChromStates+config.getBufferSigmaVal());
+			}
+		}
+		
+		for(int f=0; f< F; f++){
+			double[] observedValues = new double[N];
+			for(int i=0; i<N; i++){
+				observedValues[i] = Xf[i][f];
+			}
+			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
+			double max = observedValues[this.getPercentileIndex(85, observedValues)];
+			for(int k=0; k<numFacBindingStates; k++){
+				SIGMAf[k][f] = (max-min)/this.numFacBindingStates;
+				this.capSIGMAf[f] = (max-min)/this.numFacBindingStates;
+			}
+		}
+		
+		//Printing the initial SIGMA's
+		if(this.printIntialVals){
+			System.out.println("----------------------------------Intial SIGMAc and SIGMAf values----------------------------------------");
+			BayesmentsSandbox.printArray(SIGMAc, "SIGMAc", "SIGMAc", this.condition_names);
+			BayesmentsSandbox.printArray(SIGMAf, "SIGMAf", "SIGMAf", this.condition_names);
+			System.out.println("----------------------------------Intial SIGMAc and SIGMAf values----------------------------------------");
+		}
+		// Initializing Bjk .. Using random initialization 
+		Bjk = new double[numChromStates][numFacBindingStates];
+		for(int i=0; i<numChromStates; i++){
+			Bjk[i] = this.getRandomList(numFacBindingStates, true);
+		}
+		
+		//printing the initial Bjk's
+		if(this.printIntialVals){
+			System.out.println("----------------------------------Intial Bjk values----------------------------------------");
+			BayesmentsSandbox.printArray(Bjk, "chrom_state", "factor_State", this.condition_names);
+			System.out.println("----------------------------------Intial Bjk values----------------------------------------");
+		}
+		
+		//Initializing the dimensions of Qijk's
+		Qijk = new double[N][numChromStates][numFacBindingStates];
+		
+	}
+	
+	/**
+	 * This is internally called by seqSeqMode setter when the class enters seq mode
+	 * The method initializes the parameters for the seq features of the bayesian network
+	 */
+	private void initializeSeqParams(ExperimentManager manager){
+		
+		this.MUs = new double[numChromStates][M];
+		this.SIGMAs = new double[numChromStates][M];
+		
+		for(int m=0; m< M; m++){
+			float[] observedScores = new float[N];
+			for(int i=0; i<N; i++){
+				observedScores[i] = (float) Xs[i][m];
+			}
+			double[] means = this.getEmpMeanValues(numChromStates,  observedScores);
+			for(int j=0; j<numChromStates; j++){
+				MUs[j][m] = means[j];
+			}
+		}
+		
+		//printing params
+		if(this.printIntialVals){
+			System.out.println("----------------------------------Intial MUs values----------------------------------------");
+			BayesmentsSandbox.printArray(MUs, "MUs", "MUs", this.condition_names);
+			System.out.println("----------------------------------Intial MUs values----------------------------------------");
+		}
+		
+		for(int m=0; m< M; m++){
+			double[] observedValues = new double[N];
+			for(int i=0; i<N; i++){
+				observedValues[i] = Xs[i][m];
+			}
+			double min = observedValues[this.getPercentileIndex(15.0, observedValues)];
+			double max = observedValues[this.getPercentileIndex(85.0, observedValues)];
+			
+			for(int j=0; j<numChromStates; j++){
+				SIGMAs[j][m] = (max-min)/(this.numChromStates+config.getBufferSigmaVal());
+				this.capSIGMAs[m] = (max-min)/(this.numFacBindingStates+config.getBufferSigmaVal());
+			}
+		}
+		
+		if(this.printIntialVals){
+			System.out.println("----------------------------------Intial SIGMAs values----------------------------------------");
+			BayesmentsSandbox.printArray(SIGMAs, "SIGMAs", "SIGMAs", this.condition_names);
+			System.out.println("----------------------------------Intial SIGMAs values----------------------------------------");
+		}
+		
+	}
+	
+	
+	/**
+	 * Generates n random numbers that sum up to 1 if the boolean prob is TRUE 
+	 * @param n
+	 * @param prob
+	 * @return
+	 */
+	private double[] getRandomList(int n, boolean prob){
+		double[] ret = new double[n];
+		double sum=0.0;
+		Random ran = new Random();
+		for(int i=0; i<n; i++){
+			ret[i] = ran.nextDouble()+(double) ran.nextInt(90);
+			sum = sum + ret[i];
+		}
+		if(prob){
+			for(int i=0; i<n; i++){
+				ret[i] = ret[i]/sum;
+			}
+			return ret;
+		}else{
+			return ret;
+		}
+	}
+	
+	/**
+	 * Generates n values that fall in mu+-0.2*sigma of the the observedValues
+	 * @param n
+	 * @param observedValues
+	 * @return
+	 */
+	private double[] getEmpMeanValues(int n, float[] observedValues){
+		double[] ret =  new double[n];
+		double mean = 0.0;
+		double std=0.0;
+		for(int i=0; i< observedValues.length; i++){
+			mean = mean + observedValues[i];
+		}
+		mean = mean/(double) observedValues.length;
+		
+		for(int i=0; i<observedValues.length; i++){
+			std = std + Math.pow(observedValues[i]-mean, 2.0);
+		}
+		std = std/(double) observedValues.length;
+		
+		
+		std = Math.sqrt(std);
+		Random rn =new Random();
+		double range = 0.4*std;
+		
+		for(int i=0; i<n ; i++){
+			double random  = rn.nextDouble()*range+mean-0.2*std;
+			ret[i] = random;
+		}
+		return ret;
+	}
+	
+	/**
+	 * Returns n equal numbers that add upto one
+	 * @param n
+	 * @return
+	 */
+	private double[] getUniformList(int n){
+		double[] ret =  new double[n];
+		for(int i=0; i<n; i++){
+			ret[i] = 1/(double)n;
+		}
+		return ret;
+	}
+	
+	/**
+	 * Returns the index of the minimum number in the given list of doubles
+	 * @param list
+	 * @return
+	 */
+	private int getMinindex(double[] list){
+		double val = 100000.0;
+		int ret=0;
+		for(int i=0; i< list.length; i++){
+			if(val > list[i]){
+				ret = i;
+				val = list[i];
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * returns the index of the maximum number in the given list of doubles
+	 * @param list
+	 * @return
+	 */
+	private int getMaxindex(double[] list){
+		double val = -100000.0;
+		int ret=0;
+		for(int i=0; i< list.length; i++){
+			if(list[i] > val){
+				ret =i;
+				val = list[i];
+			}
+		}
+		return ret;
+	}
+	
+	public int getPercentileIndex(double percentile, double[] list){
+		
+		Arrays.sort(list);
+		int index = (int) percentile*list.length/100;
+		return index;
+	}	
+	
+	
+	
+	/**
+	 * Runs the EM algorithm for a given number of iterations and also plots the parameters over the learning rounds if plot parameter is true
+	 */
+	public void runEM(boolean plot){
+		
+		for(int t=0; t<this.total_itrs; t++){ // training for the given number of iterations
+			
+			if(t==0){      //Copy the initial set of random parameters. True on the first round of EM
+				
+				trainMUc = new double[this.total_itrs+1][numChromStates][C];
+				trainMUf = new double[this.total_itrs+1][numFacBindingStates][F];
+				trainBjk = new double[this.total_itrs+1][numChromStates][numFacBindingStates];
+				trainMUc[0] = MUc;
+				trainMUf[0] = MUf;
+				//trainPIj[0] = PIj;
+				trainBjk[0] = Bjk;
+				if(this.seqState){
+					trainMUs[0] = MUs;
+				}
+			}
+			
+			executeEStep();  //E-Step
+			executeMStep(); //M-Step
+			
+			// Copy the updated parameters
+			for(int j=0; j<numChromStates; j++){
+				for(int c=0; c<C; c++){
+					trainMUc[t+1][j][c]= MUc[j][c];
+				}
+			}
+			
+			for(int k=0; k<numFacBindingStates; k++){
+				for(int f=0; f<F; f++){
+					trainMUf[t+1][k][f]= MUf[k][f];
+				}
+			}
+			
+			
+			for(int j=0; j< numChromStates; j++){
+				for(int k=0; k<numFacBindingStates; k++){
+					trainBjk[t+1][j][k] = Bjk[j][k];
+				}
+			}
+			
+			if(this.seqState){
+				for(int j=0; j<numChromStates; j++){
+					for(int m=0; m<M; m++){
+						trainMUs[t+1][j][m]= MUs[j][m];
+					}
+				}
+			}
+		}
+		
+		// Plot if asked for
+		if(plot){
+			//Plotting Pi values
+			double[][] Xaxes = new double[numChromStates][this.total_itrs+1];  // plus 1 for initial random parameters
+			double[][] Yaxes = new double[numChromStates][this.total_itrs+1];
+				
+			for(int c=0; c<C; c++){
+				for(int j=0; j<numChromStates; j++){
+					for(int itr=0; itr<this.total_itrs+1; itr++){
+						Xaxes[j][itr] = itr;
+						Yaxes[j][itr] = trainMUc[itr][j][c];
+					}
+				}
+				EMIterPlotter MUcPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MU-C_"+Integer.toString(c));
+				MUcPlotter.plot();
+			}
+			
+			//Plotting Muf
+			Xaxes = new double[numFacBindingStates][this.total_itrs+1];
+			Yaxes = new double[numFacBindingStates][this.total_itrs+1];
+			for(int f=0; f<F; f++){
+				for(int k=0; k<numFacBindingStates; k++){
+					for(int itr=0; itr<this.total_itrs+1; itr++){
+						Xaxes[k][itr] = itr;
+						Yaxes[k][itr] = trainMUf[itr][k][f];
+					}
+				}
+				EMIterPlotter MUfPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MF-F_"+Integer.toString(f));
+				MUfPlotter.plot();
+			}
+				
+			//Plotting Bjk
+			Xaxes = new double[numFacBindingStates*numChromStates][this.total_itrs+1];
+			Yaxes = new double[numFacBindingStates*numChromStates][this.total_itrs+1];
+				
+			int count=0;
+			for(int j=0; j<numChromStates; j++){
+				for(int k=0; k<numFacBindingStates; k++){
+					for(int itr=0; itr<this.total_itrs+1; itr++){
+						Xaxes[count][itr] = itr;
+						Yaxes[count][itr] = trainBjk[itr][j][k];
+					}
+					count++;
+				}
+			}
+			EMIterPlotter BjkPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "Bjk");
+			BjkPlotter.plot();
+			
+			if(this.seqState){
+				Xaxes = new double[numChromStates][this.total_itrs+1];  // plus 1 for initial random parameters
+				Yaxes = new double[numChromStates][this.total_itrs+1];
+				//Plotting Mus
+				for(int m=0; m<M; m++){
+					for(int j=0; j<numChromStates; j++){
+						for(int itr=0; itr<this.total_itrs+1; itr++){
+							Xaxes[j][itr] = itr;
+							Yaxes[j][itr] = trainMUs[itr][j][m];
+						}
+					}
+					EMIterPlotter MUsPlotter = new EMIterPlotter(this.config, Xaxes, Yaxes, "MU-s_"+Integer.toString(m));
+					MUsPlotter.plot();
+				}
+			}
+		}
+		
+	}
+	
+	/**
+	 * Executes the E step. That is it calculates the Qijk's using the current set of parameters
+	 */
+	private void executeEStep(){
+		
+		double den[]= new double[N];
+		
+		//Calculate the numerator and the denominator for all the Qijk's
+		for(int i=0; i<N; i++){    // over the training examples
+			for(int j=0; j<numChromStates; j++){   // over the chromatin states
+				for(int k=0; k< numFacBindingStates; k++){ //over factor binding states
+					double chromGausssianProd=0.0;
+					double facGaussianProd = 0.0;
+					double seqGaussianProd = 0.0;
+					for(int c=0; c<C; c++){
+						NormalDistribution gaussian = new NormalDistribution(MUc[j][c],Math.pow(SIGMAc[j][c], 2.0));
+						double que_pusher = (this.regularize) ?Math.pow(gaussian.calcProbability((double) Xc[i][c]), 1/(1+WCnorm[c])): gaussian.calcProbability((double) Xc[i][c])  ;
+						chromGausssianProd = c==0 ? que_pusher: chromGausssianProd* que_pusher;
+					}
+					for(int f=0; f< F; f++){
+						NormalDistribution gaussian = new NormalDistribution(MUf[k][f],Math.pow(SIGMAf[k][f], 2.0));
+						facGaussianProd = (f == 0 ? gaussian.calcProbability((double) Xf[i][f]): facGaussianProd* gaussian.calcProbability((double) Xf[i][f]));
+					}
+					// Set the guassian products to 0 in case they are NaN
+					chromGausssianProd = ( Double.isNaN(chromGausssianProd)) ? 0.0 : chromGausssianProd;
+					facGaussianProd = (Double.isNaN(facGaussianProd)) ? 0.0: facGaussianProd;
+					
+					if(this.seqState){
+						for(int m=0; m<M; m++){
+							NormalDistribution gaussian = new NormalDistribution(MUs[j][m],Math.pow(SIGMAs[j][m], 2.0));
+							double que_pusher = this.regularize ? Math.pow(gaussian.calcProbability((double) Xs[i][m]), 1/(1+WSnorm[m])) : gaussian.calcProbability((double) Xs[i][m]);
+							seqGaussianProd = m==0 ? que_pusher: seqGaussianProd* que_pusher;
+						}
+						seqGaussianProd = (Double.isNaN(seqGaussianProd)) ? 0.0: seqGaussianProd;
+					}
+					
+					if(this.seqState){
+						Qijk[i][j][k] = Math.pow(chromGausssianProd, config.getChromWeight())*Bjk[j][k]*facGaussianProd*Math.pow(seqGaussianProd,config.getSeqWeight());
+					}else{Qijk[i][j][k] = Math.pow(chromGausssianProd,config.getChromWeight())*Bjk[j][k]*facGaussianProd;}		
+					den[i] = den[i]+Qijk[i][j][k];
+				}
+			}
+			
+		}
+		
+		//Normalize the numerator by dividing the Qijk's with the denominators
+		for(int i=0; i<N; i++){
+			for(int j=0; j<numChromStates; j++){
+				for(int k=0; k<numFacBindingStates; k++){
+					Qijk[i][j][k] = Qijk[i][j][k]/den[i];
+					
+					Qijk[i][j][k] = ( Double.isNaN(Qijk[i][j][k])) ? 0.0 : Qijk[i][j][k];
+				}
+			}
+		}
+		
+	}
+	
+	/**
+	 * Executes the M step. Updates all the parameters of the model
+	 */
+	private void executeMStep(){
+		
+		//-----------------------MUc update------------------------------------
+		
+		//Compute
+		double[][] denMUc=new double[numChromStates][C];
+		for(int j=0; j<numChromStates; j++){
+			for(int c=0; c<C; c++){
+				for(int i=0; i<N; i++){
+					for(int k=0; k<numFacBindingStates; k++){
+						MUc[j][c] = k==0 && i==0 ? Qijk[i][j][k]*Xc[i][c] : MUc[j][c]+ Qijk[i][j][k]*Xc[i][c];
+						denMUc[j][c] = denMUc[j][c]+Qijk[i][j][k];
+					
+					}
+				}
+			}
+		}
+		
+		//Normalize 
+		for(int j=0; j<numChromStates; j++){
+			for(int c=0; c<C; c++){
+				MUc[j][c] = MUc[j][c]/denMUc[j][c];
+			}
+		}
+		
+		
+		//-----------------------MUf update --------------------------------------
+		
+		//Compute
+		double[][] denMUf = new double[numFacBindingStates][F];
+		for(int k=0; k<numFacBindingStates; k++){
+			for(int f=0; f<F; f++){
+				for(int i=0; i<N; i++){
+					for(int j=0; j<numChromStates; j++){
+						MUf[k][f] = j==0 && i==0? Qijk[i][j][k]*Xf[i][f]: MUf[k][f]+Qijk[i][j][k]*Xf[i][f];
+						denMUf[k][f] = denMUf[k][f]+Qijk[i][j][k];
+					}
+				}
+			}
+		}
+		
+		//Normalize
+		for(int k=0; k<numFacBindingStates; k++){
+			for(int f=0; f<F; f++){
+				MUf[k][f] = MUf[k][f]/denMUf[k][f];
+			}
+		}
+		
+		// -----------------------MUs update, if in seqState----------------------------
+		
+		//Compute
+		if(this.seqState){
+			double[][] denMUs = new double[numChromStates][M];
+			for(int j=0; j<numChromStates; j++){
+				for(int m=0; m<M; m++){
+					for(int i=0; i<N; i++){
+						for(int k=0; k<numFacBindingStates; k++){
+							MUs[j][m] = k==0 && i==0? Qijk[i][j][k]*Xs[i][m]: MUs[j][m]+Qijk[i][j][k]*Xs[i][m];
+							denMUs[j][m] = denMUs[j][m]+Qijk[i][j][k];
+						}
+					}
+				}
+			}
+			
+			//Normalize
+			for(int j=0; j<numChromStates; j++){
+				for(int m=0; m<M; m++){
+					MUs[j][m] = MUs[j][m]/denMUs[j][m];
+				}
+			}
+		}
+		
+		//---------------------Bjk update -------------------------------------------
+		
+		//Compute
+		double[] denBjk = new double[numFacBindingStates];
+		for(int k=0; k<numFacBindingStates; k++){
+			for(int j=0; j< numChromStates; j++){
+				for(int i=0; i<N; i++){
+					Bjk[j][k] = i==0 ? Qijk[i][j][k] : Bjk[j][k]+Qijk[i][j][k];
+					denBjk[k] = denBjk[k]+Qijk[i][j][k];
+				}
+			}
+		}
+		
+		//Normalize
+		for(int k=0; k<numFacBindingStates; k++){
+			for(int j=0; j< numChromStates; j++){
+				Bjk[j][k] = Bjk[j][k]/denBjk[k];
+			}
+		}
+		
+		// ------------------------ regularization chromatin weights update (if regularization is true) ------------------------------------
+		if(this.regularize){
+			for(int c=0; c<C; c++){
+				double Z=0.0;
+				Cubic cube_root_solver = new Cubic();
+				for(int i=0; i<N; i++){
+					for(int j=0; j<numChromStates; j++){
+						for(int k=0; k<numFacBindingStates; k++){
+							NormalDistribution gaussian = new NormalDistribution(MUc[j][c],Math.pow(SIGMAc[j][c], 2.0));
+							if(!Double.isNaN(gaussian.calcProbability((double)Xc[i][c]))){
+								double que_pusher=0.0;
+								if(Double.isInfinite(Math.log(gaussian.calcProbability((double)Xc[i][c])))){
+									que_pusher = Math.log(Double.MIN_VALUE);
+									Z = (i==0 && j==0 && k==0) ? Qijk[i][j][k]*que_pusher : Z+Qijk[i][j][k]*que_pusher;
+								}else{
+									que_pusher = Math.log(gaussian.calcProbability((double)Xc[i][c]));
+									Z =  (i==0 && j==0 && k==0) ? Qijk[i][j][k]*que_pusher : Z+Qijk[i][j][k]*que_pusher;
+								}
+								}else{
+								Z = (i==0 && j==0 && k==0) ? 0.0 : Z+0.0;
+							}
+						}
+					}
+				}
+				//System.out.println("the value of Z-chrom is: "+Double.toString(Z));
+				cube_root_solver.solve(1, 2, 1, Z/this.lambda);
+				this.WCnorm[c] = cube_root_solver.x1;
+				//System.out.println("Number of roots-chrom: "+Integer.toString(cube_root_solver.nRoots));
+				//System.out.println("Value of Highest root is-chrom: "+Double.toString(cube_root_solver.x1));
+			}
+			if(this.seqState){
+				for(int m=0; m<M; m++){
+					double Z=0.0;
+					Cubic cube_root_solver =  new Cubic();
+					for(int i=0; i<N; i++){
+						for(int j=0; j<numChromStates; j++){
+							for(int k=0; k< this.numFacBindingStates; k++){
+								NormalDistribution gaussian = new NormalDistribution(MUs[j][m],Math.pow(SIGMAs[j][m], 2.0));
+								if(!Double.isNaN(gaussian.calcProbability((double)Xs[i][m]))){
+									Z = (i==0 && j==0 && k==0) ?  Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xs[i][m])) : Z+Qijk[i][j][k]*Math.log(gaussian.calcProbability((double)Xs[i][m]));
+								}else{
+									Z = (i==0 && j==0 && k==0) ? 0.0 : Z+0.0;
+								}
+							}
+						}
+					}
+					//Debug lines
+					//System.out.println("the value of Z-seq is: "+Double.toString(Z));
+					cube_root_solver.solve(1, 2, 1, Z/this.lambda);
+					this.WSnorm[m] = cube_root_solver.x1;
+					//System.out.println("Number of roots-seq: "+Integer.toString(cube_root_solver.nRoots));
+					//System.out.println("Value of Highest root is-seq: "+Double.toString(cube_root_solver.x1));
+				}
+			}
+		}
+	}
+	
+	
+	//setters
+	public void setSeqMode(Sequences seqs, ExperimentManager manager){
+		this.seqState = true;
+		this.setXs(seqs.getXs());
+		this.M = Xs[0].length;
+		System.out.println("2-time "+Integer.toString(M));
+		if(this.regularize){
+			WSnorm = new double[M];
+		}
+		this.capSIGMAs = new double[M];
+		//this.setSequences(seqs);
+		this.setInitialSeqParams(manager);
+		this.trainMUs = new double[this.total_itrs+1][this.numChromStates][this.M];		
+	}
+	
+	private void setXs(double[][] Xs){this.Xs = Xs;}
+	private void setInitialSeqParams(ExperimentManager manager){this.initializeSeqParams(manager);}
+	
+	//Accessors
+	public double[][] getMUc(){return this.MUc;}
+	public double[][] getMUf(){return this.MUf;}
+	public double[][] getSIGMAc(){return this.SIGMAc;}
+	public double[][] getSIGMAf(){return this.SIGMAf;}
+	public double[][] getBjk(){return this.Bjk;}
+	public double[][] getMUs(){return this.MUs;}
+	public double[][] getSIGMAs(){return this.SIGMAs;}
+	public int getNumTrainingEgs(){return this.N;}
+	public int getNumMotifs(){return this.M;}
+	public int getnumChromConds(){return this.C;}
+	public int getnumFacConds(){return this.F;}
+	public float[][] getXc(){return this.Xc;}
+	public float[][] getXf(){return this.Xf;}
+	public double[][] getXs(){return this.Xs;}
+	public boolean getSeqStateStatus(){return this.seqState;}
+	public double[] getChromWeights(){return this.WCnorm;}
+	public double[] getSeqWeights(){return this.WSnorm;}
+	public String[] getConditionNames(){return this.condition_names;}
+	// main method is only for testing puposers
+	
+	public static void main(String[] args){
+		//double[] test = getRandomList(3,true);
+		//System.out.println(test[0]);
+		//System.out.println(test[1]);
+		//System.out.println(test[2]);
+		//double a = Double.valueOf("9.0e-09");//.longValue();
+		//Map<Integer,String> cache;
+		
+		//cache = new HashMap<Integer,String>();
+		int x=13;
+		System.out.println(x<<2);
+		//if(cache !=  null){
+		//	System.out.println(a);
+		//}
+		
+	}
+	
+}
