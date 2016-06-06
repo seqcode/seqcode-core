@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="seqcode">
+<project name="seqcode-core">
 
   <property name="src.dir" location="src" />	
   <property name="lib.dir" location="lib" />
@@ -7,8 +7,8 @@
   <property name="build.classes.dir" location="${build.dir}/classes" />
   <property name="build.dist.dir" location="${build.dir}/dist" />
   <property name="build.unjar.dir" location="${build.dir}/unjar" />
-  <property name="build.compiler" value="javac1.7"/>
-  <property name="pwfiles.basepath"  value="/gpfs/group/mahony/code/pwfiles"/>
+  <property name="build.compiler" value="javac1.8"/>
+  <property name="pwfiles.basepath"  value="/storage/group/sam77_collab/code/pwfiles"/>
   <path id="compile.classpath">
     <pathelement location="${build.classes.dir}"/>
      <fileset dir="${lib.dir}">
@@ -49,6 +49,7 @@
 	   debuglevel="lines,vars,source"
 	   deprecation="yes"
 	   compiler="modern"
+       includeantruntime="false"
 	   verbose="no">		  
       <include name="**/*.java"/>
     </javac>

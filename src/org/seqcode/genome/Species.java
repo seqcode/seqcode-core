@@ -5,11 +5,11 @@ import java.util.*;
 
 import java.sql.*;
 
-import org.seqcode.gse.utils.*;
-import org.seqcode.gse.utils.database.DatabaseConnectionManager;
-import org.seqcode.gse.utils.database.DatabaseException;
-import org.seqcode.gse.utils.database.Sequence;
-import org.seqcode.gse.utils.database.UnknownRoleException;
+import org.seqcode.data.connections.DatabaseConnectionManager;
+import org.seqcode.data.connections.DatabaseException;
+import org.seqcode.data.connections.Sequence;
+import org.seqcode.data.connections.UnknownRoleException;
+import org.seqcode.utils.*;
 
 /**
  * Species represents a species in our database

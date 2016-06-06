@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.seqcode.data.seqdata.SeqDataLoader;
+import org.seqcode.data.seqdata.SeqLocator;
 import org.seqcode.deepseq.hitloaders.BEDFileHitLoader;
 import org.seqcode.deepseq.hitloaders.BowtieFileHitLoader;
 import org.seqcode.deepseq.hitloaders.HitLoader;
@@ -19,9 +21,7 @@ import org.seqcode.deepseq.hitloaders.SAMFileHitLoader;
 import org.seqcode.deepseq.hitloaders.TophatFileHitLoader;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
-import org.seqcode.gse.datasets.seqdata.SeqDataLoader;
-import org.seqcode.gse.datasets.seqdata.SeqLocator;
-import org.seqcode.gse.utils.Pair;
+import org.seqcode.utils.Pair;
 
 
 /** 

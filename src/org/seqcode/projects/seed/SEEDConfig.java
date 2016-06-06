@@ -12,12 +12,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.seqcode.data.io.RegionFileUtilities;
 import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.StrandedPoint;
-import org.seqcode.gse.tools.utils.Args;
-import org.seqcode.gse.utils.ArgParser;
-import org.seqcode.projects.multigps.utilities.Utils;
+import org.seqcode.utils.ArgParser;
+import org.seqcode.utils.Args;
 
 
 public class SEEDConfig {
@@ -121,7 +121,7 @@ public class SEEDConfig {
 				
 				//Regions to ignore during analysis
 				if(ap.hasKey("exclude"))
-					regionsToIgnore = Utils.loadRegionsFromFile(Args.parseString(args, "exclude", null), gconfig.getGenome(), -1);
+					regionsToIgnore = RegionFileUtilities.loadRegionsFromFile(Args.parseString(args, "exclude", null), gconfig.getGenome(), -1);
 				
 				//Tag manipulation
 				tagShift = Args.parseInteger(args,"tagshift",tagShift);
@@ -149,7 +149,7 @@ public class SEEDConfig {
 				superStitchWindow = Args.parseInteger(args, "supStitchWin", 12500);
 				minDistalDistance  = Args.parseInteger(args, "distalDistance", 2000);
 				if(ap.hasKey("refTSSs")){
-					refTSSs = Utils.loadStrandedPointsFromFile(gconfig.getGenome(), Args.parseString(args, "refTSSs",""));
+					refTSSs = RegionFileUtilities.loadStrandedPointsFromFile(gconfig.getGenome(), Args.parseString(args, "refTSSs",""));
 				}
 				
 						

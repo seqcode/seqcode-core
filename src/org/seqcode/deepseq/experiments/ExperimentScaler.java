@@ -15,14 +15,13 @@ import org.jfree.chart.axis.NumberAxis;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.Region;
-import org.seqcode.gse.utils.models.Model;
-import org.seqcode.gse.utils.models.data.DataFrame;
-import org.seqcode.gse.utils.models.data.DataRegression;
-import org.seqcode.gse.viz.scatter.ScatterPlot;
-import org.seqcode.projects.multigps.framework.BindingManager;
-import org.seqcode.projects.multigps.framework.BindingModel;
-import org.seqcode.projects.multigps.framework.MultiGPSConfig;
-import org.seqcode.projects.multigps.framework.PotentialRegionFilter;
+import org.seqcode.ml.regression.DataFrame;
+import org.seqcode.ml.regression.DataRegression;
+import org.seqcode.projects.seed.DomainFinder;
+import org.seqcode.projects.seed.SEEDConfig;
+import org.seqcode.projects.seed.features.Feature;
+import org.seqcode.utils.models.Model;
+import org.seqcode.viz.scatter.ScatterPlot;
 
 import Jama.Matrix;
 
@@ -255,30 +254,14 @@ public class ExperimentScaler {
 	public static void main(String[] args){
 		
 		GenomeConfig gconfig = new GenomeConfig(args);
-		ExptConfig econfig = new ExptConfig(gconfig.getGenome(), args);
-		MultiGPSConfig mgpsconfig = new MultiGPSConfig(gconfig, args, false);
-		
+		ExptConfig econfig = new ExptConfig(gconfig.getGenome(), args);	
+		SEEDConfig sconfig = new SEEDConfig(gconfig, args);
 		
 		if(gconfig.helpWanted()){
 			System.err.println("ExperimentScaler:");
 			System.err.println(gconfig.getArgsList()+"\n"+econfig.getArgsList());
 		}else{
 			ExperimentManager exptMan = new ExperimentManager(econfig);
-			BindingManager bindingManager = new BindingManager(mgpsconfig, exptMan);
-			//Initialize binding models & binding model record
-			Map<ControlledExperiment, List<BindingModel>>  repBindingModels = new HashMap<ControlledExperiment, List<BindingModel>>();
-			for(ControlledExperiment rep : exptMan.getReplicates()){
-				if(mgpsconfig.getDefaultBindingModel()!=null)
-					bindingManager.setBindingModel(rep, mgpsconfig.getDefaultBindingModel());
-				else if(rep.getExptType()!=null && rep.getExptType().getName().toLowerCase().equals("chipexo"))
-					bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipExoEmpiricalDistribution));
-				else
-					bindingManager.setBindingModel(rep, new BindingModel(BindingModel.defaultChipSeqEmpiricalDistribution));
-				repBindingModels.put(rep, new ArrayList<BindingModel>());
-				repBindingModels.get(rep).add(bindingManager.getBindingModel(rep));
-			}
-			for(ExperimentCondition cond : exptMan.getConditions())
-				bindingManager.updateMaxInfluenceRange(cond);
 			
 			
 			//Test
@@ -299,8 +282,11 @@ public class ExperimentScaler {
 			ExperimentScaler scaler = new ExperimentScaler();
 			
 			//Potential regions reqd by PeakSeq method
-			PotentialRegionFilter potentialFilter = new PotentialRegionFilter(mgpsconfig, econfig, exptMan, bindingManager);
-			List<Region> potentials = potentialFilter.execute();
+			DomainFinder potentialFilter = new DomainFinder(gconfig, econfig, sconfig, exptMan);
+			Map<ExperimentCondition, List<Feature>> featuresByCond = potentialFilter.execute();
+			List<Feature> potentials = new ArrayList<Feature>();
+			for(ExperimentCondition ec : exptMan.getConditions())
+				potentials.addAll(featuresByCond.get(ec));
 			System.out.println("\t"+potentials.size()+" potential regions.\n");
 			
 			//Generate the data structures for calculating scaling factors
@@ -318,7 +304,8 @@ public class ExperimentScaler {
 		                currSampCounts.add(samp.countHits(r));
 		                
 		                boolean overlapsPotentials=false;
-		                for(Region p : potentials){
+		                for(Feature f : potentials){
+		                	Region p = f.getCoords();
 		                	if(r.overlaps(p)){
 		                		overlapsPotentials=true; break;
 		                	}

@@ -12,7 +12,7 @@ import org.seqcode.deepseq.experiments.ExptConfig;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.Region;
-import org.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
+import org.seqcode.gsebricks.verbs.location.ChromosomeGenerator;
 
 
 /**

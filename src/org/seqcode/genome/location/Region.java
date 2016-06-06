@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.ChromosomeInfo;
-import org.seqcode.gse.utils.Saveable;
-import org.seqcode.gse.utils.stats.StatUtil;
+import org.seqcode.ml.math.stats.StatUtil;
+import org.seqcode.utils.Saveable;
 
 
 /**

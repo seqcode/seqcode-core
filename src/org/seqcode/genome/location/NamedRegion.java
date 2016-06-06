@@ -4,7 +4,7 @@ package org.seqcode.genome.location;
 import java.io.*;
 
 import org.seqcode.genome.Genome;
-import org.seqcode.gse.utils.Saveable;
+import org.seqcode.utils.Saveable;
 
 public class NamedRegion extends Region implements Saveable, Named {
     private String name;

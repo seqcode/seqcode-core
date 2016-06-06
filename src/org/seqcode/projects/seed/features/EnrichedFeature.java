@@ -2,7 +2,7 @@ package org.seqcode.projects.seed.features;
 
 import org.seqcode.deepseq.experiments.ExperimentManager;
 import org.seqcode.genome.location.Region;
-import org.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
+import org.seqcode.genome.sequence.SequenceGenerator;
 
 /**
  * EnrichedFeature: a type of Feature that is associated with tag enrichment values

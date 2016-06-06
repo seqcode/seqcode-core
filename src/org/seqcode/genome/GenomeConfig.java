@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.seqcode.genome.location.Region;
-import org.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
-import org.seqcode.gse.tools.utils.Args;
-import org.seqcode.gse.utils.ArgParser;
-import org.seqcode.gse.utils.NotFoundException;
-import org.seqcode.gse.utils.Pair;
+import org.seqcode.genome.sequence.SequenceGenerator;
+import org.seqcode.utils.ArgParser;
+import org.seqcode.utils.Args;
+import org.seqcode.utils.NotFoundException;
+import org.seqcode.utils.Pair;
 
 
 /**

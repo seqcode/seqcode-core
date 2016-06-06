@@ -10,15 +10,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.seqcode.data.readdb.*;
+import org.seqcode.data.seqdata.SeqAlignment;
+import org.seqcode.data.seqdata.SeqDataLoader;
+import org.seqcode.data.seqdata.SeqLocator;
 import org.seqcode.deepseq.HitPair;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
-import org.seqcode.gse.datasets.seqdata.SeqAlignment;
-import org.seqcode.gse.datasets.seqdata.SeqDataLoader;
-import org.seqcode.gse.datasets.seqdata.SeqLocator;
-import org.seqcode.gse.projects.readdb.*;
-import org.seqcode.gse.utils.NotFoundException;
-import org.seqcode.gse.utils.Pair;
+import org.seqcode.utils.NotFoundException;
+import org.seqcode.utils.Pair;
 
 
 /**

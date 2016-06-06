@@ -11,7 +11,7 @@ package org.seqcode.genome.location;
 import java.util.*;
 
 import org.seqcode.genome.Genome;
-import org.seqcode.gse.gsebricks.iterators.SingleIterator;
+import org.seqcode.gsebricks.iterators.SingleIterator;
 
 
 public class ExonicGene extends Gene {

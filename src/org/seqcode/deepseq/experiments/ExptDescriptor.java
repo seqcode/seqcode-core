@@ -3,7 +3,7 @@ package org.seqcode.deepseq.experiments;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.seqcode.gse.utils.Pair;
+import org.seqcode.utils.Pair;
 
 
 /**

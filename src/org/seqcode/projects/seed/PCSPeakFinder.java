@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.seqcode.data.motifdb.WeightMatrix;
 import org.seqcode.deepseq.StrandedBaseCount;
 import org.seqcode.deepseq.experiments.ExperimentCondition;
 import org.seqcode.deepseq.experiments.ExperimentManager;
@@ -16,10 +17,8 @@ import org.seqcode.deepseq.experiments.Sample;
 import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.Point;
 import org.seqcode.genome.location.Region;
-import org.seqcode.gse.datasets.motifs.WeightMatrix;
-import org.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
-import org.seqcode.gse.utils.sequence.SequenceUtils;
-import org.seqcode.projects.multigps.utilities.Utils;
+import org.seqcode.genome.sequence.SequenceGenerator;
+import org.seqcode.genome.sequence.SequenceUtils;
 import org.seqcode.projects.seed.features.EnrichedFeature;
 import org.seqcode.projects.seed.features.EnrichedPCSPeakFeature;
 import org.seqcode.projects.seed.features.Feature;
@@ -129,7 +128,7 @@ public class PCSPeakFinder extends PeakFinder{
 		    } catch (IOException e) {
 		    	e.printStackTrace();
 		    }
-		    Utils.printMotifLogo(wm, new File(imName), 75, motifLabel); //Note that the painter converts the motif to log oddds
+		    org.seqcode.motifs.DrawMotifs.printMotifLogo(wm, new File(imName), 75, motifLabel); //Note that the painter converts the motif to log oddds
 		}
 		
 		

@@ -1,7 +1,7 @@
 package org.seqcode.projects.seed.features;
 
 import org.seqcode.genome.location.Region;
-import org.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
+import org.seqcode.genome.sequence.SequenceGenerator;
 
 /**
  * Feature: Any genomic feature that we wish to discover in a deep-sequencing experiment. 

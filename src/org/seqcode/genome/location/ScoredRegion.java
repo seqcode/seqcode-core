@@ -5,7 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.seqcode.genome.Genome;
-import org.seqcode.gse.utils.Saveable;
+import org.seqcode.utils.Saveable;
 
 
 public class ScoredRegion extends Region implements Saveable, Scored {

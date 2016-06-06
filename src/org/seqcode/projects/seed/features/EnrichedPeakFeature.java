@@ -2,7 +2,7 @@ package org.seqcode.projects.seed.features;
 
 import org.seqcode.genome.location.Point;
 import org.seqcode.genome.location.Region;
-import org.seqcode.gse.gsebricks.verbs.sequence.SequenceGenerator;
+import org.seqcode.genome.sequence.SequenceGenerator;
 
 /**
  * PeakFeature: a punctate feature within a broader enriched region

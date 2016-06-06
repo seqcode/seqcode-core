@@ -13,9 +13,9 @@ import java.util.Map;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
-import org.seqcode.gse.tools.utils.Args;
-import org.seqcode.gse.utils.ArgParser;
-import org.seqcode.gse.utils.Pair;
+import org.seqcode.utils.ArgParser;
+import org.seqcode.utils.Args;
+import org.seqcode.utils.Pair;
 
 
 /**

@@ -12,9 +12,9 @@ import org.seqcode.deepseq.experiments.Sample;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.Region;
-import org.seqcode.gse.gsebricks.verbs.location.ChromosomeGenerator;
-import org.seqcode.gse.utils.NotFoundException;
-import org.seqcode.gse.utils.RealValuedHistogram;
+import org.seqcode.gsebricks.verbs.location.ChromosomeGenerator;
+import org.seqcode.utils.NotFoundException;
+import org.seqcode.utils.RealValuedHistogram;
 
 
 /**
