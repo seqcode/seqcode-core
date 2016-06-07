@@ -1,4 +1,4 @@
-package org.seqcode.data.readdb;
+package org.seqcode.data.readdb.tools;
 
 import java.io.IOException;
 import java.util.List;
