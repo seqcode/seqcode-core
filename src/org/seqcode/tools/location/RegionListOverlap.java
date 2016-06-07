@@ -1,9 +1,8 @@
-package org.seqcode.genome.utils;
+package org.seqcode.tools.location;
 
 import java.io.*;
 import java.util.*;
 
-import org.seqcode.data.core.*;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gseutils.Args;

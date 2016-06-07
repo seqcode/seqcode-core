@@ -1,10 +1,11 @@
-package org.seqcode.genome.sequence;
+package org.seqcode.tools.sequence;
 
 import java.util.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
 
+import org.seqcode.data.io.FASTAWriter;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Gene;
 import org.seqcode.genome.location.NamedStrandedRegion;
@@ -16,6 +17,8 @@ import org.seqcode.gseutils.NotFoundException;
 
 
 /**
+ * Returns the sequences of named gene ORFs
+ * 
  * cat gene_names.txt | java GeneORFs --species "$SC;Sigmav7" --genes s288cMapped 
  * cat gene_names.txt | java GeneORFs --species "$SC;Sigmav7" --genes s288cMapped --fasta
  * java GeneORFs --species "$SC;Sigmav7" --genes s288cMapped  --fasta --allgenes
@@ -29,7 +32,7 @@ public class GeneORFs {
     private List<RefGeneGenerator> geneGenerators;
     private Genome genome;
     private boolean allGenes, toFasta;
-    private FastaWriter<NamedStrandedRegion> fwriter;
+    private FASTAWriter<NamedStrandedRegion> fwriter;
 
     public static void main(String args[]) throws Exception {
         GeneORFs gp = new GeneORFs();
@@ -46,7 +49,7 @@ public class GeneORFs {
         allGenes = Args.parseFlags(args).contains("allgenes");
         toFasta = Args.parseFlags(args).contains("fasta");
         if (toFasta) {
-            fwriter = new FastaWriter<NamedStrandedRegion>(System.out);
+            fwriter = new FASTAWriter<NamedStrandedRegion>(System.out);
         }
     }
     public void run() throws IOException {

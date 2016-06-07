@@ -1,4 +1,4 @@
-package org.seqcode.genome.sequence;
+package org.seqcode.data.io;
 
 import java.util.Iterator;
 import java.util.regex.*;
@@ -7,6 +7,7 @@ import java.io.*;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.StrandedRegion;
+import org.seqcode.genome.sequence.SequenceGenerator;
 import org.seqcode.gsebricks.iterators.SingleIterator;
 import org.seqcode.gsebricks.verbs.ExpanderIterator;
 import org.seqcode.gsebricks.verbs.FileLineExpander;
@@ -19,10 +20,10 @@ import org.seqcode.gseutils.NotFoundException;
  * Writes the sequence contained in the input Regions
  * to a FASTA file
  */
-public class FastaWriter<X extends Region> implements Sink<X>, Closeable {
+public class FASTAWriter<X extends Region> implements Sink<X>, Closeable {
     
     public static void main(String[] args) { 
-        FastaWriter writer = new FastaWriter(System.out);
+        FASTAWriter writer = new FASTAWriter(System.out);
 		Pattern p = Pattern.compile("(.*):([\\d]+)-([\\d]+)");
         try {
 			Genome genome = Genome.findGenome(args[0]);
@@ -52,21 +53,21 @@ public class FastaWriter<X extends Region> implements Sink<X>, Closeable {
     private SequenceGenerator seqgen;
     private int lineLength;
     
-    public FastaWriter(File f) throws IOException { 
+    public FASTAWriter(File f) throws IOException { 
         os = new FileOutputStream(f);
         ps = new PrintStream(os);
         seqgen = new SequenceGenerator();
         lineLength = 100;        
     }
 
-    public FastaWriter (String fname) throws IOException, FileNotFoundException {
+    public FASTAWriter (String fname) throws IOException, FileNotFoundException {
         os = new FileOutputStream(fname);
         ps = new PrintStream(os);
         seqgen = new SequenceGenerator();
         lineLength = 100;
     }
 
-    public FastaWriter(PrintStream ps) {
+    public FASTAWriter(PrintStream ps) {
         seqgen = new SequenceGenerator();
         this.ps = ps;
         os = null;

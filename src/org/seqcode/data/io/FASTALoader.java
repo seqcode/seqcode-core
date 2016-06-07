@@ -1,7 +1,7 @@
 /*
  * Created on Apr 27, 2006
  */
-package org.seqcode.genome.sequence;
+package org.seqcode.data.io;
 
 import java.io.*;
 import java.util.*;

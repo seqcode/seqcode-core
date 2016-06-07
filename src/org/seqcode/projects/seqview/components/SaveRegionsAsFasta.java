@@ -5,9 +5,9 @@ import java.util.*;
 import java.awt.*;
 import javax.swing.*;
 
+import org.seqcode.data.io.FASTAWriter;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.StrandedRegion;
-import org.seqcode.genome.sequence.FastaWriter;
 
 import java.awt.event.*;
 
@@ -87,7 +87,7 @@ public class SaveRegionsAsFasta implements Runnable {
                 d = Integer.parseInt(down.getText());
             } catch (NumberFormatException ex) {}
             try {
-                FastaWriter fasta = new FastaWriter(f.getAbsolutePath());
+                FASTAWriter fasta = new FASTAWriter(f.getAbsolutePath());
                 for (Region r : regions) {
                     if (r instanceof StrandedRegion) {
                         StrandedRegion sr = (StrandedRegion) r;

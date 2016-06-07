@@ -1,4 +1,4 @@
-package org.seqcode.genome.sequence;
+package org.seqcode.tools.sequence;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

@@ -1,10 +1,15 @@
-package org.seqcode.genome.sequence;
+package org.seqcode.tools.sequence;
 
 import java.io.*;
 
 import org.seqcode.data.io.parsing.FASTAStream;
 import org.seqcode.gseutils.Args;
 
+/**
+ * Produces random read sequences (fixed length) in FASTA format
+ * 
+ *
+ */
 public class RandomReadGenerator {
 
     public static final char[] letters = {'A','C','T','G'};

@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Random;
 
+import org.seqcode.tools.sequence.UShuffle;
+
 /**
  * <code>SequenceUtils</code> provides a number of static methods for manipulating
  * DNA sequences stores as strings or char[].

@@ -1,10 +1,11 @@
-package org.seqcode.genome.sequence;
+package org.seqcode.tools.sequence;
 
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.seqcode.data.io.FASTAWriter;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
 import org.seqcode.genome.location.NamedStrandedRegion;
@@ -15,10 +16,11 @@ import org.seqcode.gseutils.Args;
 import org.seqcode.gseutils.Pair;
 
 
-/* reads a list of regions (one per line) on STDIN.
-   Produces on stdout a fasta file containing those regions.
-   The genome is specified on the command line as
-   --species "Mm;mm8"
+/**
+ *  reads a list of regions (one per line) on STDIN.
+    Produces on stdout a fasta file containing those regions.
+    The genome is specified on the command line as
+    --species "Mus musculus;mm8"
 */
 
 public class RegionsToFasta {
@@ -30,11 +32,11 @@ public class RegionsToFasta {
             Pair<Species,Genome> pair = Args.parseGenome(args);
             Species organism = pair.car();
             Genome genome = pair.cdr();
-            FastaWriter writer;
+            FASTAWriter writer;
             if (!outfile.equals("")) {
-            	writer = new FastaWriter(new PrintStream(outfile));
+            	writer = new FASTAWriter(new PrintStream(outfile));
             } else {
-            	writer = new FastaWriter(System.out);
+            	writer = new FASTAWriter(System.out);
             }
             writer.useCache(Args.parseFlags(args).contains("cache"));
             int expand = Args.parseInteger(args,"expand",0);

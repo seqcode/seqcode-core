@@ -1,4 +1,4 @@
-package org.seqcode.genome.utils;
+package org.seqcode.tools.location;
 
 import java.util.ArrayList;
 import java.util.Iterator;

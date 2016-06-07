@@ -109,13 +109,13 @@ Lines for paired reads must be tab delimited with the following fields
 9) weight (applies to the whole pair)
 
 
-org.seqcode.data.readdb.SAMToReadDB will convert from SAM/BAM
+org.seqcode.data.readdb.tools.SAMToReadDB will convert from SAM/BAM
 format to ReadDB, except that it does not convert string chromosome
 identifiers to the numeric identifiers needed by ReadDB.  Feel free to
 modify it to suit your local convention for non-numeric chromosomes.
 For a simple test, I used
 
-java -cp /tmp/readdb.jar org.seqcode.data.readdb.SAMToReadDB < 1.bam | egrep \
+java -cp /tmp/readdb.jar org.seqcode.data.readdb.tools.SAMToReadDB < 1.bam | egrep \
 '^chr[[:digit:]]' | sed -e 's/^chr//' | java -cp /tmp/readdb.jar \
 org.seqcode.data.readdb.ImportHits --align 1 --user test \
 --passwd test --hostname localhost --port 52000 

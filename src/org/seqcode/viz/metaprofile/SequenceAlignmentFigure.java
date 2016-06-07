@@ -13,11 +13,11 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.seqcode.data.io.FASTALoader;
 import org.seqcode.data.io.RegionFileUtilities;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
 import org.seqcode.genome.location.StrandedRegion;
-import org.seqcode.genome.sequence.FASTALoader;
 import org.seqcode.genome.sequence.SequenceGenerator;
 import org.seqcode.gseutils.ArgParser;
 import org.seqcode.gseutils.Args;

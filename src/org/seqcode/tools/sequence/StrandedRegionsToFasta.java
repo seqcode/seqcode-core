@@ -1,19 +1,22 @@
-package org.seqcode.genome.sequence;
+package org.seqcode.tools.sequence;
 
 import java.io.*;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
 import org.seqcode.genome.location.StrandedRegion;
+import org.seqcode.genome.sequence.SequenceGenerator;
+import org.seqcode.genome.sequence.SequenceUtils;
 import org.seqcode.gsebricks.verbs.location.StrandedRegionParser;
 import org.seqcode.gseutils.Args;
 import org.seqcode.gseutils.Pair;
 
 
-/* reads a list of stranded regions (one per line) on STDIN.
-   Produces on stdout a fasta file containing those regions.
-   The genome is specified on the command line as
-   --species "Mm;mm8"
+/**
+ *  reads a list of stranded regions (one per line) on STDIN.
+    Produces on stdout a fasta file containing those regions.
+    The genome is specified on the command line as
+    --species "Mus musculus;mm8"
 */
 
 public class StrandedRegionsToFasta {

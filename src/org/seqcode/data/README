@@ -1,0 +1,3 @@
+org.seqcode.data: 
+Packages for interacting with databases & files. 
+Command-line tools for importing/exporting are typically stored in tools subpackages. 

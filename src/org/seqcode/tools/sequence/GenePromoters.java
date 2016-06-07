@@ -1,4 +1,4 @@
-package org.seqcode.genome.sequence;
+package org.seqcode.tools.sequence;
 
 import java.util.*;
 import java.io.BufferedReader;
@@ -11,6 +11,7 @@ import org.seqcode.genome.location.NamedStrandedRegion;
 import org.seqcode.genome.location.NamedTypedRegion;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.ScoredRegion;
+import org.seqcode.genome.sequence.SequenceGenerator;
 import org.seqcode.gsebricks.*;
 import org.seqcode.gsebricks.verbs.*;
 import org.seqcode.gsebricks.verbs.location.ChromRegionIterator;
@@ -23,6 +24,8 @@ import org.seqcode.gseutils.NotFoundException;
 
 
 /**
+ * Returns the sequences of named gene promoter regions
+ * 
  * cat gene_names.txt | java GenePromoters --species "$SC;sacCer3" --genes sgdGene --upstream 500 --downstream 100
  * cat gene_names.txt | java GenePromoters --species "$SC;sacCer3" --genes sgdGene --upstream 500 --downstream 100 --fasta
  * java GenePromoters --species "$SC;sacCer3" --genes sgdGene --upstream 500 --downstream 100 --fasta --allgenes
