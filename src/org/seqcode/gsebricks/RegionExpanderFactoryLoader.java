@@ -1,7 +1,6 @@
 package org.seqcode.gsebricks;
 
 import java.util.*;
-import java.io.*;
 
 import org.seqcode.genome.Genome;
 
@@ -12,7 +11,7 @@ public class RegionExpanderFactoryLoader<PRODUCT> {
     private Map<String,Map<String,RegionExpanderFactory<PRODUCT>>> factories;
 
     public RegionExpanderFactoryLoader(String ftype) {
-        res = ResourceBundle.getBundle("org.seqcode.gsebricks."+ftype+"_factories");
+        res = ResourceBundle.getBundle("org.seqcode.utils.properties."+ftype+"_factories");
         factories = new HashMap<String,Map<String,RegionExpanderFactory<PRODUCT>>>();
         Enumeration<String> keys = res.getKeys();
         while(keys.hasMoreElements()) { 

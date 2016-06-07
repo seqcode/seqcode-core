@@ -1,7 +1,6 @@
 package org.seqcode.gsebricks;
 
 import org.seqcode.genome.Genome;
-import org.seqcode.genome.location.Gene;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.verbs.Mapper;
 
