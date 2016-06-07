@@ -5,7 +5,7 @@ import java.sql.*;
 import org.seqcode.data.connections.DatabaseConnectionManager;
 import org.seqcode.data.connections.DatabaseException;
 import org.seqcode.data.connections.UnknownRoleException;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 
 public class WeightMatrixScan {

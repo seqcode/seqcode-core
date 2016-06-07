@@ -9,8 +9,8 @@ import java.util.ArrayList;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
-import org.seqcode.utils.Interval;
-import org.seqcode.utils.OverlapSum;
+import org.seqcode.gseutils.Interval;
+import org.seqcode.gseutils.OverlapSum;
 
 
 public class RegionOverlapSum extends OverlapSum {

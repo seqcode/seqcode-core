@@ -10,7 +10,7 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 
 import org.seqcode.data.motifdb.*;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 import org.seqcode.viz.components.GenericSelectPanel;
 import org.seqcode.viz.components.SelectionEvent;
 

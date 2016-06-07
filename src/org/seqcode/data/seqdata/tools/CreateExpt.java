@@ -9,7 +9,7 @@ import org.seqcode.data.connections.UnknownRoleException;
 import org.seqcode.data.core.*;
 import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 

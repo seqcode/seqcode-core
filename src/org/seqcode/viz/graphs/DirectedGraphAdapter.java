@@ -10,8 +10,8 @@ package org.seqcode.viz.graphs;
 
 import java.util.*;
 
-import org.seqcode.utils.Pair;
-import org.seqcode.utils.graphs.*;
+import org.seqcode.gseutils.Pair;
+import org.seqcode.gseutils.graphs.*;
 
 
 public class DirectedGraphAdapter {

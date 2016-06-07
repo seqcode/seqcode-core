@@ -6,9 +6,9 @@ import java.util.*;
 
 import org.seqcode.data.seqdata.SeqHit;
 import org.seqcode.genome.location.Region;
+import org.seqcode.gseutils.*;
 import org.seqcode.projects.seqview.model.SeqDataModel;
 import org.seqcode.projects.seqview.model.SeqScaleModel;
-import org.seqcode.utils.*;
 import org.seqcode.viz.DynamicAttribute;
 
 

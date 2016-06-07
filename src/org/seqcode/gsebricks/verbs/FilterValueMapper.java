@@ -3,7 +3,7 @@
  */
 package org.seqcode.gsebricks.verbs;
 
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 /**
  * @author tdanford

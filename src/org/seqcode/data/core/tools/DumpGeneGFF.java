@@ -8,7 +8,7 @@ import org.seqcode.genome.location.Gene;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.verbs.*;
 import org.seqcode.gsebricks.verbs.location.RefGeneGenerator;
-import org.seqcode.utils.Args;
+import org.seqcode.gseutils.Args;
 
 
 

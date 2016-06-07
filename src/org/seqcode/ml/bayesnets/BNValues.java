@@ -6,7 +6,7 @@ package org.seqcode.ml.bayesnets;
 
 import java.util.*;
 
-import org.seqcode.utils.models.Model;
+import org.seqcode.gseutils.models.Model;
 
 
 public class BNValues {

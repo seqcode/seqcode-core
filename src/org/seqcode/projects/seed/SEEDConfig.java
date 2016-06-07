@@ -16,8 +16,8 @@ import org.seqcode.data.io.RegionFileUtilities;
 import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.StrandedPoint;
-import org.seqcode.utils.ArgParser;
-import org.seqcode.utils.Args;
+import org.seqcode.gseutils.ArgParser;
+import org.seqcode.gseutils.Args;
 
 
 public class SEEDConfig {

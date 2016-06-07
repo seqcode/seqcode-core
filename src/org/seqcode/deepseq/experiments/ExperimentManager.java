@@ -21,7 +21,7 @@ import org.seqcode.deepseq.hitloaders.SAMFileHitLoader;
 import org.seqcode.deepseq.hitloaders.TophatFileHitLoader;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Pair;
 
 
 /** 

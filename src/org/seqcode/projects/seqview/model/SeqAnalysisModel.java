@@ -4,7 +4,7 @@ import java.util.*;
 
 import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.location.Region;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 public class SeqAnalysisModel extends SeqViewModel implements RegionModel, Runnable {

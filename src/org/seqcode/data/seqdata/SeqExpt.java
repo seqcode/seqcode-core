@@ -7,7 +7,7 @@ import java.sql.*;
 
 import org.seqcode.data.core.*;
 import org.seqcode.genome.Species;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

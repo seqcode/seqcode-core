@@ -6,7 +6,7 @@ package org.seqcode.viz.eye;
 
 import java.util.Iterator;
 
-import org.seqcode.utils.models.Model;
+import org.seqcode.gseutils.models.Model;
 import org.seqcode.viz.paintable.Paintable;
 
 

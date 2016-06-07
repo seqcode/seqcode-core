@@ -12,10 +12,10 @@ import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
 import org.seqcode.genome.location.Point;
 import org.seqcode.genome.location.Region;
-import org.seqcode.utils.ArgParser;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.ArgParser;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 
 
 /**

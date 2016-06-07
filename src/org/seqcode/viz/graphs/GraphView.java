@@ -9,7 +9,7 @@ import java.io.*;
 
 import javax.swing.*;
 
-import org.seqcode.utils.graphs.DirectedGraph;
+import org.seqcode.gseutils.graphs.DirectedGraph;
 import org.seqcode.viz.paintable.*;
 import org.seqcode.viz.utils.FileChooser;
 

@@ -13,9 +13,9 @@ import org.seqcode.gsebricks.verbs.Expander;
 import org.seqcode.gsebricks.verbs.ExpanderIterator;
 import org.seqcode.gsebricks.verbs.Mapper;
 import org.seqcode.gsebricks.verbs.MapperIterator;
-import org.seqcode.utils.Coverage;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Coverage;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 
 
 public class RegionCoverage extends Coverage {

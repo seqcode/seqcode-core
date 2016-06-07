@@ -4,8 +4,8 @@ import java.sql.SQLException;
 import java.io.File;
 import java.io.IOException;
 
+import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.projects.seqview.SeqViewOptions;
-import org.seqcode.utils.NotFoundException;
 
 
 public class Snapshot {

@@ -17,8 +17,8 @@ import org.seqcode.data.seqdata.SeqLocator;
 import org.seqcode.deepseq.HitPair;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 
 
 /**

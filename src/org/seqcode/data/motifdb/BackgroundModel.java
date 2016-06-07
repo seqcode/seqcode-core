@@ -12,9 +12,9 @@ import java.util.regex.Pattern;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.sequence.SequenceUtils;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 import org.seqcode.ml.math.stats.Fmath;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
 
 
 public abstract class BackgroundModel extends BackgroundModelMetadata {

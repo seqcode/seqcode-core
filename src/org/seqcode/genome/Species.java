@@ -9,7 +9,7 @@ import org.seqcode.data.connections.DatabaseConnectionManager;
 import org.seqcode.data.connections.DatabaseException;
 import org.seqcode.data.connections.Sequence;
 import org.seqcode.data.connections.UnknownRoleException;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 /**
  * Species represents a species in our database

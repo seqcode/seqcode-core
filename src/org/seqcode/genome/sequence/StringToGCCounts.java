@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.seqcode.gsebricks.types.*;
 import org.seqcode.gsebricks.verbs.Mapper;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Pair;
 
 
 public class StringToGCCounts

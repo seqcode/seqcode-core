@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.seqcode.genome.Genome;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 import org.seqcode.ml.math.stats.Fmath;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
 
 import cern.colt.matrix.*;
 import cern.colt.matrix.impl.*;

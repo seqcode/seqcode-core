@@ -7,7 +7,7 @@ import java.util.*;
 import org.seqcode.data.core.AlignType;
 import org.seqcode.data.core.MetadataLoader;
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 /**
  * @author tdanford

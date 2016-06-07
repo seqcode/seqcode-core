@@ -4,7 +4,7 @@ import java.util.*;
 import java.sql.*;
 
 import org.seqcode.data.motifdb.*;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**

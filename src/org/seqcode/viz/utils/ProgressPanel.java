@@ -9,7 +9,7 @@ import java.io.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 import org.seqcode.viz.paintable.*;
 
 import java.awt.*;

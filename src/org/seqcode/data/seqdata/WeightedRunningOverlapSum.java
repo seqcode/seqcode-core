@@ -13,7 +13,7 @@ import java.util.*;
 import org.seqcode.data.core.*;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
-import org.seqcode.utils.Interval;
+import org.seqcode.gseutils.Interval;
 
 
 public class WeightedRunningOverlapSum {

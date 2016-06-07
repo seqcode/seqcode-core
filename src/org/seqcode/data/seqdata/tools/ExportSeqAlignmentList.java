@@ -11,8 +11,8 @@ import java.util.HashMap;
 import org.seqcode.data.seqdata.SeqAlignment;
 import org.seqcode.data.seqdata.SeqDataLoader;
 import org.seqcode.data.seqdata.SeqExpt;
-import org.seqcode.utils.ArgParser;
-import org.seqcode.utils.Args;
+import org.seqcode.gseutils.ArgParser;
+import org.seqcode.gseutils.Args;
 
 /**
  * Export existing SeqExpt & SeqAlignment descriptions to a file. 

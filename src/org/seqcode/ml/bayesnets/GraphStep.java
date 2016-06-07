@@ -4,7 +4,7 @@
  */
 package org.seqcode.ml.bayesnets;
 
-import org.seqcode.utils.graphs.DirectedGraph;
+import org.seqcode.gseutils.graphs.DirectedGraph;
 
 /**
  * A GraphStep is a reversible transformation to a DirectedGraph.  

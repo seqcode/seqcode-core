@@ -19,8 +19,8 @@ import org.seqcode.data.readdb.SingleHit;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.StrandedRegion;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 
 
 
@@ -37,7 +37,7 @@ import org.seqcode.utils.Pair;
  * 
  * Created as ChipSeqLoader on May 16, 2007
  */
-public class SeqDataLoader implements org.seqcode.utils.Closeable {
+public class SeqDataLoader implements org.seqcode.gseutils.Closeable {
 
 	public static String role = "seqdata";
 

@@ -9,7 +9,7 @@ import org.seqcode.data.core.ExptCondition;
 import org.seqcode.data.core.ExptTarget;
 import org.seqcode.data.core.Lab;
 import org.seqcode.data.seqdata.*;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**

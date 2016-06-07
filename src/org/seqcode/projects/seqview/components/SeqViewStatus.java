@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.util.EventObject;
 import java.util.HashSet;
 
-import org.seqcode.utils.EventSource;
-import org.seqcode.utils.Listener;
+import org.seqcode.gseutils.EventSource;
+import org.seqcode.gseutils.Listener;
 
 
 public class SeqViewStatus implements EventSource<EventObject>{

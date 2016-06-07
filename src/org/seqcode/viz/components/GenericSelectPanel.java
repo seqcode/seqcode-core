@@ -8,7 +8,7 @@ import java.awt.event.*;
 import javax.swing.table.*;
 
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**

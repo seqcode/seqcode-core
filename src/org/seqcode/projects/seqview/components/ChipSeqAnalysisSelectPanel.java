@@ -10,7 +10,7 @@ import javax.swing.table.*;
 
 import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Pair;
 import org.seqcode.viz.components.GenericSelectPanel;
 
 import java.sql.*;

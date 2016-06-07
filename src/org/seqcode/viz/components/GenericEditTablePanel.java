@@ -12,7 +12,7 @@ import javax.swing.table.*;
 import org.seqcode.data.core.ExptType;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**

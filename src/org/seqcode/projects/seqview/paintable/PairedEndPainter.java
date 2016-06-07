@@ -5,8 +5,8 @@ import java.awt.*;
 import java.util.*;
 
 import org.seqcode.data.readdb.PairedHit;
+import org.seqcode.gseutils.*;
 import org.seqcode.projects.seqview.model.SeqPairedEndModel;
-import org.seqcode.utils.*;
 import org.seqcode.viz.DynamicAttribute;
 
 

@@ -11,8 +11,8 @@ import org.seqcode.gsebricks.iterators.SingleIterator;
 import org.seqcode.gsebricks.verbs.ExpanderIterator;
 import org.seqcode.gsebricks.verbs.FileLineExpander;
 import org.seqcode.gsebricks.verbs.Sink;
-import org.seqcode.utils.Closeable;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.Closeable;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

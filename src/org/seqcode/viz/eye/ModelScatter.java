@@ -10,9 +10,9 @@ import java.util.*;
 
 import javax.swing.*;
 
-import org.seqcode.utils.Pair;
-import org.seqcode.utils.models.Model;
-import org.seqcode.utils.models.ModelFieldAnalysis;
+import org.seqcode.gseutils.Pair;
+import org.seqcode.gseutils.models.Model;
+import org.seqcode.gseutils.models.ModelFieldAnalysis;
 import org.seqcode.viz.paintable.*;
 
 import java.awt.*;

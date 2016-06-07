@@ -7,9 +7,9 @@ import org.seqcode.data.connections.DatabaseConnectionManager;
 import org.seqcode.data.seqdata.SeqAlignment;
 import org.seqcode.data.seqdata.SeqDataLoader;
 import org.seqcode.data.seqdata.SeqDataModifier;
-import org.seqcode.utils.ArgParser;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.ArgParser;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

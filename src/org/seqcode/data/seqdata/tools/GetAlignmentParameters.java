@@ -5,7 +5,7 @@ import java.util.*;
 import java.io.IOException;
 
 import org.seqcode.data.seqdata.*;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**

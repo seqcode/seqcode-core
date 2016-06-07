@@ -6,7 +6,7 @@ package org.seqcode.gsebricks.iterators;
 
 import java.util.Iterator;
 
-import org.seqcode.utils.Closeable;
+import org.seqcode.gseutils.Closeable;
 
 
 public interface CloseableIterator<X> extends Iterator<X>, Closeable {

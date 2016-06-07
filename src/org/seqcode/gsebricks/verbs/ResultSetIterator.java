@@ -6,7 +6,7 @@ package org.seqcode.gsebricks.verbs;
 import java.sql.*;
 import java.util.Iterator;
 
-import org.seqcode.utils.Closeable;
+import org.seqcode.gseutils.Closeable;
 
 
 /**

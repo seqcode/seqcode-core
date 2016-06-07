@@ -9,7 +9,7 @@ package org.seqcode.projects.seqview.components;
 
 import javax.swing.*;
 
-import org.seqcode.utils.models.*;
+import org.seqcode.gseutils.models.*;
 import org.seqcode.viz.eye.*;
 
 import java.awt.*;

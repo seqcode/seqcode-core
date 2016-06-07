@@ -6,8 +6,8 @@ import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
 import org.seqcode.genome.location.StrandedRegion;
 import org.seqcode.gsebricks.verbs.location.StrandedRegionParser;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.Pair;
 
 
 /* reads a list of stranded regions (one per line) on STDIN.

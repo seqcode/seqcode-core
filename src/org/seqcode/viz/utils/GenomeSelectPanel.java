@@ -9,7 +9,7 @@ import javax.swing.*;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 import java.awt.*;
 import java.awt.event.*;

@@ -6,7 +6,7 @@ package org.seqcode.gsebricks.iterators;
 
 import java.util.Iterator;
 
-import org.seqcode.utils.ArrayUtils;
+import org.seqcode.gseutils.ArrayUtils;
 
 
 public class SerialIterator<X> implements Iterator<X> {

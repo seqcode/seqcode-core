@@ -10,9 +10,9 @@ import java.util.Set;
 
 import org.seqcode.genome.location.Gene;
 import org.seqcode.gsebricks.verbs.Filter;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
-import org.seqcode.utils.SetTools;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
+import org.seqcode.gseutils.SetTools;
 
 
 public class UniqueishGeneFilter<X extends Gene> implements Filter<X, X> {

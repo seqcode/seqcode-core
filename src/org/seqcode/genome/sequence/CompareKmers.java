@@ -4,8 +4,8 @@ import java.util.*;
 import java.io.*;
 
 import org.seqcode.data.io.parsing.FASTAStream;
+import org.seqcode.gseutils.*;
 import org.seqcode.motifs.CountKmers;
-import org.seqcode.utils.*;
 
 import cern.jet.random.ChiSquare;
 

@@ -8,8 +8,8 @@ import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.verbs.Expander;
-import org.seqcode.utils.Closeable;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.Closeable;
+import org.seqcode.gseutils.NotFoundException;
 
 /**
  * SeqExpander: legacy class for interacting with SeqAlignments

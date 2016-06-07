@@ -2,7 +2,7 @@ package org.seqcode.ml.math.numeric;
 
 import java.util.*;
 
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Pair;
 
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.jet.math.Arithmetic;

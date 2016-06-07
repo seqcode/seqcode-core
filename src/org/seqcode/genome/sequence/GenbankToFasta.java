@@ -20,7 +20,7 @@ import org.biojava.bio.seq.Feature;
 import org.biojava.bio.seq.Sequence;
 import org.biojava.bio.seq.SequenceIterator;
 import org.biojava.bio.seq.io.SeqIOTools;
-import org.seqcode.utils.Args;
+import org.seqcode.gseutils.Args;
 
 
 /**

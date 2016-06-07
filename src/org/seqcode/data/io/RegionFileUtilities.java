@@ -27,7 +27,7 @@ import org.seqcode.gsebricks.verbs.location.PointParser;
 import org.seqcode.gsebricks.verbs.location.RegionParser;
 import org.seqcode.gsebricks.verbs.location.StrandedPointParser;
 import org.seqcode.gsebricks.verbs.location.StrandedRegionParser;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Pair;
 
 
 public class RegionFileUtilities {

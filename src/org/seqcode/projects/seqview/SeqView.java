@@ -32,6 +32,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
 
 import org.seqcode.genome.location.Region;
+import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.projects.seqview.components.RegionListPanel;
 import org.seqcode.projects.seqview.components.RegionPanel;
 import org.seqcode.projects.seqview.components.SaveRegionsAsFasta;
@@ -39,7 +40,6 @@ import org.seqcode.projects.seqview.components.SeqViewOptionsFrame;
 import org.seqcode.projects.seqview.components.SeqViewOptionsPane;
 import org.seqcode.projects.seqview.components.SeqViewStatus;
 import org.seqcode.projects.seqview.components.SeqViewStatusBar;
-import org.seqcode.utils.NotFoundException;
 import org.seqcode.viz.DynamicAttribute;
 
 

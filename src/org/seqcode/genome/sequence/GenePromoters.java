@@ -18,8 +18,8 @@ import org.seqcode.gsebricks.verbs.location.GeneToPromoter;
 import org.seqcode.gsebricks.verbs.location.PhastConsGenerator;
 import org.seqcode.gsebricks.verbs.location.RefGeneGenerator;
 import org.seqcode.gsebricks.verbs.location.ScoredRegionGenerator;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

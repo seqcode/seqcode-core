@@ -9,7 +9,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.util.Iterator;
 
-import org.seqcode.utils.models.Model;
+import org.seqcode.gseutils.models.Model;
 
 
 public class ModelScatterHistograms extends ContainerModelPaintable {

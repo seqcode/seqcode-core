@@ -6,8 +6,8 @@ package org.seqcode.ml.bayesnets;
 
 import java.util.*;
 
+import org.seqcode.gseutils.models.Model;
 import org.seqcode.ml.regression.DataFrame;
-import org.seqcode.utils.models.Model;
 
 
 public class BNTest {

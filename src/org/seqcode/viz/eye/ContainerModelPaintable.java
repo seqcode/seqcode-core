@@ -7,7 +7,7 @@ package org.seqcode.viz.eye;
 import java.awt.*;
 import java.util.*;
 
-import org.seqcode.utils.models.Model;
+import org.seqcode.gseutils.models.Model;
 
 
 public class ContainerModelPaintable extends AbstractModelPaintable {

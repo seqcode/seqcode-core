@@ -13,7 +13,7 @@ import java.io.*;
 
 import org.seqcode.data.motifdb.*;
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /** Generates a .png file with a set of motif logos in it.

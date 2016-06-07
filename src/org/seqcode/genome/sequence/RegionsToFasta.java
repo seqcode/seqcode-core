@@ -11,8 +11,8 @@ import org.seqcode.genome.location.NamedStrandedRegion;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.StrandedRegion;
 import org.seqcode.gsebricks.verbs.location.RegionParser;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.Pair;
 
 
 /* reads a list of regions (one per line) on STDIN.

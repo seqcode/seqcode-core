@@ -13,7 +13,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.viz.utils.GenomeSelectPanel;
 
 

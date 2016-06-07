@@ -2,7 +2,7 @@ package org.seqcode.gsebricks.verbs;
 
 import java.util.*;
 
-import org.seqcode.utils.Closeable;
+import org.seqcode.gseutils.Closeable;
 
 
 /* An ExpanderIterator takes an Expander<A,B> and an Iterator<B>
@@ -80,7 +80,7 @@ public class ExpanderIterator<A,B> implements Iterator<B>, Closeable {
     }
 
     /* (non-Javadoc)
-     * @see org.seqcode.utils.Closeable#close()
+     * @see org.seqcode.gseutils.Closeable#close()
      */
     public void close() {
         if(input instanceof Closeable) {
@@ -104,7 +104,7 @@ public class ExpanderIterator<A,B> implements Iterator<B>, Closeable {
     }
 
     /* (non-Javadoc)
-     * @see org.seqcode.utils.Closeable#isClosed()
+     * @see org.seqcode.gseutils.Closeable#isClosed()
      */
     public boolean isClosed() {
         return input==null;

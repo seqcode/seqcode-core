@@ -8,7 +8,7 @@ import java.io.File;
 
 import javax.swing.*;
 
-import org.seqcode.utils.ObjectChooser;
+import org.seqcode.gseutils.ObjectChooser;
 
 /**
  * @author tdanford

@@ -8,7 +8,7 @@ import java.util.*;
 
 import org.seqcode.gsebricks.iterators.SingleIterator;
 import org.seqcode.gsebricks.verbs.*;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**

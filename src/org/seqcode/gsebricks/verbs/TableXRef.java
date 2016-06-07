@@ -12,7 +12,7 @@ import java.sql.*;
 /**
  * @author tdanford
  */
-public class TableXRef implements Expander<String,String>, org.seqcode.utils.Closeable {
+public class TableXRef implements Expander<String,String>, org.seqcode.gseutils.Closeable {
 	
 	private Connection cxn;
 	private PreparedStatement ps;

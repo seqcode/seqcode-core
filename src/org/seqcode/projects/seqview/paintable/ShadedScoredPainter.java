@@ -4,8 +4,8 @@ import java.awt.*;
 import java.util.*;
 
 import org.seqcode.genome.location.ScoredRegion;
+import org.seqcode.gseutils.*;
 import org.seqcode.projects.seqview.model.RegionExpanderModel;
-import org.seqcode.utils.*;
 
 
 // thin painter that draws ScoredRegions.  It draws them as rectangles and uses

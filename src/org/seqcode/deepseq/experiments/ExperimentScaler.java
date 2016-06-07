@@ -15,12 +15,12 @@ import org.jfree.chart.axis.NumberAxis;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.Region;
+import org.seqcode.gseutils.models.Model;
 import org.seqcode.ml.regression.DataFrame;
 import org.seqcode.ml.regression.DataRegression;
 import org.seqcode.projects.seed.DomainFinder;
 import org.seqcode.projects.seed.SEEDConfig;
 import org.seqcode.projects.seed.features.Feature;
-import org.seqcode.utils.models.Model;
 import org.seqcode.viz.scatter.ScatterPlot;
 
 import Jama.Matrix;

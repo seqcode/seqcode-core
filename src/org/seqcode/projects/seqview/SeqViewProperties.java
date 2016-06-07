@@ -5,10 +5,10 @@ import java.io.*;
 import java.net.URL;
 import javax.swing.*;
 
+import org.seqcode.gseutils.json.*;
+import org.seqcode.gseutils.models.*;
 import org.seqcode.projects.seqview.components.MultiModelPrefs;
 import org.seqcode.projects.seqview.components.RegionPanel;
-import org.seqcode.utils.json.*;
-import org.seqcode.utils.models.*;
 import org.seqcode.viz.components.RegexFileFilter;
 
 

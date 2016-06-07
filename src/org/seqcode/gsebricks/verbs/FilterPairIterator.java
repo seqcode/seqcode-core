@@ -2,7 +2,7 @@ package org.seqcode.gsebricks.verbs;
 
 import java.util.*;
 
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Pair;
 
 
 public class FilterPairIterator<A,B> implements Iterator<Pair<A,B>> {

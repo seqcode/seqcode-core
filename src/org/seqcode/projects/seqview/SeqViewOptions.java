@@ -14,7 +14,7 @@ import org.seqcode.data.seqdata.SeqLocatorMatchedAligns;
 import org.seqcode.data.seqdata.SeqLocatorMatchedAligns.SeqLMENotReplicatesException;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 
 public class SeqViewOptions {

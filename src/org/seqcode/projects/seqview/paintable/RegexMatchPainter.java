@@ -7,8 +7,8 @@ import java.util.regex.Matcher;
 
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.sequence.SequenceUtils;
+import org.seqcode.gseutils.*;
 import org.seqcode.projects.seqview.model.RegionMapperModel;
-import org.seqcode.utils.*;
 import org.seqcode.viz.colors.ColorSet;
 
 

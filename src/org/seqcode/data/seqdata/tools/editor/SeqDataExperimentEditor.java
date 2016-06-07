@@ -22,7 +22,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 
 public class SeqDataExperimentEditor extends JFrame implements ActionListener {

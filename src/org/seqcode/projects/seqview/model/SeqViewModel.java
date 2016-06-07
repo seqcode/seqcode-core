@@ -2,7 +2,7 @@ package org.seqcode.projects.seqview.model;
 
 import java.util.*;
 
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 

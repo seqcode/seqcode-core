@@ -11,8 +11,8 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
-import org.seqcode.utils.Closeable;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.Closeable;
+import org.seqcode.gseutils.NotFoundException;
 
 
 public class SeqDataExptEditPane extends JTabbedPane implements ItemListener, ActionListener, Closeable {

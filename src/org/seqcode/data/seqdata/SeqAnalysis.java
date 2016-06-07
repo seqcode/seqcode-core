@@ -8,7 +8,7 @@ import org.seqcode.data.connections.DatabaseConnectionManager;
 import org.seqcode.data.connections.DatabaseException;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

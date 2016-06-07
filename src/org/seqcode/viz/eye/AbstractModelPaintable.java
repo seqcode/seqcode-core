@@ -9,8 +9,8 @@ import java.util.*;
 
 import javax.swing.Action;
 
-import org.seqcode.utils.Pair;
-import org.seqcode.utils.models.Model;
+import org.seqcode.gseutils.Pair;
+import org.seqcode.gseutils.models.Model;
 import org.seqcode.viz.paintable.AbstractPaintable;
 import org.seqcode.viz.paintable.PaintableChangedListener;
 

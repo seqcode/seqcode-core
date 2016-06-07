@@ -37,7 +37,7 @@ public class GeneFactoryLoader {
     private Map<String,Map<String,GeneFactory>> factories;
 
     public GeneFactoryLoader() {
-        gfRes = ResourceBundle.getBundle("org.seqcode.utils.properties.gene_factories");
+        gfRes = ResourceBundle.getBundle("org.seqcode.gseutils.properties.gene_factories");
         factories = new HashMap<String,Map<String,GeneFactory>>();
         Enumeration<String> keys = gfRes.getKeys();
         while(keys.hasMoreElements()) { 

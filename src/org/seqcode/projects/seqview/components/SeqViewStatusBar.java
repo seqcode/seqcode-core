@@ -9,7 +9,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
-import org.seqcode.utils.Listener;
+import org.seqcode.gseutils.Listener;
 
 
 public class SeqViewStatusBar extends JPanel implements Listener<EventObject>{

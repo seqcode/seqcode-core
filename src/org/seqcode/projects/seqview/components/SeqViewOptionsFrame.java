@@ -6,9 +6,9 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
+import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.projects.seqview.SeqView;
 import org.seqcode.projects.seqview.SeqViewOptions;
-import org.seqcode.utils.NotFoundException;
 
 
 /**
@@ -206,7 +206,7 @@ public class SeqViewOptionsFrame extends JFrame implements ActionListener {
      */
     public static void configureLogging() {
     	ClassLoader loader = SeqViewOptionsFrame.class.getClassLoader();
-    	//PropertyConfigurator.configure(loader.getResource("org/seqcode/utils/properties/log4j.properties"));    	
+    	//PropertyConfigurator.configure(loader.getResource("org/seqcode/gseutils/properties/log4j.properties"));    	
     }
     
     public boolean isClosed() { return closed; }

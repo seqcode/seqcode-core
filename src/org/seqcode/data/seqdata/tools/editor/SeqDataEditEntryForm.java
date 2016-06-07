@@ -42,7 +42,7 @@ import org.seqcode.data.seqdata.SeqDataLoader;
 import org.seqcode.data.seqdata.SeqDataModifier;
 import org.seqcode.data.seqdata.SeqExpt;
 import org.seqcode.data.seqdata.SeqDataModifier.DuplicateDatabaseEntryException;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

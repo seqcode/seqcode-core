@@ -6,7 +6,7 @@ package org.seqcode.gsebricks.verbs.motifs;
 import java.util.*;
 
 import org.seqcode.gsebricks.verbs.*;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**

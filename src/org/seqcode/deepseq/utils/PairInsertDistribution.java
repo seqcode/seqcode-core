@@ -13,8 +13,8 @@ import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.verbs.location.ChromosomeGenerator;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.RealValuedHistogram;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.RealValuedHistogram;
 
 
 /**

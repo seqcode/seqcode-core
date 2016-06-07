@@ -9,11 +9,11 @@ import javax.imageio.ImageIO;
 
 import org.seqcode.data.connections.UnknownRoleException;
 import org.seqcode.data.motifdb.*;
+import org.seqcode.gseutils.*;
 import org.seqcode.ml.clustering.Cluster;
 import org.seqcode.ml.clustering.ClusterRepresentative;
 import org.seqcode.ml.clustering.ClusteringMethod;
 import org.seqcode.ml.clustering.hierarchical.HierarchicalClustering;
-import org.seqcode.utils.*;
 
 
 /**

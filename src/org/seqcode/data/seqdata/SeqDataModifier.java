@@ -20,7 +20,7 @@ import org.seqcode.data.core.MetadataModifier;
 import org.seqcode.data.readdb.ACLChangeEntry;
 import org.seqcode.data.readdb.Client;
 import org.seqcode.data.readdb.ClientException;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

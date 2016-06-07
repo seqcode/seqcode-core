@@ -11,7 +11,7 @@ public class RegionExpanderFactoryLoader<PRODUCT> {
     private Map<String,Map<String,RegionExpanderFactory<PRODUCT>>> factories;
 
     public RegionExpanderFactoryLoader(String ftype) {
-        res = ResourceBundle.getBundle("org.seqcode.utils.properties."+ftype+"_factories");
+        res = ResourceBundle.getBundle("org.seqcode.gseutils.properties."+ftype+"_factories");
         factories = new HashMap<String,Map<String,RegionExpanderFactory<PRODUCT>>>();
         Enumeration<String> keys = res.getKeys();
         while(keys.hasMoreElements()) { 

@@ -3,7 +3,7 @@ package org.seqcode.projects.seqview.model;
 import java.util.*;
 
 import org.seqcode.gsebricks.verbs.Expander;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /** An ExpanderModel wraps an ewok Expander (something that maps an

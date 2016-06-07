@@ -11,9 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.seqcode.data.readdb.PairedHit;
+import org.seqcode.gseutils.Listener;
 import org.seqcode.projects.seqview.model.InteractionArcModel;
 import org.seqcode.projects.seqview.model.SeqPairedEndModel;
-import org.seqcode.utils.Listener;
 import org.seqcode.viz.DynamicAttribute;
 
 

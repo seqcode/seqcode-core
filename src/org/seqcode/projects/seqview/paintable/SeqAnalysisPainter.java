@@ -5,8 +5,8 @@ import java.util.*;
 
 import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.location.Region;
+import org.seqcode.gseutils.*;
 import org.seqcode.projects.seqview.model.SeqAnalysisModel;
-import org.seqcode.utils.*;
 import org.seqcode.viz.DynamicAttribute;
 import org.seqcode.viz.colors.ColorSet;
 

@@ -3,8 +3,8 @@ import java.awt.*;
 import java.util.*;
 
 import org.seqcode.genome.location.Region;
+import org.seqcode.gseutils.*;
 import org.seqcode.projects.seqview.model.RegionMapperModel;
-import org.seqcode.utils.*;
 
 
 public class BasePairPainter extends RegionPaintable {

@@ -14,7 +14,7 @@ import org.seqcode.data.motifdb.MarkovBackgroundModel;
 import org.seqcode.data.motifdb.WeightMatrix;
 import org.seqcode.data.motifdb.WeightMatrixImport;
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /* Loads frequency and count matrix motifs to the db. 

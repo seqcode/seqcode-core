@@ -6,7 +6,7 @@ package org.seqcode.viz.utils;
 
 import javax.swing.*;
 
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 import java.awt.*;
 import java.awt.event.*;

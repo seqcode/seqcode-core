@@ -11,7 +11,7 @@ import org.seqcode.genome.sequence.SequenceGenerator;
 import org.seqcode.genome.sequence.SequenceUtils;
 import org.seqcode.gsebricks.verbs.location.PointParser;
 import org.seqcode.gsebricks.verbs.location.RegionParser;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /** Use:

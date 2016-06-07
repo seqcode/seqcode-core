@@ -4,7 +4,7 @@ import java.lang.*;
 import java.io.*;
 import java.util.*;
 
-import org.seqcode.utils.RealValuedFunction;
+import org.seqcode.gseutils.RealValuedFunction;
 
 
 public class BetaFunction implements RealValuedFunction { 

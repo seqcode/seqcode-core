@@ -5,10 +5,11 @@
 package org.seqcode.ml.regression;
 
 import java.util.*;
-import java.lang.reflect.*;
 
-import org.seqcode.utils.BitVector;
-import org.seqcode.utils.models.*;
+import org.seqcode.gseutils.BitVector;
+import org.seqcode.gseutils.models.*;
+
+import java.lang.reflect.*;
 
 import Jama.*;
 

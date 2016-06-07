@@ -3,7 +3,7 @@ package org.seqcode.viz.metaprofile;
 import java.awt.Color;
 import java.util.List;
 
-import org.seqcode.utils.Args;
+import org.seqcode.gseutils.Args;
 
 
 public class MetaConfig {

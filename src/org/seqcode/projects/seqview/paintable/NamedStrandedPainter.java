@@ -6,8 +6,8 @@ import java.util.*;
 import org.seqcode.genome.location.Named;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.Stranded;
+import org.seqcode.gseutils.*;
 import org.seqcode.projects.seqview.model.RegionExpanderModel;
-import org.seqcode.utils.*;
 import org.seqcode.viz.DynamicAttribute;
 import org.seqcode.viz.colors.ColorSet;
 

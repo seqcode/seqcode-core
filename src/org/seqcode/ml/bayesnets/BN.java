@@ -6,11 +6,11 @@ package org.seqcode.ml.bayesnets;
 
 import java.util.*;
 
+import org.seqcode.gseutils.graphs.DirectedAlgorithms;
+import org.seqcode.gseutils.graphs.DirectedGraph;
+import org.seqcode.gseutils.models.Model;
 import org.seqcode.ml.math.probability.FiniteDistribution;
 import org.seqcode.ml.regression.DataFrame;
-import org.seqcode.utils.graphs.DirectedAlgorithms;
-import org.seqcode.utils.graphs.DirectedGraph;
-import org.seqcode.utils.models.Model;
 
 
 public class BN<X extends Model> {

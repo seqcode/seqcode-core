@@ -4,9 +4,9 @@ import java.util.*;
 import java.sql.*;
 
 import org.seqcode.data.motifdb.WeightMatrix;
+import org.seqcode.gseutils.*;
 import org.seqcode.ml.clustering.Cluster;
 import org.seqcode.ml.clustering.ClusterRepresentative;
-import org.seqcode.utils.*;
 
 
 public class WMMinAvgDistanceRep implements ClusterRepresentative<WeightMatrix> {

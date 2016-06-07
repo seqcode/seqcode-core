@@ -2,7 +2,7 @@ package org.seqcode.viz.eye;
 
 import javax.swing.*;
 
-import org.seqcode.utils.models.*;
+import org.seqcode.gseutils.models.*;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

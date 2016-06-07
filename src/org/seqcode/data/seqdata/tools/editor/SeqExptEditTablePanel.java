@@ -34,9 +34,9 @@ import org.seqcode.data.seqdata.SeqAlignment;
 import org.seqcode.data.seqdata.SeqDataLoader;
 import org.seqcode.data.seqdata.SeqDataModifier;
 import org.seqcode.data.seqdata.SeqExpt;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 import org.seqcode.projects.seqview.components.SeqAlignmentTableModel;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
 import org.seqcode.viz.components.GenericEditTablePanel;
 
 

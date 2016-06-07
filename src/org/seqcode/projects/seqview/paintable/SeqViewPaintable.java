@@ -10,12 +10,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import org.seqcode.data.connections.UnknownRoleException;
+import org.seqcode.gseutils.EventSource;
+import org.seqcode.gseutils.Listener;
 import org.seqcode.projects.seqview.RectangleLookup;
 import org.seqcode.projects.seqview.components.*;
 import org.seqcode.projects.seqview.model.ModelProperties;
 import org.seqcode.projects.seqview.model.SeqViewModel;
-import org.seqcode.utils.EventSource;
-import org.seqcode.utils.Listener;
 
 import java.sql.SQLException;
 import java.awt.event.MouseEvent;

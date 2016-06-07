@@ -10,10 +10,10 @@ import org.seqcode.genome.location.Gene;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.verbs.*;
 import org.seqcode.gsebricks.verbs.location.RefGeneGenerator;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 import org.seqcode.projects.seqview.components.Snapshot;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
 
 
 

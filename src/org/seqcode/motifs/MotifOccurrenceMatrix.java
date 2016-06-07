@@ -24,9 +24,9 @@ import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.StrandedRegion;
 import org.seqcode.genome.sequence.SequenceGenerator;
 import org.seqcode.gsebricks.verbs.location.RefGeneGenerator;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.motifs.WeightMatrixScanner;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
 
 
 public class MotifOccurrenceMatrix {

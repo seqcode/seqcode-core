@@ -10,7 +10,7 @@ import org.seqcode.data.connections.DatabaseException;
 import org.seqcode.data.connections.Sequence;
 import org.seqcode.data.connections.UnknownRoleException;
 import org.seqcode.genome.location.ChromosomeInfo;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 /**
  * Genome represents one version (or genome build) of some species.

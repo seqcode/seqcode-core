@@ -3,7 +3,7 @@ package org.seqcode.gsebricks.verbs;
 import java.util.Map;
 
 import org.seqcode.gsebricks.types.*;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Pair;
 
 
 public class PairCombiner<X,Y> implements BiCombiner<X,Y,Pair<X,Y>>, SelfDescribingVerb, DependentSelfDescribingVerb {

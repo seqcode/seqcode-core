@@ -10,9 +10,9 @@ import org.seqcode.genome.Species;
 import org.seqcode.genome.location.Gene;
 import org.seqcode.genome.location.NamedTypedRegion;
 import org.seqcode.gsebricks.RegionExpanderFactoryLoader;
+import org.seqcode.gseutils.Closeable;
+import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.projects.seqview.SeqViewOptions;
-import org.seqcode.utils.Closeable;
-import org.seqcode.utils.NotFoundException;
 
 import java.util.Collection;
 import java.util.List;

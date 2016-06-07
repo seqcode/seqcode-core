@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.seqcode.data.core.*;
 import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**

@@ -6,8 +6,8 @@ import java.util.*;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.ScoredStrandedRegion;
 import org.seqcode.gsebricks.verbs.Expander;
+import org.seqcode.gseutils.*;
 import org.seqcode.projects.seqview.model.RegionExpanderModel;
-import org.seqcode.utils.*;
 import org.seqcode.viz.DynamicAttribute;
 
 

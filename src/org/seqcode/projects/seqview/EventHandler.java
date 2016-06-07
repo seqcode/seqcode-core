@@ -5,7 +5,7 @@ package org.seqcode.projects.seqview;
 
 import java.util.*;
 
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**
@@ -30,7 +30,7 @@ public class EventHandler<X extends EventObject> implements Listener<X> {
     }
     
     /* (non-Javadoc)
-     * @see org.seqcode.utils.Listener#eventRegistered(java.lang.Object)
+     * @see org.seqcode.gseutils.Listener#eventRegistered(java.lang.Object)
      */
     public synchronized void eventRegistered(X e) {
         System.out.println("+++ Adding HAE to Event Queue");

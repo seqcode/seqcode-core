@@ -16,8 +16,8 @@ import org.seqcode.genome.location.StrandedRegion;
 import org.seqcode.genome.sequence.SequenceGenerator;
 import org.seqcode.genome.sequence.SequenceUtils;
 import org.seqcode.gsebricks.verbs.*;
+import org.seqcode.gseutils.*;
 import org.seqcode.motifs.*;
-import org.seqcode.utils.*;
 
 import cern.jet.random.Binomial;
 import cern.jet.random.engine.RandomEngine;

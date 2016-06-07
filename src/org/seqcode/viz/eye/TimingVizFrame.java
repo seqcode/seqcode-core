@@ -10,8 +10,8 @@ import java.util.*;
 import java.awt.*;
 import javax.swing.*;
 
-import org.seqcode.utils.models.*;
-import org.seqcode.utils.models.Timer;
+import org.seqcode.gseutils.models.*;
+import org.seqcode.gseutils.models.Timer;
 import org.seqcode.viz.paintable.*;
 
 

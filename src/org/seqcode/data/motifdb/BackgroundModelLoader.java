@@ -17,7 +17,7 @@ import org.seqcode.data.connections.DatabaseConnectionManager;
 import org.seqcode.data.connections.DatabaseException;
 import org.seqcode.data.io.BackgroundModelIO;
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**
@@ -2567,7 +2567,7 @@ public class BackgroundModelLoader {
   
   public static void main(String[] args) {
     ClassLoader loader = BackgroundModelLoader.class.getClassLoader();
-    PropertyConfigurator.configure(loader.getResource("org/seqcode/utils/properties/log4j.properties"));      
+    PropertyConfigurator.configure(loader.getResource("org/seqcode/gseutils/properties/log4j.properties"));      
     
     //BackgroundModelLoader.testDBLoading();
     BackgroundModelLoader.importModel(args);

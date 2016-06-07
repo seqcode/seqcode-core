@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.verbs.Filter;
-import org.seqcode.utils.SetTools;
+import org.seqcode.gseutils.SetTools;
 
 
 public class UniqueishRegionFilter<X extends Region> implements Filter<X, X> {

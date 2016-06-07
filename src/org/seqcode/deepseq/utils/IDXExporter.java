@@ -15,8 +15,8 @@ import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.NamedRegion;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.verbs.location.ChromRegionIterator;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

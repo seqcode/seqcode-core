@@ -20,7 +20,7 @@ import org.seqcode.genome.sequence.SequenceGenerator;
 import org.seqcode.genome.sequence.SequenceUtils;
 import org.seqcode.gsebricks.verbs.Sink;
 import org.seqcode.gsebricks.verbs.motifs.PerBaseMotifMatch;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /** Scans a genome for a previously loaded weight matrix.  Can read either from FASTA files or from the database.  Can put results

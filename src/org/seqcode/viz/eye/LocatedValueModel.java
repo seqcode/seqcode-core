@@ -6,7 +6,7 @@ package org.seqcode.viz.eye;
 
 import java.awt.Color;
 
-import org.seqcode.utils.models.Model;
+import org.seqcode.gseutils.models.Model;
 
 
 public class LocatedValueModel extends Model {

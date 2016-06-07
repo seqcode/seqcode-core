@@ -9,8 +9,8 @@ import java.lang.reflect.*;
 import java.awt.*;
 import java.io.*;
 
+import org.seqcode.gseutils.models.*;
 import org.seqcode.ml.regression.DataFrame;
-import org.seqcode.utils.models.*;
 import org.seqcode.viz.paintable.PaintableFrame;
 import org.seqcode.viz.paintable.PaintableScale;
 import org.seqcode.viz.paintable.VerticalScalePainter;

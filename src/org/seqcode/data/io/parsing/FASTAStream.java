@@ -5,7 +5,7 @@ package org.seqcode.data.io.parsing;
 
 import java.util.*;
 
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Pair;
 
 import java.io.*;
 
@@ -17,7 +17,7 @@ import java.io.*;
  * Each sequence is returned as a Pair of Strings: the first String is the
  * name of the sequence and the second String is the sequence itself.
  */
-public class FASTAStream implements Iterator<Pair<String,String>>, org.seqcode.utils.Closeable {
+public class FASTAStream implements Iterator<Pair<String,String>>, org.seqcode.gseutils.Closeable {
     
     private String label;
     private BufferedReader br;
@@ -98,7 +98,7 @@ public class FASTAStream implements Iterator<Pair<String,String>>, org.seqcode.u
     }
 
     /* (non-Javadoc)
-     * @see org.seqcode.utils.Closeable#close()
+     * @see org.seqcode.gseutils.Closeable#close()
      */
     public void close() {
         if (isClosed()) {return;}
@@ -112,7 +112,7 @@ public class FASTAStream implements Iterator<Pair<String,String>>, org.seqcode.u
     }
 
     /* (non-Javadoc)
-     * @see org.seqcode.utils.Closeable#isClosed()
+     * @see org.seqcode.gseutils.Closeable#isClosed()
      */
     public boolean isClosed() {
         return br == null;

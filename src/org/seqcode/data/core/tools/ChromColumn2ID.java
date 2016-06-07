@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.Collection;
 
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.Args;
+import org.seqcode.gseutils.Args;
 
 /**
  * Replaces a chromosome name with its ID in a column of tab-delimited text.

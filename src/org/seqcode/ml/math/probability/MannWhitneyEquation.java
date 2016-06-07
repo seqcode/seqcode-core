@@ -5,7 +5,7 @@ package org.seqcode.ml.math.probability;
 
 import java.util.*;
 
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 import java.io.*;
 

@@ -8,7 +8,7 @@ import java.util.LinkedList;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 
 public class CoveredFilter<X extends Region> implements Filter<X, X> {

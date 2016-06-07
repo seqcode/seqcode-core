@@ -5,7 +5,7 @@ package org.seqcode.data.io.parsing;
 
 import java.util.*;
 
-import org.seqcode.utils.ArgParser;
+import org.seqcode.gseutils.ArgParser;
 
 import java.io.*;
 

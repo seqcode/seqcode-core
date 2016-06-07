@@ -8,9 +8,9 @@ import org.seqcode.data.seqdata.SeqDataLoader;
 import org.seqcode.data.seqdata.SeqLocator;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 
 
 public class AlignmentLookup {

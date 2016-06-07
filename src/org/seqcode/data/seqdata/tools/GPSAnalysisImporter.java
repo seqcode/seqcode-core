@@ -8,7 +8,7 @@ import org.seqcode.data.connections.DatabaseException;
 import org.seqcode.data.seqdata.SeqAnalysisResult;
 import org.seqcode.gsebricks.verbs.chipseq.GPSParser;
 import org.seqcode.gsebricks.verbs.chipseq.GPSPeak;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

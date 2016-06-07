@@ -9,7 +9,7 @@ import org.seqcode.data.connections.UnknownRoleException;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.verbs.Expander;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /** maps a Region to a set of sub-regions that are tiled

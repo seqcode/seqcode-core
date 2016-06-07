@@ -7,7 +7,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 import java.awt.event.*;
 
@@ -210,21 +210,21 @@ public class SelectionDialog extends JDialog implements EventSource<SelectionEve
     }
 
     /* (non-Javadoc)
-     * @see org.seqcode.utils.EventSource#addEventListener(org.seqcode.utils.Listener)
+     * @see org.seqcode.gseutils.EventSource#addEventListener(org.seqcode.gseutils.Listener)
      */
     public void addEventListener(Listener<SelectionEvent> el) {
         src.addEventListener(el);
     }
 
     /* (non-Javadoc)
-     * @see org.seqcode.utils.EventSource#removeEventListener(org.seqcode.utils.Listener)
+     * @see org.seqcode.gseutils.EventSource#removeEventListener(org.seqcode.gseutils.Listener)
      */
     public void removeEventListener(Listener<SelectionEvent> el) {
         src.removeEventListener(el);
     }
 
     /* (non-Javadoc)
-     * @see org.seqcode.utils.EventSource#hasListeners()
+     * @see org.seqcode.gseutils.EventSource#hasListeners()
      */
     public boolean hasListeners() {
         return src.hasListeners();

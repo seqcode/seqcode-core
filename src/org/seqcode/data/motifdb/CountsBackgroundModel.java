@@ -18,8 +18,8 @@ import org.seqcode.genome.location.Region;
 import org.seqcode.genome.sequence.SequenceGenerator;
 import org.seqcode.genome.sequence.SequenceUtils;
 import org.seqcode.gsebricks.verbs.location.ChromRegionIterator;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 
 
 /**

@@ -6,7 +6,7 @@ import javax.swing.*;
 
 import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.Args;
+import org.seqcode.gseutils.Args;
 
 import java.sql.*;
 

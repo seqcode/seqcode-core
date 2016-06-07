@@ -4,7 +4,7 @@ import java.util.*;
 
 import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.Args;
+import org.seqcode.gseutils.Args;
 
 
 public class DumpAnalysisParameters {

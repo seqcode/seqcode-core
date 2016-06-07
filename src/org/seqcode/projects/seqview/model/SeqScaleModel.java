@@ -4,7 +4,7 @@ import java.util.EventObject;
 import java.util.ArrayList;
 
 import org.seqcode.genome.location.Region;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 public class SeqScaleModel extends SeqViewModel implements RegionModel, Listener<EventObject> {

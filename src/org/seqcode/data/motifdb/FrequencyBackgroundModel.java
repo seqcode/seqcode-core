@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.seqcode.genome.Genome;
+import org.seqcode.gseutils.NotFoundException;
+import org.seqcode.gseutils.Pair;
 import org.seqcode.ml.math.stats.Fmath;
-import org.seqcode.utils.NotFoundException;
-import org.seqcode.utils.Pair;
 
 
 /**

@@ -5,8 +5,8 @@ import java.sql.*;
 
 import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.location.Region;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
 
 
 

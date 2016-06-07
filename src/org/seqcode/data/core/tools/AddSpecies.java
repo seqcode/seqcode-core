@@ -1,8 +1,8 @@
 package org.seqcode.data.core.tools;
 
 import org.seqcode.genome.Species;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
 
 /**
  * AddSpecies --species "mus musculus"

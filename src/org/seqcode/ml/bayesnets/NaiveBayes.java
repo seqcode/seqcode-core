@@ -4,9 +4,9 @@
  */
 package org.seqcode.ml.bayesnets;
 
+import org.seqcode.gseutils.ArrayUtils;
+import org.seqcode.gseutils.models.*;
 import org.seqcode.ml.regression.DataFrame;
-import org.seqcode.utils.ArrayUtils;
-import org.seqcode.utils.models.*;
 
 public class NaiveBayes<X extends Model> extends BN<X> {
 

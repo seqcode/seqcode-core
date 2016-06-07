@@ -8,7 +8,7 @@ import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.ScoredRegion;
 import org.seqcode.gsebricks.verbs.Expander;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /**

@@ -7,7 +7,7 @@ import java.util.*;
 
 import javax.swing.*;
 
-import org.seqcode.utils.NamedValue;
+import org.seqcode.gseutils.NamedValue;
 
 import java.awt.*;
 

@@ -8,8 +8,8 @@ import java.awt.*;
 import java.lang.reflect.*;
 import java.util.*;
 
-import org.seqcode.utils.models.Model;
-import org.seqcode.utils.models.ModelFieldAnalysis;
+import org.seqcode.gseutils.models.Model;
+import org.seqcode.gseutils.models.ModelFieldAnalysis;
 import org.seqcode.viz.paintable.*;
 
 

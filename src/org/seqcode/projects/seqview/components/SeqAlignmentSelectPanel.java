@@ -13,7 +13,7 @@ import javax.swing.border.Border;
 import org.seqcode.data.core.ExptType;
 import org.seqcode.data.seqdata.*;
 import org.seqcode.data.seqdata.SeqLocatorMatchedAligns.SeqLMENotReplicatesException;
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Pair;
 import org.seqcode.viz.components.GenericSelectPanel;
 
 import java.sql.*;

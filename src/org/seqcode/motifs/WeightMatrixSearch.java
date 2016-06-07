@@ -8,7 +8,7 @@ import org.seqcode.data.connections.DatabaseException;
 import org.seqcode.data.connections.UnknownRoleException;
 import org.seqcode.data.motifdb.*;
 import org.seqcode.genome.Species;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 public class WeightMatrixSearch {

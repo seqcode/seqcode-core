@@ -26,7 +26,7 @@ import org.seqcode.data.io.Points2RegionsConverter;
 import org.seqcode.data.motifdb.WeightMatrix;
 import org.seqcode.data.motifdb.WeightMatrixImport;
 import org.seqcode.genome.Species;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.NotFoundException;
 
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;

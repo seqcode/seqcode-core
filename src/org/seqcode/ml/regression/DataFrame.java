@@ -6,20 +6,21 @@ package org.seqcode.ml.regression;
 
 import java.util.*;
 import java.util.regex.*;
+
+import org.seqcode.gseutils.Accumulator;
+import org.seqcode.gseutils.Function;
+import org.seqcode.gseutils.PackedBitVector;
+import org.seqcode.gseutils.Predicate;
+import org.seqcode.gseutils.models.Model;
+import org.seqcode.gseutils.models.ModelFieldAnalysis;
+import org.seqcode.gseutils.models.ModelInput;
+import org.seqcode.gseutils.models.ModelInputIterator;
+import org.seqcode.gseutils.models.ModelOutput;
+import org.seqcode.gseutils.models.ModelInput.LineReader;
+import org.seqcode.gseutils.models.ModelOutput.LineWriter;
+
 import java.lang.reflect.*;
 import java.io.*;
-
-import org.seqcode.utils.Accumulator;
-import org.seqcode.utils.Function;
-import org.seqcode.utils.PackedBitVector;
-import org.seqcode.utils.Predicate;
-import org.seqcode.utils.models.Model;
-import org.seqcode.utils.models.ModelFieldAnalysis;
-import org.seqcode.utils.models.ModelInput;
-import org.seqcode.utils.models.ModelInputIterator;
-import org.seqcode.utils.models.ModelOutput;
-import org.seqcode.utils.models.ModelInput.LineReader;
-import org.seqcode.utils.models.ModelOutput.LineWriter;
 
 
 /**

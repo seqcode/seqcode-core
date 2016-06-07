@@ -18,7 +18,7 @@ import org.seqcode.gsebricks.verbs.Expander;
  *   a UCSC annotation database.  RefGeneGenerator can work on two tables- the first contains the coordinates
  *   for the genes and the second contains a mapping from gene name to aliases.
  *   
- *   reads the properties file org.seqcode.utils.properties.gene_names which is formatted as 
+ *   reads the properties file org.seqcode.gseutils.properties.gene_names which is formatted as 
  *     genomeversion,tablename=symboltablename,namecolumn,symbolcolumn
  *
  *     namecolumn is the column in the symboltable that should match the name.  aliascolumn
@@ -141,7 +141,7 @@ public class RefGeneGenerator<X extends Region>
     
     public void setGenome(Genome g, String t) { 
         genome = g;
-        ResourceBundle res = ResourceBundle.getBundle("org.seqcode.utils.properties.gene_names");
+        ResourceBundle res = ResourceBundle.getBundle("org.seqcode.gseutils.properties.gene_names");
         Enumeration<String> keys = res.getKeys();
         tablename = t;
         /* if no table name was given, then we'll end up using the first table listed in the 

@@ -11,7 +11,7 @@ package org.seqcode.projects.seqview;
 import java.awt.*;
 import java.util.*;
 
-import org.seqcode.utils.Pair;
+import org.seqcode.gseutils.Pair;
 
 
 public class RectangleLookup<X> {

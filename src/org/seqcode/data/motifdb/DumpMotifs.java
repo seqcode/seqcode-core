@@ -2,7 +2,7 @@ package org.seqcode.data.motifdb;
 
 import java.util.*;
 
-import org.seqcode.utils.Args;
+import org.seqcode.gseutils.Args;
 
 
 

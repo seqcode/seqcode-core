@@ -16,8 +16,8 @@ import org.seqcode.data.seqdata.SeqAlignment;
 import org.seqcode.data.seqdata.SeqDataLoader;
 import org.seqcode.data.seqdata.SeqExpt;
 import org.seqcode.genome.Genome;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

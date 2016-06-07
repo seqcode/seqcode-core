@@ -3,7 +3,7 @@ package org.seqcode.genome.sequence;
 import java.io.*;
 
 import org.seqcode.data.io.parsing.FASTAStream;
-import org.seqcode.utils.Args;
+import org.seqcode.gseutils.Args;
 
 public class RandomReadGenerator {
 

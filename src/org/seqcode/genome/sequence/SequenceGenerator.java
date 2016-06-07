@@ -13,7 +13,7 @@ import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.types.*;
 import org.seqcode.gsebricks.verbs.Mapper;
-import org.seqcode.utils.*;
+import org.seqcode.gseutils.*;
 
 
 /** 

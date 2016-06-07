@@ -10,8 +10,8 @@ import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.RepeatMaskedRegion;
 import org.seqcode.gsebricks.verbs.location.ChromRegionIterator;
 import org.seqcode.gsebricks.verbs.location.RepeatMaskedGenerator;
-import org.seqcode.utils.Args;
-import org.seqcode.utils.NotFoundException;
+import org.seqcode.gseutils.Args;
+import org.seqcode.gseutils.NotFoundException;
 
 
 /**

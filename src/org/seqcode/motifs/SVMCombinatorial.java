@@ -11,8 +11,8 @@ import org.seqcode.data.connections.UnknownRoleException;
 import org.seqcode.data.io.parsing.FASTAStream;
 import org.seqcode.data.motifdb.*;
 import org.seqcode.genome.Genome;
+import org.seqcode.gseutils.*;
 import org.seqcode.motifs.*;
-import org.seqcode.utils.*;
 
 import libsvm.*;
 

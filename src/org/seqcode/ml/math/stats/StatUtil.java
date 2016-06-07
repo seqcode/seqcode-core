@@ -24,8 +24,8 @@ import cern.jet.random.engine.DRand;
 
 import java.util.Arrays;
 
+import org.seqcode.gseutils.Pair;
 import org.seqcode.ml.math.probability.NormalDistribution;
-import org.seqcode.utils.Pair;
 
 
 public class StatUtil {
