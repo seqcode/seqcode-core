@@ -21,6 +21,7 @@ Organization
 * org.seqcode.projects.seed: SEED provides a set of classes for performing statistical-enrichment-based event detection for various types of sequencing experiments. The SEED package also aims to abstract the common functionality that most event detection approaches would require (e.g. finding enriched regions on the genome, etc). In doing so, SEED can be used to rapidly "seed" the development of event detection tools for particular purposes.
 * org.seqcode.projects.seqview: The SeqView genome browser.
 * org.seqcode.tools: Command line tools for various operations on genomic locations or sequences.
+* org.seqcode.tutorials: Example code using various aspects of seqcode-core
 * org.seqcode.viz: Some visualization code.
 
 
