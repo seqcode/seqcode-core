@@ -1,8 +1,16 @@
-package org.seqcode.data.readdb;
+package org.seqcode.data.readdb.unittests;
 
 import java.util.*;
 import java.io.IOException;
 import org.junit.*;
+import org.seqcode.data.readdb.ACLChangeEntry;
+import org.seqcode.data.readdb.Client;
+import org.seqcode.data.readdb.ClientException;
+import org.seqcode.data.readdb.PairedHit;
+import org.seqcode.data.readdb.PairedHitLeftComparator;
+import org.seqcode.data.readdb.PairedHitRightComparator;
+import org.seqcode.data.readdb.SingleHit;
+
 import static org.junit.Assert.*;
 
 /**

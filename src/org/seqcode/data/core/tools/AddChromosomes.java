@@ -6,7 +6,7 @@ import java.io.*;
 
 import org.seqcode.data.connections.ClobHandler;
 import org.seqcode.data.connections.DatabaseConnectionManager;
-import org.seqcode.data.connections.Sequence;
+import org.seqcode.data.connections.DatabaseSequence;
 import org.seqcode.data.io.parsing.FASTAStream;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
@@ -67,7 +67,7 @@ public class AddChromosomes {
         
         PreparedStatement insertChrom = 
         	cxn.prepareStatement("insert into chromosome(id, genome, name) values (" +
-        			Sequence.getInsertSQL(cxn, "chromosome_id") + "," +
+        			DatabaseSequence.getInsertSQL(cxn, "chromosome_id") + "," +
         			genome.getDBID() + ",?)");
         
         PreparedStatement getChromID = 
@@ -173,7 +173,7 @@ public class AddChromosomes {
         cxn.setAutoCommit(false);
         
         PreparedStatement insertChrom = cxn.prepareStatement("insert into chromosome(id, genome, name) values (" +
-                                                    Sequence.getInsertSQL(cxn, "chromosome_id") + "," +
+                                                    DatabaseSequence.getInsertSQL(cxn, "chromosome_id") + "," +
                                                     genome.getDBID() + ",?)");
         PreparedStatement getChromID = cxn.prepareStatement("select id from chromosome where genome = ? and name = ?");
         PreparedStatement insertSequence = cxn.prepareStatement("insert into chromsequence(id,len,sequence) values (?,?,?)");

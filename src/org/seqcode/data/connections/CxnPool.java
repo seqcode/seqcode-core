@@ -1,6 +1,3 @@
-/*
- * Created on Feb 28, 2006
- */
 package org.seqcode.data.connections;
 
 import java.util.*;
@@ -9,6 +6,9 @@ import java.sql.SQLException;
 import java.sql.Connection;
 
 /**
+ * CxnPool: Base class for various connection pools.
+ * Use DatabaseFactory to obtain connections. 
+ * 
  * @author tdanford
  */
 public abstract class CxnPool {

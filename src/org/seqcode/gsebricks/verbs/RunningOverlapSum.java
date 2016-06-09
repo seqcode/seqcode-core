@@ -1,16 +1,7 @@
-/*
- * Created on Aug 22, 2007
- *
- * TODO 
- * 
- * To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
-package org.seqcode.data.seqdata;
+package org.seqcode.gsebricks.verbs;
 
 import java.util.*;
 
-import org.seqcode.data.core.*;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gseutils.Interval;
@@ -23,13 +14,13 @@ import org.seqcode.gseutils.Interval;
  * Its purpose is to track a series of intervals over a region (in this case, 
  * a region identified with a particular chromosome and genome), and to then 
  * be able to answer queries about the number of times that locations within 
- * that region have been "covered" by on or more intervals.  
+ * that region have been "covered" by one or more intervals.  
  * 
  * The method .collectRegions(int) is the most-used interface -- it collects 
  * a series of (disjoint) regions that are each continuously covered by 
  * *at least* 'int' intervals.  
  *  
- * @author Tim &amp; Alex
+ * @author Tim and Alex
  */
 public class RunningOverlapSum {
 

@@ -894,7 +894,7 @@ public class ServerTask {
             SingleHits singlehits = new SingleHits(server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
                                                    request.chromid,
                                                    request.isType2);
-            Header header = new Header(singlehits.getPositionsBuffer().ib);
+            Header header = new Header(singlehits.getPositionsBuffer().getib());
             header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
                                                                  request.chromid,
                                                                  request.isType2));
@@ -1041,7 +1041,7 @@ public class ServerTask {
             PairedHits pairedhits = new PairedHits(server.getAlignmentDir(request.alignid) + System.getProperty("file.separator"),
                                                    chromid, 
                                                    isLeft);
-            Header header = new Header(pairedhits.getPositionsBuffer().ib);
+            Header header = new Header(pairedhits.getPositionsBuffer().getib());
             header.writeIndexFile(server.getPairedHeaderFileName(request.alignid,
                                                                  chromid,
                                                                  isLeft));
@@ -1057,14 +1057,14 @@ public class ServerTask {
         Lock.writeLock(request.alignid);
         if (request.isPaired) {
             PairedHits hits = server.getPairedHits(request.alignid, request.chromid, true);
-            Header header = new Header(hits.getPositionsBuffer().ib);
+            Header header = new Header(hits.getPositionsBuffer().getib());
             header.writeIndexFile(server.getPairedHeaderFileName(request.alignid,
                                                                  request.chromid,
                                                                  true));            
             server.removePairedHeader(request.alignid, request.chromid,true);
 
             hits = server.getPairedHits(request.alignid, request.chromid, false);
-            header = new Header(hits.getPositionsBuffer().ib);
+            header = new Header(hits.getPositionsBuffer().getib());
             header.writeIndexFile(server.getPairedHeaderFileName(request.alignid,
                                                                  request.chromid,
                                                                  false));            
@@ -1072,7 +1072,7 @@ public class ServerTask {
 
         } else {
             SingleHits hits = server.getSingleHits(request.alignid, request.chromid, request.isType2);
-            Header header = new Header(hits.getPositionsBuffer().ib);
+            Header header = new Header(hits.getPositionsBuffer().getib());
             header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
                                                                  request.chromid,
                                                                  request.isType2));
@@ -1325,7 +1325,7 @@ public class ServerTask {
 	                server.removeSingleHeader(request.alignid, request.chromid, request.isType2);       
 	                hits = server.getSingleHits(request.alignid, request.chromid, request.isType2);
 	                
-	                header = new Header(hits.getPositionsBuffer().ib);
+	                header = new Header(hits.getPositionsBuffer().getib());
 	                header.writeIndexFile(server.getSingleHeaderFileName(request.alignid,
 	                                                                     request.chromid,
 	                                                                     request.isType2));

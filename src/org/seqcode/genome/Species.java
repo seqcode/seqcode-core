@@ -7,7 +7,7 @@ import java.sql.*;
 
 import org.seqcode.data.connections.DatabaseConnectionManager;
 import org.seqcode.data.connections.DatabaseException;
-import org.seqcode.data.connections.Sequence;
+import org.seqcode.data.connections.DatabaseSequence;
 import org.seqcode.data.connections.UnknownRoleException;
 import org.seqcode.gseutils.*;
 
@@ -263,7 +263,7 @@ public class Species{
         try {
             cxn = DatabaseConnectionManager.getConnection("core");
             stmt = cxn.createStatement();
-            String nextIdString = Sequence.getInsertSQL(cxn, "species_id");
+            String nextIdString = DatabaseSequence.getInsertSQL(cxn, "species_id");
             String sql = String.format("insert into species values (%s, '%s')", nextIdString, species);
             System.out.println(sql);
             stmt.executeUpdate(sql);
