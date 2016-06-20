@@ -63,8 +63,8 @@ public class BEDExporter {
 			for(ControlledExperiment rep : c.getReplicates()){
 				System.err.println("Condition "+c.getName()+":\tRep "+rep.getName());
 				try {
-					FileWriter fw = new FileWriter(outName+"."+c.getName()+"."+rep.getName()+".idx");
-					fw.write("chrom\tindex\tforward\treverse\tvalue\n");
+					FileWriter fw = new FileWriter(outName+"."+c.getName()+"."+rep.getName()+".bed");
+					//fw.write("chrom\tindex\tforward\treverse\tvalue\n");
 					
 					double basesDone=0, printStep=10000000,  numPrint=0;
 								       			
