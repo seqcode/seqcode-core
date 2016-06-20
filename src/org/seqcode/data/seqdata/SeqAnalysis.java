@@ -81,14 +81,14 @@ public class SeqAnalysis implements Comparable<SeqAnalysis> {
         java.sql.Connection cxn = DatabaseConnectionManager.getConnection(SeqDataLoader.role);
         cxn.setAutoCommit(false);
         String q = "insert into chipseqanalysis (id, name, version, program, active) values (%s,?,?,?,?)";
-        PreparedStatement ps = cxn.prepareStatement(String.format(q,org.seqcode.data.connections.Sequence.getInsertSQL(cxn, "chipseqanalysis_id")));
+        PreparedStatement ps = cxn.prepareStatement(String.format(q,org.seqcode.data.connections.DatabaseSequence.getInsertSQL(cxn, "chipseqanalysis_id")));
         ps.setString(1, name);
         ps.setString(2, version);
         ps.setString(3, program);
         ps.setInt(4,active ? 1 : 0);
         ps.execute();
         ps.close();
-        String sql = org.seqcode.data.connections.Sequence.getLastSQLStatement(cxn, "chipseqanalysis_id");
+        String sql = org.seqcode.data.connections.DatabaseSequence.getLastSQLStatement(cxn, "chipseqanalysis_id");
         ps = cxn.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
         rs.next();

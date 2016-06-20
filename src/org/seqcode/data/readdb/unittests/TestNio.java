@@ -1,4 +1,4 @@
-package org.seqcode.data.readdb;
+package org.seqcode.data.readdb.unittests;
 
 import java.nio.*;
 

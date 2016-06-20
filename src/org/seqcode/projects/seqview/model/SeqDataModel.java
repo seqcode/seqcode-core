@@ -18,8 +18,8 @@ import java.util.Collection;
 import org.seqcode.data.readdb.*;
 import org.seqcode.data.seqdata.SeqAlignment;
 import org.seqcode.data.seqdata.SeqHit;
-import org.seqcode.data.seqdata.WeightedRunningOverlapSum;
 import org.seqcode.genome.location.Region;
+import org.seqcode.gsebricks.verbs.WeightedRunningOverlapSum;
 
 
 

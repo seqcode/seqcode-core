@@ -6,7 +6,7 @@ import java.sql.Connection;
  * utility methods to handle database sequences or auto-increment columns 
  */
 
-public class Sequence {
+public class DatabaseSequence {
 
     /**
      * <code>getInsertSQL<code> returns the SQL snippet that should be
