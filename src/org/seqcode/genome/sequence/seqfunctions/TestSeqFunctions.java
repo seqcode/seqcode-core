@@ -7,32 +7,59 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.seqcode.genome.Genome;
+import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.Species;
 import org.seqcode.genome.location.NamedStrandedRegion;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.StrandedRegion;
+import org.seqcode.genome.sequence.SequenceGenerator;
 import org.seqcode.gseutils.Args;
 import org.seqcode.gseutils.Pair;
 
 public class TestSeqFunctions {
-
-	List<Region> regions;
 	
-	public TestSeqFunctions(List<Region> regs){
+	Genome genome;
+	List<Region> regions;
+	SequenceGenerator seqgen;
+	
+	public TestSeqFunctions(Genome gen, List<Region> regs){
+		genome = gen;
 		regions = regs;
-		
+		seqgen = new SequenceGenerator(gen);
 	}
 	
 	public void execute(){
+		SeqFunction fn;
 		
+		try {
+			for(Region r : regions){
+				String seq = seqgen.execute(r);
+				
+				System.out.println("Region:\t"+r.getLocationString()+"\t"+seq);
+				fn = new BaseFrequencyFunction();
+				printFunction(fn.score(seq), fn.dimensionLabels());
+			
+			}
+		} catch (SeqFunctionException e) {
+			e.printStackTrace();
+		}
 	}
 	
+	public void printFunction(double[][] score, String[] labels){
+		for(int x=0; x<score.length; x++){
+			System.out.print(labels[x]);
+			for(int y=0; y<score[x].length; y++){
+				System.out.print("\t"+score[y]);
+			}
+			System.out.println("");
+		}
+	}
 	
 	public static void main(String[] args) {
 		try {
+			GenomeConfig gcon = new GenomeConfig(args);
         	String infile = Args.parseString(args, "reg", "");
-            Pair<Species,Genome> pair = Args.parseGenome(args);
-            Genome genome = pair.cdr();
+            Genome genome = gcon.getGenome();
             List<Region> regs = new ArrayList<Region>();
             
             Region r=null;
@@ -59,7 +86,7 @@ public class TestSeqFunctions {
             if(r!=null)
             	regs.add(r);
 
-            TestSeqFunctions tester = new TestSeqFunctions(regs);
+            TestSeqFunctions tester = new TestSeqFunctions(genome, regs);
             tester.execute();
             
         } catch (Exception e) {
