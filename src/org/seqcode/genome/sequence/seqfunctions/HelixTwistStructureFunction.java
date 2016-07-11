@@ -18,7 +18,7 @@ public class HelixTwistStructureFunction implements SeqFunction{
 
 	//Variables
 	final int scoreDimension = 1;
-	int scoringOffset = 2;
+	int scoringOffset = 1;
 	int scoreWindowSize = 5;
 	boolean isBetweenNucs = true;
 	final String[] labels = {"HelT"};
@@ -42,7 +42,7 @@ public class HelixTwistStructureFunction implements SeqFunction{
 		for(int i=0; i<seqU.length(); i++)
 			scores[0][i]=0;
 		Double lastBscore =0.0;
-		for(int i=0; i<seqU.length()-scoreWindowSize; i++){
+		for(int i=0; i<seqU.length()-scoreWindowSize+1; i++){
 			String kmer = seqU.substring(i, i+scoreWindowSize);
 			
 			if(i==0){

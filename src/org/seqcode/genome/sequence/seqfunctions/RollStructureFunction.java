@@ -18,7 +18,7 @@ public class RollStructureFunction implements SeqFunction{
 
 	//Variables
 	final int scoreDimension = 1;
-	int scoringOffset = 2;
+	int scoringOffset = 1;
 	int scoreWindowSize = 5;
 	boolean isBetweenNucs = true;
 	final String[] labels = {"Roll"};
@@ -41,15 +41,15 @@ public class RollStructureFunction implements SeqFunction{
 		for(int i=0; i<seqU.length(); i++)
 			scores[0][i]=0;
 		Double lastBscore =0.0;
-		for(int i=0; i<seqU.length()-scoreWindowSize; i++){
+		for(int i=0; i<seqU.length()-scoreWindowSize+1; i++){
 			String kmer = seqU.substring(i, i+scoreWindowSize);
 			
 			if(i==0){
-				scores[0][i+scoringOffset-1]=structureA.get(kmer);
+				scores[0][i+scoringOffset]=structureA.get(kmer);
 			}else{
 				scores[0][i+scoringOffset]=(structureA.get(kmer)+lastBscore)/2;
 			}
-			scores[0][i+scoringOffset]=structureB.get(kmer);
+			scores[0][i+scoringOffset+1]=structureB.get(kmer);
 			lastBscore = structureB.get(kmer);
 		}
 		

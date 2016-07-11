@@ -12,6 +12,7 @@ import org.seqcode.genome.location.NamedStrandedRegion;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.StrandedRegion;
 import org.seqcode.genome.sequence.SequenceGenerator;
+import org.seqcode.genome.sequence.SequenceUtils;
 import org.seqcode.gseutils.Args;
 
 public class TestSeqFunctions {
@@ -32,7 +33,10 @@ public class TestSeqFunctions {
 		try {
 			for(Region r : regions){
 				String seq = seqgen.execute(r);
-				
+		        //Handle minus strand regions
+		        if(r instanceof StrandedRegion && r.getStrand()=='-')
+		        	seq = SequenceUtils.reverseComplement(seq);
+		        
 				System.out.println("Region:\t"+r.getLocationString()+"\t"+seq);
 				
 				//BaseFrequency
@@ -86,7 +90,6 @@ public class TestSeqFunctions {
             Genome genome = gcon.getGenome();
             List<Region> regs = new ArrayList<Region>();
             
-            Region r=null;
             String line;
             BufferedReader reader;
             if (!infile.equals("")) {
@@ -95,7 +98,8 @@ public class TestSeqFunctions {
             	reader = new BufferedReader(new InputStreamReader(System.in));
             }
             while ((line = reader.readLine()) != null) {
-                line = line.trim();
+            	line = line.trim();
+            	Region r=null;
                 r = StrandedRegion.fromString(genome, line);
                 if (r != null) {
                     String pieces[] = line.split("\\t");
@@ -105,10 +109,10 @@ public class TestSeqFunctions {
                 } else {
                     r = Region.fromString(genome,line);                       
                 }
+                if(r!=null)
+                	regs.add(r);
             }
 
-            if(r!=null)
-            	regs.add(r);
 
             TestSeqFunctions tester = new TestSeqFunctions(genome, regs);
             tester.execute();

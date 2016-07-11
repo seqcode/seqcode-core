@@ -20,6 +20,11 @@ public class ScoredStrandedRegion extends ScoredRegion implements Stranded {
         this.strand = strand;
     }
     
+    public ScoredStrandedRegion(Region r, double score, char strand) {
+        super(r.getGenome(), r.getChrom(),r.getStart(), r.getEnd(),score);
+        this.strand = strand;
+    }
+    
     public ScoredStrandedRegion(Genome g, DataInputStream dis) throws IOException { 
         super(g,dis);
         strand = dis.readChar();
