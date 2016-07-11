@@ -37,8 +37,9 @@ public class MGWStructureFunction implements SeqFunction{
 		
 		double [][] scores = new double[scoreDimension][seq.length()]; 
 		String seqU = seq.toUpperCase();
-		for(int i=0; i<seqU.length()-scoreWindowSize+1; i++){
+		for(int i=0; i<seqU.length(); i++)
 			scores[0][i]=0;
+		for(int i=0; i<seqU.length()-scoreWindowSize+1; i++){
 			String kmer = seqU.substring(i, i+scoreWindowSize);
 			
 			scores[0][i+scoringOffset]=structure.get(kmer);

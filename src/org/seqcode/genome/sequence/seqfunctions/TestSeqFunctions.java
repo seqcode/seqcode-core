@@ -8,13 +8,11 @@ import java.util.List;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
-import org.seqcode.genome.Species;
 import org.seqcode.genome.location.NamedStrandedRegion;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.location.StrandedRegion;
 import org.seqcode.genome.sequence.SequenceGenerator;
 import org.seqcode.gseutils.Args;
-import org.seqcode.gseutils.Pair;
 
 public class TestSeqFunctions {
 	
@@ -36,7 +34,33 @@ public class TestSeqFunctions {
 				String seq = seqgen.execute(r);
 				
 				System.out.println("Region:\t"+r.getLocationString()+"\t"+seq);
+				
+				//BaseFrequency
 				fn = new BaseFrequencyFunction();
+				printFunction(fn.score(seq), fn.dimensionLabels());
+				
+				//GC
+				fn = new GCContentFunction(3);
+				printFunction(fn.score(seq), fn.dimensionLabels());
+				
+				//polyA
+				fn = new PolyAFunction(3);
+				printFunction(fn.score(seq), fn.dimensionLabels());
+				
+				//MGW
+				fn = new MGWStructureFunction();
+				printFunction(fn.score(seq), fn.dimensionLabels());
+				
+				//PropTwist
+				fn = new PropTwistStructureFunction();
+				printFunction(fn.score(seq), fn.dimensionLabels());
+			
+				//Roll
+				fn = new RollStructureFunction();
+				printFunction(fn.score(seq), fn.dimensionLabels());
+				
+				//HelixTwist
+				fn = new HelixTwistStructureFunction();
 				printFunction(fn.score(seq), fn.dimensionLabels());
 			
 			}
@@ -49,7 +73,7 @@ public class TestSeqFunctions {
 		for(int x=0; x<score.length; x++){
 			System.out.print(labels[x]);
 			for(int y=0; y<score[x].length; y++){
-				System.out.print("\t"+score[y]);
+				System.out.print("\t"+score[x][y]);
 			}
 			System.out.println("");
 		}

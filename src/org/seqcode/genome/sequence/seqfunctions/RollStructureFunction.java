@@ -38,18 +38,18 @@ public class RollStructureFunction implements SeqFunction{
 		
 		double [][] scores = new double[scoreDimension][seq.length()]; 
 		String seqU = seq.toUpperCase();
-
+		for(int i=0; i<seqU.length(); i++)
+			scores[0][i]=0;
 		Double lastBscore =0.0;
 		for(int i=0; i<seqU.length()-scoreWindowSize; i++){
-			scores[0][i]=0;
 			String kmer = seqU.substring(i, i+scoreWindowSize);
 			
 			if(i==0){
-				scores[0][i+scoringOffset]=structureA.get(kmer);
+				scores[0][i+scoringOffset-1]=structureA.get(kmer);
 			}else{
 				scores[0][i+scoringOffset]=(structureA.get(kmer)+lastBscore)/2;
 			}
-			scores[0][i+scoringOffset+1]=structureB.get(kmer);
+			scores[0][i+scoringOffset]=structureB.get(kmer);
 			lastBscore = structureB.get(kmer);
 		}
 		

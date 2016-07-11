@@ -12,8 +12,8 @@ public class PolyAFunction implements SeqFunction{
 	int scoringOffset = 0;
 	int scoreWindowSize = 5;
 	boolean isBetweenNucs = false;
-	final String[] labels = {"GC"};
-	final String description = "GC Content";
+	final String[] labels = {"PolyA"};
+	final String description = "PolyA";
 	
 	public PolyAFunction(int W){
 		scoreWindowSize = W;
