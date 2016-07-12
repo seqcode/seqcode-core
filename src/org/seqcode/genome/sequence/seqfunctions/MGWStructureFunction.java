@@ -72,6 +72,9 @@ public class MGWStructureFunction implements SeqFunction{
 		return description;
 	}
 
+
+	public double getMaxScore(){return 6.2;}
+	public double getMinScore(){return 2.85;}
 	
 	private void loadStructureValues(){
 		structure.put("AAAAA",  3.38);

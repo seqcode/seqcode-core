@@ -1,0 +1,147 @@
+package org.seqcode.genome.sequence.seqfunctions;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.seqcode.genome.location.Point;
+import org.seqcode.genome.location.Region;
+import org.seqcode.genome.location.ScoredPoint;
+import org.seqcode.genome.location.ScoredStrandedPoint;
+import org.seqcode.genome.sequence.ScoredSequence;
+import org.seqcode.genome.sequence.SequenceGenerator;
+import org.seqcode.genome.sequence.SequenceUtils;
+
+/**
+ * Create a composite scoring function of a particular type of SeqFunction
+ * 
+ * @author mahony
+ *
+ * @param <F> SeqFunction
+ */
+public class CompositeSeqFunction<F extends SeqFunction> {
+
+	F function;
+	int width;
+	double [][] scores;
+	double [][] variances;
+	List<ScoredSequence> scoredSeqs;
+	
+	public CompositeSeqFunction(F fn, int width){
+		function = fn;
+		this.width = width;
+		scores = new double[function.scoreDimension()][width];
+		variances = new double[function.scoreDimension()][width];
+		for(int i=0; i<function.scoreDimension(); i++)
+			for(int j=0; j<width; j++){
+				scores[i][j]=0;
+				variances[i][j]=0;
+			}
+		this.scoredSeqs = new ArrayList<ScoredSequence>();
+	}
+	
+	//Accessors
+	public int getWidth(){return width;}
+	public double[][] getScores(){return scores;}
+	public double[][] getVariances(){return variances;}
+	public F getFunction(){return function;}
+	
+	/**
+	 * Add sequences (possibly weighted) to the composite list
+	 * @param points
+	 */
+	public void addSequencesFromPoints(List<Point> points, SequenceGenerator seqgen){
+		for(Point p : points){
+			double weight = 1;
+			char strand = '+';
+			if(p instanceof ScoredStrandedPoint){
+				strand = p.getStrand();
+				weight = ((ScoredPoint)p).getScore();
+			}
+			
+			Region r = new Region(p.getGenome(), p.getChrom(), p.getLocation()-(width/2)+1, p.getLocation()+(width/2));
+			String seq = seqgen.execute(r);
+			//Handle minus strand regions
+	        if(strand=='-')
+	        	seq = SequenceUtils.reverseComplement(seq);
+	        
+	        //Ignore regions that are too short (presumably because they are at the edge of the chromosome)
+	        if(seq.length()==width){
+	        	scoredSeqs.add(new ScoredSequence(seq, weight));
+	        }
+		}
+	}
+	
+	/**
+	 * Add equally weighted sequences to the composite list
+	 * @param seqs
+	 */
+	public void addSequences(List<String> seqs){
+		for(String s : seqs){
+			if(s.length()==width){
+				scoredSeqs.add(new ScoredSequence(s, 1.0));
+			}
+		}
+	}
+	
+	/**
+	 * Add weighted sequences to the composite list
+	 * @param seqs
+	 */
+	public void addScoredSequences(List<ScoredSequence> sseqs){
+		scoredSeqs.addAll(sseqs);
+	}
+	
+	/**
+	 * Populate the composite profile with regions of a fixed width around points
+	 * @param points
+	 */
+	public void populate(){
+		try{
+			double normTotal=0;
+
+			//Weighted mean
+			for(ScoredSequence s : scoredSeqs){
+				if(s.getSeq().length()==width){
+		        	normTotal+=s.getScore();
+		        	
+		        	double[][] tmpScores = function.score(s.getSeq());
+					for(int i=0; i<function.scoreDimension(); i++)
+		    			for(int j=0; j<width; j++)
+		    				scores[i][j]+=(tmpScores[i][j]*s.getScore());
+				}
+			}
+			for(int i=0; i<function.scoreDimension(); i++)
+				for(int j=0; j<width; j++)
+					scores[i][j] = scores[i][j]/normTotal;
+			
+			//Weighted variance
+			for(ScoredSequence s : scoredSeqs){
+				if(s.getSeq().length()==width){
+		        	double[][] tmpScores = function.score(s.getSeq());
+					for(int i=0; i<function.scoreDimension(); i++)
+		    			for(int j=0; j<width; j++)
+		    				variances[i][j]+=s.getScore()*(tmpScores[i][j]-scores[i][j])*(tmpScores[i][j]-scores[i][j]);
+				}
+			}
+			for(int i=0; i<function.scoreDimension(); i++)
+				for(int j=0; j<width; j++)
+					variances[i][j] = variances[i][j]/normTotal;
+			
+			
+		} catch (SeqFunctionException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void printFunction(){
+		String[] labels = function.dimensionLabels();
+		for(int i=0; i<function.scoreDimension(); i++){
+			System.out.print(labels[i]);
+			for(int j=0; j<width; j++)
+				System.out.print("\t"+scores[i][j]);
+			System.out.println("");
+		}
+	}
+
+}

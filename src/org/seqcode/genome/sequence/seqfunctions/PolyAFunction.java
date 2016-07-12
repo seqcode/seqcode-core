@@ -52,7 +52,7 @@ public class PolyAFunction implements SeqFunction{
 				T+=polyT[i+w];
 			}
 			if(A==scoreWindowSize || T==scoreWindowSize)
-				scores[0][i]=1;
+				scores[0][i+scoringOffset]=1;
 		}
 		
 		return scores;
@@ -82,4 +82,6 @@ public class PolyAFunction implements SeqFunction{
 		return description;
 	}
 
+	public double getMaxScore(){return 1.0;}
+	public double getMinScore(){return 0.0;}
 }

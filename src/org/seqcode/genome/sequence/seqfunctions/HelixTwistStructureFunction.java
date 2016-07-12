@@ -81,6 +81,8 @@ public class HelixTwistStructureFunction implements SeqFunction{
 		return description;
 	}
 
+	public double getMaxScore(){return 38.05;}
+	public double getMinScore(){return 30.94;}
 	
 	private void loadStructureValues(){
 		structureA.put("AAAAA",  37.74);

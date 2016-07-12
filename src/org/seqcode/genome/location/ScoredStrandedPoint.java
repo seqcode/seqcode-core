@@ -11,6 +11,11 @@ public class ScoredStrandedPoint extends ScoredPoint implements Stranded {
     	strand = str;
     }
     
+    public ScoredStrandedPoint (Point p, double s, char str) {
+    	super(p.getGenome(), p.getChrom(), p.getLocation(), s);
+    	strand = str;
+    }
+    
     public char getStrand() { return strand; }
     
     public ScoredStrandedPoint clone() {

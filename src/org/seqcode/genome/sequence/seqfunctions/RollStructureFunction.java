@@ -80,7 +80,9 @@ public class RollStructureFunction implements SeqFunction{
 		return description;
 	}
 
-	
+
+	public double getMaxScore(){return 8.64;}
+	public double getMinScore(){return -8.57;}
 	private void loadStructureValues(){
 		structureA.put("AAAAA",  -5.05);
 		structureA.put("AAAAT",  -3.56);

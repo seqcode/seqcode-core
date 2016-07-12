@@ -88,5 +88,7 @@ public class GCContentFunction implements SeqFunction{
 	public String scoreDescription() {
 		return description;
 	}
-
+	
+	public double getMaxScore(){return 1.0;}
+	public double getMinScore(){return 0.0;}
 }

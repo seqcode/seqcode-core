@@ -67,4 +67,6 @@ public class BaseFrequencyFunction implements SeqFunction{
 		return description;
 	}
 
+	public double getMaxScore(){return 1.0;}
+	public double getMinScore(){return 0.0;}
 }

@@ -22,6 +22,10 @@ public interface SeqFunction {
 	//the score is defined between nucleotide positions (i.e. first score defined at offset+0.5bp)
 	public boolean isBetweenNucleotides();
 	
+	//Score max & min
+	public double getMaxScore();
+	public double getMinScore();
+	
 	//Labels on each dimension
 	public String[] dimensionLabels();
 	//Description of the score

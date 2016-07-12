@@ -72,6 +72,9 @@ public class PropTwistStructureFunction implements SeqFunction{
 		return description;
 	}
 
+
+	public double getMaxScore(){return -0.03;}
+	public double getMinScore(){return -16.51;}
 	
 	private void loadStructureValues(){
 		structure.put("AAAAA",  -16.51);
