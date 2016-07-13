@@ -36,8 +36,13 @@ public class CompositeSeqFunctionComparison<F extends SeqFunction> {
 				}
 			}
 		}
-		
 	}
+	
+	//Accessors
+	public SeqFunction getFunction(){return function;}
+	public double[][] getPValues(){return pvalues;}
+	public double[][] getDiffs(){return diffs;}
+	public int getWidth(){return scoreWidth;}
 	
 	/**
 	 * Calculate differences & p-values. 
