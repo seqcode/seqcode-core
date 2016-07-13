@@ -22,18 +22,18 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 
 	F function;
 	int width;
-	double [][] scores;
+	double [][] means;
 	double [][] variances;
 	List<ScoredSequence> scoredSeqs;
 	
 	public CompositeSeqFunction(F fn, int width){
 		function = fn;
 		this.width = width;
-		scores = new double[function.scoreDimension()][width];
+		means = new double[function.scoreDimension()][width];
 		variances = new double[function.scoreDimension()][width];
 		for(int i=0; i<function.scoreDimension(); i++)
 			for(int j=0; j<width; j++){
-				scores[i][j]=0;
+				means[i][j]=0;
 				variances[i][j]=0;
 			}
 		this.scoredSeqs = new ArrayList<ScoredSequence>();
@@ -41,8 +41,9 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 	
 	//Accessors
 	public int getWidth(){return width;}
-	public double[][] getScores(){return scores;}
+	public double[][] getMeans(){return means;}
 	public double[][] getVariances(){return variances;}
+	public int getNumSeqs(){return scoredSeqs.size();}
 	public F getFunction(){return function;}
 	
 	/**
@@ -107,12 +108,12 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 		        	double[][] tmpScores = function.score(s.getSeq());
 					for(int i=0; i<function.scoreDimension(); i++)
 		    			for(int j=0; j<width; j++)
-		    				scores[i][j]+=(tmpScores[i][j]*s.getScore());
+		    				means[i][j]+=(tmpScores[i][j]*s.getScore());
 				}
 			}
 			for(int i=0; i<function.scoreDimension(); i++)
 				for(int j=0; j<width; j++)
-					scores[i][j] = scores[i][j]/normTotal;
+					means[i][j] = means[i][j]/normTotal;
 			
 			//Weighted variance
 			for(ScoredSequence s : scoredSeqs){
@@ -120,7 +121,7 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 		        	double[][] tmpScores = function.score(s.getSeq());
 					for(int i=0; i<function.scoreDimension(); i++)
 		    			for(int j=0; j<width; j++)
-		    				variances[i][j]+=s.getScore()*(tmpScores[i][j]-scores[i][j])*(tmpScores[i][j]-scores[i][j]);
+		    				variances[i][j]+=s.getScore()*(tmpScores[i][j]-means[i][j])*(tmpScores[i][j]-means[i][j]);
 				}
 			}
 			for(int i=0; i<function.scoreDimension(); i++)
@@ -134,12 +135,22 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 	}
 	
 	
-	public void printFunction(){
+	public void printFunctionMeans(){
 		String[] labels = function.dimensionLabels();
 		for(int i=0; i<function.scoreDimension(); i++){
 			System.out.print(labels[i]);
 			for(int j=0; j<width; j++)
-				System.out.print("\t"+scores[i][j]);
+				System.out.print("\t"+means[i][j]);
+			System.out.println("");
+		}
+	}
+	
+	public void printFunctionVariances(){
+		String[] labels = function.dimensionLabels();
+		for(int i=0; i<function.scoreDimension(); i++){
+			System.out.print(labels[i]);
+			for(int j=0; j<width; j++)
+				System.out.print("\t"+variances[i][j]);
 			System.out.println("");
 		}
 	}

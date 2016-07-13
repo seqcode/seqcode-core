@@ -3,7 +3,7 @@ package org.seqcode.genome.sequence.seqfunctions;
 /**
  * Class of functions that score a sequence according to some metric.
  *  
- * Assumes that the function provides per-base (or between base) quantitative scores, albeit allowing for some offset. 
+ * Assumes that the function provides per-base (or between base) quantitative means, albeit allowing for some offset. 
  *  
  * @author mahony
  *
