@@ -24,6 +24,8 @@ public class PolyAFunction implements SeqFunction{
 			scoringOffset = scoreWindowSize/2;
 			isBetweenNucs=false;
 		}
+		String l = String.format("%s (%dbp)", "PolyA", scoreWindowSize);
+		labels[0]=l;
 	}
 	
 	public double[][] score(String seq) throws SeqFunctionException {

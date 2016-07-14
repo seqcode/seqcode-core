@@ -25,8 +25,9 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 	double [][] means;
 	double [][] variances;
 	List<ScoredSequence> scoredSeqs;
+	int zeroOffset=0;
 	
-	public CompositeSeqFunction(F fn, int width){
+	public CompositeSeqFunction(F fn, int width, int zeroOffset){
 		function = fn;
 		this.width = width;
 		means = new double[function.scoreDimension()][width];
@@ -37,6 +38,7 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 				variances[i][j]=0;
 			}
 		this.scoredSeqs = new ArrayList<ScoredSequence>();
+		this.zeroOffset = zeroOffset;
 	}
 	
 	//Accessors
@@ -45,6 +47,7 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 	public double[][] getVariances(){return variances;}
 	public int getNumSeqs(){return scoredSeqs.size();}
 	public F getFunction(){return function;}
+	public int getZeroOffset(){return zeroOffset;}
 	
 	/**
 	 * Add sequences (possibly weighted) to the composite list

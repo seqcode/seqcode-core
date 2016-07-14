@@ -13,7 +13,7 @@ public class CompositeSeqFunctionComparison<F extends SeqFunction> {
 	CompositeSeqFunction<F> signal;
 	CompositeSeqFunction<F> background;
 	SeqFunction function;
-	int scoreWidth;
+	int scoreWidth, zeroOffset;
 	double [][] pvalues;
 	double [][] diffs;
 	
@@ -27,6 +27,7 @@ public class CompositeSeqFunctionComparison<F extends SeqFunction> {
 			System.exit(1);
 		}else{
 			scoreWidth=signal.getWidth();
+			zeroOffset = signal.getZeroOffset();
 			pvalues = new double[function.scoreDimension()][scoreWidth];
 			diffs = new double[function.scoreDimension()][scoreWidth];
 			for(int i=0; i<function.scoreDimension(); i++){
@@ -43,6 +44,7 @@ public class CompositeSeqFunctionComparison<F extends SeqFunction> {
 	public double[][] getPValues(){return pvalues;}
 	public double[][] getDiffs(){return diffs;}
 	public int getWidth(){return scoreWidth;}
+	public int getZeroOffset(){return zeroOffset;}
 	
 	/**
 	 * Calculate differences & p-values. 
