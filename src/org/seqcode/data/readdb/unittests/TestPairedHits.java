@@ -1,8 +1,17 @@
-package org.seqcode.data.readdb;
+package org.seqcode.data.readdb.unittests;
 
 import java.util.*;
 import java.io.*;
 import org.junit.*;
+import org.seqcode.data.readdb.FloatBP;
+import org.seqcode.data.readdb.Header;
+import org.seqcode.data.readdb.Hits;
+import org.seqcode.data.readdb.IntBP;
+import org.seqcode.data.readdb.PairedHit;
+import org.seqcode.data.readdb.PairedHitLeftComparator;
+import org.seqcode.data.readdb.PairedHitRightComparator;
+import org.seqcode.data.readdb.PairedHits;
+
 import static org.junit.Assert.*;
 
 public class TestPairedHits {
@@ -34,7 +43,7 @@ public class TestPairedHits {
         PairedHits.writePairedHits(hits, prefix, chrom, isLeft);
         
         hitsfile = new PairedHits(prefix,chrom,isLeft);
-        header = new Header(hitsfile.getPositionsBuffer().ib);
+        header = new Header(hitsfile.getPositionsBuffer().getib());
         header.writeIndexFile(prefix + chrom + ".index");        
         header = Header.readIndexFile(prefix + chrom + ".index");
     }

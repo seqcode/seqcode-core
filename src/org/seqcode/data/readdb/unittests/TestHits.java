@@ -1,9 +1,14 @@
-package org.seqcode.data.readdb;
+package org.seqcode.data.readdb.unittests;
 
 import java.util.*;
 import java.io.*;
-import java.nio.*;
 import org.junit.*;
+import org.seqcode.data.readdb.FloatBP;
+import org.seqcode.data.readdb.Header;
+import org.seqcode.data.readdb.Hits;
+import org.seqcode.data.readdb.IntBP;
+import org.seqcode.data.readdb.SingleHits;
+
 import static org.junit.Assert.*;
 
 
@@ -39,7 +44,7 @@ public class TestHits {
         }
         SingleHits.writeSingleHits(hits, weights, las, prefix, chrom, false);
         hitsfile = new SingleHits(prefix, chrom, false);
-        header = new Header(hitsfile.getPositionsBuffer().ib);
+        header = new Header(hitsfile.getPositionsBuffer().getib());
         header.writeIndexFile(prefix + chrom + ".index");
 
         header = Header.readIndexFile(prefix + chrom + ".index");

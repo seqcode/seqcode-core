@@ -4,8 +4,8 @@ import java.awt.*;
 import java.util.*;
 
 import org.seqcode.data.seqdata.SeqHit;
-import org.seqcode.data.seqdata.WeightedRunningOverlapSum;
 import org.seqcode.genome.location.Region;
+import org.seqcode.gsebricks.verbs.WeightedRunningOverlapSum;
 import org.seqcode.projects.seqview.model.SeqDataModel;
 import org.seqcode.viz.DynamicAttribute;
 

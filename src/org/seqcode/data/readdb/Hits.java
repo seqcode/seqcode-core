@@ -150,7 +150,7 @@ public abstract class Hits implements Closeable {
         assert(firstindex <= lastindex);
         assert(firstindex >= 0);
         assert(lastindex >= firstindex);
-        assert(lastindex <= positions.ib.limit());
+        assert(lastindex <= positions.getib().limit());
         int indices[] = new int[2]; // will be the output
         while (firstindex < positions.limit() && positions.get(firstindex) < startpos) {
             firstindex++;
@@ -162,8 +162,8 @@ public abstract class Hits implements Closeable {
         indices[1] = lastindex;
         assert(firstindex >= 0);
         assert(lastindex >= 0);
-        assert(firstindex < positions.ib.limit());
-        assert(lastindex <= positions.ib.limit());
+        assert(firstindex < positions.getib().limit());
+        assert(lastindex <= positions.getib().limit());
         return indices;
 
     }
@@ -178,36 +178,36 @@ public abstract class Hits implements Closeable {
            upper bound that we found
         */
         int step = 256;
-        int limit = positions.ib.limit();
+        int limit = positions.getib().limit();
         if (lastindex < limit) {
             limit = lastindex;
         }
         while (firstindex + step < limit &&
-               positions.ib.get(firstindex + step) < startpos) {
+               positions.getib().get(firstindex + step) < startpos) {
             firstindex += step;
             step *= 2;
         }
         while (firstindex < limit && 
-               positions.ib.get(firstindex) < startpos) {
+               positions.getib().get(firstindex) < startpos) {
             step = (step >> 2) | 1;
             if (step == 1 ||
                 (firstindex + step < limit &&
-                 positions.ib.get(firstindex + step - 1) < startpos)) {
+                 positions.getib().get(firstindex + step - 1) < startpos)) {
                 firstindex += step;
             }
         }
 
         step = 256;
         while (lastindex - step > firstindex &&
-               positions.ib.get(lastindex - step) > lastpos) {
+               positions.getib().get(lastindex - step) > lastpos) {
             lastindex -= step;
             step *= 2;
         }
         while (lastindex > firstindex && 
-               positions.ib.get(lastindex - 1) > lastpos) {
+               positions.getib().get(lastindex - 1) > lastpos) {
             step = (step >> 2) | 1;
             if ((step == 1 || lastindex - step > firstindex) &&
-                positions.ib.get(lastindex - step) > lastpos) {
+                positions.getib().get(lastindex - step) > lastpos) {
                 lastindex -= step;
             }
         }
@@ -218,10 +218,10 @@ public abstract class Hits implements Closeable {
         assert(indices[0] <= indices[1]);
         assert(indices[0] >= 0);
         assert(indices[1] <= positions.size());
-        assert(indices[0] >= indices[1] || positions.ib.get(indices[0]) >= startpos);
-        assert(indices[0] == 0 || indices[0] >= indices[1] || positions.ib.get(indices[0] - 1) < startpos);
-        assert(indices[1] == positions.ib.limit() || positions.ib.get(indices[1]) > lastpos);
-        assert(indices[0] >= indices[1] || positions.ib.get(indices[1] - 1) <= lastpos);
+        assert(indices[0] >= indices[1] || positions.getib().get(indices[0]) >= startpos);
+        assert(indices[0] == 0 || indices[0] >= indices[1] || positions.getib().get(indices[0] - 1) < startpos);
+        assert(indices[1] == positions.getib().limit() || positions.getib().get(indices[1]) > lastpos);
+        assert(indices[0] >= indices[1] || positions.getib().get(indices[1] - 1) <= lastpos);
         return indices;
     }
     /**
@@ -236,7 +236,7 @@ public abstract class Hits implements Closeable {
                                 Boolean isPlus) throws IOException {       
         assert(firstindex >= 0);
         assert(lastindex >= firstindex);
-        assert(lastindex <= positions.ib.limit());
+        assert(lastindex <= positions.getib().limit());
         int[] p = getIndices(firstindex, lastindex, start,stop);
         if (minweight == null && isPlus == null) {
             return p[1] - p[0];
@@ -256,7 +256,7 @@ public abstract class Hits implements Closeable {
                                     Boolean isPlus) throws IOException {       
         assert(firstindex >= 0);
         assert(lastindex >= firstindex);
-        assert(lastindex <= positions.ib.limit());
+        assert(lastindex <= positions.getib().limit());
         int[] p = getIndices(firstindex, lastindex, start,stop);
         double sum = 0;
         for (int i = p[0]; i < p[1]; i++) {
@@ -275,7 +275,7 @@ public abstract class Hits implements Closeable {
                                 Boolean isPlus) throws IOException {
         assert(firstindex >= 0);
         assert(lastindex >= firstindex);
-        assert(lastindex <= positions.ib.limit());
+        assert(lastindex <= positions.getib().limit());
         int[] p = getIndices(firstindex, lastindex, start,stop);
         if (p[0] >= p[1]) {
             return emptyIntBP;
@@ -304,7 +304,7 @@ public abstract class Hits implements Closeable {
         for (int i = p[0]; i < p[1]; i++) {
             if ((minweight == null || weights.get(i) >= minweight) &&
                 (isPlus == null || getStrandOne(lenAndStrand.get(i)) == isPlus)) {
-                output.ib.put(n, buffer.get(i));
+                output.getib().put(n, buffer.get(i));
                 n++;
             }
         }
@@ -340,7 +340,7 @@ public abstract class Hits implements Closeable {
                                      Boolean isPlus) throws IOException {
         assert(firstindex >= 0);
         assert(lastindex >= firstindex);
-        assert(lastindex <= positions.ib.limit());
+        assert(lastindex <= positions.getib().limit());
         int[] p = getIndices(firstindex, lastindex, start,stop);
         if (p[0] >= p[1]) {
             return emptyFloatBP;
@@ -537,13 +537,13 @@ public abstract class Hits implements Closeable {
         return output;
     }    
     public void close() throws IOException {        
-        positions.ib = null;
+        positions.setib(null);
         positions.bb = null;
         positions = null;
         weights.fb = null;
         weights.bb = null;
         weights = null;
-        lenAndStrand.ib = null;
+        lenAndStrand.setib(null);
         lenAndStrand.bb = null;
         lenAndStrand = null;
     }

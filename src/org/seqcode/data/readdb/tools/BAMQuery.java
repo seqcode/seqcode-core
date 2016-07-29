@@ -1,8 +1,7 @@
-package org.seqcode.data.readdb;
+package org.seqcode.data.readdb.tools;
 
 import org.apache.commons.cli.*;
 
-import java.util.*;
 import java.io.*;
 import java.net.*;
 import org.apache.http.HttpEntity;

@@ -28,7 +28,7 @@ import org.apache.tomcat.jdbc.pool.PoolProperties;
  * @author Shaun Mahony
  * @version 1.0
  */
-public abstract class DatabaseConnectionManager {
+public class DatabaseConnectionManager {
 
 	static Pattern oraclePattern = Pattern.compile(".*oracle.*",Pattern.CASE_INSENSITIVE);
     static Pattern mysqlPattern = Pattern.compile(".*mysql.*",Pattern.CASE_INSENSITIVE);
@@ -263,7 +263,8 @@ public abstract class DatabaseConnectionManager {
      * Clean up DataSources
      */
     public static void close(){
-    	for(String s : sources.keySet())
+    	for(String s : sources.keySet()){
     		sources.get(s).close();
+    	}
     }
 }

@@ -7,7 +7,6 @@ package org.seqcode.gsebricks.verbs.location;
 import java.util.*;
 
 import org.seqcode.data.core.*;
-import org.seqcode.data.seqdata.RunningOverlapSum;
 import org.seqcode.genome.location.Point;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.iterators.EmptyIterator;

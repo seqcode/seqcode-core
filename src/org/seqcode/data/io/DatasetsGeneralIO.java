@@ -3,10 +3,7 @@
  */
 package org.seqcode.data.io;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.StreamTokenizer;
 import java.util.Vector;
 
 import org.seqcode.genome.Genome;
@@ -15,6 +12,8 @@ import org.seqcode.genome.location.Region;
 
 
 /**
+ * Read Regions and Points from flat files. Probably redundant with RegionFileUtilities
+ * 
  * @author rca
  *
  */

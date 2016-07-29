@@ -7,7 +7,7 @@ import java.sql.*;
 
 import org.seqcode.data.connections.DatabaseConnectionManager;
 import org.seqcode.data.connections.DatabaseException;
-import org.seqcode.data.connections.Sequence;
+import org.seqcode.data.connections.DatabaseSequence;
 import org.seqcode.data.connections.UnknownRoleException;
 import org.seqcode.genome.location.ChromosomeInfo;
 import org.seqcode.gseutils.*;
@@ -523,7 +523,7 @@ public class Genome{
         try {
             cxn = DatabaseConnectionManager.getConnection("core");
             stmt = cxn.createStatement();
-            String nextIdString = Sequence.getInsertSQL(cxn, "genome_id");
+            String nextIdString = DatabaseSequence.getInsertSQL(cxn, "genome_id");
             String insertSQL = String.format("insert into genome(id, species, version) values (%s, %d, '%s')", nextIdString,
             		species.getDBID(), version);
             stmt.executeUpdate(insertSQL);

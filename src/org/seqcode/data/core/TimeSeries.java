@@ -7,7 +7,7 @@ package org.seqcode.data.core;
 
 import java.sql.*;
 
-import org.seqcode.data.connections.Sequence;
+import org.seqcode.data.connections.DatabaseSequence;
 
 /*
 create sequence timeseries_id; 
@@ -54,7 +54,7 @@ public class TimeSeries {
     }    
     
     public static PreparedStatement prepareInsert(java.sql.Connection cxn) throws SQLException {
-        String nextID = Sequence.getInsertSQL(cxn, "timeseries_id");
+        String nextID = DatabaseSequence.getInsertSQL(cxn, "timeseries_id");
         String query = "insert into timeseries (id, name) values (" + nextID + ", ?)";
         return cxn.prepareStatement(query);
     }

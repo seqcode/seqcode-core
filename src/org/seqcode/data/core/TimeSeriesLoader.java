@@ -10,7 +10,7 @@ import java.util.*;
 
 import org.seqcode.data.connections.DatabaseConnectionManager;
 import org.seqcode.data.connections.DatabaseException;
-import org.seqcode.data.connections.Sequence;
+import org.seqcode.data.connections.DatabaseSequence;
 import org.seqcode.data.connections.UnknownRoleException;
 import org.seqcode.gseutils.Closeable;
 
@@ -99,7 +99,7 @@ public class TimeSeriesLoader implements Closeable {
     private int getLastID(String tableName) throws SQLException { 
         int id = -1;
         Statement s = cxn.createStatement();
-        ResultSet rs = s.executeQuery(Sequence.getLastSQLStatement(cxn, tableName));
+        ResultSet rs = s.executeQuery(DatabaseSequence.getLastSQLStatement(cxn, tableName));
         if(rs.next()) { 
             id = rs.getInt(1);
         } else { 

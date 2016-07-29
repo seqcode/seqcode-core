@@ -7,14 +7,14 @@ import java.nio.*;
  * derived from the ByteBuffer bb
  */
 public class IntBP extends ByteBP {
-    protected IntBuffer ib;
+    private IntBuffer ib;
     public IntBP(ByteBuffer b) {
         super(b);
-        ib = b.asIntBuffer();
+        setib(b.asIntBuffer());
     }
     public IntBP(int size) {
         super(ByteBuffer.allocate(size*4));
-        ib = bb.asIntBuffer();
+        setib(bb.asIntBuffer());
     }
     public IntBP slice(int start, int length) {
         ByteBuffer b;
@@ -26,15 +26,21 @@ public class IntBP extends ByteBP {
         return new IntBP(b);
     }
     public int get(int i) {
-        return ib.get(i);
+        return getib().get(i);
     }
     public void put(int index, int val) {
-        ib.put(index,val);
+        getib().put(index,val);
     }
     public int limit() {
-        return ib.limit();
+        return getib().limit();
     }
     public int size() {
-        return ib.limit();
+        return getib().limit();
     }
+	public IntBuffer getib() {
+		return ib;
+	}
+	public void setib(IntBuffer ib) {
+		this.ib = ib;
+	}
 }
