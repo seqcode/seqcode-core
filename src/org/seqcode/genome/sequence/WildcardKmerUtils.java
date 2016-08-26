@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.seqcode.gseutils.Args;
+
 public class WildcardKmerUtils {
 	
 	/** A hash map the holds all the k-mer mapping functions (should be loaded) */
@@ -104,6 +106,12 @@ public class WildcardKmerUtils {
 	
 	public static List<String> map(String kmer){
 		return wildcardMap.get(kmer);
+	}
+	
+	
+	public static void main(String[] args) throws IOException{
+		String wildcardmapfile = Args.parseString(args, "wildcardmap", "");
+		WildcardKmerUtils.saveMapToJavaObj(wildcardmapfile);
 	}
 	
 	
