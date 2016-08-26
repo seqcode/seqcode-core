@@ -1,10 +1,11 @@
 package org.seqcode.genome.sequence;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +21,16 @@ public class WildcardKmerUtils {
 
 	/** length of the k-mers */
 	public static int k;
+	
+	@SuppressWarnings("unchecked")
+	public WildcardKmerUtils(int kmerLen) throws IOException, ClassNotFoundException {
+		k = kmerLen;
+		if(k ==8 ){
+			InputStream ins = this.getClass().getResourceAsStream("wildcard_8mer_2mismatch_map_hg19_hashmap.ser");
+			ObjectInputStream ois = new ObjectInputStream(ins);
+			wildcardMap = (Map<String,List<String>>) ois.readObject();
+		}
+	}
 	
 	
 	
@@ -112,6 +123,9 @@ public class WildcardKmerUtils {
 	public static void main(String[] args) throws IOException{
 		String wildcardmapfile = Args.parseString(args, "wildcardmap", "");
 		WildcardKmerUtils.saveMapToJavaObj(wildcardmapfile);
+		
+		System.out.println(wildcardMap.get("AAAAAAAA"));
+		
 	}
 	
 	

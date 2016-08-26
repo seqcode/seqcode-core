@@ -74,6 +74,7 @@
 	<include name="**/*.bat"/>
 	<include name="**/*.exe"/>
 	<include name="**/*.ico"/>
+    <include name="**/*.ser"/>
     <include name="**/*.png"/>
 	<include name="**/*.properties"/>
       </fileset>
