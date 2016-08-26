@@ -1,24 +1,21 @@
 package org.seqcode.genome.sequence;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.seqcode.gseutils.Args;
 
 public class WildcardKmerUtils {
 	
 	/** A hash map the holds all the k-mer mapping functions (should be loaded) */
-	public static Map<String,List<String>> wildcardMap = new HashMap<String,List<String>>();
+	public static Map<String,Set<String>> wildcardMap = new HashMap<String,Set<String>>();
 
 	/** length of the k-mers */
 	public static int k;
@@ -27,12 +24,12 @@ public class WildcardKmerUtils {
 	public WildcardKmerUtils(int kmerLen) throws IOException {
 		k = kmerLen;
 		if(k ==8 ){
-			InputStream ins = this.getClass().getResourceAsStream("wildcard_8mer_2mismatch_map_hg19_hashmap.txt");
+			InputStream ins = this.getClass().getResourceAsStream("wildcard_8mer_2mismatch_hg19.txt");
 			BufferedReader br = new BufferedReader(new InputStreamReader(ins));
 			String line = null;
 			while((line=br.readLine()) != null){
 				String[] pieces = line.split(",");
-				List<String> tmpAdd = new ArrayList<String>();
+				Set<String> tmpAdd = new HashSet<String>();
                 for(int s=1; s<pieces.length; s++){
                         tmpAdd.add(pieces[s]);
                 }
@@ -49,7 +46,7 @@ public class WildcardKmerUtils {
 	 * @param base
 	 * @return
 	 */
-	public static int base2int(char base) {
+	public  int base2int(char base) {
 		int intVal = -1;
 		switch (base) {
 		case 'A':
@@ -79,7 +76,7 @@ public class WildcardKmerUtils {
 	 * @param x
 	 * @return
 	 */
-	public static char int2base(int x) {
+	public  char int2base(int x) {
 		char base;
 		switch (x) {
 		case 0:
@@ -101,17 +98,50 @@ public class WildcardKmerUtils {
 		}
 		return (base);
 	}
-	
-	public static List<String> map(String kmer){
+
+	public  int seq2int(String seq) {
+		int intVal = 0;
+		int len = seq.length();
+
+		for (int i = 0; i < len; i++) {
+			long currInt = base2int(seq.charAt(i));
+			if (currInt == -1) {
+				return -1;
+			}
+			intVal = intVal * 5;
+			intVal += currInt;
+		}
+		return intVal;
+	}
+
+	public  String int2seq(long x, int kmerLen) {
+		/**
+		 * check that the x is valid for the specified maxKmerLen. Note: 5 << (2 *
+		 * (kmerLen - 1)) = 5^kmerLen
+		 */
+		if (x > ((5 << (2 * (kmerLen - 1))) - 1)) {
+			throw new IllegalArgumentException("Invalid int value, " + x + ", for kmerLen " + kmerLen);
+		}
+		StringBuffer seq = new StringBuffer(kmerLen);
+		for (int i = 0; i < kmerLen; i++) {
+			int baseVal = (int) (x % 5);
+			seq.append(int2base(baseVal));
+			x = x * 5;
+		}
+		return seq.reverse().toString();
+	}
+
+
+	public  Set<String> map(String kmer){
 		return wildcardMap.get(kmer);
 	}
-	
-	
+
+
 	public static void main(String[] args) throws IOException, ClassNotFoundException{
 		WildcardKmerUtils wku = new WildcardKmerUtils(8);
 		System.out.println(wku.wildcardMap.get("AAAAAAAA"));
-		
+
 	}
-	
-	
+
+
 }
