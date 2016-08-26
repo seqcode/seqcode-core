@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -23,37 +24,23 @@ public class WildcardKmerUtils {
 	public static int k;
 	
 	@SuppressWarnings("unchecked")
-	public WildcardKmerUtils(int kmerLen) throws IOException, ClassNotFoundException {
+	public WildcardKmerUtils(int kmerLen) throws IOException {
 		k = kmerLen;
 		if(k ==8 ){
-			InputStream ins = this.getClass().getResourceAsStream("wildcard_8mer_2mismatch_map_hg19_hashmap.ser");
-			ObjectInputStream ois = new ObjectInputStream(ins);
-			wildcardMap = (Map<String,List<String>>) ois.readObject();
-		}
-	}
-	
-	
-	
-	public static void saveMapToJavaObj(String mappingFile) throws IOException{
-		FileReader fr = new FileReader(mappingFile);
-		BufferedReader br = new BufferedReader(fr);
-		String line = null;
-		Map<String,List<String>> mapTosave = new HashMap<String,List<String>>();
-		while((line=br.readLine())!=null){
-			String[] pieces = line.split(",");
-			List<String> tmpAdd = new ArrayList<String>();
-			for(int s=1; s<pieces.length; s++){
-				tmpAdd.add(pieces[s]);
+			InputStream ins = this.getClass().getResourceAsStream("wildcard_8mer_2mismatch_map_hg19_hashmap.txt");
+			BufferedReader br = new BufferedReader(new InputStreamReader(ins));
+			String line = null;
+			while((line=br.readLine()) != null){
+				String[] pieces = line.split(",");
+				List<String> tmpAdd = new ArrayList<String>();
+                for(int s=1; s<pieces.length; s++){
+                        tmpAdd.add(pieces[s]);
+                }
+                wildcardMap.put(pieces[0], tmpAdd);
 			}
-			mapTosave.put(pieces[0], tmpAdd);
 		}
-		br.close();
-		
-		FileOutputStream fos = new FileOutputStream("out_tmp_map");
-		ObjectOutputStream oos = new ObjectOutputStream(fos);
-		oos.writeObject(mapTosave);
-		oos.close();
 	}
+	
 	
 	
 	/**
@@ -120,11 +107,9 @@ public class WildcardKmerUtils {
 	}
 	
 	
-	public static void main(String[] args) throws IOException{
-		String wildcardmapfile = Args.parseString(args, "wildcardmap", "");
-		WildcardKmerUtils.saveMapToJavaObj(wildcardmapfile);
-		
-		System.out.println(wildcardMap.get("AAAAAAAA"));
+	public static void main(String[] args) throws IOException, ClassNotFoundException{
+		WildcardKmerUtils wku = new WildcardKmerUtils(8);
+		System.out.println(wku.wildcardMap.get("AAAAAAAA"));
 		
 	}
 	
