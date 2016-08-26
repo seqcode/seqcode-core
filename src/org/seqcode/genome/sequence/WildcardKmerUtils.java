@@ -63,6 +63,7 @@ public class WildcardKmerUtils {
 			break;
 		case 'N':
 			intVal = 4;
+			break;
 		default:
 			throw new IllegalArgumentException("Invalid character: " + base);
 		}
@@ -93,6 +94,7 @@ public class WildcardKmerUtils {
 			break;
 		case 4:
 			base = 'N';
+			break;
 		default:
 			throw new IllegalArgumentException("Invalid int: " + x);
 		}
