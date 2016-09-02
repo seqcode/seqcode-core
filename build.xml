@@ -34,6 +34,7 @@
   <target name="clean" depends="init" description="remove build output" >
     <delete dir="${build.dist.dir}" />
     <delete dir="${build.classes.dir}" />
+  	<delete dir="${build.unjar.dir}" />
   </target>
 
   <!-- ======================================================================= -->
