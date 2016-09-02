@@ -757,7 +757,9 @@ public class Region implements Comparable<Region>, Saveable {
 	  for(int i = 0; i < target_end.length; i++) { target_end[i] = targetRegions[i].getEnd(); }
 	  int[] idx = StatUtil.findSort(target_end);
 	  
-	  for(Region sourceReg:sourceRegions) {
+//	  for(Region sourceReg:sourceRegions) {
+	  for (int j = 0 ; j < sourceRegions.length; j++){
+		  Region sourceReg = sourceRegions[j];
 		  boolean sourceRegOverlaps = false;
 		  int start_idx = Arrays.binarySearch(target_end, sourceReg.getStart());
 		  int end_idx   = Arrays.binarySearch(target_start, sourceReg.getEnd());
@@ -782,6 +784,9 @@ public class Region implements Comparable<Region>, Saveable {
 					else
 						break;
 			  }
+		  }
+		  if (sourceRegOverlaps){
+			  overlaps[j] = true;
 		  }
 	  }
 	  
