@@ -32,6 +32,14 @@ public class WildcardKmerUtils {
 				Set<String> tmpAdd = new HashSet<String>();
                 for(int s=1; s<pieces.length; s++){
                         tmpAdd.add(pieces[s]);
+                        if(pieces[s].contains("N")){ // is this a wild-card kmer
+                        	if(wildcardMap.containsKey(pieces[s])){
+                        		wildcardMap.get(pieces[s]).add(pieces[0]);
+                        	}else{
+                        		wildcardMap.put(pieces[s], new HashSet<String>());
+                        		wildcardMap.get(pieces[s]).add(pieces[0]);
+                        	}
+                        }
                 }
                 wildcardMap.put(pieces[0], tmpAdd);
 			}
