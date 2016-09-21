@@ -39,6 +39,14 @@ public class WildcardKmerUtils {
                         		wildcardMap.put(pieces[s], new HashSet<String>());
                         		wildcardMap.get(pieces[s]).add(pieces[0]);
                         	}
+                        	// now also the rev complement
+                        	String rev = SequenceUtils.reverseComplement(pieces[s]);
+                        	if(wildcardMap.containsKey(rev)){
+                        		wildcardMap.get(rev).add(pieces[0]);
+                        	}else{
+                        		wildcardMap.put(rev, new HashSet<String>());
+                        		wildcardMap.get(rev).add(pieces[0]);
+                        	}
                         }
                 }
                 wildcardMap.put(pieces[0], tmpAdd);
