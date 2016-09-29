@@ -68,7 +68,10 @@ public class CompositeSeqFunctionComparison<F extends SeqFunction> {
 		//Welch's T-tests (Bonferroni corrected)
 		for(int i=0; i<function.scoreDimension(); i++){
 			for(int j=0; j<scoreWidth; j++){
-				pvalues[i][j]=test.welch(sigMeans[i][j], backMeans[i][j], sigVars[i][j], backVars[i][j], (double)sigNumSeq, (double)backNumSeq);
+				if(sigVars[i][j] == 0 && backVars[i][j]==0)
+					pvalues[i][j]=1.0;
+				else
+					pvalues[i][j]=test.welch(sigMeans[i][j], backMeans[i][j], sigVars[i][j], backVars[i][j], (double)sigNumSeq, (double)backNumSeq);
 				pvalues[i][j] = Math.min(1.0,  pvalues[i][j]*scoreWidth);
 			}
 		}
