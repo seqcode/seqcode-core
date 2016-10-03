@@ -1,5 +1,6 @@
 package org.seqcode.genome.sequence.seqfunctions;
 
+import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.apache.commons.math3.stat.inference.TTest;
 
 /**
@@ -54,9 +55,12 @@ public class CompositeSeqFunctionComparison<F extends SeqFunction> {
 		double [][] backMeans = background.getMeans();
 		double [][] sigVars = signal.getVariances();
 		double [][] backVars = background.getVariances();
+		double[][][] sigScores = signal.getAllScores();
+		double[][][] backScores = background.getAllScores();
 		int sigNumSeq = signal.getNumSeqs();
 		int backNumSeq = background.getNumSeqs();
-		MyTTest test = new MyTTest();
+		MyTTest ttest = new MyTTest();
+		MannWhitneyUTest MWU = new MannWhitneyUTest();
 		
 		//Diffs
 		for(int i=0; i<function.scoreDimension(); i++){
@@ -65,14 +69,22 @@ public class CompositeSeqFunctionComparison<F extends SeqFunction> {
 			}
 		}
 		
+		/*
 		//Welch's T-tests (Bonferroni corrected)
 		for(int i=0; i<function.scoreDimension(); i++){
 			for(int j=0; j<scoreWidth; j++){
-				pvalues[i][j]=test.welch(sigMeans[i][j], backMeans[i][j], sigVars[i][j], backVars[i][j], (double)sigNumSeq, (double)backNumSeq);
+				pvalues[i][j]=ttest.welch(sigMeans[i][j], backMeans[i][j], sigVars[i][j], backVars[i][j], (double)sigNumSeq, (double)backNumSeq);
+				pvalues[i][j] = Math.min(1.0,  pvalues[i][j]*scoreWidth);
+			}
+		}*/
+		
+		//Mann-Whitney U-test (Bonferroni corrected)
+		for(int i=0; i<function.scoreDimension(); i++){
+			for(int j=0; j<scoreWidth; j++){
+				pvalues[i][j]=MWU.mannWhitneyUTest(sigScores[i][j], backScores[i][j]);
 				pvalues[i][j] = Math.min(1.0,  pvalues[i][j]*scoreWidth);
 			}
 		}
-		
 	}
 	
 	public void printDiffs(){

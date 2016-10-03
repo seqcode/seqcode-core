@@ -525,7 +525,7 @@ public class RegionFileUtilities {
 			File inFile = new File(filename);
 			if(!inFile.isFile()){System.err.println("Invalid file name");System.exit(1);}
 	        BufferedReader reader = new BufferedReader(new FileReader(inFile));
-	        String line;//Ignore first line;
+	        String line;
 	        while ((line = reader.readLine()) != null) {
 	            line = line.trim();
 	            String[] words = line.split("\\s+");
@@ -534,10 +534,8 @@ public class RegionFileUtilities {
 	            }
 	        }reader.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         return(lines);

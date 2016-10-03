@@ -24,6 +24,7 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 	int width;
 	double [][] means;
 	double [][] variances;
+	double [][][] rawScores;
 	List<ScoredSequence> scoredSeqs;
 	int zeroOffset=0;
 	
@@ -48,6 +49,7 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 	public int getNumSeqs(){return scoredSeqs.size();}
 	public F getFunction(){return function;}
 	public int getZeroOffset(){return zeroOffset;}
+	public double[][][] getAllScores(){return rawScores;}
 	
 	/**
 	 * Add sequences (possibly weighted) to the composite list
@@ -101,11 +103,13 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 	 */
 	public void populate(){
 		try{
+			int numSeqs = 0;
 			double normTotal=0;
-
+			
 			//Weighted mean
 			for(ScoredSequence s : scoredSeqs){
 				if(s.getSeq().length()==width){
+					numSeqs++;
 		        	normTotal+=s.getScore();
 		        	
 		        	double[][] tmpScores = function.score(s.getSeq());
@@ -118,13 +122,20 @@ public class CompositeSeqFunction<F extends SeqFunction> {
 				for(int j=0; j<width; j++)
 					means[i][j] = means[i][j]/normTotal;
 			
-			//Weighted variance
+			//Init the raw scores
+			rawScores = new double[function.scoreDimension()][width][numSeqs];
+			
+			//Weighted variance & raw scores
+			int sx=0;
 			for(ScoredSequence s : scoredSeqs){
 				if(s.getSeq().length()==width){
 		        	double[][] tmpScores = function.score(s.getSeq());
 					for(int i=0; i<function.scoreDimension(); i++)
-		    			for(int j=0; j<width; j++)
+		    			for(int j=0; j<width; j++){
 		    				variances[i][j]+=s.getScore()*(tmpScores[i][j]-means[i][j])*(tmpScores[i][j]-means[i][j]);
+		    				rawScores[i][j][sx]=tmpScores[i][j];
+		    			}
+					sx++;
 				}
 			}
 			for(int i=0; i<function.scoreDimension(); i++)
