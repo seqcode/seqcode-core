@@ -1,9 +1,7 @@
 package org.seqcode.tutorials;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.seqcode.deepseq.StrandedBaseCount;
 import org.seqcode.deepseq.experiments.ControlledExperiment;

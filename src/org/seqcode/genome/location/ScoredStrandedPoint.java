@@ -22,6 +22,22 @@ public class ScoredStrandedPoint extends ScoredPoint implements Stranded {
         return new ScoredStrandedPoint(getGenome(), getChrom(), getLocation(), getScore(), strand);
     }
     
+    public ScoredStrandedRegion expand(int upstream, int downstream) {
+        if (strand == '+') {
+            int ns = getLocation() - upstream;
+            int ne = getLocation() + downstream;
+            if (ns < 1) {ns = 1;}
+            return new ScoredStrandedRegion(getGenome(),getChrom(),ns,ne,score, strand);
+        } else if (strand == '-') {
+            int ns = getLocation() - downstream;
+            int ne = getLocation() + upstream;
+            if (ns < 1) {ns = 1;}
+            return new ScoredStrandedRegion(getGenome(),getChrom(),ns,ne,score, strand);                
+        } else {
+            throw new IllegalArgumentException("Strand isn't + or - so I don't know what to do");
+        }
+
+    }
     public String toString() {
         return String.format("%s:%c (%.3f)", getLocationString(), strand, getScore());
     }

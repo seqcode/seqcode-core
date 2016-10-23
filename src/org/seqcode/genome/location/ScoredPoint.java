@@ -4,7 +4,7 @@ import org.seqcode.genome.Genome;
 
 public class ScoredPoint extends Point implements Scored {
 	
-	private double score;
+	protected double score;
 	
     public ScoredPoint (Genome g, String c, int position, double s) {
     	super(g, c, position);

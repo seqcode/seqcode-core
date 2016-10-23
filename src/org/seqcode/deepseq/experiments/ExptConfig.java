@@ -315,6 +315,7 @@ public class ExptConfig {
 	//Some accessors to allow modification of options after config .
 	public void setPrintLoadingProgress(boolean plp){printLoadingProgress = plp;}
 	public void setPerBaseReadFiltering(boolean pbrf){perBaseReadFiltering = pbrf;}
+	public void setPerBaseReadLimit(float pbrl){perBaseReadLimit = pbrl; perBaseReadFiltering=true;}
 	public void setMedianScaling(boolean ms){scalingByMedian = ms;}
 	public void setRegressionScaling(boolean rs){scalingByRegression = rs;}
 	public void setSESScaling(boolean ses){scalingBySES = ses;}
