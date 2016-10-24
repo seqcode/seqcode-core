@@ -133,11 +133,7 @@ public class WildcardKmerUtils {
 	}
 
 	public  String int2seq(long x, int kmerLen) {
-		/**
-		 * check that the x is valid for the specified maxKmerLen. Note: 5 << (2 *
-		 * (kmerLen - 1)) = 5^kmerLen
-		 */
-		if (x > ((5 << (2 * (kmerLen - 1))) - 1)) {
+		if (x >= (int)Math.pow(5, kmerLen)) {
 			throw new IllegalArgumentException("Invalid int value, " + x + ", for kmerLen " + kmerLen);
 		}
 		StringBuffer seq = new StringBuffer(kmerLen);
