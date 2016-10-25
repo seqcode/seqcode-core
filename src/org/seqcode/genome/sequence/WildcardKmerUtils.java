@@ -140,7 +140,7 @@ public class WildcardKmerUtils {
 		for (int i = 0; i < kmerLen; i++) {
 			int baseVal = (int) (x % 5);
 			seq.append(int2base(baseVal));
-			x = x * 5;
+			x = (long)Math.floor(x/5.0);
 		}
 		return seq.reverse().toString();
 	}
