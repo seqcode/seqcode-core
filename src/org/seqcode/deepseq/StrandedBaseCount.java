@@ -1,5 +1,9 @@
 package org.seqcode.deepseq;
 
+import org.seqcode.genome.Genome;
+import org.seqcode.genome.location.ScoredStrandedPoint;
+import org.seqcode.genome.location.ScoredStrandedRegion;
+
 /**
  * StrandedBaseCount represents the sum of hit weights at a stranded base position in the genome.
  * The same class was called StrandedBase previously (renaming to reduce confusion)
@@ -57,4 +61,13 @@ public class StrandedBaseCount implements Comparable<StrandedBaseCount>{
 		return coordinate+" "+strand+" "+count;
 	}
 		
+	//Makes this into a regular Region-derived object
+	public ScoredStrandedPoint toScoredStrandedPoint(Genome g, String chr){
+		return new ScoredStrandedPoint(g, chr, coordinate, count, strand);
+	}
+	
+	//Makes the pseudo extended read into a regular Region-derived object
+	public ScoredStrandedRegion expandToScoredStrandedRegion(Genome g, String chr, int upstreamext, int downstreamext){
+		return (new ScoredStrandedPoint(g, chr, coordinate, count, strand).expand(upstreamext, downstreamext));
+	}
 }

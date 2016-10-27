@@ -9,7 +9,7 @@ import org.seqcode.gseutils.Saveable;
 
 
 public class ScoredRegion extends Region implements Saveable, Scored {
-    private double score;
+    protected double score;
     
     public ScoredRegion(ScoredRegion copied) { 
         super(copied);

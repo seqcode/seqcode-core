@@ -20,6 +20,11 @@ public class ScoredStrandedRegion extends ScoredRegion implements Stranded {
         this.strand = strand;
     }
     
+    public ScoredStrandedRegion(Region r, double score, char strand) {
+        super(r.getGenome(), r.getChrom(),r.getStart(), r.getEnd(),score);
+        this.strand = strand;
+    }
+    
     public ScoredStrandedRegion(Genome g, DataInputStream dis) throws IOException { 
         super(g,dis);
         strand = dis.readChar();
@@ -41,6 +46,22 @@ public class ScoredStrandedRegion extends ScoredRegion implements Stranded {
         }
     }
     
+    public ScoredStrandedRegion expand(int upstream, int downstream) {
+        if (strand == '+') {
+            int ns = getStart() - upstream;
+            int ne = getEnd() + downstream;
+            if (ns < 1) {ns = 1;}
+            return new ScoredStrandedRegion(getGenome(),getChrom(),ns,ne,score, strand);
+        } else if (strand == '-') {
+            int ns = getStart() - downstream;
+            int ne = getEnd() + upstream;
+            if (ns < 1) {ns = 1;}
+            return new ScoredStrandedRegion(getGenome(),getChrom(),ns,ne,score, strand);                
+        } else {
+            throw new IllegalArgumentException("Strand isn't + or - so I don't know what to do");
+        }
+
+    }
     public String toString() { 
         String str = getLocationString() + ":" + strand;
         str += " (" + getScore() + ")";

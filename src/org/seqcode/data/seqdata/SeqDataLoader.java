@@ -214,7 +214,7 @@ public class SeqDataLoader implements org.seqcode.gseutils.Closeable {
 			ps = SeqExpt.createLoadByNameReplicate(cxn);
 			ps.setString(1, name);
 			ps.setString(2, rep);
-			//System.out.println(ps.toString());
+			
 			rs = ps.executeQuery();
 			if (rs.next()) {
 				expt = new SeqExpt(rs, this);

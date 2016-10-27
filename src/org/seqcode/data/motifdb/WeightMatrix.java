@@ -35,6 +35,7 @@ public class WeightMatrix {
     public int dbid, speciesid;
     public boolean hasdbid, hasspeciesid; // set to true iff dbid is valid
     public boolean islogodds;
+    public int zeroOffset=0;
     public int bgMapID = -1;
     
     WeightMatrix(ResultSet wmData, ResultSet wmColData) throws SQLException {  
@@ -846,6 +847,9 @@ public class WeightMatrix {
         output.type = input.type;
         return output;
     }
+    
+    public void setZeroOffset(int z){zeroOffset=z;}
+    public int getZeroOffset(){return zeroOffset;}
 }
 class WMLetterCmp implements Comparator<Character> {
     WeightMatrix matrix;

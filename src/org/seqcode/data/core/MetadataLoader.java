@@ -657,6 +657,7 @@ public class MetadataLoader{
 	    	s = cxn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY,
 	    						    java.sql.ResultSet.CONCUR_UPDATABLE);
 	        s.executeUpdate("insert into exptcondition (name) values ('" + n + "')", Statement.RETURN_GENERATED_KEYS);
+	        //System.out.println("insert into exptcondition (name) values ('" + n + "')");
 	        rs = s.getGeneratedKeys();
 
 	        if (rs.next())

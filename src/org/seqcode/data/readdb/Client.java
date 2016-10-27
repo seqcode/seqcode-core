@@ -50,7 +50,7 @@ public class Client implements ReadOnlyClient {
     byte[] buffer; //temporary space for receiving data; contents not persistent between method calls
     private static final int BUFFERLEN = 8192*20;
     private final int socketLoadDataReadTimeout = 1000*60*8; //socket timeout in ms: set to 8 minutes because we should only be relying on the timeout to detect server shutdowns, and some uses of Client (e.g. loading a lot of reads to ReadDB) can take a long time on the Server.
-    private final int socketQueryReadTimeout = 15000; //socket timeout in ms for queries
+    private final int socketQueryReadTimeout = 60000; //socket timeout in ms for queries
     private final int threadSleepTime = 30000; //check time of last activity thread sleep time in ms
     private final int connectionIdleTimeLimit = 1000*60*10; //close idle connection after this time (10 minutes)
     private long lastActivityTime; //Time of last activity is updated by each query 
@@ -1172,6 +1172,7 @@ public class Client implements ReadOnlyClient {
             e.printStackTrace();
         }
         connectionOpen=false;
+        System.err.println("Readdb client closed");
     } 
 
     /**

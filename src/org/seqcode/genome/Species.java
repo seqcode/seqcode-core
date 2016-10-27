@@ -189,9 +189,9 @@ public class Species{
 	            ex.printStackTrace();
 	            throw new DatabaseException("Couldn't connect with role core", ex);
 	        } finally {
-	        	if (rs != null) { try {rs.close(); } catch (SQLException ex) {  }}
-		        if (stmt != null) { try { stmt.close();} catch (SQLException ex) { } }
-	        	if (cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
+	        	if (rs != null) { try {rs.close(); } catch (SQLException ex) { ex.printStackTrace(); }}
+	        	if (stmt != null) { try { stmt.close();} catch (SQLException ex) {ex.printStackTrace();} }
+		        if (cxn!=null) try {cxn.close();}catch (Exception ex) {ex.printStackTrace();}
 	        }
     	}else{
     		orgs.addAll(organisms.values());

@@ -93,6 +93,7 @@ public class WIGExporter {
 	    ExperimentManager manager = new ExperimentManager(c);
 	    sample = manager.getSamples().get(0);
 	    cacheAllData = c.getCacheAllData();
+	    gen = gcon.getGenome();
 	    
 	    
 	    		

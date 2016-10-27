@@ -144,7 +144,9 @@ public class RegionFileUtilities {
 	 */
 	public static List<Region> loadRegionsFromFile(String filename, Genome gen, int win){
 		List<Region> regs = new ArrayList<Region>();
-
+		RegionParser rparser = new RegionParser(gen);
+		PointParser pparser = new PointParser(gen);
+    	
 		try{
 			File pFile = new File(filename);
 			if(!pFile.isFile()){System.err.println("Invalid file name: "+filename);System.exit(1);}
@@ -156,26 +158,22 @@ public class RegionFileUtilities {
 	            
 	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
 	                if(words.length>=3 && words[2].contains(":")){
-		                PointParser pparser = new PointParser(gen);
-		            	Point p = pparser.execute(words[2]);
+		                Point p = pparser.execute(words[2]);
 		                if(win==-1 && words[0].contains(":") && words[0].contains("-")){
-		                	RegionParser rparser = new RegionParser(gen);
-			            	Region q = rparser.execute(words[0]);
+		                	Region q = rparser.execute(words[0]);
 			            	regs.add(q);
 		                }else{
 		                	regs.add(p.expand(win/2));
 		                }
 	                }else if(words.length>=1 && words[0].contains(":")){
 		            	if(words[0].contains("-")){
-		                	RegionParser rparser = new RegionParser(gen);
-			            	Region q = rparser.execute(words[0]);
+		                	Region q = rparser.execute(words[0]);
 			            	if(win==-1){
 			                	if(q!=null){regs.add(q);}
 			                }else
 			                	regs.add(q.getMidpoint().expand(win/2));
 		            	}else{
-		            		PointParser pparser = new PointParser(gen);
-			            	Point p = pparser.execute(words[0]);
+		            		Point p = pparser.execute(words[0]);
 			            	regs.add(p.expand(win/2));
 		            	}
 		            }
@@ -193,6 +191,9 @@ public class RegionFileUtilities {
 	//Load a set of stranded points from a file (stranded point in first column)
 	public static List<StrandedPoint> loadStrandedPointsFromFile(Genome gen, String filename){
 		List<StrandedPoint> points = new ArrayList<StrandedPoint>();
+		StrandedPointParser spparser = new StrandedPointParser(gen);
+		PointParser pparser = new PointParser(gen);
+    	
 		try{
 			File pFile = new File(filename);
 			if(!pFile.isFile()){System.err.println("Invalid file name: "+filename);System.exit(1);}
@@ -205,13 +206,11 @@ public class RegionFileUtilities {
 	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
 	                if(words.length>=1 && words[0].contains(":")){
 		            	if(words[0].split(":").length>2){
-		            		StrandedPointParser pparser = new StrandedPointParser(gen);
-		            		StrandedPoint sq = pparser.execute(words[0]);
+		            		StrandedPoint sq = spparser.execute(words[0]);
 			            	if(sq!=null){points.add(sq);}
 			                
 		            	}else{
-		            		PointParser pparser = new PointParser(gen);
-			            	Point p = pparser.execute(words[0]);
+		            		Point p = pparser.execute(words[0]);
 			            	StrandedPoint sp = new StrandedPoint(p, strand);
 			            	points.add(sp);
 		            	}
@@ -234,6 +233,9 @@ public class RegionFileUtilities {
 	 */
 	public static List<Region> loadRegionsFromPeakFile(Genome gen, String filename, int win){
 		List<Region> regs = new ArrayList<Region>();
+
+        PointParser pparser = new PointParser(gen);
+        RegionParser rparser = new RegionParser(gen);
 		try{
 			File pFile = new File(filename);
 			if(!pFile.isFile()){System.err.println("Invalid file name: "+filename);System.exit(1);}
@@ -245,36 +247,30 @@ public class RegionFileUtilities {
 	            
 	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
 	                if(words.length>=3 && words[2].contains(":")){
-		                PointParser pparser = new PointParser(gen);
 		            	Point p = pparser.execute(words[2]);
 		                if(win==-1 && words[0].contains(":") && words[0].contains("-")){
-		                	RegionParser rparser = new RegionParser(gen);
-			            	Region q = rparser.execute(words[0]);
+		                	Region q = rparser.execute(words[0]);
 			            	regs.add(q);
 		                }else{
 		                	regs.add(p.expand(win/2));
 		                }
 	                }else if(words.length>=1 && words[0].contains(":")){
 		            	if(words[0].contains("-")){
-		                	RegionParser rparser = new RegionParser(gen);
-			            	Region q = rparser.execute(words[0]);
+		                	Region q = rparser.execute(words[0]);
 			            	if(win==-1){
 			                	if(q!=null){regs.add(q);}
 			                }else
 			                	regs.add(q.getMidpoint().expand(win/2));
 		            	}else{
-		            		PointParser pparser = new PointParser(gen);
-			            	Point p = pparser.execute(words[0]);
+		            		Point p = pparser.execute(words[0]);
 			            	regs.add(p.expand(win/2));
 		            	}
 		            }
                 }
 	        }reader.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return(regs);
@@ -288,6 +284,8 @@ public class RegionFileUtilities {
 	 */
 	public static List<StrandedPoint> loadStrandedPointFromRefTssFile(Genome gen, String filename){
 		List<StrandedPoint> pts = new ArrayList<StrandedPoint>();
+		PointParser pparser = new PointParser(gen);
+		
 		try{
 			File pFile = new File(filename);
 			if(!pFile.isFile()){System.err.println("Invalid file name: "+filename);System.exit(1);}
@@ -298,7 +296,6 @@ public class RegionFileUtilities {
 				String[] words = line.split("\\s+");
 				if(words.length >=1 && !words[0].contains("#") &&  !words[0].equals("Region") && !words[0].equals("Position")){
 					String[] subwords = words[0].split(":");
-					PointParser pparser = new PointParser(gen);
 					Point p = pparser.execute(subwords[0]+":"+subwords[1]);
 					StrandedPoint sp = new StrandedPoint(p,subwords[2].charAt(0));
 					pts.add(sp);
@@ -323,6 +320,9 @@ public class RegionFileUtilities {
 	 */
 	public static List<StrandedRegion> loadStrandedRegionsFromMotifFile(Genome gen, String filename, int win){
 		List<StrandedRegion> regs = new ArrayList<StrandedRegion>();
+		StrandedRegionParser rparser = new StrandedRegionParser(gen);
+		PointParser pparser = new PointParser(gen);
+    	
 		try{
 			File pFile = new File(filename);
 			if(!pFile.isFile()){System.err.println("Invalid file name: "+filename);System.exit(1);}
@@ -334,11 +334,9 @@ public class RegionFileUtilities {
 	            char strand = '+';
 	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
 	                if(words.length>=3 && words[2].contains(":")){
-		                PointParser pparser = new PointParser(gen);
-		            	Point p = pparser.execute(words[2]);
+		                Point p = pparser.execute(words[2]);
 		                if(win==-1 && words[0].contains(":") && words[0].contains("-")){
-		                	StrandedRegionParser rparser = new StrandedRegionParser(gen);
-			            	StrandedRegion sq = rparser.execute(words[0]);
+		                	StrandedRegion sq = rparser.execute(words[0]);
 			            	regs.add(sq);
 		                }else{
 		                	StrandedRegion sp = new StrandedRegion(p.expand(win/2), strand);
@@ -347,15 +345,13 @@ public class RegionFileUtilities {
 	                }else if(words.length>=1 && words[0].contains(":")){
 	                	String[] subwords = words[0].split(":");
 		            	if(subwords[1].contains("-")){
-		            		StrandedRegionParser rparser = new StrandedRegionParser(gen);
 		            		StrandedRegion sq = rparser.execute(words[0]);
 			            	if(win==-1){
 			                	if(sq!=null){regs.add(sq);}
 			                }else
 			                	regs.add(new StrandedRegion(sq.getMidpoint().expand(win/2), sq.getStrand()));
 		            	}else{
-		            		PointParser pparser = new PointParser(gen);
-			            	Point p = pparser.execute(subwords[0]+":"+subwords[1]);
+		            		Point p = pparser.execute(subwords[0]+":"+subwords[1]);
 			            	StrandedRegion sp=null;
 			            	if(subwords.length>=3)
 			            		sp = new StrandedRegion(p.expand(win/2), subwords[2].charAt(0));
@@ -418,6 +414,9 @@ public class RegionFileUtilities {
 	public static List<StrandedPoint> loadStrandedPointsFromMotifFile(Genome gen, String filename, int win){
 		List<StrandedRegion> regs = new ArrayList<StrandedRegion>();
 		List<StrandedPoint> peaks = new ArrayList<StrandedPoint>();
+		PointParser pparser = new PointParser(gen);
+		StrandedRegionParser rparser = new StrandedRegionParser(gen);
+		
 		try{
 			File pFile = new File(filename);
 			if(!pFile.isFile()){System.err.println("Invalid file name: "+filename);System.exit(1);}
@@ -429,11 +428,9 @@ public class RegionFileUtilities {
 	            char strand = '+';
 	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
 	                if(words.length>=3 && words[2].contains(":")){
-		                PointParser pparser = new PointParser(gen);
-		            	Point p = pparser.execute(words[2]);
+		                Point p = pparser.execute(words[2]);
 		                if(win==-1 && words[0].contains(":") && words[0].contains("-")){
-		                	StrandedRegionParser rparser = new StrandedRegionParser(gen);
-			            	StrandedRegion sq = rparser.execute(words[0]);
+		                	StrandedRegion sq = rparser.execute(words[0]);
 			            	regs.add(sq);
 		                }else{
 		                	StrandedRegion sp = new StrandedRegion(p.expand(win/2), strand);
@@ -442,15 +439,13 @@ public class RegionFileUtilities {
 	                }else if(words.length>=1 && words[0].contains(":")){
 	                	String[] subwords = words[0].split(":");
 		            	if(subwords[1].contains("-")){
-		            		StrandedRegionParser rparser = new StrandedRegionParser(gen);
 		            		StrandedRegion sq = rparser.execute(words[0]);
 			            	if(win==-1){
 			                	if(sq!=null){regs.add(sq);}
 			                }else
 			                	regs.add(sq.expand(win/2, win/2));
 		            	}else{
-		            		PointParser pparser = new PointParser(gen);
-			            	Point p = pparser.execute(subwords[0]+":"+subwords[1]);
+		            		Point p = pparser.execute(subwords[0]+":"+subwords[1]);
 			            	StrandedRegion sp=null;
 			            	if(subwords.length>=3)
 			            		sp = new StrandedRegion(p.expand(win/2), subwords[2].charAt(0));
@@ -462,10 +457,8 @@ public class RegionFileUtilities {
                 }
 	        }reader.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		for(StrandedRegion r : regs)
@@ -482,6 +475,8 @@ public class RegionFileUtilities {
 	 */
 	public static List<Point> loadPeaksFromPeakFile(Genome gen, String filename, int win){
 		List<Point> peaks = new ArrayList<Point>();
+		PointParser pparser = new PointParser(gen);
+    	
 		try{
 			File pFile = new File(filename);
 			if(!pFile.isFile()){System.err.println("Invalid positive file name");System.exit(1);}
@@ -493,8 +488,7 @@ public class RegionFileUtilities {
 	            
 	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
 	                if(words.length>=3 && words[2].contains(":")){
-		                PointParser pparser = new PointParser(gen);
-		            	Point p = pparser.execute(words[2]);
+		                Point p = pparser.execute(words[2]);
 		            	peaks.add(p);		                
 	                }else if(words.length>=1 && words[0].contains(":")){
 		            	if(words[0].contains("-")){
@@ -502,18 +496,15 @@ public class RegionFileUtilities {
 			            	Region q = rparser.execute(words[0]);
 			            	peaks.add(q.getMidpoint());			            	
 		            	}else{
-		            		PointParser pparser = new PointParser(gen);
-			            	Point p = pparser.execute(words[0]);
+		            		Point p = pparser.execute(words[0]);
 			            	peaks.add(p);
 		            	}
 		            }
                 }
 	        }reader.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return(peaks);
@@ -525,7 +516,7 @@ public class RegionFileUtilities {
 			File inFile = new File(filename);
 			if(!inFile.isFile()){System.err.println("Invalid file name");System.exit(1);}
 	        BufferedReader reader = new BufferedReader(new FileReader(inFile));
-	        String line;//Ignore first line;
+	        String line;
 	        while ((line = reader.readLine()) != null) {
 	            line = line.trim();
 	            String[] words = line.split("\\s+");
@@ -534,10 +525,8 @@ public class RegionFileUtilities {
 	            }
 	        }reader.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         return(lines);

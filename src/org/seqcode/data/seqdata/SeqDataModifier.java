@@ -168,7 +168,7 @@ public class SeqDataModifier {
 		PreparedStatement update = null;
 		try {
             cxn = DatabaseConnectionManager.getConnection(role);
-            cxn.setAutoCommit(false);
+            cxn.setAutoCommit(true);
             String updateName = updateLab+" "+updateCond+" "+updateTarget+" "+updateCell;
 			
 			SeqExpt testExpt  = seqLoader.findExperiment(updateName, updateRep);
@@ -188,19 +188,17 @@ public class SeqDataModifier {
 		        update.setString(10, updatePubSrc);
 		        update.setString(11, updatePubID);
 		        update.setInt(12, expt.getDBID());
-		        update.execute();	            
+		        update.execute();
+		        update.close();
 			
 		        try {
 				    SeqExpt testExpt2 = seqLoader.loadExperiment(updateName, updateRep);
 				} catch (NotFoundException e2) {
 		            // failed again means the insert failed.  you lose 
-		        	cxn.rollback();
 		            throw new DatabaseException("Couldn't update experiment for " + updateName + "," + updateRep);
 		        }
-		        cxn.commit();
 			}
 		} catch (SQLException e) {
-			cxn.rollback();
             throw new DatabaseException(e.toString(),e);
         } finally {
         	if (update != null) { try {update.close();} catch (SQLException ex) { } }

@@ -34,6 +34,7 @@
   <target name="clean" depends="init" description="remove build output" >
     <delete dir="${build.dist.dir}" />
     <delete dir="${build.classes.dir}" />
+  	<delete dir="${build.unjar.dir}" />
   </target>
 
   <!-- ======================================================================= -->
@@ -74,6 +75,7 @@
 	<include name="**/*.bat"/>
 	<include name="**/*.exe"/>
 	<include name="**/*.ico"/>
+    <include name="**/*.ser"/>
     <include name="**/*.png"/>
 	<include name="**/*.properties"/>
       </fileset>

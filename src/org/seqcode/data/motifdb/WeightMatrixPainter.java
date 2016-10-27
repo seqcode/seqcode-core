@@ -21,6 +21,7 @@ public class WeightMatrixPainter {
        their relative probability at each base.  The image is painted in g in the
        bounding box defined by the upper left corner x1,y1 and lower right corner x2,y2 */
     public void paint(WeightMatrix wm, Graphics g, int x1, int y1, int x2, int y2, String name, boolean drawAxes) {
+    	Graphics2D g2d = (Graphics2D)g;
         wm.toLogOdds();
 
         String label = wm.toString();
@@ -29,35 +30,41 @@ public class WeightMatrixPainter {
         
         int w = x2 - x1;
         int h = y2 - y1;
+        g2d.setRenderingHint(
+		        RenderingHints.KEY_TEXT_ANTIALIASING,
+		        RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
         Font labelFont = new Font("Arial",Font.PLAIN,YLABEL_SIZE);
-        g.setFont(labelFont);
-        FontMetrics fontmetrics = g.getFontMetrics();
-        LineMetrics linemetrics = fontmetrics.getLineMetrics(label,g);
-        g.setColor(Color.BLACK);
-        g.drawString(label,x1+X_MARGIN + w/2 - fontmetrics.charsWidth(label.toCharArray(),0,label.length()) / 2,y2-Y_MARGIN);
+        g2d.setFont(labelFont);
+        FontMetrics fontmetrics = g2d.getFontMetrics();
+        LineMetrics linemetrics = fontmetrics.getLineMetrics(label,g2d);
+        g2d.setColor(Color.BLACK);
+        g2d.drawString(label,x1+X_MARGIN + w/2 - fontmetrics.charsWidth(label.toCharArray(),0,label.length()) / 2,y2-Y_MARGIN);
         int labelHeight = fontmetrics.getHeight() + Y_MARGIN;
         int posAxisHeight = drawAxes ? fontmetrics.getHeight() + Y_MARGIN : 0;
         int boxHeight = h - labelHeight - posAxisHeight;
 
+        Font baseFont = new Font("Arial",Font.BOLD, boxHeight );
+        int pixelsPerLetter = (w-X_MARGIN) / wm.length();
+        double xfactor = ((float)pixelsPerLetter) / baseFont.getSize() * 1.3;
+                //System.err.println("Xfactor is " + xfactor + ", base size is " + baseFont.getSize()+", pixels per letter is "+pixelsPerLetter);
+                
         if(drawAxes){
         	int block = (w-X_MARGIN)/wm.length();
         	int xpos = x1+X_MARGIN+(block/2);
         	for (int pos = 0; pos < wm.length(); pos++) {
-        		String pstr = new Integer((pos+1)).toString();
-        		g.drawString(pstr,xpos - fontmetrics.stringWidth(pstr)/2,y2-labelHeight-Y_MARGIN);
+        		String pstr = new Integer((pos+1)-wm.getZeroOffset()).toString();
+        		g2d.drawString(pstr,xpos - fontmetrics.stringWidth(pstr)/2,y2-labelHeight-Y_MARGIN);
         		xpos+=block;
         	}
-        	g.setColor(Color.black);
+        	g2d.setColor(Color.black);
         	int ypos = y2 - labelHeight-posAxisHeight;
-        	g.drawLine(x1+X_MARGIN, ypos, x2, ypos);
-        	g.drawLine(x1+X_MARGIN, y1, x1+X_MARGIN, ypos);
-        	g.drawString("2",x1,y1+fontmetrics.getAscent());
-        	g.drawString("1",x1,y1+(boxHeight/2)+fontmetrics.getAscent());
+        	int xend = x1+X_MARGIN+(pixelsPerLetter*wm.length());
+        	g2d.drawLine(x1+X_MARGIN, ypos, xend, ypos);
+        	g2d.drawLine(x1+X_MARGIN, y1, x1+X_MARGIN, ypos);
+        	g2d.drawString("2",x1,y1+fontmetrics.getAscent());
+        	g2d.drawString("1",x1,y1+(boxHeight/2)+fontmetrics.getAscent());
         }
-        Font baseFont = new Font("Arial",Font.BOLD, boxHeight );
-        int pixelsPerLetter = (w-X_MARGIN*2) / wm.length();
-        double xfactor = ((float)pixelsPerLetter) / baseFont.getSize() * 1.3;
-        //        System.err.println("Xfactor is " + xfactor + " and base sizeis " + baseFont.getSize());
+        
         double vals[] = new double[4];
         for (int pos = 0; pos < wm.length(); pos++) {
             Character[] letters = WeightMatrix.getLetterOrder(wm,pos);
@@ -76,29 +83,29 @@ public class WeightMatrixPainter {
             double totalscale = (2.0 - bits) / 2.0;
             for (int j = 3; j >= 0; j--) {
                 if (letters[j] == 'A') {
-                    g.setColor(AColor);
+                    g2d.setColor(AColor);
                 } else if (letters[j] == 'C') {
-                    g.setColor(CColor);
+                    g2d.setColor(CColor);
                 } else if (letters[j] == 'G') {
-                    g.setColor(GColor);
+                    g2d.setColor(GColor);
                 }  else if (letters[j] == 'T') {
-                    g.setColor(TColor);
+                    g2d.setColor(TColor);
                 }        
                 double val = vals[j];
                 AffineTransform transform = new AffineTransform(xfactor,0,0,val * totalscale,0,0);
                 Font thisFont = baseFont.deriveFont(transform);
                 int letterHeight = (int) (thisFont.getSize() * val * totalscale);        
                 if (letterHeight>1){
-	                g.setFont(thisFont);
+	                g2d.setFont(thisFont);
 	                int offset = 0;
 	                /*if (letters[j] == 'G') 
 	                    offset = -(int)(pixelsPerLetter*0.05);
 	                else if (letters[j] == 'T')
 	                    offset = (int)(pixelsPerLetter*0.05);
 	                    */
-	                g.drawString(letters[j].toString(),x1+X_MARGIN +offset+ pos * pixelsPerLetter,ypos);
+	                g2d.drawString(letters[j].toString(),x1+X_MARGIN +offset+ pos * pixelsPerLetter,ypos);
                 }else if (letterHeight==1){
-                	g.fillRect(x1+X_MARGIN+ pos*pixelsPerLetter, ypos, (int)(pixelsPerLetter*0.9), letterHeight);
+                	g2d.fillRect(x1+X_MARGIN+ pos*pixelsPerLetter, ypos, (int)(pixelsPerLetter*0.9), letterHeight);
                 }
                 ypos -= letterHeight;
             }                

@@ -56,7 +56,24 @@ public class StrandedPoint extends Point implements Stranded {
     	} else {
     		return super.getLocationString()+":"+strand;
     	}
-      }
+    }
+    
+    public StrandedRegion expand(int upstream, int downstream) {
+        if (strand == '+') {
+            int ns = getLocation() - upstream;
+            int ne = getLocation() + downstream;
+            if (ns < 1) {ns = 1;}
+            return new StrandedRegion(getGenome(),getChrom(),ns,ne,strand);
+        } else if (strand == '-') {
+            int ns = getLocation() - downstream;
+            int ne = getLocation() + upstream;
+            if (ns < 1) {ns = 1;}
+            return new StrandedRegion(getGenome(),getChrom(),ns,ne,strand);                
+        } else {
+            throw new IllegalArgumentException("Strand isn't + or - so I don't know what to do");
+        }
+
+    }
     
     /**
      * parses the input String into a StrandedPoint. Understands abbreviates in the

@@ -2,6 +2,7 @@ package org.seqcode.deepseq;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Point;
+import org.seqcode.genome.location.ScoredRegion;
 
 /**
  * StrandedPair represents a pair of reads that are paired together.
@@ -16,10 +17,10 @@ public class StrandedPair implements Comparable<StrandedPair>{
 	private int r1Chrom, r2Chrom; // int codes for chroms - convert with Genome
 	private char r1Strand, r2Strand; 
 	private int r1Coordinate, r2Coordinate;
-	private boolean sameChrom;
 	private float weight;
+	private boolean sameChrom;
 	
-	public StrandedPair(Genome g, int r1Chr, int r1Coord, char r1Str, int r2Chr, int r2Coord, char r2Str, boolean sameChr, float w){
+	public StrandedPair(Genome g, int r1Chr, int r1Coord, char r1Str, int r2Chr, int r2Coord, char r2Str, float w){
 		gen=g;
 		r1Chrom = r1Chr;
 		r2Chrom = r2Chr;
@@ -27,7 +28,7 @@ public class StrandedPair implements Comparable<StrandedPair>{
 		r2Strand = r2Str;
 		r1Coordinate = r1Coord;
 		r2Coordinate = r2Coord;
-		sameChrom = sameChr;
+		sameChrom = r1Chrom==r2Chrom;
 		weight = w;
 	}
 	
@@ -138,5 +139,15 @@ public class StrandedPair implements Comparable<StrandedPair>{
 	public String toString(){
 		return new String(gen.getChromName(r1Chrom)+":"+r1Coordinate+":"+r1Strand+"\t"+gen.getChromName(r2Chrom)+":"+r2Coordinate+":"+r2Strand+"\t"+weight);
 	}
-			
+	
+	public ScoredRegion toContiguousRegion(){
+		if(r1Chrom == r2Chrom)
+			if (r1Coordinate<r1Coordinate) {
+				return new ScoredRegion(gen, gen.getChromName(r1Chrom), r1Coordinate, r2Coordinate, weight);
+			} else {
+				return new ScoredRegion(gen, gen.getChromName(r1Chrom), r2Coordinate, r1Coordinate, weight);
+			}
+		else
+			return null;
+	}
 }

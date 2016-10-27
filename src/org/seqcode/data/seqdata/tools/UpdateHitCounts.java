@@ -22,8 +22,6 @@ public class UpdateHitCounts {
 	public static void main(String args[]) throws SQLException, NotFoundException, IOException {
 		ArgParser ap = new ArgParser(args);
         if(ap.hasKey("id")) { 
-	        java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
-	        cxn.setAutoCommit(true);
 	        Integer id = Args.parseInteger(args,"id", -1);
 	        
 	        SeqDataLoader loader = new SeqDataLoader();
@@ -45,7 +43,6 @@ public class UpdateHitCounts {
 	        modifier.updateSeqAlignmentHitCounts(align, singlecount, singleweight, singletype2count, singletype2weight, paircount, pairweight);
 		     
 	        loader.close();
-	        cxn.close();
         }else{
         	System.err.println("UpdateHitCounts:\n" +
         			"\t--id <ReadDB ID>\n" +

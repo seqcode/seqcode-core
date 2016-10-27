@@ -435,7 +435,7 @@ public class HitCache {
 			                end_ind++;
 			            }
 						for(int k = start_ind; k < end_ind; k++) {
-							pairs.add(new StrandedPair(gen, chrDBID, tempStarts[k], strand, id2DBID.get(pairR2Chrom[chrID][j][k]), pairR2Pos[chrID][j][k], pairR2Strand[chrID][j][k]==0?'+':'-', chrID==pairR2Chrom[chrID][j][k], pairWeight[chrID][j][k] ));
+							pairs.add(new StrandedPair(gen, chrDBID, tempStarts[k], strand, id2DBID.get(pairR2Chrom[chrID][j][k]), pairR2Pos[chrID][j][k], pairR2Strand[chrID][j][k]==0?'+':'-', pairWeight[chrID][j][k] ));
 						}	
 					}
 				}

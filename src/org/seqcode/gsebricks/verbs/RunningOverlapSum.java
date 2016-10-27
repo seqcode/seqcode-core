@@ -9,7 +9,7 @@ import org.seqcode.gseutils.Interval;
 
 /**
  * This is a data structure originally designed to analyze the overlapping 
- * reads of a ChIP-Seq experiment, but since adapted to several more uses.  
+ * reads of a *seq experiment, but since adapted to several more uses.  
  * 
  * Its purpose is to track a series of intervals over a region (in this case, 
  * a region identified with a particular chromosome and genome), and to then 
@@ -26,16 +26,16 @@ public class RunningOverlapSum {
 
     private Genome genome;
     private String chrom;
-    private TreeMap<Integer,Integer> changes;
+    private TreeMap<Integer,Float> changes;
     
     public RunningOverlapSum(Genome g, String c) {
         genome = g;
         chrom = c;
-        changes = new TreeMap<Integer,Integer>();
+        changes = new TreeMap<Integer,Float>();
     }
     
     public RunningOverlapSum(Collection<Region> rs) {
-        changes = new TreeMap<Integer,Integer>();
+        changes = new TreeMap<Integer,Float>();
     	 if(rs.isEmpty()) { throw new IllegalArgumentException(); }
     	 for(Region r : rs) { 
     		 if(genome == null) { 
@@ -58,7 +58,7 @@ public class RunningOverlapSum {
     	
     	for(Integer pt : s.changes.keySet()) { 
     		if(!changes.containsKey(pt)) { 
-    			changes.put(pt, 0);
+    			changes.put(pt, 0f);
     		}
     		changes.put(pt, changes.get(pt) + s.changes.get(pt));
     	}
@@ -66,9 +66,9 @@ public class RunningOverlapSum {
 
     public void addInterval(int start, int end) {
         if(changes.containsKey(start)) { 
-            changes.put(start, changes.get(start) + 1);
+            changes.put(start, changes.get(start) + 1f);
         } else { 
-            changes.put(start, 1);
+            changes.put(start, 1f);
         }
         
         /**
@@ -78,9 +78,9 @@ public class RunningOverlapSum {
          * interval ends to account for intervals being inclusive. -Bob
          */
         if(changes.containsKey(end + 1)) { 
-            changes.put(end + 1, changes.get(end + 1) - 1);
+            changes.put(end + 1, changes.get(end + 1) - 1f);
         } else {
-            changes.put(end + 1, -1);
+            changes.put(end + 1, -1f);
         }
     }
     
@@ -88,9 +88,9 @@ public class RunningOverlapSum {
         int start = intv.start;
         int end = intv.end;
         if(changes.containsKey(start)) { 
-            changes.put(start, changes.get(start) + 1);
+            changes.put(start, changes.get(start) + 1f);
         } else { 
-            changes.put(start, 1);
+            changes.put(start, 1f);
         }
         
         /**
@@ -100,9 +100,9 @@ public class RunningOverlapSum {
          * interval ends to account for intervals being inclusive. -Bob
          */
         if(changes.containsKey(end + 1)) { 
-            changes.put(end + 1, changes.get(end + 1) - 1);
+            changes.put(end + 1, changes.get(end + 1) - 1f);
         } else {
-            changes.put(end + 1, -1);
+            changes.put(end + 1, -1f);
         }
 
     }
@@ -113,22 +113,23 @@ public class RunningOverlapSum {
         for(int change : changes.keySet()) {
             int[] pair = new int[2];
             pair[0] = change;
-            pair[1] = changes.get(change);
+            pair[1] = changes.get(change).intValue();
             array[i++] = pair;
         }
         return array;
     }
     
-    public void addRegion(Region r) {
+    public void addRegion(Region r) {addRegion(r, 1);}
+    public void addRegion(Region r, float weight) {
         if(!genome.equals(r.getGenome())) { throw new IllegalArgumentException(r.getGenome().toString()); }
         if(!chrom.equals(r.getChrom())) { throw new IllegalArgumentException(r.getChrom()); }
         
         int start = r.getStart();
         int end = r.getEnd();
         if(changes.containsKey(start)) { 
-            changes.put(start, changes.get(start) + 1);
+            changes.put(start, changes.get(start) + weight);
         } else { 
-            changes.put(start, 1);
+            changes.put(start, weight);
         }
         
         /**
@@ -136,9 +137,9 @@ public class RunningOverlapSum {
          * region ends to account for regions being inclusive. -Bob
          */
         if(changes.containsKey(end + 1)) { 
-            changes.put(end + 1, changes.get(end + 1) - 1);
+            changes.put(end + 1, changes.get(end + 1) - weight);
         } else {
-            changes.put(end + 1, -1);
+            changes.put(end + 1, -weight);
         }
     }
     
@@ -146,7 +147,7 @@ public class RunningOverlapSum {
         int max = 0;
         int running = 0;
         for(int pc : changes.keySet()) { 
-            int delta = changes.get(pc);
+            int delta = changes.get(pc).intValue();
             running += delta;
             max = Math.max(max, running);
         }
@@ -156,9 +157,9 @@ public class RunningOverlapSum {
     public int getMaxOverlap(int start, int end) { 
         int max = 0;
         int running = 0;
-        Map<Integer,Integer> map = changes.headMap(end);
+        Map<Integer,Float> map = changes.headMap(end);
         for(int pc : map.keySet()) { 
-            int delta = map.get(pc);
+            int delta = map.get(pc).intValue();
             running += delta;
             if(pc >= start && pc <= end) { 
             	max = Math.max(max, running);
@@ -169,10 +170,10 @@ public class RunningOverlapSum {
     
     public int countOverlapping(int start, int end) { 
     	int count = 0;
-    	Map<Integer,Integer> map = changes.headMap(end);
+    	Map<Integer,Float> map = changes.headMap(end);
     	int running = 0;
     	for(int pc : map.keySet()) { 
-    		int delta = map.get(pc);
+    		int delta = map.get(pc).intValue();
     		running += delta;
     		if(pc >= start && delta == -1) { 
     			count += 1;
@@ -191,7 +192,7 @@ public class RunningOverlapSum {
         int rstart = -1, rend = -1;
         
         for(int pc : changes.keySet()) {
-            int delta = changes.get(pc);
+            int delta = changes.get(pc).intValue();
             if(runningSum < threshold && runningSum + delta >= threshold) { 
                 rstart = pc;
             }
@@ -213,7 +214,7 @@ public class RunningOverlapSum {
     }
     
     
-    public TreeMap<Integer, Integer> getChangeMap() {
+    public TreeMap<Integer, Float> getChangeMap() {
     	return changes;
     }
 }

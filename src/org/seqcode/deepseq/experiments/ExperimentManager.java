@@ -1,24 +1,14 @@
 package org.seqcode.deepseq.experiments;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.seqcode.data.seqdata.SeqDataLoader;
-import org.seqcode.data.seqdata.SeqLocator;
-import org.seqcode.deepseq.hitloaders.BEDFileHitLoader;
-import org.seqcode.deepseq.hitloaders.BowtieFileHitLoader;
 import org.seqcode.deepseq.hitloaders.HitLoader;
-import org.seqcode.deepseq.hitloaders.IDXFileHitLoader;
-import org.seqcode.deepseq.hitloaders.NovoFileHitLoader;
-import org.seqcode.deepseq.hitloaders.ReadDBHitLoader;
-import org.seqcode.deepseq.hitloaders.SAMFileHitLoader;
-import org.seqcode.deepseq.hitloaders.TophatFileHitLoader;
+import org.seqcode.deepseq.hitloaders.HitLoaderFactory;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
 import org.seqcode.gseutils.Pair;
@@ -36,6 +26,7 @@ public class ExperimentManager {
 	protected ExptConfig econfig;
 	protected SeqDataLoader sdloader = null;
 	protected Genome gen;
+	protected HitLoaderFactory hlfactory;
 	
 	//Experiment tree elements
 	protected HashMap<String, HitLoader> loaders = new HashMap<String,HitLoader>();
@@ -62,7 +53,8 @@ public class ExperimentManager {
 	public ExperimentManager(ExptConfig c, boolean loadReads){
 		econfig = c;
 		gen = econfig.getGenome();
-		
+		hlfactory = new HitLoaderFactory(econfig);
+
 		HashMap<String, Sample> allSamples = new HashMap<String, Sample>();
 		HashMap<String, ControlledExperiment> allReplicates = new HashMap<String, ControlledExperiment>();
 		
@@ -98,13 +90,13 @@ public class ExperimentManager {
 				String type = source.cdr();
 				if(type.equals("READDB")){ //ReadDB HitLoader
 					if(!loaders.containsKey(name)){
-						HitLoader hl = makeReadDBHitLoader(sdloader, name);
+						HitLoader hl = hlfactory.makeReadDBHitLoader(sdloader, name);
 						//hit loader does not have to be sourced here -- that happens in the samples part below
 						loaders.put(name, hl);
 					}
 				}else{  //Assume File HitLoader
 					if(!loaders.containsKey(name)){
-						HitLoader hl = makeFileHitLoader(name, type, econfig.getNonUnique());
+						HitLoader hl = hlfactory.makeFileHitLoader(name, type, econfig.getNonUnique());
 						//hit loader does not have to be sourced here -- that happens in the samples part below
 						loaders.put(name, hl);
 					}
@@ -114,11 +106,7 @@ public class ExperimentManager {
 		
 		//Secondly, load the samples (load each sample name once)
 		for(ExptDescriptor e : descriptors){
-			String sampleName;
-			if(e.signal)
-				sampleName = e.condition+":"+e.replicate+":signal";
-			else
-				sampleName = e.condition+":"+e.replicate+":control";
+			String sampleName = e.getName();
 			
 			if(econfig.getPrintLoadingProgress() && loadReads)
 				System.err.print("Loading data from "+sampleName);
@@ -284,57 +272,6 @@ public class ExperimentManager {
 	public ExperimentCondition getIndexedCondition(int index){return indexedCondition.get(index);}
 	public ExperimentCondition getNamedCondition(String name){return namedCondition.get(name);}
 	public int getNumConditions(){return conditions.size();}
-	
-	/**
-	 * Add a ReadDB HitLoader.
-	 * @param locs List of ChipSeqLocators
-	 */
-	private HitLoader makeReadDBHitLoader(SeqDataLoader loader, String name){
-		if(loader==null)
-			throw new RuntimeException("SeqDataLoader not initialized in makeReadDBHitLoader");
-		
-		List<SeqLocator> locs = new ArrayList<SeqLocator>();
-		String[] pieces = name.trim().split(";");
-		Set<String> reps = new TreeSet<String>(); 
-		if (pieces.length == 2) {
-			locs.add(new SeqLocator(pieces[0], reps, pieces[1]));
-        } else if (pieces.length == 3) {
-        	reps.add(pieces[1]);
-        	locs.add(new SeqLocator(pieces[0], reps, pieces[2]));
-        } else {
-            throw new RuntimeException("Couldn't parse a SeqLocator from " + name);
-        }
-		return (new ReadDBHitLoader(loader, gen, locs, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs()));
-	}
-	
-
-	/**
-	 * Add a File HitLoader. File formats accepted include:
-	 * IDX, NOVO, BOWTIE, BED	, SAM, TOPSAM
-	 * @param files List of File/String Pairs, where the string is a format descriptor
-	 */
-	private HitLoader makeFileHitLoader(String filename, String format, boolean useNonUnique){
-		HitLoader currReader=null;
-		File file = new File(filename);
-		if(!file.isFile()){System.err.println("File not found: "+file.getName());System.exit(1);}
-		if(format.equals("SAM") || format.equals("BAM")){
-			currReader = new SAMFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadRead2(), econfig.getLoadPairs());
-		}else if(format.equals("TOPSAM")){
-			currReader = new TophatFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(),  econfig.getLoadRead2(), econfig.getLoadPairs());
-		}else if(format.equals("NOVO")){
-			currReader = new NovoFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs());
-		}else if(format.equals("BOWTIE")){
-			currReader = new BowtieFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs());
-		}else if(format.equals("BED")){
-			currReader = new BEDFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs());
-		}else if(format.equals("IDX")){
-			currReader = new IDXFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs());
-		}else{
-		    System.err.println("Unknown file format: "+format);
-		    System.exit(1);
-		}
-		return currReader;
-	}
 	
 	
 
