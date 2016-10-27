@@ -1,4 +1,4 @@
-package Bio::DB::ReadDBClient;
+package ReadDBClient;
 
 use warnings;
 use strict;
@@ -37,12 +37,13 @@ sub init {
 # returns a hash of the key-value pairs from the config file, by default ~/.readdb_passwd
 sub read_config_file {
   my ($self) = @_;
-  my $homedir = $ENV{'HOME'};
+  #my $homedir = $ENV{'HOME'};
   my $basename = 'readdb_passwd';
   if ($ENV{'READDBROLE'}) {
     $basename = $ENV{'READDBROLE'} . $basename;
   }
-  open(PROPS,"${homedir}/.${basename}") or die "can't open config file .$basename in $homedir : $!";
+  #open(PROPS,"${homedir}/.${basename}") or die "can't open config file .$basename in $homedir : $!";
+  open(PROPS,"${basename}") or die "can't open config file $basename in current working directory : $!";
   my %props = ();
   while(<PROPS>) {
     chomp;
@@ -477,4 +478,5 @@ sub toString {
 }
 
 1;
+
 
