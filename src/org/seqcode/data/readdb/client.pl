@@ -1,14 +1,14 @@
 #!/usr/bin/perl 
-BEGIN {push @INC, '/afs/bx.psu.edu/home/giardine/share/perl/5.20.2/'}
+#BEGIN {push @INC, '/afs/bx.psu.edu/home/giardine/share/perl/5.20.2/'}
 
 
 use strict;
 use warnings;
 use DBI;
-use lib "./";
-use ReadDBClient;
+#use lib "./";
+use Bio::DB::ReadDBClient;
 
-my $client = new ReadDBClient();
+my $client = Bio::DB::ReadDBClient->new();
 my $cmd = shift(@ARGV);
 my %props = read_mysqlconfig_file();
 my ($username,$passwd,$conn) = @props{qw(user passwd dbiconnectstring)};
@@ -44,9 +44,10 @@ if ($cmd eq 'getChroms') {
   } else {
     $hits = $client->getWeight($align,$chrom);
   }
-  foreach (@$hits) {
-    print "$_\n";
-  }
+    #foreach (@$hits) {
+    #print "$_\n";
+    #}
+    print $hits;
 } elsif ($cmd eq 'getWeightHistogram') {
   #my ($self,$alignid,$chrom,$isType2,$isPaired,$extension,$binsize,$start,$stop,$minweight, $isLeft,$isPlusStrand) = @_;
   my ($align, $build, $chrom, $start, $stop) = @ARGV;
@@ -83,7 +84,8 @@ sub read_mysqlconfig_file {
   if ($ENV{'READDBROLE'}) {
     $basename = $ENV{'READDBROLE'} . $basename;
   }
-  open(PROPS,"${homedir}/.${basename}") or die "can't open config file .$basename in $homedir : $!";
+    #open(PROPS,"${homedir}/.${basename}") or die "can't open config file .$basename in $homedir : $!";
+  open(PROPS,"${basename}") or die "can't open config file $basename in current working directory";
   my %props = ();
   while(<PROPS>) {
     chomp;

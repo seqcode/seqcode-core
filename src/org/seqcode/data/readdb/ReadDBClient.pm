@@ -1,4 +1,4 @@
-package ReadDBClient;
+package Bio::DB::ReadDBClient;
 
 use warnings;
 use strict;
@@ -6,7 +6,6 @@ use IO::Socket;
 use Socket qw(IPPROTO_TCP TCP_NODELAY SO_LINGER);
 use Config;
 use Authen::SASL qw(Perl);
-#use Authen::SASL;
 
 
 sub new {
