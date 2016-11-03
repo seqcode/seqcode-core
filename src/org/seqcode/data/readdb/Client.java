@@ -1172,7 +1172,7 @@ public class Client implements ReadOnlyClient {
             e.printStackTrace();
         }
         connectionOpen=false;
-        System.err.println("Readdb client closed");
+        //System.err.println("Readdb client closed");
     } 
 
     /**
