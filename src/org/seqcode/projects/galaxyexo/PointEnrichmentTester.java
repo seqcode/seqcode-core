@@ -168,14 +168,14 @@ public class PointEnrichmentTester {
 		if (!ap.hasKey("gff") || !ap.hasKey("region")){
             System.err.println("Usage:\n " +
                     "PointEnrichmentTester\n " +
-                    "--species <organism;genome> OR\n" +
-                    "--geninfo <genome info> AND --seq <fasta seq directory>\n" +
-                    "--peaks <file containing coordinates of peaks> \n" +
-                    "--region <region of the genome for enrichment test> \n" +
-                    "\nOPTIONS:\n" +
-                    "--out <output file name> \n" +
-                    "--pseudo <pseudocounts to suppress telomere enrichment (default=0) > \n" +
-                    "--ext <window size to merge gff points to prevent event double counts (default=20) > \n" +
+                    "--species <organism;genome> OR\n " +
+                    "--geninfo <genome info> AND --seq <fasta seq directory>\n " +
+                    "--peaks <file containing coordinates of peaks> \n " +
+                    "--region <region of the genome for enrichment test> \n " +
+                    "\nOPTIONS:\n " +
+                    "--out <output file name> \n " +
+                    "--pseudo <pseudocounts to suppress telomere enrichment (default=0) > \n " +
+                    "--ext <window size to merge gff points to prevent event double counts (default=20) > \n " +
                     "");
 			System.exit(0);
 		}

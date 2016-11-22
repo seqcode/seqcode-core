@@ -258,19 +258,20 @@ public class MemeER {
 			if (!ap.hasKey("memepath")||!ap.hasKey("seq")||!ap.hasKey("locations")){
 				System.err.println("Usage:\n " +
 	                    "MemeER\n " +
-	                    "--species <organism;genome> OR --genome <genome file> OR --gen <genome file>\n" +
-	                    "--geneinfo <genome info file> OR --g <genome info file>\n" +
-	                    "--seq <fasta seq directory>\n" +
-	                    "--memepath <path to the meme bin dir (default: meme is in $PATH)>\n" +
-	                    "\nOPTIONS:\n" +
-	                	"--memenmotifs <number of motifs MEME should find for each condition (default=3)>\n" +
-	                	"--mememinw <minw arg for MEME (default=6)>\n" +
-	                	"--mememaxw <maxw arg for MEME (default=18)>\n" +
-	                	"--memeargs <additional args for MEME (default=  -dna -mod zoops -revcomp -nostatus)>\n" +
-	                	"--minROC <min ROC required for pwm output (default=0.7)>\n" +
-	                	"--out <output file prefix>\n" +
-	                	"--printPWM [flag to print PWM]\n" +
-	                	"--pwmOut <output pwm file name if --printPWM option is selected (default= one director above MEME output folder)>\n" +
+	                    "--species <organism;genome> OR --genome <genome file> OR --gen <genome file>\n " +
+	                    "--geneinfo <genome info file> OR --g <genome info file>\n " +
+	                    "--seq <fasta seq directory>\n " +
+	                    "--memepath <path to the meme bin dir (default: meme is in $PATH)>\n " +
+	                    "\nOPTIONS:\n " +
+	                    "--win <window of sequence to take around peaks(default=200)>\n " +
+	                	"--memenmotifs <number of motifs MEME should find for each condition (default=3)>\n " +
+	                	"--mememinw <minw arg for MEME (default=6)>\n " +
+	                	"--mememaxw <maxw arg for MEME (default=18)>\n " +
+	                	"--memeargs <additional args for MEME (default=  -dna -mod zoops -revcomp -nostatus)>\n " +
+	                	"--out <output file prefix>\n " +
+	                	"--printPWM [flag to print PWM]\n " +
+	                	"--minROC <min ROC required for pwm output (default=0.7)>\n " +
+	                	"--pwmOut <output pwm file name if --printPWM option is selected (default: one director above MEME output folder)>\n " +
 	                    "");
 				System.exit(0);
 				
