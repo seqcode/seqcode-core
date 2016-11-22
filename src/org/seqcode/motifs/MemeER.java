@@ -383,7 +383,9 @@ public class MemeER {
 			//Printing the selected motifs
 			
 			for(int m =0; m<selectedMotifs.size(); m++){
-				String out = WeightMatrix.printTransfacMatrix(selectedMotifs.get(m),"Motif_"+Integer.toString(m));
+				// make motif ID consistent between the ROC and PWM
+				String out = WeightMatrix.printTransfacMatrix(selectedMotifs.get(m),selectedMotifs.get(m).getName());
+//				String out = WeightMatrix.printTransfacMatrix(selectedMotifs.get(m),"Motif_"+Integer.toString(m));
 				System.err.println(out);
 				
 				// optional : print selected motif ROC and PWM to a file
