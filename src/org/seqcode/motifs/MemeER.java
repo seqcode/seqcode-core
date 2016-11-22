@@ -309,13 +309,13 @@ public class MemeER {
 			if (ap.hasKey("out")){
 				outFolderName = ap.getKeyValue("out");
 			}else{
-				outFolderName = System.getProperty("user.dir");
+				outFolderName = System.getProperty("user.dir")+"/meme_out";
 			}	
 			File outFolder = new File(outFolderName);
 			// flag to output pwm in file
 			PrintWriter writer = null;
 			if (ap.hasKey("pwmOut")){
-				File pwmOutFile = new File(outFolderName+"pwm.txt");
+				File pwmOutFile = new File(outFolderName+"/pwm.txt");
 				try{
 					writer = new PrintWriter(pwmOutFile);
 				} catch (FileNotFoundException e) {
