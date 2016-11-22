@@ -316,7 +316,8 @@ public class MemeER {
 			// path to output pwm file
 			PrintWriter writer = null;
 			if (ap.hasKey("pwmOut")){
-				File pwmOutFile = new File(Args.parseString(args, "pwmOut", "pwm.txt"));
+				String base = Args.parseString(args, "pwmOut", "pwm.txt"); 
+				File pwmOutFile = new File(base);
 				try{
 					writer = new PrintWriter(pwmOutFile);
 				} catch (FileNotFoundException e) {
