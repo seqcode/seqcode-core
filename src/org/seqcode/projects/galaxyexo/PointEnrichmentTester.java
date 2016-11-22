@@ -37,7 +37,7 @@ public class PointEnrichmentTester {
 	protected String outbase;
 	protected List<Point> gff;
 	protected List<Region> regions;
-	protected int ext = 30; //distance to expand so that I don't double count points
+	protected int ext = 20; //distance to expand so that I don't double count points
 	protected int numItr = 1000;
 	protected Poisson poisson;
 	protected int pseudocounts = 0; // noise added to prevent calling significance in telomere regions
@@ -164,26 +164,33 @@ public class PointEnrichmentTester {
 		
 		ArgParser ap = new ArgParser(args);		
 		GenomeConfig gconf = new GenomeConfig(args);
-		List<Point> gff = RegionFileUtilities.loadPointsFromGFFFile(ap.getKeyValue("gff"),gconf.getGenome());
-		List<Region> reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
-		int pseudo = Args.parseInteger(args,"pseudo", 0);
-		int expand = Args.parseInteger(args,"ext", 0);
-		// Get outdir and outbase and make them;
-		String outbase = Args.parseString(args, "out", "point_enrichment.txt");
 		
-		if (gff.size()==0){
-			System.err.println("gff files have zero hits.");
+		if (!ap.hasKey("gff") || !ap.hasKey("region")){
             System.err.println("Usage:\n " +
                     "PointEnrichmentTester\n " +
                     "--species <organism;genome> OR\n" +
-                    "--geninfo <genome info> AND --seq <path to seqs>\n" +
+                    "--geninfo <genome info> AND --seq <fasta seq directory>\n" +
                     "--peaks <file containing coordinates of peaks> \n" +
                     "--region <region of the genome for enrichment test> \n" +
                     "\nOPTIONS:\n" +
-                    "--out <output file path+name or name> \n" +
+                    "--out <output file name> \n" +
+                    "--pseudo <pseudocounts to suppress telomere enrichment (default=0) > \n" +
+                    "--ext <window size to merge gff points to prevent event double counts (default=20) > \n" +
                     "");
 			System.exit(0);
-		}	
+		}
+		
+		List<Point> gff = RegionFileUtilities.loadPointsFromGFFFile(ap.getKeyValue("gff"),gconf.getGenome());
+		if (gff.size()==0){
+			System.err.println("gff files have zero hits.");
+			System.exit(0);
+		}		
+		List<Region> reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
+		int pseudo = Args.parseInteger(args,"pseudo", 0);
+		int expand = Args.parseInteger(args,"ext", 30);
+		// Get outdir and outbase and make them;
+		String outbase = Args.parseString(args, "out", "point_enrichment.txt");
+			
 		PointEnrichmentTester tester = new PointEnrichmentTester(outbase,gconf,gff,reg);
 		
 		if (pseudo != 0){tester.setNoise(pseudo);}

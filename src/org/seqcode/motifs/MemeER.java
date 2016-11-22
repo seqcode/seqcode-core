@@ -254,6 +254,25 @@ public class MemeER {
 			//MEME nmotifs option
 			int MEMEnmotifs = Args.parseInteger(args,"memenmotifs", 3);
 			int WinSize = Args.parseInteger(args, "win", 200);
+			
+			if (!ap.hasKey("memepath")||!ap.hasKey("seq")||!ap.hasKey("locations")){
+				System.err.println("Usage:\n " +
+	                    "MemeER\n " +
+	                    "--species <organism;genome> OR --genome <genome file> OR --gen <genome file>\n" +
+	                    "--geneinfo <genome info file> OR --g <genome info file>\n" +
+	                    "--seq <fasta seq directory>\n" +
+	                    "--memepath <path to the meme bin dir (default: meme is in $PATH)>\n" +
+	                    "\nOPTIONS:\n" +
+	                	"--memenmotifs <number of motifs MEME should find for each condition (default=3)>\n" +
+	                	"--mememinw <minw arg for MEME (default=6)>\n" +
+	                	"--mememaxw <maxw arg for MEME (default=18)>\n" +
+	                	"--memeargs <additional args for MEME (default=  -dna -mod zoops -revcomp -nostatus)>\n" +
+	                	"--minROC <min ROC required for pwm output (default=0.7)>\n" +
+	                	"--pwmOut <output file name (default=meme_pwm.txt)>\n" +
+	                    "");
+				
+			}
+			
 			String GenPath = ap.getKeyValue("seq");
 			memeargs = memeargs + " -nmotifs "+MEMEnmotifs + " -minw "+MEMEminw+" -maxw "+MEMEmaxw;
 			
@@ -357,10 +376,9 @@ public class MemeER {
 				if (writer != null){
 					writer.println("\t"+selectedMotifs.get(m).getName()+"\t"+ WeightMatrix.getConsensus(selectedMotifs.get(m))+"\tROC:"+String.format("%.2f",selectedMotifsRocs.get(m)));
 					writer.println(out);
+					writer.close();
 				}
 			}
-			
-			writer.close();
 				
 		}catch (NotFoundException e) {
 			// TODO Auto-generated catch block

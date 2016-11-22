@@ -91,14 +91,15 @@ public class NucleosomeEnrichmentProfiler {
             System.err.println("Usage:\n " +
                                "NucleosomeEnrichmentProfiler\n " +
                                "--species <organism;genome> OR\n" +
-                               "--geninfo <genome info> AND --seq <path to seqs>\n" +
+                               "--geninfo <genome info> AND --seq <fasta seq directory>\n" +
+                               "--expt <file name> AND --format <SAM/BAM/BED/IDX>\n" +
                                "--peaks <file containing coordinates of peaks> \n" +
                                "\nOPTIONS:\n" +
                                "--out <output file path+name or name> \n" +
-                               "--win <window of sequence to take around peaks> \n" +
+                               "--win <window of sequence to take around peaks (default=500)> \n" +
                                "--bai <file path to bai file> \n" +
-                               "--readshift \n" +
-                               "--smooth \n" +
+                               "--readshift <number of base pair for read shift (default=7)>\n" +
+                               "--smooth <window of gaussian kernel smoothing (default=10)> \n" +
                                "");
             System.exit(0);
         }
