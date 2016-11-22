@@ -318,7 +318,7 @@ public class MemeER {
 			PrintWriter writer = null;
 			if (ap.hasKey("printPWM")){
 				// default location is one directory above MEME output
-				String base = Args.parseString(args, "pwmOut", outFolderName+File.separator+"..");
+				String base = Args.parseString(args, "pwmOut", outFolderName+File.separator+".."+File.separator+"pwm.out");
 				File pwmOutFile = new File(base);
 				try{
 					writer = new PrintWriter(pwmOutFile);
