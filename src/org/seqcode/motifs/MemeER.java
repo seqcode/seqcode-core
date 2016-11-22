@@ -268,8 +268,9 @@ public class MemeER {
 	                	"--mememaxw <maxw arg for MEME (default=18)>\n" +
 	                	"--memeargs <additional args for MEME (default=  -dna -mod zoops -revcomp -nostatus)>\n" +
 	                	"--minROC <min ROC required for pwm output (default=0.7)>\n" +
-	                	"--pwmOut <output file name (default=meme_pwm.txt)>\n" +
+	                	"--out <output file prefix>\n" +
 	                    "");
+				System.exit(0);
 				
 			}
 			
@@ -303,13 +304,20 @@ public class MemeER {
 			if (ap.hasKey("minROC")){
 				meme.setMotifMinROC(Args.parseDouble(args, "minROC", 0.7));
 			}
-			// output PWM to a file if file name is provided
+			// specify output directory if provided
+			String outFolderName = null;
+			if (ap.hasKey("out")){
+				outFolderName = ap.getKeyValue("out");
+			}else{
+				outFolderName = System.getProperty("user.dir");
+			}	
+			File outFolder = new File(outFolderName);
+			// flag to output pwm in file
 			PrintWriter writer = null;
 			if (ap.hasKey("pwmOut")){
-				String outfileName = Args.parseString(args, "pwmOut", "meme_pwm.txt");
-				File outFile = new File(outfileName);
+				File pwmOutFile = new File(outFolderName+"pwm.txt");
 				try{
-					writer = new PrintWriter(outFile);
+					writer = new PrintWriter(pwmOutFile);
 				} catch (FileNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -345,7 +353,9 @@ public class MemeER {
 					}
 				}
 			
-				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, null, false);
+		//		Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, null, false);
+				// allowing to specify output directory
+				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, outFolder, false);
 				List<WeightMatrix> wm = matrices.car();
 				List<WeightMatrix> fm = matrices.cdr();
 			
