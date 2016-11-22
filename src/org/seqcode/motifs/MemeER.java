@@ -269,6 +269,7 @@ public class MemeER {
 	                	"--memeargs <additional args for MEME (default=  -dna -mod zoops -revcomp -nostatus)>\n" +
 	                	"--minROC <min ROC required for pwm output (default=0.7)>\n" +
 	                	"--out <output file prefix>\n" +
+	                	"--pwmOut <output pwm file name>\n" +
 	                    "");
 				System.exit(0);
 				
@@ -312,10 +313,10 @@ public class MemeER {
 				outFolderName = System.getProperty("user.dir")+"/meme_out";
 			}	
 			File outFolder = new File(outFolderName);
-			// flag to output pwm in file
+			// path to output pwm file
 			PrintWriter writer = null;
 			if (ap.hasKey("pwmOut")){
-				File pwmOutFile = new File(outFolderName+"/pwm.txt");
+				File pwmOutFile = new File(Args.parseString(args, "pwmOut", "pwm.txt"));
 				try{
 					writer = new PrintWriter(pwmOutFile);
 				} catch (FileNotFoundException e) {
