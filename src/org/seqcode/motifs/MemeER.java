@@ -390,9 +390,11 @@ public class MemeER {
 				if (writer != null){
 					writer.println("\t"+selectedMotifs.get(m).getName()+"\t"+ WeightMatrix.getConsensus(selectedMotifs.get(m))+"\tROC:"+String.format("%.2f",selectedMotifsRocs.get(m)));
 					writer.println(out);
-					writer.close();
 				}
 			}
+			// close the pwm output file
+			if (writer != null){writer.close();}
+			
 				
 		}catch (NotFoundException e) {
 			// TODO Auto-generated catch block
