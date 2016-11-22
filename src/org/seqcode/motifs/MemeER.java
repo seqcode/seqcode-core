@@ -269,7 +269,8 @@ public class MemeER {
 	                	"--memeargs <additional args for MEME (default=  -dna -mod zoops -revcomp -nostatus)>\n" +
 	                	"--minROC <min ROC required for pwm output (default=0.7)>\n" +
 	                	"--out <output file prefix>\n" +
-	                	"--pwmOut <output pwm file name>\n" +
+	                	"--printPWM [flag to print PWM]\n" +
+	                	"--pwmOut <output pwm file name if --printPWM option is selected (default= one director above MEME output folder)>\n" +
 	                    "");
 				System.exit(0);
 				
@@ -315,8 +316,10 @@ public class MemeER {
 			File outFolder = new File(outFolderName);
 			// path to output pwm file
 			PrintWriter writer = null;
-			if (ap.hasKey("pwmOut")){
-				String base = Args.parseString(args, "pwmOut", outFolderName+File.separator+".."); 
+			if (ap.hasKey("printPWM")){
+				// default location is one directory above MEME output
+				String base = outFolderName+File.separator+"..";
+				base = ap.getKeyValue("pwmOut");
 				File pwmOutFile = new File(base);
 				try{
 					writer = new PrintWriter(pwmOutFile);
