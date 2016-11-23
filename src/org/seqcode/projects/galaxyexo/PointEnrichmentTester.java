@@ -189,7 +189,7 @@ public class PointEnrichmentTester {
 		int pseudo = Args.parseInteger(args,"pseudo", 0);
 		int expand = Args.parseInteger(args,"ext", 30);
 		// Get outdir and outbase and make them;
-		String outbase = Args.parseString(args, "out", "");
+		String outbase = Args.parseString(args, "out", System.getProperty("user.dir"));
 			
 		PointEnrichmentTester tester = new PointEnrichmentTester(outbase,gconf,gff,reg);
 		

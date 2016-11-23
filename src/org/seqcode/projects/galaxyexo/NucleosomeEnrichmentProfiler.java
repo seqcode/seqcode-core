@@ -115,7 +115,7 @@ public class NucleosomeEnrichmentProfiler {
 		int smooth = Args.parseInteger(args,"smooth", 10);
 		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromFile(gconf.getGenome(), ap.getKeyValue("peaks"));
 		// Get outdir and outbase and make them;
-		String outbase = Args.parseString(args, "out", "");
+		String outbase = Args.parseString(args, "out", System.getProperty("user.dir"));
 		
 		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, spoints, win);
 		fcLoader.setFivePrimeShift(fivePrimeShift);
