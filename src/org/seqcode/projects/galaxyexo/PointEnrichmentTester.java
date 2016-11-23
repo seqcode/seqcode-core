@@ -74,7 +74,7 @@ public class PointEnrichmentTester {
 			}
 		}
 		
-		File outFile = new File(outbase);
+		File outFile = new File(outbase+File.separator+"point_enrichment.txt");
 		PrintWriter writer = new PrintWriter(outFile);		
 		writer.println("total number of non-overlapping gff points : "+mergedGff.size());
 		writer.println("number of overlap between gff points and regions with size "+totalRegionSize+" : "+totalOverlap);	
@@ -189,7 +189,7 @@ public class PointEnrichmentTester {
 		int pseudo = Args.parseInteger(args,"pseudo", 0);
 		int expand = Args.parseInteger(args,"ext", 30);
 		// Get outdir and outbase and make them;
-		String outbase = Args.parseString(args, "out", "point_enrichment.txt");
+		String outbase = Args.parseString(args, "out", "");
 			
 		PointEnrichmentTester tester = new PointEnrichmentTester(outbase,gconf,gff,reg);
 		

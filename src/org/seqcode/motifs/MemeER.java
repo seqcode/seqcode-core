@@ -319,10 +319,10 @@ public class MemeER {
 			PrintWriter writer = null;
 			if (ap.hasKey("printPWM")){
 				// default location is one directory above MEME output
-				String base = Args.parseString(args, "pwmOut", outFolderName+File.separator+".."+File.separator+"pwm.out");
+				String base = Args.parseString(args, "pwmOut", outFolderName+File.separator+"..");
 				File pwmOutFile = new File(base);
 				try{
-					writer = new PrintWriter(pwmOutFile);
+					writer = new PrintWriter(pwmOutFile+File.separator+"pwm.out");
 				} catch (FileNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

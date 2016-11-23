@@ -42,7 +42,7 @@ public class NucleosomeEnrichmentProfiler {
 	
 	public void execute() throws FileNotFoundException{
 		
-		File outFile = new File(outbase);
+		File outFile = new File(outbase+File.separator+"nuc_enrichment.txt");
 		PrintWriter writer = new PrintWriter(outFile);
 		
 		for (ExperimentCondition condition : manager.getConditions()){		
@@ -115,7 +115,7 @@ public class NucleosomeEnrichmentProfiler {
 		int smooth = Args.parseInteger(args,"smooth", 10);
 		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromFile(gconf.getGenome(), ap.getKeyValue("peaks"));
 		// Get outdir and outbase and make them;
-		String outbase = Args.parseString(args, "out", "nuc_enrichment.txt");
+		String outbase = Args.parseString(args, "out", "");
 		
 		FeatureCountsLoader fcLoader = new FeatureCountsLoader(gconf, spoints, win);
 		fcLoader.setFivePrimeShift(fivePrimeShift);
