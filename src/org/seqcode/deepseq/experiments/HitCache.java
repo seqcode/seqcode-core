@@ -31,8 +31,8 @@ import org.seqcode.deepseq.stats.BackgroundCollection;
 import org.seqcode.deepseq.stats.PoissonBackgroundModel;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
-import org.seqcode.ml.math.probability.NormalDistribution;
-import org.seqcode.ml.math.stats.StatUtil;
+import org.seqcode.math.probability.NormalDistribution;
+import org.seqcode.math.stats.StatUtil;
 
 
 /**

@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.seqcode.data.io.RegionFileUtilities;
+import org.seqcode.data.io.StreamGobbler;
 import org.seqcode.data.motifdb.WeightMatrix;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.Species;
@@ -491,34 +492,6 @@ public class MemeER {
 		}
 		return auc;
 	}
-	
-	public class StreamGobbler extends Thread 
-	{ 
-		InputStream is; 
-		String type; 
-		boolean print=false;
-
-		public StreamGobbler(InputStream is, String type, boolean printOut) 
-		{ 
-			this.print = printOut;
-			this.is = is; 
-			this.type = type; 
-		} 
-
-		public void run() { 
-			try{ 
-				InputStreamReader isr = new InputStreamReader(is); 
-				BufferedReader br = new BufferedReader(isr); 
-				String line=null; 
-				while ( (line = br.readLine()) != null){ 
-					if(print)
-						System.out.println(type + ">" + line);
-				}
-			} catch (IOException ioe){ 
-				ioe.printStackTrace(); 
-			} 
-		} 
-	} 
 	
 	public  class LabeledDouble implements Comparable<LabeledDouble>{
 		public Double dat;

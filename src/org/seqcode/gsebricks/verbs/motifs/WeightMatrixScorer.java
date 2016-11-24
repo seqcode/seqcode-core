@@ -9,7 +9,7 @@ import org.seqcode.genome.sequence.SequenceUtils;
 import org.seqcode.gsebricks.verbs.Expander;
 import org.seqcode.gsebricks.verbs.Mapper;
 import org.seqcode.gseutils.Pair;
-import org.seqcode.ml.math.stats.StatUtil;
+import org.seqcode.math.stats.StatUtil;
 
 
 public class WeightMatrixScorer implements Mapper<Region,WeightMatrixScoreProfile> {

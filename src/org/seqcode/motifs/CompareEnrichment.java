@@ -22,7 +22,7 @@ import org.seqcode.motifs.*;
 import cern.jet.random.Binomial;
 import cern.jet.random.engine.RandomEngine;
 
-//import org.seqcode.ml.math.probability.Binomial;
+//import org.seqcode.math.probability.Binomial;
 
 /** Compare the frequencies of a set of motifs between two FASTA files
  * usage:

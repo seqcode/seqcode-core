@@ -14,7 +14,7 @@ import org.seqcode.genome.Genome;
 import org.seqcode.gseutils.*;
 import org.seqcode.motifs.*;
 
-//import org.seqcode.ml.math.probability.Binomial;
+//import org.seqcode.math.probability.Binomial;
 
 /** Generate input files for libsvm or liblinear classification.
  * Uses both motifs (see parameters for CompareEnrichment) and short kmers. 

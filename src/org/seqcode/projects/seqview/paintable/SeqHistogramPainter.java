@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.seqcode.data.readdb.PairedHit;
 import org.seqcode.gseutils.*;
-import org.seqcode.ml.math.probability.NormalDistribution;
-import org.seqcode.ml.math.stats.StatUtil;
+import org.seqcode.math.probability.NormalDistribution;
+import org.seqcode.math.stats.StatUtil;
 import org.seqcode.projects.seqview.model.InteractionArcModel;
 import org.seqcode.projects.seqview.model.SeqHistogramModel;
 import org.seqcode.viz.DynamicAttribute;

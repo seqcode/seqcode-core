@@ -14,7 +14,7 @@ import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.StrandedPoint;
 import org.seqcode.gseutils.ArgParser;
 import org.seqcode.gseutils.Args;
-import org.seqcode.ml.math.stats.StatUtil;
+import org.seqcode.math.stats.StatUtil;
 
 /**
  * A method to quantify reads enrichment around plus one nucleosome relative to control experiment. 

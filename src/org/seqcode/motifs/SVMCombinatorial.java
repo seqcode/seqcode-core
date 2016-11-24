@@ -16,7 +16,7 @@ import org.seqcode.motifs.*;
 
 import libsvm.*;
 
-//import org.seqcode.ml.math.probability.Binomial;
+//import org.seqcode.math.probability.Binomial;
 
 public class SVMCombinatorial extends CombinatorialEnrichment {
 

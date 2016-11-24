@@ -14,7 +14,7 @@ import org.seqcode.genome.Genome;
 import org.seqcode.genome.sequence.SequenceUtils;
 import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.gseutils.Pair;
-import org.seqcode.ml.math.stats.Fmath;
+import org.seqcode.math.stats.Fmath;
 
 
 public abstract class BackgroundModel extends BackgroundModelMetadata {

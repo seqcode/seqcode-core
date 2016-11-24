@@ -7,7 +7,7 @@ package org.seqcode.ml.bayesnets;
 import java.util.*;
 
 import org.seqcode.gseutils.models.Model;
-import org.seqcode.ml.math.probability.FiniteDistribution;
+import org.seqcode.math.probability.FiniteDistribution;
 
 
 public class BNCpd {

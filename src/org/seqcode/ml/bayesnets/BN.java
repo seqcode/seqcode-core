@@ -9,7 +9,7 @@ import java.util.*;
 import org.seqcode.gseutils.graphs.DirectedAlgorithms;
 import org.seqcode.gseutils.graphs.DirectedGraph;
 import org.seqcode.gseutils.models.Model;
-import org.seqcode.ml.math.probability.FiniteDistribution;
+import org.seqcode.math.probability.FiniteDistribution;
 import org.seqcode.ml.regression.DataFrame;
 
 
