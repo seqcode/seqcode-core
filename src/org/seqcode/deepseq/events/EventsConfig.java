@@ -136,6 +136,8 @@ public class EventsConfig {
 				runDiffTests = Args.parseFlags(args).contains("nodifftests") ? false : true;
 				//R path
 				Rpath = Args.parseString(args, "rpath", Rpath);
+				if(Rpath.length()>0 && !Rpath.endsWith(File.separator))
+					Rpath = Rpath+File.separator;
 				//EdgeR overdispersion parameter
 				edger_overdispersion = Args.parseDouble(args,"edgerod",edger_overdispersion);
 				
