@@ -235,8 +235,10 @@ public class SignificanceTester {
 			
 			//Arguments
 			String siteFile = Args.parseString(args, "gff", null);
-			if(siteFile==null)
-				printHelp(); System.exit(1);
+			if(siteFile==null){
+				printHelp(); 
+				System.exit(1);
+			}
 			String outDirName = Args.parseString(args, "outdir", null);
 			int win = Args.parseInteger(args, "win", 50);
 			double qThres = Args.parseDouble(args, "q", 0.01);
