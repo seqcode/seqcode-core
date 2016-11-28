@@ -96,8 +96,8 @@ public class SignificanceTester {
 		}
 		
 		this.outDirName = outDirName==null?
-				outDirName+File.separator+"signif_w"+searchRegionWin+"_q"+String.format("%.2e", qThres)+"_minfold"+String.format("%.1f", minFold) :
-				gffDir+"signif_w"+searchRegionWin+"_q"+String.format("%.2e", qThres)+"_minfold"+String.format("%.1f", minFold);
+				gffDir+"signif_w"+searchRegionWin+"_q"+String.format("%.2e", qThres)+"_minfold"+String.format("%.1f", minFold):
+				outDirName+File.separator+"signif_w"+searchRegionWin+"_q"+String.format("%.2e", qThres)+"_minfold"+String.format("%.1f", minFold);
 		outDir = new File(outDirName);
 		outDir.mkdirs();
 	}
