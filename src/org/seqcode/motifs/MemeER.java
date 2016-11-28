@@ -272,7 +272,7 @@ public class MemeER {
 	                	"--out <output file prefix>\n " +
 	                	"--printPWM [flag to print PWM]\n " +
 	                	"--minROC <min ROC required for pwm output (default=0.7)>\n " +
-	                	"--pwmOut <output pwm file name if --printPWM option is selected (default: one director above MEME output folder)>\n " +
+	                	"--pwmOut <output pwm file name when --printPWM option is selected (default: one directory above MEME output folder)>\n " +
 	                    "");
 				System.exit(0);
 				
@@ -311,7 +311,7 @@ public class MemeER {
 			// specify output directory if provided
 			String outFolderName = null;
 			if (ap.hasKey("out")){
-				outFolderName = ap.getKeyValue("out");
+				outFolderName = ap.getKeyValue("out")+"/meme_out";
 			}else{
 				outFolderName = System.getProperty("user.dir")+"/meme_out";
 			}	
