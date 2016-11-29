@@ -353,7 +353,7 @@ public class MemeER {
 			
 		//		Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, null, false);
 				// allowing to specify output directory
-				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, new File(outFolderName+File.separator+"meme"), false);
+				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, new File(outFolderName+File.separator+"meme_out"), false);
 				List<WeightMatrix> wm = matrices.car();
 				List<WeightMatrix> fm = matrices.cdr();
 			
