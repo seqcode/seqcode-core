@@ -92,10 +92,10 @@ public class NucleosomeEnrichmentProfiler {
                                "NucleosomeEnrichmentProfiler\n " +
                                "--species <organism;genome> OR\n " +
                                "--geninfo <genome info> AND --seq <fasta seq directory>\n " +
-                               "--expt <file name> AND --format <SAM/BAM/BED/IDX>\n " +
+                               "--expt <file name> AND --ctrl <file name> AND --format <SAM/BAM/BED/IDX>\n " +
                                "--peaks <file containing coordinates of peaks> \n " +
                                "\nOPTIONS:\n " +
-                               "--out <output file path+name or name> \n " +
+                               "--out <output directory (default = working directory)> \n " +
                                "--win <window of reads to take around peaks (default=500)> \n " +
                                "--bai <file path to bai file> \n " +
                                "--readshift <number of base pair for read shift (default=7)>\n " +

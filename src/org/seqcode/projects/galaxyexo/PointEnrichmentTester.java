@@ -170,10 +170,10 @@ public class PointEnrichmentTester {
                     "PointEnrichmentTester\n " +
                     "--species <organism;genome> OR\n " +
                     "--geninfo <genome info> AND --seq <fasta seq directory>\n " +
-                    "--peaks <file containing coordinates of peaks> \n " +
+                    "--gff <gff containing site coordinates> \n " +
                     "--region <region of the genome for enrichment test> \n " +
                     "\nOPTIONS:\n " +
-                    "--out <output file name> \n " +
+                    "--out <output directory (default = working directory)> \n " +
                     "--pseudo <pseudocounts to suppress telomere enrichment (default=0) > \n " +
                     "--ext <window size to merge gff points to prevent event double counts (default=20) > \n " +
                     "");
