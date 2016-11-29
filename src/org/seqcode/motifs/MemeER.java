@@ -272,7 +272,6 @@ public class MemeER {
 	                	"--out <output file prefix>\n " +
 	                	"--printPWM [flag to print PWM]\n " +
 	                	"--minROC <min ROC required for pwm output (default=0.7)>\n " +
-	                	"--pwmOut <output pwm file name when --printPWM option is selected (default: one directory above MEME output folder)>\n " +
 	                    "");
 				System.exit(0);
 				
@@ -311,23 +310,16 @@ public class MemeER {
 			// specify output directory if provided
 			String outFolderName = null;
 			if (ap.hasKey("out")){
-				outFolderName = ap.getKeyValue("out")+"/meme_out";
+				outFolderName = ap.getKeyValue("out");
 			}else{
-				outFolderName = System.getProperty("user.dir")+"/meme_out";
+				outFolderName = System.getProperty("user.dir");
 			}	
 			File outFolder = new File(outFolderName);
-			// path to output pwm file
+			outFolder.mkdirs();		
 			PrintWriter writer = null;
+			// print PWM if specified
 			if (ap.hasKey("printPWM")){
-				// default location is one directory above MEME output
-				String base = Args.parseString(args, "pwmOut", outFolderName+File.separator+"..");
-				File pwmOutFile = new File(base);
-				try{
-					writer = new PrintWriter(pwmOutFile+File.separator+"pwm.out");
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				writer = new PrintWriter(new File(outFolderName+File.separator+"pwm.out"));
 			}
 			
 			for(int p=0; p<points.length; p++){
@@ -361,7 +353,7 @@ public class MemeER {
 			
 		//		Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, null, false);
 				// allowing to specify output directory
-				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, outFolder, false);
+				Pair<List<WeightMatrix>,List<WeightMatrix>> matrices = meme.execute(seqs, new File(outFolderName+File.separator+"meme"), false);
 				List<WeightMatrix> wm = matrices.car();
 				List<WeightMatrix> fm = matrices.cdr();
 			
@@ -403,6 +395,9 @@ public class MemeER {
 		}catch (NotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 	}
 	

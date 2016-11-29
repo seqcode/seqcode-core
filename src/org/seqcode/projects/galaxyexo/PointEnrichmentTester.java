@@ -75,6 +75,7 @@ public class PointEnrichmentTester {
 		}
 		
 		File outFile = new File(outbase+File.separator+"point_enrichment.txt");
+		outFile.getParentFile().mkdirs();
 		PrintWriter writer = new PrintWriter(outFile);		
 		writer.println("total number of non-overlapping gff points : "+mergedGff.size());
 		writer.println("number of overlap between gff points and regions with size "+totalRegionSize+" : "+totalOverlap);	

@@ -42,7 +42,8 @@ public class NucleosomeEnrichmentProfiler {
 	
 	public void execute() throws FileNotFoundException{
 		
-		File outFile = new File(outbase+File.separator+"nuc_enrichment.txt");
+		File outFile = new File(outbase+File.separator+"nucleosome_enrichment.txt");
+		outFile.getParentFile().mkdirs();
 		PrintWriter writer = new PrintWriter(outFile);
 		
 		for (ExperimentCondition condition : manager.getConditions()){		
