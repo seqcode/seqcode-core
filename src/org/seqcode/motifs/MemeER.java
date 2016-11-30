@@ -33,6 +33,20 @@ import org.seqcode.gseutils.Args;
 import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.gseutils.Pair;
 
+/**
+ * Utility to run MEME within a java class and from a command line.  It also evaluates the significance 
+ * of the MEME discovered motifs against the randomly picked genomic sequences and calculates ROC score. 
+ * 
+ * Input:
+ * 		- Genome
+ * 		- MEME path and MEME arguments
+ * 		- Window around peaks in which to get sequences
+ * Output:
+ * 		- MEME motif files
+ * 		- ROC score for each motif
+ * 
+ * @author akshay kakumanu
+ */
 
 public class MemeER {
 	

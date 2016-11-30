@@ -16,11 +16,21 @@ import org.seqcode.gseutils.ArgParser;
 import org.seqcode.gseutils.Args;
 import org.seqcode.math.stats.StatUtil;
 
+
 /**
- * A method to quantify reads enrichment around plus one nucleosome relative to control experiment. 
+ * Utility to quantify nucleosome "valley" of signal experiments relative to control experiments.  
+ * It creates a composite plot using plus one nucleosome positions as a reference, and finds the maximum 
+ * and minimum read heights.  The fold difference in the maximum and minimum read heights are 
+ * compared to the control experiment to get the relative fold differences in read height.    
  * 
- * input : reference point
- *       : signal and control experiment
+ * Input:
+ * 		- Genome
+ * 		- Signal experiment
+ * 		- Control experiment
+ * 		- Peak locations (plus one nucleosome)
+ * 		- Window around peaks in which to count reads
+ * Output:
+ * 		- A text file containing the enrichmemt
  * 
  * @author naomi yamada
  */

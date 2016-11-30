@@ -22,12 +22,16 @@ import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
 /**
- * A method to access enrichment of peaks at genomic segments.  A part of YastEncode galaxy pipeline. 
+ * Utility to access peak enrichment at a set of genomic regions.  The same number of peaks is 
+ * randomly placed throughout a genome and statistical significance of observed peaks at the 
+ * set of genomic regions are accessed using a Poisson model.    
  * 
- * input : peaks in gff format
- *       : sub-genomic regions where you want to test the local enrichment of peaks
- * (optional) : pseudo counts to suppress enrichment (ie. telomere)
- *            : peak extension so not to double counts peaks in close proximity
+ * Input:
+ * 		- Genome
+ * 		- GFF file of peak locations
+ *		- A set of genomic regions to test peak enrichment
+ * Output:
+ * 		- A text file indicating the number of overlap and Poisson p-value.
  * 
  * @author naomi yamada
  */
