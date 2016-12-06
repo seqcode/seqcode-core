@@ -28,18 +28,15 @@ if ($cmd eq 'getWeightHistogram') {
   my $sth = $dbh->prepare("select chromosome.id from chromosome, genome where genome.id = chromosome.genome and genome.version = ? and chromosome.name = ?");
   $sth->execute($build, $chrom);
   my $chrid = $sth->fetchrow_array;
-  #TODO set extension based on readlength and expttype
-  my $sth2 = $dbh->prepare("select expttype.name, readlength from seqdata.seqexpt, expttype where expttype.id = seqdata.seqexpt.expttype and seqdata.seqexpt.id = ?");
+  #TODO set extension based on expttype
+  my $sth2 = $dbh->prepare("select expttype.name, readlength from seqdata.seqexpt, expttype where expttype.id = seqdata.seqexpt.expttype and seqdata.seqexpt.id = (select expt from seqalignment where id = ? limit 1)");
   $sth2->execute($align);
   my($expttype, $readlen) = $sth2->fetchrow_array;
   my $extension = 0;
   #TODO do offset based on strand for chipseq? similar to macs
-  if ($readlen && $expttype && $expttype eq 'CHIPSEQ') { $extension = $readlen; }
-  elsif ($align == 20425) { #for testing purposes set this length
-     $extension = 40;
-  }
+  if ($expttype && $expttype eq 'CHIPSEQ') { $extension = 100; }
   #print STDERR "TESTING found type=$expttype, len=$readlen\n";
-  my $hits = $client->getHistogram($align, $chrid, 0, 0, $extension, $binsize, $start, $stop, 0, 0, 1);
+  my $hits = $client->getWeightHistogram($align, $chrid, 0, 0, $extension, $binsize, $start, $stop, 0, 0, 1);
   #original value 0 or 1 based??? 1??
   foreach (sort { $a <=> $b } keys %$hits) {
     if ($binsize == 1) {
