@@ -174,7 +174,7 @@ public class PointEnrichmentTester {
             System.err.println("Usage:\n " +
                     "PointEnrichmentTester\n " +
                     "--species <organism;genome> OR\n " +
-                    "--geninfo <genome info> AND --seq <fasta seq directory>\n " +
+                    "--geninfo <genome info file> \n " +
                     "--gff <gff containing site coordinates> \n " +
                     "--region <region of the genome for enrichment test> \n " +
                     "\nOPTIONS:\n " +
