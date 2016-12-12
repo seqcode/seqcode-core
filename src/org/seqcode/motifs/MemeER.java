@@ -306,8 +306,8 @@ public class MemeER {
 				gen = orggen.cdr();
 			} 
 			else{
-				if(ap.hasKey("geneinfo") || ap.hasKey("g")){
-					String infofilename = ap.hasKey("geneinfo") ? ap.getKeyValue("geneinfo") : ap.getKeyValue("g"); 
+				if(ap.hasKey("geninfo") || ap.hasKey("g")){
+					String infofilename = ap.hasKey("geninfo") ? ap.getKeyValue("geninfo") : ap.getKeyValue("g"); 
 					gen = new Genome("Genome",new File(infofilename),true);
 				}
 				else{
