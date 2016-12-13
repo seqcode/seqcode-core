@@ -22,9 +22,9 @@ import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
 /**
- * Utility to access peak enrichment at a set of genomic regions.  The same number of peaks is 
- * randomly placed throughout a genome and statistical significance of observed peaks at the 
- * set of genomic regions are accessed using a Poisson model.    
+ * Utility to access peak enrichment at a set of genomic regions.  Statistical significance
+ * of peak enrichment over the set of sites is accessed using Poisson model.  The null 
+ * distribution comes from randomly placed peaks thought a genome.  
  * 
  * Input:
  * 		- Genome

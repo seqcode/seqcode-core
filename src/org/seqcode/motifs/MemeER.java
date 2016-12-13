@@ -34,8 +34,8 @@ import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.gseutils.Pair;
 
 /**
- * Utility to run MEME within a java class and from a command line.  It also evaluates the significance 
- * of the MEME discovered motifs against the randomly picked genomic sequences and calculates ROC score. 
+ * Utility to run MEME within a java class and from a command line.  It also evaluates significance 
+ * of the MEME discovered motifs against randomly picked genomic sequences and calculates ROC score. 
  * 
  * Input:
  * 		- Genome

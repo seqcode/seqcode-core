@@ -18,10 +18,10 @@ import org.seqcode.math.stats.StatUtil;
 
 
 /**
- * Utility to quantify nucleosome "valley" of signal experiments relative to control experiments.  
- * It creates a composite plot using plus one nucleosome positions as a reference, and finds the maximum 
- * and minimum read heights.  The fold difference in the maximum and minimum read heights are 
- * compared to the control experiment to get the relative fold differences in read height.    
+ * Utility to quantify a nucleosome "valley" of a signal experiment relative to a control experiment.
+ * It creates a composite plot using reference points (such as plus one nucleosome positions), and
+ * finds the maximum and minimum read heights.  The fold difference in the maximum and minimum read
+ * heights are compared to the control experiment to get the relative fold differences in read height.
  * 
  * Input:
  * 		- Genome
