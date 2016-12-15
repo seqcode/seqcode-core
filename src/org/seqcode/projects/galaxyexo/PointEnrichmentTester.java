@@ -173,7 +173,6 @@ public class PointEnrichmentTester {
 		if (!ap.hasKey("gff") || !ap.hasKey("region")){
             System.err.println("Usage:\n " +
                     "PointEnrichmentTester\n " +
-                    "--species <organism;genome> OR\n " +
                     "--geninfo <genome info file> \n " +
                     "--gff <gff containing site coordinates> \n " +
                     "--region <region of the genome for enrichment test> \n " +

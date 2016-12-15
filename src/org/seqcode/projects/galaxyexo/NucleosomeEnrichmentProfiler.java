@@ -101,7 +101,6 @@ public class NucleosomeEnrichmentProfiler {
         	System.err.println("please input peak files and region files.");
             System.err.println("Usage:\n " +
                                "NucleosomeEnrichmentProfiler\n " +
-                               "--species <organism;genome> OR\n " +
                                "--geninfo <genome info file> \n " +
                                "--expt <file name> AND --ctrl <file name> AND --format <SAM/BAM/BED/IDX>\n " +
                                "--peaks <file containing coordinates of peaks> \n " +

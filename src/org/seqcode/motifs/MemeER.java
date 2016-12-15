@@ -274,7 +274,8 @@ public class MemeER {
 			if (!ap.hasKey("memepath")||!ap.hasKey("seq")||!ap.hasKey("locations")){
 				System.err.println("Usage:\n " +
 	                    "MemeER\n " +
-	                    GenomeConfig.getArgsList()+"\n"+
+	                    "--geninfo <genome info file> \n " +
+	                    "--seq <fasta seq directory> \n " +
 	                    "--memepath <path to the meme bin dir (default: meme is in $PATH)>\n " +
 	                    "\nOPTIONS:\n " +
 	                    "--win <window of sequence to take around peaks(default=200)>\n " +
