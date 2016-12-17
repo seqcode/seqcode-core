@@ -41,10 +41,10 @@ public class PointEnrichmentTester {
 	protected String outbase;
 	protected List<Point> gff;
 	protected List<Region> regions;
-	protected int ext = 20; //distance to expand so that I don't double count points
+	protected int ext; //distance to expand so that I don't double count points
 	protected int numItr = 1000;
 	protected Poisson poisson;
-	protected int pseudocounts = 0; // noise added to prevent calling significance in telomere regions
+	protected int pseudocounts; // noise added to prevent calling significance in telomere regions
 	protected boolean printRandOverlap = false; // flag to print number of random overlap
 	
 	public PointEnrichmentTester(String base, GenomeConfig gcon,List<Point> g, List<Region> r){
@@ -200,14 +200,14 @@ public class PointEnrichmentTester {
 		}		
 		List<Region> reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
 		int pseudo = Args.parseInteger(args,"pseudo", 0);
-		int expand = Args.parseInteger(args,"ext", 30);
+		int expand = Args.parseInteger(args,"ext", 20);
 		// Get outdir and outbase and make them;
 		String outbase = Args.parseString(args, "out", System.getProperty("user.dir"));
 			
 		PointEnrichmentTester tester = new PointEnrichmentTester(outbase,gconf,gff,reg);
 		
-		if (pseudo != 0){tester.setNoise(pseudo);}
-		if (expand != 0){tester.setExpansion(expand);}
+		tester.setNoise(pseudo);
+		tester.setExpansion(expand);
 		if (ap.hasKey("print")){tester.printRandOverlap();}		
 		tester.execute();
 	}	
