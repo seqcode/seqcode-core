@@ -73,10 +73,8 @@ public class PointEnrichmentTester {
 		int totalOverlap = 0; // number of total overlap between two regions
 		for (Region gff : mergedGff){
 			for (Region reg : regions){
-				if (gff.overlaps(reg)){
+				if (gff.overlaps(reg))
 					totalOverlap ++;
-					break;
-				}
 			}
 		}
 		
