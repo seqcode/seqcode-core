@@ -45,6 +45,7 @@ public class PointEnrichmentTester {
 	protected int numItr = 1000;
 	protected Poisson poisson;
 	protected int pseudocounts = 0; // noise added to prevent calling significance in telomere regions
+	protected boolean printRandOverlap = false; // flag to print number of random overlap
 	
 	public PointEnrichmentTester(String base, GenomeConfig gcon,List<Point> g, List<Region> r){
 		outbase=base;
@@ -57,6 +58,7 @@ public class PointEnrichmentTester {
 	// set pseudo counts
 	public void setNoise(int c){pseudocounts=c;}
 	public void setExpansion(int e){ext=e;}
+	public void printRandOverlap(){printRandOverlap=true;}
 	
 	public void execute() throws FileNotFoundException{
 		
@@ -84,28 +86,33 @@ public class PointEnrichmentTester {
 		writer.println("total number of non-overlapping gff points : "+mergedGff.size());
 		writer.println("number of overlap between gff points and regions with size "+totalRegionSize+" : "+totalOverlap);	
 		
+		PrintWriter w = null;
+		if (printRandOverlap){
+			File randOverlapFile = new File(outbase+File.separator+"num_random_overlaps.txt");
+			w = new PrintWriter(randOverlapFile) ;
+		}
+		
 		double maxPval = 0;
 		// Determined p-val based on Poisson distributions for numItr times and return the max p-val
 		for (int i=0 ; i < numItr ; i++){
 			double pValuePoisson =1;
 			// produce random hits through genome
 			List<Region> randomRegions = randomRegionPick(gconfig.getGenome(), null, mergedGff.size(),1);
-			int totalRandOverlaps=0;
+			int numRandOverlaps=0;
 			for (Region randRegion : randomRegions){
 				for (Region reg : regions){
 					if (randRegion.overlaps(reg)){
-						totalRandOverlaps++;
+						numRandOverlaps++;
 						break;
 					}
 				}
 			}
-			if (i ==1){
-				writer.println("number of overlap with random regions for iteration one : "+totalRandOverlaps);
-			}
-			if (totalRandOverlaps >totalOverlap){
+			if (i ==1){writer.println("number of overlap with random regions for iteration one : "+numRandOverlaps);}
+			if (w != null){ w.println(numRandOverlaps+"\t");}
+			if (numRandOverlaps >totalOverlap){
 				pValuePoisson=1;
 			}else{
-				poisson.setMean(totalRandOverlaps+pseudocounts);
+				poisson.setMean(numRandOverlaps+pseudocounts);
 				int cA = (int)Math.ceil(totalOverlap);
 				pValuePoisson = 1 - poisson.cdf(cA) + poisson.pdf(cA);           	
 			}
@@ -180,6 +187,7 @@ public class PointEnrichmentTester {
                     "--out <output directory (default = working directory)> \n " +
                     "--pseudo <pseudocounts to suppress telomere enrichment (default=0) > \n " +
                     "--ext <window size to merge gff points to prevent event double counts (default=20) > \n " +
+                    "--print <flag to print number of random overlaps with region> \n " +
                     "");
 			System.exit(0);
 		}
@@ -199,6 +207,7 @@ public class PointEnrichmentTester {
 		
 		if (pseudo != 0){tester.setNoise(pseudo);}
 		if (expand != 0){tester.setExpansion(expand);}
+		if (ap.hasKey("print")){tester.printRandOverlap();}		
 		tester.execute();
 	}	
 }
