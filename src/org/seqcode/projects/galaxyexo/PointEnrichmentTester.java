@@ -120,6 +120,7 @@ public class PointEnrichmentTester {
 		}
 		writer.println("Poisson p-val : "+maxPval);
 		writer.close();
+		w.close();
 	}
 	
 	public static List<Region> randomRegionPick(Genome gen, List<Region> blackList, int numSamples, int sampleSize){
