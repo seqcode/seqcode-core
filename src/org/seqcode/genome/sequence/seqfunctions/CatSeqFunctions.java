@@ -41,7 +41,11 @@ public class CatSeqFunctions {
 		//Count the length of the full concatenated vector
 		catLength = 0;
 		for(SeqFunction f : seqFuncs){
-			catLength+=f.scoreDimension()*seqWidth;
+			if(f instanceof SeqFunctionMask){
+				catLength+=f.scoreDimension() * ((SeqFunctionMask)f).getRelPosList().size();
+			}else{
+				catLength+=f.scoreDimension()*seqWidth;
+			}
 		}
 		
 		//Initialize the positionLabels
@@ -49,13 +53,23 @@ public class CatSeqFunctions {
 		int i=0;
 		for(SeqFunction f : seqFuncs){
 			String posType = f.isBetweenNucleotides() ? "step" : "pos";
-			for(int p=0; p<seqWidth; p++){
-				int position = p-positionLabelOffset;
-				for(int d=0; d<f.scoreDimension(); d++){
-					
-					positionLabels[i] = f.dimensionLabels()[d]+"_at_"+posType+"_"+position;
-					
-					i++;
+			
+			if(f instanceof SeqFunctionMask){
+				List<Integer> pos = ((SeqFunctionMask)f).getRelPosList();
+				for(Integer position : pos)
+					for(int d=0; d<f.scoreDimension(); d++){
+						positionLabels[i] = f.dimensionLabels()[d]+"_at_"+posType+"_"+position;
+						i++;
+					}
+			}else{
+				for(int p=0; p<seqWidth; p++){
+					int position = p-positionLabelOffset;
+					for(int d=0; d<f.scoreDimension(); d++){
+						
+						positionLabels[i] = f.dimensionLabels()[d]+"_at_"+posType+"_"+position;
+						
+						i++;
+					}
 				}
 			}
 		}
@@ -84,14 +98,17 @@ public class CatSeqFunctions {
 	 */
 	public void printLibSVMData(Path outFile){
 		List<String> data = new ArrayList<String>();
-		for(ScoredSequence s : seqResults.keySet()){
-			Double[] scores = seqResults.get(s);
-			String currLine = new Double(s.getScore()).toString(); 
-			for(int i=0; i<catLength; i++){
-				if(scores[i]!=0)
-					currLine=currLine+"\t"+(i+1)+":"+String.format("%.3f", scores[i]);
+		for(ScoredSequence s : scoredSeqs){
+			if(seqResults.containsKey(s)){
+				Double[] scores = seqResults.get(s);
+				String currLine = new Double(s.getScore()).toString(); 
+				//System.out.println(s.getSeq()+"\t"+s.getScore());
+				for(int i=0; i<catLength; i++){
+					if(scores[i]!=0.0)
+						currLine=currLine+"\t"+(i+1)+":"+String.format("%.3f", scores[i]);
+				}
+				data.add(currLine);
 			}
-			data.add(currLine);
 		}
 		//Output file
 		try {
@@ -175,15 +192,33 @@ public class CatSeqFunctions {
 					Double [] catScores = new Double[catLength];
 					int i=0;
 					for(SeqFunction function : seqFuncs){
+						int betweenNucOffset= function.isBetweenNucleotides() ? 1:0;
 						double min = function.getMinScore();
 						double span = (function.getMaxScore()-function.getMinScore());
 						double[][] tmpScores = function.score(s.getSeq());
-						for(int p=0; p<seqWidth; p++){
-							for(int d=0; d<function.scoreDimension(); d++){
-			    				catScores[i]=(tmpScores[d][p]-min)/span;
-			    				
-			    				i++;
-			    			}
+						
+						if(function instanceof SeqFunctionMask){
+							List<Integer> pos = ((SeqFunctionMask)function).getRelPosList();
+							for(int p=0; p<pos.size(); p++){
+								for(int d=0; d<function.scoreDimension(); d++){
+									catScores[i]=Math.max((tmpScores[d][p]-min)/span, 0.0);
+									i++;
+			    				}
+							}
+						}else{
+							for(int p=0; p<seqWidth; p++){
+								if(p>=function.scoringOffset() && p<seqWidth-function.scoreWindowSize()+function.scoringOffset()+betweenNucOffset+1){
+									for(int d=0; d<function.scoreDimension(); d++){
+										catScores[i]=Math.max((tmpScores[d][p]-min)/span, 0.0);
+										i++;
+									}
+				    			}else{
+				    				for(int d=0; d<function.scoreDimension(); d++){
+				    					catScores[i]=0.0;
+				    					i++;
+				    				}
+				    			}						
+							}
 						}
 					}
 					seqResults.put(s, catScores);
