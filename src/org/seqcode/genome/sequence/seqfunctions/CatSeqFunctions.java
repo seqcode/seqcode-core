@@ -117,6 +117,30 @@ public class CatSeqFunctions {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+	 * Print data to a file in full dimensionality
+	 * @param outFile
+	 */
+	public void printFullData(Path outFile){
+		List<String> data = new ArrayList<String>();
+		for(ScoredSequence s : scoredSeqs){
+			if(seqResults.containsKey(s)){
+				Double[] scores = seqResults.get(s);
+				String currLine = new Double(s.getScore()).toString(); 
+				for(int i=0; i<catLength; i++){
+						currLine=currLine+"\t"+String.format("%.3f", scores[i]);
+				}
+				data.add(currLine);
+			}
+		}
+		//Output file
+		try {
+			Files.write(outFile, data, Charset.forName("UTF-8"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * Print sequences to a file
