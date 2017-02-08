@@ -356,7 +356,7 @@ public class ExptConfig {
 				"Experiments:\n" +
 				"\t--design <design file name>\n" +
 				"\tOR\n" +
-				"\t--expt/--ctrl <signal/control experiment file name> AND --format <SAM/BED/IDX/BOWTIE/NOVO>\n" +
+				"\t--expt/--ctrl <signal/control experiment file name> AND --format <SAM/BED/SCIDX/BOWTIE/NOVO>\n" +
 				"\tAND/OR" +
 				"\t--rdbexpt/--rdbctrl <signal/control ReadDB experiment identifier>\n" +
 				"\t\tNote that if you use --expt/--ctrl or --rdbexpt/--rdbctrl, you can specify the names of the experiment & replicate\n" +
