@@ -71,7 +71,7 @@ public class NucleosomeEnrichmentProfiler {
 				
 				double ratio = getMaxCounts(smoothedSignal)*getMinCounts(smoothedControl)/(getMinCounts(smoothedSignal)*getMaxCounts(smoothedControl));
 				
-				writer.println("Sample Name"+rep.getSignal().getName()+"\tRatio: "+ratio+"\tSignal: "+rep.getSignal().getHitCount());
+				writer.println("Sample Name "+rep.getSignal().getName()+"\tRatio: "+ratio+"\tSignal: "+rep.getSignal().getHitCount());
 			}
 		}
 		writer.close();
@@ -106,7 +106,7 @@ public class NucleosomeEnrichmentProfiler {
                                "--peaks <file containing coordinates of peaks> \n " +
                                "\nOPTIONS:\n " +
                                "--out <output directory (default = working directory)> \n " +
-                               "--win <window of reads to take around peaks (default=500)> \n " +
+                               "--win <window of reads to take around peaks (default=200)> \n " +
                                "--bai <file path to bai file> \n " +
                                "--readshift <number of base pair for read shift (default=7)>\n " +
                                "--smooth <window of gaussian kernel smoothing (default=10)> \n " +
@@ -120,8 +120,8 @@ public class NucleosomeEnrichmentProfiler {
 		ExperimentManager manager = new ExperimentManager(econf);
 		
 		// parsing command line arguments	
-		int win = Args.parseInteger(args, "win", 500);
-		int fivePrimeShift = Args.parseInteger(args,"readshift", 7);
+		int win = Args.parseInteger(args, "win", 200);
+		int fivePrimeShift = Args.parseInteger(args,"readshift", 6);
 		int smooth = Args.parseInteger(args,"smooth", 10);
 		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromFile(gconf.getGenome(), ap.getKeyValue("peaks"));
 		// Get outdir and outbase and make them;
