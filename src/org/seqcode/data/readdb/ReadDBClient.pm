@@ -349,7 +349,7 @@ sub getWeightHistogram {
   $self->{request}{start} = $start;
   $self->{request}{end} = $stop;
   $self->{request}{map} = {binsize=>$binsize};
-  $self->{request}{map}{extension}=1;
+  $self->{request}{map}{extension}=$extension;
   $self->sendRequest();
   my $response = $self->readLine();
   if ($response ne "OK") {
