@@ -24,7 +24,7 @@ public class GCContentFunction implements SeqFunction{
 			scoringOffset = scoreWindowSize/2;
 			isBetweenNucs=false;
 		}
-		String l = String.format("%s (%dbp)", "GC", scoreWindowSize);
+		String l = String.format("%s_%dbp", "GC", scoreWindowSize);
 		labels[0]=l;
 	}
 	

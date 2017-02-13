@@ -85,6 +85,8 @@ public class BindingManager {
 	public void printConditionEvents(ExperimentCondition ec, String outRoot){
 		try{
 			String outName = outRoot+"."+ec.getName()+".events";
+			if(config.getEventsFileTXTExtension())
+				outName = outName+".txt";
 			FileWriter fw = new FileWriter(outName);
 			
 			fw.write(BindingEvent.fullHeadString()+"\n");
@@ -171,6 +173,8 @@ public class BindingManager {
 	    	try {
 	    		//Full output table (all non-zero components)
 	    		String filename = filePrefix+".all.events.table";
+	    		if(config.getEventsFileTXTExtension())
+    				filename = filename+".txt";
 	    		FileWriter fout = new FileWriter(filename);
 	    		fout.write(BindingEvent.fullHeadString()+"\n");
 	    		for(BindingEvent e : events)
@@ -188,6 +192,8 @@ public class BindingManager {
 	    			String condName = cond.getName(); 
 	    			condName = condName.replaceAll("/", "-");
 	    			filename = filePrefix+"_"+condName+".events";
+	    			if(config.getEventsFileTXTExtension())
+	    				filename = filename+".txt";
 					fout = new FileWriter(filename);
 					fout.write(BindingEvent.conditionHeadString(cond)+"\n");
 			    	for(BindingEvent e : events){
@@ -215,6 +221,8 @@ public class BindingManager {
 				    			String othercondName = othercond.getName(); 
 				    			condName = condName.replaceAll("/", "-");
 				    			filename = filePrefix+"_"+condName+"_gt_"+othercondName+".diff.events";
+				    			if(config.getEventsFileTXTExtension())
+				    				filename = filename+".txt";
 								fout = new FileWriter(filename);
 								fout.write(BindingEvent.conditionShortHeadString(cond)+"\n");
 						    	for(BindingEvent e : events){

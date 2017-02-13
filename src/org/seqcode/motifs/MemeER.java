@@ -21,6 +21,7 @@ import org.seqcode.data.io.RegionFileUtilities;
 import org.seqcode.data.io.StreamGobbler;
 import org.seqcode.data.motifdb.WeightMatrix;
 import org.seqcode.genome.Genome;
+import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.Species;
 import org.seqcode.genome.location.NamedRegion;
 import org.seqcode.genome.location.Region;
@@ -34,8 +35,8 @@ import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.gseutils.Pair;
 
 /**
- * Utility to run MEME within a java class and from a command line.  It also evaluates the significance 
- * of the MEME discovered motifs against the randomly picked genomic sequences and calculates ROC score. 
+ * Utility to run MEME within a java class and from a command line.  It also evaluates significance 
+ * of the MEME discovered motifs against randomly picked genomic sequences and calculates ROC score. 
  * 
  * Input:
  * 		- Genome
@@ -273,9 +274,8 @@ public class MemeER {
 			if (!ap.hasKey("memepath")||!ap.hasKey("seq")||!ap.hasKey("locations")){
 				System.err.println("Usage:\n " +
 	                    "MemeER\n " +
-	                    "--species <organism;genome> OR --genome <genome file> OR --gen <genome file>\n " +
-	                    "--geneinfo <genome info file> OR --g <genome info file>\n " +
-	                    "--seq <fasta seq directory>\n " +
+	                    "--geninfo <genome info file> \n " +
+	                    "--seq <fasta seq directory> \n " +
 	                    "--memepath <path to the meme bin dir (default: meme is in $PATH)>\n " +
 	                    "\nOPTIONS:\n " +
 	                    "--win <window of sequence to take around peaks(default=200)>\n " +
@@ -299,21 +299,10 @@ public class MemeER {
 			List<WeightMatrix> selectedMotifs = new ArrayList<WeightMatrix>();
 			List<Double> selectedMotifsRocs = new ArrayList<Double>();
 			
+			GenomeConfig gcon = new GenomeConfig(args);
 			
-			Genome gen;
-			if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
-				Pair<Species, Genome> orggen = Args.parseGenome(args);
-				gen = orggen.cdr();
-			} 
-			else{
-				if(ap.hasKey("geneinfo") || ap.hasKey("g")){
-					String infofilename = ap.hasKey("geneinfo") ? ap.getKeyValue("geneinfo") : ap.getKeyValue("g"); 
-					gen = new Genome("Genome",new File(infofilename),true);
-				}
-				else{
-					gen = null;
-				}
-			}
+			Genome gen = gcon.getGenome();
+			
 			
 			MemeER meme = new MemeER(Args.parseString(args, "memepath", ""), memeargs);
 			
@@ -406,9 +395,6 @@ public class MemeER {
 			if (writer != null){writer.close();}
 			
 				
-		}catch (NotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

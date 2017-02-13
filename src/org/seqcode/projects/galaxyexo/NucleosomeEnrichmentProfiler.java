@@ -18,10 +18,10 @@ import org.seqcode.math.stats.StatUtil;
 
 
 /**
- * Utility to quantify nucleosome "valley" of signal experiments relative to control experiments.  
- * It creates a composite plot using plus one nucleosome positions as a reference, and finds the maximum 
- * and minimum read heights.  The fold difference in the maximum and minimum read heights are 
- * compared to the control experiment to get the relative fold differences in read height.    
+ * Utility to quantify a nucleosome "valley" of a signal experiment relative to a control experiment.
+ * It creates a composite plot using reference points (such as plus one nucleosome positions), and
+ * finds the maximum and minimum read heights.  The fold difference in the maximum and minimum read
+ * heights are compared to the control experiment to get the relative fold differences in read height.
  * 
  * Input:
  * 		- Genome
@@ -71,7 +71,7 @@ public class NucleosomeEnrichmentProfiler {
 				
 				double ratio = getMaxCounts(smoothedSignal)*getMinCounts(smoothedControl)/(getMinCounts(smoothedSignal)*getMaxCounts(smoothedControl));
 				
-				writer.println("sample "+rep.getSignal().getName()+"\tratio: "+ratio);
+				writer.println("Sample Name "+rep.getSignal().getName()+"\tRatio: "+ratio+"\tSignal: "+rep.getSignal().getHitCount());
 			}
 		}
 		writer.close();
@@ -101,13 +101,12 @@ public class NucleosomeEnrichmentProfiler {
         	System.err.println("please input peak files and region files.");
             System.err.println("Usage:\n " +
                                "NucleosomeEnrichmentProfiler\n " +
-                               "--species <organism;genome> OR\n " +
-                               "--geninfo <genome info> AND --seq <fasta seq directory>\n " +
+                               "--geninfo <genome info file> \n " +
                                "--expt <file name> AND --ctrl <file name> AND --format <SAM/BAM/BED/IDX>\n " +
                                "--peaks <file containing coordinates of peaks> \n " +
                                "\nOPTIONS:\n " +
                                "--out <output directory (default = working directory)> \n " +
-                               "--win <window of reads to take around peaks (default=500)> \n " +
+                               "--win <window of reads to take around peaks (default=200)> \n " +
                                "--bai <file path to bai file> \n " +
                                "--readshift <number of base pair for read shift (default=7)>\n " +
                                "--smooth <window of gaussian kernel smoothing (default=10)> \n " +
@@ -122,7 +121,7 @@ public class NucleosomeEnrichmentProfiler {
 		
 		// parsing command line arguments	
 		int win = Args.parseInteger(args, "win", 500);
-		int fivePrimeShift = Args.parseInteger(args,"readshift", 7);
+		int fivePrimeShift = Args.parseInteger(args,"readshift", 6);
 		int smooth = Args.parseInteger(args,"smooth", 10);
 		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromFile(gconf.getGenome(), ap.getKeyValue("peaks"));
 		// Get outdir and outbase and make them;

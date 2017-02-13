@@ -30,6 +30,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
     private boolean useCache = false;
     private boolean useLocalFiles = false;
     private String genomePath = null;
+    private boolean genomePathIsFullGenomeFile=false;
     private int maxQuery = -1;
 
     private static Map<String, String[]> regionCache;
@@ -61,6 +62,14 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
     }
     public void setGenomePath(String genomePath){
     	this.genomePath = genomePath;
+    	File test = new File(genomePath);
+    	if(!test.exists()){
+    		System.err.println("Genome sequence directory/file does not exist!");
+    		System.exit(1);
+    	}else{
+    		if(test.isFile() && (genomePath.endsWith(".fa")||genomePath.endsWith(".fasta")||genomePath.endsWith(".seq")))
+    			genomePathIsFullGenomeFile=true;
+    	}
     }
     
     /** cache the whole chromosome of this region */
@@ -75,21 +84,26 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
         if (useLocalFiles) {
         	if (genomePath==null)
         		genomePath = "/scratch/" + region.getGenome().getVersion();
-            File f = new File( genomePath + "/chr" + region.getChrom() + ".fa");
-            if (!f.exists())
-                f = new File( genomePath+ "/chr" + region.getChrom() + ".fasta");
-            if (!f.exists())
-                f = new File( genomePath+ "/" + region.getChrom() + ".fa");
-            if (!f.exists())
-                f = new File( genomePath+ "/" + region.getChrom() + ".fasta");
-            if (!f.exists())
-                f = new File( genomePath+ "/chromosome" + region.getChrom() + ".fa");
-            if (!f.exists())
-                f = new File( genomePath+ "/chromosome" + region.getChrom() + ".fasta");
-            if (!f.exists())
-                f = new File( genomePath+ "/chrom" + region.getChrom() + ".fa");
-            if (!f.exists())
-                f = new File( genomePath+ "/chrom" + region.getChrom() + ".fasta");
+        	File f=null;
+            if(genomePathIsFullGenomeFile){
+            	f = new File(genomePath);
+            }else{
+	        	f = new File( genomePath + "/chr" + region.getChrom() + ".fa");
+	            if (!f.exists())
+	                f = new File( genomePath+ "/chr" + region.getChrom() + ".fasta");
+	            if (!f.exists())
+	                f = new File( genomePath+ "/" + region.getChrom() + ".fa");
+	            if (!f.exists())
+	                f = new File( genomePath+ "/" + region.getChrom() + ".fasta");
+	            if (!f.exists())
+	                f = new File( genomePath+ "/chromosome" + region.getChrom() + ".fa");
+	            if (!f.exists())
+	                f = new File( genomePath+ "/chromosome" + region.getChrom() + ".fasta");
+	            if (!f.exists())
+	                f = new File( genomePath+ "/chrom" + region.getChrom() + ".fa");
+	            if (!f.exists())
+	                f = new File( genomePath+ "/chrom" + region.getChrom() + ".fasta");
+            }
             
             if (f.exists()) {
                 FASTAStream stream = new FASTAStream(f);

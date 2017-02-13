@@ -10,7 +10,7 @@ import org.seqcode.deepseq.ReadHit;
 
 
 /**
- * IDXFileHitLoader: a FileHitLoader from Pugh lab IDX format
+ * IDXFileHitLoader: a FileHitLoader from Galaxy-supported SCIDX format (i.e. Pugh lab IDX format). 
  * 
  * @author mahony
  *

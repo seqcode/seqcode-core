@@ -53,7 +53,7 @@ public class HitLoaderFactory {
 
 	/**
 	 * Add a File HitLoader. File formats accepted include:
-	 * IDX, NOVO, BOWTIE, BED	, SAM, TOPSAM
+	 * SCIDX, NOVO, BOWTIE, BED, SAM, TOPSAM
 	 * @param files List of File/String Pairs, where the string is a format descriptor
 	 */
 	public HitLoader makeFileHitLoader(String filename, String format, boolean useNonUnique){
@@ -70,7 +70,7 @@ public class HitLoaderFactory {
 			currReader = new BowtieFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs());
 		}else if(format.equals("BED")){
 			currReader = new BEDFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs());
-		}else if(format.equals("IDX")){
+		}else if(format.equals("SCIDX") || format.equals("IDX")){
 			currReader = new IDXFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs());
 		}else{
 		    System.err.println("Unknown file format: "+format);

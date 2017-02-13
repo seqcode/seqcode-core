@@ -43,6 +43,7 @@ public class EventsConfig {
 	protected boolean runDiffTests = true; //Run differential enrichment testing
 	protected String Rpath="";
 	protected double edger_overdispersion = 0.15; //Overdispersion used by EdgeR differential enrichment tests
+	protected boolean eventsFileTXTExtension=false;
 	
 	
 	//Constants
@@ -141,6 +142,8 @@ public class EventsConfig {
 				//EdgeR overdispersion parameter
 				edger_overdispersion = Args.parseDouble(args,"edgerod",edger_overdispersion);
 				
+				//Add .txt extension to events files
+				eventsFileTXTExtension= Args.parseFlags(args).contains("eventsaretxt");
 				
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
@@ -185,7 +188,7 @@ public class EventsConfig {
 	public boolean getRunDiffTests(){return runDiffTests;}
 	public String getRpath(){return Rpath;}
 	public double getEdgeROverDisp(){return edger_overdispersion;}
-	
+	public boolean getEventsFileTXTExtension(){return eventsFileTXTExtension;}
 	
 	/**
 	 * returns a string describing the arguments handled by this parser. 
@@ -202,7 +205,8 @@ public class EventsConfig {
 				"\t--nodifftests [flag to turn off DE tests]\n" +
 				"\t--rpath <path to the R bin dir (default: R is in $PATH). Note that you need to install edgeR separately>\n" +
 				"\t--edgerod <EdgeR overdispersion (default="+edger_overdispersion+")>\n" +
-				"\t--diffp <minimum p-value for differential enrichment (default="+differentialSignificanceP+")>\n" +				
+				"\t--diffp <minimum p-value for differential enrichment (default="+differentialSignificanceP+")>\n" +
+				"\t--eventsaretxt [add .txt to events file extension]\n" +				
 				"Annotations:\n" +
 				"\t--transcripts <transcripts file>\n" +
 				"\t--dbgenes refGene\n" +

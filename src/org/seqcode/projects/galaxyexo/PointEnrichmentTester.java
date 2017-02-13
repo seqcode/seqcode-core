@@ -22,9 +22,9 @@ import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
 /**
- * Utility to access peak enrichment at a set of genomic regions.  The same number of peaks is 
- * randomly placed throughout a genome and statistical significance of observed peaks at the 
- * set of genomic regions are accessed using a Poisson model.    
+ * Utility to access peak enrichment at a set of genomic regions.  Statistical significance
+ * of peak enrichment over the set of sites is accessed using Poisson model.  The null 
+ * distribution comes from randomly placed peaks thought a genome.  
  * 
  * Input:
  * 		- Genome
@@ -41,10 +41,11 @@ public class PointEnrichmentTester {
 	protected String outbase;
 	protected List<Point> gff;
 	protected List<Region> regions;
-	protected int ext = 20; //distance to expand so that I don't double count points
+	protected int ext; //distance to expand so that I don't double count points
 	protected int numItr = 1000;
 	protected Poisson poisson;
-	protected int pseudocounts = 0; // noise added to prevent calling significance in telomere regions
+	protected int pseudocounts; // noise added to prevent calling significance in telomere regions
+	protected boolean printRandOverlap = false; // flag to print number of random overlap
 	
 	public PointEnrichmentTester(String base, GenomeConfig gcon,List<Point> g, List<Region> r){
 		outbase=base;
@@ -57,6 +58,7 @@ public class PointEnrichmentTester {
 	// set pseudo counts
 	public void setNoise(int c){pseudocounts=c;}
 	public void setExpansion(int e){ext=e;}
+	public void printRandOverlap(){printRandOverlap=true;}
 	
 	public void execute() throws FileNotFoundException{
 		
@@ -71,10 +73,8 @@ public class PointEnrichmentTester {
 		int totalOverlap = 0; // number of total overlap between two regions
 		for (Region gff : mergedGff){
 			for (Region reg : regions){
-				if (gff.overlaps(reg)){
+				if (gff.overlaps(reg))
 					totalOverlap ++;
-					break;
-				}
 			}
 		}
 		
@@ -84,28 +84,33 @@ public class PointEnrichmentTester {
 		writer.println("total number of non-overlapping gff points : "+mergedGff.size());
 		writer.println("number of overlap between gff points and regions with size "+totalRegionSize+" : "+totalOverlap);	
 		
+		PrintWriter w = null;
+		if (printRandOverlap){
+			File randOverlapFile = new File(outbase+File.separator+"num_random_overlaps.txt");
+			w = new PrintWriter(randOverlapFile) ;
+		}
+		
 		double maxPval = 0;
 		// Determined p-val based on Poisson distributions for numItr times and return the max p-val
 		for (int i=0 ; i < numItr ; i++){
 			double pValuePoisson =1;
 			// produce random hits through genome
 			List<Region> randomRegions = randomRegionPick(gconfig.getGenome(), null, mergedGff.size(),1);
-			int totalRandOverlaps=0;
+			int numRandOverlaps=0;
 			for (Region randRegion : randomRegions){
 				for (Region reg : regions){
 					if (randRegion.overlaps(reg)){
-						totalRandOverlaps++;
+						numRandOverlaps++;
 						break;
 					}
 				}
 			}
-			if (i ==1){
-				writer.println("number of overlap with random regions for iteration one : "+totalRandOverlaps);
-			}
-			if (totalRandOverlaps >totalOverlap){
+			if (i ==1){writer.println("number of overlap with random regions for iteration one : "+numRandOverlaps);}
+			if (w != null){ w.print(numRandOverlaps+"\t");}
+			if (numRandOverlaps >totalOverlap){
 				pValuePoisson=1;
 			}else{
-				poisson.setMean(totalRandOverlaps+pseudocounts);
+				poisson.setMean(numRandOverlaps+pseudocounts);
 				int cA = (int)Math.ceil(totalOverlap);
 				pValuePoisson = 1 - poisson.cdf(cA) + poisson.pdf(cA);           	
 			}
@@ -113,6 +118,7 @@ public class PointEnrichmentTester {
 		}
 		writer.println("Poisson p-val : "+maxPval);
 		writer.close();
+		w.close();
 	}
 	
 	public static List<Region> randomRegionPick(Genome gen, List<Region> blackList, int numSamples, int sampleSize){
@@ -173,14 +179,14 @@ public class PointEnrichmentTester {
 		if (!ap.hasKey("gff") || !ap.hasKey("region")){
             System.err.println("Usage:\n " +
                     "PointEnrichmentTester\n " +
-                    "--species <organism;genome> OR\n " +
-                    "--geninfo <genome info> AND --seq <fasta seq directory>\n " +
+                    "--geninfo <genome info file> \n " +
                     "--gff <gff containing site coordinates> \n " +
                     "--region <region of the genome for enrichment test> \n " +
                     "\nOPTIONS:\n " +
                     "--out <output directory (default = working directory)> \n " +
                     "--pseudo <pseudocounts to suppress telomere enrichment (default=0) > \n " +
                     "--ext <window size to merge gff points to prevent event double counts (default=20) > \n " +
+                    "--print <flag to print number of random overlaps with region> \n " +
                     "");
 			System.exit(0);
 		}
@@ -192,14 +198,15 @@ public class PointEnrichmentTester {
 		}		
 		List<Region> reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
 		int pseudo = Args.parseInteger(args,"pseudo", 0);
-		int expand = Args.parseInteger(args,"ext", 30);
+		int expand = Args.parseInteger(args,"ext", 20);
 		// Get outdir and outbase and make them;
 		String outbase = Args.parseString(args, "out", System.getProperty("user.dir"));
 			
 		PointEnrichmentTester tester = new PointEnrichmentTester(outbase,gconf,gff,reg);
 		
-		if (pseudo != 0){tester.setNoise(pseudo);}
-		if (expand != 0){tester.setExpansion(expand);}
+		tester.setNoise(pseudo);
+		tester.setExpansion(expand);
+		if (ap.hasKey("print")){tester.printRandOverlap();}		
 		tester.execute();
 	}	
 }
