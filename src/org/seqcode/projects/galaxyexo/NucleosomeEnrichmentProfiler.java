@@ -120,7 +120,7 @@ public class NucleosomeEnrichmentProfiler {
 		ExperimentManager manager = new ExperimentManager(econf);
 		
 		// parsing command line arguments	
-		int win = Args.parseInteger(args, "win", 200);
+		int win = Args.parseInteger(args, "win", 500);
 		int fivePrimeShift = Args.parseInteger(args,"readshift", 6);
 		int smooth = Args.parseInteger(args,"smooth", 10);
 		List<StrandedPoint> spoints = RegionFileUtilities.loadStrandedPointsFromFile(gconf.getGenome(), ap.getKeyValue("peaks"));
