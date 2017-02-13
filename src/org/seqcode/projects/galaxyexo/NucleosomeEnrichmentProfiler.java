@@ -71,7 +71,7 @@ public class NucleosomeEnrichmentProfiler {
 				
 				double ratio = getMaxCounts(smoothedSignal)*getMinCounts(smoothedControl)/(getMinCounts(smoothedSignal)*getMaxCounts(smoothedControl));
 				
-				writer.println("sample "+rep.getSignal().getName()+"\tratio: "+ratio);
+				writer.println("Sample Name"+rep.getSignal().getName()+"\tRatio: "+ratio+"\tSignal: "+rep.getSignal().getHitCount());
 			}
 		}
 		writer.close();
