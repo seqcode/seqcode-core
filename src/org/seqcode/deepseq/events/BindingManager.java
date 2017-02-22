@@ -294,6 +294,8 @@ public class BindingManager {
     public void writeFullEventFile(String filename){
     	if(events.size()>0){
     		try {
+    			if(config.getEventsFileTXTExtension())
+    				filename = filename+".txt";
 	    		//Full dataset table
 		    	FileWriter fout = new FileWriter(filename);
 		    	fout.write(BindingEvent.fullHeadString()+"\n");
@@ -311,6 +313,8 @@ public class BindingManager {
      */
     public void writeMotifFile(String filename){
 		try {
+			if(config.getEventsFileTXTExtension())
+				filename = filename+".txt";
     		//Full dataset table
 	    	FileWriter fout = new FileWriter(filename);
 	    	for(ExperimentCondition cond : manager.getConditions()){
