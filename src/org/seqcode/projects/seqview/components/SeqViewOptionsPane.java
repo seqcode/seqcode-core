@@ -96,7 +96,7 @@ public class SeqViewOptionsPane
     private void reloadGenome() { 
         String orgName = (String)speciesCBox.getSelectedItem();
         String genName = (String)genomeCBox.getSelectedItem();
-        if(orgName != null && genName != null && !orgName.equals(currSpecies.getName()) && !genName.equals(currGen.getVersion())) { 
+        if(orgName != null && genName != null && (!orgName.equals(currSpecies.getName()) || !genName.equals(currGen.getVersion()))) { 
             Species org;
             try {
                 org = Species.getSpecies(orgName);
@@ -416,7 +416,7 @@ public class SeqViewOptionsPane
     /* updates the choice of experiments based on the
        currently selected genome and species */
     private void updateExptSelection() {
-        reloadGenome();       
+        reloadGenome();        
         seqSelect.setGenome(currGen);
 
         // update the set of Gene annotations
