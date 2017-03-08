@@ -210,7 +210,17 @@ public class MotifAnalysisSandbox {
 			if(loadFromFile){
 				if(ap.hasKey("motiffile")){
 					matrixList = loadMotifFromFile(motiffile, backfile, currgen);
-					matrix = matrixList.get(0);
+					if(ap.hasKey("name")){
+						String name = ap.getKeyValue("name");
+						for(WeightMatrix wm : matrixList){
+							if(wm.getName().equals(name)){
+								matrix = wm;
+								break;
+							}
+						}
+					}else{
+						matrix = matrixList.get(0);
+					}
 				}else if(ap.hasKey("weightMatfile")){
 					matrix = loadWeightMatrix(weightmatfile);
 					matrixList.add(matrix);
