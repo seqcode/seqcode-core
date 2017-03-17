@@ -9,6 +9,7 @@ import org.seqcode.ml.clustering.ClusteringMethod;
 import org.seqcode.ml.clustering.DefaultCluster;
 import org.seqcode.ml.clustering.PairwiseElementMetric;
 import org.seqcode.ml.clustering.vectorcluster.VectorClusterElement;
+import java.util.Iterator;
 
 
 /**
@@ -107,6 +108,41 @@ public class KMeansClustering<X> implements ClusteringMethod<X> {
             }totalDist += minDist*minDist;
         }
     	return(totalDist);
+    }
+    
+    public double silhouette(){
+    	double sh = 0.0;
+    	for(int k=0; k< elmts.size(); k++){
+    		X e = elmts.get(k);
+    		double[] avgDist = new double[numClusters];
+    		int minCluster = -1;
+    		double minDist = 0.0;
+    		for(int i = 0; i < numClusters; i++) { 
+                double clustDist = metric.evaluate(e, clusterMeans.get(i));
+                if(minCluster == -1 || clustDist < minDist) { 
+                    minDist = clustDist;
+                    minCluster = i;
+                }
+                double currDist = 0.0;
+                for(X ve : clusters.get(i).getElements()){
+                	currDist = currDist + metric.evaluate(e, ve);
+                }
+                currDist = currDist/clusters.get(i).size();
+                avgDist[i] = currDist;
+            }
+    		double neighborDistance = Double.MAX_VALUE;
+    		for(int i=0; i<numClusters; i++){
+    			if(i!=minCluster){ // Not its cluster
+    				if(avgDist[i]<neighborDistance){
+    					neighborDistance = avgDist[i];
+    				}
+    			}
+    		}
+    		
+    		sh = sh + (neighborDistance - avgDist[minCluster])/Math.max(neighborDistance, avgDist[minCluster]);
+    	}
+    	sh = sh/elmts.size();
+    	return sh;
     }
 }
 
