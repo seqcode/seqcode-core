@@ -21,7 +21,7 @@ public class RepeatMaskedGenerator<X extends Region> implements Expander<X,Repea
 
     static { 
         genomeToTablesuffix = new HashMap<String,String>();
-        ResourceBundle res = ResourceBundle.getBundle("org.seqcode.gseutils.properties.rmsk.properties");
+        ResourceBundle res = ResourceBundle.getBundle("org.seqcode.gseutils.properties.rmsk");
         Enumeration<String> keys = res.getKeys();
         while(keys.hasMoreElements()) { 
             String key = keys.nextElement();
