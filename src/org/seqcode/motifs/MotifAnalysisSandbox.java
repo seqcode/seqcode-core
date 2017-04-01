@@ -635,6 +635,7 @@ public class MotifAnalysisSandbox {
 		int numHits=0, peaksWithHits=0, totalPeaks=0;
 		ArrayList<ScoredStrandedRegion> hits = new ArrayList<ScoredStrandedRegion>();
 		ArrayList<String> hitseqs = new ArrayList<String>();
+		ArrayList<Point> peaksWithHitsList = new ArrayList<Point>();
 		
 		for(int i=0; i<regions.size(); i++){
 			totalPeaks++;
@@ -651,14 +652,17 @@ public class MotifAnalysisSandbox {
 				hits.add(new ScoredStrandedRegion(gen, r.getChrom(), hitreg.getStart(), hitreg.getEnd(), bestMotifScore, profiler.getMaxStrand(bestMotifIndex)));
 				if(profiler.getMaxStrand(bestMotifIndex)=='+'){hitseqs.add(subseq);
 				}else{hitseqs.add(SequenceUtils.reverseComplement(subseq));}
-				peaksWithHits++;				
+				peaksWithHits++;
+				if(peaks.size()>0){
+					peaksWithHitsList.add(peaks.get(i));
+				}	
 			}
         }
 		double perc = (double)peaksWithHits/(double)totalPeaks;
 		System.err.println(motif.name+" hits: "+numHits+" hits in "+peaksWithHits+" regions from "+totalPeaks+" total peaks ("+perc+").");
 		for(int h=0; h<hits.size(); h++){
 			//System.out.println(hits.get(h)+"\t"+hitseqs.get(h)+"\t"+SequenceUtils.reverseComplement(hitseqs.get(h)));
-			System.out.println(hits.get(h).toTabString()+"\t"+hitseqs.get(h));
+			System.out.println(peaksWithHitsList.get(h).getLocationString()+"\t"+hits.get(h).toTabString()+"\t"+hitseqs.get(h));
 		}
 	}
 	//printing hit info:
