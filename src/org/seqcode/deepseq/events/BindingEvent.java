@@ -442,8 +442,8 @@ public class BindingEvent implements Comparable<BindingEvent>{
 			double logP = Math.log(getCondSigVCtrlP(c))/config.LOG2;
 			//BED score ranges from 0 to 1000
 			//Arbitrary conversion:
-			// score = 100 * logP
-			int score = (int)(Math.max(0, Math.min(100*logP, 1000)));
+			// score = 10 * -logP
+			int score = (int)(Math.max(0, Math.min(-10*logP, 1000)));
 			
 			//Note that BED is 0-start and end-noninclusive, so we always shift the 
 			// multiGPS binding event location back by one. 
