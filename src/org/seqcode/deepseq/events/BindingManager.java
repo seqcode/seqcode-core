@@ -188,9 +188,9 @@ public class BindingManager {
 	    			Collections.sort(events, new Comparator<BindingEvent>(){
 	    	            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
 	    	        });
-	    			//Print events
 	    			String condName = cond.getName(); 
 	    			condName = condName.replaceAll("/", "-");
+	    			//Print events in MultiGPS format
 	    			filename = filePrefix+"_"+condName+".events";
 	    			if(config.getEventsFileTXTExtension())
 	    				filename = filename+".txt";
@@ -203,6 +203,19 @@ public class BindingManager {
 			    			fout.write(e.getConditionString(cond)+"\n");
 			    	}
 					fout.close();
+					//Print events in BED
+					if(config.getPrintBED()){
+						String bedfilename = filePrefix+"_"+condName+".bed";
+		    			fout = new FileWriter(bedfilename);
+						fout.write(BindingEvent.conditionBEDHeadString(cond)+"\n");
+				    	for(BindingEvent e : events){
+				    		double Q = e.getCondSigVCtrlP(cond);
+				    		//Because of the ML step and component sharing, I think that an event could be assigned a significant number of reads without being "present" in the condition's EM model.
+				    		if(e.isFoundInCondition(cond) && Q <=qMinThres)
+				    			fout.write(e.getConditionBED(cond)+"\n");
+				    	}
+						fout.close();
+					}
 	    		}
 	    		
 	    		//Differential event files
@@ -220,6 +233,9 @@ public class BindingManager {
 				    			String condName = cond.getName(); 
 				    			String othercondName = othercond.getName(); 
 				    			condName = condName.replaceAll("/", "-");
+				    			othercondName = othercondName.replaceAll("/", "-");
+				    			
+				    			//MultiGPS format
 				    			filename = filePrefix+"_"+condName+"_gt_"+othercondName+".diff.events";
 				    			if(config.getEventsFileTXTExtension())
 				    				filename = filename+".txt";
@@ -235,6 +251,23 @@ public class BindingManager {
 						    		}
 						    	}
 								fout.close();
+								
+								//Print events in BED
+								if(config.getPrintBED()){
+									filename = filePrefix+"_"+condName+"_gt_"+othercondName+".diff.bed";
+									fout = new FileWriter(filename);
+									fout.write(BindingEvent.diffConditionBEDHeadString(cond, othercond)+"\n");
+							    	for(BindingEvent e : events){
+							    		double Q = e.getCondSigVCtrlP(cond);
+							    		//Because of the ML step and component sharing, I think that an event could be assigned a significant number of reads without being "present" in the condition's EM model.
+							    		if(e.isFoundInCondition(cond) && Q <=qMinThres){
+							    			if(e.getInterCondP(cond, othercond)<=diffPMinThres && e.getInterCondFold(cond, othercond)>0){
+							    				fout.write(e.getConditionBED(cond)+"\n");
+							    			}
+							    		}
+							    	}
+									fout.close();
+								}
 		    				}
 		    			}
 		    		}

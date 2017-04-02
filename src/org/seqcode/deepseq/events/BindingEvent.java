@@ -367,6 +367,26 @@ public class BindingEvent implements Comparable<BindingEvent>{
 	}
 	
 	/**
+	 * Returns a string suitable for use as the header of a BED file whose rows are 
+	 * the output of BindingEvent.getConditionBED().
+	 * (i.e. single condition BED files)
+	 */
+	public static String conditionBEDHeadString(ExperimentCondition c){
+		String head="track name=multiGPS-"+c.getName()+" description="+"multiGPS events "+c.getName();
+		return head;
+	}
+	
+	/**
+	 * Returns a string suitable for use as the header of a BED file whose rows are 
+	 * the output of BindingEvent.getConditionBED().
+	 * (i.e. single condition BED files)
+	 */
+	public static String diffConditionBEDHeadString(ExperimentCondition c1, ExperimentCondition c2){
+		String head="track name=multiGPS-"+c1.getName()+"-gt-"+c2.getName()+" description="+"multiGPS diff events "+c1.getName()+" > "+c2.getName();
+		return head;
+	}
+	
+	/**
 	 * Returns a single-line string suitable for use as the header of a table of differential binding events
 	 */
 	public static String conditionShortHeadString(ExperimentCondition c){
@@ -415,18 +435,21 @@ public class BindingEvent implements Comparable<BindingEvent>{
 	}
 	
 	/**
-	 * TODO: Output in GFF format
+	 * Output in BED format
 	 */
-	public String toGFF(){
-		/* Comment out error
+	public String getConditionBED(ExperimentCondition c){
 		if (point != null) {
-			return new String(coords.getChrom()+"\tGPS\tpeak\t"+point.getLocation()+"\t"+point.getLocation()+"\t.\t.\t.\t"+"Note="+"Q-value:"+String.format("%.5e", Q)+",Signal="+signalHits+",Control="+ctrlHits);
-		}else {
-			return new String(coords.getChrom()+"\tGPS\tpeak\t"+point.getLocation()+"\t"+point.getLocation()+"\t.\t.\t.\t"+"Note="+"Q-value:"+String.format("%.5e", Q)+",Signal="+signalHits+",Control="+ctrlHits);
+			double logP = Math.log(getCondSigVCtrlP(c))/config.LOG2;
+			//BED score ranges from 0 to 1000
+			//Arbitrary conversion:
+			// score = 100 * logP
+			int score = (int)(Math.max(0, Math.min(100*logP, 1000)));
+			
+			//Note that BED is 0-start and end-noninclusive, so we always shift the 
+			// multiGPS binding event location back by one. 
+			return new String("chr"+point.getChrom()+"\t"+(point.getLocation()-1)+"\t"+point.getLocation()+"\tmultiGPS\t"+score);
 		}
-		*/
-		//TODO
-		return "";
+		return null;
 	}
 	
 	/**
