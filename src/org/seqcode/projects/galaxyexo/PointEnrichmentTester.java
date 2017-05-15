@@ -191,18 +191,28 @@ public class PointEnrichmentTester {
 			System.exit(0);
 		}
 		
-		List<Point> gff = RegionFileUtilities.loadPointsFromGFFFile(ap.getKeyValue("gff"),gconf.getGenome());
-		if (gff.size()==0){
-			System.err.println("gff files have zero hits.");
+		List<Point> points = null;
+		if (ap.hasKey("gff")){
+			points = RegionFileUtilities.loadPointsFromGFFFile(ap.getKeyValue("gff"),gconf.getGenome());
+		}else if (ap.hasKey("points")){
+			points = RegionFileUtilities.loadPointsFromFile(ap.getKeyValue("points"), gconf.getGenome());
+		}else{
+			System.err.println("Please provide either gff or point file");
 			System.exit(0);
-		}		
+		}
+		
+		if (points.size()==0){
+			System.err.println("peak files have zero hits.");
+			System.exit(0);
+		}
+	
 		List<Region> reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
 		int pseudo = Args.parseInteger(args,"pseudo", 0);
 		int expand = Args.parseInteger(args,"ext", 20);
 		// Get outdir and outbase and make them;
 		String outbase = Args.parseString(args, "out", System.getProperty("user.dir"));
 			
-		PointEnrichmentTester tester = new PointEnrichmentTester(outbase,gconf,gff,reg);
+		PointEnrichmentTester tester = new PointEnrichmentTester(outbase,gconf,points,reg);
 		
 		tester.setNoise(pseudo);
 		tester.setExpansion(expand);
