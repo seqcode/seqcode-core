@@ -178,11 +178,11 @@ public class PointEnrichmentTester {
 		ArgParser ap = new ArgParser(args);		
 		GenomeConfig gconf = new GenomeConfig(args);
 		
-		if (!ap.hasKey("gff") || !ap.hasKey("region")){
+		if (!ap.hasKey("gff") && !ap.hasKey("points")){
             System.err.println("Usage:\n " +
                     "PointEnrichmentTester\n " +
                     "--geninfo <genome info file> \n " +
-                    "--gff <gff containing site coordinates> \n " +
+                    "--gff <gff containing site coordinates> OR --points <points containing site coordinates> \n " +
                     "--region <region of the genome for enrichment test> \n " +
                     "\nOPTIONS:\n " +
                     "--out <output directory (default = working directory)> \n " +
@@ -194,14 +194,10 @@ public class PointEnrichmentTester {
 		}
 		
 		List<Point> points = null;
-		if (ap.hasKey("gff")){
+		if (ap.hasKey("gff"))
 			points = RegionFileUtilities.loadPointsFromGFFFile(ap.getKeyValue("gff"),gconf.getGenome());
-		}else if (ap.hasKey("points")){
+		else if (ap.hasKey("points"))
 			points = RegionFileUtilities.loadPointsFromFile(ap.getKeyValue("points"), gconf.getGenome());
-		}else{
-			System.err.println("Please provide either gff or point file");
-			System.exit(0);
-		}
 		
 		if (points.size()==0){
 			System.err.println("peak files have zero hits.");
