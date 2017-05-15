@@ -106,7 +106,10 @@ public class PointEnrichmentTester {
 				}
 			}
 			if (i ==1){writer.println("number of overlap with random regions for iteration one : "+numRandOverlaps);}
-			if (w != null){ w.print(numRandOverlaps+"\t");}
+			if (w != null){ 
+				w.print(numRandOverlaps+"\t");
+				w.close();
+				}
 			if (numRandOverlaps >totalOverlap){
 				pValuePoisson=1;
 			}else{
@@ -118,7 +121,6 @@ public class PointEnrichmentTester {
 		}
 		writer.println("Poisson p-val : "+maxPval);
 		writer.close();
-		w.close();
 	}
 	
 	public static List<Region> randomRegionPick(Genome gen, List<Region> blackList, int numSamples, int sampleSize){
