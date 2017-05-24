@@ -208,7 +208,7 @@
 	   deprecation="yes"
 	   compiler="modern"
 	   verbose="no">		  
-      <include name="org/seqcode/gse/projects/readdb/*.java"/>
+      <include name="org/seqcode/data/readdb/*.java"/>
     </javac>
   </target>
   <target name="makereaddbjar" depends="compilereaddb, unjarcli">
@@ -220,9 +220,9 @@
 	    tofile="${build.unjar.dir}/Apache-Commons-Cli-LICENSE.txt"/>
     <move file="${build.unjar.dir}/META-INF/NOTICE.txt"
 	    tofile="${build.unjar.dir}/Apache-Commons-Cli-NOTICE.txt"/>
-    <copy file="${src.dir}/org/seqcode/gse/projects/readdb/HOWTO"
+    <copy file="${src.dir}/org/seqcode/data/readdb/HOWTO"
 	  tofile="${build.classes.dir}/HOWTO"/>
-    <copy file="${src.dir}/org/seqcode/gse/projects/readdb/LICENSE"
+    <copy file="${src.dir}/org/seqcode/data/readdb/LICENSE"
 	  tofile="${build.classes.dir}/LICENSE"/>
     <delete dir="${build.unjar.dir}/META-INF"/>
     <jar destfile="${build.dist.dir}/gse-readdb.jar">	    
