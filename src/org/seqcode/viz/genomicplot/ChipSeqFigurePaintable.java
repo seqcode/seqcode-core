@@ -131,7 +131,7 @@ public class ChipSeqFigurePaintable extends FigurePaintable{
 			
 			//Draw motifs
 			if( options.experiments.get(t).motif != null){
-				drawMotifs(g2d, baseLine-offset, options.experiments.get(t).motif, options.experiments.get(t).motifThres);
+				drawMotifs(g2d, baseLine-offset, options.experiments.get(t).motif, options.experiments.get(t).motifThres, options.experiments.get(t).exptMotifColor);
 			}
 			
 			//Draw the axis
@@ -181,7 +181,7 @@ public class ChipSeqFigurePaintable extends FigurePaintable{
         g2d.setTransform(oldtrans);
  	}
 	
-	private void drawMotifs(Graphics2D g2d, int currLine, WeightMatrix wm, double thres){
+	private void drawMotifs(Graphics2D g2d, int currLine, WeightMatrix wm, double thres, Color col){
 		ArrayList<StrandedRegion> motifLocs = new ArrayList<StrandedRegion>();
 		WeightMatrixScorer scorer = new WeightMatrixScorer(wm);
 		WeightMatrixScoreProfile profiler = scorer.execute(options.gRegion);
@@ -194,6 +194,10 @@ public class ChipSeqFigurePaintable extends FigurePaintable{
 		
         for(StrandedRegion sr : motifLocs){
         	Color currCol = options.motifColor;
+        	if(col != null){
+        		currCol = col;
+        	}
+        	
         	int start = sr.getStart();
         	if(sr.getStrand()=='-'){start = sr.getEnd();}
         		

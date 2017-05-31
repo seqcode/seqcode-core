@@ -257,6 +257,9 @@ public class FigureOptions {
 							}if(oName.equals("exptMotifThres")){
 								experiments.get(oVal).motifThres = new Double(tokens[2]);
 							}
+							if(oName.equals("exptMotifColor") && tokens.length==5){
+								experiments.get(oVal).exptMotifColor = new Color(new Integer(tokens[2]), new Integer(tokens[3]), new Integer(tokens[4]));
+							}
 							if(oName.equals("exptBgColor") && tokens.length==5){
 								experiments.get(oVal).exptBgColor = new Color(new Integer(tokens[2]), new Integer(tokens[3]), new Integer(tokens[4]));
 							}if(oName.equals("exptPeakColor") && tokens.length==5){
@@ -351,6 +354,7 @@ public class FigureOptions {
 		//Colors
 		Color exptBgColor = defaultBgColor;
 		Color exptPeakColor = defaultPeakColor;
+		Color exptMotifColor = motifColor;
 		//ChIP-seq 
 		ArrayList<Region> peaks = new ArrayList<Region>();
 		WeightMatrix motif = null;
