@@ -592,6 +592,27 @@ public class Client implements ReadOnlyClient {
         }
         return total;
     }
+    /**
+     * Returns the total number of unique positions in this alignment.  
+     */
+    public int getNumPositions(String alignid, boolean isType2, boolean isPaired, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
+        int pos = 0;
+        for (int c : getChroms(alignid, isType2, isPaired, isLeft)) {
+            pos += getNumPositions(alignid, c, isType2, isPaired, null,null,null,isLeft,plusStrand);
+        }
+        return pos;
+    }
+    /**
+     * Returns the total number of unique positions in this alignment.  
+     */
+    public int getNumPairedPositions(String alignid, boolean isType2, Boolean isLeft) throws IOException, ClientException {
+        int pos = 0;
+        for (int c : getChroms(alignid, isType2, true, isLeft)) {
+            pos += getNumPairedPositions(alignid, c, isType2, null,null,null,isLeft);
+        }
+        return pos;
+    }
+    
 
     /** returns the total number of hits on the specified chromosome in the alignment.
      * Any of the object parameters can be set to null to specify "no value"
@@ -653,7 +674,68 @@ public class Client implements ReadOnlyClient {
 	        return Double.parseDouble(readLine());
     	}
     }
-
+    /** returns the total number of unique positions on the specified chromosome in the alignment.
+     * Any of the object parameters can be set to null to specify "no value"
+     */
+    public int getNumPositions(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand)  throws IOException, ClientException {
+    	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
+	        request.type="numpositions";
+	        request.alignid=alignid;
+	        request.chromid=chromid;
+	        request.start = start;
+	        request.end = stop;
+	        request.minWeight = minWeight;
+	        request.isType2 = isType2;
+	        request.isPlusStrand = plusStrand;
+	        request.isPaired = paired;
+	        request.isLeft = isLeft == null ? true : isLeft;
+	        sendString(request.toString());
+	        String response = readLine();
+	        if (!response.equals("OK")) {
+	            if (printErrors) {
+	                System.err.println("not-OK response to request: " + response);
+	                System.err.println("request was " + request);
+	            }
+	            throw new ClientException(response);
+	        }
+	        int numpos = Integer.parseInt(readLine());
+	        return numpos;
+    	}
+    }
+    /** returns the total number of unique paired positions on the specified chromosome in the alignment.
+     * Any of the object parameters can be set to null to specify "no value"
+     */
+    public int getNumPairedPositions(String alignid, int chromid, boolean isType2, Integer start, Integer stop, Float minWeight, Boolean isLeft)  throws IOException, ClientException {
+    	synchronized(this){
+    		if(!connectionOpen)
+    			reConnect();
+    		request.clear();
+	        request.type="numpairpositions";
+	        request.alignid=alignid;
+	        request.chromid=chromid;
+	        request.start = start;
+	        request.end = stop;
+	        request.minWeight = minWeight;
+	        request.isType2 = isType2;
+	        request.isPlusStrand = null;
+	        request.isPaired = true;
+	        request.isLeft = isLeft == null ? true : isLeft;
+	        sendString(request.toString());
+	        String response = readLine();
+	        if (!response.equals("OK")) {
+	            if (printErrors) {
+	                System.err.println("not-OK response to request: " + response);
+	                System.err.println("request was " + request);
+	            }
+	            throw new ClientException(response);
+	        }
+	        int numpos = Integer.parseInt(readLine());
+	        return numpos;
+    	}
+    }
     /** 
      * returns the sorted (ascending order) hit positions in the specified range of a chromosome,alignment pair.
      */ 

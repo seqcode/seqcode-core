@@ -501,6 +501,10 @@ public class ServerTask {
             processCount(header,hits);
         } else if (request.type.equals("weight")) {
             processWeight(header,hits);
+        } else if (request.type.equals("numpositions")) {
+            processNumPositions(header,hits);
+        } else if (request.type.equals("numpairpositions")) {
+            processNumPairPositions(header,hits);
         } else if (request.type.equals("histogram")) {
             processHistogram(header,hits);
         } else if (request.type.equals("weighthistogram")) {
@@ -1117,6 +1121,51 @@ public class ServerTask {
 	        int first = header.getFirstIndex(request.start);
 	        int last = header.getLastIndex(request.end);
 	        printString(Double.toString(hits.getWeightBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand)) + "\n");
+    	}
+    }
+    public void processNumPositions(Header header, Hits hits) throws IOException {
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0\n");
+    	}else{
+	        printOK();
+	        if (request.start == null && request.end == null && request.minWeight == null && request.isPlusStrand == null) {
+	            printString(Integer.toString(header.getNumHits()) + "\n");
+	            return;
+	        }
+	        if (request.start == null) {
+	            request.start = 0;
+	        }
+	        if (request.end == null) {
+	            request.end = Integer.MAX_VALUE;
+	        }
+	        int first = header.getFirstIndex(request.start == null ? 0 : request.start);
+	        int last = header.getLastIndex(request.end == null ? Integer.MAX_VALUE : request.end);
+	        printString(Integer.toString(hits.getNumPositionsBetween(first,last,request.start,request.end,request.minWeight, request.isPlusStrand)) + "\n");
+    	}
+    }
+    public void processNumPairPositions(Header header, Hits hits) throws IOException {
+    	if(header==null || hits==null){
+    		printOK();
+    		printString("0\n");
+    	}else{
+	        printOK();
+	        if (request.start == null && request.end == null && request.minWeight == null && request.isPlusStrand == null) {
+	            printString(Integer.toString(header.getNumHits()) + "\n");
+	            return;
+	        }
+	        if (request.start == null) {
+	            request.start = 0;
+	        }
+	        if (request.end == null) {
+	            request.end = Integer.MAX_VALUE;
+	        }
+	        int first = header.getFirstIndex(request.start == null ? 0 : request.start);
+	        int last = header.getLastIndex(request.end == null ? Integer.MAX_VALUE : request.end);
+	        if (request.isPaired)
+	        	printString(Integer.toString(((PairedHits)hits).getNumPairedPositionsBetween(first,last,request.start,request.end,request.minWeight)) + "\n");
+	        else
+	        	printString("0\n");
     	}
     }
     public void processGetHits(Header header, Hits hits) throws IOException {

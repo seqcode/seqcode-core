@@ -1,12 +1,8 @@
 package org.seqcode.data.readdb;
 
 import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
 import java.util.List;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Arrays;
 
 /**
  * Represents a list of sorted reads on disk
@@ -67,6 +63,34 @@ public class PairedHits extends Hits {
     }
     private static DataOutputStream dos(String f) throws IOException {
         return new DataOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
+    }
+    /**
+     * Returns the number of unique positions between start and stop
+     * where firstindex and lastindex are the lower and upper bounds to search
+     */
+    public int getNumPairedPositionsBetween (int firstindex,
+                                int lastindex,
+                                int start,
+                                int stop,
+                                Float minweight
+                                ) throws IOException {       
+        assert(firstindex >= 0);
+        assert(lastindex >= firstindex);
+        assert(lastindex <= positions.getib().limit());
+        int[] p = getIndices(firstindex, lastindex, start,stop);
+        if (minweight == null) {
+            return p[1] - p[0];
+        }
+        int count = 0;
+        int lastPos =-1;
+        for (int i = p[0]; i < p[1]; i++) {
+       /* 	int pos = positions.get(i);
+        	if(pos!=lastPos)
+        		count += ((minweight == null || (weights.get(i) >= minweight)) &&
+                      (isPlus == null || (getStrandOne(lenAndStrand.get(i)) == isPlus))) ? 1 : 0;
+		*/
+        }
+        return count;
     }
     /** hits is a sorted list.
         prefix is file name prefix 

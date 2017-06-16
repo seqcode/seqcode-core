@@ -17,13 +17,17 @@ import java.io.*;
  *  <li>setacl alignname arolfe add write (add or delete; read, write or admin)
  *  <li>getcount alignname
  *  <li>getcount alignname chromname (eg, chromname = 1+)
+ *  <li>getweight alignname
+ *  <li>getweight alignname chromname (eg, chromname = 1+)
+ *  <li>getnumpositions alignname
+ *  <li>getnumpositions alignname chromname (eg, chromname = 1+)
  *  <li>addtogroup username groupname
  *  <li>reindex alignname chromname
  * 
- * <p>The --paired flag can be provided to make getweight, getcount, and getchroms work on paired-end rather than
+ * <p>The --paired flag can be provided to make getweight, getcount, getnumpositions, and getchroms work on paired-end rather than
  * single-end alignments
  * 
- * <p>The --type2 flag can be provided to make getweight, getcount, and getchroms work on type2
+ * <p>The --type2 flag can be provided to make getweight, getcount, getnumpositions, and getchroms work on type2
  * single-end alignments
  *
  */
@@ -105,6 +109,9 @@ public class ReadDB {
         System.out.println("  getcount alignname");
         System.out.println("  getcount alignname chromnameStrand   (eg, 1+)");
         System.out.println("  getweight alignname");
+        System.out.println("  getweight alignname chromnameStrand   (eg, 1+)");
+        System.out.println("  getnumpositions alignname");
+        System.out.println("  getnumpositions alignname chromnameStrand   (eg, 1+)");
         System.out.println("  deletesinglealign alignname");
         System.out.println("  deletepairedalign alignname");
         System.out.println("  setacl alignname username|groupname add|delete write|read|admin ");
@@ -187,6 +194,18 @@ public class ReadDB {
                         System.err.println("Weight in " + align + " chrom " + otherargs[2] + " is " + weight);
                     } else {
                         System.err.println("Total weight in " + align + " is " + weight);
+                    }
+                } else if (cmd.equals("getnumpositions")) {
+                    int count = 0;
+                    if (otherargs.length == 3) {
+                        count = client.getNumPositions(align,Integer.parseInt(otherargs[2]),isType2,paired,null,null,null,isleft,null);
+                    } else {
+                        count = client.getNumPositions(align,isType2,paired,isleft,null);
+                    }
+                    if (otherargs.length == 3) {
+                        System.err.println("Positions in " + align + " chrom " + otherargs[2] + " is " + count);
+                    } else {
+                        System.err.println("Total positions in " + align + " is " + count);
                     }
                 } else if (cmd.equals("deletesinglealign")) {
                     client.deleteAlignment(align,false);

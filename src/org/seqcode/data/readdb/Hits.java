@@ -112,10 +112,10 @@ public abstract class Hits implements Closeable {
             ((lengthTwo & lenOneMask) << 16) | ((strandTwo ? 1 : 0) << 31);
     }
 
-    private IntBP positions;
-    private FloatBP weights;       
-    private IntBP lenAndStrand;
-    private int chrom;
+    protected IntBP positions;
+    protected FloatBP weights;       
+    protected IntBP lenAndStrand;
+    protected int chrom;
     private String fname;
 
     public Hits (int chrom, String positionsFname, String weightsFname, String lasFname) throws FileNotFoundException, SecurityException, IOException {
@@ -248,6 +248,10 @@ public abstract class Hits implements Closeable {
         }
         return count;
     }
+    /**
+     * Returns the sum of weights between start and stop
+     * where firstindex and lastindex are the lower and upper bounds to search
+     */
     public double getWeightBetween (int firstindex,
                                     int lastindex,
                                     int start,
@@ -265,6 +269,33 @@ public abstract class Hits implements Closeable {
                     (isPlus == null || (getStrandOne(lenAndStrand.get(i)) == isPlus))) ? f : 0;
         }
         return sum;
+    }
+    /**
+     * Returns the number of unique positions between start and stop
+     * where firstindex and lastindex are the lower and upper bounds to search
+     */
+    public int getNumPositionsBetween (int firstindex,
+                                int lastindex,
+                                int start,
+                                int stop,
+                                Float minweight,
+                                Boolean isPlus) throws IOException {       
+        assert(firstindex >= 0);
+        assert(lastindex >= firstindex);
+        assert(lastindex <= positions.getib().limit());
+        int[] p = getIndices(firstindex, lastindex, start,stop);
+        if (minweight == null && isPlus == null) {
+            return p[1] - p[0];
+        }
+        int count = 0;
+        int lastPos =-1;
+        for (int i = p[0]; i < p[1]; i++) {
+        	int pos = positions.get(i);
+        	if(pos!=lastPos)
+        		count += ((minweight == null || (weights.get(i) >= minweight)) &&
+                      (isPlus == null || (getStrandOne(lenAndStrand.get(i)) == isPlus))) ? 1 : 0;
+        }
+        return count;
     }
     public IntBP getIntsBetween(IntBP buffer,
                                 int firstindex,

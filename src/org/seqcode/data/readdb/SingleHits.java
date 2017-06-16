@@ -40,7 +40,7 @@ public class SingleHits extends Hits {
         weightsRAF.close();
         lasRAF.close();
 
-        /* ideally this part with the renames would atomic... */
+        /* ideally this part with the renames would be atomic... */
         (new File(postmp)).renameTo(new File(getPositionsFname(prefix,chrom, type2)));
         (new File(weightstmp)).renameTo(new File(getWeightsFname(prefix,chrom, type2)));
         (new File(lastmp)).renameTo(new File(getLaSFname(prefix,chrom, type2)));
@@ -200,7 +200,7 @@ public class SingleHits extends Hits {
         positionsRAF.close();
         weightsRAF.close();
         lasRAF.close();
-        /* ideally this part with the renames would atomic... */
+        /* ideally this part with the renames would be atomic... */
         (new File(postmp)).renameTo(new File(getPositionsFname(prefix,chrom, type2)));
         (new File(weightstmp)).renameTo(new File(getWeightsFname(prefix,chrom, type2)));
         (new File(lastmp)).renameTo(new File(getLaSFname(prefix,chrom, type2)));

@@ -144,11 +144,8 @@ histogram.
 --paired says to query paired reads rather than single-ended reads
 --noheader says not to print the queried region on STDOUT
 
-org.seqcode.data.readdb.ReadDB provides additional query
-functionality as
-
-org.seqcode.data.readdb.ReadDB takes a command and additional
-args.  Commands are
+org.seqcode.data.readdb.ReadDB provides additional information about
+and control over a ReadDB alignment.  Commands are
   exists alignmentname
   getchroms alignmentname
   getacl alignmentname
@@ -157,6 +154,9 @@ args.  Commands are
   getcount alignmentname
     (gets the number of hits in the alignment)
   getcount alignmentname chromosome
+  getweight alignmentname
+    (gets the sum of hit weights in the alignment)
+  getweight alignmentname chromosome
   addtogroup username groupname
 
 
