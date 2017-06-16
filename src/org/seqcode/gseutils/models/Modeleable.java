@@ -4,8 +4,8 @@
  */
 package org.seqcode.gseutils.models;
 
-
 public interface Modeleable {
 	public Class getModelClass();
+
 	public Model asModel();
 }

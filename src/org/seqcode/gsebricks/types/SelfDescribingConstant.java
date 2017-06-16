@@ -3,7 +3,8 @@
  */
 package org.seqcode.gsebricks.types;
 
-public interface SelfDescribingConstant {    
-    public Object getConstantValue();
-    public EchoType getConstantClass();
+public interface SelfDescribingConstant {
+	public Object getConstantValue();
+
+	public EchoType getConstantClass();
 }

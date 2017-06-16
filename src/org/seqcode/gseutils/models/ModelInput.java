@@ -9,38 +9,36 @@ import java.io.*;
 import org.seqcode.gseutils.Closeable;
 import org.seqcode.gseutils.json.*;
 
-
 public interface ModelInput<M extends Model> extends Closeable {
 
 	public M readModel();
-	
+
 	public static class LineReader<T extends Model> implements ModelInput<T> {
-		
+
 		private Class<T> modelClass;
 		private BufferedReader br;
-		
-		public LineReader(Class<T> cls, Reader r) { 
+
+		public LineReader(Class<T> cls, Reader r) {
 			modelClass = cls;
 			br = new BufferedReader(r);
 		}
 
-		public LineReader(Class<T> cls, InputStream is) { 
+		public LineReader(Class<T> cls, InputStream is) {
 			this(cls, new InputStreamReader(is));
 		}
 
 		public T readModel() {
 			try {
 				String line = br.readLine();
-				if(line != null) { 
+				if (line != null) {
 					JSONObject jsonObject = new JSONObject(new JSONTokener(line));
 					Object unjsoned = Model.unjsonify(modelClass, jsonObject);
-					
-					if(unjsoned != null && 
-					   Model.isSubclass(unjsoned.getClass(), modelClass)) {
-						
-						return (T)unjsoned;
+
+					if (unjsoned != null && Model.isSubclass(unjsoned.getClass(), modelClass)) {
+
+						return (T) unjsoned;
 					}
-				} else { 
+				} else {
 					close();
 				}
 			} catch (JSONException e) {
@@ -53,7 +51,9 @@ public interface ModelInput<M extends Model> extends Closeable {
 		}
 
 		public void close() {
-			if(isClosed()) { return; }
+			if (isClosed()) {
+				return;
+			}
 			try {
 				br.close();
 			} catch (IOException e) {
@@ -64,6 +64,6 @@ public interface ModelInput<M extends Model> extends Closeable {
 
 		public boolean isClosed() {
 			return br == null;
-		} 
+		}
 	}
 }

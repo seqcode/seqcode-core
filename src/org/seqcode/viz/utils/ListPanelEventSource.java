@@ -10,37 +10,38 @@ import java.util.LinkedList;
  */
 public interface ListPanelEventSource {
 
-    public void addListPanelListener(ListPanelListener lpl);
-    public void removeListPanelListener(ListPanelListener lpl);
-    
-    public static class Default implements ListPanelEventSource {
-        
-        private Object source;
-        private LinkedList<ListPanelListener> listeners;
-        
-        public Default() {
-            source = this;
-            listeners = new LinkedList<ListPanelListener>();
-        }
+	public void addListPanelListener(ListPanelListener lpl);
 
-        public Default(Object src) {
-            source = src;
-            listeners = new LinkedList<ListPanelListener>();
-        }
+	public void removeListPanelListener(ListPanelListener lpl);
 
-        public void firePanelEvent(int type, Object data) { 
-            ListPanelEvent evt = new ListPanelEvent(source, type, data);
-            for(ListPanelListener lpl : listeners) { 
-                lpl.panelEvent(evt);
-            }
-        }
-        
-        public void addListPanelListener(ListPanelListener lpl) { 
-            listeners.addLast(lpl);
-        }
-        
-        public void removeListPanelListener(ListPanelListener lpl) { 
-            listeners.remove(lpl);
-        }
-    }
+	public static class Default implements ListPanelEventSource {
+
+		private Object source;
+		private LinkedList<ListPanelListener> listeners;
+
+		public Default() {
+			source = this;
+			listeners = new LinkedList<ListPanelListener>();
+		}
+
+		public Default(Object src) {
+			source = src;
+			listeners = new LinkedList<ListPanelListener>();
+		}
+
+		public void firePanelEvent(int type, Object data) {
+			ListPanelEvent evt = new ListPanelEvent(source, type, data);
+			for (ListPanelListener lpl : listeners) {
+				lpl.panelEvent(evt);
+			}
+		}
+
+		public void addListPanelListener(ListPanelListener lpl) {
+			listeners.addLast(lpl);
+		}
+
+		public void removeListPanelListener(ListPanelListener lpl) {
+			listeners.remove(lpl);
+		}
+	}
 }

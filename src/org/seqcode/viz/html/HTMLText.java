@@ -10,18 +10,20 @@ import java.io.PrintStream;
  *
  */
 public class HTMLText implements HTMLElmt {
-	
+
 	private StringBuffer buffer;
-	
-	public HTMLText(String s) { 
+
+	public HTMLText(String s) {
 		buffer = new StringBuffer(s);
 	}
-	
-	public void addText(String s) { 
+
+	public void addText(String s) {
 		buffer.append(s);
 	}
-	
-	public void clear() { buffer = new StringBuffer(); }
+
+	public void clear() {
+		buffer = new StringBuffer();
+	}
 
 	public void print(PrintStream ps) {
 		ps.println(buffer.toString());

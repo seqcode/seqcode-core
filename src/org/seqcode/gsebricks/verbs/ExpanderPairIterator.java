@@ -4,29 +4,27 @@ import java.util.*;
 
 import org.seqcode.gseutils.Pair;
 
+public class ExpanderPairIterator<A, B> implements Iterator<Pair<A, Iterator<B>>> {
+	private Expander<A, B> expander;
+	private Iterator<A> input;
 
-public class ExpanderPairIterator<A,B> implements Iterator<Pair<A,Iterator<B>>> {
-    private Expander<A,B> expander;
-    private Iterator<A> input;
+	public ExpanderPairIterator(Expander<A, B> mapper, Iterator<A> input) {
+		this.expander = mapper;
+		this.input = input;
+	}
 
-    public ExpanderPairIterator(Expander<A,B> mapper, Iterator<A> input) {
-        this.expander = mapper;
-        this.input = input;
-    }
+	public boolean hasNext() {
+		return input.hasNext();
+	}
 
-    public boolean hasNext() {
-        return input.hasNext();
-    }
+	public Pair<A, Iterator<B>> next() {
+		A anext = input.next();
+		Iterator<B> bnext = expander.execute(anext);
+		return new Pair<A, Iterator<B>>(anext, bnext);
+	}
 
-    public Pair<A,Iterator<B>> next() {
-        A anext = input.next();
-        Iterator<B> bnext = expander.execute(anext);
-        return new Pair<A,Iterator<B>>(anext, bnext);
-    }
-
-    public void remove() {
-        throw new UnsupportedOperationException("Can't remove from a MapperIterator");
-    }
-
+	public void remove() {
+		throw new UnsupportedOperationException("Can't remove from a MapperIterator");
+	}
 
 }

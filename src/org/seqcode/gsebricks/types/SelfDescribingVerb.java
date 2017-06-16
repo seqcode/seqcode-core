@@ -3,10 +3,10 @@
  */
 package org.seqcode.gsebricks.types;
 
+public interface SelfDescribingVerb extends SelfDescribingParameterized {
+	public String[] getInputNames();
 
+	public EchoType[] getInputClasses();
 
-public interface SelfDescribingVerb extends SelfDescribingParameterized {    
-    public String[] getInputNames();
-    public EchoType[] getInputClasses();
-    public EchoType getOutputClass();
+	public EchoType getOutputClass();
 }

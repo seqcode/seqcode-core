@@ -11,5 +11,5 @@ package org.seqcode.gsebricks.verbs;
 import java.util.*;
 
 public interface Generator<X> {
-    public Iterator<X> execute();
+	public Iterator<X> execute();
 }

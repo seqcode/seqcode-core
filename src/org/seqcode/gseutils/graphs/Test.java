@@ -10,127 +10,126 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
-public class Test extends JFrame { 
+public class Test extends JFrame {
 
 	public static void main(String[] args) {
 		new Test();
 	}
-	
+
 	private DirectedAlgorithms algorithms;
 	private DirectedGraph graph;
 	private GraphTableModel tableModel;
-	
-	public Test() { 
+
+	public Test() {
 		super("Graph Tester");
-		Container c = (Container)getContentPane();
+		Container c = (Container) getContentPane();
 		c.setLayout(new BorderLayout());
-		
+
 		algorithms = null;
 		graph = null;
-		
+
 		tableModel = new GraphTableModel();
 		JTable table = new JTable(tableModel);
-		
+
 		JPanel tablePanel = new JPanel();
 		tablePanel.setLayout(new BorderLayout());
 		tablePanel.add(new JScrollPane(table));
 		tablePanel.setBorder(new TitledBorder("Graph"));
-		
+
 		c.add(tablePanel, BorderLayout.CENTER);
-		
+
 		setJMenuBar(createMenuBar());
-		
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 		pack();
 	}
-	
-	private JMenuBar createMenuBar() { 
+
+	private JMenuBar createMenuBar() {
 		JMenuBar bar = new JMenuBar();
-		
+
 		JMenu menu;
 		JMenuItem item;
-		
+
 		bar.add(menu = new JMenu("File"));
 		menu.add(new JMenuItem(getLoadGraphAction()));
 		menu.add(item = new JMenuItem("Exit"));
-		item.addActionListener(new ActionListener() { 
-			public void actionPerformed(ActionEvent e) { 
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
 			}
 		});
-		
+
 		bar.add(menu = new JMenu("View"));
 		menu.add(item = new JMenuItem(getVisualizerAction()));
-		
+
 		bar.add(menu = new JMenu("Algorithms"));
 		menu.add(new JMenuItem(getCycleCheckingAction()));
 		menu.add(new JMenuItem(getTopologicalOrderingAction()));
-		
+
 		return bar;
 	}
-	
-	public Action getLoadGraphAction() { 
-		return new AbstractAction("Open...") { 
-			public void actionPerformed(ActionEvent e) { 
+
+	public Action getLoadGraphAction() {
+		return new AbstractAction("Open...") {
+			public void actionPerformed(ActionEvent e) {
 				loadGraphFromFile();
 			}
 		};
 	}
-	
-	public Action getVisualizerAction() { 
-		return new AbstractAction("Visualize Graph") { 
-			public void actionPerformed(ActionEvent e) { 
+
+	public Action getVisualizerAction() {
+		return new AbstractAction("Visualize Graph") {
+			public void actionPerformed(ActionEvent e) {
 				GraphVisualizer viz = new GraphVisualizer(graph);
 				viz.putInFrame();
 			}
 		};
 	}
-	
-	public Action getCycleCheckingAction() { 
-		return new AbstractAction("Check for Cycle") { 
-			public void actionPerformed(ActionEvent e) { 
-				if(graph != null) { 
+
+	public Action getCycleCheckingAction() {
+		return new AbstractAction("Check for Cycle") {
+			public void actionPerformed(ActionEvent e) {
+				if (graph != null) {
 					CycleChecker checker = new DirectedCycleChecker(graph);
-					String message = checker.containsCycle() ? 
-							"Graph contains cycle" : "Graph is acyclic";
-					JOptionPane.showMessageDialog(Test.this.getContentPane(), 
-							message, "Cycle Check", JOptionPane.INFORMATION_MESSAGE);
+					String message = checker.containsCycle() ? "Graph contains cycle" : "Graph is acyclic";
+					JOptionPane.showMessageDialog(Test.this.getContentPane(), message, "Cycle Check",
+							JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
 		};
 	}
-	
-	public Action getTopologicalOrderingAction() { 
-		return new AbstractAction("Topological Ordering") { 
-			public void actionPerformed(ActionEvent e) { 
-				if(graph != null) { 
+
+	public Action getTopologicalOrderingAction() {
+		return new AbstractAction("Topological Ordering") {
+			public void actionPerformed(ActionEvent e) {
+				if (graph != null) {
 					CycleChecker checker = new DirectedCycleChecker(graph);
 					String message = null;
 					String title = null;
-					if(checker.containsCycle()) {
+					if (checker.containsCycle()) {
 						title = "Error";
 						message = "Graph contains cycle";
-					} else { 
+					} else {
 						Vector<String> ordering = algorithms.getTopologicalOrdering();
 						StringBuilder sb = new StringBuilder();
-						for(int i = 0; i < ordering.size(); i++) { 
+						for (int i = 0; i < ordering.size(); i++) {
 							sb.append((i > 0 ? "," : "") + ordering.get(i));
 						}
 						title = "Topological Ordering";
 						message = sb.toString();
 					}
-					JOptionPane.showMessageDialog(Test.this.getContentPane(), 
-							message, title, JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(Test.this.getContentPane(), message, title,
+							JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
-		};		
+		};
 	}
-	
-	public void loadGraphFromFile() { 
+
+	public void loadGraphFromFile() {
 		JFileChooser chooser = new JFileChooser();
 		int retval = chooser.showOpenDialog(this);
-		if(retval == JFileChooser.APPROVE_OPTION) { 
+		if (retval == JFileChooser.APPROVE_OPTION) {
 			File f = chooser.getSelectedFile();
 			Parser p = new Parser(f);
 			try {
@@ -141,7 +140,7 @@ public class Test extends JFrame {
 			}
 		}
 	}
-	
+
 	public void setGraph(DirectedGraph dg) {
 		graph = dg;
 		algorithms = new DirectedAlgorithms(graph);
@@ -150,22 +149,22 @@ public class Test extends JFrame {
 }
 
 class GraphTableModel implements TableModel {
-	
+
 	private LinkedList<TableModelListener> listeners;
 	private Vector<String> vertices;
 	private DirectedGraph graph;
-	
-	public GraphTableModel() { 
+
+	public GraphTableModel() {
 		vertices = new Vector<String>();
 		listeners = new LinkedList<TableModelListener>();
 		graph = null;
 	}
-	
-	public void setGraph(DirectedGraph dg) { 
+
+	public void setGraph(DirectedGraph dg) {
 		graph = dg;
 		vertices = new Vector<String>(new TreeSet<String>(dg.getVertices()));
 		TableModelEvent evt = new TableModelEvent(this);
-		for(TableModelListener tml : listeners) { 
+		for (TableModelListener tml : listeners) {
 			tml.tableChanged(evt);
 		}
 	}
@@ -175,10 +174,13 @@ class GraphTableModel implements TableModel {
 	}
 
 	public Class<?> getColumnClass(int c) {
-		switch(c) { 
-		case 0: return String.class;
-		case 1: return String.class;
-		default: return null;
+		switch (c) {
+		case 0:
+			return String.class;
+		case 1:
+			return String.class;
+		default:
+			return null;
 		}
 	}
 
@@ -187,10 +189,13 @@ class GraphTableModel implements TableModel {
 	}
 
 	public String getColumnName(int c) {
-		switch(c) { 
-		case 0: return "Vertex";
-		case 1: return "Parents";
-		default: return null;
+		switch (c) {
+		case 0:
+			return "Vertex";
+		case 1:
+			return "Parents";
+		default:
+			return null;
 		}
 	}
 
@@ -199,12 +204,13 @@ class GraphTableModel implements TableModel {
 	}
 
 	public Object getValueAt(int r, int c) {
-		switch(c) { 
-		case 0: return vertices.get(r);
-		case 1: 
+		switch (c) {
+		case 0:
+			return vertices.get(r);
+		case 1:
 			StringBuilder sb = new StringBuilder();
-			if(graph != null) { 
-				for(String parent : graph.getParents(vertices.get(r))) { 
+			if (graph != null) {
+				for (String parent : graph.getParents(vertices.get(r))) {
 					sb.append(parent + ",");
 				}
 			}
@@ -223,6 +229,6 @@ class GraphTableModel implements TableModel {
 	}
 
 	public void setValueAt(Object arg0, int arg1, int arg2) {
-	} 
-	
+	}
+
 }

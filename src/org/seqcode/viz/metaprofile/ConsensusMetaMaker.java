@@ -21,43 +21,48 @@ import org.seqcode.motifs.ConsensusSequence;
 import org.seqcode.viz.metaprofile.swing.MetaFrame;
 import org.seqcode.viz.metaprofile.swing.MetaNonFrame;
 
-
 public class ConsensusMetaMaker {
 	private static boolean batchRun = false;
 	private static boolean cluster = false;
-	private static boolean usingColorQuanta=false;
-	private static double[] colorQuanta=null;
-	
+	private static boolean usingColorQuanta = false;
+	private static double[] colorQuanta = null;
+
 	public static void main(String[] args) throws IOException, ParseException {
 		try {
-			if(args.length < 2){ printError();}
-			
+			if (args.length < 2) {
+				printError();
+			}
+
 			Pair<Species, Genome> pair = Args.parseGenome(args);
 			Genome gen = pair.cdr();
-			int winLen = Args.parseInteger(args,"win", 10000);
-			int bins = Args.parseInteger(args,"bins", 100);
-			String profilerType = Args.parseString(args, "profiler", "consensus");	
-			String cons = Args.parseString(args,"consensus", null);
+			int winLen = Args.parseInteger(args, "win", 10000);
+			int bins = Args.parseInteger(args, "bins", 100);
+			String profilerType = Args.parseString(args, "profiler", "consensus");
+			String cons = Args.parseString(args, "consensus", null);
 			ConsensusSequence consensus = new ConsensusSequence(cons);
 			double mismatchthres = Args.parseDouble(args, "mismatch", 0);
-			char watsoncrick =  Args.parseString(args,"watsoncrick", ".").charAt(0);
+			char watsoncrick = Args.parseString(args, "watsoncrick", ".").charAt(0);
 			String peakFile = Args.parseString(args, "peaks", null);
 			String outName = Args.parseString(args, "out", "meta");
 			boolean useCache = Args.parseFlags(args).contains("cache") ? true : false;
-			String seqPathName="";
-			if(useCache){
+			String seqPathName = "";
+			if (useCache) {
 				seqPathName = Args.parseString(args, "seq", "");
 			}
-			if(Args.parseFlags(args).contains("batch")){batchRun=true;}
-			if(Args.parseFlags(args).contains("cluster")){cluster=true;}
-			if(Args.parseArgs(args).contains("quanta")){
-				usingColorQuanta=true; 
-				for(int a=0; a<args.length; a++){
-					if(args[a].equals("--quanta")){
-						int numQ=new Integer(args[a+1]);
-						colorQuanta=new double[numQ];
-						for(int q=0; q<numQ && (a+2+q)<args.length; q++){
-							colorQuanta[q]=new Double(args[a+2+q]);
+			if (Args.parseFlags(args).contains("batch")) {
+				batchRun = true;
+			}
+			if (Args.parseFlags(args).contains("cluster")) {
+				cluster = true;
+			}
+			if (Args.parseArgs(args).contains("quanta")) {
+				usingColorQuanta = true;
+				for (int a = 0; a < args.length; a++) {
+					if (args[a].equals("--quanta")) {
+						int numQ = new Integer(args[a + 1]);
+						colorQuanta = new double[numQ];
+						for (int q = 0; q < numQ && (a + 2 + q) < args.length; q++) {
+							colorQuanta[q] = new Double(args[a + 2 + q]);
 						}
 					}
 				}
@@ -65,59 +70,62 @@ public class ConsensusMetaMaker {
 			}
 			Color c = Color.blue;
 			String newCol = Args.parseString(args, "color", "blue");
-			if(newCol.equals("red"))
-				c=Color.red;
-			if(newCol.equals("green"))
-				c=new Color(0,153,0);
-			if(newCol.equals("black"))
-				c=Color.black;
-		
-			
-			if(gen==null || consensus==null){printError();}
-	
-			BinningParameters params = new BinningParameters(winLen, bins);
-			System.out.println("Binding Parameters:\tWindow size: "+params.getWindowSize()+"\tBins: "+params.getNumBins());
-		
-			
-			PointProfiler profiler=null;
-			boolean normalizeProfile=false;
-			if(profilerType.equals("consensus")){
-				System.out.println("Loading data...");
-				profiler = new ConsensusProfiler(params, gen, consensus, mismatchthres, useCache, seqPathName, watsoncrick);
+			if (newCol.equals("red"))
+				c = Color.red;
+			if (newCol.equals("green"))
+				c = new Color(0, 153, 0);
+			if (newCol.equals("black"))
+				c = Color.black;
+
+			if (gen == null || consensus == null) {
+				printError();
 			}
-			 
-			if(batchRun){
+
+			BinningParameters params = new BinningParameters(winLen, bins);
+			System.out.println(
+					"Binding Parameters:\tWindow size: " + params.getWindowSize() + "\tBins: " + params.getNumBins());
+
+			PointProfiler profiler = null;
+			boolean normalizeProfile = false;
+			if (profilerType.equals("consensus")) {
+				System.out.println("Loading data...");
+				profiler = new ConsensusProfiler(params, gen, consensus, mismatchthres, useCache, seqPathName,
+						watsoncrick);
+			}
+
+			if (batchRun) {
 				System.setProperty("java.awt.headless", "true");
 				System.out.println("Batch running...");
 				MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile, false);
-				if(usingColorQuanta)
+				if (usingColorQuanta)
 					nonframe.setLinePanelColorQuanta(colorQuanta);
 				nonframe.setColor(c);
 				MetaProfileHandler handler = nonframe.getHandler();
-				if(peakFile != null){
+				if (peakFile != null) {
 					Vector<Point> points = nonframe.getUtils().loadPoints(new File(peakFile));
 					handler.addPoints(points);
-				}else{
+				} else {
 					Iterator<Point> points = nonframe.getUtils().loadTSSs("refGene");
 					handler.addPoints(points);
 				}
-				while(handler.addingPoints()){}
-				if(cluster)
+				while (handler.addingPoints()) {
+				}
+				if (cluster)
 					nonframe.clusterLinePanel();
-				//Set the panel sizes here...
+				// Set the panel sizes here...
 				nonframe.setLineMin(0);
 				nonframe.saveImages(outName);
 				nonframe.savePointsToFile(outName);
 				System.out.println("Finished");
-			}else{
+			} else {
 				System.out.println("Initializing Meta-point frame...");
 				MetaFrame frame = new MetaFrame(gen, params, profiler, normalizeProfile);
-				if(usingColorQuanta)
+				if (usingColorQuanta)
 					frame.setLinePanelColorQuanta(colorQuanta);
 				frame.setColor(c);
 				frame.startup();
 				MetaProfileHandler handler = frame.getHandler();
-				if(peakFile != null){
+				if (peakFile != null) {
 					Vector<Point> points = frame.getUtils().loadPoints(new File(peakFile));
 					handler.addPoints(points);
 				}
@@ -128,19 +136,15 @@ public class ConsensusMetaMaker {
 			e.printStackTrace();
 		}
 	}
-	
-	private static void printError(){
-		System.err.println("Usage: ConsensusMetaMaker --species <organism;genome> \n" +
-				"--win <profile width> --bins <num bins> \n" +
-				"--profiler <consensus> \n" +
-				"--consensus <IUPAC consensus> \n" +
-				"--mismatch <mismatch threshold> \n" +
-				"--peaks <peaks file name> --out <output root name> \n" +
-				"--color <red/green/blue> \n" +
-				"--cluster [flag to cluster in batch mode] \n" +
-				"--cache <flag to use cache while loading sequences> AND --seq <Full path of the sequence> \n" +
-				"--watsoncrick <W/C/.>"+
-				"--batch [a flag to run without displaying the window]");
+
+	private static void printError() {
+		System.err.println("Usage: ConsensusMetaMaker --species <organism;genome> \n"
+				+ "--win <profile width> --bins <num bins> \n" + "--profiler <consensus> \n"
+				+ "--consensus <IUPAC consensus> \n" + "--mismatch <mismatch threshold> \n"
+				+ "--peaks <peaks file name> --out <output root name> \n" + "--color <red/green/blue> \n"
+				+ "--cluster [flag to cluster in batch mode] \n"
+				+ "--cache <flag to use cache while loading sequences> AND --seq <Full path of the sequence> \n"
+				+ "--watsoncrick <W/C/.>" + "--batch [a flag to run without displaying the window]");
 		System.exit(1);
 	}
 

@@ -8,14 +8,14 @@ import java.io.*;
 import java.util.*;
 
 public class FileTimer implements Timer, org.seqcode.gseutils.Closeable {
-	
+
 	private PrintStream ps;
-	
-	public FileTimer(File f) throws IOException { 
+
+	public FileTimer(File f) throws IOException {
 		ps = new PrintStream(new FileOutputStream(f));
 	}
 
-	public FileTimer(File f, boolean append) throws IOException { 
+	public FileTimer(File f, boolean append) throws IOException {
 		ps = new PrintStream(new FileOutputStream(f, append));
 	}
 
@@ -24,7 +24,7 @@ public class FileTimer implements Timer, org.seqcode.gseutils.Closeable {
 	}
 
 	public void addTimings(Iterator<Timing> ts) {
-		while(ts.hasNext()) { 
+		while (ts.hasNext()) {
 			addTiming(ts.next());
 		}
 	}

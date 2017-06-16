@@ -9,46 +9,45 @@ import org.seqcode.ml.clustering.hierarchical.ClusterNode;
 import org.seqcode.ml.clustering.hierarchical.HierarchicalClustering;
 import org.seqcode.ml.clustering.vectorcluster.EuclideanDistance;
 
-
 public class ProfileClusteringHandler {
 
 	private ProfileClusterRepresentative repr;
 	private PairwiseElementMetric<ProfileClusterable> metric;
 	private HierarchicalClustering<ProfileClusterable> clustering;
-	
-	public ProfileClusteringHandler(BinningParameters bps) { 
+
+	public ProfileClusteringHandler(BinningParameters bps) {
 		repr = new ProfileClusterRepresentative(bps);
 		metric = new EuclideanDistance<ProfileClusterable>();
 		clustering = new HierarchicalClustering<ProfileClusterable>(repr, metric);
 	}
-	
-	public Vector<Integer> runClustering(Vector<Profile> profs) { 
+
+	public Vector<Integer> runClustering(Vector<Profile> profs) {
 		Vector<Integer> indices = new Vector<Integer>();
-		
+
 		Vector<ProfileClusterable> clusterables = new Vector<ProfileClusterable>();
-		for(int i = 0; i < profs.size(); i++) { 
+		for (int i = 0; i < profs.size(); i++) {
 			clusterables.add(new ProfileClusterable(i, profs.get(i)));
 		}
-		
+
 		Collection<Cluster<ProfileClusterable>> clusterTree = clustering.clusterElements(clusterables);
-		for(Cluster<ProfileClusterable> tree : clusterTree) { 
+		for (Cluster<ProfileClusterable> tree : clusterTree) {
 			appendIndices(indices, tree);
 		}
-		
+
 		return indices;
 	}
-	
-	private void appendIndices(Vector<Integer> indices, Cluster<ProfileClusterable> tree) { 
-		if(tree instanceof ClusterNode) { 
-			ClusterNode<ProfileClusterable> treeNode = (ClusterNode<ProfileClusterable>)tree;
+
+	private void appendIndices(Vector<Integer> indices, Cluster<ProfileClusterable> tree) {
+		if (tree instanceof ClusterNode) {
+			ClusterNode<ProfileClusterable> treeNode = (ClusterNode<ProfileClusterable>) tree;
 			appendIndices(indices, treeNode.getLeft());
 			appendIndices(indices, treeNode.getRight());
-		} else { 
-			for(ProfileClusterable pc : tree.getElements()) { 
+		} else {
+			for (ProfileClusterable pc : tree.getElements()) {
 				Integer idx = pc.getIndex();
-				if(idx != null) { 
+				if (idx != null) {
 					indices.add(idx);
-				} else { 
+				} else {
 					System.err.println("Null index encountered...");
 				}
 			}
@@ -57,11 +56,11 @@ public class ProfileClusteringHandler {
 }
 
 class ProfileClusterRepresentative implements ClusterRepresentative<ProfileClusterable> {
-	
+
 	private int index;
 	private BinningParameters params;
-	
-	public ProfileClusterRepresentative(BinningParameters bps) { 
+
+	public ProfileClusterRepresentative(BinningParameters bps) {
 		index = 0;
 		params = bps;
 	}
@@ -69,13 +68,13 @@ class ProfileClusterRepresentative implements ClusterRepresentative<ProfileClust
 	public ProfileClusterable getRepresentative(Cluster<ProfileClusterable> c) {
 		String name = String.format("cluster-rep-%d", index++);
 		MetaProfile mp = new MetaProfile(name, params);
-		
-		for(ProfileClusterable pc : c.getElements()) { 
+
+		for (ProfileClusterable pc : c.getElements()) {
 			Profile p = pc.getProfile();
 			mp.addProfile(p);
 		}
-		
+
 		return new ProfileClusterable(mp);
-	} 
-	
+	}
+
 }

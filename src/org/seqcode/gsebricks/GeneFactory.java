@@ -11,9 +11,10 @@ import org.seqcode.gsebricks.verbs.Expander;
 /**
  * @author tdanford
  *
- * <code>GeneFactory</code> returns an Expander than maps Regions to Genes.  The purpose
- * of the Factory is to return an appropriate expander for a given Genome.
+ *         <code>GeneFactory</code> returns an Expander than maps Regions to
+ *         Genes. The purpose of the Factory is to return an appropriate
+ *         expander for a given Genome.
  */
 public interface GeneFactory {
-    public Expander<Region,Gene> getExpander(Genome g);
+	public Expander<Region, Gene> getExpander(Genome g);
 }

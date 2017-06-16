@@ -16,14 +16,13 @@ import org.seqcode.projects.seqview.model.InteractionArcModel;
 import org.seqcode.projects.seqview.model.SeqPairedEndModel;
 import org.seqcode.viz.DynamicAttribute;
 
-
 public class InteractionArcPainter extends RegionPaintable {
 
 	private InteractionArcModel model;
 	private InteractionArcProperties props;
 	private DynamicAttribute attrib;
 
-	public InteractionArcPainter (InteractionArcModel model) {
+	public InteractionArcPainter(InteractionArcModel model) {
 		super();
 		this.model = model;
 		props = new InteractionArcProperties();
@@ -31,27 +30,37 @@ public class InteractionArcPainter extends RegionPaintable {
 		attrib = DynamicAttribute.getGlobalAttributes();
 	}
 
-	public InteractionArcProperties getProperties() {return props;}
-	public void setProperties(InteractionArcProperties p) {props = p;}
+	public InteractionArcProperties getProperties() {
+		return props;
+	}
+
+	public void setProperties(InteractionArcProperties p) {
+		props = p;
+	}
+
 	public void savePropsInDir(File dir) {
 		super.savePropsInDir(dir);
-		saveModelPropsInDir(dir,model);
+		saveModelPropsInDir(dir, model);
 	}
+
 	public void loadPropsInDir(File dir) {
 		super.loadPropsInDir(dir);
-		loadModelPropsInDir(dir,model);
-	}    
-	public void cleanup() { 
+		loadModelPropsInDir(dir, model);
+	}
+
+	public void cleanup() {
 		super.cleanup();
 		model.removeEventListener(this);
 	}
-	public synchronized void eventRegistered(EventObject e) {        
+
+	public synchronized void eventRegistered(EventObject e) {
 		if (e.getSource() == model && model.isReady()) {
 			setCanPaint(true);
 			setWantsPaint(true);
 			notifyListeners();
 		}
 	}
+
 	public void removeEventListener(Listener<EventObject> l) {
 		super.removeEventListener(l);
 		if (!hasListeners()) {
@@ -63,29 +72,31 @@ public class InteractionArcPainter extends RegionPaintable {
 		if (!canPaint()) {
 			return;
 		}
-		if(!model.isReady()) { return; }
+		if (!model.isReady()) {
+			return;
+		}
 
 		boolean differential = getProperties().Differential;
 
-
 		int width = x2 - x1;
-		int height = Math.max(y2 - y1,1);
-		int halfy = y2 - (height/2);
+		int height = Math.max(y2 - y1, 1);
+		int halfy = y2 - (height / 2);
 		int regionStart = model.getRegion().getStart();
 		int regionEnd = model.getRegion().getEnd();
 		int regionWidth = model.getRegion().getWidth();
-		int linewidth = Math.max(getProperties().LineWidth,1);
+		int linewidth = Math.max(getProperties().LineWidth, 1);
 		Stroke oldStroke = g.getStroke();
-		g.setStroke(new BasicStroke((float)linewidth));        
+		g.setStroke(new BasicStroke((float) linewidth));
 		List<PairedHit> hits = model.getResults();
-		if(model.isDataError()){
-			g.setFont(attrib.getLargeLabelFont(width,height));
+		if (model.isDataError()) {
+			g.setFont(attrib.getLargeLabelFont(width, height));
 			g.setColor(Color.RED);
-			g.drawString("ReadDB Data Error: " +getLabel(),x1 + g.getFont().getSize()*2,y1 + g.getFont().getSize());
-		}else if (getProperties().DrawTrackLabel) {
-			g.setFont(attrib.getLargeLabelFont(width,height));
+			g.drawString("ReadDB Data Error: " + getLabel(), x1 + g.getFont().getSize() * 2,
+					y1 + g.getFont().getSize());
+		} else if (getProperties().DrawTrackLabel) {
+			g.setFont(attrib.getLargeLabelFont(width, height));
 			g.setColor(Color.BLACK);
-			g.drawString("Paired " +getLabel(),x1 + g.getFont().getSize()*2,y1 + g.getFont().getSize());
+			g.drawString("Paired " + getLabel(), x1 + g.getFont().getSize() * 2, y1 + g.getFont().getSize());
 		}
 		int h = height;
 		float maxweight = 0;
@@ -98,16 +109,17 @@ public class InteractionArcPainter extends RegionPaintable {
 				float tmpweight = hit.weight;
 				int leftx = getXPos(hit.leftPos, regionStart, regionEnd, x1, x2);
 				int rightx = getXPos(hit.rightPos, regionStart, regionEnd, x1, x2);
-				int midx = (leftx+rightx)/2;
+				int midx = (leftx + rightx) / 2;
 				int midy;
-				if (tmpweight>=0) {
-					midy = halfy - (int)(((double)(rightx-leftx)/(double)width) * height);
+				if (tmpweight >= 0) {
+					midy = halfy - (int) (((double) (rightx - leftx) / (double) width) * height);
 				} else {
-					midy = halfy + (int)(((double)(rightx-leftx)/(double)width) * height);
+					midy = halfy + (int) (((double) (rightx - leftx) / (double) width) * height);
 				}
 				tmpweight = Math.abs(tmpweight);
 				g.setStroke(new BasicStroke(tmpweight));
-				//g.setColor(new Color(0.0f, 0.0f, 0.0f, Math.min(1.0f, tmpweight/25f)));
+				// g.setColor(new Color(0.0f, 0.0f, 0.0f, Math.min(1.0f,
+				// tmpweight/25f)));
 				g.setColor(new Color(0.0f, 0.0f, 0.0f, Math.min(1.0f, props.Alpha.floatValue())));
 				QuadCurve2D loop = new QuadCurve2D.Float(leftx, halfy, midx, midy, rightx, halfy);
 				g.draw(loop);
@@ -116,33 +128,34 @@ public class InteractionArcPainter extends RegionPaintable {
 			HashMap<PairedHit, Float> pairedReadCounter = new HashMap<PairedHit, Float>();
 			for (int i = 0; i < hits.size(); i++) {
 				PairedHit hit = hits.get(i);
-				if(pairedReadCounter.containsKey(hit))
-					pairedReadCounter.put(hit, pairedReadCounter.get(hit)+hit.weight);
+				if (pairedReadCounter.containsKey(hit))
+					pairedReadCounter.put(hit, pairedReadCounter.get(hit) + hit.weight);
 				else
 					pairedReadCounter.put(hit, hit.weight);
-				
-				//If under the de-duplicate limit, draw the arc
-				if(pairedReadCounter.get(hit)<= props.DeDuplicate.floatValue()){
+
+				// If under the de-duplicate limit, draw the arc
+				if (pairedReadCounter.get(hit) <= props.DeDuplicate.floatValue()) {
 					int leftx = getXPos(hit.leftPos, regionStart, regionEnd, x1, x2);
 					int rightx = getXPos(hit.rightPos, regionStart, regionEnd, x1, x2);
-					int midx = (leftx+rightx)/2;
-					int midy = y2 - (int)(((double)(rightx-leftx)/(double)width) * 2*height);
+					int midx = (leftx + rightx) / 2;
+					int midy = y2 - (int) (((double) (rightx - leftx) / (double) width) * 2 * height);
 					g.setColor(Color.BLACK);
 					float tmpweight = hit.weight;
-					if (tmpweight>maxweight) {
+					if (tmpweight > maxweight) {
 						maxweight = tmpweight;
 					}
-					if (tmpweight>0.0f) {
-						g.setStroke(new BasicStroke(tmpweight/15f));
+					if (tmpweight > 0.0f) {
+						g.setStroke(new BasicStroke(tmpweight / 15f));
 						tmpweight = Math.max(0.0f, tmpweight);
-						//g.setColor(new Color(0.0f, 0.0f, 0.0f, Math.min(1.0f, tmpweight/100f)));
+						// g.setColor(new Color(0.0f, 0.0f, 0.0f, Math.min(1.0f,
+						// tmpweight/100f)));
 						g.setColor(new Color(0.4f, 0.4f, 0.4f, props.Alpha.floatValue()));
 						QuadCurve2D loop = new QuadCurve2D.Float(leftx, y2, midx, midy, rightx, y2);
 						g.draw(loop);
 					}
 				}
 			}
-			//System.err.println("maxweight: "+maxweight);
+			// System.err.println("maxweight: "+maxweight);
 		}
 		g.setStroke(oldStroke);
 	}

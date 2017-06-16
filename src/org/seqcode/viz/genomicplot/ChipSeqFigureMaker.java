@@ -14,43 +14,40 @@ import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.gseutils.Pair;
 import org.seqcode.viz.paintable.PaintableFrame;
 
-
 public class ChipSeqFigureMaker {
 
-	private GenomeConfig gconfig=null;
-	private ExptConfig econfig=null;
-	private FigureOptions options; 
+	private GenomeConfig gconfig = null;
+	private ExptConfig econfig = null;
+	private FigureOptions options;
 	private PaintableFrame plotter;
-	
+
 	public static void main(String[] args) {
 		ArgParser ap = new ArgParser(args);
-        if(!ap.hasKey("options")) { 
-            System.err.println("Usage:\n " +
-                               "ChipSeqFigureMaker " +
-                               "--options <file name> " +
-                               "--species <species;genome> ");
-            return;
-        }
-        
-        GenomeConfig gcon = new GenomeConfig(args);
-    	ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
-        String ofile = ap.getKeyValue("options");
-        ChipSeqFigureMaker figure = new ChipSeqFigureMaker(ofile, gcon, econ);
-        
+		if (!ap.hasKey("options")) {
+			System.err.println(
+					"Usage:\n " + "ChipSeqFigureMaker " + "--options <file name> " + "--species <species;genome> ");
+			return;
+		}
+
+		GenomeConfig gcon = new GenomeConfig(args);
+		ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
+		String ofile = ap.getKeyValue("options");
+		ChipSeqFigureMaker figure = new ChipSeqFigureMaker(ofile, gcon, econ);
+
 	}
-	
-	public ChipSeqFigureMaker(String optionFile, GenomeConfig g, ExptConfig e){
-		gconfig=g;
-		econfig=e;
+
+	public ChipSeqFigureMaker(String optionFile, GenomeConfig g, ExptConfig e) {
+		gconfig = g;
+		econfig = e;
 		options = new FigureOptions(gconfig, econfig);
 		options.loadOptions(new File(optionFile));
-		
-		//Paint the picture
+
+		// Paint the picture
 		ChipSeqFigurePaintable painter = new ChipSeqFigurePaintable(options);
 		plotter = new PaintableFrame("Genomic Data", painter);
 		plotter.setSize(options.screenSizeX, options.screenSizeY);
 		plotter.setVisible(true);
-		plotter.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
+		plotter.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
 }

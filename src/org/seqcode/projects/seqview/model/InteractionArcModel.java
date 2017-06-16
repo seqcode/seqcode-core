@@ -17,7 +17,6 @@ import org.seqcode.data.readdb.PairedHitLeftComparator;
 import org.seqcode.data.seqdata.SeqAlignment;
 import org.seqcode.genome.location.Region;
 
-
 public class InteractionArcModel extends SeqViewModel implements RegionModel, Runnable {
 
 	private Client client;
@@ -37,53 +36,59 @@ public class InteractionArcModel extends SeqViewModel implements RegionModel, Ru
 		ids = new HashSet<String>();
 		for (SeqAlignment a : alignments) {
 			ids.add(Integer.toString(a.getDBID()));
-			if(!client.exists(Integer.toString(a.getDBID()))){
-            	System.err.println("SeqHistogramModel: Error: "+a.getExpt().getName()+";"+a.getExpt().getReplicate()+";"+a.getName()+"\tRDBID:"+a.getDBID()+" does not exist in ReadDB.");
-            	dataError=true;
-            }
+			if (!client.exists(Integer.toString(a.getDBID()))) {
+				System.err
+						.println("SeqHistogramModel: Error: " + a.getExpt().getName() + ";" + a.getExpt().getReplicate()
+								+ ";" + a.getName() + "\tRDBID:" + a.getDBID() + " does not exist in ReadDB.");
+				dataError = true;
+			}
 		}
 		results = null;
 		otherchrom = null;
 		props = new InteractionArcModelProperties();
 	}
 
-	public InteractionArcModelProperties getProperties() {return props;}
+	public InteractionArcModelProperties getProperties() {
+		return props;
+	}
 
 	public void clearValues() {
 		results = null;
 		otherchrom = null;
 	}
-	
-	public boolean isReady() {return !newinput;}
+
+	public boolean isReady() {
+		return !newinput;
+	}
 
 	public synchronized void run() {
-		while(keepRunning()) {
+		while (keepRunning()) {
 			try {
 				if (!newinput) {
 					wait();
 				}
-			} catch (InterruptedException ex) { }
+			} catch (InterruptedException ex) {
+			}
 			if (newinput) {
 				try {
-					HashMap<PairedHit, Float> deduper = new HashMap<PairedHit, Float>();  
+					HashMap<PairedHit, Float> deduper = new HashMap<PairedHit, Float>();
 					results = new ArrayList<PairedHit>();
 					otherchrom = new ArrayList<PairedHit>();
 					for (String alignid : ids) {
 						List<PairedHit> r = client.getPairedHits(alignid,
-								region.getGenome().getChromID(region.getChrom()),
-								true,
-								region.getStart(),
-								region.getEnd(),
-								null,
-								null);
+								region.getGenome().getChromID(region.getChrom()), true, region.getStart(),
+								region.getEnd(), null, null);
 						for (PairedHit h : r) {
-							if(!deduper.containsKey(h)){ deduper.put(h, h.weight);
-							}else{float currw = deduper.get(h); deduper.put(h, currw+h.weight);} 
-								
-							if(props.ArcDeDuplicate>0 && deduper.get(h)<=props.ArcDeDuplicate){
-								if (h.leftChrom == h.rightChrom) { 
-									if (h.rightPos >= region.getStart() &&
-											h.rightPos <= region.getEnd()) {
+							if (!deduper.containsKey(h)) {
+								deduper.put(h, h.weight);
+							} else {
+								float currw = deduper.get(h);
+								deduper.put(h, currw + h.weight);
+							}
+
+							if (props.ArcDeDuplicate > 0 && deduper.get(h) <= props.ArcDeDuplicate) {
+								if (h.leftChrom == h.rightChrom) {
+									if (h.rightPos >= region.getStart() && h.rightPos <= region.getEnd()) {
 										results.add(h);
 									}
 								} else {
@@ -101,7 +106,7 @@ public class InteractionArcModel extends SeqViewModel implements RegionModel, Ru
 					Collections.sort(otherchrom, comparator);
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					// assign empty output.  This is useful because Client
+					// assign empty output. This is useful because Client
 					// throws an exception for non-existant chromosomes, such
 					// as those for which there were no alignment results
 					results = new ArrayList<PairedHit>();
@@ -123,6 +128,7 @@ public class InteractionArcModel extends SeqViewModel implements RegionModel, Ru
 			}
 		}
 	}
+
 	public void resetRegion(Region r) {
 		if (newinput == false) {
 			region = r;
@@ -130,9 +136,16 @@ public class InteractionArcModel extends SeqViewModel implements RegionModel, Ru
 		}
 	}
 
-	public Region getRegion() {return region;}
+	public Region getRegion() {
+		return region;
+	}
 
-	public List<PairedHit> getResults () {return results;}
-	public List<PairedHit> getOtherChromResults() {return otherchrom;}
+	public List<PairedHit> getResults() {
+		return results;
+	}
+
+	public List<PairedHit> getOtherChromResults() {
+		return otherchrom;
+	}
 
 }

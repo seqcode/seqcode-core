@@ -9,5 +9,5 @@ import java.io.*;
  * @author tdanford
  */
 public interface Saveable {
-    public void save(DataOutputStream dos) throws IOException;
+	public void save(DataOutputStream dos) throws IOException;
 }

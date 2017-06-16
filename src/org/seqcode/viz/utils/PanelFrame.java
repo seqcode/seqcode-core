@@ -14,21 +14,23 @@ import javax.swing.border.*;
  */
 public class PanelFrame extends JFrame {
 
-    private JPanel panel;
-    
-    public PanelFrame(String title, JPanel p) {
-        super(title);
-        panel = p;
-        Container c = (Container)getContentPane();
-        c.setLayout(new BorderLayout());
-        
-        c.add(panel, BorderLayout.CENTER);
-        
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setVisible(true);
-        pack();
-        setLocation(getX() + 100, getY() + 100);
-    }
+	private JPanel panel;
 
-    public JPanel getPanel() { return panel; }
+	public PanelFrame(String title, JPanel p) {
+		super(title);
+		panel = p;
+		Container c = (Container) getContentPane();
+		c.setLayout(new BorderLayout());
+
+		c.add(panel, BorderLayout.CENTER);
+
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setVisible(true);
+		pack();
+		setLocation(getX() + 100, getY() + 100);
+	}
+
+	public JPanel getPanel() {
+		return panel;
+	}
 }

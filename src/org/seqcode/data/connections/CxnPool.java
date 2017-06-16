@@ -6,77 +6,86 @@ import java.sql.SQLException;
 import java.sql.Connection;
 
 /**
- * CxnPool: Base class for various connection pools.
- * Use DatabaseFactory to obtain connections. 
+ * CxnPool: Base class for various connection pools. Use DatabaseFactory to
+ * obtain connections.
  * 
  * @author tdanford
  */
 public abstract class CxnPool {
 
-    /* availPool is the set of available connections.  fullPool
-       is all of the connections we've created.  This freeConnection()
-       check that the connection can be returned to the availPool
-       before it does so */
-    private LinkedList<Connection> availPool, fullPool;
-    private int poolSize;
-    protected Properties props;
-    
-    public CxnPool (Properties p) {
-        availPool = new LinkedList<Connection>(); 
-        fullPool = new LinkedList<Connection>();
-        poolSize = 1;
-        props = p;
-    }
-    
-    private Connection createConnection() { 
-        try {
-            Connection cxn = DriverManager.getConnection(connectString(), username(), password());
-            initializeConnection(cxn);
-            availPool.add(cxn);
-            fullPool.add(cxn);
-            return cxn;
-        } catch (SQLException ex) {
-            System.err.println("Couldn't create a database connection " + ex.toString());
-            ex.printStackTrace();
-            throw new DatabaseException("Couldn't create database connection",ex);
-        }
-    }
+	/*
+	 * availPool is the set of available connections. fullPool is all of the
+	 * connections we've created. This freeConnection() check that the
+	 * connection can be returned to the availPool before it does so
+	 */
+	private LinkedList<Connection> availPool, fullPool;
+	private int poolSize;
+	protected Properties props;
 
-    protected void initializeConnection(java.sql.Connection cxn) throws SQLException {
-    }
+	public CxnPool(Properties p) {
+		availPool = new LinkedList<Connection>();
+		fullPool = new LinkedList<Connection>();
+		poolSize = 1;
+		props = p;
+	}
 
-    public synchronized Connection getConnection () {
-        if (availPool.size() == 0) {
-            for (int i = 0; i < poolSize; i++) {
-                createConnection();
-            }   
-        }
-        Connection c = null;
-        
-        c = fullPool.getFirst();
-        
-        return c;
-    }
+	private Connection createConnection() {
+		try {
+			Connection cxn = DriverManager.getConnection(connectString(), username(), password());
+			initializeConnection(cxn);
+			availPool.add(cxn);
+			fullPool.add(cxn);
+			return cxn;
+		} catch (SQLException ex) {
+			System.err.println("Couldn't create a database connection " + ex.toString());
+			ex.printStackTrace();
+			throw new DatabaseException("Couldn't create database connection", ex);
+		}
+	}
 
-    public synchronized void freeConnection(Connection n) {
-        if(fullPool.contains(n)) {
-            availPool.add(n);            
-        }
-    }
+	protected void initializeConnection(java.sql.Connection cxn) throws SQLException {
+	}
 
-    public synchronized void remove(Connection n) {
-        (new RuntimeException("removing connection " + n)).printStackTrace();
-        fullPool.remove(n);
-        availPool.remove(n);
-    }
+	public synchronized Connection getConnection() {
+		if (availPool.size() == 0) {
+			for (int i = 0; i < poolSize; i++) {
+				createConnection();
+			}
+		}
+		Connection c = null;
 
-    private static void reportClosed (Connection c) {
-        
-    }
+		c = fullPool.getFirst();
 
-    public abstract int getType();
+		return c;
+	}
 
-    public String connectString() {return props.getProperty("jdbcconnectstring");}
-    public String username() {return props.getProperty("user");}
-    public String password() {return props.getProperty("passwd");}    
+	public synchronized void freeConnection(Connection n) {
+		if (fullPool.contains(n)) {
+			availPool.add(n);
+		}
+	}
+
+	public synchronized void remove(Connection n) {
+		(new RuntimeException("removing connection " + n)).printStackTrace();
+		fullPool.remove(n);
+		availPool.remove(n);
+	}
+
+	private static void reportClosed(Connection c) {
+
+	}
+
+	public abstract int getType();
+
+	public String connectString() {
+		return props.getProperty("jdbcconnectstring");
+	}
+
+	public String username() {
+		return props.getProperty("user");
+	}
+
+	public String password() {
+		return props.getProperty("passwd");
+	}
 }

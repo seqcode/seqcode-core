@@ -10,91 +10,91 @@ import org.seqcode.gseutils.Args;
 
 import java.sql.*;
 
-
 /**
- * This is a GUI app for managing ChipSeqAnalysis objects that lets you set their
- * active/inactive flag
+ * This is a GUI app for managing ChipSeqAnalysis objects that lets you set
+ * their active/inactive flag
  */
-
 
 public class ChipSeqAnalysisFrame extends JFrame implements ActionListener {
 
-    private ChipSeqAnalysisSelectPanel panel;
-    private JPanel buttonPanel;
-    private JButton activeButton, inactiveButton;
-    private JMenuBar menuBar;
-    private JMenu fileMenu;
-    private JMenuItem exitItem;
+	private ChipSeqAnalysisSelectPanel panel;
+	private JPanel buttonPanel;
+	private JButton activeButton, inactiveButton;
+	private JMenuBar menuBar;
+	private JMenu fileMenu;
+	private JMenuItem exitItem;
 
-    public ChipSeqAnalysisFrame(Genome g) {
-        super();
-        panel = new ChipSeqAnalysisSelectPanel(g);
+	public ChipSeqAnalysisFrame(Genome g) {
+		super();
+		panel = new ChipSeqAnalysisSelectPanel(g);
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridBagLayout());
-        Dimension buttonSize = new Dimension(30,20);
-        activeButton = new JButton("Set as Active");
-        inactiveButton = new JButton("Set as Inactive");
-        activeButton.setMaximumSize(buttonSize);
-        inactiveButton.setMaximumSize(buttonSize);
-        buttonPanel.add(activeButton);
-        buttonPanel.add(inactiveButton);
-        activeButton.addActionListener(this);
-        inactiveButton.addActionListener(this);
-        Container content = getContentPane();
-        content.setLayout(new BorderLayout());
-        content.add(buttonPanel,BorderLayout.SOUTH);
-        content.add(panel,BorderLayout.CENTER);
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridBagLayout());
+		Dimension buttonSize = new Dimension(30, 20);
+		activeButton = new JButton("Set as Active");
+		inactiveButton = new JButton("Set as Inactive");
+		activeButton.setMaximumSize(buttonSize);
+		inactiveButton.setMaximumSize(buttonSize);
+		buttonPanel.add(activeButton);
+		buttonPanel.add(inactiveButton);
+		activeButton.addActionListener(this);
+		inactiveButton.addActionListener(this);
+		Container content = getContentPane();
+		content.setLayout(new BorderLayout());
+		content.add(buttonPanel, BorderLayout.SOUTH);
+		content.add(panel, BorderLayout.CENTER);
 
-        menuBar = new JMenuBar();
-    	fileMenu = new JMenu("File");
-    	fileMenu.setMnemonic(KeyEvent.VK_F);
-    	menuBar.add(fileMenu);
-    	exitItem = new JMenuItem("Exit", KeyEvent.VK_X);
-    	exitItem.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			exit_actionPerformed(e);
-    		}
-    	});
-    	fileMenu.add(exitItem);
-    	this.setJMenuBar(menuBar);
+		menuBar = new JMenuBar();
+		fileMenu = new JMenu("File");
+		fileMenu.setMnemonic(KeyEvent.VK_F);
+		menuBar.add(fileMenu);
+		exitItem = new JMenuItem("Exit", KeyEvent.VK_X);
+		exitItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				exit_actionPerformed(e);
+			}
+		});
+		fileMenu.add(exitItem);
+		this.setJMenuBar(menuBar);
 
+		setSize(600, 500);
+		setVisible(true);
+	}
 
-        setSize(600,500);
-        setVisible(true);
-    }
-    public void actionPerformed (ActionEvent e) {
-        if (e.getSource() == activeButton) {
-            for (SeqAnalysis a : panel.getSelected()) {
-                a.setActive(true);
-                try {
-                    a.storeActiveDB();   
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        } else if (e.getSource() == inactiveButton) {
-            for (SeqAnalysis a : panel.getSelected()) {
-                a.setActive(false);
-                try {
-                    a.storeActiveDB();   
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-    }
-    void exit_actionPerformed(ActionEvent e) {
-        panel.close();
-        try {
-            Thread.sleep(400);
-        } catch (Exception ex) {
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == activeButton) {
+			for (SeqAnalysis a : panel.getSelected()) {
+				a.setActive(true);
+				try {
+					a.storeActiveDB();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		} else if (e.getSource() == inactiveButton) {
+			for (SeqAnalysis a : panel.getSelected()) {
+				a.setActive(false);
+				try {
+					a.storeActiveDB();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+	}
 
-        }
-        System.exit(0);
-    }
-    public static void main(String args[]) throws Exception {
-        ChipSeqAnalysisFrame f = new ChipSeqAnalysisFrame(Args.parseGenome(args).cdr());
-    }
+	void exit_actionPerformed(ActionEvent e) {
+		panel.close();
+		try {
+			Thread.sleep(400);
+		} catch (Exception ex) {
+
+		}
+		System.exit(0);
+	}
+
+	public static void main(String args[]) throws Exception {
+		ChipSeqAnalysisFrame f = new ChipSeqAnalysisFrame(Args.parseGenome(args).cdr());
+	}
 
 }

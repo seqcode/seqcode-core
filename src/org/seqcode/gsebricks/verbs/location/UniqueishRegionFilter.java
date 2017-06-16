@@ -11,26 +11,25 @@ import org.seqcode.genome.location.Region;
 import org.seqcode.gsebricks.verbs.Filter;
 import org.seqcode.gseutils.SetTools;
 
-
 public class UniqueishRegionFilter<X extends Region> implements Filter<X, X> {
 
 	private int buffer;
-	private Map<List<String>,Set<X>> leftSeen;
-	private Map<List<String>,Set<X>> rightSeen;
+	private Map<List<String>, Set<X>> leftSeen;
+	private Map<List<String>, Set<X>> rightSeen;
 	private SetTools<X> st;
-	
+
 	public UniqueishRegionFilter(int buffer) {
 		this.buffer = buffer;
-		this.leftSeen = new HashMap<List<String>,Set<X>>();
-		this.rightSeen = new HashMap<List<String>,Set<X>>();
+		this.leftSeen = new HashMap<List<String>, Set<X>>();
+		this.rightSeen = new HashMap<List<String>, Set<X>>();
 		this.st = new SetTools<X>();
 	}
-	
+
 	public X execute(X a) {
 		List<String> tmpList = new ArrayList<String>();
 		tmpList.add(a.getChrom());
 		Set<X> leftSet = new HashSet<X>();
-		for (int l=a.getStart()-buffer; l<=a.getStart()+buffer; l++) {
+		for (int l = a.getStart() - buffer; l <= a.getStart() + buffer; l++) {
 			tmpList.add((new Integer(l)).toString());
 			if (leftSeen.containsKey(tmpList)) {
 				leftSet.addAll(leftSeen.get(tmpList));
@@ -38,14 +37,14 @@ public class UniqueishRegionFilter<X extends Region> implements Filter<X, X> {
 			tmpList.remove(1);
 		}
 		Set<X> rightSet = new HashSet<X>();
-		for (int r=a.getEnd()-buffer; r<=a.getEnd()+buffer; r++) {
+		for (int r = a.getEnd() - buffer; r <= a.getEnd() + buffer; r++) {
 			tmpList.add((new Integer(r)).toString());
 			if (rightSeen.containsKey(tmpList)) {
 				rightSet.addAll(rightSeen.get(tmpList));
 			}
 			tmpList.remove(1);
 		}
-		if (st.intersects(leftSet,rightSet)) {
+		if (st.intersects(leftSet, rightSet)) {
 			return null;
 		}
 		tmpList.add((new Integer(a.getStart())).toString());

@@ -9,17 +9,17 @@ import java.io.*;
 import org.seqcode.gseutils.Closeable;
 import org.seqcode.gseutils.json.*;
 
-
 public interface ModelOutput<T extends Model> extends Closeable {
 
 	public void writeModel(T m);
+
 	public void flush();
-	
+
 	public static class LineWriter<T extends Model> implements ModelOutput<T> {
-		
+
 		private PrintStream ps;
-		
-		public LineWriter(OutputStream os) { 
+
+		public LineWriter(OutputStream os) {
 			ps = new PrintStream(os);
 		}
 
@@ -39,7 +39,7 @@ public interface ModelOutput<T extends Model> extends Closeable {
 		public void writeModel(T m) {
 			JSONObject obj = m.asJSON();
 			ps.println(obj.toString());
-		} 
-		
+		}
+
 	}
 }

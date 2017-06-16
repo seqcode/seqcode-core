@@ -8,11 +8,10 @@
  */
 package org.seqcode.projects.seqview.model;
 
-
 import org.seqcode.genome.location.Gene;
 
 public class GeneModel extends RegionMultipleExpanderModel<Gene> {
-    public GeneModel() { 
-        super();
-    }
+	public GeneModel() {
+		super();
+	}
 }

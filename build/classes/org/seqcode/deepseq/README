@@ -1,0 +1,22 @@
+package:org.seqcode.deepseq
+
+This package aims to provide a set of classes that allow you to conveniently load sequencing experiment data from ReadDB or file sources. 
+Experiment relationships are kept in a tree structure that represents conditions, (controlled) replicates, and samples.
+Experiment types and targets are also indexed. 
+
+Command-line initialization support is provided by ExptConfig. 
+The main handle to all underlying data representations is via ExperimentManager. 
+
+The package supports two options for data caching: 
+	1) Load all data into memory (resource hungry for more than a couple of experiments)
+	2) Maintain local file caches - load each chromosome into memory one at a time, for example. In this option, each experiment has to be entirely loaded into memory before writing to files, so there is still some memory overhead.
+
+Classes in this package depend on classes in org.seqcode.gse and org.seqcode.genome for interacting with the database and navigating genomes. 
+However, care should be taken to avoid depending on other classes (e.g. anything in org.seqcode.projects).  
+
+History:
+--------
+Nov 18th 2014: Adding paired-end support into HitCache and some HitLoaders.
+Aug 3rd 2014: Reorganized to expand the levels of information stored on each experiment (i.e. via ExperimentTarget & ExperimentType), added local file caching support, and made the package independent of the old MultiGPS loading approach. 
+May 6th 2014: Package started, adapting from experiment management system in MultiGPS. 
+

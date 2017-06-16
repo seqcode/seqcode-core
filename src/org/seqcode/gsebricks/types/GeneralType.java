@@ -9,33 +9,38 @@
 package org.seqcode.gsebricks.types;
 
 public class GeneralType implements EchoType {
-    
-    public GeneralType() {}
 
-    public String getName() {
-        return "OBJECT";
-    }
-    
-    public boolean isParameterSubstitute(EchoType paramType) {
-        return isSubType(paramType);
-    }
+	public GeneralType() {
+	}
 
-    public boolean isReturnSubstitute(EchoType retType) {
-        return retType.isSubType(this);
-    }
+	public String getName() {
+		return "OBJECT";
+	}
 
-    public boolean isSubType(EchoType et) {
-        if(et.equals(this)) { return true; }
-        return false;
-    }
+	public boolean isParameterSubstitute(EchoType paramType) {
+		return isSubType(paramType);
+	}
 
-    public boolean equals(Object o) { 
-        return o instanceof GeneralType;
-    }
-    
-    public int hashCode() { 
-        return 17;
-    }
+	public boolean isReturnSubstitute(EchoType retType) {
+		return retType.isSubType(this);
+	}
 
-    public String toString() { return getName(); }
+	public boolean isSubType(EchoType et) {
+		if (et.equals(this)) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean equals(Object o) {
+		return o instanceof GeneralType;
+	}
+
+	public int hashCode() {
+		return 17;
+	}
+
+	public String toString() {
+		return getName();
+	}
 }

@@ -7,20 +7,29 @@ import org.seqcode.gsebricks.RegionExpanderFactory;
 import org.seqcode.gsebricks.verbs.Expander;
 
 public class ScoredRegionGeneratorFactory implements RegionExpanderFactory<ScoredRegion> {
-    private String type;
-    
-    public ScoredRegionGeneratorFactory() {
-        type = "ScoredRegion";
-    }
+	private String type;
 
-    public void setType(String t) {type = t;}
-    public String getType() {return type;}
-    public String getProduct() {return "ScoredRegion";}
-    public Expander<Region, ScoredRegion> getExpander(Genome g) {
-        return getExpander(g,type);
-    }
+	public ScoredRegionGeneratorFactory() {
+		type = "ScoredRegion";
+	}
 
-    public Expander<Region, ScoredRegion> getExpander(Genome g, String type) {
-        return new ScoredRegionGenerator(g,type);
-    }
+	public void setType(String t) {
+		type = t;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public String getProduct() {
+		return "ScoredRegion";
+	}
+
+	public Expander<Region, ScoredRegion> getExpander(Genome g) {
+		return getExpander(g, type);
+	}
+
+	public Expander<Region, ScoredRegion> getExpander(Genome g, String type) {
+		return new ScoredRegionGenerator(g, type);
+	}
 }

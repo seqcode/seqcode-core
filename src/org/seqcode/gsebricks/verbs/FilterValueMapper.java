@@ -8,24 +8,26 @@ import org.seqcode.gseutils.*;
 /**
  * @author tdanford
  */
-public class FilterValueMapper<X,Y> implements Mapper<X,Pair<X,Integer>> {
-    
-    private Filter<X,Y> filter;
+public class FilterValueMapper<X, Y> implements Mapper<X, Pair<X, Integer>> {
 
-    public FilterValueMapper(Filter<X,Y> f) {
-        filter = f;
-    }
+	private Filter<X, Y> filter;
 
-    /* (non-Javadoc)
-     * @see org.seqcode.gsebricks.verbs.Mapper#execute(java.lang.Object)
-     */
-    public Pair<X, Integer> execute(X a) {
-        Y ret = filter.execute(a);
-        if(ret != null) { 
-            return new Pair<X,Integer>(a, 1); 
-        } else { 
-            return new Pair<X,Integer>(a, 0);
-        }
-    }
+	public FilterValueMapper(Filter<X, Y> f) {
+		filter = f;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.seqcode.gsebricks.verbs.Mapper#execute(java.lang.Object)
+	 */
+	public Pair<X, Integer> execute(X a) {
+		Y ret = filter.execute(a);
+		if (ret != null) {
+			return new Pair<X, Integer>(a, 1);
+		} else {
+			return new Pair<X, Integer>(a, 0);
+		}
+	}
 
 }

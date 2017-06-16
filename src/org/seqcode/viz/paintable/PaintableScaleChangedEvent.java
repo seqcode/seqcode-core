@@ -7,10 +7,12 @@ package org.seqcode.viz.paintable;
 public class PaintableScaleChangedEvent {
 
 	private PaintableScale scale;
-	
-	public PaintableScaleChangedEvent(PaintableScale sc) { 
+
+	public PaintableScaleChangedEvent(PaintableScale sc) {
 		scale = sc;
 	}
-	
-	public PaintableScale getScale() { return scale; }
+
+	public PaintableScale getScale() {
+		return scale;
+	}
 }

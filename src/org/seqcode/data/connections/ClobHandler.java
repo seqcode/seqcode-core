@@ -5,11 +5,11 @@ import java.sql.*;
 
 public class ClobHandler {
 
-	public static void setClob(Connection cxn, PreparedStatement ps, int index, String clobValue) throws SQLException { 
-		if(DatabaseConnectionManager.isOracle(cxn)) { 
-			OraclePreparedStatement ops = (OraclePreparedStatement)ps;
+	public static void setClob(Connection cxn, PreparedStatement ps, int index, String clobValue) throws SQLException {
+		if (DatabaseConnectionManager.isOracle(cxn)) {
+			OraclePreparedStatement ops = (OraclePreparedStatement) ps;
 			ops.setStringForClob(index, clobValue);
-		} else { 
+		} else {
 			ps.setString(index, clobValue);
 		}
 	}

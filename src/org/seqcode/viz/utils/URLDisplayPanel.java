@@ -13,31 +13,33 @@ import javax.swing.*;
  * @author tdanford
  */
 public class URLDisplayPanel extends JPanel {
-    
-    private JTextField text;
-    private Action copyAction;
-    private JButton copyButton;
 
-    public URLDisplayPanel(String urlString) {
-        super();
-        setLayout(new BorderLayout());
-        text = new JTextField(urlString);
-        text.setEditable(false);
-        add(text, BorderLayout.CENTER);
-        
-        copyAction = new AbstractAction("Copy URL") {
-            public void actionPerformed(ActionEvent arg0) {
-                copyURL();
-            } 
-        };
-        copyButton = new JButton(copyAction);
-        add(copyButton, BorderLayout.SOUTH);
-    }
+	private JTextField text;
+	private Action copyAction;
+	private JButton copyButton;
 
-    public void copyURL() { 
-        text.selectAll();
-        text.copy();
-    }
+	public URLDisplayPanel(String urlString) {
+		super();
+		setLayout(new BorderLayout());
+		text = new JTextField(urlString);
+		text.setEditable(false);
+		add(text, BorderLayout.CENTER);
 
-    public String getURLString() { return text.getText(); }
+		copyAction = new AbstractAction("Copy URL") {
+			public void actionPerformed(ActionEvent arg0) {
+				copyURL();
+			}
+		};
+		copyButton = new JButton(copyAction);
+		add(copyButton, BorderLayout.SOUTH);
+	}
+
+	public void copyURL() {
+		text.selectAll();
+		text.copy();
+	}
+
+	public String getURLString() {
+		return text.getText();
+	}
 }

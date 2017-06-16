@@ -8,58 +8,63 @@ import org.seqcode.gsebricks.verbs.Mapper;
 /**
  * @author tdanford
  */
-public class ReverseComplement implements Mapper<String,String> {
-    
-    private Mapper<Character,Character> complement;
+public class ReverseComplement implements Mapper<String, String> {
 
-    public ReverseComplement() {
-        complement = new DNAComplement();
-    }
-    
-    public ReverseComplement(Mapper<Character,Character> c) { 
-        complement = c;
-    }
+	private Mapper<Character, Character> complement;
 
-    /* (non-Javadoc)
-     * @see org.seqcode.gsebricks.verbs.Filter#execute(null)
-     */
-    public String execute(String str) {
-        StringBuilder sb = new StringBuilder();
-        for(int i = str.length()-1; i >= 0; i--) { 
-            sb.append(complement.execute(str.charAt(i)));
-        }
-        return sb.toString();
-    }
+	public ReverseComplement() {
+		complement = new DNAComplement();
+	}
 
-    public static class DNAComplement implements Mapper<Character,Character> {
-        
-        public DNAComplement() {}
+	public ReverseComplement(Mapper<Character, Character> c) {
+		complement = c;
+	}
 
-        /* (non-Javadoc)
-         * @see org.seqcode.gsebricks.verbs.Mapper#execute(java.lang.Object)
-         */
-        public Character execute(Character a) {
-            switch(a.charValue()) { 
-            case 'a':
-                return 't';
-            case 'A':
-                return 'T';
-            case 't':
-                return 'a';
-            case 'T':
-                return 'A';
-            case 'g':
-                return 'c';
-            case 'G':
-                return 'C';
-            case 'c':
-                return 'g';
-            case 'C':
-                return 'G';
-            }
-            return 'N';
-        }
-        
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.seqcode.gsebricks.verbs.Filter#execute(null)
+	 */
+	public String execute(String str) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = str.length() - 1; i >= 0; i--) {
+			sb.append(complement.execute(str.charAt(i)));
+		}
+		return sb.toString();
+	}
+
+	public static class DNAComplement implements Mapper<Character, Character> {
+
+		public DNAComplement() {
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.seqcode.gsebricks.verbs.Mapper#execute(java.lang.Object)
+		 */
+		public Character execute(Character a) {
+			switch (a.charValue()) {
+			case 'a':
+				return 't';
+			case 'A':
+				return 'T';
+			case 't':
+				return 'a';
+			case 'T':
+				return 'A';
+			case 'g':
+				return 'c';
+			case 'G':
+				return 'C';
+			case 'c':
+				return 'g';
+			case 'C':
+				return 'G';
+			}
+			return 'N';
+		}
+
+	}
 
 }

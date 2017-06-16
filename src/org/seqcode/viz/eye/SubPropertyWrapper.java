@@ -8,13 +8,18 @@ public class SubPropertyWrapper<X> extends ModelPaintableProperty<X> {
 
 	private String outerKey;
 	private ModelPaintableProperty<X> inner;
-	
-	public SubPropertyWrapper(String k, ModelPaintableProperty<X> i) { 
+
+	public SubPropertyWrapper(String k, ModelPaintableProperty<X> i) {
 		super(String.format("%s.%s", k, i.getKey()));
 		outerKey = k;
 		inner = i;
 	}
-	
-	public X getValue() { return inner.getValue(); }
-	public ModelPaintableProperty<X> getInnerProperty() { return inner; }
+
+	public X getValue() {
+		return inner.getValue();
+	}
+
+	public ModelPaintableProperty<X> getInnerProperty() {
+		return inner;
+	}
 }

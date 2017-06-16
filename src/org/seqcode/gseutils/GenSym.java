@@ -7,7 +7,7 @@ package org.seqcode.gseutils;
 import java.util.*;
 
 /**
- * Generates unique string symbols. 
+ * Generates unique string symbols.
  * 
  * @author tdanford
  */
@@ -15,13 +15,13 @@ public class GenSym {
 
 	private String prefix;
 	private long index;
-	
-	public GenSym(String pre) { 
+
+	public GenSym(String pre) {
 		prefix = pre;
-		index = (long)0;
+		index = (long) 0;
 	}
-	
-	public synchronized String generateSymbol() { 
+
+	public synchronized String generateSymbol() {
 		String sym = String.format("%s%d", prefix, index);
 		index += 1;
 		return sym;

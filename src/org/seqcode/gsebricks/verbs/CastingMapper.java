@@ -6,16 +6,18 @@ package org.seqcode.gsebricks.verbs;
 /**
  * @author tdanford
  */
-public class CastingMapper<A,B> implements Mapper<A,B> { 
+public class CastingMapper<A, B> implements Mapper<A, B> {
 
-    public CastingMapper() {
-    }
+	public CastingMapper() {
+	}
 
-    /* (non-Javadoc)
-     * @see org.seqcode.gsebricks.verbs.Filter#execute(null)
-     */
-    public B execute(A a) {
-        return (B)a;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.seqcode.gsebricks.verbs.Filter#execute(null)
+	 */
+	public B execute(A a) {
+		return (B) a;
+	}
 
 }

@@ -17,103 +17,106 @@ import org.seqcode.gseutils.Args;
 import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.gseutils.Pair;
 
-
 /**
- * GenomeConfig:
- * A config parser that loads genome objects from the command-line or config files. 
- * You can also use the Args class directly to load Genomes from the command-line. 
- * However, GenomeConfig allows convenient loading of cached sequences as well, 
- * and fits the schema of the other config parser classes.   
+ * GenomeConfig: A config parser that loads genome objects from the command-line
+ * or config files. You can also use the Args class directly to load Genomes
+ * from the command-line. However, GenomeConfig allows convenient loading of
+ * cached sequences as well, and fits the schema of the other config parser
+ * classes.
  * 
  * @author mahony
  *
  */
 public class GenomeConfig {
-	private Genome gen=null;
-	private String genomeSequencePath=null; //Path to sequence data file directories
-	private SequenceGenerator<Region> seqgen=null;
-	private boolean sequenceAvailable=false;
-	private boolean printHelp=false;
-	
+	private Genome gen = null;
+	private String genomeSequencePath = null; // Path to sequence data file
+												// directories
+	private SequenceGenerator<Region> seqgen = null;
+	private boolean sequenceAvailable = false;
+	private boolean printHelp = false;
+
 	private String[] args;
-	public String getArgs(){
-		String a="";
-		for(int i=0; i<args.length; i++)
-			a = a+" "+args[i];
+
+	public String getArgs() {
+		String a = "";
+		for (int i = 0; i < args.length; i++)
+			a = a + " " + args[i];
 		return a;
 	}
-	
-	public GenomeConfig(String [] arguments){
-		this.args=arguments;
+
+	public GenomeConfig(String[] arguments) {
+		this.args = arguments;
 		ArgParser ap = new ArgParser(args);
 		seqgen = new SequenceGenerator<Region>();
-		
-		if(args.length==0 || ap.hasKey("h")){
-			printHelp=true;			
-		}else{
-			try{
-				//Test for a config file... if there is concatenate the contents into the args
-				if(ap.hasKey("config")){
+
+		if (args.length == 0 || ap.hasKey("h")) {
+			printHelp = true;
+		} else {
+			try {
+				// Test for a config file... if there is concatenate the
+				// contents into the args
+				if (ap.hasKey("config")) {
 					ArrayList<String> confArgs = new ArrayList<String>();
 					String confName = ap.getKeyValue("config");
 					File confFile = new File(confName);
-					if(!confFile.isFile())
-						System.err.println("\nCannot find configuration file: "+confName);
+					if (!confFile.isFile())
+						System.err.println("\nCannot find configuration file: " + confName);
 					BufferedReader reader = new BufferedReader(new FileReader(confFile));
-				    String line;
-			        while ((line = reader.readLine()) != null) {
-			        	line = line.trim();
-			        	String[] words = line.split("\\s+");
-			        	if(!words[0].startsWith("--"))
-			        		words[0] = new String("--"+words[0]);
-			        	confArgs.add(words[0]); 
-			        	if(words.length>1){
-				        	String rest=words[1];
-				        	for(int w=2; w<words.length; w++)
-				        		rest = rest+" "+words[w];
-				        	confArgs.add(rest);
-			        	}
-			        }
-			        String [] confArgsArr = confArgs.toArray(new String[confArgs.size()]);
-			        String [] newargs =new String[args.length + confArgsArr.length];
-			        System.arraycopy(args, 0, newargs, 0, args.length);
-			        System.arraycopy(confArgsArr, 0, newargs, args.length, confArgsArr.length);
-			        args = newargs;
-			        ap = new ArgParser(args);
-			        reader.close();
-				}
-				
-				//Load genome
-				if(ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")){
-					Pair<Species, Genome> pair = Args.parseGenome(args);
-					if(pair != null){
-						gen = pair.cdr();
-						sequenceAvailable=true;
+					String line;
+					while ((line = reader.readLine()) != null) {
+						line = line.trim();
+						String[] words = line.split("\\s+");
+						if (!words[0].startsWith("--"))
+							words[0] = new String("--" + words[0]);
+						confArgs.add(words[0]);
+						if (words.length > 1) {
+							String rest = words[1];
+							for (int w = 2; w < words.length; w++)
+								rest = rest + " " + words[w];
+							confArgs.add(rest);
+						}
 					}
-				}else{
-					if(ap.hasKey("geninfo") || ap.hasKey("g")){
-						//Make fake genome... chr lengths provided
+					String[] confArgsArr = confArgs.toArray(new String[confArgs.size()]);
+					String[] newargs = new String[args.length + confArgsArr.length];
+					System.arraycopy(args, 0, newargs, 0, args.length);
+					System.arraycopy(confArgsArr, 0, newargs, args.length, confArgsArr.length);
+					args = newargs;
+					ap = new ArgParser(args);
+					reader.close();
+				}
+
+				// Load genome
+				if (ap.hasKey("species") || ap.hasKey("genome") || ap.hasKey("gen")) {
+					Pair<Species, Genome> pair = Args.parseGenome(args);
+					if (pair != null) {
+						gen = pair.cdr();
+						sequenceAvailable = true;
+					}
+				} else {
+					if (ap.hasKey("geninfo") || ap.hasKey("g")) {
+						// Make fake genome... chr lengths provided
 						String fName = ap.hasKey("geninfo") ? ap.getKeyValue("geninfo") : ap.getKeyValue("g");
 						gen = new Genome("Genome", new File(fName), true);
-					}else{
-					    gen = null;
+					} else {
+						gen = null;
 					}
 				}
-				
-				if(gen==null){
-					System.err.println("WARNING: please provide chromosome length information in a genome info file (option --geninfo). " +
-							"MultiGPS will attempt to estimate chromosome lengths from data, but this may not work or may not be accurate.");
+
+				if (gen == null) {
+					System.err.println(
+							"WARNING: please provide chromosome length information in a genome info file (option --geninfo). "
+									+ "MultiGPS will attempt to estimate chromosome lengths from data, but this may not work or may not be accurate.");
 				}
-				
-				//Cache genome sequence
-				if(ap.hasKey("seq")){
+
+				// Cache genome sequence
+				if (ap.hasKey("seq")) {
 					genomeSequencePath = ap.getKeyValue("seq");
 					seqgen.setGenomePath(genomeSequencePath);
 					seqgen.useCache(true);
 					seqgen.useLocalFiles(true);
-					sequenceAvailable=true;
+					sequenceAvailable = true;
 				}
-				
+
 			} catch (NotFoundException e) {
 				e.printStackTrace();
 			} catch (FileNotFoundException e) {
@@ -123,46 +126,56 @@ public class GenomeConfig {
 			}
 		}
 	}
-	
+
 	/**
-	 * Merge a set of estimated genomes 
+	 * Merge a set of estimated genomes
+	 * 
 	 * @param estGenomes
 	 * @return
 	 */
-	public Genome mergeGenomes(List<Genome> estGenomes){
-		//Combine the chromosome information
+	public Genome mergeGenomes(List<Genome> estGenomes) {
+		// Combine the chromosome information
 		HashMap<String, Integer> chrLenMap = new HashMap<String, Integer>();
-		for(Genome e : estGenomes){
+		for (Genome e : estGenomes) {
 			Map<String, Integer> currMap = e.getChromLengthMap();
-			for(String s: currMap.keySet()){
-				if(!chrLenMap.containsKey(s) || chrLenMap.get(s)<currMap.get(s))
+			for (String s : currMap.keySet()) {
+				if (!chrLenMap.containsKey(s) || chrLenMap.get(s) < currMap.get(s))
 					chrLenMap.put(s, currMap.get(s));
 			}
 		}
-		gen =new Genome("Genome", chrLenMap);
-		return gen;		
+		gen = new Genome("Genome", chrLenMap);
+		return gen;
 	}
-	
-	//Accessors
-	public Genome getGenome(){return gen;}
-	public SequenceGenerator getSequenceGenerator(){return seqgen;}
-	public String getGenomeSequencePath(){return genomeSequencePath;}
-	public boolean sequenceAvailable(){return sequenceAvailable;}
-	public boolean helpWanted(){return printHelp;}
-	
-	
+
+	// Accessors
+	public Genome getGenome() {
+		return gen;
+	}
+
+	public SequenceGenerator getSequenceGenerator() {
+		return seqgen;
+	}
+
+	public String getGenomeSequencePath() {
+		return genomeSequencePath;
+	}
+
+	public boolean sequenceAvailable() {
+		return sequenceAvailable;
+	}
+
+	public boolean helpWanted() {
+		return printHelp;
+	}
+
 	/**
-	 * Returns a string describing the arguments handled by this config parser. 
+	 * Returns a string describing the arguments handled by this config parser.
+	 * 
 	 * @return String
 	 */
-	public static String getArgsList(){
-		return(new String("" +
-				"Genome:" +
-				"\t--species <Species;Genome>\n" +
-				"\tOR\n" +
-				"\t--geninfo <genome info file>" +
-				"Genome Sequence Caching:" +
-				"\t--seq <fasta seq directory>\n" +
-				""));
+	public static String getArgsList() {
+		return (new String(
+				"" + "Genome:" + "\t--species <Species;Genome>\n" + "\tOR\n" + "\t--geninfo <genome info file>"
+						+ "Genome Sequence Caching:" + "\t--seq <fasta seq directory>\n" + ""));
 	}
 }

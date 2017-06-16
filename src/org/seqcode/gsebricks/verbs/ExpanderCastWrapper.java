@@ -12,14 +12,15 @@ import java.util.Iterator;
 
 import org.seqcode.gsebricks.iterators.CastingIterator;
 
+public class ExpanderCastWrapper<A, B, C extends B> implements Expander<A, B> {
 
-public class ExpanderCastWrapper<A,B,C extends B> implements Expander<A,B> {
-    
-    private Expander<A,C> internalExpander;
-    
-    public ExpanderCastWrapper(Expander<A,C> i) { internalExpander = i; }
+	private Expander<A, C> internalExpander;
 
-    public Iterator<B> execute(A a) {
-        return new CastingIterator<B,C>(internalExpander.execute(a));
-    }
+	public ExpanderCastWrapper(Expander<A, C> i) {
+		internalExpander = i;
+	}
+
+	public Iterator<B> execute(A a) {
+		return new CastingIterator<B, C>(internalExpander.execute(a));
+	}
 }

@@ -13,221 +13,220 @@ import java.awt.event.*;
 
 import java.util.*;
 
-
 /**
  * @author tdanford
  */
 public class SelectionDialog extends JDialog implements EventSource<SelectionEvent> {
-    
-    private Vector<String> options;
-    private JButton ok, cancel;
-    SelectionPanel<String> mainPanel;
-    
-    private EventSource.Default<SelectionEvent> src;
-    
-    void layoutDialog() {
-        src = new EventSource.Default<SelectionEvent>();
-        Container c = (Container)getContentPane();
-        c.setLayout(new BorderLayout());
-        
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(1, 2, 5, 5));
-        ok = new JButton("Ok");
-        cancel = new JButton("Cancel");
-        buttonPanel.add(ok);
-        buttonPanel.add(cancel);
-        
-        ok.addActionListener(new ActionListener() { 
-            public void actionPerformed(ActionEvent e) {
-                SelectionEvent se = 
-                    new SelectionEvent(SelectionDialog.this, 
-                            SelectionEvent.OK, new Integer(getSelectionIndex()));
-                SelectionDialog.this.dispose();
-                src.fireEvent(se);                
-            }
-        });
 
-        cancel.addActionListener(new ActionListener() { 
-            public void actionPerformed(ActionEvent e) {
-                SelectionEvent se = 
-                    new SelectionEvent(SelectionDialog.this, SelectionEvent.CANCEL, null);
-                SelectionDialog.this.dispose();
-                src.fireEvent(se);
-            }
-        });
+	private Vector<String> options;
+	private JButton ok, cancel;
+	SelectionPanel<String> mainPanel;
 
-        mainPanel = new SelectionPanel<String>(options, 0);
-        mainPanel.setBorder(new TitledBorder("Options:"));
-        
-        c.add(mainPanel, BorderLayout.CENTER);
-        c.add(buttonPanel, BorderLayout.SOUTH);
-        
-        addWindowListener(new WindowAdapter() {
-           public void windowClosed(WindowEvent e) {  
-               SelectionEvent se = 
-                   new SelectionEvent(SelectionDialog.this, SelectionEvent.CANCEL, null);
-               src.fireEvent(se);               
-           }
-        });
+	private EventSource.Default<SelectionEvent> src;
 
-        setVisible(true);
-        pack();
-        setLocation(getX() + 50, getY() + 50);
-    }
-    
-    public int getSelectionIndex() { 
-        return mainPanel.getSelectedIndex();
-    }
+	void layoutDialog() {
+		src = new EventSource.Default<SelectionEvent>();
+		Container c = (Container) getContentPane();
+		c.setLayout(new BorderLayout());
 
-    /**
-     * @throws java.awt.HeadlessException
-     */
-    public SelectionDialog(Collection<String> c) throws HeadlessException {
-        super();
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridLayout(1, 2, 5, 5));
+		ok = new JButton("Ok");
+		cancel = new JButton("Cancel");
+		buttonPanel.add(ok);
+		buttonPanel.add(cancel);
 
-    /**
-     * @param arg0
-     * @throws java.awt.HeadlessException
-     */
-    public SelectionDialog(Frame arg0, Collection<String> c) throws HeadlessException {
-        super(arg0);
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+		ok.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SelectionEvent se = new SelectionEvent(SelectionDialog.this, SelectionEvent.OK,
+						new Integer(getSelectionIndex()));
+				SelectionDialog.this.dispose();
+				src.fireEvent(se);
+			}
+		});
 
-    /**
-     * @param arg0
-     * @param arg1
-     * @throws java.awt.HeadlessException
-     */
-    public SelectionDialog(Frame arg0, boolean arg1, Collection<String> c) 
-        throws HeadlessException {
-        super(arg0, arg1);
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+		cancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				SelectionEvent se = new SelectionEvent(SelectionDialog.this, SelectionEvent.CANCEL, null);
+				SelectionDialog.this.dispose();
+				src.fireEvent(se);
+			}
+		});
 
-    /**
-     * @param arg0
-     * @param arg1
-     * @throws java.awt.HeadlessException
-     */
-    public SelectionDialog(Frame arg0, String arg1, Collection<String> c) 
-    throws HeadlessException {
-        super(arg0, arg1);
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+		mainPanel = new SelectionPanel<String>(options, 0);
+		mainPanel.setBorder(new TitledBorder("Options:"));
 
-    /**
-     * @param arg0
-     * @param arg1
-     * @param arg2
-     * @throws java.awt.HeadlessException
-     */
-    public SelectionDialog(Frame arg0, String arg1, boolean arg2, Collection<String> c)
-            throws HeadlessException {
-        super(arg0, arg1, arg2);
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+		c.add(mainPanel, BorderLayout.CENTER);
+		c.add(buttonPanel, BorderLayout.SOUTH);
 
-    /**
-     * @param arg0
-     * @param arg1
-     * @param arg2
-     * @param arg3
-     */
-    public SelectionDialog(Frame arg0, String arg1, boolean arg2,
-            GraphicsConfiguration arg3, Collection<String> c) {
-        super(arg0, arg1, arg2, arg3);
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+		addWindowListener(new WindowAdapter() {
+			public void windowClosed(WindowEvent e) {
+				SelectionEvent se = new SelectionEvent(SelectionDialog.this, SelectionEvent.CANCEL, null);
+				src.fireEvent(se);
+			}
+		});
 
-    /**
-     * @param arg0
-     * @throws java.awt.HeadlessException
-     */
-    public SelectionDialog(Dialog arg0, Collection<String> c) throws HeadlessException {
-        super(arg0);
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+		setVisible(true);
+		pack();
+		setLocation(getX() + 50, getY() + 50);
+	}
 
-    /**
-     * @param arg0
-     * @param arg1
-     * @throws java.awt.HeadlessException
-     */
-    public SelectionDialog(Dialog arg0, boolean arg1, Collection<String> c) 
-        throws HeadlessException {
-        super(arg0, arg1);
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+	public int getSelectionIndex() {
+		return mainPanel.getSelectedIndex();
+	}
 
-    /**
-     * @param arg0
-     * @param arg1
-     * @throws java.awt.HeadlessException
-     */
-    public SelectionDialog(Dialog arg0, String arg1, Collection<String> c) 
-        throws HeadlessException {
-        super(arg0, arg1);
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+	/**
+	 * @throws java.awt.HeadlessException
+	 */
+	public SelectionDialog(Collection<String> c) throws HeadlessException {
+		super();
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
 
-    /**
-     * @param arg0
-     * @param arg1
-     * @param arg2
-     * @throws java.awt.HeadlessException
-     */
-    public SelectionDialog(Dialog arg0, String arg1, boolean arg2, Collection<String> c)
-            throws HeadlessException {
-        super(arg0, arg1, arg2);
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+	/**
+	 * @param arg0
+	 * @throws java.awt.HeadlessException
+	 */
+	public SelectionDialog(Frame arg0, Collection<String> c) throws HeadlessException {
+		super(arg0);
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
 
-    /**
-     * @param arg0
-     * @param arg1
-     * @param arg2
-     * @param arg3
-     * @throws java.awt.HeadlessException
-     */
-    public SelectionDialog(Dialog arg0, String arg1, boolean arg2,
-            GraphicsConfiguration arg3, Collection<String> c) throws HeadlessException {
-        super(arg0, arg1, arg2, arg3);
-        options = new Vector<String>(c);
-        layoutDialog();
-    }
+	/**
+	 * @param arg0
+	 * @param arg1
+	 * @throws java.awt.HeadlessException
+	 */
+	public SelectionDialog(Frame arg0, boolean arg1, Collection<String> c) throws HeadlessException {
+		super(arg0, arg1);
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
 
-    /* (non-Javadoc)
-     * @see org.seqcode.gseutils.EventSource#addEventListener(org.seqcode.gseutils.Listener)
-     */
-    public void addEventListener(Listener<SelectionEvent> el) {
-        src.addEventListener(el);
-    }
+	/**
+	 * @param arg0
+	 * @param arg1
+	 * @throws java.awt.HeadlessException
+	 */
+	public SelectionDialog(Frame arg0, String arg1, Collection<String> c) throws HeadlessException {
+		super(arg0, arg1);
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
 
-    /* (non-Javadoc)
-     * @see org.seqcode.gseutils.EventSource#removeEventListener(org.seqcode.gseutils.Listener)
-     */
-    public void removeEventListener(Listener<SelectionEvent> el) {
-        src.removeEventListener(el);
-    }
+	/**
+	 * @param arg0
+	 * @param arg1
+	 * @param arg2
+	 * @throws java.awt.HeadlessException
+	 */
+	public SelectionDialog(Frame arg0, String arg1, boolean arg2, Collection<String> c) throws HeadlessException {
+		super(arg0, arg1, arg2);
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
 
-    /* (non-Javadoc)
-     * @see org.seqcode.gseutils.EventSource#hasListeners()
-     */
-    public boolean hasListeners() {
-        return src.hasListeners();
-    }
+	/**
+	 * @param arg0
+	 * @param arg1
+	 * @param arg2
+	 * @param arg3
+	 */
+	public SelectionDialog(Frame arg0, String arg1, boolean arg2, GraphicsConfiguration arg3, Collection<String> c) {
+		super(arg0, arg1, arg2, arg3);
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
+
+	/**
+	 * @param arg0
+	 * @throws java.awt.HeadlessException
+	 */
+	public SelectionDialog(Dialog arg0, Collection<String> c) throws HeadlessException {
+		super(arg0);
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
+
+	/**
+	 * @param arg0
+	 * @param arg1
+	 * @throws java.awt.HeadlessException
+	 */
+	public SelectionDialog(Dialog arg0, boolean arg1, Collection<String> c) throws HeadlessException {
+		super(arg0, arg1);
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
+
+	/**
+	 * @param arg0
+	 * @param arg1
+	 * @throws java.awt.HeadlessException
+	 */
+	public SelectionDialog(Dialog arg0, String arg1, Collection<String> c) throws HeadlessException {
+		super(arg0, arg1);
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
+
+	/**
+	 * @param arg0
+	 * @param arg1
+	 * @param arg2
+	 * @throws java.awt.HeadlessException
+	 */
+	public SelectionDialog(Dialog arg0, String arg1, boolean arg2, Collection<String> c) throws HeadlessException {
+		super(arg0, arg1, arg2);
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
+
+	/**
+	 * @param arg0
+	 * @param arg1
+	 * @param arg2
+	 * @param arg3
+	 * @throws java.awt.HeadlessException
+	 */
+	public SelectionDialog(Dialog arg0, String arg1, boolean arg2, GraphicsConfiguration arg3, Collection<String> c)
+			throws HeadlessException {
+		super(arg0, arg1, arg2, arg3);
+		options = new Vector<String>(c);
+		layoutDialog();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.seqcode.gseutils.EventSource#addEventListener(org.seqcode.gseutils.
+	 * Listener)
+	 */
+	public void addEventListener(Listener<SelectionEvent> el) {
+		src.addEventListener(el);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.seqcode.gseutils.EventSource#removeEventListener(org.seqcode.gseutils
+	 * .Listener)
+	 */
+	public void removeEventListener(Listener<SelectionEvent> el) {
+		src.removeEventListener(el);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.seqcode.gseutils.EventSource#hasListeners()
+	 */
+	public boolean hasListeners() {
+		return src.hasListeners();
+	}
 
 }

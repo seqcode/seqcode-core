@@ -17,138 +17,147 @@ import org.seqcode.gseutils.Coverage;
 import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.gseutils.Pair;
 
-
 public class RegionCoverage extends Coverage {
 
 	private Genome genome;
-	
-	public RegionCoverage(Genome g) { 
+
+	public RegionCoverage(Genome g) {
 		super();
 		genome = g;
 	}
-	
-	public RegionCoverage(RegionCoverageModel m) { 
+
+	public RegionCoverage(RegionCoverageModel m) {
 		this(null, m);
 	}
-	
-	public RegionCoverage(Genome g, RegionCoverageModel m) { 
+
+	public RegionCoverage(Genome g, RegionCoverageModel m) {
 		super(m);
 		genome = g == null ? m.loadGenome() : g;
 	}
-	
-	public RegionCoverage(Genome g, Coverage c) { 
+
+	public RegionCoverage(Genome g, Coverage c) {
 		super(c);
 		genome = g;
 	}
-	
-	public RegionCoverage(Genome g, Collection<? extends Region> rs) { 
+
+	public RegionCoverage(Genome g, Collection<? extends Region> rs) {
 		this(g, rs, null);
 	}
-	
-	public RegionCoverage(Genome g, Collection<? extends Region> rs, PrintStream ps) { 
+
+	public RegionCoverage(Genome g, Collection<? extends Region> rs, PrintStream ps) {
 		this(g);
 		int i = 0;
-		for(Region r : rs) { 
+		for (Region r : rs) {
 			addRegion(r);
 			i += 1;
-			if(ps != null) { 
-				if(i % 100 == 0) { 
-					System.out.print("."); System.out.flush();
+			if (ps != null) {
+				if (i % 100 == 0) {
+					System.out.print(".");
+					System.out.flush();
 				}
-				if(i % 1000 == 0) { 
-					System.out.println(String.format("(%dk)", i/1000));
+				if (i % 1000 == 0) {
+					System.out.println(String.format("(%dk)", i / 1000));
 				}
 			}
 		}
-		if(ps != null) { ps.println(); }
+		if (ps != null) {
+			ps.println();
+		}
 	}
-	
-	public RegionCoverage(Genome g, Iterator<? extends Region> rs) { 
+
+	public RegionCoverage(Genome g, Iterator<? extends Region> rs) {
 		this(g, rs, null);
 	}
-	
-	public RegionCoverage(Genome g, Iterator<? extends Region> rs, PrintStream ps) { 
+
+	public RegionCoverage(Genome g, Iterator<? extends Region> rs, PrintStream ps) {
 		this(g);
 		int i = 0;
-		while(rs.hasNext()) { 
+		while (rs.hasNext()) {
 			addRegion(rs.next());
 			i += 1;
-			if(ps != null) { 
-				if(i % 100 == 0) { 
-					System.out.print("."); System.out.flush();
+			if (ps != null) {
+				if (i % 100 == 0) {
+					System.out.print(".");
+					System.out.flush();
 				}
-				if(i % 1000 == 0) { 
-					System.out.println(String.format("(%dk)", i/1000));
+				if (i % 1000 == 0) {
+					System.out.println(String.format("(%dk)", i / 1000));
 				}
 			}
 		}
-		
-		if(ps != null) { ps.println(); }
+
+		if (ps != null) {
+			ps.println();
+		}
 	}
-	
-	public Iterator<Region> regions() { 
-		Expander<String,Region> regExp = new Expander<String,Region>() { 
-			public Iterator<Region> execute(String key) { 
+
+	public Iterator<Region> regions() {
+		Expander<String, Region> regExp = new Expander<String, Region>() {
+			public Iterator<Region> execute(String key) {
 				Iterator<Integer[]> units = units(key);
-				return new MapperIterator<Integer[],Region>(new UnitMapper(key), units); 
+				return new MapperIterator<Integer[], Region>(new UnitMapper(key), units);
 			}
 		};
-		return new ExpanderIterator<String,Region>(regExp, keys());
+		return new ExpanderIterator<String, Region>(regExp, keys());
 	}
-	
-	private class UnitMapper implements Mapper<Integer[],Region> {
-		private String key; 
-		public UnitMapper(String k) { key = k; }
+
+	private class UnitMapper implements Mapper<Integer[], Region> {
+		private String key;
+
+		public UnitMapper(String k) {
+			key = k;
+		}
+
 		public Region execute(Integer[] a) {
 			return new Region(genome, key, a[0], a[1]);
-		} 
+		}
 	}
-	
-	public Region rightNearest(Point p) { 
+
+	public Region rightNearest(Point p) {
 		Integer[] bounds = super.rightNearest(p.getChrom(), p.getLocation());
-		if(bounds != null) { 
+		if (bounds != null) {
 			return new Region(p.getGenome(), p.getChrom(), bounds[0], bounds[1]);
-		} else { 
+		} else {
 			return null;
 		}
 	}
-	
-	public Region leftNearest(Point p) { 
+
+	public Region leftNearest(Point p) {
 		Integer[] bounds = super.leftNearest(p.getChrom(), p.getLocation());
-		if(bounds != null) { 
+		if (bounds != null) {
 			return new Region(p.getGenome(), p.getChrom(), bounds[0], bounds[1]);
-		} else { 
+		} else {
 			return null;
 		}
 	}
-	
-	public RegionCoverage subtract(Coverage c) { 
+
+	public RegionCoverage subtract(Coverage c) {
 		return new RegionCoverage(genome, super.subtract(c));
 	}
-	
-	public RegionCoverage intersection(Coverage c) { 
+
+	public RegionCoverage intersection(Coverage c) {
 		return new RegionCoverage(genome, super.intersection(c));
 	}
-	
-	public RegionCoverage union(Coverage c) { 
+
+	public RegionCoverage union(Coverage c) {
 		return new RegionCoverage(genome, super.union(c));
 	}
-	
+
 	public void addRegion(Region r) {
-		if(!r.getGenome().equals(genome)) {
+		if (!r.getGenome().equals(genome)) {
 			throw new IllegalArgumentException();
 		}
 		addInterval(r.getChrom(), r.getStart(), r.getEnd());
 	}
-	
-	public int coverage(Region r) { 
+
+	public int coverage(Region r) {
 		return super.coverage(r.getChrom(), r.getStart(), r.getEnd());
 	}
-	
-	public Collection<Region> coveredRegions(Region r) { 
+
+	public Collection<Region> coveredRegions(Region r) {
 		Collection<Integer[]> cov = covered(r.getChrom(), r.getStart(), r.getEnd());
 		ArrayList<Region> regs = new ArrayList<Region>();
-		for(Integer[] c : cov) { 
+		for (Integer[] c : cov) {
 			regs.add(new Region(genome, r.getChrom(), c[0], c[1]));
 		}
 		return regs;
@@ -157,25 +166,26 @@ public class RegionCoverage extends Coverage {
 	public boolean hasCoverage(Region r) {
 		return hasCoverage(r.getChrom(), r.getStart(), r.getEnd());
 	}
-	
-	public RegionCoverageModel asModel() { 
+
+	public RegionCoverageModel asModel() {
 		return new RegionCoverageModel(this, super.asModel());
 	}
-	
+
 	public static class RegionCoverageModel extends CoverageModel {
-		
+
 		public String species, version;
-		
-		public RegionCoverageModel() {}
-		
+
+		public RegionCoverageModel() {
+		}
+
 		public RegionCoverageModel(RegionCoverage c, CoverageModel m) {
 			keys = m.keys.clone();
 			coverages = m.coverages.clone();
 			species = c.genome.getSpeciesName();
 			version = c.genome.getVersion();
 		}
-		
-		public Genome loadGenome() { 
+
+		public Genome loadGenome() {
 			try {
 				Species org = Species.getSpecies(species);
 				return new Genome(org, version);
@@ -192,38 +202,40 @@ public class RegionCoverage extends Coverage {
 
 	public Region findNearestRight(Point p) {
 		Integer[] bounds = super.findNearestRight(p.getChrom(), p.getLocation());
-		if(bounds == null) { return null; }
+		if (bounds == null) {
+			return null;
+		}
 		return new Region(p.getGenome(), p.getChrom(), bounds[0], bounds[1]);
 	}
 
 	public Region findNearestLeft(Point p) {
 		Integer[] bounds = super.findNearestLeft(p.getChrom(), p.getLocation());
-		if(bounds == null) { return null; }
+		if (bounds == null) {
+			return null;
+		}
 		return new Region(p.getGenome(), p.getChrom(), bounds[0], bounds[1]);
 	}
 
-	public Collection<Pair<Region, Region>> 
-		findPairs(int maxDist, RegionCoverage coverage, boolean right) {
+	public Collection<Pair<Region, Region>> findPairs(int maxDist, RegionCoverage coverage, boolean right) {
 
-		ArrayList<Pair<Region,Region>> lst = new ArrayList<Pair<Region,Region>>();
+		ArrayList<Pair<Region, Region>> lst = new ArrayList<Pair<Region, Region>>();
 		Iterator<String> chroms = keys();
 
-		while(chroms.hasNext()) { 
+		while (chroms.hasNext()) {
 			String chrom = chroms.next();
-			Collection<Pair<Integer[],Integer[]>> 
-				pairs = right ? super.findRightPairs(chrom, maxDist, coverage) 
-						: super.findLeftPairs(chrom, maxDist, coverage); 
-			
-			for(Pair<Integer[],Integer[]> p : pairs) { 
+			Collection<Pair<Integer[], Integer[]>> pairs = right ? super.findRightPairs(chrom, maxDist, coverage)
+					: super.findLeftPairs(chrom, maxDist, coverage);
+
+			for (Pair<Integer[], Integer[]> p : pairs) {
 				Integer[] p1 = p.getFirst(), p2 = p.getLast();
 				System.out.println(String.format("%d,%d vs. %d,%d", p1[0], p1[1], p2[0], p2[1]));
-				
+
 				Region r1 = new Region(genome, chrom, p1[0], p1[1]);
 				Region r2 = new Region(genome, chrom, p2[0], p2[1]);
-				lst.add(new Pair<Region,Region>(r1, r2));
+				lst.add(new Pair<Region, Region>(r1, r2));
 			}
 		}
-		
+
 		return lst;
 	}
 }

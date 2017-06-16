@@ -1,8 +1,7 @@
 package org.seqcode.gsebricks.verbs;
 
+public interface Combiner<A, B, C> {
 
-public interface Combiner<A,B,C> {
-
-    public C execute(A a, B b);
+	public C execute(A a, B b);
 
 }

@@ -8,16 +8,21 @@
  */
 package org.seqcode.gsebricks.types;
 
-
 public class PairType extends StructuredType {
-    
-    private EchoType firstType, secondType;
 
-    public PairType(EchoType f, EchoType s) { 
-        super("Pair", "first", f, "second", s);
-        firstType = f; secondType = s;
-    }
-    
-    public EchoType getFirstType() { return firstType; }
-    public EchoType getSecondType() { return secondType; }
+	private EchoType firstType, secondType;
+
+	public PairType(EchoType f, EchoType s) {
+		super("Pair", "first", f, "second", s);
+		firstType = f;
+		secondType = s;
+	}
+
+	public EchoType getFirstType() {
+		return firstType;
+	}
+
+	public EchoType getSecondType() {
+		return secondType;
+	}
 }

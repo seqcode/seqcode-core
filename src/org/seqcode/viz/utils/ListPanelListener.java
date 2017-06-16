@@ -7,5 +7,5 @@ package org.seqcode.viz.utils;
  * @author tdanford
  */
 public interface ListPanelListener {
-    public void panelEvent(ListPanelEvent e);
+	public void panelEvent(ListPanelEvent e);
 }

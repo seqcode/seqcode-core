@@ -11,41 +11,42 @@ import java.util.List;
 import org.seqcode.data.connections.DatabaseException;
 import org.seqcode.data.connections.DatabaseFactory;
 
-
 /**
  * @author mahony
  * 
- * PughDBLoader serves as a clearinghouse for query interactions with the Pugh lab database
+ *         PughDBLoader serves as a clearinghouse for query interactions with
+ *         the Pugh lab database
  */
 public class PughDBLoader {
 	public static String role = "pughdb";
-	private java.sql.Connection cxn=null;
+	private java.sql.Connection cxn = null;
 
-	public static void main(String[] args) throws Exception{
+	public static void main(String[] args) throws Exception {
 		PughDBLoader loader = new PughDBLoader();
 		Collection<PughLabSampleInfo> info = loader.loadAllSamples();
-		for(PughLabSampleInfo i : info){
+		for (PughLabSampleInfo i : info) {
 			System.out.println(i.toString());
 		}
 	}
 
-	public PughDBLoader(){
-		
+	public PughDBLoader() {
+
 	}
-	
+
 	public java.sql.Connection getConnection() {
-        if (cxn == null) {
-            try {
-                cxn = DatabaseFactory.getConnection(role);
-            } catch (SQLException e) {
-                throw new DatabaseException(e.toString(),e);
-            }
-        }
-        return cxn;
-    }
-	
+		if (cxn == null) {
+			try {
+				cxn = DatabaseFactory.getConnection(role);
+			} catch (SQLException e) {
+				throw new DatabaseException(e.toString(), e);
+			}
+		}
+		return cxn;
+	}
+
 	/**
 	 * Load all samples in Pugh DB
+	 * 
 	 * @return
 	 * @throws SQLException
 	 */
@@ -62,5 +63,5 @@ public class PughDBLoader {
 		ps.close();
 		return samples;
 	}
-	
+
 }

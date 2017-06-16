@@ -10,6 +10,7 @@ package org.seqcode.gsebricks.types;
 
 public interface DefaultConstantsParameterized {
 
-    public String[] defaultConstantNames();
-    public SelfDescribingConstant[] defaultConstants();
+	public String[] defaultConstantNames();
+
+	public SelfDescribingConstant[] defaultConstants();
 }

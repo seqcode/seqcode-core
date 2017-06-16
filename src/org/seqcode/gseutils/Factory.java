@@ -7,5 +7,5 @@ package org.seqcode.gseutils;
  * @author tdanford
  */
 public interface Factory<X> {
-    public X createObject();
+	public X createObject();
 }

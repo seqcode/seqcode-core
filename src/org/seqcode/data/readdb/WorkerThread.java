@@ -8,45 +8,45 @@ package org.seqcode.data.readdb;
 
 public class WorkerThread implements Runnable {
 
-    private ServerTask task;
-    private boolean keepRunning;
-    private Dispatch dispatch;
+	private ServerTask task;
+	private boolean keepRunning;
+	private Dispatch dispatch;
 
-    public WorkerThread(Dispatch d) {
-        task = null;
-        keepRunning = true;
-        dispatch = d;
-    }
+	public WorkerThread(Dispatch d) {
+		task = null;
+		keepRunning = true;
+		dispatch = d;
+	}
 
-    public synchronized void stopRunning() {keepRunning = false;}
+	public synchronized void stopRunning() {
+		keepRunning = false;
+	}
 
-    public synchronized void handle(ServerTask t) {
-        task = t;
-        notifyAll();
-    }
+	public synchronized void handle(ServerTask t) {
+		task = t;
+		notifyAll();
+	}
 
-    public synchronized void run() {
-        while (keepRunning) {
-            if (task == null) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    // swallow it and go back to waiting.
-                }
-            } else {
-                try {
-                    task.run();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                ServerTask t = task;
-                task = null;
-                dispatch.freeThread(this, t);
-            }
-        }
+	public synchronized void run() {
+		while (keepRunning) {
+			if (task == null) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					// swallow it and go back to waiting.
+				}
+			} else {
+				try {
+					task.run();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				ServerTask t = task;
+				task = null;
+				dispatch.freeThread(this, t);
+			}
+		}
 
-    }
-
-
+	}
 
 }

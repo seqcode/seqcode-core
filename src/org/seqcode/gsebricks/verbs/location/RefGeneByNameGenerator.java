@@ -14,18 +14,17 @@ import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Gene;
 import org.seqcode.gsebricks.verbs.Expander;
 
+public class RefGeneByNameGenerator implements Expander<String, Gene> {
 
-public class RefGeneByNameGenerator implements Expander<String,Gene> { 
+	private Genome genome;
+	private RefGeneGenerator gen;
 
-    private Genome genome;
-    private RefGeneGenerator gen;
-    
-    public RefGeneByNameGenerator(Genome g) { 
-        genome = g;
-        gen = new RefGeneGenerator(g);
-    }
+	public RefGeneByNameGenerator(Genome g) {
+		genome = g;
+		gen = new RefGeneGenerator(g);
+	}
 
-    public Iterator<Gene> execute(String a) {
-        return gen.byName(a);
-    }
+	public Iterator<Gene> execute(String a) {
+		return gen.byName(a);
+	}
 }

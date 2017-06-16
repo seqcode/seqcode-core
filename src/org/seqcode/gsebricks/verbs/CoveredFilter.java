@@ -10,30 +10,29 @@ import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
 import org.seqcode.gseutils.NotFoundException;
 
-
 public class CoveredFilter<X extends Region> implements Filter<X, X> {
 
 	private LinkedList<Region> regions;
 	private File file;
 	private Genome genome;
-	
+
 	public CoveredFilter(File file) {
-		try { 
+		try {
 			genome = Genome.findGenome("mm8");
-		} catch(NotFoundException nfe) { 
+		} catch (NotFoundException nfe) {
 			throw new IllegalStateException();
 		}
 		this.file = file;
 		this.regions = new LinkedList<Region>();
 		parse();
 	}
-	
+
 	private void parse() {
-		try { 
+		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			String line = null;
 			String[] split;
-			while((line = br.readLine()) != null) { 
+			while ((line = br.readLine()) != null) {
 				split = line.split("\t");
 				String chrom = split[0];
 				int start = Integer.parseInt(split[1]);
@@ -42,7 +41,7 @@ public class CoveredFilter<X extends Region> implements Filter<X, X> {
 				regions.add(r);
 			}
 			br.close();
-		} catch(IOException ie) { 
+		} catch (IOException ie) {
 			ie.printStackTrace(System.err);
 		}
 	}

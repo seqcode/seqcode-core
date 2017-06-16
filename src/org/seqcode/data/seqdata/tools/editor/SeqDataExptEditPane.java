@@ -14,65 +14,70 @@ import javax.swing.JTabbedPane;
 import org.seqcode.gseutils.Closeable;
 import org.seqcode.gseutils.NotFoundException;
 
-
 public class SeqDataExptEditPane extends JTabbedPane implements ItemListener, ActionListener, Closeable {
 
 	private JPanel seqPanel;
-	private SeqExptEditTablePanel seqSelect=null;
+	private SeqExptEditTablePanel seqSelect = null;
 	private boolean handlingChange, closed;
 	private JButton donebutton;
 
-	public SeqDataExptEditPane ()throws NotFoundException {
-        super();
-        handlingChange=false;
-        init();
+	public SeqDataExptEditPane() throws NotFoundException {
+		super();
+		handlingChange = false;
+		init();
 	}
-	public boolean isClosed() { return closed; }
-    
-    public void close() {
-    	if(seqSelect!=null)
-    		seqSelect.close();
-        closed = true;
-    }
-    
-    private void init() throws NotFoundException {
-    	donebutton = new JButton("Done");
-        donebutton.addActionListener(this);
-        JPanel dbpanel = new JPanel();
-        dbpanel.setLayout(new GridBagLayout());
-        dbpanel.add(donebutton);
-        
-    	seqPanel = new JPanel();
-    	seqSelect = new SeqExptEditTablePanel();
-    	seqPanel.setLayout(new BorderLayout());
-        seqPanel.add(seqSelect, BorderLayout.CENTER);
-        seqPanel.add(dbpanel, BorderLayout.SOUTH);
-        seqSelect.updateData();
-        addTab("Seq Data", seqPanel);
-        setVisible(true);
-    }
-    
-    //updates the choice of experiments
-    private void updateExptSelection() {
-    	seqSelect.updateData();    	
-    }
-	
-    public void itemStateChanged(ItemEvent e) {
-    	if (handlingChange) {return;}
-    	Object source = e.getItemSelectable();
-    	synchronized(this) {
-    		if (!handlingChange) {
-    			handlingChange = true;
-    			updateExptSelection();
-    			handlingChange = false;
-    		}
-    	}
-	     
-    }
-    public void actionPerformed (ActionEvent e) {
-    	if (e.getSource() == donebutton) {
-    		close();
-    		System.exit(0);
-    	}
-    }
+
+	public boolean isClosed() {
+		return closed;
+	}
+
+	public void close() {
+		if (seqSelect != null)
+			seqSelect.close();
+		closed = true;
+	}
+
+	private void init() throws NotFoundException {
+		donebutton = new JButton("Done");
+		donebutton.addActionListener(this);
+		JPanel dbpanel = new JPanel();
+		dbpanel.setLayout(new GridBagLayout());
+		dbpanel.add(donebutton);
+
+		seqPanel = new JPanel();
+		seqSelect = new SeqExptEditTablePanel();
+		seqPanel.setLayout(new BorderLayout());
+		seqPanel.add(seqSelect, BorderLayout.CENTER);
+		seqPanel.add(dbpanel, BorderLayout.SOUTH);
+		seqSelect.updateData();
+		addTab("Seq Data", seqPanel);
+		setVisible(true);
+	}
+
+	// updates the choice of experiments
+	private void updateExptSelection() {
+		seqSelect.updateData();
+	}
+
+	public void itemStateChanged(ItemEvent e) {
+		if (handlingChange) {
+			return;
+		}
+		Object source = e.getItemSelectable();
+		synchronized (this) {
+			if (!handlingChange) {
+				handlingChange = true;
+				updateExptSelection();
+				handlingChange = false;
+			}
+		}
+
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == donebutton) {
+			close();
+			System.exit(0);
+		}
+	}
 }

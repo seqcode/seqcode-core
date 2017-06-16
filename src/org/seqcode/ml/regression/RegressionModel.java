@@ -12,38 +12,37 @@ import org.seqcode.gseutils.models.ModelFieldAnalysis;
 
 import java.lang.reflect.*;
 
-
-
 public class RegressionModel extends Model {
-	
-	public Field getDependentVariable() { 
+
+	public Field getDependentVariable() {
 		ModelFieldAnalysis mfa = new ModelFieldAnalysis(getClass());
 		Vector<Field> fs = mfa.findTypedFields(DependentVariable.class);
-		if(fs.size() == 1) { 
-			return fs.get(0); 
-		} else if (fs.size() == 0) { 
-			throw new IllegalModelException(String.format(
-					"Model %s has no dependent variable", getClass().getName()));
-		} else { 
+		if (fs.size() == 1) {
+			return fs.get(0);
+		} else if (fs.size() == 0) {
+			throw new IllegalModelException(String.format("Model %s has no dependent variable", getClass().getName()));
+		} else {
 			StringBuilder sb = new StringBuilder();
-			for(Field f : fs) {
-				if(sb.length() > 0) { sb.append(" "); }
+			for (Field f : fs) {
+				if (sb.length() > 0) {
+					sb.append(" ");
+				}
 				sb.append(f.getName());
 			}
-			throw new IllegalModelException(String.format(
-					"Model %s has more than one dependent variable: %s", 
+			throw new IllegalModelException(String.format("Model %s has more than one dependent variable: %s",
 					getClass().getName(), sb.toString()));
 		}
 	}
-	
-	
-	public boolean hasInterceptVariable() { 
+
+	public boolean hasInterceptVariable() {
 		ModelFieldAnalysis mfa = new ModelFieldAnalysis(getClass());
 		Vector<Field> fs = mfa.findTypedFields(Intercept.class);
-		if(fs.size() > 1) { 
+		if (fs.size() > 1) {
 			StringBuilder sb = new StringBuilder();
-			for(Field f : fs) {
-				if(sb.length() > 0) { sb.append(" "); }
+			for (Field f : fs) {
+				if (sb.length() > 0) {
+					sb.append(" ");
+				}
 				sb.append(f.getName());
 			}
 			throw new IllegalStateException(
@@ -51,25 +50,24 @@ public class RegressionModel extends Model {
 		}
 		return fs.size() == 1;
 	}
-	
-	
-	public Vector<Field> getIndependentVariables() { 
+
+	public Vector<Field> getIndependentVariables() {
 		ModelFieldAnalysis mfa = new ModelFieldAnalysis(getClass());
 		Vector<Field> fs = new Vector<Field>();
 		fs.addAll(mfa.findTypedFields(NumericVariable.class));
 		fs.addAll(mfa.findTypedFields(FactorVariable.class));
 		return fs;
 	}
-	
+
 	public static interface DependentVariable {
 	}
-	
-	public static interface FactorVariable { 
+
+	public static interface FactorVariable {
 	}
-	
-	public static interface NumericVariable { 
+
+	public static interface NumericVariable {
 	}
-	
-	public static interface Intercept { 
+
+	public static interface Intercept {
 	}
 }

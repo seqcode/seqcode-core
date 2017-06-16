@@ -15,8 +15,9 @@ import cern.jet.random.engine.DRand;
 
 /**
  * Test the significance of count enrichment vs control
+ * 
  * @author Shaun Mahony
- * @version	%I%, %G%
+ * @version %I%, %G%
  */
 public class EnrichmentSignificance {
 
@@ -28,8 +29,9 @@ public class EnrichmentSignificance {
 	protected Binomial binomial;
 	protected Poisson poisson;
 	protected ChiSquare chisquare;
-	
-	public EnrichmentSignificance(EventsConfig con, ExperimentManager exptman, BindingManager bman, double minFoldChange, double genomeLength){
+
+	public EnrichmentSignificance(EventsConfig con, ExperimentManager exptman, BindingManager bman,
+			double minFoldChange, double genomeLength) {
 		this.config = con;
 		this.manager = exptman;
 		this.bindingManager = bman;
@@ -41,125 +43,145 @@ public class EnrichmentSignificance {
 	}
 
 	/**
-	 * Evaluate the significance of a set of EnrichedFeatures using Binomial and Poisson tests
-	 * Assumes that the counts in the features are not already scaled
+	 * Evaluate the significance of a set of EnrichedFeatures using Binomial and
+	 * Poisson tests Assumes that the counts in the features are not already
+	 * scaled
+	 * 
 	 * @param modelRange
 	 */
-	public void execute() {this.execute(-1);}
-	public void execute(int modelRange){
+	public void execute() {
+		this.execute(-1);
+	}
 
-		//Calculate relative replicate weights using signal vs noise fractions in each signal channel
+	public void execute(int modelRange) {
+
+		// Calculate relative replicate weights using signal vs noise fractions
+		// in each signal channel
 		double[] repWeights = new double[manager.getReplicates().size()];
-		for(ExperimentCondition c : manager.getConditions()){
-			double totalSig =0;
-			for(ControlledExperiment r : c.getReplicates())
+		for (ExperimentCondition c : manager.getConditions()) {
+			double totalSig = 0;
+			for (ControlledExperiment r : c.getReplicates())
 				totalSig += r.getSignalVsNoiseFraction() * r.getSignal().getHitCount();
-			for(ControlledExperiment r : c.getReplicates())
-				repWeights[r.getIndex()]=(r.getSignalVsNoiseFraction() * r.getSignal().getHitCount())/totalSig;
+			for (ControlledExperiment r : c.getReplicates())
+				repWeights[r.getIndex()] = (r.getSignalVsNoiseFraction() * r.getSignal().getHitCount()) / totalSig;
 		}
-		
-		//Compute fold difference, log-likelihood, and p-values. 
-		//To be clear about what each variable is measuring:
-		// sigCtrlFold: weighted average of per-replicate fold difference between signal reads assigned to event and scaled control reads assigned to event.
-		// sigCtrlP: Outcome of binomial test between sum of per-replicate signal read counts at event and sum of scaled per-replicate control counts at event. If multiple replicates use the same control, the counts are used redundantly since this is equivalent to summing the scaling factors across replicates. 
+
+		// Compute fold difference, log-likelihood, and p-values.
+		// To be clear about what each variable is measuring:
+		// sigCtrlFold: weighted average of per-replicate fold difference
+		// between signal reads assigned to event and scaled control reads
+		// assigned to event.
+		// sigCtrlP: Outcome of binomial test between sum of per-replicate
+		// signal read counts at event and sum of scaled per-replicate control
+		// counts at event. If multiple replicates use the same control, the
+		// counts are used redundantly since this is equivalent to summing the
+		// scaling factors across replicates.
 		// LL: log-likelihood loss if component was eliminated from model.
-		// LLp: Chi-square distributed p-value corresponding to LL.  
-		for (BindingEvent cf: bindingManager.getBindingEvents()){
-			for(ExperimentCondition c1 : manager.getConditions()){
+		// LLp: Chi-square distributed p-value corresponding to LL.
+		for (BindingEvent cf : bindingManager.getBindingEvents()) {
+			for (ExperimentCondition c1 : manager.getConditions()) {
 				double c1Sig = cf.getCondSigHitsFromReps(c1);
 				double ctrlCountScaled = cf.getCondCtrlHitsScaledFromReps(c1);
-				
-				//Weighted fold difference, signal vs control
+
+				// Weighted fold difference, signal vs control
 				double sigCtrlFold = 0;
-				for(ControlledExperiment r : c1.getReplicates()){
-					double repFold = cf.getRepCtrlHits(r)>1 ? cf.getRepSigHits(r)/(cf.getRepCtrlHits(r)*r.getControlScaling()) : cf.getRepSigHits(r);
+				for (ControlledExperiment r : c1.getReplicates()) {
+					double repFold = cf.getRepCtrlHits(r) > 1
+							? cf.getRepSigHits(r) / (cf.getRepCtrlHits(r) * r.getControlScaling())
+							: cf.getRepSigHits(r);
 					sigCtrlFold += repFold * repWeights[r.getIndex()];
 				}
-				
-				//P-value, signal vs control
-				double sigCtrlP = evaluateSignificance(c1Sig, ctrlCountScaled, cf.getCondTotalSigHitsFromReps(c1), modelRange==-1 ? bindingManager.getMaxInfluenceRange(c1):modelRange);
+
+				// P-value, signal vs control
+				double sigCtrlP = evaluateSignificance(c1Sig, ctrlCountScaled, cf.getCondTotalSigHitsFromReps(c1),
+						modelRange == -1 ? bindingManager.getMaxInfluenceRange(c1) : modelRange);
 				cf.setCondSigVCtrlFold(c1, sigCtrlFold);
 				cf.setCondSigVCtrlP(c1, sigCtrlP);
-				
-				//Log-likelihood p-value
-				if(config.CALC_EVENTS_LL){
+
+				// Log-likelihood p-value
+				if (config.CALC_EVENTS_LL) {
 					cf.setLLp(c1, chisquare.cdf(cf.getLLd(c1)));
-					System.out.println(String.format("%s\t%s\t%.0f\t%e",cf.getPoint().getLocationString(),c1.getName(),cf.getLLd(c1),cf.getLLp(c1)));
+					System.out.println(String.format("%s\t%s\t%.0f\t%e", cf.getPoint().getLocationString(),
+							c1.getName(), cf.getLLd(c1), cf.getLLp(c1)));
 				}
 			}
 		}
 		// calculate q-values, correction for multiple testing
 		benjaminiHochbergCorrection(bindingManager.getBindingEvents());
-	}//end of evaluateConfidence method
+	}// end of evaluateConfidence method
 
-	
 	/**
 	 * Evaluate the significance using Binomial and Poisson distributions
 	 */
 	private double evaluateSignificance(double countA, double countB, double total, int modelWidth) {
-        double pValuePoisson, pValueBalance;
-		
-		if(countA+countB<=0){
-			return(1);
-		}else{
-	        try{
-	
-	            binomial.setNandP((int)Math.ceil(countA + countB), 1.0 / (minFoldChange + 1));
-	            pValueBalance = binomial.cdf((int)Math.ceil(countB));
-	
-	            poisson.setMean(minFoldChange * Math.max(countB, total * (double)modelWidth / (double)genomeLength ));
-	            int cA = (int)Math.ceil(countA);
-	            pValuePoisson = 1 - poisson.cdf(cA) + poisson.pdf(cA);
-	            
-	        } catch(Exception err){
-	            err.printStackTrace();
-	            throw new RuntimeException(err.toString(), err);
-	        }
-	        return(Math.max(pValueBalance, pValuePoisson));
+		double pValuePoisson, pValueBalance;
+
+		if (countA + countB <= 0) {
+			return (1);
+		} else {
+			try {
+
+				binomial.setNandP((int) Math.ceil(countA + countB), 1.0 / (minFoldChange + 1));
+				pValueBalance = binomial.cdf((int) Math.ceil(countB));
+
+				poisson.setMean(minFoldChange * Math.max(countB, total * (double) modelWidth / (double) genomeLength));
+				int cA = (int) Math.ceil(countA);
+				pValuePoisson = 1 - poisson.cdf(cA) + poisson.pdf(cA);
+
+			} catch (Exception err) {
+				err.printStackTrace();
+				throw new RuntimeException(err.toString(), err);
+			}
+			return (Math.max(pValueBalance, pValuePoisson));
 		}
 	}
+
 	/**
 	 * Multiple hypothesis testing correction
 	 */
-	private void benjaminiHochbergCorrection(List<BindingEvent> features){
+	private void benjaminiHochbergCorrection(List<BindingEvent> features) {
 		double total = features.size();
-		
-		//Signal-vs-Control corrections by condition
-		for(ExperimentCondition c : manager.getConditions()){
+
+		// Signal-vs-Control corrections by condition
+		for (ExperimentCondition c : manager.getConditions()) {
 			BindingEvent.setSortingCond(c);
-			Collections.sort(features, new Comparator<BindingEvent>(){
-	            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
-	        });
-			
-			
-			double rank =1.0;
-			for(BindingEvent cf : features){
-				cf.setCondSigVCtrlP(c, Math.min(1.0, cf.getCondSigVCtrlP(c)*(total/rank)));
+			Collections.sort(features, new Comparator<BindingEvent>() {
+				public int compare(BindingEvent o1, BindingEvent o2) {
+					return o1.compareBySigCtrlPvalue(o2);
+				}
+			});
+
+			double rank = 1.0;
+			for (BindingEvent cf : features) {
+				cf.setCondSigVCtrlP(c, Math.min(1.0, cf.getCondSigVCtrlP(c) * (total / rank)));
 				rank++;
 			}
 		}
-		
-		//LL p-value corrections by condition
-		if(config.CALC_EVENTS_LL){
-			for(ExperimentCondition c : manager.getConditions()){
+
+		// LL p-value corrections by condition
+		if (config.CALC_EVENTS_LL) {
+			for (ExperimentCondition c : manager.getConditions()) {
 				BindingEvent.setSortingCond(c);
-				Collections.sort(features, new Comparator<BindingEvent>(){
-		            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareByLLPvalue(o2);}
-		        });
-				
-				
-				double rank =1.0;
-				for(BindingEvent cf : features){
-					cf.setCondSigVCtrlP(c, Math.min(1.0, cf.getCondSigVCtrlP(c)*(total/rank)));
+				Collections.sort(features, new Comparator<BindingEvent>() {
+					public int compare(BindingEvent o1, BindingEvent o2) {
+						return o1.compareByLLPvalue(o2);
+					}
+				});
+
+				double rank = 1.0;
+				for (BindingEvent cf : features) {
+					cf.setCondSigVCtrlP(c, Math.min(1.0, cf.getCondSigVCtrlP(c) * (total / rank)));
 					rank++;
 				}
 			}
 		}
-		
-		//Finally, sort on the first condition
+
+		// Finally, sort on the first condition
 		BindingEvent.setSortingCond(manager.getConditions().get(0));
-		Collections.sort(features, new Comparator<BindingEvent>(){
-            public int compare(BindingEvent o1, BindingEvent o2) {return o1.compareBySigCtrlPvalue(o2);}
-        });
-	}//end of benjaminiHochbergCorrection method
+		Collections.sort(features, new Comparator<BindingEvent>() {
+			public int compare(BindingEvent o1, BindingEvent o2) {
+				return o1.compareBySigCtrlPvalue(o2);
+			}
+		});
+	}// end of benjaminiHochbergCorrection method
 }

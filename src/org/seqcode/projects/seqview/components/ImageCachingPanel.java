@@ -18,43 +18,43 @@ import javax.swing.*;
 
 public class ImageCachingPanel extends JPanel {
 
-    private Image cachedImage;
-    private JPanel internal;
-    
-    public ImageCachingPanel(JPanel p) { 
-        internal = p;
-        setLayout(new BorderLayout());
-        add(internal, BorderLayout.CENTER);
-        cachedImage = null;
-        
-        this.addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent e) {
-                invalidateImage();
-            }
-        });
-    }
-    
-    public void invalidateImage() { 
-        cachedImage = null;
-        repaint();
-    }
+	private Image cachedImage;
+	private JPanel internal;
 
-    public void paint(Graphics g) { 
-        try { 
-            int w = getWidth(), h = getHeight();
-            if(cachedImage == null) {
-                cachedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-                Graphics ig = cachedImage.getGraphics();
-                Graphics2D g2 = (Graphics2D)ig;
-                internal.paint(g2);
-            }
-        
-            g.drawImage(cachedImage, 0, 0, w, h, null);
-            
-        } catch(Exception e) { 
-            e.printStackTrace(System.err);
-        }
-        
-        super.paintBorder(g);
-    }
+	public ImageCachingPanel(JPanel p) {
+		internal = p;
+		setLayout(new BorderLayout());
+		add(internal, BorderLayout.CENTER);
+		cachedImage = null;
+
+		this.addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				invalidateImage();
+			}
+		});
+	}
+
+	public void invalidateImage() {
+		cachedImage = null;
+		repaint();
+	}
+
+	public void paint(Graphics g) {
+		try {
+			int w = getWidth(), h = getHeight();
+			if (cachedImage == null) {
+				cachedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+				Graphics ig = cachedImage.getGraphics();
+				Graphics2D g2 = (Graphics2D) ig;
+				internal.paint(g2);
+			}
+
+			g.drawImage(cachedImage, 0, 0, w, h, null);
+
+		} catch (Exception e) {
+			e.printStackTrace(System.err);
+		}
+
+		super.paintBorder(g);
+	}
 }

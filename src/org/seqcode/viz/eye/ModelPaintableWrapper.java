@@ -10,17 +10,16 @@ import java.util.Iterator;
 import org.seqcode.gseutils.models.Model;
 import org.seqcode.viz.paintable.Paintable;
 
-
 /**
- * Turns a Paintable into a ModelPaintable. 
+ * Turns a Paintable into a ModelPaintable.
  * 
  * @author tdanford
  */
 public class ModelPaintableWrapper extends AbstractModelPaintable {
 
 	private Paintable inner;
-	
-	public ModelPaintableWrapper(Paintable p) { 
+
+	public ModelPaintableWrapper(Paintable p) {
 		inner = p;
 		inner.addPaintableChangedListener(this);
 	}

@@ -14,17 +14,15 @@ import org.seqcode.gseutils.models.*;
 import org.seqcode.gseutils.models.Timer;
 import org.seqcode.viz.paintable.*;
 
-
 public class TimingVizFrame extends JFrame implements Timer {
-	
-	public static void main(String[] args) { 
+
+	public static void main(String[] args) {
 		TimingVizFrame frame = new TimingVizFrame();
-		for(int i = 0; i < args.length; i++) { 
+		for (int i = 0; i < args.length; i++) {
 			File f = new File(args[i]);
 			try {
 				Iterator<Timing> timings = new ModelInputIterator<Timing>(
-						new ModelInput.LineReader<Timing>(Timing.class,
-								new FileInputStream(f)));
+						new ModelInput.LineReader<Timing>(Timing.class, new FileInputStream(f)));
 				frame.addTimings(timings);
 				System.out.println(String.format("-> %s", args[i]));
 			} catch (FileNotFoundException e) {
@@ -34,39 +32,39 @@ public class TimingVizFrame extends JFrame implements Timer {
 	}
 
 	private ModelScatter scatter;
-	
-	public TimingVizFrame() { 
+
+	public TimingVizFrame() {
 		super("Timing Data");
 		scatter = new ModelScatter("size", "seconds");
-		
-		Container c = (Container)getContentPane();
+
+		Container c = (Container) getContentPane();
 		c.setLayout(new BorderLayout());
-		
+
 		PaintablePanel pp = new PaintablePanel(scatter);
 		pp.setPreferredSize(new Dimension(400, 200));
 
 		c.add(pp, BorderLayout.CENTER);
-		
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+
 		showMe();
 	}
-	
-	private void showMe() { 
-		SwingUtilities.invokeLater(new Runnable() { 
-			public void run() { 
+
+	private void showMe() {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
 				setVisible(true);
 				pack();
 			}
 		});
 	}
-	
-	public void addTiming(Timing t) { 
+
+	public void addTiming(Timing t) {
 		scatter.addModel(t);
 	}
-	
-	public void addTimings(Iterator<Timing> ts) { 
-		while(ts.hasNext()) { 
+
+	public void addTimings(Iterator<Timing> ts) {
+		while (ts.hasNext()) {
 			addTiming(ts.next());
 		}
 	}

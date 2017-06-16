@@ -4,76 +4,80 @@ import java.awt.*;
 
 import org.seqcode.viz.paintable.*;
 
-
 /**
  * ProfileLinePaintable
- * @author tdanford
- * Date: Aug 12, 2008
+ * 
+ * @author tdanford Date: Aug 12, 2008
  */
-public class ProfileLinePaintable extends AbstractPaintable{
-	
+public class ProfileLinePaintable extends AbstractPaintable {
+
 	private PaintableScale scale;
 	private BinningParameters params;
 	private Profile profile;
-	private Color col=Color.blue;
-	private boolean quantized=false;
+	private Color col = Color.blue;
+	private boolean quantized = false;
 	private double[] quanta;
-	
-	public ProfileLinePaintable(PaintableScale sc, Profile p) { 
+
+	public ProfileLinePaintable(PaintableScale sc, Profile p) {
 		scale = sc;
 		profile = p;
 		params = profile.getBinningParameters();
 	}
-	
-	public Profile getProfile() { return profile; }
-	public void setColor(Color c){col=c;}
-	
-	public void setQuanta(double [] q){
-		if(q!=null){
-			quantized=true;
-			quanta=q;
+
+	public Profile getProfile() {
+		return profile;
+	}
+
+	public void setColor(Color c) {
+		col = c;
+	}
+
+	public void setQuanta(double[] q) {
+		if (q != null) {
+			quantized = true;
+			quanta = q;
 		}
 	}
-	
+
 	public void paintItem(Graphics g, int x1, int y1, int x2, int y2) {
-		int w = x2-x1, h = y2-y1;
-		Graphics2D g2 = (Graphics2D)g;
-		
+		int w = x2 - x1, h = y2 - y1;
+		Graphics2D g2 = (Graphics2D) g;
+
 		int binPix = w / (params.getNumBins());
 
-		for(int i = 0; i < params.getNumBins(); i++) { 
-			int x = x1 + i*binPix;
+		for (int i = 0; i < params.getNumBins(); i++) {
+			int x = x1 + i * binPix;
 			double value = profile.value(i);
 			double yf;
-			
-			if(quantized){
-				yf=0;
-				for(int a=0; a<quanta.length; a++)
-					if(value>quanta[a])
-						yf=(double)a/((double)quanta.length-1);
-			}else{
+
+			if (quantized) {
+				yf = 0;
+				for (int a = 0; a < quanta.length; a++)
+					if (value > quanta[a])
+						yf = (double) a / ((double) quanta.length - 1);
+			} else {
 				yf = scale.fractionalOffset(value);
 			}
-			
-			if(yf>0){
+
+			if (yf > 0) {
 				Color c = calcFracColor(col, yf);
 				g2.setColor(c);
 				g2.fillRect(x, y1, binPix, h);
 			}
 		}
 	}
-	
-	private Color calcFracColor(Color col, double v){
+
+	private Color calcFracColor(Color col, double v) {
 		Color c;
 		Color maxColor = col;
 		Color minColor = Color.white;
-		
-		double sVal = v>1 ? 1 : (v<0 ? 0 : v);
-		int red = (int)(maxColor.getRed() * sVal + minColor.getRed() * (1 - sVal));
-	    int green = (int)(maxColor.getGreen() * sVal + minColor.getGreen() * (1 - sVal));
-	    int blue = (int)(maxColor.getBlue() *sVal + minColor.getBlue() * (1 - sVal));
-	    c = new Color(red, green, blue, col.getAlpha());
-		return(c);
+
+		double sVal = v > 1 ? 1 : (v < 0 ? 0 : v);
+		int red = (int) (maxColor.getRed() * sVal + minColor.getRed() * (1 - sVal));
+		int green = (int) (maxColor.getGreen() * sVal + minColor.getGreen() * (1 - sVal));
+		int blue = (int) (maxColor.getBlue() * sVal + minColor.getBlue() * (1 - sVal));
+		c = new Color(red, green, blue, col.getAlpha());
+		return (c);
 	}
-	
+
 }

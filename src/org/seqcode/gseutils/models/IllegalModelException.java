@@ -5,5 +5,7 @@
 package org.seqcode.gseutils.models;
 
 public class IllegalModelException extends RuntimeException {
-	public IllegalModelException(String m) { super(m); }
+	public IllegalModelException(String m) {
+		super(m);
+	}
 }

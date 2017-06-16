@@ -4,7 +4,8 @@ import java.util.Date;
 import java.util.Random;
 
 /**
- * uShuffle: a useful tool for shuffling biological sequences while preserving the k-let counts
+ * uShuffle: a useful tool for shuffling biological sequences while preserving
+ * the k-let counts
  * 
  */
 public class UShuffle {
@@ -32,7 +33,7 @@ public class UShuffle {
 					if (i + 1 < argv.length && argv[i + 1].charAt(0) != '-')
 						k = Integer.parseInt(argv[++i]);
 					else
-						print_help_and_exit(); 
+						print_help_and_exit();
 				} else if (argv[i].compareTo("-seed") == 0) {
 					if (i + 1 < argv.length && argv[i + 1].charAt(0) != '-')
 						seed = Integer.parseInt(argv[++i]);
@@ -59,11 +60,10 @@ public class UShuffle {
 	}
 
 	private static void print_help_and_exit() {
-		System.out.println(title + "\nOptions:\n" +
-				"  -s <string>     specifies the sequence\n" +
-				"  -n <number>     specifies the number of random sequences to generate\n" +
-				"  -k <number>     specifies the let size\n" +
-				"  -seed <number>  specifies the seed for random number generator\n");
+		System.out.println(title + "\nOptions:\n" + "  -s <string>     specifies the sequence\n"
+				+ "  -n <number>     specifies the number of random sequences to generate\n"
+				+ "  -k <number>     specifies the let size\n"
+				+ "  -seed <number>  specifies the seed for random number generator\n");
 		System.exit(0);
 	}
 
@@ -169,39 +169,39 @@ public class UShuffle {
 		s_ = s;
 		l_ = l;
 		k_ = k;
-		if (k_ >= l_ || k_ <= 1)	/* two special cases */
+		if (k_ >= l_ || k_ <= 1) /* two special cases */
 			return;
 
 		/* use hashtable to find distinct vertices */
-		n_lets = l_ - k_ + 2;	/* number of (k-1)-lets */
+		n_lets = l_ - k_ + 2; /* number of (k-1)-lets */
 		n_vertices = 0;
 		hinit(n_lets);
 		for (i = 0; i < n_lets; i++)
 			hinsert(i);
-		root = entries[n_lets - 1].i_vertices;	/* the last let */
+		root = entries[n_lets - 1].i_vertices; /* the last let */
 		vertices = new vertex[n_vertices];
 		for (i = 0; i < n_vertices; i++)
 			vertices[i] = new vertex();
 
 		/* set i_sequence and n_indices for each vertex */
-		for (i = 0; i < n_lets; i++) {	/* for each let */
+		for (i = 0; i < n_lets; i++) { /* for each let */
 			hentry ev = entries[i];
 			vertex v = vertices[ev.i_vertices];
 
 			v.i_sequence = ev.i_sequence;
-			if (i < n_lets - 1)	/* not the last let */
+			if (i < n_lets - 1) /* not the last let */
 				v.n_indices++;
 		}
 
 		/* allocate indices for each vertex */
-		for (i = 0; i < n_vertices; i++) {	/* for each vertex */
+		for (i = 0; i < n_vertices; i++) { /* for each vertex */
 			vertex v = vertices[i];
 
 			v.indices = new int[v.n_indices];
 		}
 
 		/* populate indices for each vertex */
-		for (i = 0; i < n_lets - 1; i++) {	/* for each edge */
+		for (i = 0; i < n_lets - 1; i++) { /* for each edge */
 			hentry eu = entries[i];
 			hentry ev = entries[i + 1];
 			vertex u = vertices[eu.i_vertices];
@@ -214,14 +214,18 @@ public class UShuffle {
 	private void permute(char[] t, int n) {
 		for (int i = n - 1; i > 0; i--) {
 			int j = rand.nextInt(i + 1);
-			char tmp = t[i]; t[i] = t[j]; t[j] = tmp;	/* swap */
+			char tmp = t[i];
+			t[i] = t[j];
+			t[j] = tmp; /* swap */
 		}
 	}
 
 	private void permute(int[] t, int n) {
 		for (int i = n - 1; i > 0; i--) {
 			int j = rand.nextInt(i + 1);
-			int tmp = t[i]; t[i] = t[j]; t[j] = tmp;	/* swap */
+			int tmp = t[i];
+			t[i] = t[j];
+			t[j] = tmp; /* swap */
 		}
 	}
 
@@ -268,17 +272,17 @@ public class UShuffle {
 		for (i = 0; i < n_vertices; i++) {
 			u = vertices[i];
 			if (i != root) {
-				j = u.indices[u.n_indices - 1];	/* swap the last one */
+				j = u.indices[u.n_indices - 1]; /* swap the last one */
 				u.indices[u.n_indices - 1] = u.indices[u.next];
 				u.indices[u.next] = j;
-				permute(u.indices, u.n_indices - 1);	/* permute the rest */
+				permute(u.indices, u.n_indices - 1); /* permute the rest */
 			} else
 				permute(u.indices, u.n_indices);
-			u.i_indices = 0;	/* reset to zero before walk */
+			u.i_indices = 0; /* reset to zero before walk */
 		}
 
 		/* walk the graph */
-		strncpy(t, s_, k_ - 1);	/* the first let remains the same */
+		strncpy(t, s_, k_ - 1); /* the first let remains the same */
 		u = vertices[0];
 		i = k_ - 1;
 		while (u.i_indices < u.n_indices) {

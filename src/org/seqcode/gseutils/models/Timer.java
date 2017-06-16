@@ -9,5 +9,6 @@ import java.util.Iterator;
 public interface Timer {
 
 	public void addTiming(Timing t);
+
 	public void addTimings(Iterator<Timing> ts);
 }

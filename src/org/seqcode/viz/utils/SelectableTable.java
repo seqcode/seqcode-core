@@ -13,19 +13,29 @@ import javax.swing.table.*;
 public class SelectableTable<X> extends JTable {
 
 	private SelectableTableModel<X> myModel;
-	
-	public SelectableTable(String colName, Class colClass) { 
+
+	public SelectableTable(String colName, Class colClass) {
 		super();
 		myModel = new SelectableTableModel<X>(colName, colClass);
 		setModel(myModel);
-		if(getModel() == null) { throw new IllegalArgumentException(); }
+		if (getModel() == null) {
+			throw new IllegalArgumentException();
+		}
 		setDefaultEditor(Boolean.class, new DefaultCellEditor(new JCheckBox()));
 		TableColumnModel cModel = getColumnModel();
 		TableColumn col = cModel.getColumn(0);
 		col.setMaxWidth(20);
 	}
 
-	public SelectableTableModel<X> getModel() { return myModel; }
-	public void setMultiSelectable(boolean v) { myModel.setMultiSelectable(v); }
-	public boolean isMultiSelectable() { return myModel.isMultiSelectable(); }
+	public SelectableTableModel<X> getModel() {
+		return myModel;
+	}
+
+	public void setMultiSelectable(boolean v) {
+		myModel.setMultiSelectable(v);
+	}
+
+	public boolean isMultiSelectable() {
+		return myModel.isMultiSelectable();
+	}
 }

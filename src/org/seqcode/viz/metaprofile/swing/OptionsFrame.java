@@ -20,8 +20,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-public class OptionsFrame extends JFrame{
-	
+public class OptionsFrame extends JFrame {
+
 	private JTextField fontSizeField = new JTextField(10);
 	private JTextField maxColorField = new JTextField(10);
 	private JTextField minColorField = new JTextField(10);
@@ -36,19 +36,19 @@ public class OptionsFrame extends JFrame{
 	private final ProfileLinePanel linepanel;
 	private JColorChooser colorPick;
 
-	public OptionsFrame(final ProfilePanel p, final ProfileLinePanel lp){
+	public OptionsFrame(final ProfilePanel p, final ProfileLinePanel lp) {
 		panel = p;
-		linepanel=lp;
+		linepanel = lp;
 
-		//Initialize buttons
+		// Initialize buttons
 		fontSizeEntry = new JButton(createFontUpdateAction());
 		maxColorEntry = new JButton(createMaxColorUpdateAction());
 		minColorEntry = new JButton(createMinColorUpdateAction());
 		lineWeightEntry = new JButton(createLineWeightUpdateAction());
 		colorChangeEntry = new JButton(createColorUpdateAction());
-		finished= new JButton(createFinishAction());
-		
-		//Font size panel
+		finished = new JButton(createFinishAction());
+
+		// Font size panel
 		JPanel fp = new JPanel();
 		fp.setLayout(new BoxLayout(fp, BoxLayout.LINE_AXIS));
 		JLabel message = new JLabel("Font Size:");
@@ -56,18 +56,18 @@ public class OptionsFrame extends JFrame{
 		fontSizeEntry.setMaximumSize(new Dimension(100, 30));
 		fp.add(fontSizeField);
 		fp.add(fontSizeEntry);
-		fp.setSize(new Dimension(300,30));
-		fp.setMaximumSize(new Dimension(300,30));
+		fp.setSize(new Dimension(300, 30));
+		fp.setMaximumSize(new Dimension(300, 30));
 		fp.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-		
-		//Color chooser
+
+		// Color chooser
 		JPanel cp = new JPanel();
 		cp.setLayout(new BoxLayout(cp, BoxLayout.PAGE_AXIS));
 		colorPick = new JColorChooser(panel.getPeakColor());
 		cp.add(colorPick);
 		cp.add(colorChangeEntry);
-		
-		//Meta-peak Style
+
+		// Meta-peak Style
 		JRadioButton rad_histo = new JRadioButton("Histogram");
 		JRadioButton rad_line = new JRadioButton("Line");
 		rad_histo.addActionListener(createRadioUpdateAction());
@@ -84,8 +84,8 @@ public class OptionsFrame extends JFrame{
 		sp.add(sLabel);
 		sp.add(rad_histo);
 		sp.add(rad_line);
-		
-		//Line profile max/min color panel
+
+		// Line profile max/min color panel
 		JPanel lmp = new JPanel();
 		lmp.setLayout(new BoxLayout(lmp, BoxLayout.LINE_AXIS));
 		profileMax = new JLabel(String.format("Value for line max color:", linepanel.getMaxColorVal()));
@@ -93,8 +93,8 @@ public class OptionsFrame extends JFrame{
 		maxColorEntry.setMaximumSize(new Dimension(200, 30));
 		lmp.add(maxColorField);
 		lmp.add(maxColorEntry);
-		lmp.setSize(new Dimension(400,30));
-		lmp.setMaximumSize(new Dimension(400,30));
+		lmp.setSize(new Dimension(400, 30));
+		lmp.setMaximumSize(new Dimension(400, 30));
 		lmp.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		JPanel lmp2 = new JPanel();
 		lmp2.setLayout(new BoxLayout(lmp2, BoxLayout.LINE_AXIS));
@@ -103,11 +103,11 @@ public class OptionsFrame extends JFrame{
 		minColorEntry.setMaximumSize(new Dimension(200, 30));
 		lmp2.add(minColorField);
 		lmp2.add(minColorEntry);
-		lmp2.setSize(new Dimension(400,30));
-		lmp2.setMaximumSize(new Dimension(400,30));
+		lmp2.setSize(new Dimension(400, 30));
+		lmp2.setMaximumSize(new Dimension(400, 30));
 		lmp2.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-		
-		//Line weight panel
+
+		// Line weight panel
 		JPanel lwp = new JPanel();
 		lwp.setLayout(new BoxLayout(lwp, BoxLayout.LINE_AXIS));
 		JLabel lineWeightMessage = new JLabel("Line Profile Weight");
@@ -115,13 +115,12 @@ public class OptionsFrame extends JFrame{
 		lineWeightEntry.setMaximumSize(new Dimension(100, 30));
 		lwp.add(lineWeightField);
 		lwp.add(lineWeightEntry);
-		lwp.setSize(new Dimension(300,30));
-		lwp.setMaximumSize(new Dimension(300,30));
+		lwp.setSize(new Dimension(300, 30));
+		lwp.setMaximumSize(new Dimension(300, 30));
 		lwp.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-		
-		
-		//Container for everything
-		Container c = (Container)getContentPane();
+
+		// Container for everything
+		Container c = (Container) getContentPane();
 		c.setLayout(new BoxLayout(c, BoxLayout.PAGE_AXIS));
 		c.add(fp);
 		c.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -136,118 +135,124 @@ public class OptionsFrame extends JFrame{
 		c.add(Box.createRigidArea(new Dimension(0, 10)));
 		c.add(finished);
 	}
-	
-	private Action createFontUpdateAction(){
-		return new AbstractAction("OK") { 
-			public void actionPerformed(ActionEvent e) { 
+
+	private Action createFontUpdateAction() {
+		return new AbstractAction("OK") {
+			public void actionPerformed(ActionEvent e) {
 				String tmp = fontSizeField.getText();
 				int fSize;
-				if(tmp.length()>0){
+				if (tmp.length() > 0) {
 					fSize = Integer.valueOf(tmp);
-				}else{
-					fSize=12;
+				} else {
+					fSize = 12;
 				}
 				panel.updateFontSize(fSize);
 				linepanel.updateFontSize(fSize);
 				OptionsFrame.this.setVisible(false);
-			} 
+			}
 		};
 	}
-	private Action createLineWeightUpdateAction(){
-		return new AbstractAction("OK") { 
-			public void actionPerformed(ActionEvent e) { 
+
+	private Action createLineWeightUpdateAction() {
+		return new AbstractAction("OK") {
+			public void actionPerformed(ActionEvent e) {
 				String tmp = lineWeightField.getText();
 				int w;
-				if(tmp.length()>0){
+				if (tmp.length() > 0) {
 					w = Integer.valueOf(tmp);
-				}else{
-					w=1;
+				} else {
+					w = 1;
 				}
 				linepanel.updateLineWeight(w);
 				OptionsFrame.this.setVisible(false);
-			} 
+			}
 		};
 	}
-	private Action createColorUpdateAction(){
-		return new AbstractAction("Update Color") { 
-			public void actionPerformed(ActionEvent e) { 
+
+	private Action createColorUpdateAction() {
+		return new AbstractAction("Update Color") {
+			public void actionPerformed(ActionEvent e) {
 				Color c = colorPick.getColor();
-				if(c==null){
-					c=Color.blue; 
+				if (c == null) {
+					c = Color.blue;
 				}
 				panel.updateColor(c);
 				linepanel.updateColor(c);
 				OptionsFrame.this.setVisible(false);
-			} 
+			}
 		};
 	}
-	private Action createRadioUpdateAction(){
-		return new AbstractAction() { 
-			public void actionPerformed(ActionEvent e) { 
+
+	private Action createRadioUpdateAction() {
+		return new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
 				panel.setStyle(e.getActionCommand());
-			} 
+			}
 		};
 	}
-	private Action createMaxColorUpdateAction(){
-		return new AbstractAction("OK") { 
-			public void actionPerformed(ActionEvent e) { 
+
+	private Action createMaxColorUpdateAction() {
+		return new AbstractAction("OK") {
+			public void actionPerformed(ActionEvent e) {
 				String tmp = maxColorField.getText();
 				double max;
-				if(tmp.length()>0){
+				if (tmp.length() > 0) {
 					max = Double.valueOf(tmp);
-				}else{
-					max=linepanel.getMaxColorVal();
+				} else {
+					max = linepanel.getMaxColorVal();
 				}
 				linepanel.setMaxColorVal(max);
 				OptionsFrame.this.setVisible(false);
-			} 
+			}
 		};
 	}
-	private Action createMinColorUpdateAction(){
-		return new AbstractAction("OK") { 
-			public void actionPerformed(ActionEvent e) { 
+
+	private Action createMinColorUpdateAction() {
+		return new AbstractAction("OK") {
+			public void actionPerformed(ActionEvent e) {
 				String tmp = minColorField.getText();
 				double min;
-				if(tmp.length()>0){
+				if (tmp.length() > 0) {
 					min = Double.valueOf(tmp);
-				}else{
-					min=linepanel.getMinColorVal();
+				} else {
+					min = linepanel.getMinColorVal();
 				}
 				linepanel.setMinColorVal(min);
 				OptionsFrame.this.setVisible(false);
-			} 
+			}
 		};
 	}
-	private Action createFinishAction(){
+
+	private Action createFinishAction() {
 		return new AbstractAction("Done") {
 			public void actionPerformed(ActionEvent e) {
 				Color c = colorPick.getColor();
-				if(c!=null){
+				if (c != null) {
 					panel.updateColor(c);
 					linepanel.updateColor(c);
 				}
 				String tmp = fontSizeField.getText();
 				int fSize;
-				if(tmp.length()>0){
+				if (tmp.length() > 0) {
 					fSize = Integer.valueOf(tmp);
 					panel.updateFontSize(fSize);
 					linepanel.updateFontSize(fSize);
 				}
 				tmp = maxColorField.getText();
-				double max=linepanel.getMaxColorVal();
-				if(tmp.length()>0){
+				double max = linepanel.getMaxColorVal();
+				if (tmp.length() > 0) {
 					max = Double.valueOf(tmp);
 					linepanel.setMaxColorVal(max);
 				}
 				tmp = minColorField.getText();
-				double min=linepanel.getMinColorVal();
-				if(tmp.length()>0){
+				double min = linepanel.getMinColorVal();
+				if (tmp.length() > 0) {
 					min = Double.valueOf(tmp);
 					linepanel.setMinColorVal(min);
 				}
 				tmp = lineWeightField.getText();
-				int w=1;
-				if(tmp.length()>0){
+				int w = 1;
+				if (tmp.length() > 0) {
 					w = Integer.valueOf(tmp);
 					linepanel.updateLineWeight(w);
 				}
@@ -255,9 +260,10 @@ public class OptionsFrame extends JFrame{
 			}
 		};
 	}
+
 	public void startup() {
 		Runnable r = new Runnable() {
-			public void run() { 
+			public void run() {
 				OptionsFrame.this.setLocation(getX() + 150, getY() + 50);
 				OptionsFrame.this.pack();
 			}

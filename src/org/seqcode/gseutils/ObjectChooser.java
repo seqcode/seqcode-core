@@ -7,5 +7,5 @@ package org.seqcode.gseutils;
  * @author tdanford
  */
 public interface ObjectChooser<X> {
-    public X choose();
+	public X choose();
 }

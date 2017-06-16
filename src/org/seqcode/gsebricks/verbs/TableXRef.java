@@ -8,26 +8,23 @@ import org.seqcode.gsebricks.iterators.EmptyIterator;
 
 import java.sql.*;
 
-
 /**
  * @author tdanford
  */
-public class TableXRef implements Expander<String,String>, org.seqcode.gseutils.Closeable {
-	
+public class TableXRef implements Expander<String, String>, org.seqcode.gseutils.Closeable {
+
 	private Connection cxn;
 	private PreparedStatement ps;
 	private String tableName, matchField, returnField;
-	
-	public TableXRef(Connection c, String t, String match, String ret) 
-		throws SQLException {
-		
+
+	public TableXRef(Connection c, String t, String match, String ret) throws SQLException {
+
 		cxn = c;
 		tableName = t;
 		matchField = match;
 		returnField = ret;
-		
-		ps = cxn.prepareStatement("select " + returnField + " from " + tableName + " " +
-				"where " + matchField + "=?");
+
+		ps = cxn.prepareStatement("select " + returnField + " from " + tableName + " " + "where " + matchField + "=?");
 	}
 
 	public Iterator<String> execute(String input) {
@@ -35,7 +32,7 @@ public class TableXRef implements Expander<String,String>, org.seqcode.gseutils.
 			ps.setString(1, input);
 			ResultSet rs = ps.executeQuery();
 			LinkedList<String> results = new LinkedList<String>();
-			while(rs.next()) { 
+			while (rs.next()) {
 				results.add(rs.getString(1));
 			}
 			rs.close();
@@ -57,6 +54,6 @@ public class TableXRef implements Expander<String,String>, org.seqcode.gseutils.
 	}
 
 	public boolean isClosed() {
-		return cxn==null;
+		return cxn == null;
 	}
 }

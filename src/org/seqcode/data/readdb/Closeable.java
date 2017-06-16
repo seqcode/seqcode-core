@@ -4,6 +4,6 @@ import java.io.IOException;
 
 public interface Closeable {
 
-    public void close() throws IOException;
+	public void close() throws IOException;
 
 }

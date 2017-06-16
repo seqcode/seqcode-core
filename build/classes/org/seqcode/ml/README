@@ -1,0 +1,7 @@
+org.seqcode.ml
+
+Machine-learning library. 
+Aims to be a store of general ML algorithms. 
+Currently has GSE implementations of some clustering methods, but these methods may not be accurate or useful, 
+so check them before use and please add more methods here!
+

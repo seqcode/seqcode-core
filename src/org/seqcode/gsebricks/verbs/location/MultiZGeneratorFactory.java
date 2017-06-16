@@ -7,20 +7,29 @@ import org.seqcode.gsebricks.RegionExpanderFactory;
 import org.seqcode.gsebricks.verbs.Expander;
 
 public class MultiZGeneratorFactory implements RegionExpanderFactory<ScoredRegion> {
-    private String type;
-    
-    public MultiZGeneratorFactory() {
-        type = "MultiZ";
-    }
+	private String type;
 
-    public void setType(String t) {type = t;}
-    public String getType() {return type;}
-    public String getProduct() {return "ScoredRegion";}
-    public Expander<Region, ScoredRegion> getExpander(Genome g) {
-        return getExpander(g,type);
-    }
+	public MultiZGeneratorFactory() {
+		type = "MultiZ";
+	}
 
-    public Expander<Region, ScoredRegion> getExpander(Genome g, String type) {
-        return new MultiZGenerator(g);
-    }
+	public void setType(String t) {
+		type = t;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public String getProduct() {
+		return "ScoredRegion";
+	}
+
+	public Expander<Region, ScoredRegion> getExpander(Genome g) {
+		return getExpander(g, type);
+	}
+
+	public Expander<Region, ScoredRegion> getExpander(Genome g, String type) {
+		return new MultiZGenerator(g);
+	}
 }

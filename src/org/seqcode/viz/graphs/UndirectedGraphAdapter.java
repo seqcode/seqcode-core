@@ -13,52 +13,51 @@ import java.util.*;
 import org.seqcode.gseutils.Pair;
 import org.seqcode.gseutils.graphs.*;
 
-
 public class UndirectedGraphAdapter {
 
-    private UndirectedGraph graph;
-    private GraphView view;
-    
-    private Map<String,NodeView> nodeViews;
-    private Map<Pair<String,String>,EdgeView> edgeViews;
-    
-    public UndirectedGraphAdapter(UndirectedGraph dg) { 
-        graph = dg;
-        view = new GraphView();
-        
-        nodeViews = new TreeMap<String,NodeView>();
-        edgeViews = new HashMap<Pair<String,String>,EdgeView>();
-        
-        buildViews();
-    }
-    
-    private void buildViews() { 
-        for(String node : graph.getVertices()) { 
-            NodeView nview = view.createNode();
-            nview.setOption("name", node);
-            nodeViews.put(node, nview);
-        }
-        
-        for(String from : graph.getVertices()) {
-            NodeView fromView = nodeViews.get(from);
-            
-            for(String to : graph.getNeighbors(from)) {
-            	if(from.compareTo(to) <= 0) { 
-            		NodeView toView = nodeViews.get(to);
-                
-                	EdgeView edge = view.createEdge(fromView, toView);
-                	edge.setDirected(false);
-                	edgeViews.put(new Pair<String,String>(from, to), edge);
-            	}
-            }
-        }
-    }
-    
-    public UndirectedGraph getGraph() { 
-        return graph; 
-    }
+	private UndirectedGraph graph;
+	private GraphView view;
 
-    public GraphView getView() { 
-        return view;
-    }
+	private Map<String, NodeView> nodeViews;
+	private Map<Pair<String, String>, EdgeView> edgeViews;
+
+	public UndirectedGraphAdapter(UndirectedGraph dg) {
+		graph = dg;
+		view = new GraphView();
+
+		nodeViews = new TreeMap<String, NodeView>();
+		edgeViews = new HashMap<Pair<String, String>, EdgeView>();
+
+		buildViews();
+	}
+
+	private void buildViews() {
+		for (String node : graph.getVertices()) {
+			NodeView nview = view.createNode();
+			nview.setOption("name", node);
+			nodeViews.put(node, nview);
+		}
+
+		for (String from : graph.getVertices()) {
+			NodeView fromView = nodeViews.get(from);
+
+			for (String to : graph.getNeighbors(from)) {
+				if (from.compareTo(to) <= 0) {
+					NodeView toView = nodeViews.get(to);
+
+					EdgeView edge = view.createEdge(fromView, toView);
+					edge.setDirected(false);
+					edgeViews.put(new Pair<String, String>(from, to), edge);
+				}
+			}
+		}
+	}
+
+	public UndirectedGraph getGraph() {
+		return graph;
+	}
+
+	public GraphView getView() {
+		return view;
+	}
 }

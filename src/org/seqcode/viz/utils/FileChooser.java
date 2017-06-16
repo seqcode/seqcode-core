@@ -5,7 +5,6 @@ package org.seqcode.viz.utils;
 
 import java.io.File;
 
-
 import javax.swing.*;
 
 import org.seqcode.gseutils.ObjectChooser;
@@ -15,55 +14,55 @@ import org.seqcode.gseutils.ObjectChooser;
  */
 public class FileChooser implements ObjectChooser<File> {
 
-    private JFrame parent;
-    private String name;
-    private JFileChooser chooser;
+	private JFrame parent;
+	private String name;
+	private JFileChooser chooser;
 
-    public FileChooser(JFrame p) {
-        parent = p;
-        name = null;
-        chooser = new JFileChooser();
-    }
-    
-    public FileChooser(JFrame p, String n) {
-        parent = p;
-        name = n;
-        chooser = new JFileChooser();
-        chooser.setApproveButtonText(n);
-    }
-    
-    public File choose() { 
-    	return chooseOpen();
-    }
+	public FileChooser(JFrame p) {
+		parent = p;
+		name = null;
+		chooser = new JFileChooser();
+	}
 
-    public File chooseSave() {
-        chooser.setMultiSelectionEnabled(false);
-        int option = chooser.showSaveDialog(parent);
-        if(option == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
-            return chooser.getSelectedFile();
-        } else { 
-            return null;
-        }
-    }
+	public FileChooser(JFrame p, String n) {
+		parent = p;
+		name = n;
+		chooser = new JFileChooser();
+		chooser.setApproveButtonText(n);
+	}
 
-    public File chooseOpen() {
-        chooser.setMultiSelectionEnabled(false);
-        int option = chooser.showOpenDialog(parent);
-        if(option == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
-            return chooser.getSelectedFile();
-        } else { 
-            return null;
-        }
-    }
+	public File choose() {
+		return chooseOpen();
+	}
 
-    public File[] chooseAll() {
-        chooser.setMultiSelectionEnabled(true);
-        int option = chooser.showOpenDialog(parent);
-        if(option == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
-            return chooser.getSelectedFiles();
-        } else { 
-            return null;
-        }
-    }
+	public File chooseSave() {
+		chooser.setMultiSelectionEnabled(false);
+		int option = chooser.showSaveDialog(parent);
+		if (option == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
+			return chooser.getSelectedFile();
+		} else {
+			return null;
+		}
+	}
+
+	public File chooseOpen() {
+		chooser.setMultiSelectionEnabled(false);
+		int option = chooser.showOpenDialog(parent);
+		if (option == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
+			return chooser.getSelectedFile();
+		} else {
+			return null;
+		}
+	}
+
+	public File[] chooseAll() {
+		chooser.setMultiSelectionEnabled(true);
+		int option = chooser.showOpenDialog(parent);
+		if (option == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
+			return chooser.getSelectedFiles();
+		} else {
+			return null;
+		}
+	}
 
 }

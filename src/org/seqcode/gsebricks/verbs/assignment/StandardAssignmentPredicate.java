@@ -16,10 +16,10 @@ import org.seqcode.gsebricks.verbs.Mapper;
  *
  */
 public class StandardAssignmentPredicate<X extends Region> implements AssignmentPredicate<X> {
-	
+
 	private int upstream, downstream, nonstranded;
-	
-	public StandardAssignmentPredicate(int up, int down, int ns) { 
+
+	public StandardAssignmentPredicate(int up, int down, int ns) {
 		upstream = up;
 		downstream = down;
 		nonstranded = ns;
@@ -28,36 +28,42 @@ public class StandardAssignmentPredicate<X extends Region> implements Assignment
 	public Mapper assignmentZoneMapper() {
 		return new StandardAssignmentZoneMapper(upstream, downstream, nonstranded);
 	}
-	
-	private boolean contains(Region r, int pt) { 
+
+	private boolean contains(Region r, int pt) {
 		return r.getStart() <= pt && r.getEnd() >= pt;
 	}
 
 	public boolean isValidAssignment(Region item, X event) {
-		if(!item.getChrom().equals(event.getChrom())) { return false; }
-		if(item instanceof StrandedRegion) { 
-			StrandedRegion sitem = (StrandedRegion)item;
+		if (!item.getChrom().equals(event.getChrom())) {
+			return false;
+		}
+		if (item instanceof StrandedRegion) {
+			StrandedRegion sitem = (StrandedRegion) item;
 			boolean strand = sitem.getStrand() == '+';
-			if(strand) { 
-				if(contains(event, sitem.getStart())) { return true; }
-				if(event.getEnd() < item.getStart()) { 
-					int dist = item.getStart()-event.getEnd();
+			if (strand) {
+				if (contains(event, sitem.getStart())) {
+					return true;
+				}
+				if (event.getEnd() < item.getStart()) {
+					int dist = item.getStart() - event.getEnd();
 					return dist <= upstream;
-				} else { 
-					int dist = event.getStart()-item.getStart();
+				} else {
+					int dist = event.getStart() - item.getStart();
 					return dist <= downstream;
 				}
-			} else { 
-				if(contains(event, sitem.getEnd())) { return true; }
-				if(event.getEnd() < item.getEnd()) { 
-					int dist = item.getEnd()-event.getEnd();
+			} else {
+				if (contains(event, sitem.getEnd())) {
+					return true;
+				}
+				if (event.getEnd() < item.getEnd()) {
+					int dist = item.getEnd() - event.getEnd();
 					return dist <= downstream;
-				} else { 
-					int dist = event.getStart()-item.getEnd();
+				} else {
+					int dist = event.getStart() - item.getEnd();
 					return dist <= upstream;
-				}				
+				}
 			}
-		} else { 
+		} else {
 			int dist = item.distance(event);
 			return dist <= nonstranded;
 		}

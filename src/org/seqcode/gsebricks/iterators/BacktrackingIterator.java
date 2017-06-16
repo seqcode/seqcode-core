@@ -7,16 +7,16 @@ package org.seqcode.gsebricks.iterators;
 import java.util.*;
 
 public class BacktrackingIterator<X> implements Iterator<X> {
-	
+
 	private LinkedList<X> pending;
 	private Iterator<X> itr;
-	
-	public BacktrackingIterator(Iterator<X> i) { 
+
+	public BacktrackingIterator(Iterator<X> i) {
 		itr = i;
 		pending = new LinkedList<X>();
 	}
-	
-	public void addNext(X v) { 
+
+	public void addNext(X v) {
 		pending.addFirst(v);
 	}
 
@@ -25,9 +25,9 @@ public class BacktrackingIterator<X> implements Iterator<X> {
 	}
 
 	public X next() {
-		if(pending.isEmpty()) { 
-			return itr.next(); 
-		} else { 
+		if (pending.isEmpty()) {
+			return itr.next();
+		} else {
 			return pending.removeFirst();
 		}
 	}

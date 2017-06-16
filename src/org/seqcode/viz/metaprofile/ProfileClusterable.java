@@ -3,22 +3,24 @@ package org.seqcode.viz.metaprofile;
 import org.seqcode.ml.clustering.vectorcluster.VectorClusterElement;
 
 public class ProfileClusterable implements VectorClusterElement {
-	
+
 	private Integer index;
 	private Profile profile;
-	
-	public ProfileClusterable(int idx, Profile p) { 
+
+	public ProfileClusterable(int idx, Profile p) {
 		index = idx;
 		profile = p;
 	}
-	
-	public ProfileClusterable(Profile p) { 
+
+	public ProfileClusterable(Profile p) {
 		profile = p;
 	}
-	
-	public Integer getIndex() { return index; }
-	
-	public Profile getProfile() { 
+
+	public Integer getIndex() {
+		return index;
+	}
+
+	public Profile getProfile() {
 		return profile;
 	}
 

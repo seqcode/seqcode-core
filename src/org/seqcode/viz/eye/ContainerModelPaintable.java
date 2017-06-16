@@ -9,48 +9,47 @@ import java.util.*;
 
 import org.seqcode.gseutils.models.Model;
 
-
 public class ContainerModelPaintable extends AbstractModelPaintable {
-	
+
 	protected ArrayList<ModelPaintable> innerPaintables;
-	
-	public ContainerModelPaintable() { 
+
+	public ContainerModelPaintable() {
 		innerPaintables = new ArrayList<ModelPaintable>();
 	}
-	
-	public ContainerModelPaintable(ModelPaintable... pts) { 
+
+	public ContainerModelPaintable(ModelPaintable... pts) {
 		this();
-		
-		for(int i = 0; i < pts.length; i++) { 
+
+		for (int i = 0; i < pts.length; i++) {
 			addModelPaintable(pts[i]);
 		}
 	}
-	
-	public ContainerModelPaintable(Collection<ModelPaintable> pts) { 
+
+	public ContainerModelPaintable(Collection<ModelPaintable> pts) {
 		this();
-		
-		for(ModelPaintable p : pts) { 
+
+		for (ModelPaintable p : pts) {
 			addModelPaintable(p);
 		}
 	}
-	
+
 	public void addModelPaintable(ModelPaintable p) {
-		if(!innerPaintables.contains(p)) { 
+		if (!innerPaintables.contains(p)) {
 			p.addPaintableChangedListener(this);
 		}
 		innerPaintables.add(p);
 	}
-	
-	public void removeModelPaintable(ModelPaintable p) { 
+
+	public void removeModelPaintable(ModelPaintable p) {
 		innerPaintables.remove(p);
-		if(!innerPaintables.contains(p)) { 
+		if (!innerPaintables.contains(p)) {
 			p.removePaintableChangedListener(this);
 		}
 	}
 
 	public void addModel(Model m) {
 		setEventPassthrough(false);
-		for(ModelPaintable p : innerPaintables) { 
+		for (ModelPaintable p : innerPaintables) {
 			p.addModel(m);
 		}
 		setEventPassthrough(true);
@@ -59,9 +58,9 @@ public class ContainerModelPaintable extends AbstractModelPaintable {
 
 	public void addModels(Iterator<? extends Model> itr) {
 		setEventPassthrough(false);
-		while(itr.hasNext()) { 
+		while (itr.hasNext()) {
 			Model m = itr.next();
-			for(ModelPaintable p : innerPaintables) { 
+			for (ModelPaintable p : innerPaintables) {
 				p.addModel(m);
 			}
 		}
@@ -71,11 +70,11 @@ public class ContainerModelPaintable extends AbstractModelPaintable {
 
 	public void clearModels() {
 		setEventPassthrough(false);
-		for(ModelPaintable p : innerPaintables) { 
+		for (ModelPaintable p : innerPaintables) {
 			p.clearModels();
 		}
 		setEventPassthrough(true);
-		dispatchChangedEvent();		
+		dispatchChangedEvent();
 	}
 
 	public void paintItem(Graphics g, int x1, int y1, int x2, int y2) {

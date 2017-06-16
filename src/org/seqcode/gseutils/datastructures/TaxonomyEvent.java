@@ -9,7 +9,7 @@ import java.util.*;
  * @author Timothy Danford
  */
 public class TaxonomyEvent extends EventObject {
-	
+
 	public static final int ELEMENT_ADDED = 0;
 	public static final int ELEMENT_REMOVED = 1;
 	public static final int ELEMENT_CHANGED = 2;
@@ -30,30 +30,49 @@ public class TaxonomyEvent extends EventObject {
 		this.type = type;
 	}
 
-	public TaxonomyEvent(Object src, TaxonomyEvent te, String a) { 
+	public TaxonomyEvent(Object src, TaxonomyEvent te, String a) {
 		super(src);
-		addr = new LinkedList<String>(te.addr); 
+		addr = new LinkedList<String>(te.addr);
 		addr.addFirst(a);
 		leafValue = te.leafValue;
 		type = te.type;
 	}
-	
-	public Collection<String> getAddr() { return addr; }
-	public Object getLeaf() { return leafValue; }
-	public int getType() { return type; }
-	public void addAddr(String a) { addr.addFirst(a); }
-	public String removeAddr() { return addr.removeFirst(); }
-	public int getAddrLength() { return addr.size(); }
-	
-	public String toString() { 
+
+	public Collection<String> getAddr() {
+		return addr;
+	}
+
+	public Object getLeaf() {
+		return leafValue;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void addAddr(String a) {
+		addr.addFirst(a);
+	}
+
+	public String removeAddr() {
+		return addr.removeFirst();
+	}
+
+	public int getAddrLength() {
+		return addr.size();
+	}
+
+	public String toString() {
 		return "(" + type + ":" + getAddrString() + ") --> " + leafValue.toString();
 	}
-	
-	public String getAddrString() { 
+
+	public String getAddrString() {
 		StringBuilder sb = new StringBuilder();
 		boolean f = true;
-		for(String a : addr) { 
-			if(!f) { sb.append(","); }
+		for (String a : addr) {
+			if (!f) {
+				sb.append(",");
+			}
 			f = false;
 			sb.append(a);
 		}

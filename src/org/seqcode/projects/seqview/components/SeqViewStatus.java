@@ -7,40 +7,48 @@ import java.util.HashSet;
 import org.seqcode.gseutils.EventSource;
 import org.seqcode.gseutils.Listener;
 
-
-public class SeqViewStatus implements EventSource<EventObject>{
-	private String statusMessage="";
+public class SeqViewStatus implements EventSource<EventObject> {
+	private String statusMessage = "";
 	private Color statusColor = Color.black;
 	private HashSet<Listener<EventObject>> listeners;
-	
-	public SeqViewStatus(){
+
+	public SeqViewStatus() {
 		listeners = new HashSet<Listener<EventObject>>();
 	}
-	
-	public void setStatus(String m, Color c){
-		statusMessage=m;
-		statusColor=c;
+
+	public void setStatus(String m, Color c) {
+		statusMessage = m;
+		statusColor = c;
 		notifyListeners();
 	}
-	public String getMessage(){return statusMessage;}
-	public Color getColor(){return statusColor;}
-	
-	
+
+	public String getMessage() {
+		return statusMessage;
+	}
+
+	public Color getColor() {
+		return statusColor;
+	}
+
 	public synchronized void notifyListeners(EventObject obj) {
-        for (Listener<EventObject> l : listeners) {
-            l.eventRegistered(obj);
-        }
-    }
-    
-    public void notifyListeners() { 
-        notifyListeners(new EventObject(this));
-    }
-    
-    public void addEventListener(Listener<EventObject> l) {
-        listeners.add(l);
-    }
-    public void removeEventListener(Listener<EventObject> l) {
-        listeners.remove(l);
-    }
-    public boolean hasListeners() {return listeners.size() > 0;}
+		for (Listener<EventObject> l : listeners) {
+			l.eventRegistered(obj);
+		}
+	}
+
+	public void notifyListeners() {
+		notifyListeners(new EventObject(this));
+	}
+
+	public void addEventListener(Listener<EventObject> l) {
+		listeners.add(l);
+	}
+
+	public void removeEventListener(Listener<EventObject> l) {
+		listeners.remove(l);
+	}
+
+	public boolean hasListeners() {
+		return listeners.size() > 0;
+	}
 }

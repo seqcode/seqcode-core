@@ -9,20 +9,20 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 public class SortingIterator<X extends Comparable<X>> implements Iterator<X> {
-	
+
 	private Iterator<X> itr;
 	private Object[] array;
 	private int idx;
-	
-	public SortingIterator(Iterator<X> itr) { 
+
+	public SortingIterator(Iterator<X> itr) {
 		this.itr = itr;
 		array = null;
 		idx = -1;
 	}
-	
-	private void loadAndSort() { 
+
+	private void loadAndSort() {
 		ArrayList<X> values = new ArrayList<X>();
-		while(itr.hasNext()) { 
+		while (itr.hasNext()) {
 			values.add(itr.next());
 		}
 		array = values.toArray();
@@ -31,13 +31,17 @@ public class SortingIterator<X extends Comparable<X>> implements Iterator<X> {
 	}
 
 	public boolean hasNext() {
-		if(array == null) { loadAndSort(); }
+		if (array == null) {
+			loadAndSort();
+		}
 		return idx < array.length;
 	}
 
 	public X next() {
-		if(array == null) { loadAndSort(); }
-		return idx < array.length ? (X)array[idx++] : null;
+		if (array == null) {
+			loadAndSort();
+		}
+		return idx < array.length ? (X) array[idx++] : null;
 	}
 
 	public void remove() {

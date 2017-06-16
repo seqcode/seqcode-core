@@ -14,24 +14,33 @@ import org.seqcode.gsebricks.verbs.Expander;
  * @author tdanford
  */
 public class RefGeneGeneratorFactory implements RegionExpanderFactory<Gene>, GeneFactory {
-    private String type;
+	private String type;
 
-    public RefGeneGeneratorFactory() {
-    }
+	public RefGeneGeneratorFactory() {
+	}
 
-    public void setType(String t) {type = t;}
-    public String getType() {return type;}
-    public String getProduct() {return "Gene";}
-    public Expander<Region, Gene> getExpander(Genome g) {
-        return getExpander(g,type);
-    }
+	public void setType(String t) {
+		type = t;
+	}
 
-    public Expander<Region, Gene> getExpander(Genome g, String type) {
-        if (type == null) {
-            return new RefGeneGenerator(g);
-        } else {
-            RefGeneGenerator gg = new RefGeneGenerator(g, type);
-            return gg;
-        }
-    }
+	public String getType() {
+		return type;
+	}
+
+	public String getProduct() {
+		return "Gene";
+	}
+
+	public Expander<Region, Gene> getExpander(Genome g) {
+		return getExpander(g, type);
+	}
+
+	public Expander<Region, Gene> getExpander(Genome g, String type) {
+		if (type == null) {
+			return new RefGeneGenerator(g);
+		} else {
+			RefGeneGenerator gg = new RefGeneGenerator(g, type);
+			return gg;
+		}
+	}
 }

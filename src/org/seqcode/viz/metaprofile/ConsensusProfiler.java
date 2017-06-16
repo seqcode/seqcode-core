@@ -10,25 +10,26 @@ import org.seqcode.motifs.ConsensusSequence;
 import org.seqcode.motifs.ConsensusSequenceScoreProfile;
 import org.seqcode.motifs.ConsensusSequenceScorer;
 
-public class ConsensusProfiler  implements PointProfiler<Point, Profile>{
+public class ConsensusProfiler implements PointProfiler<Point, Profile> {
 
 	private ConsensusSequence consensus;
 	private ConsensusSequenceScorer scorer;
 	private SequenceGenerator seqgen;
 	private Genome gen;
-	private BinningParameters params=null;
-	private double mismatchThreshold=0;
-	private char searchStrand = '.'; //W=watson, C=crick. 
-	
-	public ConsensusProfiler(BinningParameters bp, Genome g, ConsensusSequence cons, double maxMismatch, boolean useCache, String seqPath, char watsoncrick){
-		mismatchThreshold=maxMismatch;
-		gen=g;
-		params=bp; 
-		consensus=cons;
+	private BinningParameters params = null;
+	private double mismatchThreshold = 0;
+	private char searchStrand = '.'; // W=watson, C=crick.
+
+	public ConsensusProfiler(BinningParameters bp, Genome g, ConsensusSequence cons, double maxMismatch,
+			boolean useCache, String seqPath, char watsoncrick) {
+		mismatchThreshold = maxMismatch;
+		gen = g;
+		params = bp;
+		consensus = cons;
 		scorer = new ConsensusSequenceScorer(consensus);
 		seqgen = new SequenceGenerator();
 		seqgen.useCache(useCache);
-		if(useCache){
+		if (useCache) {
 			seqgen.setGenomePath(seqPath);
 		}
 	}
@@ -39,37 +40,42 @@ public class ConsensusProfiler  implements PointProfiler<Point, Profile>{
 
 	public Profile execute(Point a) {
 		double[] array = new double[params.getNumBins()];
-		for(int i = 0; i < array.length; i++) { array[i] = 0; }
-		
+		for (int i = 0; i < array.length; i++) {
+			array[i] = 0;
+		}
+
 		int window = params.getWindowSize();
-		Region query = a.expand(window/2);
-		
-		char rstrand = (a instanceof StrandedPoint) ? 
-				((StrandedPoint)a).getStrand() : '.';
+		Region query = a.expand(window / 2);
+
+		char rstrand = (a instanceof StrandedPoint) ? ((StrandedPoint) a).getStrand() : '.';
 		String seq = seqgen.execute(query);
-		if(rstrand=='-')
+		if (rstrand == '-')
 			seq = SequenceUtils.reverseComplement(seq);
-		
-		ConsensusSequenceScoreProfile profiler = scorer.execute(seq, searchStrand=='.' ? '.':(searchStrand=='W' ? '+' : '-'));
-		for(int i=0; i<seq.length() && i<window; i+=params.getBinSize()){
-			if(profiler.getLowestMismatch(i)<=mismatchThreshold){
+
+		ConsensusSequenceScoreProfile profiler = scorer.execute(seq,
+				searchStrand == '.' ? '.' : (searchStrand == 'W' ? '+' : '-'));
+		for (int i = 0; i < seq.length() && i < window; i += params.getBinSize()) {
+			if (profiler.getLowestMismatch(i) <= mismatchThreshold) {
 				int bin = params.findBin(i);
 				addToArray(bin, bin, array, 1);
 			}
 		}
-		
+
 		return new PointProfile(a, params, array, (a instanceof StrandedPoint));
 	}
 
-	private void addToArray(int i, int j, double[] array, double value) { 
-		for(int k = i; k <= j; k++) { 
+	private void addToArray(int i, int j, double[] array, double value) {
+		for (int k = i; k <= j; k++) {
 			array[k] += value;
 		}
 	}
-	private void maxToArray(int i, int j, double[] array, double value) { 
-		for(int k = i; k <= j; k++) { 
-			array[k] = Math.max(array[k],value);
+
+	private void maxToArray(int i, int j, double[] array, double value) {
+		for (int k = i; k <= j; k++) {
+			array[k] = Math.max(array[k], value);
 		}
 	}
-	public void cleanup() {}
+
+	public void cleanup() {
+	}
 }

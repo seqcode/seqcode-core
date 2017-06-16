@@ -8,25 +8,24 @@ import java.util.*;
 
 import org.seqcode.gseutils.Closeable;
 
-
 public class ModelInputIterator<T extends Model> implements Iterator<T>, Closeable {
-	
+
 	private ModelInput<T> input;
 	private T next;
-	
-	public ModelInputIterator(ModelInput<T> inp) { 
+
+	public ModelInputIterator(ModelInput<T> inp) {
 		input = inp;
 		next = input.readModel();
 	}
-	
-	public void close() { 
+
+	public void close() {
 		input.close();
 		input = null;
 		next = null;
 	}
-	
-	public boolean isClosed() { 
-		return input ==null;
+
+	public boolean isClosed() {
+		return input == null;
 	}
 
 	public boolean hasNext() {

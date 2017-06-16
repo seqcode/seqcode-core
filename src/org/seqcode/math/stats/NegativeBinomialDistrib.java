@@ -6,128 +6,148 @@ import cern.jet.random.Poisson;
 import cern.jet.random.engine.DRand;
 
 /**
- * NegativeBinomial: distribution of the number of failures (X) before the rth success in independent trials, with success 
- * probability p in each trial. 
+ * NegativeBinomial: distribution of the number of failures (X) before the rth
+ * success in independent trials, with success probability p in each trial.
  * 
- * This class implements a random number generator that samples from the NB. PDF & CDF will be added/ 
+ * This class implements a random number generator that samples from the NB. PDF
+ * & CDF will be added/
  * 
- * This class is necessary because of a bug in the Colt implementation of NegativeBinomial (in the nextInt method), and also because
- * the Colt implementation does not allow a real-valued r. 
+ * This class is necessary because of a bug in the Colt implementation of
+ * NegativeBinomial (in the nextInt method), and also because the Colt
+ * implementation does not allow a real-valued r.
+ * 
  * @author Shaun Mahony
- * @version	%I%, %G%
+ * @version %I%, %G%
  */
 public class NegativeBinomialDistrib {
-	protected double r;	//Number of successes 
-	protected double p;	//Probability of success
+	protected double r; // Number of successes
+	protected double p; // Probability of success
 	protected double mean;
 	protected double var;
-	protected Gamma gamma; //Gamma distribution
-	protected Poisson poisson; //Poisson
-	protected NegativeBinomialDist nb; //SSJ NegativeBinomial
-	
+	protected Gamma gamma; // Gamma distribution
+	protected Poisson poisson; // Poisson
+	protected NegativeBinomialDist nb; // SSJ NegativeBinomial
+
 	/**
-	 * NegativeBinomial (r p parameterization)
-	 * Parameterized as the distribution of the number of failures (X) before the rth success in independent trials
-	 * @param r : Number of successes 
-	 * @param p : Probability of success in each trial
+	 * NegativeBinomial (r p parameterization) Parameterized as the distribution
+	 * of the number of failures (X) before the rth success in independent
+	 * trials
+	 * 
+	 * @param r
+	 *            : Number of successes
+	 * @param p
+	 *            : Probability of success in each trial
 	 */
-	public NegativeBinomialDistrib(double r, double p){
+	public NegativeBinomialDistrib(double r, double p) {
 		this.r = r;
 		this.p = p;
 		gamma = new Gamma(1, 1.0, new DRand());
 		poisson = new Poisson(10, new DRand());
 		nb = new NegativeBinomialDist(r, p);
 	}
-	
+
 	/**
 	 * Update the r & p parameters directly
+	 * 
 	 * @param r
 	 * @param p
 	 */
-	public void setRandP(double r, double p){
+	public void setRandP(double r, double p) {
 		this.r = r;
 		this.p = p;
-		mean = r*(1-p)/p;
-		var = r*(1-p)/(p*p);
+		mean = r * (1 - p) / p;
+		var = r * (1 - p) / (p * p);
 	}
-	
+
 	/**
-	 * Update the r & p parameters via the mean and variance 
+	 * Update the r & p parameters via the mean and variance
+	 * 
 	 * @param mean
 	 * @param var
 	 */
-	public void setMeanVar(double mean, double var){
-		r = (mean*mean)/(var-mean);
-		p = mean/var;
+	public void setMeanVar(double mean, double var) {
+		r = (mean * mean) / (var - mean);
+		p = mean / var;
 		this.mean = mean;
 		this.var = var;
 	}
-	
 
 	/**
 	 * Returns a random number from the distribution, bypassing internal state
 	 * This method samples a random number from the NegativeBinomial
-	 * distribution with parameters r (no. of successes in n independent trials) 
-	 * and p (probability of success)
-	 * Valid for r > 0, 0 < p < 1.
-	 * If G from Gamma(r) then K from Poiss((1-p)G/p) is NB(r,p)--distributed. 
-	 * REFERENCE: - J.H. Ahrens, U. Dieter (1974): Computer methods for
-	 * sampling from gamma, beta, Poisson and * binomial distributions,
-	 * Computing 12, 223--246.
+	 * distribution with parameters r (no. of successes in n independent trials)
+	 * and p (probability of success) Valid for r > 0, 0 < p < 1. If G from
+	 * Gamma(r) then K from Poiss((1-p)G/p) is NB(r,p)--distributed. REFERENCE:
+	 * - J.H. Ahrens, U. Dieter (1974): Computer methods for sampling from
+	 * gamma, beta, Poisson and * binomial distributions, Computing 12,
+	 * 223--246.
 	 * 
 	 * @return integer
 	 */
-	public int nextInt(double nb_r, double nb_p){
+	public int nextInt(double nb_r, double nb_p) {
 		setRandP(nb_r, nb_p);
 		return nextInt();
 	}
-	public int nextInt(){
-		if(mean==var)
+
+	public int nextInt() {
+		if (mean == var)
 			return poisson.nextInt(mean);
-		else{
-			double x = (1.0 - p)/p;
+		else {
+			double x = (1.0 - p) / p;
 			double y = x * gamma.nextDouble(r, 1.0);
 			return poisson.nextInt(y);
 		}
 	}
-	
+
 	/**
 	 * Call SSJ NegativeBinomial pdf
-	 * @param x Number of failures before the r-th success
+	 * 
+	 * @param x
+	 *            Number of failures before the r-th success
 	 * @return
 	 */
-	public double pdf(int x){
+	public double pdf(int x) {
 		return nb.prob(x);
 	}
-	
+
 	/**
 	 * Call SSJ NegativeBinomial static pdf
-	 * @param x Number of failures before the r-th success
-	 * @param nb_r Number of successes
-	 * @param nb_p Probability of success
+	 * 
+	 * @param x
+	 *            Number of failures before the r-th success
+	 * @param nb_r
+	 *            Number of successes
+	 * @param nb_p
+	 *            Probability of success
 	 * @return
 	 */
-	public static double pdf(int x, double nb_r, double nb_p){
+	public static double pdf(int x, double nb_r, double nb_p) {
 		return NegativeBinomialDist.prob(nb_r, nb_p, x);
 	}
-	
+
 	/**
 	 * Call SSJ NegativeBinomial cdf
-	 * @param x Number of failures before the r-th success
+	 * 
+	 * @param x
+	 *            Number of failures before the r-th success
 	 * @return
 	 */
-	public double cdf(int x){
+	public double cdf(int x) {
 		return nb.cdf(x);
 	}
-	
+
 	/**
 	 * Call SSJ NegativeBinomial static cdf
-	 * @param x Number of failures before the r-th success
-	 * @param nb_r Number of successes
-	 * @param nb_p Probability of success
+	 * 
+	 * @param x
+	 *            Number of failures before the r-th success
+	 * @param nb_r
+	 *            Number of successes
+	 * @param nb_p
+	 *            Probability of success
 	 * @return
 	 */
-	public static double cdf(int x, double nb_r, double nb_p){
+	public static double cdf(int x, double nb_r, double nb_p) {
 		return NegativeBinomialDist.cdf(nb_r, nb_p, x);
 	}
 }

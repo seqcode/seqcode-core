@@ -8,13 +8,15 @@
  */
 package org.seqcode.gsebricks.verbs;
 
-public class MapperCastWrapper<A,B,C extends B> implements Mapper<A,B> {
-    
-    private Mapper<A,C> internalMapper;
-    
-    public MapperCastWrapper(Mapper<A,C> i) { internalMapper = i; }
+public class MapperCastWrapper<A, B, C extends B> implements Mapper<A, B> {
 
-    public B execute(A a) {
-        return (B)(internalMapper.execute(a));
-    }
+	private Mapper<A, C> internalMapper;
+
+	public MapperCastWrapper(Mapper<A, C> i) {
+		internalMapper = i;
+	}
+
+	public B execute(A a) {
+		return (B) (internalMapper.execute(a));
+	}
 }

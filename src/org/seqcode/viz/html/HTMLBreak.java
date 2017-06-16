@@ -10,10 +10,13 @@ import java.io.PrintStream;
  *
  */
 public class HTMLBreak implements HTMLElmt {
-	
-	public HTMLBreak() {}
 
-	/* (non-Javadoc)
+	public HTMLBreak() {
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.seqcode.viz.html.HTMLElmt#print(java.io.PrintStream)
 	 */
 	public void print(PrintStream ps) {

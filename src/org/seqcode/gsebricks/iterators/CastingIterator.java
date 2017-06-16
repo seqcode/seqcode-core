@@ -10,21 +10,23 @@ package org.seqcode.gsebricks.iterators;
 
 import java.util.*;
 
-public class CastingIterator<A,B extends A> implements Iterator<A> {
-    
-    private Iterator<B> internal;
-    
-    public CastingIterator(Iterator<B> itr) { internal = itr; }
+public class CastingIterator<A, B extends A> implements Iterator<A> {
 
-    public boolean hasNext() {
-        return internal.hasNext();
-    }
+	private Iterator<B> internal;
 
-    public A next() {
-        return (A)internal.next();
-    }
+	public CastingIterator(Iterator<B> itr) {
+		internal = itr;
+	}
 
-    public void remove() {
-        internal.remove();
-    } 
+	public boolean hasNext() {
+		return internal.hasNext();
+	}
+
+	public A next() {
+		return (A) internal.next();
+	}
+
+	public void remove() {
+		internal.remove();
+	}
 }

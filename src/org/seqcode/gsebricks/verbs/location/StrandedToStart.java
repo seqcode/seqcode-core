@@ -7,54 +7,49 @@ import org.seqcode.genome.location.StrandedRegion;
 import org.seqcode.gsebricks.types.*;
 import org.seqcode.gsebricks.verbs.Mapper;
 
-
 /**
  * Maps a StrandedRegion to its start site
  */
-public class StrandedToStart<X extends StrandedRegion> implements Mapper<X,Point>, SelfDescribingVerb {
+public class StrandedToStart<X extends StrandedRegion> implements Mapper<X, Point>, SelfDescribingVerb {
 
-    public StrandedToStart() {}
+	public StrandedToStart() {
+	}
 
-    public Point execute(X a) {
-        switch(a.getStrand()) { 
-        case '+':
-            return new Point(a.getGenome(),
-                             a.getChrom(),
-                             a.getStart());
-        case '-':
-            return new Point(a.getGenome(),
-                             a.getChrom(),
-                             a.getEnd());
-        default:
-            throw new IllegalArgumentException("Don't understand strand " + a.getStrand());
-        }
-    }
-    
-    
-    private static final String[] inputNames = { "StrandedRegions" };
-    private static final EchoType[] inputTypes = { new ClassType(StrandedRegion.class) };
-    private static final EchoType outputType = new ClassType(Point.class); 
-    
-    public EchoType[] getInputClasses() {
-        return inputTypes;
-    }
+	public Point execute(X a) {
+		switch (a.getStrand()) {
+		case '+':
+			return new Point(a.getGenome(), a.getChrom(), a.getStart());
+		case '-':
+			return new Point(a.getGenome(), a.getChrom(), a.getEnd());
+		default:
+			throw new IllegalArgumentException("Don't understand strand " + a.getStrand());
+		}
+	}
 
-    public String[] getInputNames() {
-        return inputNames;
-    }
+	private static final String[] inputNames = { "StrandedRegions" };
+	private static final EchoType[] inputTypes = { new ClassType(StrandedRegion.class) };
+	private static final EchoType outputType = new ClassType(Point.class);
 
-    public EchoType getOutputClass() {
-        return outputType;
-    }
+	public EchoType[] getInputClasses() {
+		return inputTypes;
+	}
 
-    public EchoType[] getParameterClasses() {
-        return null;
-    }
+	public String[] getInputNames() {
+		return inputNames;
+	}
 
-    public String[] getParameterNames() {
-        return null;
-    }
+	public EchoType getOutputClass() {
+		return outputType;
+	}
 
-    public void init(Map<String, Object> params) {
-    }
+	public EchoType[] getParameterClasses() {
+		return null;
+	}
+
+	public String[] getParameterNames() {
+		return null;
+	}
+
+	public void init(Map<String, Object> params) {
+	}
 }
