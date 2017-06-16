@@ -21,6 +21,8 @@ import java.io.*;
  *  <li>getweight alignname chromname (eg, chromname = 1+)
  *  <li>getnumpositions alignname
  *  <li>getnumpositions alignname chromname (eg, chromname = 1+)
+ *  <li>getnumpairpositions alignname
+ *  <li>getnumpairpositions alignname chromname (eg, chromname = 1+)
  *  <li>addtogroup username groupname
  *  <li>reindex alignname chromname
  * 
@@ -112,6 +114,8 @@ public class ReadDB {
         System.out.println("  getweight alignname chromnameStrand   (eg, 1+)");
         System.out.println("  getnumpositions alignname");
         System.out.println("  getnumpositions alignname chromnameStrand   (eg, 1+)");
+        System.out.println("  getnumpairpositions alignname");
+        System.out.println("  getnumpairpositions alignname chromnameStrand   (eg, 1+)");
         System.out.println("  deletesinglealign alignname");
         System.out.println("  deletepairedalign alignname");
         System.out.println("  setacl alignname username|groupname add|delete write|read|admin ");
@@ -206,6 +210,18 @@ public class ReadDB {
                         System.err.println("Positions in " + align + " chrom " + otherargs[2] + " is " + count);
                     } else {
                         System.err.println("Total positions in " + align + " is " + count);
+                    }
+                } else if (cmd.equals("getnumpairpositions")) {
+                    int count = 0;
+                    if (otherargs.length == 3) {
+                        count = client.getNumPairedPositions(align,Integer.parseInt(otherargs[2]),isType2,null,null,null,isleft);
+                    } else {
+                        count = client.getNumPairedPositions(align,isType2,isleft);
+                    }
+                    if (otherargs.length == 3) {
+                        System.err.println("PairPositions in " + align + " chrom " + otherargs[2] + " is " + count);
+                    } else {
+                        System.err.println("Total pairpositions in " + align + " is " + count);
                     }
                 } else if (cmd.equals("deletesinglealign")) {
                     client.deleteAlignment(align,false);

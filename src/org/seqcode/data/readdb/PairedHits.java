@@ -65,8 +65,11 @@ public class PairedHits extends Hits {
         return new DataOutputStream(new BufferedOutputStream(new FileOutputStream(f)));
     }
     /**
-     * Returns the number of unique positions between start and stop
-     * where firstindex and lastindex are the lower and upper bounds to search
+     * Returns the number of unique paired positions between start and stop
+     * where firstindex and lastindex are the lower and upper bounds to search.
+     * A unique paired position is defined by stranded Left read and stranded Right read.
+     * (e.g. if a lef-right pair have the same positions as a right-left pair, they are 
+     * counted as two distinct paired positions). 
      */
     public int getNumPairedPositionsBetween (int firstindex,
                                 int lastindex,
@@ -82,13 +85,19 @@ public class PairedHits extends Hits {
             return p[1] - p[0];
         }
         int count = 0;
-        int lastPos =-1;
+        int lastPos =-1, lastOChr=-1, lastOPos=-1;
+        boolean lastStr=true, lastOStr=true;
         for (int i = p[0]; i < p[1]; i++) {
-       /* 	int pos = positions.get(i);
-        	if(pos!=lastPos)
-        		count += ((minweight == null || (weights.get(i) >= minweight)) &&
-                      (isPlus == null || (getStrandOne(lenAndStrand.get(i)) == isPlus))) ? 1 : 0;
-		*/
+        	int pos = positions.get(i);
+        	int oChr = chroms.get(i);
+        	int oPos = otherPositions.get(i);
+        	boolean str = getStrandOne(lenAndStrand.get(i));
+        	boolean oStr = getStrandTwo(lenAndStrand.get(i));
+        	
+        	if(pos!=lastPos || oChr!=lastOChr || oPos!=lastOPos || str!=lastStr || oStr!=lastOStr || i==p[0])
+        		count += (minweight == null || (weights.get(i) >= minweight)) ? 1 : 0;
+		
+        	lastPos=pos; lastOChr=oChr; lastOPos=oPos; lastStr=str; lastOStr=oStr;
         }
         return count;
     }

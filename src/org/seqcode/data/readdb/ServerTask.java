@@ -1129,10 +1129,6 @@ public class ServerTask {
     		printString("0\n");
     	}else{
 	        printOK();
-	        if (request.start == null && request.end == null && request.minWeight == null && request.isPlusStrand == null) {
-	            printString(Integer.toString(header.getNumHits()) + "\n");
-	            return;
-	        }
 	        if (request.start == null) {
 	            request.start = 0;
 	        }
@@ -1150,10 +1146,6 @@ public class ServerTask {
     		printString("0\n");
     	}else{
 	        printOK();
-	        if (request.start == null && request.end == null && request.minWeight == null && request.isPlusStrand == null) {
-	            printString(Integer.toString(header.getNumHits()) + "\n");
-	            return;
-	        }
 	        if (request.start == null) {
 	            request.start = 0;
 	        }

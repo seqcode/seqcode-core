@@ -603,7 +603,7 @@ public class Client implements ReadOnlyClient {
         return pos;
     }
     /**
-     * Returns the total number of unique positions in this alignment.  
+     * Returns the total number of unique paired positions in this alignment.  
      */
     public int getNumPairedPositions(String alignid, boolean isType2, Boolean isLeft) throws IOException, ClientException {
         int pos = 0;
@@ -706,6 +706,8 @@ public class Client implements ReadOnlyClient {
     	}
     }
     /** returns the total number of unique paired positions on the specified chromosome in the alignment.
+     * Note that total number of unique paired positions will depend on the setting of "isLeft": 
+     *    e.g. will count pair positions with left read in specified chromosome.
      * Any of the object parameters can be set to null to specify "no value"
      */
     public int getNumPairedPositions(String alignid, int chromid, boolean isType2, Integer start, Integer stop, Float minWeight, Boolean isLeft)  throws IOException, ClientException {

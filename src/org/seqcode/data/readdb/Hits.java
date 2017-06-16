@@ -139,9 +139,9 @@ public abstract class Hits implements Closeable {
     }
     /**
      * returns indices = int[2] 
-     * such that indices[0] is the first element of positions >= startpos
-     * and indices[1] is the first element of positions > lastpos.
-     * indices[0] == indices[1] -> no hits between startpos and lastpos
+     * such that indices[0] is the first element of positions greater than or equal to startpos
+     * and indices[1] is the first element of positions greater than lastpos.
+     * indices[0] == indices[1] ... no hits between startpos and lastpos
      * firstindex is an inclusive lower bound on the index of startpos.
      * lastindex is an inclusive upper bound on the index of lastpos
      */
@@ -289,11 +289,15 @@ public abstract class Hits implements Closeable {
         }
         int count = 0;
         int lastPos =-1;
+        Boolean lastStr =false;
         for (int i = p[0]; i < p[1]; i++) {
         	int pos = positions.get(i);
-        	if(pos!=lastPos)
+        	Boolean str = getStrandOne(lenAndStrand.get(i));
+        	if(!(pos==lastPos && str==lastStr)){
         		count += ((minweight == null || (weights.get(i) >= minweight)) &&
-                      (isPlus == null || (getStrandOne(lenAndStrand.get(i)) == isPlus))) ? 1 : 0;
+                      (isPlus == null || str == isPlus)) ? 1 : 0;
+        	}
+        	lastPos=pos; lastStr=str;
         }
         return count;
     }
