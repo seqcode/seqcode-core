@@ -284,9 +284,7 @@ public abstract class Hits implements Closeable {
         assert(lastindex >= firstindex);
         assert(lastindex <= positions.getib().limit());
         int[] p = getIndices(firstindex, lastindex, start,stop);
-        if (minweight == null && isPlus == null) {
-            return p[1] - p[0];
-        }
+        
         int count = 0;
         int lastPos =-1;
         Boolean lastStr =false;

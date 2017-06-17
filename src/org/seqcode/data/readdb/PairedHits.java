@@ -81,9 +81,7 @@ public class PairedHits extends Hits {
         assert(lastindex >= firstindex);
         assert(lastindex <= positions.getib().limit());
         int[] p = getIndices(firstindex, lastindex, start,stop);
-        if (minweight == null) {
-            return p[1] - p[0];
-        }
+
         int count = 0;
         int lastPos =-1, lastOChr=-1, lastOPos=-1;
         boolean lastStr=true, lastOStr=true;

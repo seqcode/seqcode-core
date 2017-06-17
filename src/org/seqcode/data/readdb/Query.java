@@ -21,6 +21,7 @@ import java.io.*;
  * <li>--paired means to query the paired reads.
  * <li>--noheader means to skip printing the input region in the outpu
  * <li>--right means to query the right side reads rather than left.
+ * </ul>
  */
 
 public class Query {

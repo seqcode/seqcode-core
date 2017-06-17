@@ -20,7 +20,7 @@ import org.apache.commons.cli.*;
  * <li>--sleepiness 2   how sleepy the server should be waiting for input.  Lower values use more CPU but improve responsiveness
  * <li>--idlelimit 24  number of hours after which idle task connections are closed 
  * <li>--help           print the usage message and exit
- *
+ * </ul>
  */
 public class Server {
 
