@@ -342,6 +342,17 @@ public class PairedHits extends Hits {
         return prefix + chrom + getLeftRightSuffix(isLeft) + ".otherpos";
     }
 
-
+    public void close() throws IOException {       
+        chroms.setib(null);
+        chroms.bb = null;
+        chroms = null;
+        otherPositions.setib(null);
+        otherPositions.bb = null;
+        otherPositions = null;
+        pairCode.setib(null);
+        pairCode.bb = null;
+        pairCode = null;
+        super.close();
+    }
 
 }

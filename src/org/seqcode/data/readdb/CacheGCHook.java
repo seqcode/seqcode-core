@@ -7,14 +7,15 @@ import java.util.logging.*;
  */
 public class CacheGCHook implements Runnable {
 	private Logger logger;
-    
-    public CacheGCHook(Logger l) {
+    private int gcFrequency;
+    public CacheGCHook(Logger l, int gcFreq) {
         logger = l;
+        gcFrequency = gcFreq;
     }
 
     public void run() {
         while (true) {
-            if (LRUCache.removed() > 200) {
+            if (LRUCache.removed() > gcFrequency) {
                 logger.log(Level.INFO,"running GC");
                 LRUCache.resetRemoved();
                 System.gc();

@@ -19,8 +19,17 @@ import org.apache.commons.cli.*;
  * <li>--maxconn 1000    maximum number of client connections
  * <li>--sleepiness 2   how sleepy the server should be waiting for input.  Lower values use more CPU but improve responsiveness
  * <li>--idlelimit 24  number of hours after which idle task connections are closed 
+ * <li>--gcfreq 50     number of datasets removed from cache before garbage collection called.  
  * <li>--help           print the usage message and exit
  * </ul>
+ * 
+ * <p>Breakdown of relationship between cachesize and number of opened files
+ * There are 5 caches, each of size [cachesize]. Max number of files for each:
+ *  - acls: 1 file x cachesize
+ *  - singleHeaders: 1 file x cachesize
+ *  - pairedHeaders: 1 file x cachesize
+ *  - singleHits: 3 files x cachesize
+ *  - pairedHits: 6 files x cachesize
  */
 public class Server {
 
@@ -29,7 +38,7 @@ public class Server {
 
 	private Logger logger;
     private int port;
-    private int numThreads, cacheSize, maxConnections, sleepiness, taskIdleLimit;
+    private int numThreads, cacheSize, maxConnections, sleepiness, taskIdleLimit, gcFrequency;
     private boolean debug;
     /* topdir is the top-level directory for our data files.
       pwfile is "${topdir}/users.txt" and groupfile is 
@@ -55,9 +64,10 @@ public class Server {
         port = 52000;
         sleepiness = 4;
         numThreads = 5;
-        cacheSize = numThreads * 20;
+        cacheSize = 100;
         maxConnections = 1000;
-        taskIdleLimit = 24;
+        taskIdleLimit = 2; //(hours)
+        gcFrequency = 50;
         topdir = "/tmp";
         keepRunning = true;
         logger = Logger.getLogger("org.seqcode.data.readdb.Server");
@@ -74,6 +84,7 @@ public class Server {
         options.addOption("M","maxconn",true,"how many connections are allowed");
         options.addOption("S","sleepiness",true,"how sleepy the server should be while waiting for input.  1-100");
         options.addOption("L","idlelimit",true,"number of hours after which to close idle connections. Negative sets no limit.");
+        options.addOption("G","gcfreq",true,"number of datasets removed from cache before garbage collection called.");
         options.addOption("h","help",false,"print help message");
         CommandLineParser parser = new GnuParser();
         CommandLine line = parser.parse( options, args, false );            
@@ -87,7 +98,6 @@ public class Server {
         }
         if (line.hasOption("threads")) {
             numThreads = Integer.parseInt(line.getOptionValue("threads"));
-            cacheSize = 10 * numThreads;
         }
         if (line.hasOption("datadir")) {
             topdir = line.getOptionValue("datadir");
@@ -110,6 +120,9 @@ public class Server {
         if (line.hasOption("idlelimit")) {
             taskIdleLimit = Integer.parseInt(line.getOptionValue("idlelimit"));
         }
+        if (line.hasOption("gcfreq")) {
+            gcFrequency = Integer.parseInt(line.getOptionValue("gcfreq"));
+        }
 
         singleHits = new LRUCache<SingleHits>(cacheSize);
         pairedHits = new LRUCache<PairedHits>(cacheSize);
@@ -127,9 +140,10 @@ public class Server {
         System.out.println(" [--threads 5]   use this number of worker threads to process requests.");
         System.out.println(" [--cachesize 100]  number of datasets to keep open.  Actual number of open files will be");
         System.out.println("                  up to 18 times this value");
-        System.out.println(" [--maxconn 250]   maximum number of open connections");
+        System.out.println(" [--maxconn 1000]   maximum number of open connections");
         System.out.println(" [--debug]  print debugging output");
         System.out.println(" [--sleepiness 4]  (1-100) higher values use less CPU when idle but may incur more delay in processing requests");
+        System.out.println(" [--idlelimit 2]  number of hours after which to close idle connections. Negative sets no limit. ");
     }
     public static void main(String args[]) throws Exception {
         Server server = new Server();
@@ -155,7 +169,7 @@ public class Server {
     public boolean debug() {return debug;}
     public int getSleepiness() {return sleepiness;}
     public void listen() throws IOException {
-        Thread t = new Thread(new CacheGCHook(logger));
+        Thread t = new Thread(new CacheGCHook(logger, gcFrequency));
         t.start();
         dispatch = new Dispatch(this,numThreads, maxConnections);
         t = new Thread(dispatch);
