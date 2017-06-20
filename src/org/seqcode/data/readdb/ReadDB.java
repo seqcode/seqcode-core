@@ -231,8 +231,6 @@ public class ReadDB {
                 } else {
                     System.err.println("Unknown command " + cmd);
                 }
-
-
             }
         }
     }

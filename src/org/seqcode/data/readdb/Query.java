@@ -122,8 +122,9 @@ public class Query {
         System.out.println(" [--bed] output hit positions in BED format (doesn't work with paired reads)");
         System.out.println(" [--wiggle 10] output a histogram in wiggle format with 10bp bin size");
         System.out.println("");
-        System.out.println("Lines in the input should be of them form");
+        System.out.println("Lines in the input should be of the form");
         System.out.println("3:1000-2000");
+        System.out.println(" where the chromosome is represented by the appropriate ReadDB code.");
     }
 
     public void run(InputStream instream) throws IOException, ClientException {

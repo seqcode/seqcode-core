@@ -109,8 +109,8 @@ public class Client implements ReadOnlyClient {
     	
     	Socket socket=null;
     	synchronized(this){
-	    	socket = new Socket(hostname,portnum);
-	        socket.setTcpNoDelay(true);
+    		socket = new Socket(hostname,portnum);
+	    	socket.setTcpNoDelay(true);
 	        socket.setSendBufferSize(BUFFERLEN);
 	        socket.setReceiveBufferSize(BUFFERLEN);
 	        /* linger = true, time = 0 means that the other side gets a reset if the
@@ -124,17 +124,16 @@ public class Client implements ReadOnlyClient {
 	        outstream.flush();
 	        instream = new BufferedInputStream(socket.getInputStream());
 	        buffer = new byte[BUFFERLEN];
+	        connected = true;
 	        
 	        if (!authenticate(hostname,username,passwd)) {
-	        	System.out.println("ERROR IN AUTH");
 	        	if(socket!=null)
                 	closeConnection(socket);
 	            throw new ClientException("Authentication Exception Failed");
 	        }
 	        request = new Request();
-	        System.out.println("GOT HERE");
+
 	        printErrors = false;
-	        connected = true;
     	}
     	return socket;
     }
@@ -147,8 +146,8 @@ public class Client implements ReadOnlyClient {
     	String response="";
     	Socket socket=null;
     	try{
+    		socket = openConnection();
         	synchronized (this){
-        		socket = openConnection();
         		request.type="ping";
     	        sendString(request.toString());
     	        response = readLine();
@@ -184,9 +183,7 @@ public class Client implements ReadOnlyClient {
      */
     private boolean authenticate(String hostname, String username, String password) throws IOException {
         SaslClient sasl = null;
-        Socket s = null;
         try {
-        	s = openConnection();
             sendString(username + "\n");
             Map<String,String> props = new HashMap<String,String>();
             props.put("Sasl.POLICY_NOPLAINTEXT","true");
@@ -223,20 +220,15 @@ public class Client implements ReadOnlyClient {
             }
             sasl.dispose();
             String status = readLine();
-            closeConnection(s);
             return (status.equals("authenticated as " + username));
         } catch (SaslException e) {
             e.printStackTrace();
             if (sasl != null) {
                 sasl.dispose();
             }
-            if(connected && s!=null)
-            	closeConnection(s);
             return false;
         } catch (ClientException e) {
 			e.printStackTrace();
-			if(connected && s!=null)
-            	closeConnection(s);
 			return false;
 		}
     }
@@ -270,20 +262,20 @@ public class Client implements ReadOnlyClient {
      * @throws ClientException if the user isn't authorized to shut the server down.
      */
     public void shutdown() throws IOException, ClientException{
+    	Socket s = openConnection();
     	synchronized(this){
-    		Socket s = openConnection();
-	        request.type = "shutdown";
+    		request.type = "shutdown";
 	        sendString(request.toString());
-	        closeConnection(s);
     	}
+    	closeConnection(s);
     }
     /** this was to fix a bug in the server.  You shouldn't need it for general use.
      * Regenerate the index for this alignment and chromosome
      */
     public void reIndex(String align, int chrom, boolean isType2, boolean paired) throws IOException, ClientException {
+    	Socket s = openConnection();
     	synchronized(this){
-    		Socket s = openConnection();
-	        request.type = "reindex";
+    		request.type = "reindex";
 	        request.alignid = align;
 	        request.chromid = chrom;
 	        request.isType2 = isType2;
@@ -294,16 +286,16 @@ public class Client implements ReadOnlyClient {
 	        if (!response.equals("OK")) {
 	            System.out.println(response);
 	        }
-	        closeConnection(s);
     	}
+    	closeConnection(s);
     }
     /** This was to fix a bug in the server.  You shouldn't need it for general use.
      * Resort the hits for a single-ended alignment and regenerate the index.
      */
     public void checksort(String align, int chrom) throws IOException, ClientException {
+    	Socket s = openConnection();
     	synchronized(this){
-    		Socket s = openConnection();
-	    	request.clear();
+    		request.clear();
 	        request.type = "checksort";
 	        request.alignid = align;
 	        request.chromid = chrom;
@@ -313,8 +305,8 @@ public class Client implements ReadOnlyClient {
 	        if (!response.equals("OK")) {
 	            System.out.println(response);
 	        }
-	        closeConnection(s);
     	}
+    	closeConnection(s);
     }
     /**
      * Stores a set of SingleHit objects (representing an un-paired or single-ended read
@@ -323,11 +315,9 @@ public class Client implements ReadOnlyClient {
      
      */
     public void storeSingle(String alignid, List<SingleHit> allhits, boolean isType2) throws IOException, ClientException {
-    	Socket socket = null;
-    	synchronized(this){
-    		socket = openConnection();
+    	Socket socket = openConnection();
     		socket.setSoTimeout(socketLoadDataReadTimeout);
-    	}
+    		
 	    int step = 10000000;
         for (int pos = 0; pos < allhits.size(); pos += step) {
             Map<Integer, List<SingleHit>> map = new HashMap<Integer,List<SingleHit>>();
@@ -401,11 +391,9 @@ public class Client implements ReadOnlyClient {
      * to any hits that have already been stored in the alignment
      */
     public void storePaired(String alignid, List<PairedHit> allhits) throws IOException, ClientException {
-    	Socket socket = null;
-    	synchronized(this){
-    		socket = openConnection();
-    		socket.setSoTimeout(socketLoadDataReadTimeout);
-    	}
+    	Socket socket = openConnection();
+    	socket.setSoTimeout(socketLoadDataReadTimeout);
+    	
     	Map<Integer, List<PairedHit>> map = new HashMap<Integer,List<PairedHit>>();
     	for (PairedHit h : allhits) {
             if (!map.containsKey(h.leftChrom)) {
@@ -491,8 +479,8 @@ public class Client implements ReadOnlyClient {
      * to the user.  Returns false if they don't exist or if they aren't accessible
      */
     public boolean exists(String alignid) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
     		request.clear(); 
 	        request.type="exists";
 	        request.alignid=alignid;
@@ -514,9 +502,9 @@ public class Client implements ReadOnlyClient {
      * the paired or single ended reads.
      */
     public void deleteAlignment(String alignid, boolean isPaired) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	    	request.type="deletealign";
+    		request.type="deletealign";
 	        request.isPaired = isPaired;
 	        request.alignid=alignid;
 	        sendString(request.toString());
@@ -535,9 +523,9 @@ public class Client implements ReadOnlyClient {
      * Returns the set of chromosomes that exist for this alignment. 
      */
     public Set<Integer> getChroms(String alignid, boolean isType2, boolean isPaired, Boolean isLeft) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="getchroms";
+    		request.type="getchroms";
 	        request.isType2 = isType2;
 	        request.isLeft = isLeft;
 	        request.isPaired = isPaired;
@@ -607,9 +595,9 @@ public class Client implements ReadOnlyClient {
      * Any of the object parameters can be set to null to specify "no value"
      */
     public int getCount(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand)  throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="count";
+    		request.type="count";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
@@ -638,9 +626,9 @@ public class Client implements ReadOnlyClient {
     /** returns the total weight on the specified chromosome in this alignment
      */
     public double getWeight(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="weight";
+    		request.type="weight";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
@@ -670,9 +658,9 @@ public class Client implements ReadOnlyClient {
      * Any of the object parameters can be set to null to specify "no value"
      */
     public int getNumPositions(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand)  throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="numpositions";
+    		request.type="numpositions";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
@@ -704,8 +692,8 @@ public class Client implements ReadOnlyClient {
      * Any of the object parameters can be set to null to specify "no value"
      */
     public int getNumPairedPositions(String alignid, int chromid, boolean isType2, Integer start, Integer stop, Float minWeight, Boolean isLeft)  throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
     		request.type="numpairpositions";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -736,9 +724,9 @@ public class Client implements ReadOnlyClient {
      * returns the sorted (ascending order) hit positions in the specified range of a chromosome,alignment pair.
      */ 
     public int[] getPositions(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="gethits";
+    		request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
@@ -771,9 +759,9 @@ public class Client implements ReadOnlyClient {
      * will be in the same order as the sorted positions returned by getPositions()
      */ 
     public float[] getWeightsRange(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="gethits";
+    		request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
@@ -802,9 +790,9 @@ public class Client implements ReadOnlyClient {
     	}
     }
     public List<SingleHit> getSingleHits(String alignid, int chromid, boolean isType2, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	    	request.type="gethits";
+    		request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
@@ -855,9 +843,9 @@ public class Client implements ReadOnlyClient {
     	}
     }
     public List<PairedHit> getPairedHits(String alignid, int chromid, boolean isLeft, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="gethits";
+    		request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
@@ -990,9 +978,9 @@ public class Client implements ReadOnlyClient {
         return getHistogram(alignid, chromid, isType2, paired, extension,binsize,0,start,stop,minWeight,plusStrand,true);
     }
     public TreeMap<Integer,Integer> getHistogram(String alignid, int chromid, boolean isType2, boolean paired, int extension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand, boolean isLeft) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="histogram";
+    		request.type="histogram";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
@@ -1034,9 +1022,9 @@ public class Client implements ReadOnlyClient {
         return getWeightHistogram(alignid, chromid, isType2, paired, extension, binsize, 0, start,stop,minWeight,plusStrand, true);
     }
     public TreeMap<Integer,Float> getWeightHistogram(String alignid, int chromid, boolean isType2, boolean paired, int extension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand, boolean isLeft) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="weighthistogram";
+    		request.type="weighthistogram";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
@@ -1133,9 +1121,9 @@ public class Client implements ReadOnlyClient {
      * Returns a Map from READ, WRITE, and ADMIN to lists of principals that have those privileges on the specified alignment.
      */
     public Map<String,Set<String>> getACL(String alignid) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="getacl";
+    		request.type="getacl";
 	        request.alignid=alignid;
 	        sendString(request.toString());
 	        String response = readLine();
@@ -1158,8 +1146,8 @@ public class Client implements ReadOnlyClient {
        is either read, write, or admin. 
     */
     private void fillPartACL(Map<String,Set<String>> output) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
     		String type = readLine();
     		int entries = Integer.parseInt(readLine());
 	        Set<String> out = new HashSet<String>();
@@ -1174,9 +1162,9 @@ public class Client implements ReadOnlyClient {
      * Applies the specified ACLChangeEntry objects to the acl for this experiment/chromosome.
      */
     public void setACL(String alignid, Set<ACLChangeEntry> changes) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	        request.type="setacl";
+    		request.type="setacl";
 	        request.alignid=alignid;
 	        for (ACLChangeEntry a : changes) {
 	            request.list.add(a.toString());
@@ -1197,9 +1185,9 @@ public class Client implements ReadOnlyClient {
      * Adds the specified user (princ) to a group.
      */
     public void addToGroup(String princ, String group) throws IOException, ClientException {
+    	Socket socket = openConnection();
     	synchronized(this){
-    		Socket socket = openConnection();
-	    	request.type="addtogroup";
+    		request.type="addtogroup";
 	        request.map.put("princ",princ);
 	        request.map.put("group",group);
 	        sendString(request.toString());
