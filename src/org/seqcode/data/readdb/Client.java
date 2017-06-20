@@ -16,8 +16,6 @@ import javax.security.auth.callback.*;
  *  <p>Client generally assumes that the hit positions are the 5' end of the hit. 
  *
  * <p>Client IS NOT REENTRANT.  Do not overlap calls to a single Client object.
- *
- * <p>The current version of Client keeps a separate thread that would close the connection if it is idle too long. 
  * 
  * <p>Most method parameters that are object types (eg Integer, Boolean) are optional.  If a null value
  * is passed then no filtering is done based on that parameter.  
@@ -43,22 +41,18 @@ import javax.security.auth.callback.*;
 public class Client implements ReadOnlyClient {    
 
     public static final String SaslMechanisms[] = {"CRAM-MD5","DIGEST-MD5"};
-    Socket socket; //the socket to talk to the server.  outstream and instream are from the socket
     OutputStream outstream;
     BufferedInputStream instream;
-    Thread closeTimerThread=null; //checks time of last activity - closes connection if idle for too long
+    Request request;
     byte[] buffer; //temporary space for receiving data; contents not persistent between method calls
     private static final int BUFFERLEN = 8192*20;
     private final int socketLoadDataReadTimeout = 1000*60*8; //socket timeout in ms: set to 8 minutes because we should only be relying on the timeout to detect server shutdowns, and some uses of Client (e.g. loading a lot of reads to ReadDB) can take a long time on the Server.
     private final int socketQueryReadTimeout = 60000; //socket timeout in ms for queries
-    private final int threadSleepTime = 30000; //check time of last activity thread sleep time in ms
-    private final int connectionIdleTimeLimit = 1000*60*10; //close idle connection after this time (10 minutes)
-    private long lastActivityTime; //Time of last activity is updated by each query 
-    private boolean connectionOpen=false;
-    private Request request;
     private boolean printErrors;
-    private String hostname, username, password;
+    private String hostname, username, passwd;
     private int portnum;
+    private boolean connected=false;
+    
     
     /** Connects to a ReadDB server on the specified host and port using the specified 
      * username and password.
@@ -69,7 +63,6 @@ public class Client implements ReadOnlyClient {
                    int portnum,
                    String username,
                    String passwd) throws IOException, ClientException {
-        init(hostname,portnum,username,passwd);
     }
     /**
      * Creates the default connection
@@ -106,25 +99,15 @@ public class Client implements ReadOnlyClient {
                 throw new IOException("Can't read connection properties from " + url);
             }
         }
-        String hostname = bundle.getString("hostname");
-        String port = bundle.getString("port");
-        String username = bundle.getString("username");
-        String password = bundle.getString("passwd");
-        init(hostname, Integer.parseInt(port), username, password);
+        this.hostname = bundle.getString("hostname");
+        this.portnum = new Integer(bundle.getString("port"));
+        this.username = bundle.getString("username");
+        this.passwd = bundle.getString("passwd");
     }
     
-    private void init(String hostname,
-                   int portnum,
-                   String username,
-                   String passwd) throws IOException, ClientException {
-    	this.hostname=hostname;
-    	this.portnum=portnum;
-    	this.username=username;
-    	this.password = passwd;
+    private Socket openConnection() throws IOException, ClientException {
     	
-    	if(closeTimerThread!=null && closeTimerThread.isAlive())
-    		closeTimerThread.interrupt();
-    	
+    	Socket socket=null;
     	synchronized(this){
 	    	socket = new Socket(hostname,portnum);
 	        socket.setTcpNoDelay(true);
@@ -140,49 +123,36 @@ public class Client implements ReadOnlyClient {
 	        outstream = socket.getOutputStream();
 	        outstream.flush();
 	        instream = new BufferedInputStream(socket.getInputStream());
-	        connectionOpen=true;
-	        lastActivityTime = System.currentTimeMillis();
 	        buffer = new byte[BUFFERLEN];
 	        
 	        if (!authenticate(hostname,username,passwd)) {
+	        	System.out.println("ERROR IN AUTH");
+	        	if(socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException("Authentication Exception Failed");
 	        }
 	        request = new Request();
+	        System.out.println("GOT HERE");
 	        printErrors = false;
-	        
-	        //Start a new check alive thread
-	        closeTimerThread = new Thread(new ClientConnectionTimerThread(this));
-	        closeTimerThread.start();
+	        connected = true;
     	}
-    }
-    
-    /**
-     * Re-connect to the ReadDB sever using the same settings
-     */
-    public void reConnect(){
-    	try {
-			init(hostname, portnum, username, password);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClientException e) {
-			e.printStackTrace();
-		}
+    	return socket;
     }
     
     /** 
      * Pings the ReadDB server, 
      * @return true if the server pongs 
      */
-    public boolean connectionAlive(){
+    public boolean connectionAlive() throws ClientException{
     	String response="";
+    	Socket socket=null;
     	try{
         	synchronized (this){
-        		if(!connectionOpen)
-        			reConnect();
-        		request.clear(); 
-    	        request.type="ping";
+        		socket = openConnection();
+        		request.type="ping";
     	        sendString(request.toString());
     	        response = readLine();
+    	        closeConnection(socket);
         	}
 	        if (response.equals("pong")) {
 	            return true;
@@ -191,9 +161,12 @@ public class Client implements ReadOnlyClient {
 	        }
         }catch(IOException e){
         	//SocketException could be generated by a timeout
+        	if(socket!=null && connected)
+        		closeConnection(socket);
         	return false;
         }
     }
+    
     /**
      * Return some basic information about the server
      * @return string
@@ -211,7 +184,9 @@ public class Client implements ReadOnlyClient {
      */
     private boolean authenticate(String hostname, String username, String password) throws IOException {
         SaslClient sasl = null;
+        Socket s = null;
         try {
+        	s = openConnection();
             sendString(username + "\n");
             Map<String,String> props = new HashMap<String,String>();
             props.put("Sasl.POLICY_NOPLAINTEXT","true");
@@ -248,22 +223,31 @@ public class Client implements ReadOnlyClient {
             }
             sasl.dispose();
             String status = readLine();
+            closeConnection(s);
             return (status.equals("authenticated as " + username));
         } catch (SaslException e) {
             e.printStackTrace();
             if (sasl != null) {
                 sasl.dispose();
             }
+            if(connected && s!=null)
+            	closeConnection(s);
             return false;
-        }
+        } catch (ClientException e) {
+			e.printStackTrace();
+			if(connected && s!=null)
+            	closeConnection(s);
+			return false;
+		}
     }
     
     /** sends a string to the server and flushes the socket 
      */
-    private void sendString(String s) throws IOException {
+    private void sendString(String s) throws IOException, ClientException {
+    	if(!connected)
+    		throw new ClientException("Client not connected!");
     	outstream.write(s.getBytes());
         outstream.flush();
-        lastActivityTime = System.currentTimeMillis();
     }
     /** reads one line from the server.  blocking.
      */
@@ -278,8 +262,6 @@ public class Client implements ReadOnlyClient {
             }
         }
         String out = new String(buffer,0,pos);
-        //System.err.println("READ " + out);
-        lastActivityTime = System.currentTimeMillis();
         return out;
     }
     /**
@@ -289,11 +271,10 @@ public class Client implements ReadOnlyClient {
      */
     public void shutdown() throws IOException, ClientException{
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-	        request.clear();
+    		Socket s = openConnection();
 	        request.type = "shutdown";
 	        sendString(request.toString());
+	        closeConnection(s);
     	}
     }
     /** this was to fix a bug in the server.  You shouldn't need it for general use.
@@ -301,9 +282,7 @@ public class Client implements ReadOnlyClient {
      */
     public void reIndex(String align, int chrom, boolean isType2, boolean paired) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-	    	request.clear();
+    		Socket s = openConnection();
 	        request.type = "reindex";
 	        request.alignid = align;
 	        request.chromid = chrom;
@@ -315,6 +294,7 @@ public class Client implements ReadOnlyClient {
 	        if (!response.equals("OK")) {
 	            System.out.println(response);
 	        }
+	        closeConnection(s);
     	}
     }
     /** This was to fix a bug in the server.  You shouldn't need it for general use.
@@ -322,8 +302,7 @@ public class Client implements ReadOnlyClient {
      */
     public void checksort(String align, int chrom) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
+    		Socket s = openConnection();
 	    	request.clear();
 	        request.type = "checksort";
 	        request.alignid = align;
@@ -334,6 +313,7 @@ public class Client implements ReadOnlyClient {
 	        if (!response.equals("OK")) {
 	            System.out.println(response);
 	        }
+	        closeConnection(s);
     	}
     }
     /**
@@ -343,9 +323,9 @@ public class Client implements ReadOnlyClient {
      
      */
     public void storeSingle(String alignid, List<SingleHit> allhits, boolean isType2) throws IOException, ClientException {
+    	Socket socket = null;
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
+    		socket = openConnection();
     		socket.setSoTimeout(socketLoadDataReadTimeout);
     	}
 	    int step = 10000000;
@@ -396,19 +376,24 @@ public class Client implements ReadOnlyClient {
 		                    outstream.flush();        
 		                    response = readLine();
 		                    if (!response.equals("OK")) {
+		                    	if(connected && socket!=null)
+		                        	closeConnection(socket);
 		                        throw new ClientException(response);
 		                    }
 	                    }catch (IOException ioe){
 	                    	//IOException here is probably a socket time-out. 
 	                    	//I think it's best to kill the process at this point, since we won't know if the sent reads actually got loaded.
 	                    	System.err.println(ioe);
+	                    	if(connected && socket!=null)
+	                        	closeConnection(socket);
 	                    	System.exit(1);
 	                    }
 	                }
 	            }
 	        }
     	}
-        socket.setSoTimeout(socketQueryReadTimeout);
+        if(connected && socket!=null)
+        	closeConnection(socket);
     }
     /**
      * Stores a set of PairedHit objects (representing an paired-ended read
@@ -416,9 +401,9 @@ public class Client implements ReadOnlyClient {
      * to any hits that have already been stored in the alignment
      */
     public void storePaired(String alignid, List<PairedHit> allhits) throws IOException, ClientException {
+    	Socket socket = null;
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
+    		socket = openConnection();
     		socket.setSoTimeout(socketLoadDataReadTimeout);
     	}
     	Map<Integer, List<PairedHit>> map = new HashMap<Integer,List<PairedHit>>();
@@ -448,6 +433,8 @@ public class Client implements ReadOnlyClient {
 		                if (!response.equals("OK")) {
 		                    System.err.println("not-OK response to request: " + response);
 		                    System.err.println("request was " + request);
+		                    if(connected && socket!=null)
+	                        	closeConnection(socket);
 		                    throw new ClientException(response);
 		                }
 		                int[] ints = new int[count];
@@ -483,6 +470,8 @@ public class Client implements ReadOnlyClient {
 		                        System.err.println("not-OK response to request: " + response);
 		                        System.err.println("request was " + request);
 		                    }
+		                    if(connected && socket!=null)
+	                        	closeConnection(socket);
 		                    throw new ClientException(response);
 		                }
 	                }catch (IOException ioe){
@@ -494,21 +483,22 @@ public class Client implements ReadOnlyClient {
 	            }
 	        }
     	}
-        socket.setSoTimeout(socketQueryReadTimeout);
+        if(connected && socket!=null)
+        	closeConnection(socket);
     }
     
     /** Returns true if the alignment and chromosome exist and are accessible
      * to the user.  Returns false if they don't exist or if they aren't accessible
      */
-    public boolean exists(String alignid) throws IOException {
+    public boolean exists(String alignid) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
+    		Socket socket = openConnection();
     		request.clear(); 
 	        request.type="exists";
 	        request.alignid=alignid;
 	        sendString(request.toString());
 	        String response = readLine();
+	        closeConnection(socket);
 	        if (response.equals("exists")) {
 	            return true;
 	        } else if (response.equals("unknown")) {
@@ -525,14 +515,13 @@ public class Client implements ReadOnlyClient {
      */
     public void deleteAlignment(String alignid, boolean isPaired) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	    	request.type="deletealign";
 	        request.isPaired = isPaired;
 	        request.alignid=alignid;
 	        sendString(request.toString());
 	        String response = readLine();
+	        closeConnection(socket);
 	        if (!response.equals("OK")) {
 	            if (printErrors) {
 	                System.err.println("not-OK response to request: " + response);
@@ -547,9 +536,7 @@ public class Client implements ReadOnlyClient {
      */
     public Set<Integer> getChroms(String alignid, boolean isType2, boolean isPaired, Boolean isLeft) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="getchroms";
 	        request.isType2 = isType2;
 	        request.isLeft = isLeft;
@@ -562,13 +549,15 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(response);
 	        }
 	        int numchroms = Integer.parseInt(readLine());
 	        Set<Integer> output = new HashSet<Integer>();
-	        while (numchroms-- > 0) {
+	        while (numchroms-- > 0)
 	            output.add(Integer.parseInt(readLine()));
-	        }
+	        closeConnection(socket);
 	        return output;
     	}
     }
@@ -619,9 +608,7 @@ public class Client implements ReadOnlyClient {
      */
     public int getCount(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand)  throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="count";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -639,9 +626,12 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(response);
 	        }
 	        int numhits = Integer.parseInt(readLine());
+	        closeConnection(socket);
 	        return numhits;
     	}
     }
@@ -649,9 +639,7 @@ public class Client implements ReadOnlyClient {
      */
     public double getWeight(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="weight";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -669,9 +657,13 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(response);
 	        }
-	        return Double.parseDouble(readLine());
+	        double weight = Double.parseDouble(readLine());
+	        closeConnection(socket);
+	        return weight;
     	}
     }
     /** returns the total number of unique positions on the specified chromosome in the alignment.
@@ -679,9 +671,7 @@ public class Client implements ReadOnlyClient {
      */
     public int getNumPositions(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand)  throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="numpositions";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -699,9 +689,12 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(response);
 	        }
 	        int numpos = Integer.parseInt(readLine());
+	        closeConnection(socket);
 	        return numpos;
     	}
     }
@@ -712,10 +705,8 @@ public class Client implements ReadOnlyClient {
      */
     public int getNumPairedPositions(String alignid, int chromid, boolean isType2, Integer start, Integer stop, Float minWeight, Boolean isLeft)  throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
-	        request.type="numpairpositions";
+    		Socket socket = openConnection();
+    		request.type="numpairpositions";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
 	        request.start = start;
@@ -732,9 +723,12 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(response);
 	        }
 	        int numpos = Integer.parseInt(readLine());
+	        closeConnection(socket);
 	        return numpos;
     	}
     }
@@ -743,9 +737,7 @@ public class Client implements ReadOnlyClient {
      */ 
     public int[] getPositions(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -764,10 +756,14 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(response);
 	        }
 	        int numhits = Integer.parseInt(readLine());
-	        return Bits.readInts(numhits, instream, buffer);
+	        int[] pos = Bits.readInts(numhits, instream, buffer);
+	        closeConnection(socket);
+	        return pos;
     	}
     }
     /** 
@@ -776,9 +772,7 @@ public class Client implements ReadOnlyClient {
      */ 
     public float[] getWeightsRange(String alignid, int chromid, boolean isType2, boolean paired, Integer start, Integer stop, Float minWeight, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -797,17 +791,19 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(response);
 	        }
 	        int numhits = Integer.parseInt(readLine());
-	        return Bits.readFloats(numhits, instream, buffer);
+	        float[] wr = Bits.readFloats(numhits, instream, buffer);
+	        closeConnection(socket);
+	        return wr;
     	}
     }
     public List<SingleHit> getSingleHits(String alignid, int chromid, boolean isType2, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	    	request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -827,6 +823,8 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(response);
 	        }
 	        List<SingleHit> output = new ArrayList<SingleHit>();
@@ -852,14 +850,13 @@ public class Client implements ReadOnlyClient {
 	            h.length = Hits.getLengthOne(j);
 	            h.strand = Hits.getStrandOne(j);
 	        }
+	        closeConnection(socket);
 	        return output;
     	}
     }
     public List<PairedHit> getPairedHits(String alignid, int chromid, boolean isLeft, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="gethits";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -883,6 +880,8 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(String.format("align %s chrom %d: %s", alignid, chromid, response));
 	        }
 	        List<PairedHit> output = new ArrayList<PairedHit>();
@@ -956,7 +955,7 @@ public class Client implements ReadOnlyClient {
 	            }
 	        }
 	
-	
+	        closeConnection(socket);
 	        return output;
     	}
     }
@@ -992,9 +991,7 @@ public class Client implements ReadOnlyClient {
     }
     public TreeMap<Integer,Integer> getHistogram(String alignid, int chromid, boolean isType2, boolean paired, int extension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand, boolean isLeft) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="histogram";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -1019,6 +1016,8 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(response);
 	        }
 	        int numints = Integer.parseInt(readLine());
@@ -1027,6 +1026,7 @@ public class Client implements ReadOnlyClient {
 	        for (int i = 0; i < out.length; i += 2) {
 	            output.put(out[i], out[i+1]);
 	        }
+	        closeConnection(socket);
 	        return output;
     	}
     }
@@ -1035,9 +1035,7 @@ public class Client implements ReadOnlyClient {
     }
     public TreeMap<Integer,Float> getWeightHistogram(String alignid, int chromid, boolean isType2, boolean paired, int extension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand, boolean isLeft) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="weighthistogram";
 	        request.alignid=alignid;
 	        request.chromid=chromid;
@@ -1061,6 +1059,8 @@ public class Client implements ReadOnlyClient {
 	                System.err.println("not-OK response to request: " + response);
 	                System.err.println("request was " + request);
 	            }
+	            if(connected && socket!=null)
+                	closeConnection(socket);
 	            throw new ClientException(response);
 	        }
 	        int numints = Integer.parseInt(readLine());
@@ -1070,6 +1070,7 @@ public class Client implements ReadOnlyClient {
 	        for (int i = 0; i < out.length; i++) {
 	            output.put(out[i], weight[i]);
 	        }
+	        closeConnection(socket);
 	        return output;
     	}
     }
@@ -1133,13 +1134,12 @@ public class Client implements ReadOnlyClient {
      */
     public Map<String,Set<String>> getACL(String alignid) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="getacl";
 	        request.alignid=alignid;
 	        sendString(request.toString());
 	        String response = readLine();
+	        closeConnection(socket);
 	        if (!response.equals("OK")) {
 	            if (printErrors) {
 	                System.err.println("not-OK response to request: " + response);
@@ -1157,10 +1157,9 @@ public class Client implements ReadOnlyClient {
     /* fills one section of the acl output data structure.  A section
        is either read, write, or admin. 
     */
-    private void fillPartACL(Map<String,Set<String>> output) throws IOException {
+    private void fillPartACL(Map<String,Set<String>> output) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
+    		Socket socket = openConnection();
     		String type = readLine();
     		int entries = Integer.parseInt(readLine());
 	        Set<String> out = new HashSet<String>();
@@ -1168,6 +1167,7 @@ public class Client implements ReadOnlyClient {
 	            out.add(readLine());
 	        }
 	        output.put(type,out);
+	        closeConnection(socket);
     	}
     }
     /**
@@ -1175,9 +1175,7 @@ public class Client implements ReadOnlyClient {
      */
     public void setACL(String alignid, Set<ACLChangeEntry> changes) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	        request.type="setacl";
 	        request.alignid=alignid;
 	        for (ACLChangeEntry a : changes) {
@@ -1185,6 +1183,7 @@ public class Client implements ReadOnlyClient {
 	        }    
 	        sendString(request.toString());
 	        String response = readLine();
+	        closeConnection(socket);
 	        if (!response.equals("OK")) {
 	            if (printErrors) {
 	                System.err.println("not-OK response to request: " + response);
@@ -1199,14 +1198,13 @@ public class Client implements ReadOnlyClient {
      */
     public void addToGroup(String princ, String group) throws IOException, ClientException {
     	synchronized(this){
-    		if(!connectionOpen)
-    			reConnect();
-    		request.clear();
+    		Socket socket = openConnection();
 	    	request.type="addtogroup";
 	        request.map.put("princ",princ);
 	        request.map.put("group",group);
 	        sendString(request.toString());
 	        String response = readLine();
+	        closeConnection(socket);
 	        if (!response.equals("OK")) {
 	            if (printErrors) {
 	                System.err.println("not-OK response to request: " + response);
@@ -1220,16 +1218,12 @@ public class Client implements ReadOnlyClient {
      * Closes this connection to the server.
      */
     public void close() {
-    	if(closeTimerThread!=null && closeTimerThread.isAlive())
-    		closeTimerThread.interrupt();
-        if(connectionOpen)
-        	closeConnection();
-        connectionOpen=false;
+        
     } 
     /**
      * Closes this connection to the server.
      */
-    public void closeConnection() {
+    public void closeConnection(Socket socket) {
     	if (socket == null) {
             return;
         }
@@ -1242,7 +1236,9 @@ public class Client implements ReadOnlyClient {
             outstream = null;
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        } catch (ClientException e) {
+			e.printStackTrace();
+		}
         try {
             instream.close();
             instream = null;
@@ -1255,37 +1251,9 @@ public class Client implements ReadOnlyClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        connectionOpen=false;
-        //System.err.println("Readdb client closed");
+        connected=false;
     } 
 
-    /**
-     * ClientConnectionTimerThread closes the connection if it is idle for too long
-     * @author mahony
-     *
-     */
-    class ClientConnectionTimerThread implements Runnable{
-    	Client parent; //reference to parent class
-    	
-    	public ClientConnectionTimerThread(Client p){
-    		parent = p;
-    	}
-		public void run() {
-			while(true){
-				try {
-	                Thread.sleep(threadSleepTime);
-	                //System.out.println("ClientConnectionTimerThread: checking ("+(System.currentTimeMillis() - lastActivityTime)+")\tconnectionOpen="+connectionOpen);
-	                if(connectionOpen && System.currentTimeMillis() - lastActivityTime >connectionIdleTimeLimit){
-	                	parent.closeConnection();
-	                	//System.out.println("ClientConnectionTimerThread: connection closed");
-	                }
-				} catch (InterruptedException e) { 
-					Thread.currentThread().interrupt();
-			        break;
-				}
-			}
-		}
-    }
 }
 
 /**

@@ -46,7 +46,7 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
     private ArrayList<SeqHit> results;
     private SeqDataProperties props;
 
-    public SeqDataModel(Client c, Collection<SeqAlignment> alignments) throws IOException {
+    public SeqDataModel(Client c, Collection<SeqAlignment> alignments) throws IOException, ClientException {
         client = c;
         extension = 0;
         totalSum = null;
