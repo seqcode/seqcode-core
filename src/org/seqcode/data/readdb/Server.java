@@ -80,7 +80,7 @@ public class Server {
         options.addOption("t","threads",true,"number of threads to spawn");
         options.addOption("d","datadir",true,"directory to use for data");
         options.addOption("D","debug",false,"provide debugging output");
-        options.addOption("C","cachesize",true,"how many files to keep open (this value times up to 18)");
+        options.addOption("C","cachesize",true,"how many datasets to keep cached");
         options.addOption("M","maxconn",true,"how many connections are allowed");
         options.addOption("S","sleepiness",true,"how sleepy the server should be while waiting for input.  1-100");
         options.addOption("L","idlelimit",true,"number of hours after which to close idle connections. Negative sets no limit.");
@@ -328,6 +328,14 @@ public class Server {
         singleHits.printKeys();
         pairedHits.printKeys();
         acls.printKeys();
+    }
+    public void clearCache() {
+        singleHeaders.clear();
+        pairedHeaders.clear();
+        singleHits.clear();
+        pairedHits.clear();
+        acls.clear();
+        logger.log(Level.INFO,"Cache cleared");
     }
 
     /**

@@ -403,6 +403,8 @@ public class ServerTask {
                     printAuthError();
                 }
                 shouldClose = true;
+            } else if (request.type.equals("clearcache")) {
+                processClearCache();
             } else {
                 processFileRequest();
             }
@@ -653,6 +655,17 @@ public class ServerTask {
             }
         } catch (Exception e) {
             server.getLogger().logp(Level.INFO,"serverTask","processExists " +toString(),e.toString(),e);
+            printString("unknown\n");
+        }
+    }
+    /** Clear the cache. Useful for debugging purposes. 
+     */
+    public void processClearCache() throws IOException {
+        try{
+        	server.clearCache();
+        	printOK();	
+        } catch (Exception e) {
+            server.getLogger().logp(Level.INFO,"serverTask","processClearCache " +toString(),e.toString(),e);
             printString("unknown\n");
         }
     }

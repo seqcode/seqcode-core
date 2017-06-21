@@ -68,6 +68,7 @@ public class ReadDB {
         options.addOption("d","paired",false,"work on paired alignment?");
         options.addOption("r","right",false,"query right side reads when querying paired alignments");
         options.addOption("C","noclose",false,"don't close the connection.  For debugging only");
+        options.addOption("cc","clearcache",false,"clear experiment cache.  For debugging only");
         options.addOption("h","help",false,"print help");
         CommandLineParser parser = new GnuParser();
         CommandLine line = parser.parse( options, args, false );            
@@ -132,6 +133,8 @@ public class ReadDB {
         		System.out.println("TRUE");
         	else
         		System.out.println("FALSE");
+        }else if (cmd.equals("clearcache")) {
+        	client.clearServerCache();
         } else if (cmd.equals("serverinfo")) {
         	System.out.println(client.getServerInfo());
         }  else if (cmd.equals("addtogroup")) {

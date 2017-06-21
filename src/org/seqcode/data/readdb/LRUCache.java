@@ -64,6 +64,14 @@ public class LRUCache<X extends Closeable> {
             }
         }
     }
+    public void clear() {
+        synchronized(ordered) {
+        	int size = ordered.size();
+        	ordered.clear();
+        	map.clear();
+        	removed+=size;
+        }
+    }
     public static int removed() {return removed;}
     public static void resetRemoved() {removed = 0;}
 

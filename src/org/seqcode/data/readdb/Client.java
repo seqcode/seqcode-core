@@ -265,6 +265,31 @@ public class Client implements ReadOnlyClient {
     	synchronized(this){
     		request.type = "shutdown";
 	        sendString(request.toString());
+	        String response = readLine();
+	        if (!response.equals("OK")) {
+	            System.out.println(response);
+	        }else{
+	        	System.out.println("ReadDB shutting down");
+	        }
+    	}
+    	closeConnection();
+    }
+    /**
+     * Tells the server to clear its cache. Only used for debugging & testing.
+     * @throws IOException on network errors
+     * @throws ClientException if the user isn't authorized to shut the server down.
+     */
+    public void clearServerCache() throws IOException, ClientException{
+    	openConnection();
+    	synchronized(this){
+    		request.type = "clearcache";
+	        sendString(request.toString());
+	        String response = readLine();
+	        if (!response.equals("OK")) {
+	            System.out.println(response);
+	        }else{
+	        	System.out.println("ReadDB cache cleared");
+	        }
     	}
     	closeConnection();
     }

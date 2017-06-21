@@ -41,9 +41,9 @@ public class TestReadDB {
         c.connectionAlive();
         c.close();
     }
-    @Test(expected=IOException.class) public void badPort() throws UnknownHostException, IOException, ClientException {
+    @Test public void badPort() throws UnknownHostException, IOException, ClientException {
         Client c = new Client(hostname, portnum+100, user, passwd);
-        c.connectionAlive();
+        assertTrue("Connected on port",!c.connectionAlive());
         c.close();
     }
     @Test(expected=ClientException.class) public void badAlignGetChromsPaired() throws IOException, ClientException {
@@ -638,27 +638,87 @@ public class TestReadDB {
         
         TreeMap<Integer,Integer> map = c.getHistogram(name,chrom,true,false,0,10,0,100,null,null);
         System.out.println(name + " MAP1 IS " + map);
-        assertEquals(name + " basic size",map.size(),3);
-        assertEquals(name + " basic 5",(int)map.get(5),3);
-        assertEquals(name + " basic 15",(int)map.get(15),4);
-        assertEquals(name + " basic 25",(int)map.get(25),1);
+        assertEquals(name + " basic size",3, map.size());
+        assertEquals(name + " basic 5",3, (int)map.get(5));
+        assertEquals(name + " basic 15",4, (int)map.get(15));
+        assertEquals(name + " basic 25",1, (int)map.get(25));
 
         map = c.getHistogram(name,chrom,true,false,0,10,0,100,15F,null);
         System.out.println(name + " MAP2 IS " + map);
-        assertEquals(name + " minweight size",map.size(),2);
-        assertEquals(name + " minweight 15",(int)map.get(15),3);
-        assertEquals(name + " minweight 25",(int)map.get(25),1);
+        assertEquals(name + " minweight size", 2, map.size());
+        assertEquals(name + " minweight 15", 3, (int)map.get(15));
+        assertEquals(name + " minweight 25", 1, (int)map.get(25));
 
         map = c.getHistogram(name,chrom,true,false,0,10,0,100,null,true);
         System.out.println(name + " MAP3 IS " + map);
-        assertEquals(name + " basic size",map.size(),2);
-        assertEquals(name + " basic 5",(int)map.get(5),2);
-        assertEquals(name + " basic 15",(int)map.get(15),2);
+        assertEquals(name + " basic size",2, map.size());
+        assertEquals(name + " basic 5",2, (int)map.get(5));
+        assertEquals(name + " basic 15",2, (int)map.get(15));
+        c.close();
+     }
+    @Test public void testEmptyResults() throws IOException, ClientException {
+        Client c = new Client(hostname, portnum, user, passwd);
+        String name = "testEmptyResults";
+        int chrom = 60;
+        ArrayList<SingleHit> hits = new ArrayList<SingleHit>();
+        hits.add(new SingleHit(chrom, 1, 10.0F, true, 10));
+        hits.add(new SingleHit(chrom, 1, 10.0F, false, 10));
+        hits.add(new SingleHit(chrom, 1, 10.0F, true, 10));
+        hits.add(new SingleHit(chrom, 10, 10.0F, false, 10));
+        hits.add(new SingleHit(chrom, 10, 20.0F, true, 20));
+        hits.add(new SingleHit(chrom, 11, 20.0F, false, 20));
+        hits.add(new SingleHit(chrom, 12, 20.0F, true, 20));
+        hits.add(new SingleHit(chrom, 25, 20.0F, false, 20));
+        //Empty region between 100 & 200
+        hits.add(new SingleHit(chrom, 225, 20.0F, true, 20));
+        hits.add(new SingleHit(chrom, 227, 20.0F, false, 20));
+        hits.add(new SingleHit(chrom, 229, 20.0F, false, 20));
+        
+        c.storeSingle(name,hits,false);
+        
+        //SingleHits
+        List<SingleHit> retrieved = c.getSingleHits(name,chrom,false,0,300,null,null);
+        assertEquals(name + " hits 1-300 size",11, retrieved.size());
+        List<SingleHit> eretrieved = c.getSingleHits(name,chrom,false,100,200,null,null);
+        assertEquals(name + " emptyhits 100-200 size",0, eretrieved.size());
+        List<SingleHit> ncretrieved = c.getSingleHits(name,chrom+1,false,0,300,null,null);
+        assertEquals(name + " nochrom size",0, ncretrieved.size());
+        
+        //Histogram Test
+        TreeMap<Integer,Integer> map1 = c.getHistogram(name,chrom,false,false,0,10,0,100,null,null);
+        System.out.println(name + " MAP1 IS " + map1);
+        assertEquals(name + " basic 1-100 size",3, map1.size());
+        assertEquals(name + " basic 1-100 5",3, (int)map1.get(5));
+        assertEquals(name + " basic 1-100 15",4, (int)map1.get(15));
+        assertEquals(name + " basic 1-100 25",1, (int)map1.get(25));
+        TreeMap<Integer,Integer> map2 = c.getHistogram(name,chrom,false,false,0,10,0,300,null,null);
+        System.out.println(name + " MAP2 IS " + map2);
+        assertEquals(name + " basic 1-300 size",4, map2.size());
+        assertEquals(name + " basic 1-300 225",3, (int)map2.get(225));
+        TreeMap<Integer,Integer> map3 = c.getHistogram(name,chrom,false,false,0,10,100,200,null,null);
+        System.out.println(name + " MAP3 IS " + map3);
+        assertEquals(name + " empty 100-200 size",0, map3.size());
+        
+        //WeightedHistogram Test
+        TreeMap<Integer,Float> wmap1 = c.getWeightHistogram(name,chrom,false,false,0,10,0,100,null,null);
+        System.out.println(name + " WMAP1 IS " + wmap1);
+        assertEquals(name + " wbasic 1-100 size",3, wmap1.size());
+        TreeMap<Integer,Float> wmap2 = c.getWeightHistogram(name,chrom,false,false,0,10,0,300,null,null);
+        System.out.println(name + " WMAP2 IS " + wmap2);
+        assertEquals(name + " wbasic 1-300 size",4, wmap2.size());
+        TreeMap<Integer,Float> wmap3 = c.getWeightHistogram(name,chrom,false,false,0,10,100,200,null,null);
+        System.out.println(name + " WMAP3 IS " + wmap3);
+        assertEquals(name + " empty 100-200 size",0, wmap3.size());
+        TreeMap<Integer,Float> wmap4 = c.getWeightHistogram(name,chrom+1,false,false,0,10,100,200,null,null);
+        System.out.println(name + " WMAP4 IS " + wmap4);
+        assertEquals(name + " nochrom wmap size",0, wmap4.size());
+        
         c.close();
      }
      @Test public void testMaximumStore() throws IOException, ClientException {
         Client c = new Client(hostname, portnum, user, passwd);
-        for (int n = 100000; n <= 50000000; n *= 2) {
+        int maxSize=50000000;
+        for (int n = 100000; n <= maxSize; n *= 2) {
             String name = "storeMaximum" + n;
             ArrayList<SingleHit> hits = new ArrayList<SingleHit>();
             for (int i = 0; i < n; i++) {
@@ -943,14 +1003,14 @@ public class TestReadDB {
                                    i % 3));
         }        
         c.storePaired(name, phits);
-
+        
         count = c.getCount(name,false, false, false, true) + c.getCount(name,false,false,false,false);
         assertEquals(hits.size(),count);
         count = c.getCount(name,false, true, false, true) + c.getCount(name,false,true,false,false);
         assertEquals(phits.size(),count);
 
 
-        c.deleteAlignment(name, false);        
+        c.deleteAlignment(name, false);
         count = c.getCount(name,false, true, false, true) + c.getCount(name,false,true,false,false);
         assertEquals(phits.size(),count);
 
