@@ -1260,18 +1260,23 @@ public class ServerTask {
 	                n++;
 	            }
 	        }
-	        int[] hist = new int[n*2];
-	        int pos = 0;
-	        for (int i = 0; i< raw.length; i++) {
-	            if (raw[i] > 0) {
-	                hist[pos*2] = request.start + binsize * i + binsize / 2;
-	                hist[pos*2+1] = raw[i];
-	                pos++;
-	            }
+	        if(n>0){
+		        int[] hist = new int[n*2];
+		        int pos = 0;
+		        for (int i = 0; i< raw.length; i++) {
+		            if (raw[i] > 0) {
+		                hist[pos*2] = request.start + binsize * i + binsize / 2;
+		                hist[pos*2+1] = raw[i];
+		                pos++;
+		            }
+		        }
+		        printOK();
+		        printString(Integer.toString(hist.length) + "\n");
+		        Bits.sendInts(hist, outstream, buffer);
+	        }else{
+	        	printOK();
+		        printString("0\n");
 	        }
-	        printOK();
-	        printString(Integer.toString(hist.length) + "\n");
-	        Bits.sendInts(hist, outstream, buffer);
     	}
     }
 
@@ -1326,20 +1331,26 @@ public class ServerTask {
 	                n++;
 	            }
 	        }
-	        int[] parray = new int[n];
-	        float[] farray = new float[n];
-	        int pos = 0;
-	        for (int i = 0; i< raw.length; i++) {
-	            if (raw[i] > 0) {
-	                parray[pos] = request.start + binsize * i + binsize / 2;
-	                farray[pos] = raw[i];
-	                pos++;
-	            }
+	        
+	        if(n>0){
+		        int[] parray = new int[n];
+		        float[] farray = new float[n];
+		        int pos = 0;
+		        for (int i = 0; i< raw.length; i++) {
+		            if (raw[i] > 0) {
+		                parray[pos] = request.start + binsize * i + binsize / 2;
+		                farray[pos] = raw[i];
+		                pos++;
+		            }
+		        }
+		        printOK();
+		        printString(Integer.toString(parray.length) + "\n");
+		        Bits.sendInts(parray, outstream, buffer);        
+		        Bits.sendFloats(farray, outstream, buffer);
+	        }else{
+	        	printOK();
+		        printString("0\n");
 	        }
-	        printOK();
-	        printString(Integer.toString(parray.length) + "\n");
-	        Bits.sendInts(parray, outstream, buffer);        
-	        Bits.sendFloats(farray, outstream, buffer);
     	}
     }
     public void processCheckSort(Header header, Hits hits) throws IOException {

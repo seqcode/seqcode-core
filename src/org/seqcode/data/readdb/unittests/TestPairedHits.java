@@ -192,6 +192,6 @@ public class TestPairedHits {
         chrom = Integer.parseInt(args[1]);
         isLeft = Boolean.parseBoolean(args[2]);
 
-        org.junit.runner.JUnitCore.main("org.seqcode.data.readdb.TestPairedHits");
+        org.junit.runner.JUnitCore.main("org.seqcode.data.readdb.unittests.TestPairedHits");
     }
 }

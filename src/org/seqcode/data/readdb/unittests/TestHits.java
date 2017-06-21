@@ -369,7 +369,7 @@ public class TestHits {
         }
 
         chrom = Integer.parseInt(args[1]);
-        org.junit.runner.JUnitCore.main("org.seqcode.data.readdb.TestHits");
+        org.junit.runner.JUnitCore.main("org.seqcode.data.readdb.unittests.TestHits");
     }
 
 }

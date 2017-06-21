@@ -2,6 +2,8 @@ package org.seqcode.data.readdb.unittests;
 
 import java.util.*;
 import java.io.IOException;
+import java.net.UnknownHostException;
+
 import org.junit.*;
 import org.seqcode.data.readdb.ACLChangeEntry;
 import org.seqcode.data.readdb.Client;
@@ -26,18 +28,22 @@ public class TestReadDB {
 
      @Test public void connect() throws IOException, ClientException {
          Client c = new Client(hostname, portnum, user, passwd);
+         assertTrue("No connection",c.connectionAlive());
          c.close();
      }
     @Test(expected=ClientException.class) public void badPassword() throws IOException, ClientException {
         Client c = new Client(hostname, portnum, user, "foo");
-        c.close();
+        c.connectionAlive();
+    	c.close();
     }
     @Test(expected=ClientException.class) public void badUser() throws IOException, ClientException {
         Client c = new Client(hostname, portnum, "foo", passwd);
+        c.connectionAlive();
         c.close();
     }
-    @Test(expected=IOException.class) public void badPort() throws IOException, ClientException {
-        Client c = new Client(hostname, portnum+1, user, passwd);
+    @Test(expected=IOException.class) public void badPort() throws UnknownHostException, IOException, ClientException {
+        Client c = new Client(hostname, portnum+100, user, passwd);
+        c.connectionAlive();
         c.close();
     }
     @Test(expected=ClientException.class) public void badAlignGetChromsPaired() throws IOException, ClientException {
@@ -466,16 +472,17 @@ public class TestReadDB {
         String name = "testRangeQuery";
         int chrom = 10101010;
         int n = 10000;
+        int maxPos=100000;
         List<SingleHit> hits = new ArrayList<SingleHit>();
         for (int i = 0; i < n; i++) {
-            hits.add(new SingleHit(chrom, (int)Math.round(Math.random() * Integer.MAX_VALUE), 1.0F, true, 20));
+            hits.add(new SingleHit(chrom, (int)Math.round(Math.random() * maxPos), 1.0F, true, 20));
         }
         c.storeSingle(name,hits,false);
         
         Collections.sort(hits);
         for (int q = 0; q < 30; q++) {
-            int start = (int)Math.round(Math.random() * Integer.MAX_VALUE);
-            int end = start + (int)(Math.round(Math.random() * Integer.MAX_VALUE) % (Integer.MAX_VALUE - start));
+            int start = (int)Math.round(Math.random() * maxPos);
+            int end = start + (int)(Math.round(Math.random() * maxPos) % (maxPos - start));
             int count = 0;
             for (int i = 0; i < hits.size(); i++) {
                 if (hits.get(i).pos >= start && hits.get(i).pos <= end) {
@@ -488,10 +495,10 @@ public class TestReadDB {
             int k = 0;
             while (j < hits.size() && hits.get(j).pos < start) { j++;}
             while (j < hits.size() && hits.get(j).pos <= end) {
-                assertTrue(hits.get(j++).pos == back[k++]);
+            	assertTrue(hits.get(j++).pos == back[k++]);
             }
         }
-        assertTrue(c.getCount(name,chrom,false,false,0, Integer.MAX_VALUE - 1,null,null,null) == n);
+        assertTrue(c.getCount(name,chrom,false,false,0, maxPos - 1,null,null,null) == n);
         System.err.println("Done with testRangeQuery");
         c.close();
     }
@@ -549,7 +556,7 @@ public class TestReadDB {
                 int start = (int)Math.round(Math.random() * MAXVALUE);
                 int end = start + (int)(Math.round(Math.random() * MAXVALUE) % (MAXVALUE - start));
                 float weight = (float)Math.random() * MAXWEIGHT;
-                int binsize = 10 + (int)Math.round(Math.random() * 40);
+                int binsize = 10;// + (int)Math.round(Math.random() * 40);
                 if (end < start) {
                     throw new RuntimeException("end < start");
                 }
@@ -575,7 +582,7 @@ public class TestReadDB {
                         } else {
                             myw.put(bin,hits.get(i).weight);
                         }                        
-                        if (hits.get(i).weight >= weight) {
+                        if (hits.get(i).weight > weight) {
                             if (myminw.containsKey(bin)) {
                                 myminw.put(bin,1 + myminw.get(bin));
                             } else {
@@ -649,7 +656,7 @@ public class TestReadDB {
         assertEquals(name + " basic 15",(int)map.get(15),2);
         c.close();
      }
-    @Test public void testMaximumStore() throws IOException, ClientException {
+     @Test public void testMaximumStore() throws IOException, ClientException {
         Client c = new Client(hostname, portnum, user, passwd);
         for (int n = 100000; n <= 50000000; n *= 2) {
             String name = "storeMaximum" + n;
@@ -955,9 +962,6 @@ public class TestReadDB {
             ex = true;
         }
         assertTrue(ex || count == 0);
-        
-
-        
 
         c.close();
     }
@@ -971,6 +975,6 @@ public class TestReadDB {
         user2 = args[4];
         passwd2 = args[5];
 
-        org.junit.runner.JUnitCore.main("org.seqcode.data.readdb.TestReadDB");
+        org.junit.runner.JUnitCore.main("org.seqcode.data.readdb.unittests.TestReadDB");
     }
 }
