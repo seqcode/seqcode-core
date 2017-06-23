@@ -10,12 +10,16 @@ import javax.security.auth.callback.*;
 /**
  * <p>API for remote access to the readdb server.
  *
- *  <p>Calls throw IOException on network errors.
- *  Calls throw ClientException on other errors (authentication, authorization, invalid request ,etc.
+ * <p>Calls throw IOException on network errors.
+ * Calls throw ClientException on other errors (authentication, authorization, invalid request ,etc.)
  *
- *  <p>Client generally assumes that the hit positions are the 5' end of the hit. 
+ * <p>Client generally assumes that the hit positions are the 5' end of the hit. 
  *
  * <p>Client IS NOT REENTRANT.  Do not overlap calls to a single Client object.
+ * 
+ * <p>Client connections can be defined as persistent, which keeps the socket open.
+ * Use this when expecting many rapid queries (saves connection overhead).
+ * By default, connections are opened and closed in the each method call.  
  * 
  * <p>Most method parameters that are object types (eg Integer, Boolean) are optional.  If a null value
  * is passed then no filtering is done based on that parameter.  
@@ -52,33 +56,48 @@ public class Client implements ReadOnlyClient {
     private boolean printErrors;
     private String hostname, username, passwd;
     private int portnum;
+    private boolean persistentConnection=false, chosenPersistentConnection=false;
     private boolean connected=false;
     
     
     /** Connects to a ReadDB server on the specified host and port using the specified 
      * username and password.
+     * 
+     * Client connections can be defined as persistent, which keeps the socket open.
+     * Use this when expecting many rapid queries (saves connection overhead).  
+     *  
      * @throws IOException on network errors
      * @throws ClientException if the client cannot authenticate to the server
      */
     public Client (String hostname,
                    int portnum,
                    String username,
-                   String passwd) throws IOException, ClientException {
+                   String passwd,
+                   boolean persistentConnection) throws IOException, ClientException {
     	this.hostname=hostname;
     	this.portnum = portnum;
     	this.username=username;
     	this.passwd=passwd;
+        this.persistentConnection = persistentConnection;
+        this.chosenPersistentConnection = persistentConnection;
+    }
+    public Client (String hostname, int portnum, String username, String passwd) throws IOException, ClientException {
+    	this(hostname, portnum, username, passwd, false);
     }
     /**
      * Creates the default connection
      * as specified by ~/.readdb_passwd or a readdb_passwd found in the classpath
      * Must have keys hostname, port, username, and passwd in a format
      * that java.util.PropertyResourceBundle can read
+     * 
+     * Client connections can be defined as persistent, which keeps the socket open.
+     * Use this when expecting many rapid queries (saves connection overhead).
      *
      * @throws IOException on network errors
      * @throws ClientException if the client cannot authenticate to the server
      */
-    public Client() throws IOException, ClientException {
+    public Client(boolean persistentConnection) throws IOException, ClientException {
+    	System.out.println("Client()");
         String homedir = System.getenv("HOME");
         String basename = "readdb_passwd";
         if (System.getenv("READDBROLE") != null) {
@@ -108,35 +127,47 @@ public class Client implements ReadOnlyClient {
         this.portnum = new Integer(bundle.getString("port"));
         this.username = bundle.getString("username");
         this.passwd = bundle.getString("passwd");
+        this.persistentConnection = persistentConnection;
+        this.chosenPersistentConnection = persistentConnection;
+    }
+    public Client() throws IOException, ClientException {this(false);}
+    
+    public void setPersistentConnection(boolean persistent){
+    	this.persistentConnection = persistent;
+        this.chosenPersistentConnection = persistent;
+        if(!persistent && connected) //If the user has chosen to make this connection non-persistent, hang up any open connections
+        	closeConnection();
     }
     
     private void openConnection() throws UnknownHostException, IOException, ClientException {
     	
-    	socket=null;
-    	synchronized(this){
-    		socket = new Socket(hostname,portnum);
-	    	socket.setTcpNoDelay(true);
-	        socket.setSendBufferSize(BUFFERLEN);
-	        socket.setReceiveBufferSize(BUFFERLEN);
-	        /* linger = true, time = 0 means that the other side gets a reset if the
-	           socket is closed on our end (eg, java exits).  We turn this off just before
-	           sending a "bye" to allow for a graceful shutdown.  But the RST in
-	           other cases lets the server figure out that we've disappeared
-	        */
-	        socket.setSoLinger(true,0);
-	        socket.setSoTimeout(socketQueryReadTimeout);
-	        outstream = socket.getOutputStream();
-	        outstream.flush();
-	        instream = new BufferedInputStream(socket.getInputStream());
-	        buffer = new byte[BUFFERLEN];
-	        connected = true;
-	        
-	        if (!authenticate(hostname,username,passwd)) {
-	        	throw new ClientException("Authentication Exception Failed");
-	        }
-	        request = new Request();
-
-	        printErrors = false;
+    	if(!connected){
+	    	socket=null;
+	    	synchronized(this){
+	    		socket = new Socket(hostname,portnum);
+		    	socket.setTcpNoDelay(true);
+		        socket.setSendBufferSize(BUFFERLEN);
+		        socket.setReceiveBufferSize(BUFFERLEN);
+		        /* linger = true, time = 0 means that the other side gets a reset if the
+		           socket is closed on our end (eg, java exits).  We turn this off just before
+		           sending a "bye" to allow for a graceful shutdown.  But the RST in
+		           other cases lets the server figure out that we've disappeared
+		        */
+		        socket.setSoLinger(true,0);
+		        socket.setSoTimeout(socketQueryReadTimeout);
+		        outstream = socket.getOutputStream();
+		        outstream.flush();
+		        instream = new BufferedInputStream(socket.getInputStream());
+		        buffer = new byte[BUFFERLEN];
+		        connected = true;
+		        
+		        if (!authenticate(hostname,username,passwd)) {
+		        	throw new ClientException("Authentication Exception Failed");
+		        }
+		        request = new Request();
+	
+		        printErrors = false;
+	    	}
     	}
     }
     
@@ -341,7 +372,7 @@ public class Client implements ReadOnlyClient {
     public void storeSingle(String alignid, List<SingleHit> allhits, boolean isType2) throws IOException, ClientException {
     	openConnection();
     	socket.setSoTimeout(socketLoadDataReadTimeout);
-    		
+    	
 	    int step = 10000000;
         for (int pos = 0; pos < allhits.size(); pos += step) {
             Map<Integer, List<SingleHit>> map = new HashMap<Integer,List<SingleHit>>();
@@ -402,6 +433,8 @@ public class Client implements ReadOnlyClient {
 	            }
 	        }
     	}
+        socket.setSoTimeout(socketQueryReadTimeout);
+        
         closeConnection();
     }
     /**
@@ -486,6 +519,8 @@ public class Client implements ReadOnlyClient {
 	            }
 	        }
     	}
+        socket.setSoTimeout(socketQueryReadTimeout);
+        
         closeConnection();
     }
     
@@ -565,40 +600,52 @@ public class Client implements ReadOnlyClient {
      * Returns the total number of hits in this alignment.  
      */
     public int getCount(String alignid, boolean isType2, boolean isPaired, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
-        int count = 0;
+    	persistentConnection=true; //Override to keep Socket open for faster multi-queries
+    	int count = 0;
         for (int c : getChroms(alignid, isType2, isPaired, isLeft)) {
             count += getCount(alignid, c, isType2, isPaired, null,null,null,isLeft,plusStrand);
         }
+        persistentConnection=chosenPersistentConnection;
+        closeConnection();
         return count;
     }
     /**
      * Returns the sum of the weights of all hits in this alignment
      */
     public double getWeight(String alignid,  boolean isType2, boolean isPaired, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
-        double total = 0;
+    	persistentConnection=true; //Override to keep Socket open for faster multi-queries
+    	double total = 0;
         for (int c : getChroms(alignid, isType2, isPaired, isLeft)) {
             total += getWeight(alignid, c, isType2, isPaired, null, null, null, isLeft, plusStrand);
         }
+        persistentConnection=chosenPersistentConnection;
+        closeConnection();
         return total;
     }
     /**
      * Returns the total number of unique positions in this alignment.  
      */
     public int getNumPositions(String alignid, boolean isType2, boolean isPaired, Boolean isLeft, Boolean plusStrand) throws IOException, ClientException {
-        int pos = 0;
+    	persistentConnection=true; //Override to keep Socket open for faster multi-queries
+    	int pos = 0;
         for (int c : getChroms(alignid, isType2, isPaired, isLeft)) {
             pos += getNumPositions(alignid, c, isType2, isPaired, null,null,null,isLeft,plusStrand);
         }
+        persistentConnection=chosenPersistentConnection;
+        closeConnection();
         return pos;
     }
     /**
      * Returns the total number of unique paired positions in this alignment.  
      */
     public int getNumPairedPositions(String alignid, boolean isType2, Boolean isLeft) throws IOException, ClientException {
-        int pos = 0;
+    	persistentConnection=true; //Override to keep Socket open for faster multi-queries
+    	int pos = 0;
         for (int c : getChroms(alignid, isType2, true, isLeft)) {
             pos += getNumPairedPositions(alignid, c, isType2, null,null,null,isLeft);
         }
+        persistentConnection=chosenPersistentConnection;
+        closeConnection();
         return pos;
     }
     
@@ -1063,7 +1110,8 @@ public class Client implements ReadOnlyClient {
         return getHistogram(alignids,chromid,isType2, paired,extension,binsize,0,start,stop,minWeight,plusStrand);
     }
     public TreeMap<Integer,Integer> getHistogram(Collection<String> alignids, int chromid, boolean isType2, boolean paired, int extension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
-        TreeMap<Integer,Integer> output = null;
+    	persistentConnection=true; //Override to keep Socket open for faster multi-queries
+    	TreeMap<Integer,Integer> output = null;
         for (String alignid : alignids) {
             TreeMap<Integer,Integer> o = getHistogram(alignid,chromid,isType2, paired,extension,binsize,dedup,start,stop,minWeight,plusStrand,true);
             if(paired) //run for isLeft =true & false
@@ -1087,13 +1135,16 @@ public class Client implements ReadOnlyClient {
                 }
             }    
         }
+        persistentConnection=chosenPersistentConnection;
+        closeConnection();
         return output;
     }
     public TreeMap<Integer,Float> getWeightHistogram(Collection<String> alignids, int chromid, boolean isType2, boolean paired, int extension, int binsize, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
         return getWeightHistogram(alignids,chromid,isType2, paired,extension,binsize,0,start,stop,minWeight,plusStrand);
     }
     public TreeMap<Integer,Float> getWeightHistogram(Collection<String> alignids, int chromid, boolean isType2, boolean paired, int extension, int binsize, int dedup, Integer start, Integer stop, Float minWeight, Boolean plusStrand) throws IOException, ClientException {
-        TreeMap<Integer,Float> output = null;
+    	persistentConnection=true; //Override to keep Socket open for faster multi-queries
+    	TreeMap<Integer,Float> output = null;
         for (String alignid : alignids) {
             TreeMap<Integer,Float> o = getWeightHistogram(alignid,chromid,isType2, paired,extension,binsize,dedup,start,stop,minWeight,plusStrand, true);
             if(paired) //run for isLeft =true & false
@@ -1110,6 +1161,8 @@ public class Client implements ReadOnlyClient {
                 }
             }            
         }
+        persistentConnection=chosenPersistentConnection;
+        closeConnection();
         return output;
     }
 
@@ -1200,42 +1253,46 @@ public class Client implements ReadOnlyClient {
      * Closes this connection to the server.
      */
     public void close() {
-    	if(connected && socket!=null)
-        	closeConnection();        
+    	if(connected)
+        	closeConnection(true);        
     } 
     /**
      * Closes this connection to the server.
+     * finalClose is used to force closure in cases where connection is persistant. 
      */
-    public void closeConnection() {
-    	if (socket == null) {
-            return;
-        }
-        try {
-            socket.setSoLinger(false,0);
-            request.clear();
-            request.type="bye";
-            sendString(request.toString());
-            outstream.close();
-            outstream = null;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClientException e) {
-			e.printStackTrace();
-		}
-        try {
-            instream.close();
-            instream = null;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.close();
-            socket = null;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        connected=false;
+    public void closeConnection(boolean finalClose) {
+    	if(!persistentConnection || finalClose){
+	    	if (socket == null || !connected) {
+	            return;
+	        }
+	        try {
+	            socket.setSoLinger(false,0);
+	            request.clear();
+	            request.type="bye";
+	            sendString(request.toString());
+	            outstream.close();
+	            outstream = null;
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        } catch (ClientException e) {
+				e.printStackTrace();
+			}
+	        try {
+	            instream.close();
+	            instream = null;
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	        try {
+	            socket.close();
+	            socket = null;
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	        connected=false;
+    	}
     } 
+    public void closeConnection() {this.closeConnection(false);}
 
 }
 

@@ -66,9 +66,9 @@ public class ReadDBHitLoader extends HitLoader{
 
 		try {
 			//Start a new ReadDB client
-			if(client==null)
-				client = new Client();
-
+			client = new Client();
+			client.setPersistentConnection(true);
+			
 			//Process the SeqLocators
 			for(SeqLocator locator : exptLocs){
 				String exptName = locator.getExptName(); exptNames.add(exptName);
@@ -101,6 +101,8 @@ public class ReadDBHitLoader extends HitLoader{
 	        	}
 		    }
 	        
+	        //Hang up open connections
+	        client.setPersistentConnection(false);
             
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -119,9 +121,7 @@ public class ReadDBHitLoader extends HitLoader{
 	public void sourceAllHits(){
 		this.initialize();
 		try {
-			//Start a new ReadDB client
-			if(client==null)
-				client = new Client();
+			client.setPersistentConnection(true);
 
 			//Iterate over each chromosome
 			for (String chrom: gen.getChromList()){
@@ -161,7 +161,7 @@ public class ReadDBHitLoader extends HitLoader{
 				if (count>MAXRDBLOAD){
 					int chunkNum = count/MAXRDBLOAD*2+1;
 					int chunkLength = length/chunkNum;
-					int start = 0;
+					int start = 1;
 					while (start<=length){
 						int end = Math.min(length, start+chunkLength-1);
 						Region r = new Region(gen, chrom, start, end);
@@ -172,6 +172,7 @@ public class ReadDBHitLoader extends HitLoader{
 					chunks.add(wholeChrom);
 
 				for (Region chunk: chunks){
+					System.out.println(chunk.getLocationString());
 					Pair<ArrayList<Integer>,ArrayList<Float>> hits;
 					if(loadType1){
 						hits = loadStrandedBaseCounts(chunk, '+', false);
@@ -194,6 +195,9 @@ public class ReadDBHitLoader extends HitLoader{
 					}
 				}
 			}
+			
+			//Hang up connections
+			client.setPersistentConnection(false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClientException e) {
@@ -212,10 +216,6 @@ public class ReadDBHitLoader extends HitLoader{
         ArrayList<Integer> coords = new ArrayList<Integer>();
         ArrayList<Float> counts = new ArrayList<Float>();
         try {
-        	//Start a new ReadDB client
-    		if(client==null)
-    			client = new Client();
-
     		allHits = client.getWeightHistogram(alignIDs,
                                                 r.getGenome().getChromID(r.getChrom()),
                                                 loadRead2,
@@ -250,9 +250,6 @@ public class ReadDBHitLoader extends HitLoader{
     private ArrayList<HitPair> loadStrandedPairs(Region r, char strand){
     	ArrayList<HitPair> pairs = new ArrayList<HitPair>();
     	try{
-    		//Start a new ReadDB client
-    		if(client==null)
-    			client = new Client();
     		
 	    	for (String alignid : alignIDs) {
 	            List<PairedHit> ph = client.getPairedHits(alignid,

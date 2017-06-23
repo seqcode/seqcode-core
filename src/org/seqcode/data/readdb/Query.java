@@ -135,9 +135,10 @@ public class Query {
             client = new Client(hostname,
                                 portnum,
                                 username,
-                                password);
+                                password,
+                                true);
         } else {
-            client = new Client();
+            client = new Client(true);
         }
 
         while ((line = reader.readLine()) != null) {            

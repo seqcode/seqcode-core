@@ -717,7 +717,7 @@ public class TestReadDB {
      }
      @Test public void testMaximumStore() throws IOException, ClientException {
         Client c = new Client(hostname, portnum, user, passwd);
-        int maxSize=50000000;
+        int maxSize=1000000; //50000000;
         for (int n = 100000; n <= maxSize; n *= 2) {
             String name = "storeMaximum" + n;
             ArrayList<SingleHit> hits = new ArrayList<SingleHit>();
