@@ -72,7 +72,7 @@ public class ExperimentManager {
 		}
 		if(makeSeqDataLoader)
 			try {
-				sdloader = new SeqDataLoader();
+				sdloader = new SeqDataLoader(false, false);
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			} catch (IOException e1) {

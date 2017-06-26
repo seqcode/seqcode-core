@@ -386,8 +386,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 		//Loading experiment painters
 		if (opts.seqExpts.size() > 0) {
 			try {
-				SeqDataLoader loader = new SeqDataLoader();
-
 				for(int i = 0; i < opts.seqExpts.size(); i++) { 
 					Collection<SeqAlignment> alignments = opts.seqExpts.get(i).aligns;
 
@@ -430,7 +428,6 @@ Listener<EventObject>, PainterContainer, MouseListener {
 						addModelToPaintable(p,arcmod);
 					}
 				}
-				loader.close();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

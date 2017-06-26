@@ -26,7 +26,7 @@ public class SeqExpander implements Expander<Region, SeqHit>, Closeable {
 
 
     public SeqExpander(SeqLocator loc, boolean loadR2) throws SQLException, IOException {
-        loader = new SeqDataLoader();
+        loader = new SeqDataLoader(true, false);
         locator = loc;
         alignments = null;
         lastGenome = null;

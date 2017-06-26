@@ -1,14 +1,11 @@
 package org.seqcode.data.readdb;
 
-import java.util.*;
-import java.io.*;
-
 /* this was used to fix a bug in the readdb server.  You shouldn't need it. */
 
 public class Resort {
 
     public static void main(String args[]) throws Exception {
-        Client client = new Client();
+        Client client = new Client(true);
         for (int i = 0; i < args.length; i++) {
             String alignid = args[i];
             System.err.println("Resorting alignment " + alignid);

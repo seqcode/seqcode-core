@@ -50,7 +50,7 @@ public class Client implements ReadOnlyClient {
     BufferedInputStream instream;
     Request request;
     byte[] buffer; //temporary space for receiving data; contents not persistent between method calls
-    private static final int BUFFERLEN = 8192*20;
+    private static final int BUFFERLEN = 8192*20; //Why is this *20  & server is *16 ?
     private final int socketLoadDataReadTimeout = 1000*60*8; //socket timeout in ms: set to 8 minutes because we should only be relying on the timeout to detect server shutdowns, and some uses of Client (e.g. loading a lot of reads to ReadDB) can take a long time on the Server.
     private final int socketQueryReadTimeout = 60000; //socket timeout in ms for queries
     private boolean printErrors;
@@ -64,7 +64,9 @@ public class Client implements ReadOnlyClient {
      * username and password.
      * 
      * Client connections can be defined as persistent, which keeps the socket open.
-     * Use this when expecting many rapid queries (saves connection overhead).  
+     * Use this when expecting many rapid queries (saves connection overhead).
+     * Don't use this if you expect Client to be left open for a long time without queries 
+     * (routers will drop connection).  
      *  
      * @throws IOException on network errors
      * @throws ClientException if the client cannot authenticate to the server
@@ -97,7 +99,6 @@ public class Client implements ReadOnlyClient {
      * @throws ClientException if the client cannot authenticate to the server
      */
     public Client(boolean persistentConnection) throws IOException, ClientException {
-    	System.out.println("Client()");
         String homedir = System.getenv("HOME");
         String basename = "readdb_passwd";
         if (System.getenv("READDBROLE") != null) {
@@ -618,7 +619,7 @@ public class Client implements ReadOnlyClient {
         for (int c : getChroms(alignid, isType2, isPaired, isLeft)) {
             total += getWeight(alignid, c, isType2, isPaired, null, null, null, isLeft, plusStrand);
         }
-        persistentConnection=chosenPersistentConnection;
+        persistentConnection=chosenPersistentConnection;        
         closeConnection();
         return total;
     }
@@ -985,7 +986,7 @@ public class Client implements ReadOnlyClient {
 	                output.get(i).leftPos = ints.get(i);
 	            }
 	        }
-	
+	        
 	        closeConnection();
 	        return output;
     	}
@@ -1052,9 +1053,11 @@ public class Client implements ReadOnlyClient {
 	        TreeMap<Integer,Integer> output = new TreeMap<Integer,Integer>();
 	        int numints = Integer.parseInt(readLine());
 	        if(numints>0){
-		        int out[] = Bits.readInts(numints, instream, buffer);
-		        for (int i = 0; i < out.length; i += 2) {
-		            output.put(out[i], out[i+1]);
+		        IntBP ints = new IntBP(numints);
+		        ReadableByteChannel rbc = Channels.newChannel(instream);
+		        Bits.readBytes(ints.bb, rbc);
+		        for (int i = 0; i < numints; i+=2) {
+		        	output.put(ints.get(i), ints.get(i+1));
 		        }
 	        }
 	        closeConnection();
@@ -1095,10 +1098,13 @@ public class Client implements ReadOnlyClient {
 	        TreeMap<Integer,Float> output = new TreeMap<Integer,Float>();
 	        int numints = Integer.parseInt(readLine());
 	        if(numints>0){
-		        int out[] = Bits.readInts(numints, instream, buffer);
-		        float weight[] = Bits.readFloats(numints, instream,buffer);
-		        for (int i = 0; i < out.length; i++) {
-		            output.put(out[i], weight[i]);
+	        	ReadableByteChannel rbc = Channels.newChannel(instream);
+	        	IntBP ints = new IntBP(numints);
+		        Bits.readBytes(ints.bb, rbc);
+		        FloatBP floats = new FloatBP(numints);
+		        Bits.readBytes(floats.bb, rbc);
+		        for (int i = 0; i < numints; i++) {
+		        	output.put(ints.get(i), floats.get(i));
 		        }
 	        }
 	        closeConnection();
@@ -1266,30 +1272,40 @@ public class Client implements ReadOnlyClient {
 	            return;
 	        }
 	        try {
+	        	//Setting linger to false enables an orderly Socket close()
 	            socket.setSoLinger(false,0);
 	            request.clear();
 	            request.type="bye";
 	            sendString(request.toString());
-	            outstream.close();
-	            outstream = null;
+	            
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        } catch (ClientException e) {
 				e.printStackTrace();
-			}
-	        try {
-	            instream.close();
-	            instream = null;
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	        try {
-	            socket.close();
-	            socket = null;
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	        connected=false;
+			}finally{
+            	try{
+            		outstream.close();
+    	            outstream = null;
+            	} catch (IOException e) {
+    	            e.printStackTrace();
+    	        }finally{
+            		try {
+        	            instream.close();
+        	            instream = null;
+        	        } catch (IOException e) {
+        	            e.printStackTrace();
+        	        }finally{
+	        	        try {
+	        	            socket.close();
+	        	            socket = null;
+	        	        } catch (IOException e) {
+	        	            e.printStackTrace();
+	        	        }finally{
+	        	        	connected=false;
+	        	        }
+            		}
+            	}
+            }
     	}
     } 
     public void closeConnection() {this.closeConnection(false);}

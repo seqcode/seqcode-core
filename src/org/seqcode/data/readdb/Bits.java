@@ -77,6 +77,29 @@ public class Bits {
      *
      * buffer is scratch space
      */
+    public static void sendIntsByChannel(int[] a, WritableByteChannel channel) throws IOException {
+    	IntBP output = new IntBP(ByteBuffer.allocate(a.length*4));
+    	int n=0;
+    	for(int i=0; i<a.length; i++){
+    		output.getib().put(n++, a[i]);
+    	}
+    	Bits.sendBytes(output.bb, channel);
+    }
+    public static void sendFloatsByChannel(float[] a, WritableByteChannel channel) throws IOException {
+    	FloatBP output = new FloatBP(ByteBuffer.allocate(a.length*4));
+    	int n=0;
+    	for(int i=0; i<a.length; i++){
+    		output.fb.put(n++, a[i]);
+    	}
+    	Bits.sendBytes(output.bb, channel);
+    }
+    
+    /** sends the specified integers to the specified output stream.
+     *  uses the current value of the order field to determine whether it
+     * should send big or little endian.
+     *
+     * buffer is scratch space
+     */
     public static void sendInts(int[] a, OutputStream stream, byte[] buffer) throws IOException {
         int i = 0;
         ByteBuffer bb = ByteBuffer.wrap(buffer);
@@ -113,6 +136,7 @@ public class Bits {
         }
         stream.flush();
     }
+    
     public static int[] readInts(int count, InputStream instream, byte[] buffer) throws IOException {
         int[] output = new int[count];        
         int outputpos = 0;
@@ -171,20 +195,5 @@ public class Bits {
         }
         return output;
     }    
-    public static int[] floatToInt(float[] f) {
-        int output[] = new int[f.length];
-        for (int i = 0; i < f.length; i++) {
-            output[i] = Float.floatToRawIntBits(f[i]);
-        }
-        return output;
-    }
-    public static float[] intToFloat(int[] i) {
-        float[] output = new float[i.length];
-        for (int j = 0; j < i.length; j++) {
-            output[j] = Float.intBitsToFloat(i[j]);
-        }
-        return output;
-    }
-
 
 }

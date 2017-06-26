@@ -33,6 +33,7 @@ public class ServerTask {
        and the server will close the connection.
     */
     private boolean shouldClose;
+    private boolean clientInitiatedClose=false;
     /* Socket, streams from the socket */
     private Socket socket;
     private int haventTriedRead;
@@ -93,13 +94,13 @@ public class ServerTask {
         
         return shouldClose;
     }
+    
     public void close () {
         try {
-            if (server.debug()) {
-                System.err.println("Closing Socket " + socket + " for " + this);
-            }
             if (!socket.isClosed()) {
-                socket.close();
+            	if (server.debug())
+                    System.err.println("Closing Socket " + socket + " for " + this);
+            	socket.close();
             }
         } catch (Exception e) {
             // ignore it
@@ -384,6 +385,10 @@ public class ServerTask {
                 processReindex();
             } else if (request.type.equals("bye")) {
                 shouldClose = true;
+                clientInitiatedClose = true;
+                //I have a feeling that the server sometimes calls close before client in current protocol, leading to TIME_WAIT on server. 
+                //Thus, let's hang out here for a little while
+                Thread.sleep(10);
             } else if (request.type.equals("getchroms")) {
                 processGetChroms();
             } else if (request.type.equals("getacl")) {
@@ -1285,7 +1290,7 @@ public class ServerTask {
 		        }
 		        printOK();
 		        printString(Integer.toString(hist.length) + "\n");
-		        Bits.sendInts(hist, outstream, buffer);
+		        Bits.sendIntsByChannel(hist, outchannel);
 	        }else{
 	        	printOK();
 		        printString("0\n");
@@ -1358,8 +1363,8 @@ public class ServerTask {
 		        }
 		        printOK();
 		        printString(Integer.toString(parray.length) + "\n");
-		        Bits.sendInts(parray, outstream, buffer);        
-		        Bits.sendFloats(farray, outstream, buffer);
+		        Bits.sendIntsByChannel(parray, outchannel);        
+		        Bits.sendFloatsByChannel(farray, outchannel);
 	        }else{
 	        	printOK();
 		        printString("0\n");

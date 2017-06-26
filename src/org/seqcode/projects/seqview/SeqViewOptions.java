@@ -378,7 +378,7 @@ public class SeqViewOptions {
 		                throw new RuntimeException("Couldn't parse a SeqAlignmentsLocator from " + args[++i]);
 		            }
 	            	if(loc!=null){
-                        SeqDataLoader loader = new SeqDataLoader();
+                        SeqDataLoader loader = new SeqDataLoader(false, false);
                         Collection<SeqAlignment> aligns = loader.loadAlignments(loc, opts.genome);
                         opts.seqExpts.add(new SeqLocatorMatchedAligns(aligns, loc)); 
                         loader.close();
