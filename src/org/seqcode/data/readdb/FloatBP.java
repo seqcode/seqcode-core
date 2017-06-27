@@ -37,4 +37,7 @@ public class FloatBP extends ByteBP {
     public int size() {
         return fb.limit();
     }
+    public FloatBuffer getfb() {
+		return fb;
+	}
 }

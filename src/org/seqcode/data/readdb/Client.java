@@ -373,7 +373,7 @@ public class Client implements ReadOnlyClient {
     public void storeSingle(String alignid, List<SingleHit> allhits, boolean isType2) throws IOException, ClientException {
     	openConnection();
     	socket.setSoTimeout(socketLoadDataReadTimeout);
-    	
+
 	    int step = 10000000;
         for (int pos = 0; pos < allhits.size(); pos += step) {
             Map<Integer, List<SingleHit>> map = new HashMap<Integer,List<SingleHit>>();
@@ -836,7 +836,11 @@ public class Client implements ReadOnlyClient {
 	            throw new ClientException(response);
 	        }
 	        int numhits = Integer.parseInt(readLine());
-	        float[] wr = Bits.readFloats(numhits, instream, buffer);
+	        FloatBP flts = new FloatBP(numhits);
+	        ReadableByteChannel rbc = Channels.newChannel(instream);
+	        Bits.readBytes(flts.bb, rbc);
+	        float[] wr = flts.getfb().array();
+	        
 	        closeConnection();
 	        return wr;
     	}
