@@ -799,7 +799,11 @@ public class Client implements ReadOnlyClient {
 	            throw new ClientException(response);
 	        }
 	        int numhits = Integer.parseInt(readLine());
-	        int[] pos = Bits.readInts(numhits, instream, buffer);
+	        IntBP ints = new IntBP(numhits);
+	        ReadableByteChannel rbc = Channels.newChannel(instream);
+	        Bits.readBytes(ints.bb, rbc);
+	        int[] pos = ints.getib().array();
+	    	
 	        closeConnection();
 	        return pos;
     	}
@@ -986,7 +990,6 @@ public class Client implements ReadOnlyClient {
 	                output.get(i).leftPos = ints.get(i);
 	            }
 	        }
-	        
 	        closeConnection();
 	        return output;
     	}
