@@ -12,26 +12,18 @@ import java.nio.channels.*;
 
 public class Bits {
 
-    /** Sends the count bytes starting at offset from the ByteBuffer to the channel
-     */
-    public static void sendBytes(ByteBuffer b, int offset, int count, WritableByteChannel channel) throws IOException {
-        synchronized(b) {
-            b.position(offset);
-            int sent = 0;
-            while (sent < count) {
-                sent += channel.write(b);
-            }
-        }
-    }
+    
     /** sends the full ByteBuffer to the channel
      */
     public static void sendBytes(ByteBuffer b, WritableByteChannel channel) throws IOException {
         synchronized(b) {
-            b.position(0);
+        	b.position(0);
             int sent = 0;
             int limit = b.limit();
+            int count = 0;
             while (sent < limit) {
                 sent += channel.write(b);
+                count++;
             }
         }
     }
@@ -39,8 +31,8 @@ public class Bits {
      * reads the full ByteBuffer from the channel
      */
     public static void readBytes(ByteBuffer b, ReadableByteChannel channel) throws IOException {
-        synchronized (b) {
-            b.position(0);
+    	synchronized (b) {
+    		b.position(0);
             while (b.remaining() > 0) {
                 int r = channel.read(b);
                 if (b.remaining() > 0 && r == -1) {
@@ -69,27 +61,25 @@ public class Bits {
     }
 
 
-   /** sends the specified integers to the specified output stream.
-     *  uses the current value of the order field to determine whether it
-     * should send big or little endian.
-     *
-     * buffer is scratch space
+   /** 
+    * NIO version of sending ints
+     * 
      */
     public static void sendIntsByChannel(int[] a, WritableByteChannel channel) throws IOException {
-    	IntBP output = new IntBP(ByteBuffer.allocate(a.length*4));
-    	int n=0;
-    	for(int i=0; i<a.length; i++){
-    		output.getib().put(n++, a[i]);
-    	}
-    	Bits.sendBytes(output.bb, channel);
+    	ByteBuffer buf=ByteBuffer.allocateDirect(a.length*Integer.BYTES);
+        buf.asIntBuffer().put(a);
+        buf.clear();
+        Bits.sendBytes(buf, channel);
     }
+    /** 
+     * NIO version of sending floats
+      * 
+      */
     public static void sendFloatsByChannel(float[] a, WritableByteChannel channel) throws IOException {
-    	FloatBP output = new FloatBP(ByteBuffer.allocate(a.length*4));
-    	int n=0;
-    	for(int i=0; i<a.length; i++){
-    		output.fb.put(n++, a[i]);
-    	}
-    	Bits.sendBytes(output.bb, channel);
+    	ByteBuffer buf=ByteBuffer.allocateDirect(a.length*Float.BYTES);
+        buf.asFloatBuffer().put(a);
+        buf.clear();
+        Bits.sendBytes(buf, channel);
     }
     
     /** sends the specified integers to the specified output stream.

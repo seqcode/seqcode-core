@@ -481,7 +481,7 @@ public class TestReadDB {
         
         Collections.sort(hits);
         for (int q = 0; q < 30; q++) {
-            int start = (int)Math.round(Math.random() * maxPos);
+        	int start = (int)Math.round(Math.random() * maxPos);
             int end = start + (int)(Math.round(Math.random() * maxPos) % (maxPos - start));
             int count = 0;
             for (int i = 0; i < hits.size(); i++) {
@@ -489,6 +489,8 @@ public class TestReadDB {
                     count++;
                 }
             }
+            //System.out.println(name + " range= " + start +"-"+ end+", count="+count);
+
             assertTrue(String.format("%s %d != %d", name, count, c.getCount(name,chrom,false,false,start,end,null,null,null)), count == c.getCount(name,chrom,false,false,start,end,null,null,null));
             int back[] = c.getPositions(name,chrom,false,false,start,end,null,null,null);
             int j = 0;
@@ -520,22 +522,22 @@ public class TestReadDB {
         
         TreeMap<Integer,Integer> map = c.getHistogram(name,chrom,false,false,0,10,0,100,null,null);
         System.out.println(name + " MAP1 IS " + map);
-        assertEquals(name + " basic size",map.size(),3);
-        assertEquals(name + " basic 5",(int)map.get(5),3);
-        assertEquals(name + " basic 15",(int)map.get(15),4);
-        assertEquals(name + " basic 25",(int)map.get(25),1);
+        assertEquals(name + " basic size",3, map.size());
+        assertEquals(name + " basic 5",3, (int)map.get(5));
+        assertEquals(name + " basic 15",4, (int)map.get(15));
+        assertEquals(name + " basic 25",1, (int)map.get(25));
 
         map = c.getHistogram(name,chrom,false,false,0,10,0,100,15F,null);
         System.out.println(name + " MAP2 IS " + map);
-        assertEquals(name + " minweight size",map.size(),2);
-        assertEquals(name + " minweight 15",(int)map.get(15),3);
-        assertEquals(name + " minweight 25",(int)map.get(25),1);
+        assertEquals(name + " minweight size",2, map.size());
+        assertEquals(name + " minweight 15",3, (int)map.get(15));
+        assertEquals(name + " minweight 25",1, (int)map.get(25));
 
         map = c.getHistogram(name,chrom,false,false,0,10,0,100,null,true);
         System.out.println(name + " MAP3 IS " + map);
-        assertEquals(name + " basic size",map.size(),2);
-        assertEquals(name + " basic 5",(int)map.get(5),2);
-        assertEquals(name + " basic 15",(int)map.get(15),2);
+        assertEquals(name + " basic size",2, map.size());
+        assertEquals(name + " basic 5",2, (int)map.get(5));
+        assertEquals(name + " basic 15",2, (int)map.get(15));
         c.close();
      }
     @Test public void testHistogram2() throws IOException, ClientException {
@@ -717,7 +719,7 @@ public class TestReadDB {
      }
      @Test public void testMaximumStore() throws IOException, ClientException {
         Client c = new Client(hostname, portnum, user, passwd);
-        int maxSize=1000000; //50000000;
+        int maxSize=50000000;
         for (int n = 100000; n <= maxSize; n *= 2) {
             String name = "storeMaximum" + n;
             ArrayList<SingleHit> hits = new ArrayList<SingleHit>();

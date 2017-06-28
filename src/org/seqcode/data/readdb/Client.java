@@ -374,6 +374,7 @@ public class Client implements ReadOnlyClient {
     	openConnection();
     	socket.setSoTimeout(socketLoadDataReadTimeout);
 
+    	WritableByteChannel outchannel = Channels.newChannel(outstream);
 	    int step = 10000000;
         for (int pos = 0; pos < allhits.size(); pos += step) {
             Map<Integer, List<SingleHit>> map = new HashMap<Integer,List<SingleHit>>();
@@ -409,14 +410,14 @@ public class Client implements ReadOnlyClient {
 		                    for (int i = startindex; i < startindex + count; i++) {
 		                        ints[i - startindex] = hits.get(i).pos;
 		                    }   
-		                    Bits.sendInts(ints, outstream,buffer);
+		                    Bits.sendIntsByChannel(ints, outchannel);
 		                    float[] floats = new float[count];
 		                    for (int i = startindex; i < startindex + count; i++) {
 		                        floats[i - startindex] = hits.get(i).weight;
 		                        ints[i - startindex] = Hits.makeLAS(hits.get(i).length, hits.get(i).strand);
 		                    }
-		                    Bits.sendFloats(floats, outstream,buffer);
-		                    Bits.sendInts(ints, outstream,buffer);
+		                    Bits.sendFloatsByChannel(floats, outchannel);
+		                    Bits.sendIntsByChannel(ints, outchannel);
 		            
 		                    System.err.println("Sent " + count + " hits to the server for " + chromid + "," + alignid);
 		                    outstream.flush();        
@@ -447,6 +448,7 @@ public class Client implements ReadOnlyClient {
     	openConnection();
     	socket.setSoTimeout(socketLoadDataReadTimeout);
     	
+    	WritableByteChannel outchannel = Channels.newChannel(outstream);
     	Map<Integer, List<PairedHit>> map = new HashMap<Integer,List<PairedHit>>();
     	for (PairedHit h : allhits) {
             if (!map.containsKey(h.leftChrom)) {
@@ -480,7 +482,7 @@ public class Client implements ReadOnlyClient {
 		                for (int i = startindex; i < startindex + count; i++) {
 		                    ints[i-startindex] = hits.get(i).leftPos;
 		                }        
-		                Bits.sendInts(ints, outstream,buffer);
+		                Bits.sendIntsByChannel(ints, outchannel);
 		                float[] floats = new float[count];
 		                int[] codes = new int[count];
 		                for (int i = startindex; i < startindex + count; i++) {
@@ -490,17 +492,17 @@ public class Client implements ReadOnlyClient {
 		                                                      hits.get(i).rightLength, hits.get(i).rightStrand);
 		
 		                }
-		                Bits.sendFloats(floats, outstream,buffer);
-		                Bits.sendInts(codes, outstream,buffer);
-		                Bits.sendInts(ints, outstream,buffer);
+		                Bits.sendFloatsByChannel(floats, outchannel);
+		                Bits.sendIntsByChannel(codes, outchannel);
+		                Bits.sendIntsByChannel(ints, outchannel);
 		                for (int i = startindex; i < startindex + count; i++) {
 		                    ints[i-startindex] = hits.get(i).rightChrom;
 		                }        
-		                Bits.sendInts(ints, outstream,buffer);
+		                Bits.sendIntsByChannel(ints, outchannel);
 		                for (int i = startindex; i < startindex + count; i++) {
 		                    ints[i-startindex] = hits.get(i).rightPos;
 		                }        
-		                Bits.sendInts(ints, outstream,buffer);
+		                Bits.sendIntsByChannel(ints, outchannel);
 		                System.err.println("Sent " + count + " hits to the server");
 		                outstream.flush();        
 		                response = readLine();
@@ -802,7 +804,10 @@ public class Client implements ReadOnlyClient {
 	        IntBP ints = new IntBP(numhits);
 	        ReadableByteChannel rbc = Channels.newChannel(instream);
 	        Bits.readBytes(ints.bb, rbc);
-	        int[] pos = ints.getib().array();
+	        int[] pos = new int[numhits];
+	        for (int i = 0; i < numhits; i++) {
+	        	pos[i]=ints.get(i);
+	        }
 	    	
 	        closeConnection();
 	        return pos;
@@ -839,7 +844,10 @@ public class Client implements ReadOnlyClient {
 	        FloatBP flts = new FloatBP(numhits);
 	        ReadableByteChannel rbc = Channels.newChannel(instream);
 	        Bits.readBytes(flts.bb, rbc);
-	        float[] wr = flts.getfb().array();
+	        float[] wr = new float[numhits];
+	        for (int i = 0; i < numhits; i++) {
+	        	wr[i]=flts.get(i);
+	        }
 	        
 	        closeConnection();
 	        return wr;
@@ -876,15 +884,18 @@ public class Client implements ReadOnlyClient {
 	        }
 	        IntBP ints = new IntBP(numhits);
 	        ReadableByteChannel rbc = Channels.newChannel(instream);
+	        ints.bb.clear();
 	        Bits.readBytes(ints.bb, rbc);
 	        for (int i = 0; i < numhits; i++) {
 	            output.get(i).pos = ints.get(i);
 	        }
 	        FloatBP floats = new FloatBP(numhits);
+	        floats.bb.clear();
 	        Bits.readBytes(floats.bb, rbc);
 	        for (int i = 0; i < numhits; i++) {
 	            output.get(i).weight = floats.get(i);
 	        }
+	        ints.bb.clear();
 	        Bits.readBytes(ints.bb, rbc);
 	        for (int i = 0; i < numhits; i++) {
 	            int j = ints.get(i);

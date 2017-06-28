@@ -33,9 +33,9 @@ public class SingleHits extends Hits {
         RandomAccessFile weightsRAF = new RandomAccessFile(weightstmp,"rw");
         RandomAccessFile lasRAF = new RandomAccessFile(lastmp,"rw");
 
-        Bits.sendBytes(positions.bb, 0, positions.bb.limit(), positionsRAF.getChannel());
-        Bits.sendBytes(weights.bb, 0, weights.bb.limit(), weightsRAF.getChannel());
-        Bits.sendBytes(las.bb, 0, las.bb.limit(), lasRAF.getChannel());
+        Bits.sendBytes(positions.bb, positionsRAF.getChannel());
+        Bits.sendBytes(weights.bb, weightsRAF.getChannel());
+        Bits.sendBytes(las.bb, lasRAF.getChannel());
         positionsRAF.close();
         weightsRAF.close();
         lasRAF.close();
