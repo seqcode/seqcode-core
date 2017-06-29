@@ -408,8 +408,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
 						}
 					} else {
 						System.err.println("Using old ChipSeq painters");
-						histomod = new SeqDataModel(new org.seqcode.data.readdb.Client(),
-								alignments);
+						histomod = new SeqDataModel(alignments);
 						p = new SeqAboveBelowStrandPainter((SeqDataModel)histomod);
 					}
 					addModel(histomod);

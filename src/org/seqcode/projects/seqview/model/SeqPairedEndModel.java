@@ -3,7 +3,6 @@ package org.seqcode.projects.seqview.model;
 import java.io.IOException;
 import java.util.*;
 
-import org.seqcode.data.readdb.Client;
 import org.seqcode.data.readdb.ClientException;
 import org.seqcode.data.readdb.PairedHit;
 import org.seqcode.data.readdb.PairedHitLeftComparator;
@@ -11,9 +10,8 @@ import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.location.Region;
 
 
-public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runnable {
+public class SeqPairedEndModel extends ReadDBSeqViewModel implements RegionModel, Runnable {
 
-    private Client client;
     private Set<SeqAlignment> alignments;
     private Set<String> ids;
     private Region region;
@@ -23,7 +21,7 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
     private SeqPairedEndModelProperties props;
     
     public SeqPairedEndModel (Collection<SeqAlignment> alignments) throws IOException, ClientException{
-        client = new Client();
+    	super();
         comparator = new PairedHitLeftComparator();
         this.alignments = new HashSet<SeqAlignment>();
         this.alignments.addAll(alignments);
@@ -31,7 +29,7 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
         for (SeqAlignment a : alignments) {
             ids.add(Integer.toString(a.getDBID()));
             if(!client.exists(Integer.toString(a.getDBID()))){
-            	System.err.println("SeqHistogramModel: Error: "+a.getExpt().getName()+";"+a.getExpt().getReplicate()+";"+a.getName()+"\tRDBID:"+a.getDBID()+" does not exist in ReadDB.");
+            	System.err.println("SeqPairedEndModel: Error: "+a.getExpt().getName()+";"+a.getExpt().getReplicate()+";"+a.getName()+"\tRDBID:"+a.getDBID()+" does not exist in ReadDB.");
             	dataError=true;
             }
         }
@@ -90,6 +88,7 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
             } catch (InterruptedException ex) { }
             if (newinput) {
                 try {
+                	this.openConnection();
                     results = new ArrayList<PairedHit>();
                     otherchrom = new ArrayList<PairedHit>();
                     double mindist = getProperties().MinimumDistance;
@@ -144,6 +143,6 @@ public class SeqPairedEndModel extends SeqViewModel implements RegionModel, Runn
                 notifyListeners();
             }
         }
-        client.close();
+        close();
     }
 }

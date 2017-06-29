@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.seqcode.data.readdb.Client;
 import org.seqcode.data.readdb.ClientException;
 import org.seqcode.data.readdb.PairedHit;
 import org.seqcode.data.readdb.PairedHitLeftComparator;
@@ -18,9 +17,8 @@ import org.seqcode.data.seqdata.SeqAlignment;
 import org.seqcode.genome.location.Region;
 
 
-public class InteractionArcModel extends SeqViewModel implements RegionModel, Runnable {
+public class InteractionArcModel extends ReadDBSeqViewModel implements RegionModel, Runnable {
 
-	private Client client;
 	private Set<SeqAlignment> alignments;
 	private Set<String> ids;
 	private Region region;
@@ -30,7 +28,7 @@ public class InteractionArcModel extends SeqViewModel implements RegionModel, Ru
 	private InteractionArcModelProperties props;
 
 	public InteractionArcModel(Collection<SeqAlignment> alignments) throws IOException, ClientException {
-		client = new Client();
+		super();
 		comparator = new PairedHitLeftComparator();
 		this.alignments = new HashSet<SeqAlignment>();
 		this.alignments.addAll(alignments);
@@ -65,6 +63,8 @@ public class InteractionArcModel extends SeqViewModel implements RegionModel, Ru
 			} catch (InterruptedException ex) { }
 			if (newinput) {
 				try {
+					this.openConnection();
+					
 					HashMap<PairedHit, Float> deduper = new HashMap<PairedHit, Float>();  
 					results = new ArrayList<PairedHit>();
 					otherchrom = new ArrayList<PairedHit>();
@@ -102,7 +102,7 @@ public class InteractionArcModel extends SeqViewModel implements RegionModel, Ru
 				} catch (Exception ex) {
 					ex.printStackTrace();
 					// assign empty output.  This is useful because Client
-					// throws an exception for non-existant chromosomes, such
+					// throws an exception for non-existent chromosomes, such
 					// as those for which there were no alignment results
 					results = new ArrayList<PairedHit>();
 				}
@@ -110,7 +110,7 @@ public class InteractionArcModel extends SeqViewModel implements RegionModel, Ru
 				notifyListeners();
 			}
 		}
-		client.close();
+		close();
 	}
 
 	public void setRegion(Region r) {

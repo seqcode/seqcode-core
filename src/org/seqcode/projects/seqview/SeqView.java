@@ -64,7 +64,7 @@ public class SeqView extends JFrame {
 	protected boolean imageraster;
 	private File currDirectory = new File(System.getProperty("user.home"));
 	
-    public SeqView(String[] args) throws NotFoundException, SQLException, IOException {
+    public SeqView(String[] args) throws NotFoundException, SQLException, IOException {    	
     	//Set up the browser window
     	setSize(700,500);
         setLocation(50,50);
@@ -107,7 +107,7 @@ public class SeqView extends JFrame {
     }
     
     public String getVersion(){
-    	return "Version 0.2, Aug-2014";
+    	return "Version 0.22, Jun-2017";
     }
     
     public RegionPanel getRegionPanel() { return regPanel; }
@@ -184,7 +184,14 @@ public class SeqView extends JFrame {
         			thisviewer.getRegionPanel().close();
         		System.exit(0);
         	}
-        });        
+        });
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+            	if(thisviewer.getRegionPanel()!=null && !thisviewer.getRegionPanel().isClosed())
+        			thisviewer.getRegionPanel().close();
+            	System.exit(0);
+            }
+        });
 
         jmb.add((editmenu = new JMenu("Edit")));
         editmenu.add((item = new JMenuItem("Configure All SeqData Tracks")));

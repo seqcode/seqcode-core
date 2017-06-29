@@ -29,9 +29,8 @@ import org.seqcode.gsebricks.verbs.WeightedRunningOverlapSum;
  * If an extension is specified, then each return hit will
  * be extended by that many bp.
  */
-public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable {
+public class SeqDataModel extends ReadDBSeqViewModel implements RegionModel, Runnable {
     
-    private Client client;
     private Collection<String> alignids;
     private Collection<SeqAlignment> alignments;
     private SeqAlignment align;
@@ -46,9 +45,9 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
     private ArrayList<SeqHit> results;
     private SeqDataProperties props;
 
-    public SeqDataModel(Client c, Collection<SeqAlignment> alignments) throws IOException, ClientException {
-        client = c;
-        extension = 0;
+    public SeqDataModel(Collection<SeqAlignment> alignments) throws IOException, ClientException {
+    	super();
+    	extension = 0;
         totalSum = null;
         watsonSum = null;
         crickSum = null;
@@ -128,6 +127,7 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
             }
             if (newinput) {
                 try {
+                	this.openConnection();
                     setExtensionAndShift(getProperties().ExtendRead,getProperties().ShiftRead);
                     if (doSums) {
                     	if(props.ShowType1Reads){
@@ -237,6 +237,7 @@ public class SeqDataModel extends SeqViewModel implements RegionModel, Runnable 
                 notifyListeners();
             }
         }
+        close();
     }
     
 	public void setDoSums(boolean b) {doSums = b;}

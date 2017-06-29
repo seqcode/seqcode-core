@@ -12,9 +12,8 @@ import org.seqcode.genome.location.Region;
  * Data model for chipseq histogram.  Separate methods for retrieving
  * plus and minus strand results
  */
-public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runnable {
+public class SeqHistogramModel extends ReadDBSeqViewModel implements RegionModel, Runnable {
     
-    private Client client;
     private TreeMap<Integer,Float> resultsPlus, resultsMinus, resultsPval;
     private Set<SeqAlignment> alignments;
     private Set<String> ids;
@@ -24,12 +23,12 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
     private boolean newinput;
     
     public SeqHistogramModel (SeqAlignment a) throws IOException, ClientException {
+    	super();
         alignments = new HashSet<SeqAlignment>();
         alignments.add(a);
         props = new SeqHistogramModelProperties();
         region = null;
         newinput = false;
-        client = new Client();
         ids = new HashSet<String>();
         ids.add(Integer.toString(a.getDBID()));
         if(!client.exists(Integer.toString(a.getDBID()))){
@@ -38,12 +37,12 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
         }
     }
     public SeqHistogramModel (Collection<SeqAlignment> a) throws IOException, ClientException {
+    	super();
         alignments = new HashSet<SeqAlignment>();
         alignments.addAll(a);
         props = new SeqHistogramModelProperties();
         region = null;
         newinput = false;
-        client = new Client();
         ids = new HashSet<String>();
         for (SeqAlignment align : alignments) {
             ids.add(Integer.toString(align.getDBID()));
@@ -97,6 +96,8 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
             }
             if (newinput) {
                 try {
+                	this.openConnection();
+                	
                     int width = props.BinWidth;
                     int extension = props.ReadExtension;
                     // for GaussianKernel, get 1bp resolution data
@@ -309,6 +310,6 @@ public class SeqHistogramModel extends SeqViewModel implements RegionModel, Runn
                 notifyListeners();
             }
         }
-        client.close();
+        close();
     }
  }

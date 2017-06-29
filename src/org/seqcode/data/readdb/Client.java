@@ -141,7 +141,6 @@ public class Client implements ReadOnlyClient {
     }
     
     private void openConnection() throws UnknownHostException, IOException, ClientException {
-    	
     	if(!connected){
 	    	socket=null;
 	    	synchronized(this){
