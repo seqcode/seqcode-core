@@ -326,7 +326,7 @@ public class TestHits {
                                                  start,end,binsize,0,weight,null,0);
             int[] myhist = new int[(end - start) / binsize + 1];
             for (int i = 0; i < hits.size(); i++) {
-                if (hits.get(i) >= start && hits.get(i) <= end && weights.get(i) >= weight) {
+                if (hits.get(i) >= start && hits.get(i) <= end && weights.get(i) > weight) {
                     myhist[(hits.get(i) - start) / binsize]++;
                 }
             }

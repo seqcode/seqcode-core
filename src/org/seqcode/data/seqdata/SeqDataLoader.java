@@ -74,7 +74,17 @@ public class SeqDataLoader implements org.seqcode.gseutils.Closeable {
      * Accessor for ReadDB client
      * @return
      */
-    public Client getClient(){return client;}
+    public Client getClient(){
+    	if(client==null)
+    		try {
+	            client = new Client();
+	        } catch (ClientException e) {
+	            throw new IllegalArgumentException(e);
+	        } catch (IOException e) {
+				e.printStackTrace();
+			}
+    	return client;
+    }
     /**
      * Accessor for MetadataLoader
      * @return
@@ -82,7 +92,7 @@ public class SeqDataLoader implements org.seqcode.gseutils.Closeable {
     public MetadataLoader getMetadataLoader(){return mloader;}
     
 	//Constructors
-    public SeqDataLoader() throws SQLException, IOException{this(true, true);}
+    public SeqDataLoader() throws SQLException, IOException{this(false, false);}
 	public SeqDataLoader(boolean openClient, boolean cacheAllMetadata) throws SQLException, IOException {
 		mloader = new MetadataLoader(cacheAllMetadata); 
 		

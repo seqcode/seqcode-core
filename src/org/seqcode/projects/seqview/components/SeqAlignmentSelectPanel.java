@@ -31,7 +31,7 @@ public class SeqAlignmentSelectPanel extends GenericSelectPanel<SeqLocatorMatche
 
     public SeqAlignmentSelectPanel() { 
         try {
-            seqLoader = new SeqDataLoader(true, true);
+            seqLoader = new SeqDataLoader(false, true);
         } catch (Exception e) {
             e.printStackTrace();
             seqLoader = null;

@@ -356,7 +356,7 @@ public class Args {
                     throw new RuntimeException("Invalid string for SeqAnalysis " + base);
                 }
                 SeqAnalysis a = null;
-                loader = new SeqDataLoader(false, true);
+                loader = new SeqDataLoader(false, false);
                 if (pieces != null) {
                     a = SeqAnalysis.get(loader,pieces[0],pieces[1]);
                 }
@@ -386,7 +386,7 @@ public class Args {
         SeqAnalysis a = null;
         SeqDataLoader loader = null;
         try {
-            loader = new SeqDataLoader(false, true);
+            loader = new SeqDataLoader(false, false);
             if (pieces != null) {
                 try {
                     a = SeqAnalysis.get(loader,pieces[0],pieces[1]);

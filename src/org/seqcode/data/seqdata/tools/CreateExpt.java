@@ -51,7 +51,7 @@ public class CreateExpt {
     		PreparedStatement update = null;
     		
     		SeqExpt expt = null;
-	        SeqDataLoader loader = new SeqDataLoader();
+	        SeqDataLoader loader = new SeqDataLoader(false, true);
 	        MetadataLoader core = loader.getMetadataLoader();
 	        boolean newExpt=false;
 	        

@@ -19,7 +19,7 @@ public class FindZeroReadAlignments {
         java.sql.Connection cxn = DatabaseConnectionManager.getConnection("seqdata");
         cxn.setAutoCommit(true);
         
-        SeqDataLoader loader = new SeqDataLoader();
+        SeqDataLoader loader = new SeqDataLoader(false, true);
                 
         Collection<SeqExpt> allExpts = loader.loadAllExperiments();
         for(SeqExpt expt : allExpts){

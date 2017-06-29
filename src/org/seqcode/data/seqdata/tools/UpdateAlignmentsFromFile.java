@@ -78,7 +78,7 @@ public class UpdateAlignmentsFromFile {
     	}
     	BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
         
-        SeqDataLoader loader = new SeqDataLoader();
+        SeqDataLoader loader = new SeqDataLoader(false, true);
         MetadataLoader core = loader.getMetadataLoader();
 
         java.sql.Connection cxn = null;

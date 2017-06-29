@@ -37,7 +37,7 @@ public class GetAlignments {
         String conditionstring = Args.parseString(args,"exptcondition",null);
         String rtypestring = Args.parseString(args,"readtype",null);
 
-        SeqDataLoader loader = new SeqDataLoader();
+        SeqDataLoader loader = new SeqDataLoader(false, false);
         MetadataLoader core = loader.getMetadataLoader();
 
         Integer target = null, cells = null, condition = null, lab = null, expttype = null, readtype = null;

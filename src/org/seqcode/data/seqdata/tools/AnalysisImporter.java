@@ -5,10 +5,8 @@ import java.io.*;
 import java.sql.*;
 
 import org.seqcode.data.connections.DatabaseException;
-import org.seqcode.data.core.*;
 import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.Genome;
-import org.seqcode.genome.Species;
 import org.seqcode.gseutils.Args;
 import org.seqcode.gseutils.NotFoundException;
 

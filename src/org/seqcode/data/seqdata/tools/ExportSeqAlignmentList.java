@@ -92,7 +92,7 @@ public class ExportSeqAlignmentList {
 	
 	public void execute(){
 	    try{
-	    	SeqDataLoader loader = new SeqDataLoader();
+	    	SeqDataLoader loader = new SeqDataLoader(false, true);
 	        HashMap<Integer, DeepSeqEntry> oldList = new HashMap<Integer, DeepSeqEntry>();
 	    
         	FileWriter fw = new FileWriter(outFile);

@@ -27,7 +27,7 @@ public class AlignmentLookup {
 					System.exit(1);
 				}
 				SeqLocator expt = expts.get(0);
-				loader = new SeqDataLoader(false, true);
+				loader = new SeqDataLoader();
 			
 				boolean erafound=false;
 				boolean erfound=false;

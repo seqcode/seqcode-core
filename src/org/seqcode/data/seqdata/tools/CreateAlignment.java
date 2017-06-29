@@ -64,7 +64,7 @@ public class CreateAlignment {
     		
     		SeqExpt expt = null;
 	        SeqAlignment alignment = null;
-	        SeqDataLoader loader = new SeqDataLoader();
+	        SeqDataLoader loader = new SeqDataLoader(false, true);
 	        MetadataLoader core = loader.getMetadataLoader();
 	        
     		try{

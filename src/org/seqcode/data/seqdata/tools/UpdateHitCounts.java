@@ -3,7 +3,6 @@ package org.seqcode.data.seqdata.tools;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import org.seqcode.data.connections.DatabaseConnectionManager;
 import org.seqcode.data.seqdata.SeqAlignment;
 import org.seqcode.data.seqdata.SeqDataLoader;
 import org.seqcode.data.seqdata.SeqDataModifier;

@@ -26,7 +26,7 @@ public class DeleteAlignment {
         cxn.setAutoCommit(true);
         Integer id = Args.parseInteger(args,"id", -1);
         
-        SeqDataLoader loader = new SeqDataLoader();
+        SeqDataLoader loader = new SeqDataLoader(true, true);
         SeqDataModifier seqDatamodifier = new SeqDataModifier(loader);
         
         SeqAlignment align = loader.loadAlignment(id);

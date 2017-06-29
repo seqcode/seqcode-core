@@ -51,7 +51,7 @@ public class SeqExptEditTablePanel  extends GenericEditTablePanel<SeqExpt> {
 
     public SeqExptEditTablePanel() { 
     	try {
-            seqLoader = new SeqDataLoader(true, true);
+            seqLoader = new SeqDataLoader(false, true);
             seqModifier = new SeqDataModifier(seqLoader);
     	} catch (AccessControlException e1) {
     		e1.printStackTrace();
