@@ -162,9 +162,7 @@ public class Client implements ReadOnlyClient {
 		String port = bundle.getString("port");
 		String username = bundle.getString("username");
 		String password = bundle.getString("passwd");
-		if (hostname == "banba.vmhost.psu.edu"){
-			password = Hash.md5(password);
-		}
+		password = Hash.md5(password);
 		init(hostname, Integer.parseInt(port), username, password);
 	}
 
