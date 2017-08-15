@@ -14,6 +14,9 @@ import org.seqcode.genome.GenomeConfig;
 import org.seqcode.gseutils.ArgParser;
 import org.seqcode.motifs.FreqMatrixImport;
 
+/**
+ * For each input motif, print motif logos.
+ */
 
 public class PrintMotifLogos {
 	
@@ -38,7 +41,18 @@ public class PrintMotifLogos {
 	
 	public static void main(String[] args) throws IOException, ParseException{
 		
-		ArgParser ap = new ArgParser(args);
+		ArgParser ap = new ArgParser(args);		
+        if(!ap.hasKey("motfile")) { 
+        	System.err.println("please input motfile.");
+            System.err.println("Usage:\n " +
+                               "PrintMotifLogos\n " +
+                               "--geninfo <genome info file> \n " +
+                               "--expt <file name> AND --ctrl <file name> AND --format <SAM/BAM/BED/IDX>\n " +
+                               "--motifs <file containing coordinates of peaks> \n " +
+                               "");
+            System.exit(0);
+        }
+
 		GenomeConfig gcon = new GenomeConfig(args);
 		String motfile = ap.getKeyValue("motfile");
 		String backFile =ap.hasKey("back") ? ap.getKeyValue("back"):null;
