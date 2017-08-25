@@ -48,7 +48,7 @@ public class PrintMotifLogos {
                                "PrintMotifLogos\n " +
                                "--geninfo <genome info file> \n " +
                                "--expt <file name> AND --ctrl <file name> AND --format <SAM/BAM/BED/IDX>\n " +
-                               "--motifs <file containing coordinates of peaks> \n " +
+                               "--motfile <file containing motifs> \n " +
                                "");
             System.exit(0);
         }
