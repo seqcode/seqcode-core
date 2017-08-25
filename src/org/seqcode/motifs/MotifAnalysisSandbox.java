@@ -962,7 +962,7 @@ public class MotifAnalysisSandbox {
 			
 			String[] words = inFileLines.get(i).split("\\s+");
 			
-			for (int j=0; j< words.length; i++)
+			for (int j=0; j< words.length; j++)
 				System.out.println(words[j]+"\t");
 			System.out.println();
 			
