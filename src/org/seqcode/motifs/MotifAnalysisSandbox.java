@@ -962,10 +962,6 @@ public class MotifAnalysisSandbox {
 			
 			String[] words = inFileLines.get(i).split("\\s+");
 			
-			for (int j=0; j< words.length; j++)
-				System.out.println(words[j]+"\t");
-			System.out.println();
-			
 			if(!goodMotif)
 				System.out.println(words[0]+"\t"+words[1]+"\t"+words[2]+"\t"+words[3]+"\t"+motif.getMinScore()+"\t"+bestSeq);
 			else
