@@ -117,6 +117,23 @@ public class KMedoidsClustering<X> implements ClusteringMethod<X> {
     	return(totalDist);
     }
     
+    public double sumOfDistance(){
+    	double totalDist =0;
+    	for(int k = 0; k < elmts.size(); k++) { 
+            X e = elmts.get(k);
+            int minCluster = -1;
+            double minDist = 0.0;
+            for(int i = 0; i < numClusters; i++) { 
+                double clustDist = metric.evaluate(e, clusterMedoids.get(i));
+                if(minCluster == -1 || clustDist < minDist) { 
+                    minDist = clustDist;
+                    minCluster = i;
+                }
+            }totalDist += minDist;
+        }
+    	return(totalDist);
+    }
+    
     public double silhouette(){
     	double sh = 0.0;
     	for(int k=0; k< elmts.size(); k++){
