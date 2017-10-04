@@ -146,7 +146,7 @@ public class RegionCountSorter {
 	
 	public static void main(String[] args){
 		ArgParser ap = new ArgParser(args);		
-        if((!ap.hasKey("peak") && !ap.hasKey("region") && !ap.hasKey("sregion") )) { 
+        if((!ap.hasKey("peak") && !ap.hasKey("speak") && !ap.hasKey("region") && !ap.hasKey("sregion") )) { 
         	System.err.println("Please provide peak, region, sregion file !");
             System.err.println("Usage:\n" +
                                "RegionCountSorter\n" +
