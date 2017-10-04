@@ -12,6 +12,7 @@ import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
 import org.seqcode.genome.location.Point;
 import org.seqcode.genome.location.Region;
+import org.seqcode.genome.location.StrandedPoint;
 import org.seqcode.genome.location.StrandedRegion;
 import org.seqcode.gseutils.ArgParser;
 import org.seqcode.gseutils.Args;
@@ -34,6 +35,7 @@ public class RegionCountSorter {
 	protected ExperimentManager manager;
 	protected ExptConfig econf;
 	protected List<Point> points;
+	protected List<StrandedPoint> spoints;
 	protected List<Region> regions; 
 	protected List<StrandedRegion> strandedReg;
 	protected int window;
@@ -47,6 +49,7 @@ public class RegionCountSorter {
 	}
 	
 	public void setPoint(List<Point> p ){ points = p;}
+	public void setStrandedPoint(List<StrandedPoint> p){spoints=p;}
 	public void setStrandedRegion(List<StrandedRegion> sreg){ strandedReg=sreg; }
 	public void setRegion(List<Region> reg){ regions=reg;}
 	
@@ -57,13 +60,15 @@ public class RegionCountSorter {
 		if (points != null){
 			for (Point p : points)
 				countRegions.add(p.expand(window/2));
+		}else if (spoints !=null){
+			for (StrandedPoint p : spoints)
+				countRegions.add(p.expand(window/2));
 		}else if (strandedReg != null){
 			if(window >0){
 				for (StrandedRegion sreg : strandedReg)					
 					countRegions.add(sreg.resize(window));
 			}else{
-				for (StrandedRegion sreg : strandedReg)
-					countRegions.add(sreg);
+				countRegions.addAll(strandedReg);
 			}
 		}else if(regions != null){
 			if (window>0){
@@ -147,7 +152,7 @@ public class RegionCountSorter {
                                "RegionCountSorter\n" +
                                "--species <organism;genome> OR\n" +
                                "--geninfo <genome info file> AND --seq <path to seqs>\n" +
-                               "--peaks <list of peaks> OR --region <list of regions> OR --sregion <list of stranded regions> \n" +
+                               "--peak <list of peaks> OR --speak <list of stranded peaks> OR --region <list of regions> OR --sregion <list of stranded regions> \n" +
                                "--expt <experiments> \n" +
                                "\nOPTIONS:\n" +
                                "--win <window size around peaks> \n" +
@@ -168,16 +173,16 @@ public class RegionCountSorter {
 		if (ap.hasKey("peak")){
 			List<Point> points = RegionFileUtilities.loadPointsFromFile(ap.getKeyValue("peak"), gconf.getGenome());
 			sorter.setPoint(points);
-		}
-		else if (ap.hasKey("sregion")){
+		}else if (ap.hasKey("speak")){
+			List<StrandedPoint> points = RegionFileUtilities.loadStrandedPointsFromFile(gconf.getGenome(), ap.getKeyValue("peak"));
+			sorter.setStrandedPoint(points);
+		}else if (ap.hasKey("sregion")){
 			sreg = RegionFileUtilities.loadStrandedRegionsFromMotifFile(gconf.getGenome(), ap.getKeyValue("sregion"), -1);
 			sorter.setStrandedRegion(sreg);
 		}else if (ap.hasKey("region")){
 			reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"), gconf.getGenome(), -1);
 			sorter.setRegion(reg);
-		}
-		
+		}			
 		sorter.execute();
 	}
-
 }
