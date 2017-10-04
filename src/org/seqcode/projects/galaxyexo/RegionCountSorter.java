@@ -174,7 +174,7 @@ public class RegionCountSorter {
 			List<Point> points = RegionFileUtilities.loadPointsFromFile(ap.getKeyValue("peak"), gconf.getGenome());
 			sorter.setPoint(points);
 		}else if (ap.hasKey("speak")){
-			List<StrandedPoint> points = RegionFileUtilities.loadStrandedPointsFromFile(gconf.getGenome(), ap.getKeyValue("peak"));
+			List<StrandedPoint> points = RegionFileUtilities.loadStrandedPointsFromFile(gconf.getGenome(), ap.getKeyValue("speak"));
 			sorter.setStrandedPoint(points);
 		}else if (ap.hasKey("sregion")){
 			sreg = RegionFileUtilities.loadStrandedRegionsFromMotifFile(gconf.getGenome(), ap.getKeyValue("sregion"), -1);
