@@ -99,6 +99,8 @@ public class RegionCountSorter {
 			//add peaks or regions
 			if (points !=null)
 				regionCounts[i].setKey(points.get(i));
+			else if (spoints !=null)
+				regionCounts[i].setKey(spoints.get(i));
 			else if (strandedReg != null)
 				regionCounts[i].setKey(strandedReg.get(i));
 			else if (regions != null)
