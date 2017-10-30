@@ -44,8 +44,8 @@ public class APCluster {
 			se[i] = 0;
 		}
 		
-		System.err.println("a size: "+a.size());
-		System.err.println("r size: "+r.size());
+		//System.err.println("a size: "+a.size());
+		//System.err.println("r size: "+r.size());
 		
 		/*
 		System.out.println("a:");
@@ -58,7 +58,7 @@ public class APCluster {
 
 		while (!done) {
 			if (it%10 == 0) {
-				System.err.println("Iteration: "+it);
+				//System.err.println("Iteration: "+it);
 			}
 			
 			//compute responsibilities
@@ -81,17 +81,17 @@ public class APCluster {
 						max2 = tmp;
 					}
 				}
-				System.err.println("MAX1: " + max1 + " MAX2: " + max2);
+				//System.err.println("MAX1: " + max1 + " MAX2: " + max2);
 				for (int k=0; k<s.size(); k++) {
 					ClusterablePair ikpair = new ClusterablePair(objects.get(i), objects.get(k));
 					if (!s.exists(ikpair)) continue;
 					if (k==i1) {
 						double message = lam*r.get(ikpair) + (1.0-lam)*(s.evaluate(ikpair) - max2);
-						System.err.println("R " + objects.get(i).name() + " to " + objects.get(k).name() + ": " + message);
+						//System.err.println("R " + objects.get(i).name() + " to " + objects.get(k).name() + ": " + message);
 						r.put(ikpair, message);
 					} else {
 						double message = lam*r.get(ikpair) + (1.0-lam)*(s.evaluate(ikpair) - max1);
-						System.err.println("R " + objects.get(i).name() + " to " + objects.get(k).name() + ": " + message);
+						//System.err.println("R " + objects.get(i).name() + " to " + objects.get(k).name() + ": " + message);
 						r.put(ikpair, message);
 					}
 				}
@@ -144,15 +144,15 @@ public class APCluster {
 					}
 					if (i==k) {
 						double message = lam*a.get(ikpair) + (1.0 - lam)*tmp2;
-						System.err.println("A " + objects.get(i).name() + " to " + objects.get(k).name() + ": " + message);
+						//System.err.println("A " + objects.get(i).name() + " to " + objects.get(k).name() + ": " + message);
 						a.put(ikpair, message);
 					} else if (tmp2 < 0) {
 						double message = lam*a.get(ikpair) + (1.0-lam)*tmp2;
-						System.err.println("A " + objects.get(i).name() + " to " + objects.get(k).name() + ": " + message);
+						//System.err.println("A " + objects.get(i).name() + " to " + objects.get(k).name() + ": " + message);
 						a.put(ikpair, message);
 					} else {
 						double message = lam*a.get(ikpair);
-						System.err.println("A " + objects.get(i).name() + " to " + objects.get(k).name() + ": " + message);
+						//System.err.println("A " + objects.get(i).name() + " to " + objects.get(k).name() + ": " + message);
 						a.put(ikpair, message);
 					}
 				}
@@ -273,7 +273,7 @@ public class APCluster {
 	 */
 	public static void main(String[] argv) throws Exception {
 		FileSimilarityMeasure<Clusterable> fsm = new FileSimilarityMeasure<Clusterable>(argv[0],
-				"  ", Double.valueOf(argv[1]).doubleValue());
+				"\t", Double.valueOf(argv[1]).doubleValue());
 		double netsim = cluster(fsm.objects(), fsm, 0.5, 50, 500);
 		PrintStream outstream = new PrintStream(argv[2]);
 		fsm.printExemplars(outstream);

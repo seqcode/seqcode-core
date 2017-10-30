@@ -81,7 +81,7 @@ public class FeatureCountsLoader {
 		// Reverse the array depending of strand of features			
 		Map<StrandedRegion,double[][]> sampleRegionCounts = new HashMap<StrandedRegion,double[][]>();			
 		for (StrandedRegion reg : sampleCountsMap.keySet()){			
-			double[][] sampleCounts = new double[windowSize+edge+1][2];
+			double[][] sampleCounts = new double[windowSize+edge+1][2]; 
 			double[][] controlCounts = new double[windowSize+edge+1][2];
 			for (int i = 0;i <= windowSize+edge;i++){
 				for (int s = 0; s<2; s++){
