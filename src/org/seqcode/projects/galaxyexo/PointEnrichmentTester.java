@@ -47,12 +47,13 @@ public class PointEnrichmentTester {
 	protected int pseudocounts; // noise added to prevent calling significance in telomere regions
 	protected boolean printRandOverlap = false; // flag to print number of random overlap
 	
-	public PointEnrichmentTester(String base, GenomeConfig gcon,List<Point> g, List<Region> r){
+	public PointEnrichmentTester(String base, GenomeConfig gcon,List<Point> g, List<Region> r, int numTest){
 		outbase=base;
 		gconfig=gcon;
 		gff=g;
 		regions=r;	
 		poisson = new Poisson(1, new DRand());
+		numItr = numTest;
 	}
 	
 	// set pseudo counts
@@ -189,6 +190,7 @@ public class PointEnrichmentTester {
                     "--pseudo <pseudocounts to suppress telomere enrichment (default=0) > \n " +
                     "--ext <window size to merge gff points to prevent event double counts (default=20) > \n " +
                     "--print <flag to print number of random overlaps with region> \n " +
+                    "--numItr <number of test conducted> \n " +
                     "");
 			System.exit(0);
 		}
@@ -207,10 +209,11 @@ public class PointEnrichmentTester {
 		List<Region> reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
 		int pseudo = Args.parseInteger(args,"pseudo", 0);
 		int expand = Args.parseInteger(args,"ext", 20);
+		int itr = Args.parseInteger(args,"numItr", 1000);
 		// Get outdir and outbase and make them;
 		String outbase = Args.parseString(args, "out", System.getProperty("user.dir"));
 			
-		PointEnrichmentTester tester = new PointEnrichmentTester(outbase,gconf,points,reg);
+		PointEnrichmentTester tester = new PointEnrichmentTester(outbase,gconf,points,reg,itr);
 		
 		tester.setNoise(pseudo);
 		tester.setExpansion(expand);
