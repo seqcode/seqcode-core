@@ -8,7 +8,6 @@
   <property name="build.dist.dir" location="${build.dir}/dist" />
   <property name="build.unjar.dir" location="${build.dir}/unjar" />
   <property name="build.compiler" value="javac1.8"/>
-  <property name="pwfiles.basepath"  value="/storage/group/sam77_collab/code/pwfiles"/>
   <path id="compile.classpath">
     <pathelement location="${build.classes.dir}"/>
      <fileset dir="${lib.dir}">
@@ -105,37 +104,19 @@
   <target name="requirepwset">
     <fail unless="pwset"
 	  message="Must set pwset property.  This is a subdir of
-		   pwfiles.basepath (${pwfiles.basepath})."/>
+		   pwbasepath (${pwbasepath})."/>
   </target>
 
   <target name="setpwfilespath" depends="init, requirepwset" unless="${pwfiles.path}">
-    <property name="pwfiles.path" value="${pwfiles.basepath}/${pwset}"/>
-  </target>
-
-  	<!-- ======================================================================= -->
-	<!-- Target: makemultigpsjar                                                  -->
-	<!-- Depends: build, unjarall, setpwfilespath                         		 -->
-	<!-- Description: Compiles all the client source files and builds the jar    -->
-	<!--              for MultiGPS. ant -Dpwset=mahonylab makemultigpsjar     -->
-	<!-- ======================================================================= -->
-  <target name="makemultigpsjar" depends="build, unjarall, setpwfilespath">
-    <delete dir="${build.unjar.dir}/META-INF"/>
-    <jar destfile="${build.dist.dir}/multigps.${pwset}.jar" manifest="manifests/multigps_manifest.txt">	    
-      <fileset dir="${build.classes.dir}" includes="**/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="**/*.properties"/>
-      <fileset dir="${build.classes.dir}" includes="**/*.png"/>
-      <fileset dir="${build.classes.dir}" includes="**/*.txt"/>
-      <fileset dir="${pwfiles.path}" includes="*"/>
-      <fileset dir="${build.unjar.dir}"/>	    
-    </jar>  
-    <chmod file="${build.dist.dir}/multigps.${pwset}.jar}" perm="755"/>
+    <property name="pwfiles.path" value="${pwbasepath}/${pwset}"/>
   </target>
 
 	<!-- ======================================================================= -->
 	<!-- Target: makeseqviewjar                                                  -->
 	<!-- Depends: build, unjarall, setpwfilespath                         		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
-	<!--              for the seqview browser. ant -Dpwset=mahonylab makeseqviewjar     -->
+	<!--              for the seqview browser.  							     -->
+	<!--   ant -Dpwbasepath=/gpfs/group/sam77/default/code/pwfiles  -Dpwset=mahonylab makeseqviewjar     -->
 	<!-- ======================================================================= -->
   <target name="makeseqviewjar" depends="build, unjarall, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
@@ -154,7 +135,8 @@
 	<!-- Target: makesigniftestjar                                                  -->
 	<!-- Depends: build, unjarall, setpwfilespath                         		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
-	<!--              for the seqview browser. ant -Dpwset=pughlab makesigniftestjar     -->
+	<!--              for the seqview browser.                                  -->
+	<!--    ant -Dpwbasepath=/gpfs/group/sam77/default/code/pwfiles -Dpwset=pughlab makesigniftestjar     -->
 	<!-- ======================================================================= -->
   <target name="makesigniftestjar" depends="build, unjarall, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
@@ -173,7 +155,8 @@
 	<!-- Target: makeseqcodejar                                                  -->
 	<!-- Depends: build, unjarall                                          		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
-	<!--              for the seqcode jar. ant -Dpwset=mahonylab  makeseqcodejar    -->
+	<!--              for the seqcode jar.    									 -->
+	<!--     ant -Dpwbasepath=/gpfs/group/sam77/default/code/pwfiles  -Dpwset=mahonylab  makeseqcodejar    -->
 	<!-- ======================================================================= -->
 	
   <target name="makeseqcodejar" depends="build, unjarall, setpwfilespath">
