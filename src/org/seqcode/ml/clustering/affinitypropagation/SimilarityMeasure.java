@@ -1,6 +1,8 @@
 package org.seqcode.ml.clustering.affinitypropagation;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.seqcode.ml.clustering.Clusterable;
 import org.seqcode.ml.clustering.ClusterablePair;
@@ -61,8 +63,38 @@ public abstract class SimilarityMeasure<X extends Clusterable> implements Pairwi
     	}
     }
 
+    public List<APExemplar> getExemplars(){
+    	List<APExemplar> exs = new ArrayList<APExemplar>();
+    	for (int i=0; i<exidx.length; i++) 
+    		exs.add(new APExemplar(i));
+    	return exs;
+    }
     
+    public List<APAssignment> getAssignments(){
+    	List<APAssignment> assigns = new ArrayList<APAssignment>();
+    	for (int i=0; i<this.size(); i++)
+    		assigns.add(new APAssignment(i));
+    	return assigns;
+    }
 
     
-
+    public class APExemplar{
+    	public int index;
+    	public String name;
+    	public APExemplar(int i){
+    		index = exidx[i];
+    		name = getName(exidx[i]);
+    	}
+    }
+    
+    public class APAssignment{
+    	public int index;
+    	public String name;
+    	public APExemplar exemplar;
+    	public APAssignment(int i){
+    		index = i;
+    		name = getName(i);
+    		exemplar = new APExemplar(assgn[i]);
+    	}
+    }
 }
