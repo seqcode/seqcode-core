@@ -68,6 +68,7 @@ public class ChIPReadSimulator {
 	private List<ReadHit> noiseSource=null;
 	private boolean subsampleControl=false;
 	private boolean paired=false;
+	private int startChrm= -1; //Specify which chromosome to start placing binding events
 	
 	public ChIPReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, int jointSpacing, String outPath){
 		model=m;
@@ -155,6 +156,7 @@ public class ChIPReadSimulator {
 			
 			//Translate from offsets to chromosome name and start
 			int c=0; long offset=0;
+			if (startChrm !=-1){ c=startChrm;}	// hack to start simulating from different chromosome
 			String chr = fakeGen.getChromList().get(0);
 			while(curroff>(offset+chromLens[c]) && c<fakeGen.getChromList().size()-1){
 				c++;
@@ -414,6 +416,9 @@ public class ChIPReadSimulator {
 		}
 		System.err.println(noiseSource.size()+" control reads sourced as distinct fragments");
 	}
+	public void setStartChrom(int sc){
+		this.startChrm = sc;
+	}
 	
 
 	// clean up
@@ -556,6 +561,8 @@ public class ChIPReadSimulator {
 			}if(ap.hasKey("paired")){
 				isPaired=true;
 			}
+			
+			
 			double noiseProb   = Args.parseDouble(args, "noise", 0.9);
 			double [][] noiseProbs = new double[c][r];
 			for(int x=0; x<c; x++)
@@ -589,6 +596,9 @@ public class ChIPReadSimulator {
 				manager = new ExperimentManager(econ);
 				sim.setNoiseSource(manager.getSamples(), subsampleControl);
 			}
+	        if (ap.hasKey("sc")){
+	        	sim.setStartChrom(new Integer(ap.getKeyValue("sc")));
+	        }
 			
 	        sim.setTotalReads((int) reads);
 	        sim.setReadLength(rlen);
