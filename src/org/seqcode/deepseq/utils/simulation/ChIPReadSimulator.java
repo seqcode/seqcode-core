@@ -156,8 +156,8 @@ public class ChIPReadSimulator {
 			
 			//Translate from offsets to chromosome name and start
 			int c=0; long offset=0;
-			if (startChrm !=-1){ c=startChrm;}	// hack to start simulating from different chromosome
 			String chr = fakeGen.getChromList().get(0);
+			if (startChrm !=-1){ c=startChrm; chr = fakeGen.getChromList().get(c); }	// hack to start simulating from different chrom
 			while(curroff>(offset+chromLens[c]) && c<fakeGen.getChromList().size()-1){
 				c++;
 				chr = fakeGen.getChromList().get(c);
