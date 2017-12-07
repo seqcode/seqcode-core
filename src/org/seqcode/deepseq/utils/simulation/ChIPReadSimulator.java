@@ -69,7 +69,7 @@ public class ChIPReadSimulator {
 	private boolean subsampleControl=false;
 	private boolean paired=false;
 	
-	public ChIPReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, int jointSpacing, String outPath, int startChrom){
+	public ChIPReadSimulator(BindingModel m, Genome g, List<SimCounts> counts, int numCond, int numRep, double noiseProb, double jointRate, int jointSpacing, String outPath){
 		model=m;
 		numConditions = numCond;
 		numReplicates = numRep;
@@ -80,7 +80,7 @@ public class ChIPReadSimulator {
 		genomeLength = (long)fakeGen.getGenomeLength();
 		chromLens = new long[fakeGen.getChromList().size()];
 		
-		int c=startChrom; long offset=0;
+		int c=0; long offset=0;
 		for(String chr : fakeGen.getChromList()){
 			chromLens[c]=fakeGen.getChromLength(chr); 
 			chromOffsets.put(chr, offset);
@@ -466,7 +466,7 @@ public class ChIPReadSimulator {
 	 */
 	public static void main(String[] args) {
 		String empFile, outFile="out";
-		int c=2, r=2, numdata, jointSpacing=200, rlen=32, startChrom=0; 
+		int c=2, r=2, numdata, jointSpacing=200, rlen=32;
 		double frags=1000000, reads=1000000, a, up, down, diff, jointRate=0.0;
 		String bmfile;
 		boolean printEvents=true, subsampleControl=false, isPaired=false;
@@ -555,9 +555,7 @@ public class ChIPReadSimulator {
 				}
 			}if(ap.hasKey("paired")){
 				isPaired=true;
-			}if (ap.hasKey("startC")){
-				startChrom = new Integer(ap.getKeyValue("startC"));	//Modefied by Naomi to allow simulation event starts from non-zero chromosome
-			}														
+			}
 			
 			
 			double noiseProb   = Args.parseDouble(args, "noise", 0.9);
@@ -584,7 +582,7 @@ public class ChIPReadSimulator {
 			// Simulate reads according to counts and binding model
 			BindingModel bm = new BindingModel(mFile);
 	        //Initialize the MultiConditionReadSimulator
-			ChIPReadSimulator sim = new ChIPReadSimulator(bm, gcon.getGenome(), counts, c, r, noiseProb, jointRate, jointSpacing, outFile, startChrom);
+			ChIPReadSimulator sim = new ChIPReadSimulator(bm, gcon.getGenome(), counts, c, r, noiseProb, jointRate, jointSpacing, outFile);
 	        if(noiseProb==1.0)
 	        	sim.setTotalFrags((int) frags);
 
