@@ -556,6 +556,8 @@ public class ChIPReadSimulator {
 			}if(ap.hasKey("paired")){
 				isPaired=true;
 			}
+			
+			
 			double noiseProb   = Args.parseDouble(args, "noise", 0.9);
 			double [][] noiseProbs = new double[c][r];
 			for(int x=0; x<c; x++)

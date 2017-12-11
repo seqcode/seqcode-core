@@ -108,7 +108,7 @@ public class PointEnrichmentTester {
 			}
 			if (i ==1){writer.println("number of overlap with random regions for iteration one : "+numRandOverlaps);}
 			if (w != null){ 
-				w.print(numRandOverlaps+"\t");
+				w.print(numRandOverlaps+"\n");
 				w.close();
 				}
 			if (numRandOverlaps >totalOverlap){
