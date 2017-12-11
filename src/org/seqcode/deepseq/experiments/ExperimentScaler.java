@@ -232,11 +232,11 @@ public class ExperimentScaler {
 			try {
 				FileWriter fout = new FileWriter(outputFile+".NCIS_scaling-ccr.count");
 				for(int d=0; d<bintotals.size(); d++)
-					fout.write(bintotals.get(d)+","+ratios.get(d));
+					fout.write(bintotals.get(d)+"\t"+ratios.get(d)+"\n");
 				fout.close();
 				FileWriter fout2 = new FileWriter(outputFile+".NCIS_scaling-marginal.count");
 				for(int d=0; d<bintot.size(); d++)
-					fout2.write(bintot.get(d)+","+mratios.get(d));
+					fout2.write(bintot.get(d)+"\t"+mratios.get(d)+"\n");
 				fout2.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
