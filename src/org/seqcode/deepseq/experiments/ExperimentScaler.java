@@ -2,6 +2,7 @@ package org.seqcode.deepseq.experiments;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -226,6 +227,21 @@ public class ExperimentScaler {
 			plotter.saveXYplot(dataToPlot, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Cumulative Count Scaling Ratio", outputFile+".NCIS_scaling-ccr.png", true);
 			ScalingPlotter plotter2 = new ScalingPlotter(outputFile+" NCIS plot");
 			plotter2.saveXYplot(dataToPlot2, totalAtScaling, scalingRatio, "Binned Total Tag Count", "Marginal Signal/Control Ratio", outputFile+".NCIS_scaling-marginal.png", true);
+			
+			//Print data points to files
+			try {
+				FileWriter fout = new FileWriter(outputFile+".NCIS_scaling-ccr.count");
+				for(int d=0; d<bintotals.size(); d++)
+					fout.write(bintotals.get(d)+","+ratios.get(d));
+				fout.close();
+				FileWriter fout2 = new FileWriter(outputFile+".NCIS_scaling-marginal.count");
+				for(int d=0; d<bintot.size(); d++)
+					fout2.write(bintot.get(d)+","+mratios.get(d));
+				fout2.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
         
 		return(scalingRatio);
