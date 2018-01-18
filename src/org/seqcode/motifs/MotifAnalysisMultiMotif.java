@@ -115,12 +115,17 @@ public class MotifAnalysisMultiMotif {
 		//initialize
 		MotifAnalysisMultiMotif analyzer = new MotifAnalysisMultiMotif(gConfig);
 		
+		System.out.println("mutlimotif analyzer is initialized");
+		
 		//load options
 		analyzer.setNumTest(numSamp);
 		analyzer.setWin(win);
 		analyzer.setPrintROC(print_roc);
 		analyzer.loadBackgroundFromFile(backFile, simBackFile);
 		analyzer.loadMotifsFromFile(motifFile);
+		
+		System.out.println("motifs are loaded");
+		
 		if(thresFile!=null)
 			analyzer.loadThresholdsFromFile(thresFile, thresLevel);
 		else if(fractionThreshold != Double.MIN_VALUE)
@@ -131,7 +136,7 @@ public class MotifAnalysisMultiMotif {
 		//load positive & negative sets
 		if(ap.hasKey("seq"))
 		{
-			System.out.println("using cash and loading sequences");
+			System.out.println("using cash to load sequences");
 			analyzer.loadPositive(posFile,true);
 			analyzer.loadNegative(neg,true);
 		}else{
