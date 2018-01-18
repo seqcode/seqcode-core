@@ -131,16 +131,13 @@ public class MotifAnalysisMultiMotif {
 		//load positive & negative sets
 		if(ap.hasKey("seq"))
 		{
-			System.out.println("using cash to load sequences");
 			analyzer.loadPositive(posFile,true);
-			System.out.println("positives are loaded");
 			analyzer.loadNegative(neg,true);
 		}else{
 			analyzer.loadPositive(posFile,false);
 			analyzer.loadNegative(neg,false);
 		}
 		
-		System.out.println("sequences loaded");
 
 		//Options
 		if(peaksWithMotifs)
@@ -185,9 +182,6 @@ public class MotifAnalysisMultiMotif {
 
 	//Simple printing of peak lines that contain ANY of the motifs
 	public void printPeaksWithMotifs(){
-		
-		System.out.println("within peaks with motifs");
-		
 		boolean [] contains = new boolean[posSet.size()];
 		for(int i=0; i<posSet.size(); i++){contains[i]=false;}
 		for(WeightMatrix m : motifs){
@@ -522,7 +516,6 @@ public class MotifAnalysisMultiMotif {
 		posPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, fname, window);
 		posLines = RegionFileUtilities.loadLinesFromFile(fname);
 		if(usecache){
-			System.out.println("loading positive sequences.");
 			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, gcon.getSequenceGenerator());
 		}else{
 			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, null);
