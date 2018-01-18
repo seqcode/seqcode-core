@@ -114,18 +114,13 @@ public class MotifAnalysisMultiMotif {
 
 		//initialize
 		MotifAnalysisMultiMotif analyzer = new MotifAnalysisMultiMotif(gConfig);
-		
-		System.out.println("mutlimotif analyzer is initialized");
-		
+				
 		//load options
 		analyzer.setNumTest(numSamp);
 		analyzer.setWin(win);
 		analyzer.setPrintROC(print_roc);
 		analyzer.loadBackgroundFromFile(backFile, simBackFile);
 		analyzer.loadMotifsFromFile(motifFile);
-		
-		System.out.println("motifs are loaded");
-		
 		if(thresFile!=null)
 			analyzer.loadThresholdsFromFile(thresFile, thresLevel);
 		else if(fractionThreshold != Double.MIN_VALUE)
@@ -138,6 +133,7 @@ public class MotifAnalysisMultiMotif {
 		{
 			System.out.println("using cash to load sequences");
 			analyzer.loadPositive(posFile,true);
+			System.out.println("positives are loaded");
 			analyzer.loadNegative(neg,true);
 		}else{
 			analyzer.loadPositive(posFile,false);
@@ -526,6 +522,7 @@ public class MotifAnalysisMultiMotif {
 		posPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, fname, window);
 		posLines = RegionFileUtilities.loadLinesFromFile(fname);
 		if(usecache){
+			System.out.println("loading positive sequences.");
 			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, gcon.getSequenceGenerator());
 		}else{
 			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, null);
