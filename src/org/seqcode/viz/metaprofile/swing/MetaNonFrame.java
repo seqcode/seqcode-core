@@ -55,6 +55,9 @@ public class MetaNonFrame{
 		linePanel.setTransparent(c);
 		panel.setTransparent(c);
 	}
+	public void setDrawBorder(boolean c){
+		linePanel.setDrawBorder(c);
+	}
 	public void saveImages(String root){
 		try {
 			System.err.println("Saving images with root name: "+root);

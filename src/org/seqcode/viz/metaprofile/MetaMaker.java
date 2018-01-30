@@ -72,6 +72,7 @@ public class MetaMaker {
 						nonframe.setColor(mconfig.color);
 						nonframe.setDrawColorBar(mconfig.drawColorBar);
 						nonframe.setTransparent(mconfig.transparent);
+						nonframe.setDrawBorder(mconfig.border);
 						MetaProfileHandler handler = nonframe.getHandler();
 						if(mconfig.peakFiles.size()==1){
 							System.out.println("Single set mode...");
