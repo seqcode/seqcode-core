@@ -38,7 +38,8 @@ public class ProfileLinePanel extends JPanel implements ProfileListener{
 	private boolean colorQuantized=false;
 	private double [] colorQuantaLimits=null;
 	private boolean drawColorBar=true;
-	private boolean drawBorder = true;
+//	private boolean drawBorder = true; temporarily commented out
+	private boolean drawBorder = false;
 	private boolean transparent = false;
 
 	public ProfileLinePanel(BinningParameters bps, PaintableScale s) { 
