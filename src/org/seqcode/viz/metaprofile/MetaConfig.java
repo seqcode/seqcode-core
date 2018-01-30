@@ -23,7 +23,7 @@ public class MetaConfig {
 	public boolean saveSVG = false;
 	public boolean transparent = false;
 	public boolean printMatrix = false;
-	public boolean border = true;
+	public boolean drawBorder = true;
 	public String profilerType = "fiveprime";	
 	public String profileStyle = "Line";	
 	public List<String> peakFiles = null;
@@ -56,7 +56,7 @@ public class MetaConfig {
 			outName = Args.parseString(args, "out", "meta");
 			batchRun = Args.parseFlags(args).contains("batch");
 			cluster = Args.parseFlags(args).contains("cluster");
-			border = Args.parseFlags(args).contains("noborder") ? false : true;
+			drawBorder = Args.parseFlags(args).contains("noborder") ? false : true;
 			color = Color.blue;
 			String newCol = Args.parseString(args, "color", "blue");
 			if(newCol.equals("red"))
