@@ -103,6 +103,7 @@ public class MetaConfig {
 				"\t--nocolorbar [flag to turn off colorbar in batch mode]\n" +
 				"\t--transparent [flag for transparent background]\n" +
 				"\t--style <Line/Histo>\n" +
+				"\t--noborder [flag to turn off drawing border]\n" +
 				"\t--svg [flag to save an SVG image]\n"));
 	}
 }
