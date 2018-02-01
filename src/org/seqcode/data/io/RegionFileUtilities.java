@@ -473,6 +473,9 @@ public class RegionFileUtilities {
 	 * @param win
 	 * @return
 	 */
+	public static List<Point> loadPeaksFromPeakFile(Genome gen, String filename){
+		return loadPeaksFromPeakFile(gen, filename, 1);
+	}
 	public static List<Point> loadPeaksFromPeakFile(Genome gen, String filename, int win){
 		List<Point> peaks = new ArrayList<Point>();
 		PointParser pparser = new PointParser(gen);
