@@ -75,6 +75,7 @@ public class RegionTagCounts {
 					double scaling = rep.getControlScaling();
 					double sigStrength = 1-(scaling/(rep.getSignal().getHitCount()/rep.getControl().getHitCount()));
 					sigCount = sigStrength * rep.getSignal().getHitCount();
+					System.err.println("SigStrength="+sigStrength+"\tsigCount="+sigCount);
 				}
 				
 				ArrayList<Double> allRepCounts= new ArrayList<Double>();
