@@ -104,9 +104,9 @@ public class RegionTagCounts {
 								
 								double count = 0;
 								if(totalTagNorm)
-									count=sum/rep.getSignal().getHitCount();
+									count=sum/rep.getSignal().getHitCount()*1000000;
 								else if(sigPropNorm)
-									count=sum/sigCount;
+									count=sum/sigCount*1000000;
 								else
 									count=sum;
 								
