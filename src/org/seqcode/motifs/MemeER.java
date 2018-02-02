@@ -55,17 +55,17 @@ public class MemeER {
 	protected String MEMEargs;
 	protected static String PWMfile = null;	// pwm output file name
 	protected Float pseudo = (float)0.001;
-	public static final int MOTIF_FINDING_NEGSEQ=5000;
+	public static final int MOTIF_FINDING_NEGSEQ=10000;
 	public static final double MOTIF_FINDING_ALLOWED_REPETITIVE = 0.2;
-//	public static final double MOTIF_MIN_ROC = 0.70;
-	public static double MOTIF_MIN_ROC = 0.70;
+	protected double motifMinROC = 0.70;
 	public MemeER(String path, String args) {
 		this.MEMEpath = path;
 		this.MEMEargs = args;		
 	}
 	
 	// option to set motif minimum ROC
-	public void setMotifMinROC(double minroc){MOTIF_MIN_ROC = minroc;}
+	public void setMotifMinROC(double minroc){motifMinROC = minroc;}
+	public double getMotifMinROC(){return motifMinROC;}
 
 	public Pair<List<WeightMatrix>,List<WeightMatrix>> execute(List<String> sequences, File memeOutDirFullName, boolean bestOnly){
 		List<WeightMatrix> wm = new ArrayList<WeightMatrix>();
@@ -368,7 +368,7 @@ public class MemeER {
 						if(fm.get(w)!=null){
 							System.err.println("\t"+fm.get(w).getName()+"\t"+ WeightMatrix.getConsensus(fm.get(w))+"\tROC:"+String.format("%.2f",rocScores[w]));
 						}
-						if(rocScores[w] > MemeER.MOTIF_MIN_ROC){
+						if(rocScores[w] > meme.getMotifMinROC()){
 							selectedMotifs.add(fm.get(w));
 							selectedMotifsRocs.add(rocScores[w]);
 						}
