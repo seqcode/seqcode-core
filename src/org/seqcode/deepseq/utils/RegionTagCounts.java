@@ -70,9 +70,12 @@ public class RegionTagCounts {
 		for(ExperimentCondition c : manager.getConditions()){
 			for(ControlledExperiment rep : c.getReplicates()){
 				System.err.println("Condition "+c.getName()+":\tRep "+rep.getName());
-				double scaling = rep.getControlScaling();
-				double sigStrength = 1-(scaling/(rep.getSignal().getHitCount()/rep.getControl().getHitCount()));
-				double sigCount = sigStrength * rep.getSignal().getHitCount();
+				double sigCount = rep.getSignal().getHitCount();
+				if(rep.hasControl()){
+					double scaling = rep.getControlScaling();
+					double sigStrength = 1-(scaling/(rep.getSignal().getHitCount()/rep.getControl().getHitCount()));
+					sigCount = sigStrength * rep.getSignal().getHitCount();
+				}
 				
 				ArrayList<Double> allRepCounts= new ArrayList<Double>();
 				ChromRegionIterator chroms = new ChromRegionIterator(gConfig.getGenome());
