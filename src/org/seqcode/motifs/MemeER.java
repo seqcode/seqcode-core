@@ -6,8 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +20,6 @@ import org.seqcode.data.io.StreamGobbler;
 import org.seqcode.data.motifdb.WeightMatrix;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
-import org.seqcode.genome.Species;
 import org.seqcode.genome.location.NamedRegion;
 import org.seqcode.genome.location.Region;
 import org.seqcode.genome.sequence.SequenceGenerator;
@@ -31,7 +28,6 @@ import org.seqcode.gsebricks.verbs.motifs.WeightMatrixScoreProfile;
 import org.seqcode.gsebricks.verbs.motifs.WeightMatrixScorer;
 import org.seqcode.gseutils.ArgParser;
 import org.seqcode.gseutils.Args;
-import org.seqcode.gseutils.NotFoundException;
 import org.seqcode.gseutils.Pair;
 
 /**
@@ -425,7 +421,25 @@ public class MemeER {
 	}
 	
 	public  double[] motifROCScores(List<WeightMatrix> matrices, List<String> posSeqs, String[] negSeqs){
+		String[] testNegSeqs=negSeqs;
 		double[] rocScores = new double[matrices.size()];
+		
+		//If lengths of posSeqs and negSeqs are not matched, 
+		//we will get errors in our discriminative performance estimates
+		int posAvgLen=0, negAvgLen=0;
+		for(String posSeq : posSeqs){ posAvgLen+=posSeq.length(); }
+		for(String negSeq : negSeqs){ negAvgLen+=negSeq.length(); }
+		posAvgLen/=posSeqs.size();
+		negAvgLen/=negSeqs.length;
+		if(posAvgLen<negAvgLen && posAvgLen>0){
+			testNegSeqs = new String[negSeqs.length];
+			for(int s=0; s<negSeqs.length; s++)
+				testNegSeqs[s] = negSeqs[s].substring(0, posAvgLen);
+		}else if(posAvgLen > negAvgLen){
+			System.err.println("WARNING: average length of positive sequences is "
+					+ "greater than that of negatives. AUROCs will not be accurate");
+		}
+		
 		int m=0;
 		for(WeightMatrix motif : matrices){
 			List<Double> posScores = new ArrayList<Double>();
@@ -436,8 +450,8 @@ public class MemeER {
 					WeightMatrixScoreProfile profiler = scorer.execute(posSeq);
 					posScores.add(profiler.getMaxScore());
 				}
-				for(int s=0; s<negSeqs.length; s++){
-					WeightMatrixScoreProfile profiler = scorer.execute(negSeqs[s]);
+				for(int s=0; s<testNegSeqs.length; s++){
+					WeightMatrixScoreProfile profiler = scorer.execute(testNegSeqs[s]);
 					negScores.add(profiler.getMaxScore());
 				}
 			}
