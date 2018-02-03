@@ -432,9 +432,15 @@ public class MemeER {
 		posAvgLen/=posSeqs.size();
 		negAvgLen/=negSeqs.length;
 		if(posAvgLen<negAvgLen && posAvgLen>0){
+			Random rand = new Random();
+			//Match distribution of negative sequence lengths to that of positives
+			int numP = posSeqs.size();
 			testNegSeqs = new String[negSeqs.length];
-			for(int s=0; s<negSeqs.length; s++)
-				testNegSeqs[s] = negSeqs[s].substring(0, posAvgLen);
+			for(int s=0; s<negSeqs.length; s++){
+				int randPos = (int)(rand.nextDouble()*numP);
+				int currLen = posSeqs.get(randPos).length();
+				testNegSeqs[s] = negSeqs[s].substring(0, currLen);
+			}
 		}else if(posAvgLen > negAvgLen){
 			System.err.println("WARNING: average length of positive sequences is "
 					+ "greater than that of negatives. AUROCs will not be accurate");
