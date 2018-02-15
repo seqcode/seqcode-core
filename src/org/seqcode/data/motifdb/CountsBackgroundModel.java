@@ -361,7 +361,7 @@ public class CountsBackgroundModel extends BackgroundModel implements Background
    */
   public static CountsBackgroundModel modelFromRegionList(Genome gen, List<Region> regionList, int k){
     SequenceGenerator<Region> seqgen = new SequenceGenerator<Region>();
-    seqgen.useCache(false);
+    //seqgen.useCache(false);
 
     CountsBackgroundModel cbg = new CountsBackgroundModel(null, gen, k);
     cbg.gen = gen;

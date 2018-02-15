@@ -14,7 +14,6 @@ import org.seqcode.data.motifdb.CountsBackgroundModel;
 import org.seqcode.data.motifdb.FrequencyBackgroundModel;
 import org.seqcode.data.motifdb.MarkovBackgroundModel;
 import org.seqcode.genome.Genome;
-import org.seqcode.gseutils.Args;
 import org.seqcode.gseutils.NotFoundException;
 
 
