@@ -69,16 +69,16 @@ public class Stranded5PrimeShiftMaxCorrelation {
 		Vector<Point> points = utils.loadPoints(new File(peakFile));
 		
 		double maxCorr=0;
-		double maxShift=0;
+		double bestShift=0;
 		for (int i=minShift; i<maxShift; i++){
 			double currCorr= correlationBpShift(points,mconfig.fivePrimeShift);
 			if (currCorr > maxCorr){
 				maxCorr = currCorr;
-				maxShift =i;			
+				bestShift =i;			
 			}
 		}	
 		
-		System.out.println("MaximumCorrelation : "+maxCorr+"\tMaximumShift : "+maxShift);
+		System.out.println("MaximumCorrelation : "+maxCorr+"\tMaximumShift : "+bestShift);
 	}
 	
 	public double correlationBpShift(Vector<Point> points, int shift){
@@ -145,6 +145,8 @@ public class Stranded5PrimeShiftMaxCorrelation {
 		GenomeConfig gconfig = new GenomeConfig(args);
 		ExptConfig econfig = new ExptConfig(gconfig.getGenome(), args);
 		MetaConfig mconfig = new MetaConfig(args);
+		
+		System.out.println("winwow size set? "+mconfig.winLen);
 		
 		Stranded5PrimeShiftMaxCorrelation maxcorr = new Stranded5PrimeShiftMaxCorrelation(gconfig, mconfig, econfig);
 		boolean isLog= Args.parseFlags(args).contains("notlog") ? false: true;
