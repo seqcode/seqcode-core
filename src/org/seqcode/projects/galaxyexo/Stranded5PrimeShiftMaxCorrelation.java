@@ -99,6 +99,8 @@ public class Stranded5PrimeShiftMaxCorrelation {
 					pos_mat[k][j] = posProfile.value(j);
 					neg_mat[k][j] = negProfile.value(j);
 					if (isLog){
+						if (pos_mat[k][j]==0){ pos_mat[k][j]=1;} //pseudo counts
+						if (neg_mat[k][j]==0){ neg_mat[k][j]=1;} 
 						pos_mat[k][j] = Math.log(pos_mat[k][j]);
 						neg_mat[k][j] = Math.log(neg_mat[k][j]);
 					}
@@ -112,6 +114,8 @@ public class Stranded5PrimeShiftMaxCorrelation {
 					pos_mat[k][j] = posProfile.value(j);
 					neg_mat[k][j] = negProfile.value(j);
 					if (isLog){
+						if (pos_mat[k][j]==0){ pos_mat[k][j]=1;} //pseudo counts
+						if (neg_mat[k][j]==0){ neg_mat[k][j]=1;} 
 						pos_mat[k][j] = Math.log(pos_mat[k][j]);
 						neg_mat[k][j] = Math.log(neg_mat[k][j]);
 					}
