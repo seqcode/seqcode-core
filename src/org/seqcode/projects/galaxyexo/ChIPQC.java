@@ -1,5 +1,6 @@
 package org.seqcode.projects.galaxyexo;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -35,12 +36,14 @@ public class ChIPQC {
 	protected GenomeConfig gconfig;
 	protected ExptConfig econfig;
 	protected ExperimentManager manager;
+	protected Genome genome;
 	
 	public ChIPQC(GenomeConfig gcon, ExptConfig econ, ExperimentManager man){	
 		gconfig = gcon;
 		econfig = econ;
 		manager = man;
-	}
+		genome = econfig.getGenome();
+	}	
 	 
 	public void printQCMetrics(){		
 		double ncis, signalHits, controlHits;
@@ -66,7 +69,6 @@ public class ChIPQC {
 	
 	public void printPairedBinCounts(int scalingWindowSize) throws FileNotFoundException, UnsupportedEncodingException{
 		
-		Genome genome = econfig.getGenome();
 		Map<Sample, List<Float>> sampleWindowCounts = new HashMap<Sample, List<Float>>();
 		List<Sample> allSamples = new ArrayList<Sample>();
 		List<Sample> signalSamples = new ArrayList<Sample>();
@@ -111,6 +113,19 @@ public class ChIPQC {
 		}		
 		manager.close();
 	}
+	
+	public void printGenomeBins(int scalingWindowSize) throws FileNotFoundException{
+		File outFile = new File(System.getProperty("user.dir")+File.separator+"genome_windows.bed");
+		PrintWriter writer = new PrintWriter(outFile);
+		for(String chrom:genome.getChromList()) {
+			int chrlen = genome.getChromLength(chrom);
+			for (int start = 1; start  < chrlen - scalingWindowSize; start += scalingWindowSize) {
+				Region r = new Region(genome, chrom, start, start + scalingWindowSize);
+				writer.write("chrm"+chrom.toString()+"\t"+start+"\t"+start + scalingWindowSize+"\n");
+			}
+		}
+		writer.close();
+	}
 		
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {	
 		/***
@@ -128,6 +143,7 @@ public class ChIPQC {
                                "\t--scalewin <window size for scaling procedure (default=10000)>\n" +
                                "\t--binCounts [flag to print bin counts] \n" +
             				   "\t--plotscaling [flag to plot diagnostic information for the chosen scaling method]\n" +
+            				   "\t--printBins [flag to print genomic bin coordinates in bed file]\n" +
                                "");
             System.exit(0);
         }
@@ -140,6 +156,8 @@ public class ChIPQC {
 		exoQC.printQCMetrics();			
 		if (ap.hasKey("binCounts"))
 			exoQC.printPairedBinCounts(econf.getScalingSlidingWindow());
+		if (ap.hasKey("printBins"))
+			exoQC.printGenomeBins(econf.getScalingSlidingWindow());
 		manager.close();
 	}
 }
