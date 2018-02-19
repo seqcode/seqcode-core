@@ -72,6 +72,7 @@ public class Stranded5PrimeShiftMaxCorrelation {
 		double bestShift=0;
 		for (int i=minShift; i<maxShift; i++){
 			double currCorr= correlationBpShift(points,i);
+			System.out.println("current shift, "+i+",current corr,"+currCorr);
 			if (currCorr > maxCorr){
 				maxCorr = currCorr;
 				bestShift =i;			
@@ -149,7 +150,7 @@ public class Stranded5PrimeShiftMaxCorrelation {
 		System.out.println("winwow size set? "+mconfig.winLen);
 		
 		Stranded5PrimeShiftMaxCorrelation maxcorr = new Stranded5PrimeShiftMaxCorrelation(gconfig, mconfig, econfig);
-		boolean isLog= Args.parseFlags(args).contains("notlog") ? false: true;
+		boolean isLog= Args.parseFlags(args).contains("nolog") ? false: true;
 		maxcorr.setLog(isLog);
 		
 		maxcorr.run();
