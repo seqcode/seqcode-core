@@ -71,7 +71,7 @@ public class Stranded5PrimeShiftMaxCorrelation {
 		double maxCorr=0;
 		double bestShift=0;
 		for (int i=minShift; i<maxShift; i++){
-			double currCorr= correlationBpShift(points,mconfig.fivePrimeShift);
+			double currCorr= correlationBpShift(points,i);
 			if (currCorr > maxCorr){
 				maxCorr = currCorr;
 				bestShift =i;			
