@@ -21,7 +21,7 @@ import org.seqcode.viz.metaprofile.PointProfiler;
 import org.seqcode.viz.metaprofile.Stranded5PrimeProfiler;
 
 /**
- * Utility to compute a base pair shift that maximizes the correlation between stranded tags. 
+ * Utility to compute a base pair shift that maximizes the correlation between stranded tags. Trim the edges(=maxShift) to calculate correlation.
  * 
  * Input:
  * 		- Genome
@@ -94,11 +94,11 @@ public class Stranded5PrimeShiftMaxCorrelation {
 			PointProfile posProfile = (PointProfile) posProfiler.execute(points.get(k));
 			PointProfile negProfile = (PointProfile) negProfiler.execute(points.get(k));
 			if(k==0){
-				pos_mat = new double[points.size()][posProfile.length()];
-				neg_mat = new double[points.size()][negProfile.length()];
-				for(int j=0; j< posProfile.length(); j++){
-					pos_mat[k][j] = posProfile.value(j);
-					neg_mat[k][j] = negProfile.value(j);
+				pos_mat = new double[points.size()][posProfile.length()-maxShift*2];
+				neg_mat = new double[points.size()][negProfile.length()-maxShift*2];
+				for(int j=0; j< posProfile.length()-maxShift*2; j++){
+					pos_mat[k][j] = posProfile.value(j+maxShift);
+					neg_mat[k][j] = negProfile.value(j+maxShift);
 					if (isLog){
 						if (pos_mat[k][j]==0){ pos_mat[k][j]=1;} //pseudo counts
 						if (neg_mat[k][j]==0){ neg_mat[k][j]=1;} 
@@ -111,9 +111,9 @@ public class Stranded5PrimeShiftMaxCorrelation {
 				}
 			}
 			else{
-				for(int j=0; j< posProfile.length(); j++){
-					pos_mat[k][j] = posProfile.value(j);
-					neg_mat[k][j] = negProfile.value(j);
+				for(int j=0; j< posProfile.length()-maxShift*2; j++){
+					pos_mat[k][j] = posProfile.value(j+maxShift);
+					neg_mat[k][j] = negProfile.value(j+maxShift);
 					if (isLog){
 						if (pos_mat[k][j]==0){ pos_mat[k][j]=1;} //pseudo counts
 						if (neg_mat[k][j]==0){ neg_mat[k][j]=1;} 
