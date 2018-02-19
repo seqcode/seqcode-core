@@ -134,7 +134,7 @@ public class ExperimentScaler {
 	 * @param outputFile : optional file that will contain the data 
 	 * @return
 	 */
-	public double scalingRatioByNCIS(List<Float> setA, List<Float> setB, String outputFile){
+	public double scalingRatioByNCIS(List<Float> setA, List<Float> setB, String outputFile, double minFrac){
 		double scalingRatio=1;
 		double totalAtScaling=0;
 		if(setA.size()!=setB.size()){
@@ -161,7 +161,7 @@ public class ExperimentScaler {
         	totalAtScaling = pc.x+pc.y;
         	
         	i++;
-        	if(i/numPairs > 0.75 && cumulA>0 && cumulB>0){ //NCIS estimates begin using the lower 3 quartiles of the genome (based on total tags)
+        	if(i/numPairs > minFrac && cumulA>0 && cumulB>0){ //NCIS estimates begin using the lower 3 quartiles of the genome (based on total tags)
 	        	currRatio = (cumulA/cumulB);
 	        	if(lastRatio==-1 || currRatio<lastRatio){
 	        		lastRatio = currRatio;
@@ -380,7 +380,7 @@ public class ExperimentScaler {
 				if(sampA.isSignal()){
 					for(Sample sampB : exptMan.getSamples())
 						if(sampA!=null && sampB!=null && sampA.getIndex() != sampB.getIndex())
-							System.out.println("NCIS\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByNCIS(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB), null));
+							System.out.println("NCIS\t"+sampA.getName()+" vs "+sampB.getName()+"\t"+scaler.scalingRatioByNCIS(sampleWindowCounts.get(sampA), sampleWindowCounts.get(sampB), null,econfig.getNCISMinBinFrac()));
 				}
 			}
 			

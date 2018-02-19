@@ -55,6 +55,7 @@ public class ExptConfig {
 	protected boolean loadType2Reads = false; //Load Type2 reads (if exists and distinguishable)
 	protected boolean loadRead2=true; //Load second in pair reads (only used by BAM loader for now)
 	protected boolean loadPairs = false; //Load pair information (if exists)
+	protected double NCISMinBinFrac = 0.75; //NCIS estimates begin using the lower fraction of the genome (based on total tags)
 	
 	    
 	protected String[] args;
@@ -133,6 +134,7 @@ public class ExptConfig {
 					fixedScalingFactor = Args.parseFloat(args,"fixedscaling",1);
 				}
 				//Scale by NCIS is default
+				NCISMinBinFrac = Args.parseDouble(args, "ncisbinmin", NCISMinBinFrac);	//NCIS estimates begin using the lower fraction of the genome (based on total tags)
 				//Scale by median 
 				scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
 				//Scale by SES
@@ -311,6 +313,7 @@ public class ExptConfig {
 	public boolean getLoadType2Reads(){return loadType2Reads;}
 	public boolean getLoadRead2(){return loadRead2;}
 	public boolean getLoadPairs(){return loadPairs;}
+	public double getNCISMinBinFrac(){return NCISMinBinFrac;}
 	
 	//Some accessors to allow modification of options after config .
 	public void setPrintLoadingProgress(boolean plp){printLoadingProgress = plp;}
