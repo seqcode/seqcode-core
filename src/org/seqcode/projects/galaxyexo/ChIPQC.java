@@ -121,7 +121,7 @@ public class ChIPQC {
 			int chrlen = genome.getChromLength(chrom);
 			for (int start = 1; start  < chrlen - scalingWindowSize; start += scalingWindowSize) {
 				Region r = new Region(genome, chrom, start, start + scalingWindowSize);
-				writer.write("chr"+chrom.toString()+"\t"+start+"\t"+start + scalingWindowSize+"\n");
+				writer.write("chr"+chrom.toString()+"\t"+start+"\t"+(start+scalingWindowSize)+"\n");
 			}
 		}
 		writer.close();
