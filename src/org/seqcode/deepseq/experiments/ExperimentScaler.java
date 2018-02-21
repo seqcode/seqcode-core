@@ -283,15 +283,18 @@ public class ExperimentScaler {
         
         //NCIS procedure
         double cumulA=0, cumulB=0, currRatio=0, lastRatio=-1;
+        double cumulrawB=0,finalRatio=0;
         float i=0;
         for(PairedCounts pc : counts){
         	cumulA+=pc.x;
         	cumulB+=pc.y;
+        	cumulrawB+=pc.y/tRatio;
         	totalAtScaling = pc.x+pc.y;
         	
         	i++;
         	if(i/numPairs > minFrac && cumulA>0 && cumulB>0){ //NCIS estimates begin using the lower 3 quartiles of the genome (based on total tags)
 	        	currRatio = (cumulA/cumulB);
+	        	finalRatio = (cumulA/cumulrawB);
 	        	if(lastRatio==-1 || currRatio<lastRatio){
 	        		lastRatio = currRatio;
 	        	}else{
@@ -301,6 +304,8 @@ public class ExperimentScaler {
         }
         
         scalingRatio = currRatio*tRatio; //Multiply by the total tag normalization
+        System.out.println("scaling ratio by multiplication "+scalingRatio);
+        System.out.println("scaling ratio by using tag counts "+finalRatio);
         
         
         /*Scaling plot generation*/
