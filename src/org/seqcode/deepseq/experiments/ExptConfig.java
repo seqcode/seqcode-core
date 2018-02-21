@@ -373,6 +373,7 @@ public class ExptConfig {
 				"\t--medianscale [flag to use scaling by median ratio (default = scaling by NCIS)]\n" +
 				"\t--regressionscale [flag to use scaling by regression (default = scaling by NCIS)]\n" +
 				"\t--sesscale [flag to use scaling by SES (default = scaling by NCIS)]\n" +
+				"\t--normalizedncisscale [flag to use scaling by total tag followed by NCIS (default = scaling by NCIS)]\n" +
 				"\t--fixedscaling <multiply control counts by total tag count ratio and then by this factor if not estimating scaling>\n" +
 				"\t--scalewin <window size for scaling procedure (default=10000)>\n" +
 				"\t--plotscaling [flag to plot diagnostic information for the chosen scaling method]\n" +

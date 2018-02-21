@@ -300,9 +300,6 @@ public class ExperimentScaler {
         	}
         }
         
-        System.out.println("currRatio");
-        System.out.println("tRatio");
-        
         scalingRatio = currRatio*tRatio; //Multiply by the total tag normalization
         
         
