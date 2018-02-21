@@ -268,7 +268,7 @@ public class ExperimentScaler {
 		//First normalize using total reads
 		float tRatio = (float) (totalA/totalB);
 		List<Float> setnB = new ArrayList<Float>();
-		for (int x=0; x< setnB.size();x++)
+		for (int x=0; x< setB.size();x++)
 			setnB.add(setnB.get(x)/tRatio);
 		
 		float numPairs = (float)setA.size();
