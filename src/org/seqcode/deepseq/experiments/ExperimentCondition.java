@@ -164,6 +164,9 @@ public class ExperimentCondition {
 						expt.setScaling(scaler.scalingRatioByRegression(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl())));
 					else if(econfig.getScalingByMedian())
 						expt.setScaling(scaler.scalingRatioByMedian(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl())));
+					else if(econfig.getScalingByHitRatioAndNCIS())
+						expt.setScaling(scaler.scalingRatioByHitRatioAndNCIS(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl()),
+								expt.getSignal().getHitCount(), expt.getControl().getHitCount(),scalingPlotFilename,econfig.getNCISMinBinFrac()));
 					else
 						expt.setScaling(scaler.scalingRatioByNCIS(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl()), scalingPlotFilename,econfig.getNCISMinBinFrac()));
 				}

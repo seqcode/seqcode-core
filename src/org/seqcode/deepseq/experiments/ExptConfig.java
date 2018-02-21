@@ -43,6 +43,7 @@ public class ExptConfig {
 	protected boolean scalingByRegression=false; //Default is to scale by NCIS
 	protected boolean scalingBySES = false; //Default is to estimate scaling by NCIS
 	protected boolean scalingByMedian = false; //Default is to estimate scaling by NCIS
+	protected boolean scalingByHitRatioAndNCIS = false; //Default is to estimate scaling by NCIS
 	protected float fixedScalingFactor = 1; //Default is to estimate scaling by NCIS
 	protected int scalingSlidingWindow = 10000; 
 	protected boolean plotScaling = false; //Make a scaling method plot
@@ -141,6 +142,8 @@ public class ExptConfig {
 				scalingBySES = Args.parseFlags(args).contains("sesscale") ? true : false;
 				//Scale by regression
 				scalingByRegression = Args.parseFlags(args).contains("regressionscale") ? true : false;
+				//Scale by total tag followed by NCIS
+				scalingByHitRatioAndNCIS = Args.parseFlags(args).contains("normalizedncisscale") ? true : false;
 				//Scaling window
 				scalingSlidingWindow = Args.parseInteger(args,"scalewin",scalingSlidingWindow);
 				//Make a scaling method plot
@@ -304,6 +307,7 @@ public class ExptConfig {
 	public boolean getScalingByMedian(){return scalingByMedian;}
 	public boolean getScalingByRegression(){return scalingByRegression;}
 	public boolean getScalingBySES(){return scalingBySES;}
+	public boolean getScalingByHitRatioAndNCIS(){return scalingByHitRatioAndNCIS;}
 	public int getScalingSlidingWindow(){return scalingSlidingWindow;}
 	public boolean getPlotScaling(){return plotScaling;}
 	public boolean getCacheAllData(){return cacheAllHits;}
