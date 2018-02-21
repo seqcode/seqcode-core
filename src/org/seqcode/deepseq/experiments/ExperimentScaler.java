@@ -269,7 +269,7 @@ public class ExperimentScaler {
 		float tRatio = (float) (totalA/totalB);
 		List<Float> setnB = new ArrayList<Float>();
 		for (int x=0; x< setB.size();x++)
-			setnB.add(setnB.get(x)/tRatio);
+			setnB.add(setB.get(x)/tRatio);
 		
 		float numPairs = (float)setA.size();
 		List<PairedCounts> counts = new ArrayList<PairedCounts>();
