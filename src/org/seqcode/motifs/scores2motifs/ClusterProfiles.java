@@ -39,14 +39,14 @@ import org.seqcode.ml.clustering.vectorcluster.VectorClusterElement;
  */
 
 public class ClusterProfiles {
+	
+	private List<Hill> hills;
 	private PairwiseElementMetric<VectorClusterElement> metric = new EuclideanDistance<VectorClusterElement>();
 	private int K;
 	private int numClusItrs;
-	private ArrayList<VectorClusterElement> sparse_profiles = new ArrayList<VectorClusterElement>();
-	private ArrayList<String> sparse_colnames = new ArrayList<String>();
+	private List<VectorClusterElement> sparse_profiles = new ArrayList<VectorClusterElement>();
+	private List<String> sparse_colnames = new ArrayList<String>();
 	private File outdir;
-	private HashMap<Integer,String> indToLocation;
-	private HashMap<Integer,Double> intToLogitScore;
 	private int minK=4;
 	private int maxK=5;
 	
@@ -63,78 +63,21 @@ public class ClusterProfiles {
 	private final int maxSplitSize = 1000;
 	
 	
-
-	
-	//Gettors
-	public int getKmerBaseInd(int len){
-		int baseInd = 0;
-		for(int k=minK; k<len; k++){
-			baseInd += (int)Math.pow(4, k);
-		}
-		return baseInd;
-	}
-	public String getKmerName(int ind){
-		int currKmerLen = 0;
-		ArrayList<Integer> baseinds = new ArrayList<Integer>();
-		for(int k=minK; k <= maxK; k++){
-			baseinds.add(getKmerBaseInd(k));
-		}
-		int search = Collections.binarySearch(baseinds, ind);
+	/**
+	 * Constructor that sets up the k-means object
+	 * @param itrs
+	 * @param k
+	 * @param pfls
+	 * @param otag
+	 */
+	public ClusterProfiles(List<Hill> hills, int itrs, int mink, int maxk, File odir) {
+		this.hills = hills;
+		numClusItrs = itrs;
+		setKmerModLenMin(mink);
+		setKmerModLenMax(maxk);
+		sparcifyProfiles();
 		
-		currKmerLen = search >= 0 ? minK + search : -1*(search + 1) - 1 + minK;
-		String kmerName = RegionFileUtilities.int2seq(ind- getKmerBaseInd(currKmerLen), currKmerLen);
-		
-		return kmerName;
-	}
-	
-	public int getNumClusters(){
-		return K;
-	}
-	
-	//Settors
-	public void setNumClusters(int nc){K=nc;}
-	public void setProfileInds(HashMap<Integer,String> plfsinds){indToLocation=plfsinds;}
-	public void setProfileScores(HashMap<Integer,Double> plfscore){intToLogitScore = plfscore;}
-	public void setKmerModLenMin(int k){minK = k;}
-	public void setKmerModLenMax(int k){maxK = k;}
-	public void setOutdir(File f){outdir = f;}
-	
-	
-	public void setSparcedProfiles(ArrayList<int[]> pfs){
-		
-		// First find the penetrance of each feature
-		double[] feature_penetrance = new double[pfs.get(0).length];
-		for(int[] p : pfs){
-			for(int i=0; i<p.length; i++){
-				if(p[i] > 0)
-					feature_penetrance[i]++;
-			}
-		}
-		
-		
-		// Find the colnames of the once that will be kept and store the colnames in a list
-		for(int i=0; i<feature_penetrance.length; i++){
-			feature_penetrance[i] = feature_penetrance[i]/pfs.size();
-			if(feature_penetrance[i] > minKmerProp_global ){
-				sparse_colnames.add(getKmerName(i));
-			}
-		}
-			
-		// Now make the sparse profiles
-		int sparce_length = sparse_colnames.size();
-		
-		for(int[] p : pfs){
-			double[] sparce_p = new double[sparce_length];
-			int count=0;
-			for(int i=0; i<p.length; i++){
-				if(feature_penetrance[i] > minKmerProp_global){
-					sparce_p[count] = (double)p[i];
-					count++;
-				}		
-			}
-			DefaultVectorClusterElement v = new DefaultVectorClusterElement(sparce_p);
-			sparse_profiles.add(v);
-		}
+		this.setOutdir(odir);
 	}
 	
 	/**
@@ -201,6 +144,80 @@ public class ClusterProfiles {
 		return clusAssignment;
 	}
 	
+	//Gettors
+	public int getKmerBaseInd(int len){
+		int baseInd = 0;
+		for(int k=minK; k<len; k++){
+			baseInd += (int)Math.pow(4, k);
+		}
+		return baseInd;
+	}
+	public String getKmerName(int ind){
+		int currKmerLen = 0;
+		ArrayList<Integer> baseinds = new ArrayList<Integer>();
+		for(int k=minK; k <= maxK; k++){
+			baseinds.add(getKmerBaseInd(k));
+		}
+		int search = Collections.binarySearch(baseinds, ind);
+		
+		currKmerLen = search >= 0 ? minK + search : -1*(search + 1) - 1 + minK;
+		String kmerName = RegionFileUtilities.int2seq(ind- getKmerBaseInd(currKmerLen), currKmerLen);
+		
+		return kmerName;
+	}
+	
+	public int getNumClusters(){
+		return K;
+	}
+	
+	//Settors
+	public void setNumClusters(int nc){K=nc;}
+	public void setKmerModLenMin(int k){minK = k;}
+	public void setKmerModLenMax(int k){maxK = k;}
+	public void setOutdir(File f){outdir = f;}
+	
+	
+	public void sparcifyProfiles(){
+		
+		// First find the penetrance of each feature
+		double[] feature_penetrance = new double[hills.get(0).getKmerProfile().length];
+		for(Hill h : hills){
+			int[] p = h.getKmerProfile();
+			for(int i=0; i<p.length; i++){
+				if(p[i] > 0)
+					feature_penetrance[i]++;
+			}
+		}
+		
+		
+		// Find the colnames of the once that will be kept and store the colnames in a list
+		for(int i=0; i<feature_penetrance.length; i++){
+			feature_penetrance[i] = feature_penetrance[i]/hills.size();
+			if(feature_penetrance[i] > minKmerProp_global ){
+				sparse_colnames.add(getKmerName(i));
+			}
+		}
+			
+		// Now make the sparse profiles
+		int sparce_length = sparse_colnames.size();
+		
+		for(Hill h : hills){
+			int[] p = h.getKmerProfile();
+			double[] sparce_p = new double[sparce_length];
+			int count=0;
+			for(int i=0; i<p.length; i++){
+				if(feature_penetrance[i] > minKmerProp_global){
+					sparce_p[count] = (double)p[i];
+					count++;
+				}		
+			}
+			DefaultVectorClusterElement v = new DefaultVectorClusterElement(sparce_p);
+			sparse_profiles.add(v);
+		}
+	}
+	
+	
+	
 	public boolean added(Vector<VectorClusterElement> added, VectorClusterElement curr){
 		boolean ret = false;
 		for(VectorClusterElement a : added){
@@ -219,7 +236,7 @@ public class ClusterProfiles {
 	}
 	
 	
-	// Slave methods
+	// write clusters to a file
 	private List<Integer> writeClusters(Vector<VectorClusterElement> clusMeans) throws IOException{
 		List<Integer> clusterAssignment = new ArrayList<Integer>();
 		int[] clusterCounts = new int[K];
@@ -248,9 +265,9 @@ public class ClusterProfiles {
 		BufferedWriter bw = new BufferedWriter(ow);
 		
 		for(int p=0; p<sparse_profiles.size(); p++){
-			int memebership = getClusterAssignment(sparse_profiles.get(p),clusMeans);
-			clusterAssignment.add(memebership);
-			bw.write(indToLocation.get(p)+"\t"+Integer.toString(memebership)+"\t"+Double.toString(intToLogitScore.get(p))+"\n");
+			int membership = getClusterAssignment(sparse_profiles.get(p),clusMeans);
+			clusterAssignment.add(membership);
+			bw.write(hills.get(p).getHillRegion().getLocationString()+"\t"+Integer.toString(membership)+"\t"+Double.toString(hills.get(p).getScore())+"\n");
 		}
 		bw.close();
 		return clusterAssignment;
@@ -333,28 +350,6 @@ public class ClusterProfiles {
 		Pair<Double,Double> clusterquality = new Pair<Double,Double>(kmc.silhouette(),kmc.sumOfSquaredDistance());
 		
 		return new Pair<Pair<Double,Double>,Vector<VectorClusterElement>>(clusterquality,kmc.getClusterMeans());
-		
-	}
-	
-
-	/**
-	 * Constructor that sets up the k-means object
-	 * @param itrs
-	 * @param k
-	 * @param pfls
-	 * @param otag
-	 */
-	public ClusterProfiles(int itrs, ArrayList<int[]> pfls, HashMap<Integer,String> pflsIndsMap, int mink, int maxk, HashMap<Integer,Double> pflscores,File odir) {
-		numClusItrs = itrs;
-		setKmerModLenMin(mink);
-		setKmerModLenMax(maxk);
-		setSparcedProfiles(pfls);
-		setProfileInds(pflsIndsMap);
-		setProfileScores(pflscores);
-		
-		
-		
-		this.setOutdir(odir);
 		
 	}
 	

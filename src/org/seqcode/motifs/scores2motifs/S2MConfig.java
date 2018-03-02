@@ -1,30 +1,13 @@
 package org.seqcode.motifs.scores2motifs;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
-import org.seqcode.data.io.RegionFileUtilities;
-import org.seqcode.data.motifdb.WeightMatrix;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.GenomeConfig;
-import org.seqcode.genome.location.NamedRegion;
-import org.seqcode.genome.location.Point;
 import org.seqcode.genome.location.Region;
-import org.seqcode.genome.location.RepeatMaskedRegion;
 import org.seqcode.genome.sequence.SequenceGenerator;
-import org.seqcode.gsebricks.verbs.location.ChromRegionIterator;
 import org.seqcode.gsebricks.verbs.location.RepeatMaskedGenerator;
 import org.seqcode.gseutils.ArgParser;
 import org.seqcode.gseutils.Args;

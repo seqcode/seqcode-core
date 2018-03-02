@@ -2,7 +2,7 @@ package org.seqcode.motifs.scores2motifs;
 
 import org.seqcode.genome.location.Region;
 
-public class Hill {
+public class Hill implements Comparable<Hill>{
 
 	protected Region hillLoc;
 	protected Double score;
@@ -17,4 +17,15 @@ public class Hill {
 	
 	//Settor
 	public void setKmerProfile(int[] kp){ kmerProfile=kp; }
+	
+	//Gettors
+	public Region getHillRegion(){return hillLoc;}
+	public Double getScore(){return score;}
+	public String getSeq(){return seq;}
+	public int[] getKmerProfile(){return kmerProfile;}
+
+	
+	public int compareTo(Hill o) {
+		return o.score.compareTo(this.score);
+	}
 }
