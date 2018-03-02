@@ -529,15 +529,19 @@ public class RegionFileUtilities {
 	            String[] words = line.split("\\t+");
 	            
 	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
-	            	if(words.length>=2 && words[0].contains(":")){
+	            	if(words.length>=1 && words[0].contains(":")){
 		            	if(words[0].contains("-")){
 		                	RegionParser rparser = new RegionParser(gen);
 			            	Region q = rparser.execute(words[0]);
-			            	Double score = new Double(words[1]);  
+			            	Double score = 1.0; //This is basically just reading unscored points
+			            	if(words.length>=2)
+			            		score = new Double(words[1]);  
 			            	peaks.add(new ScoredPoint(q.getGenome(), q.getChrom(), q.getMidpoint().getLocation(), score));			            	
 		            	}else{
 		            		Point p = pparser.execute(words[0]);
-		            		Double score = new Double(words[1]);  
+		            		Double score = 1.0; //This is basically just reading unscored points
+			            	if(words.length>=2)
+			            		score = new Double(words[1]);  
 			            	peaks.add(new ScoredPoint(p.getGenome(), p.getChrom(), p.getLocation(), score));
 		            	}
 		            }

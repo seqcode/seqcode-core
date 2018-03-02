@@ -51,7 +51,7 @@ public class S2MConfig implements Serializable{
 	/** The minimum value of model scan score to consider form motif finding */
 	protected double thresold_hills = 0.1;
 	/** The number of hills in each cluster to consider for MEME motif finding */
-	public static final int NUM_HILLS = 750;
+	public static final int NUM_HILLS = 2000;
 	/** No of iterations of clustering */
 	public static final int ITRS_CLUS=10;
 	/** minimum ROC required to report motif*/
@@ -180,16 +180,16 @@ public class S2MConfig implements Serializable{
 				"\n OPTIONS:\n" +
 				" General:\n"+
 				"\t--out <prefix>: Ouput file prefix. All output will be put into a directory with the prefix name\n" +
-				"\t--threads <n>: Use n threads to train SeqUnwinder model. Default is 5 threads\n" +
 				"\t--debug: Flag to run in debug mode; prints extra output\n" +
 				"\t--memepath <path>: path to the meme bin dir (default: meme is in $PATH)\n" +
+				"\t--points <file>: (scored) genomic locations\n" +
 				" Specify the genome:\n" +
 				"\t--geninfo <genome info file> This file should list the lengths of all chromosomes on separate lines using the format chrName<tab>chrLength\n" + 
 				"\t\tAND\n" +  
 				"\t--seq <path>: A directory containing fasta format files corresponding to every named chromosome is required\n" +
 				"\t--mink <int>: Minimum length of k-mer (default = 4)\n" + 
 				"\t--maxk <int>: Maximum length of k-mer (default = 5)\n" + 
-				" Other SeqUnwinder options (Highly recommend using defaul options): \n"+
+				" Other Scores2Motifs options (Recommend using default options): \n"+
 				"\t--minscanlen <value>: Minimum length of the window to scan K-mer models. Default=8.\n"+
 				"\t--maxscanlen <value>: Maximum length of the window to scan K-mer models. Default=14.\n"+
 				"\t--hillsthresh <value>: Scoring threshold to identify hills. Default=0.1.\n"+

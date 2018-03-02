@@ -1,6 +1,8 @@
 package org.seqcode.motifs.scores2motifs;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,10 +31,10 @@ public class Scores2Motifs {
 	protected int bestNumClusters = 2;
 	
 	/** List of all discriminative motifs for all the labels*/ 
-	protected List<WeightMatrix> discrimMotifs = new ArrayList<WeightMatrix>();
+	protected List<WeightMatrix> motifs = new ArrayList<WeightMatrix>();
 	
 	/** The ROC value of the identified motifs that indicates their significance */
-	protected HashMap<String, Double> discrimMotifsRocs = new HashMap<String,Double>();
+	protected HashMap<String, Double> motifRocs = new HashMap<String,Double>();
 	
 	
 
@@ -43,8 +45,9 @@ public class Scores2Motifs {
 	public Scores2Motifs(S2MConfig h2mcon) {
 		s2mConfig = h2mcon;
 		basedir_profiles = new File(s2mConfig.getOutDir().getAbsoluteFile()+File.separator+"kmer_profiles");
+		basedir_profiles.mkdirs();
 		basedir_meme = new File(s2mConfig.getOutDir().getAbsoluteFile()+File.separator+File.separator+"meme");
-		
+		basedir_meme.mkdirs();
 	}
 	
 	/**
@@ -52,16 +55,17 @@ public class Scores2Motifs {
 	 * @throws IOException
 	 */
 	public void execute() throws IOException{
-		makeMemeDirs();
-		
 		//Load a set of random regions
+		System.out.println("Loading random regions");
 		setRandomRegs();
 		
 		//Define the hills according to one of the input options
+		System.out.println("Defining hill regions");
 		setHills();
 		
 		//Cluster hill profiles
 		if(hills.size()>100){
+			System.out.println("Clustering hills");
 			ClusterProfiles clusterManager = new ClusterProfiles(hills, S2MConfig.ITRS_CLUS,s2mConfig.getKmin(),s2mConfig.getKmax(),basedir_profiles);
 			clusterAssignment = clusterManager.execute();
 			bestNumClusters = clusterManager.getNumClusters();
@@ -69,6 +73,9 @@ public class Scores2Motifs {
 		
 		//Run motif-finding
 		runMEME();
+		
+		//Write output motifs
+		writeMotifs();
 		
 	}
 
@@ -127,7 +134,7 @@ public class Scores2Motifs {
 					Iterator<ScoredPoint> peakItr = sp.iterator();
 					while(peakItr.hasNext()){
 						ScoredPoint currPeak = peakItr.next();
-						Region currReg = currPeak.expand(s2mConfig.getRepMaskWin());
+						Region currReg = currPeak.expand(s2mConfig.getRepMaskWin()/2);
 						double repLen = 0;
 						Iterator<RepeatMaskedRegion> repItr = s2mConfig.getRepMask().execute(currReg);
 						while (repItr.hasNext()) {
@@ -187,14 +194,6 @@ public class Scores2Motifs {
 	
 	
 	/**
-	 * Make MEME directories
-	 */
-	protected void makeMemeDirs(){
-		File memeDir = new File(s2mConfig.getOutDir().getAbsoluteFile()+File.separator+"meme");
-				memeDir.mkdirs();
-	}
-	
-	/**
 	 * Run motif-finding with MEME
 	 */
 	protected void runMEME(){
@@ -241,12 +240,64 @@ public class Scores2Motifs {
 					if(rocScores[w] > meme.getMotifMinROC()){
 						//selectedMotifs.add(fm.get(w));
 						fm.get(w).setName("c"+Integer.toString(c)+"_"+Integer.toString(motInd));
-						discrimMotifs.add(fm.get(w));
-						discrimMotifsRocs.put("c"+Integer.toString(c)+"_"+Integer.toString(motInd), rocScores[w]);
+						motifs.add(fm.get(w));
+						motifRocs.put("c"+Integer.toString(c)+"_"+Integer.toString(motInd), rocScores[w]);
 					}
 					motInd++;
 				}
 			}
+		}
+	}
+	
+	protected void writeMotifs() throws IOException{
+		//First write a transfac file with all the identified discrim motifs
+		File motifsTransfac = new File(s2mConfig.getOutDir().getAbsoluteFile()+File.separator+"motifs.transfac");
+		FileWriter fw = new FileWriter(motifsTransfac);
+		BufferedWriter bw = new BufferedWriter(fw);
+
+		for(int m =0; m<motifs.size(); m++){
+			String out = WeightMatrix.printTransfacMatrix(motifs.get(m),motifs.get(m).getName().replaceAll("#", ""));
+			bw.write(out);
+		}
+		bw.close();
+
+		// Next, print the ROC values
+		File motifsROC = new File(s2mConfig.getOutDir().getAbsoluteFile()+File.separator+"motifs_roc.tab");
+		fw = new FileWriter(motifsROC);
+		bw = new BufferedWriter(fw);
+		for(String s : motifRocs.keySet()){
+			bw.write(s.replaceAll("#", "")+"\t"+Double.toString(motifRocs.get(s))+"\n");
+		}
+		bw.close();
+
+		// Now print the logos
+		File motifLogos = new File(s2mConfig.getOutDir().getAbsolutePath()+File.separator+"motif_logos");
+		motifLogos.mkdirs();
+		// Finally, draw the motif logos
+		for(WeightMatrix fm : motifs){
+			File motifFileName = new File(s2mConfig.getOutDir().getAbsolutePath()+File.separator+"motif_logos"+File.separator+fm.getName().replaceAll("#", "")+".png");
+			org.seqcode.motifs.DrawMotifs.printMotifLogo(fm, motifFileName, 75, fm.getName(), true);
+			File motifFileNameRC = new File(s2mConfig.getOutDir().getAbsolutePath()+File.separator+"motif_logos"+File.separator+fm.getName().replaceAll("#", "")+"_rc.png");
+			org.seqcode.motifs.DrawMotifs.printMotifLogo(WeightMatrix.reverseComplement(fm), motifFileNameRC, 75, fm.getName().replaceAll("#", ""), true);
+		}
+	}
+	
+	
+	/**
+	 * main
+	 * @param args
+	 */
+	public static void main(String[] args){	
+		System.err.println("Scores2Motifs version "+S2MConfig.version+"\n\n");
+		
+		try {
+			S2MConfig con = new S2MConfig(args);
+			
+			Scores2Motifs s2m = new Scores2Motifs(con);
+			s2m.execute();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
