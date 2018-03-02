@@ -1,0 +1,5 @@
+This subpackage is copied from parts of the SeqUnwinder code. 
+
+The aim is to take any scoring landscape, cluster the local peaks in that landscape based on k-mers, and then run each cluster through MEME. 
+This procedure allows you to convert any arbitrary scoring landscape into interpretable motifs. 
+ 
