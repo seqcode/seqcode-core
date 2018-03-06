@@ -691,7 +691,8 @@ public class RegionFileUtilities {
 	        intVal = 3;
 	        break;
 	      default:
-	        throw new IllegalArgumentException("Invalid character: " + base);
+	    	intVal=-1;	    	  
+	        //throw new IllegalArgumentException("Invalid character: " + base);
 	    }
 	    return intVal;
 	  }
