@@ -164,8 +164,11 @@ public class ExperimentCondition {
 						expt.setScaling(scaler.scalingRatioByRegression(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl())));
 					else if(econfig.getScalingByMedian())
 						expt.setScaling(scaler.scalingRatioByMedian(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl())));
+					else if(econfig.getScalingByHitRatioAndNCIS())
+						expt.setScaling(scaler.scalingRatioByHitRatioAndNCIS(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl()),
+								expt.getSignal().getHitCount(), expt.getControl().getHitCount(),scalingPlotFilename,econfig.getNCISMinBinFrac()));
 					else
-						expt.setScaling(scaler.scalingRatioByNCIS(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl()), scalingPlotFilename));
+						expt.setScaling(scaler.scalingRatioByNCIS(sampleWindowCounts.get(expt.getSignal()), sampleWindowCounts.get(expt.getControl()), scalingPlotFilename,econfig.getNCISMinBinFrac()));
 				}
 			}
 				
@@ -190,7 +193,7 @@ public class ExperimentCondition {
 			else if(econfig.getScalingByMedian())
 				pooledSampleControlScaling = scaler.scalingRatioByMedian(pooledSignal, pooledControl);
 			else
-				pooledSampleControlScaling = scaler.scalingRatioByNCIS(pooledSignal, pooledControl, null);
+				pooledSampleControlScaling = scaler.scalingRatioByNCIS(pooledSignal, pooledControl, null, econfig.getNCISMinBinFrac());
 			
 			if(econfig.getPrintLoadingProgress())
 				System.err.println("\tComplete.");

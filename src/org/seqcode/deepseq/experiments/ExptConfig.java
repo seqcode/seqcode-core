@@ -43,6 +43,7 @@ public class ExptConfig {
 	protected boolean scalingByRegression=false; //Default is to scale by NCIS
 	protected boolean scalingBySES = false; //Default is to estimate scaling by NCIS
 	protected boolean scalingByMedian = false; //Default is to estimate scaling by NCIS
+	protected boolean scalingByHitRatioAndNCIS = false; //Default is to estimate scaling by NCIS
 	protected float fixedScalingFactor = 1; //Default is to estimate scaling by NCIS
 	protected int scalingSlidingWindow = 10000; 
 	protected boolean plotScaling = false; //Make a scaling method plot
@@ -55,6 +56,7 @@ public class ExptConfig {
 	protected boolean loadType2Reads = false; //Load Type2 reads (if exists and distinguishable)
 	protected boolean loadRead2=true; //Load second in pair reads (only used by BAM loader for now)
 	protected boolean loadPairs = false; //Load pair information (if exists)
+	protected double NCISMinBinFrac = 0.75; //NCIS estimates begin using the lower fraction of the genome (based on total tags)
 	
 	    
 	protected String[] args;
@@ -133,12 +135,15 @@ public class ExptConfig {
 					fixedScalingFactor = Args.parseFloat(args,"fixedscaling",1);
 				}
 				//Scale by NCIS is default
+				NCISMinBinFrac = Args.parseDouble(args, "ncisbinmin", NCISMinBinFrac);	//NCIS estimates begin using the lower fraction of the genome (based on total tags)
 				//Scale by median 
 				scalingByMedian = Args.parseFlags(args).contains("medianscale") ? true : false;
 				//Scale by SES
 				scalingBySES = Args.parseFlags(args).contains("sesscale") ? true : false;
 				//Scale by regression
 				scalingByRegression = Args.parseFlags(args).contains("regressionscale") ? true : false;
+				//Scale by total tag followed by NCIS
+				scalingByHitRatioAndNCIS = Args.parseFlags(args).contains("normalizedncisscale") ? true : false;
 				//Scaling window
 				scalingSlidingWindow = Args.parseInteger(args,"scalewin",scalingSlidingWindow);
 				//Make a scaling method plot
@@ -302,6 +307,7 @@ public class ExptConfig {
 	public boolean getScalingByMedian(){return scalingByMedian;}
 	public boolean getScalingByRegression(){return scalingByRegression;}
 	public boolean getScalingBySES(){return scalingBySES;}
+	public boolean getScalingByHitRatioAndNCIS(){return scalingByHitRatioAndNCIS;}
 	public int getScalingSlidingWindow(){return scalingSlidingWindow;}
 	public boolean getPlotScaling(){return plotScaling;}
 	public boolean getCacheAllData(){return cacheAllHits;}
@@ -311,6 +317,7 @@ public class ExptConfig {
 	public boolean getLoadType2Reads(){return loadType2Reads;}
 	public boolean getLoadRead2(){return loadRead2;}
 	public boolean getLoadPairs(){return loadPairs;}
+	public double getNCISMinBinFrac(){return NCISMinBinFrac;}
 	
 	//Some accessors to allow modification of options after config .
 	public void setPrintLoadingProgress(boolean plp){printLoadingProgress = plp;}
@@ -366,6 +373,7 @@ public class ExptConfig {
 				"\t--medianscale [flag to use scaling by median ratio (default = scaling by NCIS)]\n" +
 				"\t--regressionscale [flag to use scaling by regression (default = scaling by NCIS)]\n" +
 				"\t--sesscale [flag to use scaling by SES (default = scaling by NCIS)]\n" +
+				"\t--normalizedncisscale [flag to use scaling by total tag followed by NCIS (default = scaling by NCIS)]\n" +
 				"\t--fixedscaling <multiply control counts by total tag count ratio and then by this factor if not estimating scaling>\n" +
 				"\t--scalewin <window size for scaling procedure (default=10000)>\n" +
 				"\t--plotscaling [flag to plot diagnostic information for the chosen scaling method]\n" +

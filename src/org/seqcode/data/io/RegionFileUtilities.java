@@ -18,6 +18,7 @@ import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.NamedRegion;
 import org.seqcode.genome.location.Point;
 import org.seqcode.genome.location.Region;
+import org.seqcode.genome.location.ScoredPoint;
 import org.seqcode.genome.location.StrandedPoint;
 import org.seqcode.genome.location.StrandedRegion;
 import org.seqcode.genome.sequence.SequenceGenerator;
@@ -513,6 +514,47 @@ public class RegionFileUtilities {
 		return(peaks);
 	}
 	
+	//Format here would be: Point\tDouble
+	public static List<ScoredPoint> loadScoredPointsFromFile(Genome gen, String filename){
+		List<ScoredPoint> peaks = new ArrayList<ScoredPoint>();
+		PointParser pparser = new PointParser(gen);
+    	
+		try{
+			File pFile = new File(filename);
+			if(!pFile.isFile()){System.err.println("Invalid positive file name");System.exit(1);}
+	        BufferedReader reader = new BufferedReader(new FileReader(pFile));
+	        String line;
+	        while ((line = reader.readLine()) != null) {
+	            line = line.trim();
+	            String[] words = line.split("\\t+");
+	            
+	            if(words.length>0 && !words[0].contains("#") && !words[0].equals("Region") && !words[0].equals("Position")){
+	            	if(words.length>=1 && words[0].contains(":")){
+		            	if(words[0].contains("-")){
+		                	RegionParser rparser = new RegionParser(gen);
+			            	Region q = rparser.execute(words[0]);
+			            	Double score = 1.0; //This is basically just reading unscored points
+			            	if(words.length>=2)
+			            		score = new Double(words[1]);  
+			            	peaks.add(new ScoredPoint(q.getGenome(), q.getChrom(), q.getMidpoint().getLocation(), score));			            	
+		            	}else{
+		            		Point p = pparser.execute(words[0]);
+		            		Double score = 1.0; //This is basically just reading unscored points
+			            	if(words.length>=2)
+			            		score = new Double(words[1]);  
+			            	peaks.add(new ScoredPoint(p.getGenome(), p.getChrom(), p.getLocation(), score));
+		            	}
+		            }
+                }
+	        }reader.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return(peaks);
+	}
+	
 	public static List<String> loadLinesFromFile(String filename){
 		List<String> lines = new ArrayList<String>();
 		try{
@@ -649,7 +691,8 @@ public class RegionFileUtilities {
 	        intVal = 3;
 	        break;
 	      default:
-	        throw new IllegalArgumentException("Invalid character: " + base);
+	    	intVal=-1;	    	  
+	        //throw new IllegalArgumentException("Invalid character: " + base);
 	    }
 	    return intVal;
 	  }
