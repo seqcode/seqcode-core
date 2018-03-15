@@ -99,7 +99,9 @@ public class Scores2Motifs {
 				//Expand to region
 				Region searchWin = sp.expand(s2mConfig.getMemeSearchWin());
 				//Load sequences for each point
-				String seq = s2mConfig.getSeqGen().execute(searchWin);
+				String seq = s2mConfig.getSeqGen().execute(searchWin).toUpperCase();
+				if(seq.contains("N"))
+					continue;
 				//Define the Hill objects
 				hills.add(new Hill(searchWin, sp.getScore(), seq));
 			}
