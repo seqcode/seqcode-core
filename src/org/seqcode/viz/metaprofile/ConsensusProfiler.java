@@ -26,6 +26,7 @@ public class ConsensusProfiler  implements PointProfiler<Point, Profile>{
 		params=bp; 
 		consensus=cons;
 		scorer = new ConsensusSequenceScorer(consensus);
+		searchStrand = watsoncrick;
 		seqgen = new SequenceGenerator();
 		seqgen.useCache(useCache);
 		if(useCache){
