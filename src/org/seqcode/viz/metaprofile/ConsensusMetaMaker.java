@@ -27,6 +27,7 @@ public class ConsensusMetaMaker {
 	private static boolean cluster = false;
 	private static boolean usingColorQuanta=false;
 	private static double[] colorQuanta=null;
+	protected static boolean drawColorBar;
 	
 	public static void main(String[] args) throws IOException, ParseException {
 		try {
@@ -43,6 +44,7 @@ public class ConsensusMetaMaker {
 			char watsoncrick =  Args.parseString(args,"watsoncrick", ".").charAt(0);
 			String peakFile = Args.parseString(args, "peaks", null);
 			String outName = Args.parseString(args, "out", "meta");
+			drawColorBar = !Args.parseFlags(args).contains("nocolorbar");
 			boolean useCache = Args.parseFlags(args).contains("cache") ? true : false;
 			String seqPathName="";
 			if(useCache){
@@ -71,6 +73,15 @@ public class ConsensusMetaMaker {
 				c=new Color(0,153,0);
 			if(newCol.equals("black"))
 				c=Color.black;
+			for(int s=0; s<args.length; s++){
+				if(args[s].equals("--color4")){
+					Integer R = new Integer(args[s+1]);
+					Integer G = new Integer(args[s+2]);
+					Integer B = new Integer(args[s+3]);
+					Integer A = new Integer(args[s+4]);
+					c = new Color(R,G,B,A);
+				}
+			}
 		
 			
 			if(gen==null || consensus==null){printError();}
@@ -90,6 +101,8 @@ public class ConsensusMetaMaker {
 				System.setProperty("java.awt.headless", "true");
 				System.out.println("Batch running...");
 				MetaNonFrame nonframe = new MetaNonFrame(gen, params, profiler, normalizeProfile, false);
+				nonframe.setDrawColorBar(drawColorBar);
+				nonframe.setDrawBorder(false);
 				if(usingColorQuanta)
 					nonframe.setLinePanelColorQuanta(colorQuanta);
 				nonframe.setColor(c);
@@ -139,7 +152,8 @@ public class ConsensusMetaMaker {
 				"--color <red/green/blue> \n" +
 				"--cluster [flag to cluster in batch mode] \n" +
 				"--cache <flag to use cache while loading sequences> AND --seq <Full path of the sequence> \n" +
-				"--watsoncrick <W/C/.>"+
+				"--watsoncrick <W/C/.>\n"+
+				"--nocolorbar\n"+
 				"--batch [a flag to run without displaying the window]");
 		System.exit(1);
 	}
