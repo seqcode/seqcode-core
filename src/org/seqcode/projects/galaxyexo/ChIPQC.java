@@ -120,10 +120,12 @@ public class ChIPQC {
 		ArgParser ap = new ArgParser(args);	
         if((!ap.hasKey("species") && !ap.hasKey("geninfo"))) { 
             System.err.println("Usage:\n" +
-                               "RegionCountSorter\n" +
+                               "ChIPQC\n" +
                                "\t--species <organism;genome> OR\n" +
                                "\t--geninfo <genome info file> AND --seq <path to seqs>\n" +
-                               "\t--expt <experiments> \n" +
+                               "\t--expt <signal experiment> \n" +
+                               "\t--expt <control experiment> \n" +
+	                       "\t--format <BAM/IDX/BED/etc> \n" +
                                "\nOPTIONS:\n" +
                                "\t--scalewin <window size for scaling procedure (default=10000)>\n" +
                                "\t--binCounts [flag to print bin counts] \n" +
