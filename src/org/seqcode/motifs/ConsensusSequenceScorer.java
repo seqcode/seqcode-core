@@ -100,7 +100,7 @@ public class ConsensusSequenceScorer {
                 	mismatches++;
             
             if(strand=='-')
-            	results[sequence.length-length-i+1] = mismatches;
+            	results[sequence.length-length-i] = mismatches;
             else
             	results[i] = mismatches;
         }
