@@ -70,7 +70,7 @@ public class WeightMatrixScorer implements Mapper<Region,WeightMatrixScoreProfil
             }
             
             if(strand=='-') { 
-            	results[sequence.length-length-i] = score;
+            	results[sequence.length-length-i+1] = score;
             } else { 
             	results[i] = score;
             }
