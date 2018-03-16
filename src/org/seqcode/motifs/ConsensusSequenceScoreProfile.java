@@ -61,7 +61,7 @@ public class ConsensusSequenceScoreProfile {
 	/** Lowest mismatch over a window*/
 	public int getLowestMismatchBoundedWin(int l, int r){
 		int min = consensus.getMaxMismatch();
-		if(l>0 && r>=0 && l<forward.length && r<forward.length &&  l<=r){
+		if(l>=0 && r>=0 && l<forward.length && r<forward.length &&  l<=r){
 			for(int i=l; i<=r; i++){
 				if(getLowestMismatch(i)<min)
 					min = getLowestMismatch(i);

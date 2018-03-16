@@ -119,12 +119,15 @@ public class ConsensusMetaMaker {
 					nonframe.clusterLinePanel();
 				//Set the panel sizes here...
 				nonframe.setLineMin(0);
+				nonframe.setLineMax(1);
 				nonframe.saveImages(outName);
 				nonframe.savePointsToFile(outName);
 				System.out.println("Finished");
 			}else{
 				System.out.println("Initializing Meta-point frame...");
 				MetaFrame frame = new MetaFrame(gen, params, profiler, normalizeProfile);
+				frame.setLineMin(0);
+				frame.setLineMax(1);
 				if(usingColorQuanta)
 					frame.setLinePanelColorQuanta(colorQuanta);
 				frame.setColor(c);
