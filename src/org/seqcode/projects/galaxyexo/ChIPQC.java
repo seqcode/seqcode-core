@@ -61,8 +61,14 @@ public class ChIPQC {
 				IPstrength = 1-(ncis/(signalHits/controlHits));
 				if (IPstrength<0)
 					IPstrength=0;
-				System.out.println("Condition:"+rep.getCondName()+"\tSignal:"+signalHits+"\tControl:"+controlHits+"\tScalingFactor:"+ncis+"\tIPstrength: "+IPstrength);
 			}
+			double pooledncis = exptCond.getPooledSampleControlScaling();
+			double pooledsignal = exptCond.getTotalSignalCount();
+			double pooledcontrl = exptCond.getTotalControlCount();
+			double pooledIPstrength =1-(pooledncis/(pooledsignal/pooledcontrl));
+			if (pooledIPstrength<0)
+				pooledIPstrength=0;
+			System.out.println("Condition:"+exptCond.getName()+"\tSignal:"+pooledsignal+"\tControl:"+pooledcontrl+"\tScalingFactor:"+pooledncis+"\tIPstrength: "+pooledIPstrength);
 		}
 		manager.close();
 	}
