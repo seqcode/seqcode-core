@@ -186,12 +186,19 @@ public class ExperimentCondition {
 					sumCtrl+=sampleWindowCounts.get(s).get(x);
 				pooledControl.add(sumCtrl);
 			}
+			double totalSignalHits=0; double totalCtrlHits=0;
+			for(Sample s : signalSamples)
+				totalSignalHits+=s.getHitCount();
+			for (Sample s : controlSamples)
+				totalCtrlHits+=s.getHitCount();
 			if(econfig.getScalingBySES())
 				pooledSampleControlScaling = scaler.scalingRatioBySES(pooledSignal, pooledControl);
 			else if(econfig.getScalingByRegression())
 				pooledSampleControlScaling = scaler.scalingRatioByRegression(pooledSignal, pooledControl);
 			else if(econfig.getScalingByMedian())
 				pooledSampleControlScaling = scaler.scalingRatioByMedian(pooledSignal, pooledControl);
+			else if(econfig.getScalingByHitRatioAndNCIS())
+				pooledSampleControlScaling = scaler.scalingRatioByHitRatioAndNCIS(pooledSignal, pooledControl,totalSignalHits,totalCtrlHits, null, econfig.getNCISMinBinFrac());
 			else
 				pooledSampleControlScaling = scaler.scalingRatioByNCIS(pooledSignal, pooledControl, null, econfig.getNCISMinBinFrac());
 			
