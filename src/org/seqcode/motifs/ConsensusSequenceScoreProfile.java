@@ -42,14 +42,12 @@ public class ConsensusSequenceScoreProfile {
 	}
 	/** Strand of the lowest mismatch over a window*/
 	public char getLowestMismatchStrandBoundedWin(int l, int r){
-		int min = Integer.MAX_VALUE; 
 		int minScore = consensus.getMaxMismatch();
 		char str = '+';
 		for(int i = l; i <=r; i++) { 
 			int ms = getLowestMismatch(i);
-			if(min == Integer.MAX_VALUE || ms < minScore) { 
+			if(ms < minScore) { 
 				minScore= ms; 
-				min = i;
 				str = getLowestMismatchStrand(i);
 			}
 		}
@@ -63,7 +61,7 @@ public class ConsensusSequenceScoreProfile {
 	/** Lowest mismatch over a window*/
 	public int getLowestMismatchBoundedWin(int l, int r){
 		int min = consensus.getMaxMismatch();
-		if(l>0 && r>=0 && l<forward.length && r<forward.length &&  l<r){
+		if(l>0 && r>=0 && l<forward.length && r<forward.length &&  l<=r){
 			for(int i=l; i<=r; i++){
 				if(getLowestMismatch(i)<min)
 					min = getLowestMismatch(i);
