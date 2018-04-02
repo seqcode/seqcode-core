@@ -290,7 +290,7 @@ public class ExperimentScaler {
         	totalAtScaling = pc.x+pc.y;
         	
         	i++;
-        	if(i/numPairs > minFrac && (cumulA>0 || cumulB>0)){ //NCIS estimates begin using the lower 3 quartiles of the genome (based on total tags)
+        	if(i/numPairs > minFrac && cumulA>0 && cumulB>0){ //NCIS estimates begin using the lower 3 quartiles of the genome (based on total tags)
 	        	currRatio = (cumulA/cumulB);
 	        	if(lastRatio==-1 || currRatio<lastRatio){
 	        		lastRatio = currRatio;
