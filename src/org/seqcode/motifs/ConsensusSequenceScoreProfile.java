@@ -40,15 +40,28 @@ public class ConsensusSequenceScoreProfile {
 			return '-';
 		}
 	}
+	/** Strand of the lowest mismatch over a window*/
+	public char getLowestMismatchStrandBoundedWin(int l, int r){
+		int minScore = consensus.getMaxMismatch();
+		char str = '+';
+		for(int i = l; i <=r; i++) { 
+			int ms = getLowestMismatch(i);
+			if(ms < minScore) { 
+				minScore= ms; 
+				str = getLowestMismatchStrand(i);
+			}
+		}
+		return str;
+	}
 	
 	/** Lowest mismatch (from 2 strands) at this position */
 	public int getLowestMismatch(int i) { 
 		return Math.min(forward[i], reverse[i]); 
 	}
-	/** Lowest mismatch over the whole sequence*/
+	/** Lowest mismatch over a window*/
 	public int getLowestMismatchBoundedWin(int l, int r){
 		int min = consensus.getMaxMismatch();
-		if(l>0 && r>=0 && l<forward.length && r<forward.length &&  l<r){
+		if(l>=0 && r>=0 && l<forward.length && r<forward.length &&  l<=r){
 			for(int i=l; i<=r; i++){
 				if(getLowestMismatch(i)<min)
 					min = getLowestMismatch(i);
@@ -58,6 +71,7 @@ public class ConsensusSequenceScoreProfile {
 			return -1;
 		}
 	}
+	
 	/** Lowest mismatch over the whole sequence*/
 	public int getLowestMismatch(){
 		return(getLowestMismatch(getLowestMismatchIndex()));
@@ -67,6 +81,19 @@ public class ConsensusSequenceScoreProfile {
 		int min = Integer.MAX_VALUE; 
 		int minScore = consensus.getMaxMismatch();
 		for(int i = 0; i < forward.length; i++) { 
+			int ms = getLowestMismatch(i);
+			if(min == Integer.MAX_VALUE || ms<minScore) { 
+				minScore = ms;
+				min = i;
+			}
+		}
+		return min;
+	}
+	/** Index of lowest mismatch level. If multiple equivalent, leftmost is returned**/
+	public int getLowestMismatchIndexBoundedWin(int l, int r) { 
+		int min = Integer.MAX_VALUE; 
+		int minScore = consensus.getMaxMismatch();
+		for(int i = l; i <= r; i++) { 
 			int ms = getLowestMismatch(i);
 			if(min == Integer.MAX_VALUE || ms<minScore) { 
 				minScore = ms;
