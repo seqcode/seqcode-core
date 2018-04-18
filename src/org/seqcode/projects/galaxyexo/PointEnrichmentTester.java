@@ -205,8 +205,6 @@ public class PointEnrichmentTester {
 			System.err.println("peak files have zero hits.");
 			System.exit(0);
 		}
-		
-		System.out.println(ap.getKeyValue("region"));
 	
 		List<Region> reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
 		int pseudo = Args.parseInteger(args,"pseudo", 0);
