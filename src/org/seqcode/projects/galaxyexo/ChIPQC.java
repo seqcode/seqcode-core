@@ -20,8 +20,8 @@ import org.seqcode.genome.location.Region;
 import org.seqcode.gseutils.ArgParser;
 
 /**
- * Utility to output a signal fraction calculated based on a normalization. It will also output a scaling factor, number of reads etc.
- * It includes an option to output hit counts of signal and control experiments in a given bin size in genome wide.
+ * Utility to output a signal fraction using a normalization factor between signal and control experiments. 
+ * It includes an option to output binned counts of signal and control experiments.
  * 
  * Input:
  * 		- Genome
