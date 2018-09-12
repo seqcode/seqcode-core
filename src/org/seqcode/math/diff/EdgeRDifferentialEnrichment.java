@@ -24,6 +24,7 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
 	protected EventsConfig config;
 	protected File outDir;
 	protected String outBase;
+	protected String providedRepCountsFilename=null;
 	
 	//Constructor
 	public EdgeRDifferentialEnrichment(EventsConfig config, File outDir, String outBase){
@@ -32,13 +33,22 @@ public class EdgeRDifferentialEnrichment extends DifferentialEnrichment{
 		this.outDir = outDir;
 		this.outBase = outBase;
 	}
+	public EdgeRDifferentialEnrichment(EventsConfig config, File outDir, String outBase, String providedRepCountsFilename){
+		super();
+		this.config = config;
+		this.outDir = outDir;
+		this.outBase = outBase;
+		this.providedRepCountsFilename = providedRepCountsFilename;
+	}
+	
 	
 	/**
 	 * execute: make & run an appropriate EdgeR script 
 	 */ 
 	public CountsDataset execute(CountsDataset dat) {
 		this.data = dat;
-		String repCountsFilename = outDir+File.separator+outBase+".replicates.counts";
+		String repCountsFilename = providedRepCountsFilename == null ?
+				outDir+File.separator+outBase+".replicates.counts" : providedRepCountsFilename;
 		String scriptFilename = outDir+File.separator+"call_DE_GLM"+fileIDname+".R";
 		
 		//Write the R script

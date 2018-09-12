@@ -119,12 +119,13 @@ public class SignificanceTester {
 		EnrichmentSignificance tester = new EnrichmentSignificance(config, manager, bindingManager, config.getMinEventFoldChange(), econfig.getMappableGenomeLength());
 		tester.execute(searchRegionWin);
 		
-		bindingManager.writeReplicateCounts(outDirName+File.separator+outFileBase+"_replicatecounts.txt");
+		String repCountFileName = outDirName+File.separator+outFileBase+"_replicatecounts.txt";
+		bindingManager.writeReplicateCounts(repCountFileName);
 		writeBindingEventGFFFiles(outDirName+File.separator+outFileBase, events);
 		
 		//Statistical analysis: inter-condition differences
 		if(manager.getNumConditions()>1 && config.getRunDiffTests()){
-			DifferentialEnrichment edgeR = new EdgeRDifferentialEnrichment(config, outDir, outFileBase);
+			DifferentialEnrichment edgeR = new EdgeRDifferentialEnrichment(config, outDir, outFileBase, repCountFileName);
 			CountsDataset data;
 			File outImagesDir = new File(outDirName+File.separator+"images");
 			outImagesDir.mkdir();
