@@ -67,7 +67,10 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
     		System.err.println("Genome sequence directory/file does not exist!");
     		System.exit(1);
     	}else{
-    		if(test.isFile() && (genomePath.endsWith(".fa")||genomePath.endsWith(".fasta")||genomePath.endsWith(".seq")))
+    		// Skip the check for a file extension for galaxy
+    		//if(test.isFile() && (genomePath.endsWith(".fa")||genomePath.endsWith(".fasta")||genomePath.endsWith(".seq")))
+    		//	genomePathIsFullGenomeFile=true;
+    		if(test.isFile())
     			genomePathIsFullGenomeFile=true;
     	}
     }
