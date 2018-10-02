@@ -406,6 +406,39 @@ public class RegionFileUtilities {
 	}
 	
 	/**
+	 * Load a set of regions from a BED file
+	 * @param gen
+	 * @param filename
+	 * @param win
+	 * @return
+	 */
+	public static List<Region> loadRegionsFromBEDFile(Genome gen, String filename, int win){
+		List<Region> regs = new ArrayList<Region>();
+		try{
+			BEDParser parser = new BEDParser(new File(filename));
+			BEDLine line;
+	        while (parser.hasNext()) {
+	            line = parser.next();
+	            Region sq = new Region(
+	            		gen,
+	            		line.getChrom(),
+	            		line.getChromStart()+1,
+	            		line.getChromEnd());
+	            if(win==-1)
+	            	regs.add(sq);
+	            else
+	            	regs.add(new Region(sq.getMidpoint().expand(win)));
+	        }
+	        parser.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return(regs);
+	}
+	
+	/**
 	 * Load a set of stranded points from a file
 	 * @param gen
 	 * @param filename
