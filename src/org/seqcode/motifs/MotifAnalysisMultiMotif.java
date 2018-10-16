@@ -9,9 +9,11 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.seqcode.data.io.BackgroundModelIO;
+import org.seqcode.data.io.FASTALoader;
 import org.seqcode.data.io.RegionFileUtilities;
 import org.seqcode.data.motifdb.CountsBackgroundModel;
 import org.seqcode.data.motifdb.MarkovBackgroundModel;
@@ -25,6 +27,7 @@ import org.seqcode.genome.sequence.SequenceUtils;
 import org.seqcode.gsebricks.verbs.motifs.WeightMatrixScoreProfile;
 import org.seqcode.gsebricks.verbs.motifs.WeightMatrixScorer;
 import org.seqcode.gseutils.ArgParser;
+import org.seqcode.gseutils.Pair;
 
 import cern.jet.stat.Probability;
 
@@ -66,7 +69,9 @@ public class MotifAnalysisMultiMotif {
                                " More Information: \n" +
                                "  --seq <path to genome FASTA files>\n" +
                                "  --peaks <file containing coordinates of peaks> \n" +
+                               "  --peakseq <optional file containing sequences corresponding to peaks (same order)> \n" +
                                "  --neg <random/markov/filename> \n"+
+                               "  --negseq <optional file containing sequences corresponding to neg file peaks (same order)> \n" +
                                "  --motifthres <file with thresholds> \n" +
                                "  --threslevel <threshold level> OR --multithres \n" +
                                "  --globalthres <fixed threshold for all motifs> \n" +
@@ -95,6 +100,8 @@ public class MotifAnalysisMultiMotif {
         String simBackFile =ap.hasKey("simback") ? ap.getKeyValue("simback"):backFile;
         String posFile = ap.hasKey("peaks") ? ap.getKeyValue("peaks"):null;
         String neg = ap.hasKey("neg") ? ap.getKeyValue("neg"):null;
+        String posSeqFile = ap.hasKey("peakseq") ? ap.getKeyValue("peakseq"):null;
+        String negSeqFile = ap.hasKey("negseq") ? ap.getKeyValue("negseq"):null;
         int win = ap.hasKey("win") ? new Integer(ap.getKeyValue("win")).intValue():-1;
         int numSamp = 1000000;
         if(ap.hasKey("numrand")){
@@ -129,14 +136,12 @@ public class MotifAnalysisMultiMotif {
 			analyzer.setAllThresholds(globalThreshold);
 					
 		//load positive & negative sets
+		boolean useSeqCache = false;
 		if(ap.hasKey("seq"))
-		{
-			analyzer.loadPositive(posFile,true);
-			analyzer.loadNegative(neg,true);
-		}else{
-			analyzer.loadPositive(posFile,false);
-			analyzer.loadNegative(neg,false);
-		}
+			useSeqCache = true;
+		
+		analyzer.loadPositive(posFile,posSeqFile, useSeqCache);
+		analyzer.loadNegative(neg,negSeqFile, useSeqCache);
 		
 
 		//Options
@@ -511,18 +516,27 @@ public class MotifAnalysisMultiMotif {
 	public void setPrintROC(boolean pr){printROCCurve = pr;}
 
 	//load positive
-	public void loadPositive(String fname, boolean usecache){
+	public void loadPositive(String fname, String seqfname, boolean usecache){
 		posSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, fname, window);
 		posPeaks = RegionFileUtilities.loadPeaksFromPeakFile(gen, fname, window);
 		posLines = RegionFileUtilities.loadLinesFromFile(fname);
-		if(usecache){
-			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, gcon.getSequenceGenerator());
+		
+		if(seqfname!=null){
+			posSeq = loadSeqFromFASTA(seqfname);
+			if(posSeq.size() != posSet.size()){
+				System.err.println("Error: positive peaks and sequences are not the same size.");
+				System.exit(1);
+			}
 		}else{
-			posSeq = RegionFileUtilities.getSequencesForRegions(posSet, null);
+			if(usecache){
+				posSeq = RegionFileUtilities.getSequencesForRegions(posSet, gcon.getSequenceGenerator());
+			}else{
+				posSeq = RegionFileUtilities.getSequencesForRegions(posSet, null);
+			}
 		}
 	}
 	//load negative
-	public void loadNegative(String name, boolean usecache){
+	public void loadNegative(String name, String seqfname, boolean usecache){
 		if(name==null || name.equals("random")){
 			negSet = RegionFileUtilities.randomRegionPick(gen, posSet, numRand, window);
 			negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
@@ -535,10 +549,18 @@ public class MotifAnalysisMultiMotif {
 			}
 		}else{
 			negSet = RegionFileUtilities.loadRegionsFromPeakFile(gen, name, window);
-			if(usecache){
-				negSeq = RegionFileUtilities.getSequencesForRegions(negSet, gcon.getSequenceGenerator());
+			if(seqfname!=null){
+				negSeq = loadSeqFromFASTA(seqfname);
+				if(negSeq.size() != negSet.size()){
+					System.err.println("Error: negative peaks and sequences are not the same size.");
+					System.exit(1);
+				}
 			}else{
-				negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
+				if(usecache){
+					negSeq = RegionFileUtilities.getSequencesForRegions(negSet, gcon.getSequenceGenerator());
+				}else{
+					negSeq = RegionFileUtilities.getSequencesForRegions(negSet, null);
+				}
 			}
 		}
 	}
@@ -628,6 +650,19 @@ public class MotifAnalysisMultiMotif {
 		}
 	}
 	
+	//Load sequences from a FASTA
+	protected List<String> loadSeqFromFASTA(String filename){
+		FASTALoader loader = new FASTALoader();
+		File f = new File(filename);
+		List<String> seqs = new ArrayList<String>();
+		Iterator<Pair<String, String>> it = loader.execute(f);
+		while(it.hasNext()){
+			Pair<String, String> p = it.next();
+			String seq = p.cdr();
+			seqs.add(seq);
+		}
+		return seqs;
+	}
 	
 	//Multiple hypothesis testing correction -- assumes peaks ordered according to p-value
 	protected ArrayList<IndexedDouble> benjaminiHochbergCorrection(ArrayList<IndexedDouble> scores){
