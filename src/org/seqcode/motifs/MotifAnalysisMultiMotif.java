@@ -285,7 +285,7 @@ public class MotifAnalysisMultiMotif {
 			x++;
 		}
 		for(int i=0; i<posSet.size(); i++){
-			System.out.print(posLines.get(i));
+			System.out.print(posPeaks.get(i).getLocation());
 			x=0;
 			for(WeightMatrix m : motifs){
 				System.out.print("\t"+m.getName()+"\t"+bestScores[x][i]+"\t"+bestHits[x][i]);
@@ -711,7 +711,7 @@ public class MotifAnalysisMultiMotif {
 			hitOverRep = negHitRate>0 ? posHitRate/negHitRate:-1;
 			peaksOverRep = negPeaksRate>0 ? posPeaksRate/negPeaksRate:-1;
 			
-			//pvalHits = binomialSampleEquality(posHits, negHits, posTotal, negTotal);
+			//pvalHits = binomialSampleEquality(posHits, negHits, posTotal, negTotal); //Note that we're not calculating this p-value at the moment because the motif hit rate can be > 1. 
 			pvalPeaks = binomialSampleEquality(posPeaks, negPeaks, posTotal, negTotal);
 		}
 
