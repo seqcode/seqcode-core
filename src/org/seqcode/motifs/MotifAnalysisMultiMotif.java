@@ -285,7 +285,7 @@ public class MotifAnalysisMultiMotif {
 			x++;
 		}
 		for(int i=0; i<posSet.size(); i++){
-			System.out.print(posPeaks.get(i).getLocation());
+			System.out.print(posPeaks.get(i).getLocationString());
 			x=0;
 			for(WeightMatrix m : motifs){
 				System.out.print("\t"+m.getName()+"\t"+bestScores[x][i]+"\t"+bestHits[x][i]);
