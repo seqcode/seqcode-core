@@ -37,6 +37,8 @@ public class CompositeTagDistribution {
 	protected HashMap<StrandedPoint,Integer> pointIndex = new HashMap<StrandedPoint,Integer>();
 	protected boolean isSignal;
 	
+	public CompositeTagDistribution(){}
+	
 	public CompositeTagDistribution(List<StrandedPoint> points, ExperimentManager eMan, int win, boolean loadSignal){
 		exptMan = eMan;
 		this.win = win;
