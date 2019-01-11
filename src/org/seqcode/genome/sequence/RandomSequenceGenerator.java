@@ -18,7 +18,8 @@ public class RandomSequenceGenerator {
 
 	private MarkovBackgroundModel markov;
 	private int modelLen;
-	private Random rand = new Random();
+//	private Random rand = new Random();
+	private Random rand; 
 	
 	
 	public static void main(String[] args) throws IOException, ParseException, NotFoundException {
@@ -50,6 +51,13 @@ public class RandomSequenceGenerator {
 	public RandomSequenceGenerator(MarkovBackgroundModel m){
 		markov=m;
 		modelLen = markov.getMaxKmerLen();
+		rand = new Random();
+	}
+	
+	public RandomSequenceGenerator(MarkovBackgroundModel m, long seed){
+		markov=m;
+		modelLen = markov.getMaxKmerLen();
+		rand = new Random(seed);
 	}
 	
 	public String execute(int len){
