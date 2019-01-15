@@ -223,8 +223,10 @@ public class Region implements Comparable<Region>, Saveable {
 
     if (start != r.start || end != r.end) {
       if (overlaps(r)) {
-        lst.addLast(new Region(g, chrom, Math.min(start, r.start), Math.max(start, r.start) - 1));
-        lst.addLast(new Region(g, chrom, Math.min(end, r.end) + 1, Math.max(end, r.end)));
+    	  if(start != r.start)
+    		  lst.addLast(new Region(g, chrom, Math.min(start, r.start), Math.max(start, r.start) - 1));
+    	  if(end != r.end)
+    		  lst.addLast(new Region(g, chrom, Math.min(end, r.end) + 1, Math.max(end, r.end)));
       }
       else {
         if (before(r)) {
