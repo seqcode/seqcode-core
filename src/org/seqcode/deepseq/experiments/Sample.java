@@ -3,6 +3,7 @@ package org.seqcode.deepseq.experiments;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.HashMap;
 
 import org.seqcode.deepseq.ExtReadHit;
 import org.seqcode.deepseq.ReadHit;
@@ -90,6 +91,15 @@ public class Sample {
 		uniquePairs = cache.getUniquePairCount();
 		if(gen==null)
 			gen = cache.getGenome();
+	}
+	
+	/**
+	 * Load fragment size frequency
+	 * @return
+	 * @author Jianyu Yang
+	 */
+	public HashMap<Integer, Integer> getFragSizeFrequency() {
+		return cache.getFragSizeFrequency();
 	}
 	
 	

@@ -323,6 +323,30 @@ public class HitCache {
 		System.gc();
 	}
 	
+	/**
+	 * Generate a hashmap containing the frequencies of each fragment size,
+	 * @return
+	 * @author Jianyu Yang
+	 */
+	public HashMap<Integer, Integer> getFragSizeFrequency(){
+		HashMap<Integer, Integer> frequency = new HashMap<Integer, Integer>();
+		for(int chrID=0; chrID<pairR1Pos.length; chrID++)
+			for(int strand=0; strand<pairR1Pos[chrID].length; strand++)
+				for(int index=0; index<pairR1Pos[chrID][strand].length; index++)
+					if(chrID==pairR2Chrom[chrID][strand][index]) { 
+						int size = Math.abs(pairR1Pos[chrID][strand][index]-pairR2Pos[chrID][strand][index]+1);
+						if(frequency.containsKey(size)) {
+							int oldValue = frequency.get(size);
+							int newValue = oldValue + 1;
+							frequency.put(size, newValue);
+						} else {
+							frequency.put(size, 1);
+						}
+					}
+		
+		return frequency;
+	}
+	
 	
 	/**
 	 * Load all base counts in a region, regardless of strand.
