@@ -152,6 +152,14 @@ public class HitCache {
 	 * Third dimension index is that of the corresponding R1 read in pairR1Pos
 	 */
 	private float[][][] pairWeight=null;
+	/**
+	 * Midpoints of the paired hits. <br>
+	 * First dimension represents the R1 read chromosome ID. <br>
+	 * Second dimension represents the R1 read strand. 0 for '+', 1 for '-' <br>
+	 * Third dimension contains the midpoints <br>
+	 * Third dimension index is that of the corresponding R1 read in pairR1Pos
+	 */
+	private int[][][] pairMid=null;
 	
 	private HashMap<String, Integer> chrom2ID=new HashMap<String,Integer>();
 	private HashMap<String, Integer> chrom2DBID=new HashMap<String,Integer>();
@@ -330,20 +338,23 @@ public class HitCache {
 	 */
 	public HashMap<Integer, Integer> getFragSizeFrequency(){
 		HashMap<Integer, Integer> frequency = new HashMap<Integer, Integer>();
-		for(int chrID=0; chrID<pairR1Pos.length; chrID++)
-			for(int strand=0; strand<pairR1Pos[chrID].length; strand++)
-				for(int index=0; index<pairR1Pos[chrID][strand].length; index++)
-					if(chrID==pairR2Chrom[chrID][strand][index]) { 
-						int size = Math.abs(pairR1Pos[chrID][strand][index]-pairR2Pos[chrID][strand][index]+1);
-						if(frequency.containsKey(size)) {
-							int oldValue = frequency.get(size);
-							int newValue = oldValue + 1;
-							frequency.put(size, newValue);
-						} else {
-							frequency.put(size, 1);
+		for(int chrID=0; chrID<pairR1Pos.length; chrID++) if(pairR1Pos[chrID]!=null) {
+			for(int strand=0; strand<pairR1Pos[chrID].length; strand++) {
+				if(pairR1Pos[chrID][strand]!=null) {
+					for(int index=0; index<pairR1Pos[chrID][strand].length; index++)
+						if(chrID==pairR2Chrom[chrID][strand][index]) { 
+							int size = Math.abs(pairR1Pos[chrID][strand][index]-pairR2Pos[chrID][strand][index]+1);
+							if(frequency.containsKey(size)) {
+								int oldValue = frequency.get(size);
+								int newValue = oldValue + 1;
+								frequency.put(size, newValue);
+							} else {
+								frequency.put(size, 1);
+							}
 						}
-					}
-		
+				}
+			}
+		}
 		return frequency;
 	}
 	
@@ -465,6 +476,48 @@ public class HitCache {
 				}
 			}
 		
+		}
+		return pairs;
+	}
+	
+	public synchronized List<StrandedPair> getPairsByMid(Region r) {
+		List<StrandedPair> pairs = new ArrayList<StrandedPair>();
+		
+		if(loadPairs && hasPairs && pairR1Pos!=null) {
+			if(!regionIsCached(r)) {
+				if(cacheInLocalFiles) {
+					loadCachedChrom(r.getChrom());
+				}else {
+					System.err.println("HitCache: Queried region "+r.getLocationString()+" is not in cache and local file caching not available!");
+					System.exit(1);
+				}
+			}
+			String chr = r.getChrom();
+			if(chrom2ID.containsKey(chr)) {
+				int chrID = chrom2ID.get(chr);
+				int chrDBID = chrom2DBID.get(chr);
+				for(int j=0;j<2;j++) {
+					if(pairMid[chrID][j]!=null) {
+						int[] tempMids = pairMid[chrID][j];
+						if(tempMids.length !=0 ) {
+							int start_ind = Arrays.binarySearch(tempMids, r.getStart());
+							int end_ind = Arrays.binarySearch(tempMids, r.getEnd());
+							
+							if( start_ind < 0 ) { start_ind = -start_ind - 1; }
+							if( end_ind < 0 )   { end_ind = -end_ind - 1; }
+							
+							while (start_ind > 0 && tempMids[start_ind - 1] >= r.getStart() ) {
+								start_ind--;
+							}
+							while (end_ind < tempMids.length && tempMids[end_ind] <= r.getEnd()) {
+								end_ind++;
+							}
+							for(int k = start_ind; k < end_ind; k++) {
+								pairs.add(new StrandedPair(gen, chrDBID, pairR1Pos[chrID][j][k], j==0?'+':'-', id2DBID.get(pairR2Chrom[chrID][j][k]), pairR2Pos[chrID][j][k], pairR2Strand[chrID][j][k]==0?'+':'-', pairWeight[chrID][j][k]));							}
+						}
+					}
+				}
+			}
 		}
 		return pairs;
 	}
@@ -645,6 +698,7 @@ public class HitCache {
 			pairR2Chrom = new int[numChroms][2][];
 			pairR2Strand = new int[numChroms][2][];
 			pairWeight = new float[numChroms][2][];
+			pairMid = new int[numChroms][2][];
 		}
 		
 		//Copy over the 5' position data
@@ -676,6 +730,7 @@ public class HitCache {
 						pairR2Chrom[c][j] = new int[pairsList.get(chr)[j].size()];
 						pairR2Strand[c][j] = new int[pairsList.get(chr)[j].size()];
 						pairWeight[c][j] = new float[pairsList.get(chr)[j].size()];
+						pairMid[c][j] = new int[pairsList.get(chr)[j].size()];
 						int p=0;
 						for(HitPair lrp : pairsList.get(chr)[j]){
 							pairR1Pos[c][j][p] = lrp.r1Pos;
@@ -683,6 +738,7 @@ public class HitCache {
 							pairR2Chrom[c][j][p] = chrom2ID.get(lrp.r2Chr);
 							pairR2Strand[c][j][p] = lrp.r2Strand;
 							pairWeight[c][j][p] = lrp.pairWeight;
+							pairMid[c][j][p] = (lrp.r1Pos+lrp.r2Pos)/2;
 							p++;
 						}
 					}
@@ -697,6 +753,8 @@ public class HitCache {
 					pairR2Strand[chrom2ID.get(chr)][1]=null;
 					pairWeight[chrom2ID.get(chr)][0]=null;
 					pairWeight[chrom2ID.get(chr)][1]=null;
+					pairMid[chrom2ID.get(chr)][0]=null;
+					pairMid[chrom2ID.get(chr)][1]=null;
 				}
 			}
 		}
@@ -710,12 +768,13 @@ public class HitCache {
 				}
 			}
 		}
-		//Sort the paired-end arrays
+		//Sort the paired-end arrays !!!!!!!!!!ATTENTION!!!!!!!!!!!!!: I need to sort by midpoint here
 		if(loadPairs && hasPairs){ 
 			for(int i = 0; i < pairR1Pos.length; i++) {  // chr
 				for(int j = 0; j < pairR1Pos[i].length; j++) { // strand
 					if(pairR1Pos[i][j]!=null && pairR2Pos[i][j]!=null && pairR2Chrom[i][j]!=null && pairR2Strand[i][j]!=null){
-						int[] inds = StatUtil.findSort(pairR1Pos[i][j]);
+						int[] inds = StatUtil.findSort(pairMid[i][j]);
+						pairR1Pos[i][j] = StatUtil.permute(pairR1Pos[i][j], inds);
 						pairR2Pos[i][j] = StatUtil.permute(pairR2Pos[i][j], inds);
 						pairR2Chrom[i][j] = StatUtil.permute(pairR2Chrom[i][j], inds);
 						pairR2Strand[i][j] = StatUtil.permute(pairR2Strand[i][j], inds);
@@ -769,6 +828,7 @@ public class HitCache {
 						int[] tmpR2Chrom = new int[uniquePos];
 						int[] tmpR2Str = new int[uniquePos];
 						float[] tmpW = new float[uniquePos];
+						int[] tmpMid = new int[uniquePos];
 						for(int x=0; x<uniquePos; x++){tmpW[x]=0;}
 						int x=0;
 						tmpR1Pos[x] = pairR1Pos[i][j][0];
@@ -776,6 +836,7 @@ public class HitCache {
 						tmpR2Chrom[x] = pairR2Chrom[i][j][0];
 						tmpR2Str[x] = pairR2Strand[i][j][0];
 						tmpW[x] += pairWeight[i][j][0];
+						tmpMid[x] = pairMid[i][j][0];
 						for(int k = 1; k < pairR1Pos[i][j].length; k++){
 							if(pairR1Pos[i][j][k-1]!=pairR1Pos[i][j][k] || 
 									pairR2Pos[i][j][k-1]!=pairR2Pos[i][j][k] || 
@@ -788,12 +849,14 @@ public class HitCache {
 							tmpR2Chrom[x] = pairR2Chrom[i][j][k];
 							tmpR2Str[x] = pairR2Strand[i][j][k];
 							tmpW[x] += pairWeight[i][j][k];
+							tmpMid[x] = pairMid[i][j][k];
 						}
 						pairR1Pos[i][j] = tmpR1Pos;
 						pairR2Pos[i][j] = tmpR2Pos;
 						pairR2Chrom[i][j] = tmpR2Chrom;
 						pairR2Strand[i][j] = tmpR2Str;
 						pairWeight[i][j] = tmpW;
+						pairMid[i][j] = tmpMid;
 					}
 				}
 			}

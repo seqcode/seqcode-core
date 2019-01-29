@@ -132,6 +132,10 @@ public class Sample {
 		return cache.getPairs(r);
 	}
 	
+	public List<StrandedPair> getPairsByMid(Region r) {
+		return cache.getPairsByMid(r);
+	}
+	
 	/**
 	 * Sum of all hit weights in a region.
 	 * If caching in local files, group calls to this method by same chromosome.
