@@ -1,3 +1,5 @@
+# Branch for SEM
+
 seqcode-core
 ============
 
