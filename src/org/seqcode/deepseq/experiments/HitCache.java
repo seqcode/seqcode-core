@@ -696,6 +696,7 @@ public class HitCache {
 			pairR2Chrom = new int[numChroms][2][];
 			pairR2Strand = new int[numChroms][2][];
 			pairWeight = new float[numChroms][2][];
+			pairMid = new int[numChroms][2][];
 		}
 		
 		//Copy over the 5' position data
