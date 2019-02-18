@@ -44,7 +44,8 @@ public class SequenceAlignmentFigure {
 		TColor = t;
 	}
 	/**
-	 * Visualize sequences as color pixels
+	 * Visualize sequences as color pixels. 
+	 * Note that if the sequences are of differing lengths, this code assumes they should be left-aligned
 	 * @param seqs, raw sequences or FASTA sequences
 	 * @param width, width of each base, in pixel
 	 * @param height, height of each base, in pixel
@@ -69,7 +70,7 @@ public class SequenceAlignmentFigure {
 		BufferedImage im = new BufferedImage(pixwidth, pixheight,BufferedImage.TYPE_INT_ARGB);
         Graphics g = im.getGraphics();
         Graphics2D g2 = (Graphics2D)g;
-        g2.setColor(Color.WHITE);
+        g2.setColor(NColor);
         g2.fillRect(0,0,pixwidth, pixheight);
         
         int count = 0;

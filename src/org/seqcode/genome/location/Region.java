@@ -64,23 +64,23 @@ public class Region implements Comparable<Region>, Saveable {
   /**
    * The genome that this region corresponds to
    */
-  private Genome g;
+  protected Genome g;
 
   /**
    * The chromosome that this region corresponds to
    */
-  private String chrom;
+  protected String chrom;
 
   /**
    * The start of this region (in bp)<br>
    * <i>Note</i>: The chromosome starts at 1
    */
-  private int start;
+  protected int start;
 
   /**
    * The end of this region (in bp)<br>
    */
-  private int end;
+  protected int end;
 
 
   public Region(Region copied) {

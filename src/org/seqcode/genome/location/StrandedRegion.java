@@ -62,15 +62,28 @@ public class StrandedRegion extends Region implements Stranded {
     }
 
     public StrandedRegion expand(int upstream, int downstream) {
+    	int chromLength = g.getChromLength(chrom);
         if (strand == '+') {
             int ns = getStart() - upstream;
             int ne = getEnd() + downstream;
             if (ns < 1) {ns = 1;}
+            if (ne > chromLength ) {
+                ne = chromLength ;
+                if (ns > ne) {
+                  ns = ne;
+                }
+              }
             return new StrandedRegion(getGenome(),getChrom(),ns,ne,strand);
         } else if (strand == '-') {
             int ns = getStart() - downstream;
             int ne = getEnd() + upstream;
             if (ns < 1) {ns = 1;}
+            if (ne > chromLength ) {
+                ne = chromLength ;
+                if (ns > ne) {
+                  ns = ne;
+                }
+              }
             return new StrandedRegion(getGenome(),getChrom(),ns,ne,strand);                
         } else {
             throw new IllegalArgumentException("Strand isn't + or - so I don't know what to do");
