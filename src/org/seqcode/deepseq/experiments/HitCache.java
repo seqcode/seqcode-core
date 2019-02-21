@@ -339,7 +339,7 @@ public class HitCache {
 	public HashMap<Integer, Integer> getFragSizeFrequency(){
 		HashMap<Integer, Integer> frequency = new HashMap<Integer, Integer>();
 		for(int chrID=0; chrID<pairR1Pos.length; chrID++)
-			for(int strand=0; strand<pairR1Pos[chrID].length; strand++)
+			for(int strand=0; strand<pairR1Pos[chrID].length; strand++) {
 				for(int index=0; index<pairR1Pos[chrID][strand].length; index++)
 					if(chrID==pairR2Chrom[chrID][strand][index]) { 
 						int size = Math.abs(pairR1Pos[chrID][strand][index]-pairR2Pos[chrID][strand][index]+1);
@@ -351,7 +351,7 @@ public class HitCache {
 							frequency.put(size, 1);
 						}
 					}
-		
+			}
 		return frequency;
 	}
 	
@@ -510,8 +510,7 @@ public class HitCache {
 								end_ind++;
 							}
 							for(int k = start_ind; k < end_ind; k++) {
-								pairs.add(new StrandedPair(gen, chrDBID, pairR1Pos[chrID][j][k], j==0?'+':'-', id2DBID.get(pairR2Chrom[chrID][j][k]), pairR2Pos[chrID][j][k], pairR2Strand[chrID][j][k]==0?'+':'-', pairWeight[chrID][j][k]));
-							}
+								pairs.add(new StrandedPair(gen, chrDBID, pairR1Pos[chrID][j][k], j==0?'+':'-', id2DBID.get(pairR2Chrom[chrID][j][k]), pairR2Pos[chrID][j][k], pairR2Strand[chrID][j][k]==0?'+':'-', pairWeight[chrID][j][k]));							}
 						}
 					}
 				}
@@ -766,17 +765,17 @@ public class HitCache {
 				}
 			}
 		}
-		//Sort the paired-end arrays
+		//Sort the paired-end arrays !!!!!!!!!!ATTENTION!!!!!!!!!!!!!: I need to sort by midpoint here
 		if(loadPairs && hasPairs){ 
 			for(int i = 0; i < pairR1Pos.length; i++) {  // chr
 				for(int j = 0; j < pairR1Pos[i].length; j++) { // strand
 					if(pairR1Pos[i][j]!=null && pairR2Pos[i][j]!=null && pairR2Chrom[i][j]!=null && pairR2Strand[i][j]!=null){
-						int[] inds = StatUtil.findSort(pairR1Pos[i][j]);
+						int[] inds = StatUtil.findSort(pairMid[i][j]);
+						pairR1Pos[i][j] = StatUtil.permute(pairR1Pos[i][j], inds);
 						pairR2Pos[i][j] = StatUtil.permute(pairR2Pos[i][j], inds);
 						pairR2Chrom[i][j] = StatUtil.permute(pairR2Chrom[i][j], inds);
 						pairR2Strand[i][j] = StatUtil.permute(pairR2Strand[i][j], inds);
 						pairWeight[i][j] = StatUtil.permute(pairWeight[i][j], inds);
-						pairMid[i][j] = StatUtil.permute(pairMid[i][j], inds);
 					}
 				}
 			}
