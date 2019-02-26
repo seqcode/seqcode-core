@@ -42,7 +42,7 @@ public class PoissonBackgroundModel extends BackgroundModel{
 		for(int b=1; l>confThreshold; b++){
 			l=1-P.cdf(b);
 			countThres=b;
-		}
+		}	
 		return(Math.max(1,countThres));
 	}
 	
