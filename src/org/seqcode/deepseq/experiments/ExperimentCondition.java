@@ -142,6 +142,17 @@ public class ExperimentCondition {
 	}
 	
 	/**
+	 * Get the pooled signal pair fraction from all underlying signal channels
+	 */
+	public double getTotalSignalPairVsNoisePairFrac() {
+		double s=0;
+		for(ControlledExperiment rep: replicates) {
+			s += rep.getSignal().getPairCount() * rep.getSignalVsNoiseFraction();
+		}
+		return (s/getTotalSignalPairCount());
+	}
+	
+	/**
 	 * Runs the chosen scaling method for all underlying replicates (signal vs control)
 	 * and for the pooled signal in this condition vs the pooled control. 
 	 * 
