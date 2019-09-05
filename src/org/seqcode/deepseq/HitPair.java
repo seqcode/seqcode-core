@@ -11,13 +11,22 @@ package org.seqcode.deepseq;
  * @author mahony
  */
 public class HitPair implements Comparable<HitPair>{
+	public String r1Chr;
 	public int r1Pos;
+	public int r1Strand;
 	public String r2Chr;
 	public int r2Pos;
 	public int r2Strand; // 0 for '-', 1 for '+'
 	public float pairWeight;
+	
+	// Constructor when chromosome and strand info of R1 have been defined externally
 	public HitPair(int p1, String c2, int p2, int s2, float w){
 		r1Pos = p1; r2Chr = c2; r2Pos = p2; r2Strand = s2; pairWeight=w;
+	}
+	
+	// Constructor for HDF5HitLoader
+	public HitPair(String c1, int p1, int s1, String c2, int p2, int s2, float w) {
+		r1Chr = c1; r1Pos = p1; r1Strand = s1; r2Chr = c2; r2Pos = p2; r2Strand = s2; pairWeight = w;
 	}
 	
 	// sort according to R1 coordinate, then by R2 coordinate, then by strands

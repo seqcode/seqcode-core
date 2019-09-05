@@ -388,6 +388,7 @@ public class ExptConfig {
 				"\t--not1reads / --loadt2reads [flags to use Type1 or Type2 reads] (Type1 loaded by default)\n" +
 				"\t--noread2 [flag to ignore second reads in paired-end]\n" +
 				"\t--sortMid [flag to decide if sort read pairs by midpoint or 5' end (default: 5' end)]\n" +
+				"\t--loadpairs [flag to load pair-end reads]\n" + 
 				""));
 	}
 }
