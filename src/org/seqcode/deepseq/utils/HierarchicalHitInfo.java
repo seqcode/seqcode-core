@@ -42,6 +42,7 @@ public class HierarchicalHitInfo {
 	// HDF5 identifier
 	protected long file_id = -1;
 	protected long filespace_id = -1;
+	protected long memspace_id = -1;
 	protected long dcpl_id = -1;
 	protected long dataspace_id = -1;
 	protected long dataset_id = -1;
@@ -51,7 +52,7 @@ public class HierarchicalHitInfo {
 	
 	public HierarchicalHitInfo(Genome g, String source, int nElement) {
 		this.genome = g;
-		this.filename = source;
+		this.filename = source + ".h5";
 		
 		dim1 = g.getChromList().size() * 2;
 		dim2 = nElement;
@@ -106,6 +107,15 @@ public class HierarchicalHitInfo {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
+		
+		// Create the memory space to append the hit
+		try {
+			memspace_id = H5.H5Screate_simple(rank, new long[] {1, dim2, 1}, null);
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+
 	}
 	
 	/**
@@ -161,7 +171,7 @@ public class HierarchicalHitInfo {
 			throw new Exception("Unequal dimension of hit info! Excepted: " + dim2 + " Get: " + hit.length);
 		// select the part written by the hit info and write the info
 		int index = convertIndex(chr, strand);
-		long[] start = { index, 0, flag[index] };
+		long[] start = { index, 0, flag[index]++ };
 		long[] count = { 1, dim2, 1};
 		try {
 			if (filespace_id >= 0) {
@@ -169,7 +179,7 @@ public class HierarchicalHitInfo {
 				
 				// write the data into the dataset
 				if (dataset_id >= 0)
-					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_IEEE_F32BE, HDF5Constants.H5S_ALL, 
+					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_IEEE_F32BE, memspace_id, 
 							filespace_id, HDF5Constants.H5P_DEFAULT, hit);
 			}
 		} catch (Exception e) {

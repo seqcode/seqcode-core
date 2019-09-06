@@ -8,6 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.deepseq.HitPair;
+import org.seqcode.deepseq.utils.HierarchicalHitInfo;
 
 import hdf.hdf5lib.H5;
 import hdf.hdf5lib.HDF5Constants;
@@ -21,6 +22,7 @@ public class HDF5HitLoader {
 	
 	private boolean useChimericReads=false; //Ignore chimeric mappings for now.
 	protected Genome genome;
+	protected HierarchicalHitInfo hhInfo;
 	
 	// sam load identifier
 	protected File file; 
@@ -32,17 +34,9 @@ public class HDF5HitLoader {
 	protected double totalHits; //totalHits is the sum of alignment weights
 	protected String sourceName=""; //String describing the source
 	
-	// hdf5 identifier
-	protected long file_id = -1;
-	protected long group_id = -1;
-	protected long dataspace_id = -1;
-	protected long dataset_id = -1;
-	protected long dcpl_id = -1;
-	protected String GROUPNAME = "group";
-	protected String DATASETNAME = "dataset";
-	
-	protected int nChroms = 15;
 	protected LinkedBlockingQueue<HitPair> readQueue = new LinkedBlockingQueue<HitPair>() ;
+	
+	protected boolean terminatorFlag = false;
 	
 	public HDF5HitLoader(Genome g, File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadRead2, boolean loadPairs) {
 		this.genome = g;
@@ -53,14 +47,15 @@ public class HDF5HitLoader {
 		this.loadPairs = loadPairs;
 		totalHits = 0;
 		
+		this.hhInfo = new HierarchicalHitInfo(genome, f.getName(), 7);
+		hhInfo.initializeHDF5();
 	}
 	
 	class ProcessReadThread implements Runnable {
-		private boolean terminatorFlag = false;
 		private List<HitPair> processingReads = new ArrayList<HitPair>();
 		
 		public void run() {
-			while(!terminatorFlag) {
+			while(!terminatorFlag || !readQueue.isEmpty()) {
 				readQueue.drainTo(processingReads, 100);
 				process(processingReads);
 			}
@@ -68,72 +63,25 @@ public class HDF5HitLoader {
 		
 		private void process(List<HitPair> input) {
 			for(HitPair hp : input) {
-				int dim1 = convertIndex(hp.r1Chr, hp.r1Strand);
+				try {
+					hhInfo.appendHit(hp.r1Chr, hp.r1Strand, new double[] {hp.r1Pos, genome.getChromID(hp.r2Chr), hp.r2Strand, hp.r2Pos, hp.pairWeight});
+					totalHits += hp.pairWeight;
+				} catch (Exception e) {
+					// TODO: handle exception
+					e.printStackTrace();
+				}
 			}
 		}
-		
-		private int convertIndex(String chr, int strand) {
-			return genome.getChromID(chr) + strand;
-		}
 	}
-	
-	public void initializeHDF5() {
-		// Create a new file using default properties.
-		try {
-			file_id = H5.H5Fcreate("test.hdf5", HDF5Constants.H5F_ACC_TRUNC, 
-					HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		
-		// Create a new group
-		try {
-			if(file_id >= 0)
-				group_id = H5.H5Gcreate(file_id, "/" + GROUPNAME, HDF5Constants.H5P_DEFAULT,
-						 HDF5Constants.H5P_DEFAULT,  HDF5Constants.H5P_DEFAULT);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		// Create the dataspace
-		try {
-			dataspace_id = H5.H5Screate_simple(2, new long[] {nChroms, 10000}, null);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		// Create the dataset creation property list
-		try {
-			dcpl_id = H5.H5Pcreate(HDF5Constants.H5P_DATASET_CREATE);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		// Set the chunk size
-		try {
-			if (dcpl_id >= 0) 
-				H5.H5Pset_chunk(dcpl_id, 1, new long[] {nChroms, 10});
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		// Create the chunked dataset
-		try {
-			dataset_id = H5.H5Dcreate(file_id, "/" + GROUPNAME + "/" + DATASETNAME, HDF5Constants.H5T_STD_I32BE, 
-					dataspace_id, HDF5Constants.H5P_DEFAULT, dcpl_id,HDF5Constants.H5P_DEFAULT);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	public void sourceAllHits() {
 		SamReaderFactory factory = SamReaderFactory.makeDefault()
 				.enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
 				.validationStringency(ValidationStringency.SILENT);
 		SamReader reader = factory.open(file);
 		CloseableIterator<SAMRecord> iter = reader.iterator();
-		Collection<SAMRecord> byRead = new ArrayList<SAMRecord>();
-		String lastread = null;
+		Thread prt = new Thread(new ProcessReadThread());
+		prt.start();
 		while (iter.hasNext()) {
 			SAMRecord record = iter.next();
 		    
@@ -145,7 +93,9 @@ public class HDF5HitLoader {
 		    if(loadPairs && record.getFirstOfPairFlag() && record.getProperPairFlag()){
 		    	boolean neg = record.getReadNegativeStrandFlag();
                 boolean mateneg = record.getMateNegativeStrandFlag();
-                HitPair hp = new HitPair((neg ? record.getAlignmentEnd() : record.getAlignmentStart()),
+                HitPair hp = new HitPair(record.getReferenceName().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", ""),
+                		neg ? 1: 0,
+                		(neg ? record.getAlignmentEnd() : record.getAlignmentStart()),
                 		record.getMateReferenceName().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", ""),
                 		(mateneg ? record.getMateAlignmentStart()+record.getReadLength()-1 : record.getMateAlignmentStart()), 
                 		mateneg ? 1 : 0,
@@ -153,5 +103,18 @@ public class HDF5HitLoader {
                 readQueue.add(hp);
 		    }
 		}
+		terminatorFlag = true;
 	}
+	
+	public static void main(String[] args) {
+		File genFile = new File("D:\\Dropbox\\Code\\sem-test\\yeast\\geninfo.txt");
+		File bamFile = new File("D:\\Dropbox\\Code\\sem-test\\yeast\\ref.F1804.chrI.bam");
+		
+		Genome gen = new Genome("Genome", genFile, true);
+		HDF5HitLoader hl = new HDF5HitLoader(gen, bamFile, false, true, false, true, true);
+		
+		hl.sourceAllHits();
+		
+	}
+	
 }
