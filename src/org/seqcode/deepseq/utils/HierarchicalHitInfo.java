@@ -4,11 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.LongPredicate;
 
+import org.math.plot.utils.Array;
 import org.seqcode.deepseq.HitPair;
 import org.seqcode.genome.Genome;
 
 import hdf.hdf5lib.H5;
 import hdf.hdf5lib.HDF5Constants;
+import hdf.hdf5lib.exceptions.HDF5DataspaceInterfaceException;
+
 import htsjdk.tribble.index.Block;
 
 /**
@@ -33,7 +36,7 @@ public class HierarchicalHitInfo {
 	protected String filename;
 	protected long dim1;
 	protected long dim2;
-	protected long dim3 = 10000;
+	protected long dim3 = 1000000;
 	protected long[] dims;
 	protected long[] maxDims;
 	protected long[] chunkDims;
@@ -44,7 +47,6 @@ public class HierarchicalHitInfo {
 	protected long filespace_id = -1;
 	protected long memspace_id = -1;
 	protected long dcpl_id = -1;
-	protected long dataspace_id = -1;
 	protected long dataset_id = -1;
 	
 	// flag used to mark the position of newly appended hit info on each dim1
@@ -182,6 +184,31 @@ public class HierarchicalHitInfo {
 					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_IEEE_F32BE, memspace_id, 
 							filespace_id, HDF5Constants.H5P_DEFAULT, hit);
 			}
+		} catch (HDF5DataspaceInterfaceException e) {
+			
+	        try {
+				// extend the dataset
+				dim3 += 1000000;
+	            if (dataset_id >= 0)
+	                H5.H5Dset_extent(dataset_id, new long[] {dim1, dim2, dim3});
+  
+		        // Retrieve the dataspace for the newly extended dataset.
+	            if (dataset_id >= 0)
+	                filespace_id = H5.H5Dget_space(dataset_id);
+	            
+				if (filespace_id >= 0) {
+					H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
+					
+					// write the data into the dataset
+					if (dataset_id >= 0)
+						H5.H5Dwrite(dataset_id, HDF5Constants.H5T_IEEE_F32BE, memspace_id, 
+								filespace_id, HDF5Constants.H5P_DEFAULT, hit);
+				}
+	        } catch (Exception e1) {
+				// TODO: handle exception
+	        	e1.printStackTrace();
+			}
+
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

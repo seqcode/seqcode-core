@@ -47,16 +47,17 @@ public class HDF5HitLoader {
 		this.loadPairs = loadPairs;
 		totalHits = 0;
 		
-		this.hhInfo = new HierarchicalHitInfo(genome, f.getName(), 7);
+		this.hhInfo = new HierarchicalHitInfo(genome, f.getName(), 5);
 		hhInfo.initializeHDF5();
 	}
 	
 	class ProcessReadThread implements Runnable {
-		private List<HitPair> processingReads = new ArrayList<HitPair>();
+		private ArrayList<HitPair> processingReads;
 		
 		public void run() {
 			while(!terminatorFlag || !readQueue.isEmpty()) {
-				readQueue.drainTo(processingReads, 100);
+				processingReads = new ArrayList<HitPair>();
+				readQueue.drainTo(processingReads, 1000000);
 				process(processingReads);
 			}
 		}
@@ -82,6 +83,7 @@ public class HDF5HitLoader {
 		CloseableIterator<SAMRecord> iter = reader.iterator();
 		Thread prt = new Thread(new ProcessReadThread());
 		prt.start();
+		int count = 0;
 		while (iter.hasNext()) {
 			SAMRecord record = iter.next();
 		    
@@ -94,16 +96,29 @@ public class HDF5HitLoader {
 		    	boolean neg = record.getReadNegativeStrandFlag();
                 boolean mateneg = record.getMateNegativeStrandFlag();
                 HitPair hp = new HitPair(record.getReferenceName().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", ""),
-                		neg ? 1: 0,
                 		(neg ? record.getAlignmentEnd() : record.getAlignmentStart()),
+                		neg ? 1: 0,
                 		record.getMateReferenceName().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", ""),
                 		(mateneg ? record.getMateAlignmentStart()+record.getReadLength()-1 : record.getMateAlignmentStart()), 
                 		mateneg ? 1 : 0,
                 		1);
-                readQueue.add(hp);
+                readQueue.offer(hp);
+                count++;
+                break;
 		    }
 		}
+		System.err.println("All reads have been loaded! loaded: " + count);
 		terminatorFlag = true;
+		try {
+			prt.join();
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+
+		// close the dataset
+		hhInfo.closeDataset();
+		hhInfo.closeFile();
 	}
 	
 	public static void main(String[] args) {
@@ -111,6 +126,10 @@ public class HDF5HitLoader {
 		File bamFile = new File("D:\\Dropbox\\Code\\sem-test\\yeast\\ref.F1804.chrI.bam");
 		
 		Genome gen = new Genome("Genome", genFile, true);
+		
+		for(String chr: gen.getChromList()) {
+			System.out.println(chr + "\t" + gen.getChromID(chr));
+		}
 		HDF5HitLoader hl = new HDF5HitLoader(gen, bamFile, false, true, false, true, true);
 		
 		hl.sourceAllHits();
