@@ -17,9 +17,10 @@ import htsjdk.tribble.index.Block;
 /**
  * Hierarchical data structure to store the information of hits based on HDF5 project
  * The structure is:
- * 											[ 0, 1, 1, 3]
- * 					0(/chromosome 1/-)		[ 3, 5, 6, 2]
- * 											[ 5, 2, 4, 6]
+ * 			dim1(index determined by r1 chr, strand)		dim2(index of hit info element, i.e., r1Pos, r2Chr...)			dim3(index of the hit)
+ * 																		0(r1Pos)											0(100), 1(123), 2(235),...
+ * 					0(/chromosome 1/-)									1(r2Chr)											0(1), 1(3), 2(2),...	
+ * 																		...															...
  * 					1(/chromosome 1/+)	 	...
  * 		HitInfo		2(/chromosome 2/-)		...
  * 					3(/chromosome 2/+)		...
@@ -52,12 +53,18 @@ public class HierarchicalHitInfo {
 	// flag used to mark the position of newly appended hit info on each dim1
 	protected int[] flag;
 	
-	public HierarchicalHitInfo(Genome g, String source, int nElement) {
+	/**
+	 * Constructor
+	 * @param g			genome info to determine the dim1
+	 * @param source	hdf5 file name prefix
+	 * @param nElement	number of elements of the hit info which determines the dim2
+	 */
+	public HierarchicalHitInfo(Genome g, String source, boolean isPair) {
 		this.genome = g;
 		this.filename = source + ".h5";
 		
 		dim1 = g.getChromList().size() * 2;
-		dim2 = nElement;
+		dim2 = isPair? 6 : 3;
 		dims = new long[] {dim1, dim2, dim3};
 		maxDims = new long[] {dim1, dim2, HDF5Constants.H5S_UNLIMITED};
 		chunkDims = new long[] {1, dim2, 2500};
@@ -68,6 +75,7 @@ public class HierarchicalHitInfo {
 	
 	// getter
 	public int getLength(String chr, int strand) { return flag[convertIndex(chr, strand)];}
+	
 	
 	/**
 	 * Initialize the structure of HDF5 file
