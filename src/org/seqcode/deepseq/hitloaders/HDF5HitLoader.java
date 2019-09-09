@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.deepseq.HitPair;
@@ -104,7 +105,15 @@ public class HDF5HitLoader {
                 		1);
                 readQueue.offer(hp);
                 count++;
-                break;
+                
+                // let the thread sleep if the size of queue is too big to avoid memory problem
+            	while (readQueue.size() > 1000000) {
+            		try {
+            			TimeUnit.SECONDS.sleep(5);
+            		} catch (Exception e) {
+            			e.printStackTrace();
+					}
+            	} 
 		    }
 		}
 		System.err.println("All reads have been loaded! loaded: " + count);
