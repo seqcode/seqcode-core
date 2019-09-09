@@ -60,11 +60,14 @@ public class HierarchicalHitInfo {
 		dim2 = nElement;
 		dims = new long[] {dim1, dim2, dim3};
 		maxDims = new long[] {dim1, dim2, HDF5Constants.H5S_UNLIMITED};
-		chunkDims = new long[] {1, dim2, 10000};
+		chunkDims = new long[] {1, dim2, 2500};
 		rank = 3;
 		
 		flag = new int[(int)dim1];
 	}
+	
+	// getter
+	public int getLength(String chr, int strand) { return flag[convertIndex(chr, strand)];}
 	
 	/**
 	 * Initialize the structure of HDF5 file
@@ -103,7 +106,7 @@ public class HierarchicalHitInfo {
 		// Create the chunked dataset
 		try {
 			if ((file_id >= 0) && (filespace_id >= 0) && (dcpl_id >= 0 ))
-				dataset_id = H5.H5Dcreate(file_id, "HitInfo", HDF5Constants.H5T_IEEE_F32BE, filespace_id, 
+				dataset_id = H5.H5Dcreate(file_id, "HitInfo", HDF5Constants.H5T_NATIVE_DOUBLE, filespace_id, 
 						HDF5Constants.H5P_DEFAULT, dcpl_id, HDF5Constants.H5P_DEFAULT);
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -181,7 +184,7 @@ public class HierarchicalHitInfo {
 				
 				// write the data into the dataset
 				if (dataset_id >= 0)
-					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_IEEE_F32BE, memspace_id, 
+					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
 							filespace_id, HDF5Constants.H5P_DEFAULT, hit);
 			}
 		} catch (HDF5DataspaceInterfaceException e) {
@@ -201,7 +204,7 @@ public class HierarchicalHitInfo {
 					
 					// write the data into the dataset
 					if (dataset_id >= 0)
-						H5.H5Dwrite(dataset_id, HDF5Constants.H5T_IEEE_F32BE, memspace_id, 
+						H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
 								filespace_id, HDF5Constants.H5P_DEFAULT, hit);
 				}
 	        } catch (Exception e1) {
