@@ -36,12 +36,12 @@ public class HDF5HitLoader {
 	protected boolean loadRead2=true; //Load read 2 in paired-end
 	protected boolean loadPairs=false; //Load pair information (if exists)
 	protected boolean hasPairs = false; //Flag to say there are pairs in the sample 
-	protected double totalReads = 0; //total number of reads
-	protected double totalHitPairs = 0; //total number of hit pairs
+	protected int totalReads = 0; //total number of reads
+	protected int totalHitPairs = 0; //total number of hit pairs
 	protected String sourceName=""; //String describing the source
 	
-	protected LinkedBlockingQueue<ReadHit> readQueue = new LinkedBlockingQueue<ReadHit>() ;
-	protected LinkedBlockingQueue<HitPair> pairQueue = new LinkedBlockingQueue<HitPair>() ;
+	protected LinkedBlockingQueue<ReadHit> readQueue = new LinkedBlockingQueue<ReadHit>(1000) ;
+	protected LinkedBlockingQueue<HitPair> pairQueue = new LinkedBlockingQueue<HitPair>(1000) ;
 	
 	protected boolean terminatorFlag = false;
 	
@@ -54,8 +54,9 @@ public class HDF5HitLoader {
 		this.loadRead2 = loadRead2;
 		this.loadPairs = loadPairs;
 		
-		this.readHHI = new HierarchicalHitInfo(genome, f.getName() + ".read", false);
-		this.pairHHI = new HierarchicalHitInfo(genome, f.getName() + ".pair", true);
+		this.readHHI = new HierarchicalHitInfo(genome, f.getAbsolutePath() + ".read", false);
+		this.pairHHI = new HierarchicalHitInfo(genome, f.getAbsolutePath() + ".pair", true);
+		readHHI.initializeHDF5();
 		pairHHI.initializeHDF5();
 	}
 	
@@ -120,6 +121,7 @@ public class HDF5HitLoader {
 		Thread prt = new Thread(new ProcessReadThread());
 		prt.start();
 		ppt.start();
+		int count = 0;
 		while (iter.hasNext()) {
 			SAMRecord record = iter.next();
 		    
@@ -146,22 +148,23 @@ public class HDF5HitLoader {
                 		(mateneg ? record.getMateAlignmentStart()+record.getReadLength()-1 : record.getMateAlignmentStart()), 
                 		mateneg ? 1 : 0,
                 		1);
-                pairQueue.offer(hp);
-		    }
-		    
-            // let the thread sleep if the size of queue is too big to avoid memory problem
-        	while ((pairQueue.size() + readQueue.size() )> 1000000) {
-        		try {
-        			TimeUnit.SECONDS.sleep(5);
-        		} catch (Exception e) {
-        			e.printStackTrace();
+                try {
+                    pairQueue.put(hp);
+				} catch (Exception e) {
+					// TODO: handle exception
+					e.printStackTrace();
 				}
-        	} 
+
+		    }
+		    count++;
+		    if(count % 1000000 == 0)
+		    	System.err.format("Having loaded read: %d\t hitpair: %d\n", totalReads, totalHitPairs);
 		}
-//		System.err.println("All reads have been loaded! loaded: " + count);
+		System.err.println("All reads have been loaded! loaded reads: " + totalReads + "\thitpairs: " + totalHitPairs);
 		terminatorFlag = true;
 		try {
 			ppt.join();
+			prt.join();
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -203,13 +206,18 @@ public class HDF5HitLoader {
 		}currRead.setNumHits(mapcount);
 
 		for (ReadHit rh : currRead.getHits()) {
-			readQueue.offer(rh);
+			try {
+				readQueue.put(rh);
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
 		}
     }//end of processRead
 	
 	public static void main(String[] args) {
-		File genFile = new File("D:\\Dropbox\\Code\\sem-test\\yeast\\geninfo.txt");
-		File bamFile = new File("D:\\Dropbox\\Code\\sem-test\\yeast\\h4_ip_200u.filt.sort.bam");
+		File genFile = new File(args[0]);
+		File bamFile = new File(args[1]);
 		
 		Genome gen = new Genome("Genome", genFile, true);
 		
