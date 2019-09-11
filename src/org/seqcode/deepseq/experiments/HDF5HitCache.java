@@ -4,8 +4,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.math3.optim.nonlinear.vector.Weight;
 import org.seqcode.deepseq.StrandedBaseCount;
 import org.seqcode.deepseq.StrandedPair;
 import org.seqcode.deepseq.hitloaders.HDF5HitLoader;
@@ -158,6 +161,70 @@ public class HDF5HitCache implements HitCacheInterface{
 		pairHHI.closeDataset();
 		readHHI.closeFile();
 		pairHHI.closeFile();
+	}
+	
+	/**
+	 * Update the number of hits after loading all hitLoaders
+	 */
+	private void updateHits() {
+		// Reset all hits number
+		totalHits = 0;		
+		totalHitsPos = 0;	
+		totalHitsNeg = 0;	
+		uniqueHits = 0;	
+		totalPairs = 0;	
+		uniquePairs = 0;	
+		
+		// Update number of hits associated with reads
+		for(String chr: gen.getChromList())
+			for(int strand=0; strand<2; strand++) {
+				double[] weight = readHHI.getElement(chr, strand, "weight");
+				for(int i=0; i<weight.length; i++) {
+					totalHits += weight[i];
+					uniqueHits++;
+					if(strand==0)
+						totalHitsPos++;
+					else
+						totalHitsNeg++;
+				}
+			}
+		
+		// Update number of hits associated with hitpairs
+		for(String chr: gen.getChromList())
+			for(int strand=0; strand<2; strand++) {
+				double[] pairWeight = pairHHI.getElement(chr, strand, "pairWeight");
+				for(int i=0; i<pairWeight.length; i++) {
+					totalPairs += pairWeight[i];
+					uniquePairs++;
+				}
+			}
+	}
+	
+	/**
+	 * Generate a hashmap containing the frequencies of each fragment size,
+	 * @return
+	 * @author Jianyu Yang
+	 */
+	public HashMap<Integer, Integer> getFragSizeFrequency(){
+		HashMap<Integer, Integer> frequency = new HashMap<Integer, Integer>();
+		if(loadPairs && hasPairs) {
+			for(String chr: gen.getChromList())
+				for(int strand=0; strand<2; strand++) {
+					double[] r1Pos = pairHHI.getElement(chr, strand, "r1Pos");
+					double[] r2Pos = pairHHI.getElement(chr, strand, "r2Pos");
+					for(int i=0; i<r1Pos.length; i++) {
+						int size = Math.abs((int)(r2Pos[i] - r1Pos[i]));
+						if(frequency.containsKey(size)) {
+							int oldValue = frequency.get(size);
+							int newValue = oldValue + 1;
+							frequency.put(size, newValue);
+						} else {
+							frequency.put(size, 1);
+						}
+					}
+				}
+		}
+		return frequency;
 	}
 	
 	/**
