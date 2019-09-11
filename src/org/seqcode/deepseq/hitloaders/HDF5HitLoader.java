@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -11,6 +12,7 @@ import org.seqcode.genome.Genome;
 import org.seqcode.deepseq.HitPair;
 import org.seqcode.deepseq.Read;
 import org.seqcode.deepseq.ReadHit;
+import org.seqcode.deepseq.StrandedPair;
 import org.seqcode.deepseq.utils.HierarchicalHitInfo;
 
 import hdf.hdf5lib.H5;
@@ -31,9 +33,8 @@ public class HDF5HitLoader {
 	// sam load identifier
 	protected File file; 
 	protected boolean useNonUnique=false; //whether use non unique reads
-	protected boolean loadType1=true; //Load type1 reads
-	protected boolean loadType2=false; //Load type2 reads (if exists)
 	protected boolean loadRead2=true; //Load read 2 in paired-end
+	protected boolean loadReads=true; //Load read information
 	protected boolean loadPairs=false; //Load pair information (if exists)
 	protected boolean hasPairs = false; //Flag to say there are pairs in the sample 
 	protected int totalReads = 0; //total number of reads
@@ -45,14 +46,14 @@ public class HDF5HitLoader {
 	
 	protected boolean terminatorFlag = false;
 	
-	public HDF5HitLoader(Genome g, File f, boolean nonUnique, boolean loadT1Reads, boolean loadT2Reads, boolean loadRead2, boolean loadPairs) {
+	public HDF5HitLoader(Genome g, File f, boolean loadReads, boolean nonUnique, boolean loadRead2, boolean loadPairs) {
 		this.genome = g;
 		this.file = f;
 		this.useNonUnique = nonUnique;
-		this.loadType1 = loadT1Reads;
-		this.loadType2 = loadT2Reads;
 		this.loadRead2 = loadRead2;
+		this.loadReads = loadReads;
 		this.loadPairs = loadPairs;
+		this.sourceName = f.getAbsolutePath();
 		
 		this.readHHI = new HierarchicalHitInfo(genome, f.getAbsolutePath() + ".read", false);
 		this.pairHHI = new HierarchicalHitInfo(genome, f.getAbsolutePath() + ".pair", true);
@@ -60,22 +61,32 @@ public class HDF5HitLoader {
 		pairHHI.initializeHDF5();
 	}
 	
+	//Accessors
+	public boolean hasPairedReads() {return hasPairs;}
+	public double getHitCount() {return totalReads;}
+	public String getSourceName() {return sourceName;}
+	public HierarchicalHitInfo getHitPairInfo() {return pairHHI;}
+	public HierarchicalHitInfo getReadInfo() {return readHHI;}
+	
 	class ProcessPairThread implements Runnable {
 		private ArrayList<HitPair> processingPairs;
 		
 		public void run() {
 			while(!terminatorFlag || !pairQueue.isEmpty()) {
 				processingPairs = new ArrayList<HitPair>();
-				pairQueue.drainTo(processingPairs, 1000000);
+				pairQueue.drainTo(processingPairs, 1000);
 				process(processingPairs);
 			}
 		}
 		
 		private void process(List<HitPair> input) {
 			for(HitPair hp : input) {
+				if(!hasPairs) {
+					hasPairs = true;
+				}
 				try {
-					pairHHI.appendHit(hp.r1Chr, hp.r1Strand, new double[] {hp.r1Pos, genome.getChromID(hp.r2Chr), hp.r2Strand, hp.r2Pos, hp.pairWeight, hp.pairMid});
-					totalHitPairs += 1;
+					pairHHI.appendHit(hp.r1Chr, hp.r1Strand, new double[] {hp.r1Pos, genome.getChromID(hp.r2Chr), hp.r2Pos, hp.r2Strand, hp.pairWeight, hp.pairMid});
+					totalHitPairs += (int)hp.pairWeight;
 				} catch (Exception e) {
 					// TODO: handle exception
 					e.printStackTrace();
@@ -98,8 +109,8 @@ public class HDF5HitLoader {
 		private void process(List<ReadHit> input) {
 			for(ReadHit rh : input) {
 				try {
-					readHHI.appendHit(rh.getChrom(), rh.getStrand()=='+' ? 0 : 1, new double[] {rh.getStart(), rh.getEnd(), rh.getWeight()});
-					totalReads += 1;
+					readHHI.appendHit(rh.getChrom(), rh.getStrand()=='+' ? 0 : 1, new double[] {rh.getStrand()=='+' ? rh.getStart() : rh.getEnd(), rh.getStrand()=='+' ? rh.getEnd() : rh.getStart(), rh.getWeight()});
+					totalReads += rh.getWeight();
 				} catch (Exception e) {
 					// TODO: handle exception
 					e.printStackTrace();
@@ -129,13 +140,15 @@ public class HDF5HitLoader {
 		    if(record.isSecondaryOrSupplementary() && !useChimericReads){continue;}
 		    if(record.getReadPairedFlag() && record.getSecondOfPairFlag() && !loadRead2){continue;}
 		    
-		    if (lastread == null || !lastread.equals(record.getReadName())) {
-		    	processRead(byRead);
-		    	byRead.clear();
+		    if(loadReads) {
+			    if (lastread == null || !lastread.equals(record.getReadName())) {
+			    	processRead(byRead);
+			    	byRead.clear();
+			    }
+			    lastread = record.getReadName();
+			    
+			    byRead.add(record); //Filter by first or second of pair here if loading by type1/2?
 		    }
-		    lastread = record.getReadName();
-		    
-		    byRead.add(record); //Filter by first or second of pair here if loading by type1/2?
 		    
 		    //load pair if this is a first mate, congruent, proper pair
 		    if(loadPairs && record.getFirstOfPairFlag() && record.getProperPairFlag()){
@@ -157,8 +170,6 @@ public class HDF5HitLoader {
 
 		    }
 		    count++;
-		    if(count % 1000000 == 0)
-		    	System.err.format("Having loaded read: %d\t hitpair: %d\n", totalReads, totalHitPairs);
 		}
 		System.err.println("All reads have been loaded! loaded reads: " + totalReads + "\thitpairs: " + totalHitPairs);
 		terminatorFlag = true;
@@ -169,20 +180,6 @@ public class HDF5HitLoader {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
-		
-		// print the length of each dimension
-		for (String chr: genome.getChromList()) {
-			System.out.println(pairHHI.getLength(chr, 0));
-			System.out.println(pairHHI.getLength(chr, 1));
-			System.out.println(readHHI.getLength(chr, 0));
-			System.out.println(readHHI.getLength(chr, 1));
-		}
-
-		// close the dataset
-		readHHI.closeDataset();
-		readHHI.closeFile();
-		pairHHI.closeDataset();
-		pairHHI.closeFile();
 	}
 	
     protected void processRead(Collection<SAMRecord> records) {
@@ -215,19 +212,26 @@ public class HDF5HitLoader {
 		}
     }//end of processRead
 	
+    // close the hitloader
+    public void close() {
+    	readHHI.closeDataset();
+    	readHHI.closeFile();
+    	pairHHI.closeDataset();
+    	pairHHI.closeFile();
+    }
+    
 	public static void main(String[] args) {
 		File genFile = new File(args[0]);
 		File bamFile = new File(args[1]);
 		
 		Genome gen = new Genome("Genome", genFile, true);
 		
-		for(String chr: gen.getChromList()) {
-			System.out.println(chr + "\t" + gen.getChromID(chr));
-		}
-		HDF5HitLoader hl = new HDF5HitLoader(gen, bamFile, false, true, false, true, true);
+		HDF5HitLoader hl = new HDF5HitLoader(gen, bamFile, false, false, false, true);
 		
 		hl.sourceAllHits();
+		hl.getHitPairInfo().sortByReference();
 		
+		hl.close();
 	}
 	
 }
