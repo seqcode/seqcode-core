@@ -82,15 +82,15 @@ public class Sample {
 	 * @param initialCachedRegions : list of regions to keep cached at the start (can be null)
 	 */
 	public void initializeCache(boolean cacheEntireGenome, List<Region> initialCachedRegions){
-		boolean hdf5Cache = true;	// flag to mark whether we will use HDF5 to cache the hits
+		boolean hdf5Cache = false;	// flag to mark whether we will use HDF5 to cache the hits
 		for(HitLoader hl: loaders) {
-			if(hl.getClassName() == "HDF5HitLoader") {
+			if(hl.getClassName().equals("HDF5HitLoader")) {
 				hdf5Cache = true;
 			}
 		}
 		if(hdf5Cache)
 			for(HitLoader hl: loaders) {
-				if(hl.getClassName() != "HDF5HitLoader") {
+				if(!hl.getClassName().equals("HDF5HitLoader")) {
 					System.err.println("If you want to use HDF5 cache, all experiments under the same sample must all be set as HDF5 type!");
 					System.exit(1);
 				}
@@ -98,7 +98,7 @@ public class Sample {
 		if(!hdf5Cache)
 			cache = new HitCache(econfig.getLoadPairs(), econfig, loaders, maxReadsPerBP, cacheEntireGenome, initialCachedRegions);
 		else
-			cache = new HDF5HitCache(econfig, loaders);
+			cache = new HDF5HitCache(econfig, loaders, name);
 		totalHits = cache.getHitCount();
 		totalHitsPos = cache.getHitCountPos();
 		totalHitsNeg = cache.getHitCountNeg();

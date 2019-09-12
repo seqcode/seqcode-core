@@ -32,6 +32,7 @@ public class HDF5HitLoader extends HitLoader {
 	
 	// sam load identifier
 	protected File file; 
+	protected boolean isCache=false; //Read hits from a pre-stored HDF5HitCache hits info file
 	protected boolean useNonUnique=false; //whether use non unique reads
 	protected boolean loadRead2=true; //Load read 2 in paired-end
 	protected boolean loadReads=true; //Load read information
@@ -46,7 +47,7 @@ public class HDF5HitLoader extends HitLoader {
 	
 	protected boolean terminatorFlag = false;
 	
-	public HDF5HitLoader(Genome g, File f, boolean loadReads, boolean nonUnique, boolean loadRead2, boolean loadPairs) {
+	public HDF5HitLoader(Genome g, File f, boolean loadReads, boolean nonUnique, boolean loadRead2, boolean loadPairs, boolean isCache) {
 		super(true, false, loadRead2, loadPairs);
 		this.genome = g;
 		this.file = f;
@@ -54,14 +55,23 @@ public class HDF5HitLoader extends HitLoader {
 		this.loadReads = loadReads;
 		this.loadPairs = loadPairs;
 		this.sourceName = f.getAbsolutePath();
+		this.isCache = isCache;
 		
-		this.readHHI = new HierarchicalHitInfo(genome, f.getAbsolutePath() + ".read", false);
-		this.pairHHI = new HierarchicalHitInfo(genome, f.getAbsolutePath() + ".pair", true);
-		readHHI.initializeHDF5();
-		pairHHI.initializeHDF5();
+		if(!isCache) {
+			this.readHHI = new HierarchicalHitInfo(genome, f.getAbsolutePath() + ".read.h5", false);
+			this.pairHHI = new HierarchicalHitInfo(genome, f.getAbsolutePath() + ".pair.h5", true);
+			readHHI.initializeHDF5();
+			pairHHI.initializeHDF5();
+		} else {
+			this.readHHI = new HierarchicalHitInfo(genome, f.getAbsolutePath() + ".read.h5", false);
+			this.pairHHI = new HierarchicalHitInfo(genome, f.getAbsolutePath() + ".pair.h5", true);
+			readHHI.openDataSet();
+			pairHHI.openDataSet();
+		}
 	}
 	
 	//Accessors
+	public boolean isCache() {return isCache;}
 	public boolean hasPairedReads() {return hasPairs;}
 	public double getHitCount() {return totalReads;}
 	public String getSourceName() {return sourceName;}
@@ -120,6 +130,8 @@ public class HDF5HitLoader extends HitLoader {
 	}
 		
 	public void sourceAllHits() {
+		if(isCache)
+			return;
 		SamReaderFactory factory = SamReaderFactory.makeDefault()
 				.enable(SamReaderFactory.Option.INCLUDE_SOURCE_IN_RECORDS, SamReaderFactory.Option.VALIDATE_CRC_CHECKSUMS)
 				.validationStringency(ValidationStringency.SILENT);
@@ -171,7 +183,6 @@ public class HDF5HitLoader extends HitLoader {
 		    }
 		    count++;
 		}
-		System.err.println("All reads have been loaded! loaded reads: " + totalReads + "\thitpairs: " + totalHitPairs);
 		terminatorFlag = true;
 		try {
 			ppt.join();
@@ -222,8 +233,10 @@ public class HDF5HitLoader extends HitLoader {
     
     // clean the dataset
     public void cleanup() {
-    	readHHI.initializeHDF5();
-    	pairHHI.initializeHDF5();
+    	if(!isCache) {
+    		readHHI.deleteFile();
+    		pairHHI.deleteFile();
+    	}
     }
     
 	public static void main(String[] args) {
@@ -232,7 +245,7 @@ public class HDF5HitLoader extends HitLoader {
 		
 		Genome gen = new Genome("Genome", genFile, true);
 		
-		HDF5HitLoader hl = new HDF5HitLoader(gen, bamFile, false, false, false, true);
+		HDF5HitLoader hl = new HDF5HitLoader(gen, bamFile, false, false, false, true, false);
 		
 		hl.sourceAllHits();
 		hl.getHitPairInfo().sortByReference();

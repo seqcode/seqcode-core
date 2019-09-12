@@ -27,6 +27,7 @@ public class HDF5HitCache implements HitCacheInterface{
 	private File localCacheDir;
 	private Genome gen;
 	private ExptConfig econfig;
+	protected String name;
 	protected double totalHits = 0;		// totalHits is the sum of alignment weights
 	protected double totalHitsPos = 0;	// totalHitsPos is the sum of alignment weights on the plus strand
 	protected double totalHitsNeg = 0;	// totalHitsNeg is the sum of alignment weights on the minus strand
@@ -40,35 +41,41 @@ public class HDF5HitCache implements HitCacheInterface{
 	protected String readReference = "5'end";	
 	protected String pairReference = "pairMid";
 	
-	public HDF5HitCache(ExptConfig ec, Collection<HitLoader> hloaders) {
+	public HDF5HitCache(ExptConfig ec, Collection<HitLoader> hloaders, String sampleName) {
 		this.econfig = ec;
 		this.gen = econfig.getGenome();
 		this.loaders = hloaders;
+		this.name = sampleName;
 		
 		this.loadReads = econfig.loadReads;
 		this.loadPairs = econfig.loadPairs;
 		
-		this.localCacheDir = new File("./");
-		
+		this.localCacheDir = new File("");
+
 		initialize();
 	}
 	
 	/**
-	 * load hit info of all hitloaders to a single dataset and sort them by reference element
+	 * load hit info of 		
+		System.out.println(name);
+		System.out.println(localCacheDir.getAbsolutePath());
+		all hitloaders to a single dataset and sort them by reference element
 	 */
 	private void initialize() {
 		
 		// Create the hitInfo dataset for the HDF5HitCache itself
-		readHHI = new HierarchicalHitInfo(gen, localCacheDir.getAbsolutePath()+"HDF5HitCache.read.h5", false);
-		pairHHI = new HierarchicalHitInfo(gen, localCacheDir.getAbsolutePath()+"HDF5HitCache.pair.h5", true);
+		readHHI = new HierarchicalHitInfo(gen, localCacheDir.getAbsolutePath()+ "/" + name + ".read.h5", false);
+		pairHHI = new HierarchicalHitInfo(gen, localCacheDir.getAbsolutePath()+ "/" + name + ".pair.h5", true);
 		
 		// Initialize
 		readHHI.initializeHDF5();
 		pairHHI.initializeHDF5();
 		
 		// Append all hits into the dataset and extract the info into the HDF5HitCache
+		boolean needSort = loaders.size()>1;
 		for(HitLoader currLoader: loaders) {
 			HDF5HitLoader currHDF5Loader = (HDF5HitLoader)currLoader;
+			if(!currHDF5Loader.isCache()) {needSort = true;}
 			currLoader.sourceAllHits();
 			
 			// readHHI
@@ -121,14 +128,17 @@ public class HDF5HitCache implements HitCacheInterface{
 							}
 					}
 				
-				// close the hitloader
+				// close the hitloader and delete the file
 				currHDF5Loader.close();
+				currHDF5Loader.cleanup();;
 			}
 		}
 		
-		// Sort each hitInfo dataset
-		readHHI.sortByReference();
-		pairHHI.sortByReference();
+		// Sort each hitInfo dataset if needed
+		if(needSort) {
+			readHHI.sortByReference();
+			pairHHI.sortByReference();
+		}
 		
 		// Update hit number info
 		updateHits();
@@ -165,13 +175,17 @@ public class HDF5HitCache implements HitCacheInterface{
 	}
 	
 	/**
-	 * close the readhit and hitpair dataset
+	 * delete the readhit and hitpair dataset
 	 */
 	public void close() {
 		readHHI.closeDataset();
-		pairHHI.closeDataset();
 		readHHI.closeFile();
+		pairHHI.closeDataset();
 		pairHHI.closeFile();
+		if(!econfig.getKeepHDF5()) {
+			readHHI.deleteFile();
+			pairHHI.deleteFile();
+		}
 	}
 	
 	/**
@@ -343,7 +357,8 @@ public class HDF5HitCache implements HitCacheInterface{
 			int j = (strand=='+') ? 0 : 1;
 			try {
 				int[] ind = getIndexInRegion(chr, j, r, false);
-				bases.addAll(readHHI.getBase(chr, j, ind[0], ind[1]));
+				if(ind[1] > ind[0])
+					bases.addAll(readHHI.getBase(chr, j, ind[0], ind[1]));
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(1);
@@ -383,7 +398,8 @@ public class HDF5HitCache implements HitCacheInterface{
 				int j = (strand == '+') ? 0 : 1;
 				try {
 					int[] ind = getIndexInRegion(chr, j, r, true);
-					pairs.addAll(pairHHI.getPair(chr, j, ind[0], ind[1]));
+					if(ind[1] > ind[0])
+						pairs.addAll(pairHHI.getPair(chr, j, ind[0], ind[1]));
 				} catch (Exception e) {
 					e.printStackTrace();
 					System.exit(1);
@@ -411,7 +427,8 @@ public class HDF5HitCache implements HitCacheInterface{
 				for(int j=0; j<2; j++) {
 					try {
 						int[] ind = getIndexInRegion(chr, j, r, true);
-						pairs.addAll(pairHHI.getPair(chr, j, ind[0], ind[1]));
+						if(ind[1] > ind[0])
+							pairs.addAll(pairHHI.getPair(chr, j, ind[0], ind[1]));
 					} catch (Exception e) {
 						e.printStackTrace();
 						System.exit(1);
@@ -549,21 +566,31 @@ public class HDF5HitCache implements HitCacheInterface{
 		Genome gen = new Genome("Genome", genFile, true);
 		ExptConfig ec = new ExptConfig(gen, args);
 		
-		HDF5HitLoader hl1 = new HDF5HitLoader(gen, bam1File, false, false, false, true);
-		HDF5HitLoader hl2 = new HDF5HitLoader(gen, bam2File, false, false, false, true);
+		HDF5HitLoader hl1 = new HDF5HitLoader(gen, bam1File, true, true, true, true, false);
+		HDF5HitLoader hl2 = new HDF5HitLoader(gen, bam2File, true, true, true, true, false);
 		
-		List<HDF5HitLoader> hList = new ArrayList<HDF5HitLoader>() {
+		List<HitLoader> hList = new ArrayList<HitLoader>() {
 			{
 				add(hl1);
 				add(hl2);
 			}
 		};
 		
-		HDF5HitCache hc = new HDF5HitCache(false, true, ec, hList);
+		HDF5HitCache hc = new HDF5HitCache(ec, hList, "test");
 		
 		long start = System.currentTimeMillis();
-		for(int i=0; i<10000; i++)
-			hc.getPairsByMid(new Region(gen, "I", 10000, 10200));
+		List<StrandedPair> pairList = hc.getPairsByMid(new Region(gen, "I", 1000000000, 1000000100));
+		for (StrandedPair sp: pairList) {
+			System.out.println(sp);
+		}
+		List<StrandedBaseCount> baseList = hc.getBases(new Region(gen, "M", 5000, 5200));
+		for (StrandedBaseCount sbc: baseList) {
+			System.out.println(sbc);
+		}
+		List<StrandedPair> pairList2 = hc.getPairs(new Region(gen, "I", 3000, 3100));
+		for (int i  = 0; i  < 5; i ++) {
+			System.out.println(pairList2.get(i));
+		}
 		long end = System.currentTimeMillis();
 		System.err.println((end - start) + "ms");
 		hc.close();

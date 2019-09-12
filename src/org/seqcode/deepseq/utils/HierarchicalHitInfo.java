@@ -1,5 +1,6 @@
 package org.seqcode.deepseq.utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +40,7 @@ public class HierarchicalHitInfo {
 	
 	// structure info of dataset
 	protected boolean isPair;
-	protected String filename;
+	protected File h5;
 	protected long dim1;				// dimension 1: represents the r1 chromosome and strand info
 	protected long dim2;				// dimension 2: represents the each element of the hits (r1Pos, r2Chr, r2Strand, r2Pos, weight, pairMid for hitpair and start, end, weight for readhit)
 	protected long dim3 = 1000000;		// dimension 3: order of each hit
@@ -88,7 +89,7 @@ public class HierarchicalHitInfo {
 	 */
 	public HierarchicalHitInfo(Genome g, String source, boolean isPair) {
 		this.genome = g;
-		this.filename = source + ".h5";
+		this.h5 = new File(source);
 		this.isPair = isPair;
 		
 		// initialize the dimension information of the dataset
@@ -159,6 +160,8 @@ public class HierarchicalHitInfo {
 	 * @return
 	 */
 	public double[] getElement(String chr, int strand, long elementID, int startOrder, int endOrder) throws Exception {
+		if(endOrder<=startOrder)
+			return null;
 		int index = convertIndex(chr, strand);
 		if(flag[index]<endOrder) {throw new IndexOutOfBoundsException();}
 		long[] start = { index, elementID, startOrder };
@@ -182,6 +185,8 @@ public class HierarchicalHitInfo {
 	}
 	
 	public double[][] getElement(String chr, int strand, int startOrder, int endOrder) throws Exception {
+		if(endOrder<=startOrder)
+			return null;
 		int index = convertIndex(chr, strand);
 		if(flag[index]<endOrder) {throw new IndexOutOfBoundsException();}
 		long[] start = { index, 0, startOrder};
@@ -221,6 +226,8 @@ public class HierarchicalHitInfo {
 	public List<StrandedPair> getPair(String chr, int strand, int startOrder, int endOrder) throws Exception {
 		if(!isPair)
 			throw new Exception("Extract hitpair info from a readHit dataset");
+		if(endOrder<=startOrder)
+			return null;
 		double[][] hitInfo = getElement(chr, strand, startOrder, endOrder);
 
 		// transpose the hitInfo
@@ -241,6 +248,8 @@ public class HierarchicalHitInfo {
 		if(isPair) {
 			throw new Exception("Extract readhit info from a hitpair dataset");
 		}
+		if(endOrder<=startOrder)
+			return null;
 		double[][] hitInfo = getElement(chr, strand, startOrder, endOrder);
 		
 		// transpose the hitInfo 
@@ -283,7 +292,7 @@ public class HierarchicalHitInfo {
 	 */
 	public void sortByReference() {
 		for (String chrom: genome.getChromList())
-			for (int strand=0; strand<2; strand++) { if(flag[convertIndex(chrom, strand)] > 0) {
+			for (int strand=0; strand<2; strand++) { if(getLength(chrom, strand) > 0) {
 				// 1. load the reference element
 				double[] reference = getElement(chrom, strand, referenceIndex);
 				
@@ -336,7 +345,7 @@ public class HierarchicalHitInfo {
 	public void initializeHDF5() {
 		// Create a new file using default properties
 		try {
-			file_id =  H5.H5Fcreate(filename, HDF5Constants.H5F_ACC_TRUNC, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+			file_id =  H5.H5Fcreate(h5.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -374,6 +383,60 @@ public class HierarchicalHitInfo {
 			e.printStackTrace();
 		}
 
+	}
+	
+	/**
+	 * Open an existing HDF5HitCache info
+	 */
+	public void openDataSet() {
+		// Open an existing file using default properties
+		try {
+			file_id =  H5.H5Fopen(h5.getAbsolutePath(), HDF5Constants.H5F_ACC_RDONLY, HDF5Constants.H5P_DEFAULT);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Get dataset id
+		try {
+			if(file_id>=0)
+				dataset_id = H5.H5Dopen(file_id, "HitInfo", HDF5Constants.H5P_DEFAULT);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Retrieve the dataset creation property list
+		try {
+			if(dataset_id>=0)
+				dcpl_id = H5.H5Dget_create_plist(dataset_id);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Retrieve the filespace id
+		try {
+			if(dataset_id>=0)
+				filespace_id = H5.H5Dget_space(dataset_id);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Iterate each chromosome/strand to get the length of the info (Use 5'end for reads or r1Pos for hitpair because these values are always > 0)
+		for(String chr: genome.getChromList())
+			for(int strand=0; strand<2; strand++) {
+				flag[convertIndex(chr, strand)] = Integer.MAX_VALUE;
+				int endIndex = 0;
+				while(true) {
+					try {
+						if(getElement(chr, strand, isPair ? "r1Pos" : "5'end", endIndex) > 0)
+							endIndex++;
+						else
+							break;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				flag[convertIndex(chr, strand)] = endIndex;
+			}
 	}
 	
 	/**
@@ -417,6 +480,11 @@ public class HierarchicalHitInfo {
         catch (Exception e) {
             e.printStackTrace();
         }
+	}
+	
+	public void deleteFile() {
+		if(h5.delete())
+			System.out.println("Successfully delete file: " + h5.getAbsolutePath());
 	}
 	
 	/**
