@@ -3,6 +3,8 @@ package org.seqcode.deepseq.experiments;
 import java.util.HashMap;
 import java.util.List;
 
+import org.seqcode.deepseq.ExtReadHit;
+import org.seqcode.deepseq.ReadHit;
 import org.seqcode.deepseq.StrandedBaseCount;
 import org.seqcode.deepseq.StrandedPair;
 import org.seqcode.genome.Genome;
@@ -82,4 +84,39 @@ public interface HitCacheInterface {
 	 */
 	public float countStrandedBases(Region r, char strand);
 	
+	/**
+	 * Convert all hits into ReadHits for a given region
+	 * @param r
+	 * @param readLen
+	 * @return
+	 */
+	public List<ReadHit> exportReadHits(Region r, int readLen);
+	
+	/**
+	 * Convert all hits into ReadHits
+	 * @param readLen
+	 * @return
+	 */
+	public List<ReadHit> exportReadHits(int readLen);
+	
+	/**
+	 * @param r
+	 * @param readLen
+	 * @param startShift
+	 * @param fivePrimeExt
+	 * @param threePrimeExt
+	 * @return
+	 */
+	public List<ExtReadHit> exportExtReadHits(Region r, int readLen, int startShift, int fivePrimeExt, int threePrimeExt);
+	
+	/**
+	 * Simple count correction with a scaling factor and a floor of one.
+	 * @param perBaseScaling
+	 */
+	public void linearCountCorrection(float perBaseScaling);
+	
+	/**
+	 * Clean up
+	 */
+	public void close();
 }

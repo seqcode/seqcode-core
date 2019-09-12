@@ -69,6 +69,7 @@ public abstract class HitLoader {
 	}
 
 //Accessors
+	public String getClassName() {return this.getClass().getSimpleName();}
 	public boolean hasPairedReads(){return hasPairs;}
 	public double getHitCount(){return(totalHits);}
 	public String getSourceName(){return sourceName;}

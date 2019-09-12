@@ -76,7 +76,7 @@ import org.seqcode.math.stats.StatUtil;
  * @author mahony
  * This class combines functionality from DeepSeq and ReadCache in the old GSE setup.
  */
-public class HitCache {
+public class HitCache implements HitCacheInterface{
 
 	private Collection<HitLoader> loaders; //Source of reads
 	private boolean cacheMemoryEntireGenome=false;

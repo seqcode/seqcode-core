@@ -55,8 +55,10 @@ public class ExptConfig {
 	protected boolean loadType1Reads = true; //Load Type1 reads
 	protected boolean loadType2Reads = false; //Load Type2 reads (if exists and distinguishable)
 	protected boolean loadRead2=true; //Load second in pair reads (only used by BAM loader for now)
+	protected boolean loadReads = true;  //Load read information
 	protected boolean loadPairs = false; //Load pair information (if exists)
 	protected boolean sortMid = false; //Sort pairs according to midpoint
+	protected boolean HDF5 = false; //Use HDF5 dataset to store the hits instead of memory
 	protected double NCISMinBinFrac = 0.75; //NCIS estimates begin using the lower fraction of the genome (based on total tags)
 	
 	    
@@ -109,11 +111,17 @@ public class ExptConfig {
 				//////////////////////
 				//Which reads to load?
 				////////////////////////
+				loadReads = Args.parseFlags(args).contains("loadreads");
 				loadPairs = Args.parseFlags(args).contains("loadpairs");
 				loadType1Reads = !Args.parseFlags(args).contains("not1reads");
 				loadType2Reads = Args.parseFlags(args).contains("loadt2reads");
 				loadRead2 = !Args.parseFlags(args).contains("noread2");
 				sortMid = Args.parseArgs(args).contains("sortMid");
+				
+				//////////////////////
+				//HDF5 mode?
+				////////////////////////
+				HDF5 = Args.parseFlags(args).contains("HDF5");
 				
 				////////////////////////
 				//Read limit parameters
@@ -318,7 +326,9 @@ public class ExptConfig {
 	public boolean getLoadType1Reads(){return loadType1Reads;}
 	public boolean getLoadType2Reads(){return loadType2Reads;}
 	public boolean getLoadRead2(){return loadRead2;}
+	public boolean getLoadReads() {return loadReads;}
 	public boolean getLoadPairs(){return loadPairs;}
+	public boolean getHDF5() {return HDF5;}
 	public double getNCISMinBinFrac(){return NCISMinBinFrac;}
 	
 	//Some accessors to allow modification of options after config .

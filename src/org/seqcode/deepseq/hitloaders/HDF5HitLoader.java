@@ -23,7 +23,7 @@ import htsjdk.samtools.SamReaderFactory;
 import htsjdk.samtools.ValidationStringency;
 import htsjdk.samtools.util.CloseableIterator;
 
-public class HDF5HitLoader {
+public class HDF5HitLoader extends HitLoader {
 	
 	private boolean useChimericReads=false; //Ignore chimeric mappings for now.
 	protected Genome genome;
@@ -47,10 +47,10 @@ public class HDF5HitLoader {
 	protected boolean terminatorFlag = false;
 	
 	public HDF5HitLoader(Genome g, File f, boolean loadReads, boolean nonUnique, boolean loadRead2, boolean loadPairs) {
+		super(true, false, loadRead2, loadPairs);
 		this.genome = g;
 		this.file = f;
 		this.useNonUnique = nonUnique;
-		this.loadRead2 = loadRead2;
 		this.loadReads = loadReads;
 		this.loadPairs = loadPairs;
 		this.sourceName = f.getAbsolutePath();
@@ -218,6 +218,12 @@ public class HDF5HitLoader {
     	readHHI.closeFile();
     	pairHHI.closeDataset();
     	pairHHI.closeFile();
+    }
+    
+    // clean the dataset
+    public void cleanup() {
+    	readHHI.initializeHDF5();
+    	pairHHI.initializeHDF5();
     }
     
 	public static void main(String[] args) {

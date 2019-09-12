@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.util.Elements;
+
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.seqcode.deepseq.StrandedBaseCount;
 import org.seqcode.deepseq.StrandedPair;
@@ -251,6 +253,31 @@ public class HierarchicalHitInfo {
 		return bases;
 	}
 	
+	public void updateElement(String chr, int strand, String elementString, double[] element) throws Exception{
+		updateElement(chr, strand, isPair ? pairElement2ID.get(elementString) : readElement2ID.get(elementString), element);
+	}
+	
+	public void updateElement(String chr, int strand, Long elementID, double[] element) throws Exception{
+		if(element.length != getLength(chr, strand))
+			throw new Exception("Length of input element is unequal to the flag Expected " + getLength(chr, strand) + "\t Get: " + element.length);
+		
+		long[] start = {convertIndex(chr, strand), elementID, 0};
+		long[] count = {1, 1, flag[convertIndex(chr, strand)]};
+		try {
+			if (filespace_id >= 0) {
+				H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
+				
+				// write the sorted element back to the dataset
+				memspace_id = H5.H5Screate_simple(rank, new long[] {1, 1, flag[convertIndex(chr, strand)]}, null);
+				if (dataset_id >= 0)
+					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
+							filespace_id, HDF5Constants.H5P_DEFAULT, element);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Sort all elements according to the reference element
 	 */
@@ -265,21 +292,11 @@ public class HierarchicalHitInfo {
 				for(long elementID: isPair? pairID2Element.keySet() : readID2Element.keySet()) {
 					if(elementID != referenceIndex) {
 						double[] sortElement = permute(getElement(chrom, strand, elementID), inds);
-						
-						long[] start = {convertIndex(chrom, strand), elementID, 0};
-						long[] count = {1, 1, flag[convertIndex(chrom, strand)]};
 						try {
-							if (filespace_id >= 0) {
-								H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
-								
-								// write the sorted element back to the dataset
-								memspace_id = H5.H5Screate_simple(rank, new long[] {1, 1, flag[convertIndex(chrom, strand)]}, null);
-								if (dataset_id >= 0)
-									H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
-											filespace_id, HDF5Constants.H5P_DEFAULT, sortElement);
-							}
+							updateElement(chrom, strand, elementID, sortElement);
 						} catch (Exception e) {
 							e.printStackTrace();
+							System.exit(1);
 						}
 					}
 				}

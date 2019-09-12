@@ -8,19 +8,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.optim.nonlinear.vector.Weight;
+import org.seqcode.deepseq.ExtReadHit;
+import org.seqcode.deepseq.ReadHit;
 import org.seqcode.deepseq.StrandedBaseCount;
 import org.seqcode.deepseq.StrandedPair;
 import org.seqcode.deepseq.hitloaders.HDF5HitLoader;
+import org.seqcode.deepseq.hitloaders.HitLoader;
 import org.seqcode.deepseq.utils.HierarchicalHitInfo;
 import org.seqcode.genome.Genome;
 import org.seqcode.genome.location.Region;
+
 
 public class HDF5HitCache implements HitCacheInterface{
 	
 	private HierarchicalHitInfo readHHI;
 	private HierarchicalHitInfo pairHHI;
-	private Collection<HDF5HitLoader> loaders;	// source of hits
+	private Collection<HitLoader> loaders;	// source of hits
 	private File localCacheDir;
 	private Genome gen;
 	private ExptConfig econfig;
@@ -37,13 +40,13 @@ public class HDF5HitCache implements HitCacheInterface{
 	protected String readReference = "5'end";	
 	protected String pairReference = "pairMid";
 	
-	public HDF5HitCache(boolean loadReads, boolean loadPairs, ExptConfig ec, Collection<HDF5HitLoader> hloaders) {
+	public HDF5HitCache(ExptConfig ec, Collection<HitLoader> hloaders) {
 		this.econfig = ec;
 		this.gen = econfig.getGenome();
 		this.loaders = hloaders;
 		
-		this.loadReads = loadReads;
-		this.loadPairs = loadPairs;
+		this.loadReads = econfig.loadReads;
+		this.loadPairs = econfig.loadPairs;
 		
 		this.localCacheDir = new File("./");
 		
@@ -64,63 +67,71 @@ public class HDF5HitCache implements HitCacheInterface{
 		pairHHI.initializeHDF5();
 		
 		// Append all hits into the dataset and extract the info into the HDF5HitCache
-		for(HDF5HitLoader currLoader: loaders) {
+		for(HitLoader currLoader: loaders) {
+			HDF5HitLoader currHDF5Loader = (HDF5HitLoader)currLoader;
 			currLoader.sourceAllHits();
 			
 			// readHHI
-			HierarchicalHitInfo currloaderReadHHI = currLoader.getReadInfo();
-			for (String chrom: gen.getChromList())
-				for (int strand=0; strand<2; strand++){
-					int startOrder = 0;
-					int length = currloaderReadHHI.getLength(chrom, strand);
-					for(int endOrder=10000; endOrder<=length; endOrder+=10000) {
-						try {
-							readHHI.appendArray(chrom, strand, currloaderReadHHI.getElement(chrom, strand, startOrder, endOrder));
-						} catch (Exception e) {
-							e.printStackTrace();
+			if(loadReads) {
+				HierarchicalHitInfo currloaderReadHHI = currHDF5Loader.getReadInfo();
+				for (String chrom: gen.getChromList())
+					for (int strand=0; strand<2; strand++){
+						int startOrder = 0;
+						int length = currloaderReadHHI.getLength(chrom, strand);
+						for(int endOrder=10000; endOrder<=length; endOrder+=10000) {
+							try {
+								readHHI.appendArray(chrom, strand, currloaderReadHHI.getElement(chrom, strand, startOrder, endOrder));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							startOrder = endOrder;
 						}
-						startOrder = endOrder;
+						// append the rest part of the hits into the hitcache
+						if (currloaderReadHHI.getLength(chrom, strand)>startOrder)
+							try {
+								readHHI.appendArray(chrom, strand, currloaderReadHHI.getElement(chrom, strand, startOrder, length));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
 					}
-					// append the rest part of the hits into the hitcache
-					if (currloaderReadHHI.getLength(chrom, strand)>startOrder)
-						try {
-							readHHI.appendArray(chrom, strand, currloaderReadHHI.getElement(chrom, strand, startOrder, length));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-				}
+			}
 			
 			// pairHHI
-			HierarchicalHitInfo currloaderPairHHI = currLoader.getHitPairInfo();
-			for (String chrom: gen.getChromList())
-				for (int strand=0; strand<2; strand++){
-					int startOrder = 0;
-					int length = currloaderPairHHI.getLength(chrom, strand);
-					if(length > 0) {hasPairs = true;}
-					for(int endOrder=10000; endOrder<=length; endOrder+=10000) {
-						try {
-							pairHHI.appendArray(chrom, strand, currloaderPairHHI.getElement(chrom, strand, startOrder, endOrder));
-						} catch (Exception e) {
-							e.printStackTrace();
+			if(loadPairs) {
+				HierarchicalHitInfo currloaderPairHHI = currHDF5Loader.getHitPairInfo();
+				for (String chrom: gen.getChromList())
+					for (int strand=0; strand<2; strand++){
+						int startOrder = 0;
+						int length = currloaderPairHHI.getLength(chrom, strand);
+						if(length > 0) {hasPairs = true;}
+						for(int endOrder=10000; endOrder<=length; endOrder+=10000) {
+							try {
+								pairHHI.appendArray(chrom, strand, currloaderPairHHI.getElement(chrom, strand, startOrder, endOrder));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							startOrder = endOrder;
 						}
-						startOrder = endOrder;
+						// append the rest part of the hits into the hitcache
+						if (currloaderPairHHI.getLength(chrom, strand)>startOrder)
+							try {
+								pairHHI.appendArray(chrom, strand, currloaderPairHHI.getElement(chrom, strand, startOrder, length));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
 					}
-					// append the rest part of the hits into the hitcache
-					if (currloaderPairHHI.getLength(chrom, strand)>startOrder)
-						try {
-							pairHHI.appendArray(chrom, strand, currloaderPairHHI.getElement(chrom, strand, startOrder, length));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-				}
-			
-			// close the hitloader
-			currLoader.close();
+				
+				// close the hitloader
+				currHDF5Loader.close();
+			}
 		}
 		
 		// Sort each hitInfo dataset
 		readHHI.sortByReference();
 		pairHHI.sortByReference();
+		
+		// Update hit number info
+		updateHits();
 	}
 	
 	//Accessors
@@ -178,26 +189,60 @@ public class HDF5HitCache implements HitCacheInterface{
 		// Update number of hits associated with reads
 		for(String chr: gen.getChromList())
 			for(int strand=0; strand<2; strand++) {
-				double[] weight = readHHI.getElement(chr, strand, "weight");
-				for(int i=0; i<weight.length; i++) {
-					totalHits += weight[i];
-					uniqueHits++;
-					if(strand==0)
-						totalHitsPos++;
-					else
-						totalHitsNeg++;
+				if(readHHI.getLength(chr, strand)>0) {
+					double[] weight = readHHI.getElement(chr, strand, "weight");
+					for(int i=0; i<weight.length; i++) {
+						totalHits += weight[i];
+						uniqueHits++;
+						if(strand==0)
+							totalHitsPos++;
+						else
+							totalHitsNeg++;
+					}
 				}
 			}
 		
 		// Update number of hits associated with hitpairs
 		for(String chr: gen.getChromList())
 			for(int strand=0; strand<2; strand++) {
-				double[] pairWeight = pairHHI.getElement(chr, strand, "pairWeight");
-				for(int i=0; i<pairWeight.length; i++) {
-					totalPairs += pairWeight[i];
-					uniquePairs++;
+				if(pairHHI.getLength(chr, strand)>0) {
+					double[] pairWeight = pairHHI.getElement(chr, strand, "pairWeight");
+					for(int i=0; i<pairWeight.length; i++) {
+						totalPairs += pairWeight[i];
+						uniquePairs++;
+					}
 				}
 			}
+	}
+	
+	/**
+	 * Simple count correction with a scaling factor and a floor of one. 
+	 * Beware: only works if all reads are loaded.
+	 * @param perBaseScaling float threshold
+	 */
+	public void linearCountCorrection(float perBaseScaling){
+		if(perBaseScaling<1)
+			System.err.println("linearCountCorrection: perBaseScaling is less than 1 - makes no sense to scale");
+		else{
+			for(String chr: gen.getChromList())
+				for(int strand=0; strand<2; strand++)
+					if(readHHI.getLength(chr, strand)>0) {
+						double[] weights = readHHI.getElement(chr, strand, "weights");
+						for( int i=0; i<weights.length; i++)
+							if(weights[i] > 0) {
+								weights[i] = weights[i] / perBaseScaling;
+								if(weights[i] < 1)
+									weights[i] = 1;
+							}
+						
+						// write back the weights
+						try {
+							readHHI.updateElement(chr, strand, "weights", weights);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+		}
 	}
 	
 	/**
@@ -228,6 +273,48 @@ public class HDF5HitCache implements HitCacheInterface{
 	}
 	
 	/**
+	 * Sum of all hit weights in a region
+	 * @param r Region
+	 * @return count float
+	 */
+	public float countHits(Region r) {
+		float count = 0;
+		count += countStrandedBases(r, '+');
+		count += countStrandedBases(r, '-');
+		return count;
+	}
+	
+	/**
+	 * Sum of hit weights in one strand of a region
+	 * @param r Region, strand char
+	 * @return count float
+	 */
+	public synchronized float countStrandedBases(Region r, char strand) {
+		// make sure the reference element of the read hit is 5' end
+		if(readReference != "5'end")
+			setReadReference("5'end");
+		
+		float count = 0;
+		
+		String chr = r.getChrom();
+		if(gen.getChromList().contains(chr)) {
+			int j = (strand=='+') ? 0 : 1;
+			try {
+				int[] ind = getIndexInRegion(chr, j, r, false);
+				double[] weight = readHHI.getElement(chr, j, "5'end", ind[0], ind[1]);
+				for(int i=0; i<weight.length; i++)
+					count += weight[i];
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+		
+		return count;
+	}
+	
+	
+	/**
 	 * Load all bases in a region according to the 5' end, regardless of the strand
 	 * @param r
 	 * @return
@@ -254,26 +341,12 @@ public class HDF5HitCache implements HitCacheInterface{
 		String chr = r.getChrom();
 		if(gen.getChromList().contains(chr)) {
 			int j = (strand=='+') ? 0 : 1;
-			int length = readHHI.getLength(chr, j);
-			if(length > 0) {
-				int start_ind = binarySearch(chr, j, r.getStart(), false);
-				int end_ind = binarySearch(chr, j, r.getEnd(), false);
-				
-				if( start_ind < 0 ) {start_ind = -start_ind -1;}
-				if( end_ind < 0)	{end_ind  = -end_ind - 1;}
-				
-				try {
-					while(start_ind>0 && readHHI.getReference(chr, j, start_ind-1) >= r.getStart()) {
-						start_ind--;
-					}
-					while(end_ind < length && readHHI.getReference(chr, j, end_ind) <= r.getEnd()) {
-						end_ind++;
-					}
-					bases.addAll(readHHI.getBase(chr, j, start_ind, end_ind));
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.exit(1);
-				}
+			try {
+				int[] ind = getIndexInRegion(chr, j, r, false);
+				bases.addAll(readHHI.getBase(chr, j, ind[0], ind[1]));
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.exit(1);
 			}
 		}
 		
@@ -308,27 +381,12 @@ public class HDF5HitCache implements HitCacheInterface{
 			String chr = r.getChrom();
 			if(gen.getChromList().contains(chr)) {
 				int j = (strand == '+') ? 0 : 1;
-				int length = pairHHI.getLength(chr, j);
-				if(length>0) {
-					int start_ind = binarySearch(chr, j, r.getStart(), true);
-					int end_ind = binarySearch(chr, j, r.getEnd(), true);
-					
-					if( start_ind < 0 ) {start_ind = -start_ind -1;}
-					if( end_ind < 0)	{end_ind  = -end_ind - 1;}
-					
-					try {
-						
-						while(start_ind>0 && pairHHI.getReference(chr, j, start_ind-1) >= r.getStart()) {
-							start_ind--;
-						}
-						while(end_ind < length && pairHHI.getReference(chr, j, end_ind) <= r.getEnd()) {
-							end_ind++;
-						}
-						pairs.addAll(pairHHI.getPair(chr, j, start_ind, end_ind));
-					} catch (Exception e) {
-						e.printStackTrace();
-						System.exit(1);
-					}
+				try {
+					int[] ind = getIndexInRegion(chr, j, r, true);
+					pairs.addAll(pairHHI.getPair(chr, j, ind[0], ind[1]));
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.exit(1);
 				}
 			}
 		}
@@ -351,31 +409,95 @@ public class HDF5HitCache implements HitCacheInterface{
 			String chr = r.getChrom();
 			if(gen.getChromList().contains(chr)) 
 				for(int j=0; j<2; j++) {
-					int length = pairHHI.getLength(chr, j);
-					if(length>0) {
-						int start_ind = binarySearch(chr, j, r.getStart(), true);
-						int end_ind = binarySearch(chr, j, r.getEnd(), true);
-						
-						if( start_ind < 0 ) {start_ind = -start_ind -1;}
-						if( end_ind < 0)	{end_ind  = -end_ind - 1;}
-						
-						try {
-							while(start_ind>0 && pairHHI.getReference(chr, j, start_ind-1) >= r.getStart()) {
-								start_ind--;
-							}
-							while(end_ind < length && pairHHI.getReference(chr, j, end_ind) <= r.getEnd()) {
-								end_ind++;
-							}
-							pairs.addAll(pairHHI.getPair(chr, j, start_ind, end_ind));
-						} catch (Exception e) {
-							e.printStackTrace();
-							System.exit(1);
-						}
+					try {
+						int[] ind = getIndexInRegion(chr, j, r, true);
+						pairs.addAll(pairHHI.getPair(chr, j, ind[0], ind[1]));
+					} catch (Exception e) {
+						e.printStackTrace();
+						System.exit(1);
 					}
 				}
 		}
 		
 		return pairs;		
+	}
+	
+	/**
+	 * Exports readhits in a given region
+	 */
+	public List<ReadHit> exportReadHits(Region r, int readLen){
+		List<ReadHit> reghits = new ArrayList<ReadHit>();
+		for(StrandedBaseCount sbc: getBases(r)) {
+    		int start = sbc.getStrand() == '+' ? sbc.getCoordinate() : sbc.getCoordinate()-readLen+1;
+    		int end = sbc.getStrand() == '+' ? sbc.getCoordinate()+readLen-1 : sbc.getCoordinate();
+    		reghits.add(new ReadHit(r.getChrom(),start,end,sbc.getStrand(),sbc.getCount()));
+		}
+		return reghits;
+	}
+	
+    public List<ExtReadHit> exportExtReadHits(Region r, int readLen, int startShift, int fivePrimeExt, int threePrimeExt){
+    	List<ReadHit> readHits = exportReadHits(r,readLen);
+    	List<ExtReadHit> extReadHits = new ArrayList<ExtReadHit>();
+    	for(ReadHit rh : readHits){
+    		extReadHits.add(new ExtReadHit(gen, rh, startShift, fivePrimeExt, threePrimeExt));
+    	}
+    	return extReadHits;
+    }
+	
+    /**
+     * Export all single-end hits to ReadHit objects
+     * @param readLen
+     * @return
+     */
+    public List<ReadHit> exportReadHits(int readLen){
+		List<ReadHit> allhits = new ArrayList<ReadHit>();
+		
+		for(String chr : gen.getChromList()){
+			Region chrom = new Region(gen, chr, 1, gen.getChromLength(chr));
+			for(StrandedBaseCount sbc : getBases(chrom)){
+				int start = sbc.getStrand()=='+' ? sbc.getCoordinate() : sbc.getCoordinate()-readLen+1;
+				int end = sbc.getStrand()=='+' ? sbc.getCoordinate()+readLen-1 : sbc.getCoordinate();
+				allhits.add(new ReadHit(chr, start, end, sbc.getStrand(), sbc.getCount()));
+			}
+		}
+		return(allhits);
+	}
+	
+	/**
+	 * Return the index of the hits with reference element located in the given region
+	 * @param chr
+	 * @param strand
+	 * @param r
+	 * @param isPair
+	 * @return
+	 */
+	private int[] getIndexInRegion(String chr, int strand, Region r, boolean isPair) throws Exception {
+		int start_ind; int end_ind;
+		HierarchicalHitInfo hhInfo = isPair ? pairHHI : readHHI;
+		int length = hhInfo.getLength(chr, strand);
+		if(length>0) {
+			start_ind = binarySearch(chr, strand, r.getStart(), true);
+			end_ind = binarySearch(chr, strand, r.getEnd(), true);
+			
+			if( start_ind < 0 ) {start_ind = -start_ind -1;}
+			if( end_ind < 0)	{end_ind  = -end_ind - 1;}
+			
+			try {
+				while(start_ind>0 && hhInfo.getReference(chr, strand, start_ind-1) >= r.getStart()) {
+					start_ind--;
+				}
+				while(end_ind < length && hhInfo.getReference(chr, strand, end_ind) <= r.getEnd()) {
+					end_ind++;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+		} else {
+			throw new Exception("Try to search for hits on a chromosome with no hits!");
+		}
+		
+		return new int[] {start_ind, end_ind};
 	}
 	
 	/**

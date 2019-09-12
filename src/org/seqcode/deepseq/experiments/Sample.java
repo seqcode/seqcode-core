@@ -24,7 +24,7 @@ public class Sample {
 
 	private int index;
 	private Collection<HitLoader> loaders;
-	private HitCache cache=null;
+	private HitCacheInterface cache=null;
 	private ExptConfig econfig;
 	private Genome gen;
 	protected String name;
@@ -82,7 +82,23 @@ public class Sample {
 	 * @param initialCachedRegions : list of regions to keep cached at the start (can be null)
 	 */
 	public void initializeCache(boolean cacheEntireGenome, List<Region> initialCachedRegions){
-		cache = new HitCache(econfig.getLoadPairs(), econfig, loaders, maxReadsPerBP, cacheEntireGenome, initialCachedRegions);
+		boolean hdf5Cache = true;	// flag to mark whether we will use HDF5 to cache the hits
+		for(HitLoader hl: loaders) {
+			if(hl.getClassName() == "HDF5HitLoader") {
+				hdf5Cache = true;
+			}
+		}
+		if(hdf5Cache)
+			for(HitLoader hl: loaders) {
+				if(hl.getClassName() != "HDF5HitLoader") {
+					System.err.println("If you want to use HDF5 cache, all experiments under the same sample must all be set as HDF5 type!");
+					System.exit(1);
+				}
+			}
+		if(!hdf5Cache)
+			cache = new HitCache(econfig.getLoadPairs(), econfig, loaders, maxReadsPerBP, cacheEntireGenome, initialCachedRegions);
+		else
+			cache = new HDF5HitCache(econfig, loaders);
 		totalHits = cache.getHitCount();
 		totalHitsPos = cache.getHitCountPos();
 		totalHitsNeg = cache.getHitCountNeg();
