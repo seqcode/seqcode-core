@@ -111,7 +111,7 @@ public class HDF5HitLoader extends HitLoader {
 		public void run() {
 			while (!terminatorFlag || !readQueue.isEmpty()) {
 				processReads = new ArrayList<ReadHit>();
-				readQueue.drainTo(processReads, 1000000);
+				readQueue.drainTo(processReads, 1000);
 				process(processReads);
 			}
 		}
@@ -144,7 +144,6 @@ public class HDF5HitLoader extends HitLoader {
 		Thread prt = new Thread(new ProcessReadThread());
 		prt.start();
 		ppt.start();
-		int count = 0;
 		while (iter.hasNext()) {
 			SAMRecord record = iter.next();
 		    
@@ -181,7 +180,6 @@ public class HDF5HitLoader extends HitLoader {
 				}
 
 		    }
-		    count++;
 		}
 		terminatorFlag = true;
 		try {

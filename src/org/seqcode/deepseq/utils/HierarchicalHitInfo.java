@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.lang.model.util.Elements;
-
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.seqcode.deepseq.StrandedBaseCount;
 import org.seqcode.deepseq.StrandedPair;
@@ -211,6 +209,13 @@ public class HierarchicalHitInfo {
 				if (dataset_id >= 0)
 					H5.H5Dread(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
 							filespace_id, HDF5Constants.H5P_DEFAULT, elements);
+				
+				// End access to the memory space to release the resource
+				try {
+					H5.H5Sclose(memspace_id);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -281,6 +286,13 @@ public class HierarchicalHitInfo {
 				if (dataset_id >= 0)
 					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
 							filespace_id, HDF5Constants.H5P_DEFAULT, element);
+				
+				// End access to the memory space to release the resource
+				try {
+					H5.H5Sclose(memspace_id);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -311,20 +323,11 @@ public class HierarchicalHitInfo {
 				}
 				
 				// 3. write the reference element back to the dataset finally
-				long[] start = {convertIndex(chrom, strand), referenceIndex, 0};
-				long[] count = {1, 1, flag[convertIndex(chrom, strand)]};
 				try {
-					if (filespace_id >= 0) {
-						H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
-						
-						// write the sorted element back to the dataset
-						memspace_id = H5.H5Screate_simple(rank, new long[] {1, 1, flag[convertIndex(chrom, strand)]}, null);
-						if (dataset_id >= 0)
-							H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
-									filespace_id, HDF5Constants.H5P_DEFAULT, reference);
-					}
+					updateElement(chrom, strand, referenceIndex, reference);
 				} catch (Exception e) {
 					e.printStackTrace();
+					System.exit(1);
 				}
 			}
 			}
@@ -484,7 +487,7 @@ public class HierarchicalHitInfo {
 	
 	public void deleteFile() {
 		if(h5.delete())
-			System.out.println("Successfully delete file: " + h5.getAbsolutePath());
+			System.err.println("Successfully delete HDF5 file: " + h5.getAbsolutePath());
 	}
 	
 	/**
@@ -521,6 +524,11 @@ public class HierarchicalHitInfo {
 		int index = convertIndex(chr, strand);
 		long[] start = { index, 0, flag[index]++ };
 		long[] count = { 1, dim2, 1};
+		
+		// extend the dataset if flag exceed the size of dimension 3
+		while (flag[index] > dim3)
+			extendDataset();
+				
 		try {
 			if (filespace_id >= 0) {
 				// Select the region used to append hit
@@ -535,30 +543,18 @@ public class HierarchicalHitInfo {
 				}
 				
 				// write the data into the dataset
-				if (dataset_id >= 0)
+				if (dataset_id >= 0 && filespace_id >= 0 && memspace_id >= 0)
 					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
 							filespace_id, HDF5Constants.H5P_DEFAULT, hit);
-			}
-		} catch (HDF5DataspaceInterfaceException e) {
-			// if exceed the dim3, extend the dataset to append the hit again
-	        try {
-				// extend the dataset
-				extendDataset();
-	            
-				if (filespace_id >= 0) {
-					H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
-					
-					// write the data into the dataset
-					if (dataset_id >= 0)
-						H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
-								filespace_id, HDF5Constants.H5P_DEFAULT, hit);
+				
+				// End access to the memory space to release the resource
+				try {
+					H5.H5Sclose(memspace_id);
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-	        } catch (Exception e1) {
-				// TODO: handle exception
-	        	e1.printStackTrace();
 			}
-
-		} catch (Exception e) {
+		}  catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
@@ -573,6 +569,11 @@ public class HierarchicalHitInfo {
 		long[] start = { index, 0, flag[index] };
 		long[] count = { 1, dim2, hits[0].length};
 		flag[index] += hits[0].length;
+		
+		// extend the dataset if flag exceed the size of dimension 3
+		while (flag[index] > dim3)
+			extendDataset();
+		
 		// append the array into the dataset
 		try {
 			if (filespace_id >= 0) {
@@ -588,29 +589,17 @@ public class HierarchicalHitInfo {
 				}
 				
 				// write the data into the dataset
-				if (dataset_id >= 0)
+				if (dataset_id >= 0 && filespace_id >= 0 && memspace_id >= 0)
 					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
 							filespace_id, HDF5Constants.H5P_DEFAULT, hits);
-			}
-		} catch (HDF5DataspaceInterfaceException e) {
-			// if exceed the dim3, extend the dataset to append the hit again
-	        try {
-				// extend the dataset
-				extendDataset(flag[index]+hits[0].length-dim3);
-	            
-				if (filespace_id >= 0) {
-					H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
-					
-					// write the data into the dataset
-					if (dataset_id >= 0)
-						H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
-								filespace_id, HDF5Constants.H5P_DEFAULT, hits);
+				
+				// End access to the memory space to release the resource
+				try {
+					H5.H5Sclose(memspace_id);
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-	        } catch (Exception e1) {
-				// TODO: handle exception
-	        	e1.printStackTrace();
 			}
-
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

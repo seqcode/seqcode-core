@@ -64,8 +64,8 @@ public class HDF5HitCache implements HitCacheInterface{
 	private void initialize() {
 		
 		// Create the hitInfo dataset for the HDF5HitCache itself
-		readHHI = new HierarchicalHitInfo(gen, localCacheDir.getAbsolutePath()+ "/" + name + ".read.h5", false);
-		pairHHI = new HierarchicalHitInfo(gen, localCacheDir.getAbsolutePath()+ "/" + name + ".pair.h5", true);
+		readHHI = new HierarchicalHitInfo(gen, localCacheDir.getAbsolutePath()+ "/" + name.replace(':', '_') + ".read.h5", false);
+		pairHHI = new HierarchicalHitInfo(gen, localCacheDir.getAbsolutePath()+ "/" + name.replace(':', '_') + ".pair.h5", true);
 		
 		// Initialize
 		readHHI.initializeHDF5();
@@ -269,16 +269,18 @@ public class HDF5HitCache implements HitCacheInterface{
 		if(loadPairs && hasPairs) {
 			for(String chr: gen.getChromList())
 				for(int strand=0; strand<2; strand++) {
-					double[] r1Pos = pairHHI.getElement(chr, strand, "r1Pos");
-					double[] r2Pos = pairHHI.getElement(chr, strand, "r2Pos");
-					for(int i=0; i<r1Pos.length; i++) {
-						int size = Math.abs((int)(r2Pos[i] - r1Pos[i]));
-						if(frequency.containsKey(size)) {
-							int oldValue = frequency.get(size);
-							int newValue = oldValue + 1;
-							frequency.put(size, newValue);
-						} else {
-							frequency.put(size, 1);
+					if(pairHHI.getLength(chr, strand)>0) {
+						double[] r1Pos = pairHHI.getElement(chr, strand, "r1Pos");
+						double[] r2Pos = pairHHI.getElement(chr, strand, "r2Pos");
+						for(int i=0; i<r1Pos.length; i++) {
+							int size = Math.abs((int)(r2Pos[i] - r1Pos[i]));
+							if(frequency.containsKey(size)) {
+								int oldValue = frequency.get(size);
+								int newValue = oldValue + 1;
+								frequency.put(size, newValue);
+							} else {
+								frequency.put(size, 1);
+							}
 						}
 					}
 				}
@@ -488,7 +490,7 @@ public class HDF5HitCache implements HitCacheInterface{
 	 * @param isPair
 	 * @return
 	 */
-	private int[] getIndexInRegion(String chr, int strand, Region r, boolean isPair) throws Exception {
+	private int[] getIndexInRegion(String chr, int strand, Region r, boolean isPair) {
 		int start_ind; int end_ind;
 		HierarchicalHitInfo hhInfo = isPair ? pairHHI : readHHI;
 		int length = hhInfo.getLength(chr, strand);
@@ -511,7 +513,7 @@ public class HDF5HitCache implements HitCacheInterface{
 				System.exit(1);
 			}
 		} else {
-			throw new Exception("Try to search for hits on a chromosome with no hits!");
+			return new int[] {0, 0};
 		}
 		
 		return new int[] {start_ind, end_ind};
