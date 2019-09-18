@@ -42,7 +42,8 @@ public class WIGExporter {
 	private int trackYMax=-1;
 	private int perBaseMax=-1;
 	private boolean needlefiltering=false;
-	private boolean cacheAllData;	
+	private boolean cacheAllData;
+	private char strand='.';
 	
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		
@@ -62,6 +63,7 @@ public class WIGExporter {
 					"\t--read5ext <Extension on the 5' end>\n" +
 					"\t--read3ext <Extension on the 3' end>\n" +
 					"\t--pbmax <max read count per base>\n" +
+					"\t--strand <+/-/. limit to reads from one strand>\n" +
 					"\t--winsize <window size/step in WIG file>\n" +
 					"\t--name <string to use as track name>\n" +
 					"\t--description <string to use as track description>\n" +
@@ -82,6 +84,8 @@ public class WIGExporter {
 		read5PrimeExt = Args.parseInteger(args,"read5ext",read5PrimeExt);
 		read3PrimeExt = Args.parseInteger(args,"read3ext",read3PrimeExt);
 		readLength = Args.parseInteger(args,"readlen",readLength);
+		String strandStr = Args.parseString(args,"strand",".");
+		strand = strandStr.charAt(0);
 		winSize = Args.parseInteger(args,"winsize",winSize);
 		
 		//General options processed directly by ExptConfig
@@ -154,7 +158,7 @@ public class WIGExporter {
 					
 					ArrayList<ReadHit> hits = new ArrayList<ReadHit>();
                     hits.addAll(sample.exportExtReadHits(currSubRegion, readLength, 0, read5PrimeExt, read3PrimeExt));
-                    double stackedHitCounts[] = makeHitLandscape(hits, currSubRegion, perBaseMax, '.');
+                    double stackedHitCounts[] = makeHitLandscape(hits, currSubRegion, perBaseMax, strand);
                     
                     boolean recording=false;
 	                //Scan regions
