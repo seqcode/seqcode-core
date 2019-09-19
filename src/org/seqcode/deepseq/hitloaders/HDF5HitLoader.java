@@ -174,6 +174,7 @@ public class HDF5HitLoader extends HitLoader {
                 		1);
                 try {
                     pairQueue.put(hp);
+                    hp = null;
 				} catch (Exception e) {
 					// TODO: handle exception
 					e.printStackTrace();
@@ -185,6 +186,8 @@ public class HDF5HitLoader extends HitLoader {
 		try {
 			ppt.join();
 			prt.join();
+			readQueue = null;
+			pairQueue = null;
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -219,6 +222,8 @@ public class HDF5HitLoader extends HitLoader {
 				e.printStackTrace();
 			}
 		}
+		
+		currRead = null;
     }//end of processRead
 	
     // close the hitloader

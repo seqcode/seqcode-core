@@ -213,6 +213,7 @@ public class HDF5HitCache implements HitCacheInterface{
 						else
 							totalHitsNeg++;
 					}
+					weight = null;
 				}
 			}
 		
@@ -225,6 +226,7 @@ public class HDF5HitCache implements HitCacheInterface{
 						totalPairs += pairWeight[i];
 						uniquePairs++;
 					}
+					pairWeight = null;
 				}
 			}
 	}
@@ -275,13 +277,13 @@ public class HDF5HitCache implements HitCacheInterface{
 						for(int i=0; i<r1Pos.length; i++) {
 							int size = Math.abs((int)(r2Pos[i] - r1Pos[i]));
 							if(frequency.containsKey(size)) {
-								int oldValue = frequency.get(size);
-								int newValue = oldValue + 1;
-								frequency.put(size, newValue);
+								frequency.put(size, frequency.get(size) + 1);
 							} else {
 								frequency.put(size, 1);
 							}
 						}
+						r1Pos = null;
+						r2Pos = null;
 					}
 				}
 		}
@@ -578,9 +580,11 @@ public class HDF5HitCache implements HitCacheInterface{
 			}
 		};
 		
-		HDF5HitCache hc = new HDF5HitCache(ec, hList, "test");
-		
 		long start = System.currentTimeMillis();
+		HDF5HitCache hc = new HDF5HitCache(ec, hList, "test");
+		long end = System.currentTimeMillis();
+		System.err.println((end - start) + "ms");
+		
 		List<StrandedPair> pairList = hc.getPairsByMid(new Region(gen, "I", 1000000000, 1000000100));
 		for (StrandedPair sp: pairList) {
 			System.out.println(sp);
@@ -593,8 +597,7 @@ public class HDF5HitCache implements HitCacheInterface{
 		for (int i  = 0; i  < 5; i ++) {
 			System.out.println(pairList2.get(i));
 		}
-		long end = System.currentTimeMillis();
-		System.err.println((end - start) + "ms");
+
 		hc.close();
 		
 	}

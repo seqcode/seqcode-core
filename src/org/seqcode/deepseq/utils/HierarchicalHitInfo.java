@@ -201,6 +201,9 @@ public class HierarchicalHitInfo {
 	public double[][] getElement(long[] start, long[] count) {
 		double[][] elements = new double[(int)count[1]][(int)count[2]];
 		try {
+			// get filespace_id
+			filespace_id = H5.H5Dget_space(dataset_id);
+			
 			if (filespace_id >= 0) {
 				H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
 				
@@ -210,8 +213,9 @@ public class HierarchicalHitInfo {
 					H5.H5Dread(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
 							filespace_id, HDF5Constants.H5P_DEFAULT, elements);
 				
-				// End access to the memory space to release the resource
+				// End access
 				try {
+					H5.H5Sclose(filespace_id);
 					H5.H5Sclose(memspace_id);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -234,14 +238,22 @@ public class HierarchicalHitInfo {
 		if(endOrder<=startOrder)
 			return null;
 		double[][] hitInfo = getElement(chr, strand, startOrder, endOrder);
-
+		
 		// transpose the hitInfo
-		hitInfo = MatrixUtils.createRealMatrix(hitInfo).transpose().getData();
+		double[][] transposedHitInfo = transposeMatrix(hitInfo);
 		
 		// convert each row of the hitInfo to strandedPair then return
 		List<StrandedPair> pairs = new ArrayList<StrandedPair>();
-		for(int i=0; i<hitInfo.length; i++)
-			pairs.add(convertPair(chr, strand, hitInfo[i]));
+		for(int i=0; i<transposedHitInfo.length; i++)
+			pairs.add(convertPair(chr, strand, transposedHitInfo[i][0], transposedHitInfo[i][1], transposedHitInfo[i][2],
+					transposedHitInfo[i][3], transposedHitInfo[i][4]));
+		
+		// Free memory
+		// TODO: I don't think it is a right way to free memory, but I still haven't found a better way to make sure
+		// the hitInfo and transposedHitInfo will be recycled instantly
+		hitInfo = null;
+		transposedHitInfo = null;
+		
 		return pairs;
 	}
 	
@@ -255,15 +267,22 @@ public class HierarchicalHitInfo {
 		}
 		if(endOrder<=startOrder)
 			return null;
-		double[][] hitInfo = getElement(chr, strand, startOrder, endOrder);
+		double[][] hitInfo= getElement(chr, strand, startOrder, endOrder);
 		
-		// transpose the hitInfo 
-		hitInfo = MatrixUtils.createRealMatrix(hitInfo).transpose().getData();
+		// transpose the hitInfo
+		double[][] transposedHitInfo = transposeMatrix(hitInfo);
 		
 		// convert each row of the hitInfo to strandedBaseCount then return
 		List<StrandedBaseCount> bases = new ArrayList<StrandedBaseCount>();
-		for(int i=0; i<hitInfo.length; i++)
-			bases.add(convertBase(chr, strand, hitInfo[i]));
+		for(int i=0; i<transposedHitInfo.length; i++)
+			bases.add(convertBase(chr, strand, transposedHitInfo[i][0], transposedHitInfo[i][1], transposedHitInfo[i][2]));
+		
+		// Free memory
+		// TODO: I don't think it is the right way to free memory, but I still haven't found a better way to make sure
+		// the hitInfo and transposedHitInfo will be recycled instantly
+		hitInfo = null;
+		transposedHitInfo = null;
+		
 		return bases;
 	}
 	
@@ -278,22 +297,21 @@ public class HierarchicalHitInfo {
 		long[] start = {convertIndex(chr, strand), elementID, 0};
 		long[] count = {1, 1, flag[convertIndex(chr, strand)]};
 		try {
-			if (filespace_id >= 0) {
-				H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
-				
-				// write the sorted element back to the dataset
-				memspace_id = H5.H5Screate_simple(rank, new long[] {1, 1, flag[convertIndex(chr, strand)]}, null);
-				if (dataset_id >= 0)
-					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
-							filespace_id, HDF5Constants.H5P_DEFAULT, element);
-				
-				// End access to the memory space to release the resource
-				try {
-					H5.H5Sclose(memspace_id);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			// get filespace_id
+			filespace_id = H5.H5Dget_space(dataset_id);
+		
+			H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
+			
+			// write the element to the dataset
+			memspace_id = H5.H5Screate_simple(rank, new long[] {1, 1, flag[convertIndex(chr, strand)]}, null);
+			if (dataset_id >= 0)
+				H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
+						filespace_id, HDF5Constants.H5P_DEFAULT, element);
+			
+			// End access to the memory space to release the resource
+			H5.H5Sclose(filespace_id);
+			H5.H5Sclose(memspace_id);
+					
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -319,6 +337,7 @@ public class HierarchicalHitInfo {
 							e.printStackTrace();
 							System.exit(1);
 						}
+						sortElement = null;
 					}
 				}
 				
@@ -329,17 +348,20 @@ public class HierarchicalHitInfo {
 					e.printStackTrace();
 					System.exit(1);
 				}
+				
+				reference = null;
+				inds = null;
 			}
-			}
+		}
 	}
 	
-	protected StrandedPair convertPair(String chr, int strand, double[] info) {
-		return new StrandedPair(genome, genome.getChromID(chr), (int)info[0], strand==0? '+' : '-',
-				(int)info[1], (int)info[2], info[3]==0 ? '+' : '-', (int)info[4]);
+	protected StrandedPair convertPair(String chr, int strand, double r1Pos, double r2Chr, double r2Pos, double r2Strand, double pairWeight) {
+		return new StrandedPair(genome, genome.getChromID(chr), (int)r1Pos, strand==0? '+' : '-',
+				(int)r2Chr, (int)r2Pos, r2Strand==0 ? '+' : '-', (int)pairWeight);
 	}
 	
-	protected StrandedBaseCount convertBase(String chr, int strand, double[] info) {
-		return new StrandedBaseCount(strand==0 ? '+' : '-', (int)(strand==0? info[0] : info[1]), (float)info[2]);
+	protected StrandedBaseCount convertBase(String chr, int strand, double end5, double end3, double weight) {
+		return new StrandedBaseCount(strand==0 ? '+' : '-', (int)(strand==0? end5 : end3), (float)weight);
 	}
 	
 	/**
@@ -385,6 +407,23 @@ public class HierarchicalHitInfo {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
+		
+		// End access to the resource
+        try {
+            if (dcpl_id >= 0)
+                H5.H5Pclose(dcpl_id);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (filespace_id >= 0)
+                H5.H5Sclose(filespace_id);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
 
 	}
 	
@@ -407,38 +446,48 @@ public class HierarchicalHitInfo {
 			e.printStackTrace();
 		}
 		
-		// Retrieve the dataset creation property list
-		try {
-			if(dataset_id>=0)
-				dcpl_id = H5.H5Dget_create_plist(dataset_id);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		// Retrieve the filespace id
-		try {
-			if(dataset_id>=0)
-				filespace_id = H5.H5Dget_space(dataset_id);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
 		// Iterate each chromosome/strand to get the length of the info (Use 5'end for reads or r1Pos for hitpair because these values are always > 0)
+		try {
+			filespace_id = H5.H5Dget_space(dataset_id);
+			H5.H5Sget_simple_extent_dims(filespace_id, dims, maxDims);
+			H5.H5Sclose(filespace_id);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		for(String chr: genome.getChromList())
 			for(int strand=0; strand<2; strand++) {
 				flag[convertIndex(chr, strand)] = Integer.MAX_VALUE;
 				int endIndex = 0;
-				while(true) {
-					try {
-						if(getElement(chr, strand, isPair ? "r1Pos" : "5'end", endIndex) > 0)
-							endIndex++;
-						else
-							break;
-					} catch (Exception e) {
-						e.printStackTrace();
+				try {
+					if(getElement(chr, strand, isPair ? "r1Pos" : "5'end", (int)(dims[2]-1)) > 0) {
+						flag[convertIndex(chr, strand)] = (int)dims[2];
+					} else {
+						// First find a roughly region of the end index
+						while(true) {
+							if(getElement(chr, strand, isPair ? "r1Pos" : "5'end", endIndex) > 0) {
+								endIndex+=10000;
+								if(endIndex >= dims[2])
+									endIndex = (int)(dims[2] - 1);
+							} else
+								break;
+						}
+						// Then find the accurate end index
+						while(true) {
+							if(getElement(chr, strand, isPair ? "r1Pos" : "5'end", endIndex) == 0) {
+								endIndex--;
+								if(endIndex<0)
+									break;
+							}
+							else
+								break;
+						}
+						flag[convertIndex(chr, strand)] = endIndex+1;
 					}
+					System.err.println("Detected number of hits on chromosome " + chr + " strand " + strand + " : " + getLength(chr, strand));
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-				flag[convertIndex(chr, strand)] = endIndex;
 			}
 	}
 	
@@ -448,24 +497,8 @@ public class HierarchicalHitInfo {
 	public void closeDataset() {
         // End access to the dataset and release resources used by it.
         try {
-            if (dcpl_id >= 0)
-                H5.H5Pclose(dcpl_id);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
             if (dataset_id >= 0)
                 H5.H5Dclose(dataset_id);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            if (filespace_id >= 0)
-                H5.H5Sclose(filespace_id);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -494,19 +527,16 @@ public class HierarchicalHitInfo {
 	 * extend the dataset by 1000000 columns
 	 */
 	public void extendDataset() {
-		extendDataset(1000000);
+		extendDataset(10000);
 	}
 	
 	public void extendDataset(long size) {
-		try {
+		try {		
 			// extend the dataset
 			dim3 += size;
 			if (dataset_id >= 0)
 				H5.H5Dset_extent(dataset_id, new long[] {dim1, dim2, dim3});
 			
-	        // Retrieve the dataspace for the newly extended dataset.
-            if (dataset_id >= 0)
-                filespace_id = H5.H5Dget_space(dataset_id);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -530,33 +560,30 @@ public class HierarchicalHitInfo {
 			extendDataset();
 				
 		try {
-			if (filespace_id >= 0) {
-				// Select the region used to append hit
+			// get filespace_id
+			filespace_id = H5.H5Dget_space(dataset_id);
+			
+			 
+			// Select the region used to append hit
+			if (filespace_id >= 0)
 				H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
 				
-				// Create the memory space to append the hit
-				try {
-					memspace_id = H5.H5Screate_simple(rank, new long[] {1, dim2, 1}, null);
-				} catch (Exception e) {
-					// TODO: handle exception
-					e.printStackTrace();
-				}
-				
-				// write the data into the dataset
-				if (dataset_id >= 0 && filespace_id >= 0 && memspace_id >= 0)
-					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
-							filespace_id, HDF5Constants.H5P_DEFAULT, hit);
-				
-				// End access to the memory space to release the resource
-				try {
-					H5.H5Sclose(memspace_id);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			// Create the memory space to append the hit
+			memspace_id = H5.H5Screate_simple(rank, new long[] {1, dim2, 1}, null);
+			
+			// write the data into the dataset
+			if (dataset_id >= 0 && filespace_id >= 0 && memspace_id >= 0)
+				H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
+						filespace_id, HDF5Constants.H5P_DEFAULT, hit);
+			
+			// End access to the memory space to release the resource
+			H5.H5Sclose(filespace_id);
+			H5.H5Sclose(memspace_id);
+			
 		}  catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
@@ -576,30 +603,24 @@ public class HierarchicalHitInfo {
 		
 		// append the array into the dataset
 		try {
-			if (filespace_id >= 0) {
-				// select the region to append the array
-				H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
-				
-				// Create the memory space to append the hit
-				try {
-					memspace_id = H5.H5Screate_simple(rank, new long[] {1, dim2, hits[0].length}, null);
-				} catch (Exception e) {
-					// TODO: handle exception
-					e.printStackTrace();
-				}
-				
-				// write the data into the dataset
-				if (dataset_id >= 0 && filespace_id >= 0 && memspace_id >= 0)
-					H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
-							filespace_id, HDF5Constants.H5P_DEFAULT, hits);
-				
-				// End access to the memory space to release the resource
-				try {
-					H5.H5Sclose(memspace_id);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			// get filespace_id
+			filespace_id = H5.H5Dget_space(dataset_id);
+			
+			// select the region to append the array
+			H5.H5Sselect_hyperslab(filespace_id, HDF5Constants.H5S_SELECT_SET, start, null, count, null);
+			
+			// Create the memory space to append the hit
+			memspace_id = H5.H5Screate_simple(rank, new long[] {1, dim2, hits[0].length}, null);
+			
+			// write the data into the dataset
+			if (dataset_id >= 0 && filespace_id >= 0 && memspace_id >= 0)
+				H5.H5Dwrite(dataset_id, HDF5Constants.H5T_NATIVE_DOUBLE, memspace_id, 
+						filespace_id, HDF5Constants.H5P_DEFAULT, hits);
+			
+			// End access to the memory space to release the resource
+			H5.H5Sclose(filespace_id);
+			H5.H5Sclose(memspace_id);
+			
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -612,6 +633,21 @@ public class HierarchicalHitInfo {
 		for(int i: inds)
 			returnArray[index++] = array[i];
 		return returnArray;
+	}
+	
+	public static double[][] transposeMatrix(double[][] matrix){
+	    int m = matrix.length;
+	    int n = matrix[0].length;
+
+	    double[][] transposedMatrix = new double[n][m];
+
+	    for(int x = 0; x < n; x++) {
+	        for(int y = 0; y < m; y++) {
+	            transposedMatrix[x][y] = matrix[y][x];
+	        }
+	    }
+
+	    return transposedMatrix;
 	}
 }
 
