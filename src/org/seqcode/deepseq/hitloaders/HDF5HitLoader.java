@@ -42,8 +42,8 @@ public class HDF5HitLoader extends HitLoader {
 	protected int totalHitPairs = 0; //total number of hit pairs
 	protected String sourceName=""; //String describing the source
 	
-	protected LinkedBlockingQueue<ReadHit> readQueue = new LinkedBlockingQueue<ReadHit>(1000) ;
-	protected LinkedBlockingQueue<HitPair> pairQueue = new LinkedBlockingQueue<HitPair>(1000) ;
+	protected LinkedBlockingQueue<ReadHit> readQueue = new LinkedBlockingQueue<ReadHit>(10000) ;
+	protected LinkedBlockingQueue<HitPair> pairQueue = new LinkedBlockingQueue<HitPair>(10000) ;
 	
 	protected boolean terminatorFlag = false;
 	
@@ -84,7 +84,7 @@ public class HDF5HitLoader extends HitLoader {
 		public void run() {
 			while(!terminatorFlag || !pairQueue.isEmpty()) {
 				processingPairs = new ArrayList<HitPair>();
-				pairQueue.drainTo(processingPairs, 1000);
+				pairQueue.drainTo(processingPairs, 10000);
 				process(processingPairs);
 			}
 		}
@@ -111,7 +111,7 @@ public class HDF5HitLoader extends HitLoader {
 		public void run() {
 			while (!terminatorFlag || !readQueue.isEmpty()) {
 				processReads = new ArrayList<ReadHit>();
-				readQueue.drainTo(processReads, 1000);
+				readQueue.drainTo(processReads, 10000);
 				process(processReads);
 			}
 		}
