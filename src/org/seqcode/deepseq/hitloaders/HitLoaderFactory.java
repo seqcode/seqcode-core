@@ -60,7 +60,7 @@ public class HitLoaderFactory {
 	public HitLoader makeFileHitLoader(String filename, String format, boolean useNonUnique){
 		HitLoader currReader=null;
 		File file = new File(filename);
-		if(!file.isFile() && !econfig.getKeepHDF5()){System.err.println("File not found: "+file.getName());System.exit(1);}
+		if(!file.isFile() && !format.equals("HDF5Cache")){System.err.println("File not found: "+file.getName());System.exit(1);}
 		if(format.equals("SAM") || format.equals("BAM")){
 			currReader = new SAMFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadRead2(), econfig.getLoadPairs());
 		}else if(format.equals("TOPSAM")){

@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.stream.events.EndDocument;
+
 import org.seqcode.deepseq.ExtReadHit;
 import org.seqcode.deepseq.ReadHit;
 import org.seqcode.deepseq.StrandedBaseCount;
@@ -41,6 +43,10 @@ public class HDF5HitCache implements HitCacheInterface{
 	protected String readReference = "5'end";	
 	protected String pairReference = "pairMid";
 	
+	protected long getIndexTime = 0;
+	protected long getPairsTime = 0;
+	protected long binarySearchTime = 0;
+	
 	public HDF5HitCache(ExptConfig ec, Collection<HitLoader> hloaders, String sampleName) {
 		this.econfig = ec;
 		this.gen = econfig.getGenome();
@@ -72,10 +78,10 @@ public class HDF5HitCache implements HitCacheInterface{
 		pairHHI.initializeHDF5();
 		
 		// Append all hits into the dataset and extract the info into the HDF5HitCache
-		boolean needSort = loaders.size()>1;
+//		boolean needSort = loaders.size()>1;
 		for(HitLoader currLoader: loaders) {
 			HDF5HitLoader currHDF5Loader = (HDF5HitLoader)currLoader;
-			if(!currHDF5Loader.isCache()) {needSort = true;}
+//			if(!currHDF5Loader.isCache()) {needSort = true;}
 			currLoader.sourceAllHits();
 			
 			// readHHI
@@ -135,10 +141,10 @@ public class HDF5HitCache implements HitCacheInterface{
 		}
 		
 		// Sort each hitInfo dataset if needed
-		if(needSort) {
-			readHHI.sortByReference();
-			pairHHI.sortByReference();
-		}
+//		if(needSort) {
+		setReadReference(readReference);;
+		setPairReference(pairReference);;
+//		}
 		
 		// Update hit number info
 		updateHits();
@@ -309,9 +315,10 @@ public class HDF5HitCache implements HitCacheInterface{
 	 */
 	public synchronized float countStrandedBases(Region r, char strand) {
 		// make sure the reference element of the read hit is 5' end
-		if(readReference != "5'end")
+		if(!readReference.equals("5'end")) {
+			System.err.println("Set read reference as 5'end!");
 			setReadReference("5'end");
-		
+		}
 		float count = 0;
 		
 		String chr = r.getChrom();
@@ -351,8 +358,10 @@ public class HDF5HitCache implements HitCacheInterface{
 	 * @return
 	 */
 	public synchronized List<StrandedBaseCount> getStrandedBases(Region r, char strand){
-		if(readReference != "5'end")
+		if(readReference != "5'end") {
+			System.err.println("Set read reference as 5' end!");
 			setReadReference("5'end");
+		}
 		
 		List<StrandedBaseCount> bases = new ArrayList<StrandedBaseCount>();
 		
@@ -391,8 +400,10 @@ public class HDF5HitCache implements HitCacheInterface{
 	 * @return
 	 */
 	public synchronized List<StrandedPair> getPairsOnStrand(Region r, char strand){
-		if(pairReference != "r1Pos")
+		if(!pairReference.equals("r1Pos")) {
+			System.err.println("Set pair reference as r1Pos!");
 			setPairReference("r1Pos");
+		}
 		
 		List<StrandedPair> pairs = new ArrayList<StrandedPair>();
 		
@@ -420,8 +431,10 @@ public class HDF5HitCache implements HitCacheInterface{
 	 * @return
 	 */
 	public synchronized List<StrandedPair> getPairsByMid(Region r) {
-		if(pairReference!="pairMid")
+		if(!pairReference.equals("pairMid")) {
+			System.err.println("Set pair reference as pairMid!");
 			setPairReference("pairMid");
+		}
 		
 		List<StrandedPair> pairs = new ArrayList<StrandedPair>();
 		
@@ -431,15 +444,21 @@ public class HDF5HitCache implements HitCacheInterface{
 				for(int j=0; j<2; j++) {
 					try {
 						int[] ind = getIndexInRegion(chr, j, r, true);
-						if(ind[1] > ind[0])
+						if(ind[1] > ind[0]) {
+							long start = System.currentTimeMillis();
 							pairs.addAll(pairHHI.getPair(chr, j, ind[0], ind[1]));
+							getPairsTime += (System.currentTimeMillis() - start);
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 						System.exit(1);
 					}
 				}
 		}
-		
+		System.out.println("Get Index: " + getIndexTime);
+		System.out.println("Get Pairs: " + getPairsTime);
+		System.out.println("Binary search: " + binarySearchTime);
+		System.out.println("tranpose: " + pairHHI.time);
 		return pairs;		
 	}
 	
@@ -493,6 +512,7 @@ public class HDF5HitCache implements HitCacheInterface{
 	 * @return
 	 */
 	private int[] getIndexInRegion(String chr, int strand, Region r, boolean isPair) {
+		long start = System.currentTimeMillis();
 		int start_ind; int end_ind;
 		HierarchicalHitInfo hhInfo = isPair ? pairHHI : readHHI;
 		int length = hhInfo.getLength(chr, strand);
@@ -517,7 +537,7 @@ public class HDF5HitCache implements HitCacheInterface{
 		} else {
 			return new int[] {0, 0};
 		}
-		
+		getIndexTime += (System.currentTimeMillis() - start);
 		return new int[] {start_ind, end_ind};
 	}
 	
@@ -530,6 +550,7 @@ public class HDF5HitCache implements HitCacheInterface{
 	 * @return
 	 */
 	private int binarySearch(String chr, int strand, int index, boolean isPair) {
+		long start = System.currentTimeMillis();
 		HierarchicalHitInfo hhInfo;
 		if(isPair)
 			hhInfo = pairHHI;
@@ -558,7 +579,7 @@ public class HDF5HitCache implements HitCacheInterface{
 				System.exit(1);
 			}
 		}
-		
+		binarySearchTime += (System.currentTimeMillis() - start);
 		return -mid - 1;
 	}
 	

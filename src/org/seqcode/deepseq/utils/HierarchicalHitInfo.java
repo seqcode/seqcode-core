@@ -2,6 +2,7 @@ package org.seqcode.deepseq.utils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,10 @@ public class HierarchicalHitInfo {
 	
 	// flag used to mark the position of newly appended hit info on each dim1
 	protected int[] flag;
+	// store reference array to increase the speed.
+	protected double[][] ref;
+	
+	public long time = 0;
 	
 	/**
 	 * Constructor
@@ -96,10 +101,11 @@ public class HierarchicalHitInfo {
 		referenceIndex = isPair ? 5 : 0;		// default reference element for pair (pairMid) or read (5'end)
 		dims = new long[] {dim1, dim2, dim3};
 		maxDims = new long[] {dim1, dim2, HDF5Constants.H5S_UNLIMITED};
-		chunkDims = new long[] {1, dim2, 2500};
+		chunkDims = new long[] {1, dim2, 100};
 		rank = 3;
 		
 		flag = new int[(int)dim1];
+		ref = new double[(int)dim1][];
 		
 	}
 	
@@ -113,11 +119,11 @@ public class HierarchicalHitInfo {
 	public static Set<Long> getPairElementIDList() {return pairID2Element.keySet();}
 	public long getReferenceIndex() {return referenceIndex;}
 	public double getReference(String chr, int strand, int order) throws Exception{
-		return getElement(chr, strand, referenceIndex, order);
+		return ref[convertIndex(chr, strand)][order];
 	}
 	
 	public double[] getReference(String chr, int strand, int startOrder, int endOrder) throws Exception {
-		return getElement(chr, strand, referenceIndex, startOrder, endOrder);
+		return Arrays.copyOfRange(ref[convertIndex(chr, strand)], startOrder, endOrder);
 	}
 
 	/**
@@ -240,7 +246,9 @@ public class HierarchicalHitInfo {
 		double[][] hitInfo = getElement(chr, strand, startOrder, endOrder);
 		
 		// transpose the hitInfo
+		long start = System.currentTimeMillis();
 		double[][] transposedHitInfo = transposeMatrix(hitInfo);
+		time += (System.currentTimeMillis() - start);
 		
 		// convert each row of the hitInfo to strandedPair then return
 		List<StrandedPair> pairs = new ArrayList<StrandedPair>();
@@ -328,6 +336,7 @@ public class HierarchicalHitInfo {
 				
 				// 2. sort all elements according to the reference then write back to the dataset
 				int[] inds = StatUtil.findSort(reference);
+				ref[convertIndex(chrom, strand)] = reference;
 				for(long elementID: isPair? pairID2Element.keySet() : readID2Element.keySet()) {
 					if(elementID != referenceIndex) {
 						double[] sortElement = permute(getElement(chrom, strand, elementID), inds);
