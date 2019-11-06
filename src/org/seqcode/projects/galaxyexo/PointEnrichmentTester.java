@@ -28,7 +28,7 @@ import cern.jet.random.engine.DRand;
  * 
  * Input:
  * 		- Genome
- * 		- GFF file of peak locations
+ * 		- Peak locations in gff/points/bed
  *		- A set of genomic regions to test peak enrichment
  * Output:
  * 		- A text file indicating the number of overlap and Poisson p-value.
@@ -182,8 +182,8 @@ public class PointEnrichmentTester {
             System.err.println("Usage:\n " +
                     "PointEnrichmentTester\n " +
                     "--geninfo <genome info file> \n " +
-                    "--gff <gff containing site coordinates> OR --points <points containing site coordinates> \n " +
-                    "--region <region of the genome for enrichment test> \n " +
+                    "--gff <gff containing site coordinates> OR --points <points containing site coordinates> OR --bed <bed containing site coordinates>\n " +
+                    "--region <region of the genome for enrichment test> OR --regbed <region in bed format for enrichment test>\n " +
                     "\nOPTIONS:\n " +
                     "--out <output directory (default = working directory)> \n " +
                     "--pseudo <pseudocounts to suppress telomere enrichment (default=0) > \n " +
@@ -194,26 +194,31 @@ public class PointEnrichmentTester {
 			System.exit(0);
 		}
 		
-		List<Point> points = null; List<Region> peakRegs = null;
-		if (ap.hasKey("gff"))
+		// get peak positions from file
+		List<Point> points = new ArrayList<Point>();
+		if (ap.hasKey("gff")){
 			points = RegionFileUtilities.loadPointsFromGFFFile(ap.getKeyValue("gff"),genome);
-		else if (ap.hasKey("points"))
+		}else if (ap.hasKey("points")){
 			points = RegionFileUtilities.loadPointsFromFile(ap.getKeyValue("points"), genome);
-		else if (ap.hasKey("bed"))
-			peakRegs = RegionFileUtilities.loadRegionsFromBEDFile(genome, ap.getKeyValue("bed"),-1);
-		
-		if (points.size()==0 && peakRegs.size()==0){
+		}else if (ap.hasKey("bed")){
+			List<Region> peakRegs = RegionFileUtilities.loadRegionsFromBEDFile(genome, ap.getKeyValue("bed"),-1);
+			for (Region p : peakRegs){points.add(p.getMidpoint());} // convert bed to points
+		}else{
 			System.err.println("peak files have zero hits.");
 			System.exit(0);
 		}
 		
-		// convert bed to points
-		if (peakRegs.size() >0)
-			for (Region p : peakRegs)
-				points.add(p.getMidpoint());
+		// get regions from file
+		List<Region> reg= null;
+		if (ap.hasKey("region")){
+			reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
+		}else if (ap.hasKey("regbed")){
+			reg = RegionFileUtilities.loadRegionsFromBEDFile(genome, ap.getKeyValue("bed"),-1);
+		}else{
+			System.err.println("region files have zero hits.");
+			System.exit(0);
+		}
 		
-	
-		List<Region> reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
 		int expand = Args.parseInteger(args,"ext", 20);
 		int itr = Args.parseInteger(args,"numItr", 1000);
 		// Get outdir and outbase and make them;
