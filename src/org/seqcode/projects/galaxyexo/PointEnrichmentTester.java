@@ -24,7 +24,7 @@ import cern.jet.random.engine.DRand;
 /**
  * Utility to access peak enrichment at a set of genomic regions.  Statistical significance
  * of peak enrichment over the set of sites is accessed using Poisson model.  The null 
- * distribution comes from randomly placed peaks thought a genome.  
+ * distribution comes from randomly placed peaks throughout a genome.  
  * 
  * Input:
  * 		- Genome
@@ -40,11 +40,10 @@ public class PointEnrichmentTester {
 	protected GenomeConfig gconfig;	
 	protected String outbase;
 	protected List<Point> gff;
-	protected List<Region> regions;
+	protected List<Region> regions; // region that you want to test significance in overlap
 	protected int ext; //distance to expand so that I don't double count points
 	protected int numItr = 1000;
 	protected Poisson poisson;
-	protected int pseudocounts; // noise added to prevent calling significance in telomere regions
 	protected boolean printRandOverlap = false; // flag to print number of random overlap
 	
 	public PointEnrichmentTester(String base, GenomeConfig gcon,List<Point> g, List<Region> r, int numTest){
@@ -57,7 +56,6 @@ public class PointEnrichmentTester {
 	}
 	
 	// set pseudo counts
-	public void setNoise(int c){pseudocounts=c;}
 	public void setExpansion(int e){ext=e;}
 	public void printRandOverlap(){printRandOverlap=true;}
 	
@@ -114,7 +112,7 @@ public class PointEnrichmentTester {
 			if (numRandOverlaps >totalOverlap){
 				pValuePoisson=1;
 			}else{
-				poisson.setMean(numRandOverlaps+pseudocounts);
+				poisson.setMean(numRandOverlaps);
 				int cA = (int)Math.ceil(totalOverlap);
 				pValuePoisson = 1 - poisson.cdf(cA) + poisson.pdf(cA);           	
 			}
@@ -178,8 +176,9 @@ public class PointEnrichmentTester {
 		
 		ArgParser ap = new ArgParser(args);		
 		GenomeConfig gconf = new GenomeConfig(args);
+		Genome genome = gconf.getGenome();
 		
-		if (!ap.hasKey("gff") && !ap.hasKey("points")){
+		if (!ap.hasKey("gff") && !ap.hasKey("points") && !ap.hasKey("bed")){
             System.err.println("Usage:\n " +
                     "PointEnrichmentTester\n " +
                     "--geninfo <genome info file> \n " +
@@ -195,19 +194,26 @@ public class PointEnrichmentTester {
 			System.exit(0);
 		}
 		
-		List<Point> points = null;
+		List<Point> points = null; List<Region> peakRegs = null;
 		if (ap.hasKey("gff"))
-			points = RegionFileUtilities.loadPointsFromGFFFile(ap.getKeyValue("gff"),gconf.getGenome());
+			points = RegionFileUtilities.loadPointsFromGFFFile(ap.getKeyValue("gff"),genome);
 		else if (ap.hasKey("points"))
-			points = RegionFileUtilities.loadPointsFromFile(ap.getKeyValue("points"), gconf.getGenome());
+			points = RegionFileUtilities.loadPointsFromFile(ap.getKeyValue("points"), genome);
+		else if (ap.hasKey("bed"))
+			peakRegs = RegionFileUtilities.loadRegionsFromBEDFile(genome, ap.getKeyValue("bed"),-1);
 		
-		if (points.size()==0){
+		if (points.size()==0 && peakRegs.size()==0){
 			System.err.println("peak files have zero hits.");
 			System.exit(0);
 		}
+		
+		// convert bed to points
+		if (peakRegs.size() >0)
+			for (Region p : peakRegs)
+				points.add(p.getMidpoint());
+		
 	
 		List<Region> reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
-		int pseudo = Args.parseInteger(args,"pseudo", 0);
 		int expand = Args.parseInteger(args,"ext", 20);
 		int itr = Args.parseInteger(args,"numItr", 1000);
 		// Get outdir and outbase and make them;
@@ -215,7 +221,6 @@ public class PointEnrichmentTester {
 			
 		PointEnrichmentTester tester = new PointEnrichmentTester(outbase,gconf,points,reg,itr);
 		
-		tester.setNoise(pseudo);
 		tester.setExpansion(expand);
 		if (ap.hasKey("print")){tester.printRandOverlap();}		
 		tester.execute();
