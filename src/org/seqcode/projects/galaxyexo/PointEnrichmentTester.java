@@ -213,7 +213,7 @@ public class PointEnrichmentTester {
 		if (ap.hasKey("region")){
 			reg = RegionFileUtilities.loadRegionsFromFile(ap.getKeyValue("region"),gconf.getGenome(),-1);
 		}else if (ap.hasKey("regbed")){
-			reg = RegionFileUtilities.loadRegionsFromBEDFile(genome, ap.getKeyValue("bed"),-1);
+			reg = RegionFileUtilities.loadRegionsFromBEDFile(genome, ap.getKeyValue("regbed"),-1);
 		}else{
 			System.err.println("region files have zero hits.");
 			System.exit(0);
