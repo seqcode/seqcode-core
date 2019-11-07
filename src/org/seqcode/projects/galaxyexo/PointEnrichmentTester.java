@@ -44,8 +44,8 @@ public class PointEnrichmentTester {
 	protected int ext; //distance to expand so that I don't double count points
 	protected int numItr = 1000;
 	protected Poisson poisson;
-	protected boolean printRandOverlap = false; // flag to print number of random overlap
-	protected String nulldistrib = "";
+	protected boolean printRandOverlap = true; // flag to print number of random overlap
+	protected String nulldistrib = "NullDistrib:";
 	
 	public PointEnrichmentTester(String base, GenomeConfig gcon,List<Point> g, List<Region> r, int numTest){
 		outbase=base;
@@ -98,7 +98,6 @@ public class PointEnrichmentTester {
 						break;
 					}}}
 			
-			if (i ==1){writer.println("number of overlap with random regions for iteration one : "+numRandOverlaps);}
 			nulldistrib+=numRandOverlaps+",";
 			if (numRandOverlaps >totalOverlap){
 				pValuePoisson=1;
