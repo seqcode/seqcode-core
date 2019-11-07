@@ -45,6 +45,7 @@ public class PointEnrichmentTester {
 	protected int numItr = 1000;
 	protected Poisson poisson;
 	protected boolean printRandOverlap = false; // flag to print number of random overlap
+	protected String nulldistrib = "";
 	
 	public PointEnrichmentTester(String base, GenomeConfig gcon,List<Point> g, List<Region> r, int numTest){
 		outbase=base;
@@ -80,14 +81,8 @@ public class PointEnrichmentTester {
 		File outFile = new File(outbase+File.separator+"point_enrichment.txt");
 		outFile.getParentFile().mkdirs();
 		PrintWriter writer = new PrintWriter(outFile);		
-		writer.println("total number of non-overlapping gff points : "+mergedGff.size());
-		writer.println("number of overlap between gff points and regions with size "+totalRegionSize+" : "+totalOverlap);	
-		
-		PrintWriter w = null;
-		if (printRandOverlap){
-			File randOverlapFile = new File(outbase+File.separator+"num_random_overlaps.txt");
-			w = new PrintWriter(randOverlapFile) ;
-		}
+		writer.println("total number of non-overlapping peaks : "+mergedGff.size());
+		writer.println("number of overlap between peaks and regions with size "+totalRegionSize+" : "+totalOverlap);	
 		
 		double maxPval = 0;
 		// Determined p-val based on Poisson distributions for numItr times and return the max p-val
@@ -101,14 +96,10 @@ public class PointEnrichmentTester {
 					if (randRegion.overlaps(reg)){
 						numRandOverlaps++;
 						break;
-					}
-				}
-			}
+					}}}
+			
 			if (i ==1){writer.println("number of overlap with random regions for iteration one : "+numRandOverlaps);}
-			if (w != null){ 
-				w.print(numRandOverlaps+"\n");
-				w.close();
-				}
+			nulldistrib+=numRandOverlaps+",";
 			if (numRandOverlaps >totalOverlap){
 				pValuePoisson=1;
 			}else{
@@ -119,6 +110,10 @@ public class PointEnrichmentTester {
 			if (pValuePoisson >maxPval) {maxPval = pValuePoisson;}		
 		}
 		writer.println("Poisson p-val : "+maxPval);
+		
+		if (printRandOverlap)
+			writer.println(nulldistrib);
+		
 		writer.close();
 	}
 	
