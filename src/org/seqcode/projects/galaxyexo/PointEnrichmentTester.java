@@ -39,7 +39,7 @@ import cern.jet.random.engine.DRand;
 public class PointEnrichmentTester {
 	protected GenomeConfig gconfig;	
 	protected String outbase;
-	protected List<Point> gff;
+	protected List<Point> peaks;
 	protected List<Region> regions; // region that you want to test significance in overlap
 	protected int ext; //distance to expand so that I don't double count points
 	protected int numItr = 1000;
@@ -47,10 +47,10 @@ public class PointEnrichmentTester {
 	protected boolean printRandOverlap = true; // flag to print number of random overlap
 	protected String nulldistrib = "NullDistrib:";
 	
-	public PointEnrichmentTester(String base, GenomeConfig gcon,List<Point> g, List<Region> r, int numTest){
+	public PointEnrichmentTester(String base, GenomeConfig gcon,List<Point> p, List<Region> r, int numTest){
 		outbase=base;
 		gconfig=gcon;
-		gff=g;
+		peaks=p;
 		regions=r;	
 		poisson = new Poisson(1, new DRand());
 		numItr = numTest;
@@ -65,23 +65,23 @@ public class PointEnrichmentTester {
 		int totalRegionSize = 0;
 		for (Region reg : regions){totalRegionSize+=reg.getWidth();}	// total size of regions
 		// expand regions for 20bp so that I don't double counts the peaks nearby
-		List<Region> expandedGff = new ArrayList<Region>();
-		for (Point point : gff){
-			expandedGff.add(point.expand(ext));
+		List<Region> expandedPeaks = new ArrayList<Region>();
+		for (Point point : peaks){
+			expandedPeaks.add(point.expand(ext));
 		}
-		List <Region> mergedGff = Region.mergeRegions(expandedGff);	
+		List <Region> mergedPeaks = Region.mergeRegions(expandedPeaks);	
 		int totalOverlap = 0; // number of total overlap between two regions
-		for (Region gff : mergedGff){
+		for (Region p: mergedPeaks){
 			for (Region reg : regions){
-				if (gff.overlaps(reg))
+				if (p.overlaps(reg)){
 					totalOverlap ++;
-			}
-		}
+					break;
+				}}}
 		
 		File outFile = new File(outbase+File.separator+"point_enrichment.txt");
 		outFile.getParentFile().mkdirs();
 		PrintWriter writer = new PrintWriter(outFile);		
-		writer.println("total number of non-overlapping peaks : "+mergedGff.size());
+		writer.println("total number of non-overlapping peaks : "+mergedPeaks.size());
 		writer.println("number of overlap between peaks and regions with size "+totalRegionSize+" : "+totalOverlap);	
 		
 		double maxPval = 0;
@@ -89,7 +89,7 @@ public class PointEnrichmentTester {
 		for (int i=0 ; i < numItr ; i++){
 			double pValuePoisson =1;
 			// produce random hits through genome
-			List<Region> randomRegions = randomRegionPick(gconfig.getGenome(), null, mergedGff.size(),1);
+			List<Region> randomRegions = randomRegionPick(gconfig.getGenome(), null, mergedPeaks.size(),1);
 			int numRandOverlaps=0;
 			for (Region randRegion : randomRegions){
 				for (Region reg : regions){
