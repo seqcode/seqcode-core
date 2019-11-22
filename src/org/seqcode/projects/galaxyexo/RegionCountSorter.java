@@ -94,7 +94,6 @@ public class RegionCountSorter {
 			for (Sample sample : manager.getSamples())
 				counts += (float) (normCONST*sample.countHits(countRegions.get(i))/sample.getHitCount());
 			//add counts
-			System.out.println("counts "+counts);
 			RegionCounts rc = new RegionCounts(counts);
 			
 			// add peaks or regions
@@ -109,23 +108,9 @@ public class RegionCountSorter {
 			regionCounts.add(rc);
 		}
 		
-		//Sort by responsibilities
-		for (int i=0; i < 5; i++){
-			System.out.println(regionCounts.get(i).getCoord()+" : "+regionCounts.get(i).getCount());
-		}
+		//sort 
 		Collections.sort(regionCounts);
-		System.out.println("after sorting");
-		for (int i=0; i < 5; i++){
-			System.out.println(regionCounts.get(i).getCoord()+" : "+regionCounts.get(i).getCount());
-		}
-//		Collections.sort(regionCounts, new Comparator<RegionCounts>(){
-//			public int compare(RegionCounts o1, RegionCounts o2) {return o1.compareTo(o2);}
-//		});
 		Collections.reverse(regionCounts);
-		System.out.println("reverse sorting");
-		for (int i=0; i < 5; i++){
-			System.out.println(regionCounts.get(i).getCoord()+" : "+regionCounts.get(i).getCount());
-		}
 		
 		// outputting the list of regions in descending order of counts
 		for (RegionCounts rc : regionCounts){
