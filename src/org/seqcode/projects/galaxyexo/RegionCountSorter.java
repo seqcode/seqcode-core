@@ -116,8 +116,7 @@ public class RegionCountSorter {
 			else if (regionCounts[i].getRegion()!=null)
 				System.out.println(regionCounts[i].getRegion());
 			else
-				System.out.println(regionCounts[i].getRegion());
-			System.out.println(regionCounts[i].getStrandedRegion());	
+				System.out.println(regionCounts[i].getStrandedRegion());
 		}
 		manager.close();
 	}
