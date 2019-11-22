@@ -110,9 +110,10 @@ public class RegionCountSorter {
 		}
 		
 		//Sort by responsibilities
-		Collections.sort(regionCounts, new Comparator<RegionCounts>(){
-			public int compare(RegionCounts o1, RegionCounts o2) {return o1.compareTo(o2);}
-		});
+		Collections.sort(regionCounts);
+//		Collections.sort(regionCounts, new Comparator<RegionCounts>(){
+//			public int compare(RegionCounts o1, RegionCounts o2) {return o1.compareTo(o2);}
+//		});
 		Collections.reverse(regionCounts);
 		
 		// outputting the list of regions in descending order of counts
