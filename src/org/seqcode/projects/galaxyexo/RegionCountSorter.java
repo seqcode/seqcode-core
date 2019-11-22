@@ -110,11 +110,22 @@ public class RegionCountSorter {
 		}
 		
 		//Sort by responsibilities
+		for (int i=0; i < 5; i++){
+			System.out.println(regionCounts.get(i).getCoord()+" : "+regionCounts.get(i).getCount());
+		}
 		Collections.sort(regionCounts);
+		System.out.println("after sorting");
+		for (int i=0; i < 5; i++){
+			System.out.println(regionCounts.get(i).getCoord()+" : "+regionCounts.get(i).getCount());
+		}
 //		Collections.sort(regionCounts, new Comparator<RegionCounts>(){
 //			public int compare(RegionCounts o1, RegionCounts o2) {return o1.compareTo(o2);}
 //		});
 		Collections.reverse(regionCounts);
+		System.out.println("reverse sorting");
+		for (int i=0; i < 5; i++){
+			System.out.println(regionCounts.get(i).getCoord()+" : "+regionCounts.get(i).getCount());
+		}
 		
 		// outputting the list of regions in descending order of counts
 		for (RegionCounts rc : regionCounts){
@@ -151,9 +162,10 @@ public class RegionCountSorter {
 		public StrandedPoint getStrandedCoord(){return spoints;}
 		public Region getRegion(){return reg;}
 		public StrandedRegion getStrandedRegion(){return sreg;}
+		public float getCount(){return count;}
 		
-		public int compareTo(RegionCounts regcounts){
-			return Float.compare(count,  regcounts.count);
+		public int compareTo(RegionCounts rc){
+			return Float.compare(count,  rc.count);
 		}
 			
 //			float compareVal = regcounts.count;
