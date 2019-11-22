@@ -49,6 +49,7 @@ public class MemeER {
 	
 	protected String MEMEpath;
 	protected String MEMEargs;
+	protected File workingDir=null;
 	protected static String PWMfile = null;	// pwm output file name
 	protected Float pseudo = (float)0.001;
 	public static final int MOTIF_FINDING_NEGSEQ=10000;
@@ -62,12 +63,14 @@ public class MemeER {
 	// option to set motif minimum ROC
 	public void setMotifMinROC(double minroc){motifMinROC = minroc;}
 	public double getMotifMinROC(){return motifMinROC;}
+	public void setWorkingDir(File wd){workingDir=wd;}
 
 	public Pair<List<WeightMatrix>,List<WeightMatrix>> execute(List<String> sequences, File memeOutDirFullName, boolean bestOnly){
 		List<WeightMatrix> wm = new ArrayList<WeightMatrix>();
 		List<WeightMatrix> fm = new ArrayList<WeightMatrix>();
+		if(workingDir==null) 
+			workingDir = new File(System.getProperty("user.dir"));
 		String memeOutDir = null;
-		File workingDir = new File(System.getProperty("user.dir"));
 		if(memeOutDirFullName == null){
 			String wDir = System.getProperty("user.dir");
 			memeOutDir = wDir+"/meme_out";
@@ -93,7 +96,9 @@ public class MemeER {
 				deleteDirectory(memeOutPath);
 			
 			//Call MEME
-			String MEMEcmd = MEMEpath+"/meme ";
+			String MEMEcmd = MEMEpath.equals("") ?
+					"meme " :
+					MEMEpath.endsWith(File.separator) ? MEMEpath+"meme " : MEMEpath+File.separator+"meme ";
 			Process proc = Runtime.getRuntime().exec(MEMEcmd+" "+seqFilename+" "+MEMEargs +" -o "+memeOutDir);
 			// any error message? 
 			StreamGobbler errorGobbler = new 
