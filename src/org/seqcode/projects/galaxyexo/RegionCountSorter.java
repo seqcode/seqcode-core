@@ -2,7 +2,6 @@ package org.seqcode.projects.galaxyexo;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.seqcode.data.io.RegionFileUtilities;
@@ -95,6 +94,7 @@ public class RegionCountSorter {
 			for (Sample sample : manager.getSamples())
 				counts += (float) (normCONST*sample.countHits(countRegions.get(i))/sample.getHitCount());
 			//add counts
+			System.out.println("counts "+counts);
 			RegionCounts rc = new RegionCounts(counts);
 			
 			// add peaks or regions
@@ -143,10 +143,10 @@ public class RegionCountSorter {
 	
 	private class RegionCounts implements Comparable<RegionCounts>{	
 		
-		protected Point coord=null;  //Event coordinate
-		protected StrandedPoint spoints=null;
-		protected Region reg=null; //
-		protected StrandedRegion sreg=null;
+		protected Point coord;  //Event coordinate
+		protected StrandedPoint spoints;
+		protected Region reg; //
+		protected StrandedRegion sreg;
 		protected float count;
 		
 		public RegionCounts(float count){
