@@ -144,13 +144,16 @@ public class RegionCountSorter {
 		public StrandedRegion getStrandedRegion(){return sreg;}
 		
 		public int compareTo(RegionCounts regcounts){
-			float compareVal = regcounts.count;
-			if (compareVal > this.count){
-				return 1;
-			}else{
-				return -1;
-			}
+			return Float.compare(count,  regcounts.count);
 		}
+			
+//			float compareVal = regcounts.count;
+//			if (compareVal > this.count){
+//				return 1;
+//			}else{
+//				return -1;
+//			}
+//		}
 	}
 
 	
