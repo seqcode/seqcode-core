@@ -114,7 +114,7 @@ public class RegionCountSorter {
 		manager.close();
 	}
 	
-	class ArrayListSorter implements Comparable<ArrayListSorter>{		
+	private class ArrayListSorter implements Comparable<ArrayListSorter>{		
 		private Object key;
 		private float val;		
 		public ArrayListSorter(){}		
