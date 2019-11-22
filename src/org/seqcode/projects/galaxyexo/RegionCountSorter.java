@@ -1,7 +1,8 @@
 package org.seqcode.projects.galaxyexo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.seqcode.data.io.RegionFileUtilities;
@@ -87,36 +88,43 @@ public class RegionCountSorter {
 		// get normalization constant for the total tag normalization
 		double normCONST = sumReads/manager.getSamples().size();
 		
-		RegionCounts[] regionCounts = new RegionCounts[countRegions.size()];
+		List<RegionCounts> regionCounts = new ArrayList<RegionCounts>();
+		
 		for (int i = 0 ; i < countRegions.size(); i++){
-			float counts = 0;
+			float counts=0;
 			for (Sample sample : manager.getSamples())
 				counts += (float) (normCONST*sample.countHits(countRegions.get(i))/sample.getHitCount());
-			// add counts
-			regionCounts[i] = new RegionCounts(counts);
+			//add counts
+			RegionCounts rc = new RegionCounts(counts);
 			
-			//add peaks or regions
+			// add peaks or regions
 			if (points !=null)
-				regionCounts[i].setCoord(points.get(i));
+				rc.setCoord(points.get(i));
 			else if (spoints !=null)
-				regionCounts[i].setStrandedCoord(spoints.get(i));
+				rc.setStrandedCoord(spoints.get(i));
 			else if (strandedReg != null)
-				regionCounts[i].setStrandedRegion(strandedReg.get(i));
-			else if (regions != null)
-				regionCounts[i].setRegion(regions.get(i));		
-		}	
-		Arrays.sort(regionCounts);
+				rc.setStrandedRegion(strandedReg.get(i));
+			else
+				rc.setRegion(regions.get(i));
+			regionCounts.add(rc);
+		}
+		
+		//Sort by responsibilities
+		Collections.sort(regionCounts, new Comparator<RegionCounts>(){
+			public int compare(RegionCounts o1, RegionCounts o2) {return o1.compareTo(o2);}
+		});
+		Collections.reverse(regionCounts);
 		
 		// outputting the list of regions in descending order of counts
-		for (int i = 0; i < countRegions.size(); i++){
-			if (regionCounts[i].getCoord()!=null)
-				System.out.println(regionCounts[i].getCoord());
-			else if (regionCounts[i].getStrandedCoord()!=null)
-				System.out.println(regionCounts[i].getStrandedCoord());
-			else if (regionCounts[i].getRegion()!=null)
-				System.out.println(regionCounts[i].getRegion());
+		for (RegionCounts rc : regionCounts){
+			if (points !=null)
+				System.out.println(rc.getCoord());
+			else if (spoints !=null)
+				System.out.println(rc.getStrandedCoord());
+			else if (strandedReg != null)
+				System.out.println(rc.getRegion());
 			else
-				System.out.println(regionCounts[i].getStrandedRegion());
+				System.out.println(rc.getStrandedRegion());		
 		}
 		manager.close();
 	}
