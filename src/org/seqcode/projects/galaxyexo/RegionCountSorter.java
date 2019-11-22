@@ -87,64 +87,73 @@ public class RegionCountSorter {
 		// get normalization constant for the total tag normalization
 		double normCONST = sumReads/manager.getSamples().size();
 		
-		ArrayListSorter[] regionCounts = new ArrayListSorter[countRegions.size()];
+		RegionCounts[] regionCounts = new RegionCounts[countRegions.size()];
 		for (int i = 0 ; i < countRegions.size(); i++){
-			regionCounts[i] = new ArrayListSorter();
 			float counts = 0;
 			for (Sample sample : manager.getSamples())
 				counts += (float) (normCONST*sample.countHits(countRegions.get(i))/sample.getHitCount());
 			// add counts
-			regionCounts[i].setVal(counts);		
+			regionCounts[i] = new RegionCounts(counts);
 			
 			//add peaks or regions
 			if (points !=null)
-				regionCounts[i].setKey(points.get(i));
+				regionCounts[i].setCoord(points.get(i));
 			else if (spoints !=null)
-				regionCounts[i].setKey(spoints.get(i));
+				regionCounts[i].setStrandedCoord(spoints.get(i));
 			else if (strandedReg != null)
-				regionCounts[i].setKey(strandedReg.get(i));
+				regionCounts[i].setStrandedRegion(strandedReg.get(i));
 			else if (regions != null)
-				regionCounts[i].setKey(regions.get(i));		
+				regionCounts[i].setRegion(regions.get(i));		
 		}	
 		Arrays.sort(regionCounts);
 		
 		// outputting the list of regions in descending order of counts
-		for (int i = 0; i < countRegions.size(); i++)
-			System.out.println(regionCounts[i].getKey());		
+		for (int i = 0; i < countRegions.size(); i++){
+			if (regionCounts[i].getCoord()!=null)
+				System.out.println(regionCounts[i].getCoord());
+			else if (regionCounts[i].getStrandedCoord()!=null)
+				System.out.println(regionCounts[i].getStrandedCoord());
+			else if (regionCounts[i].getRegion()!=null)
+				System.out.println(regionCounts[i].getRegion());
+			else
+				System.out.println(regionCounts[i].getRegion());
+			System.out.println(regionCounts[i].getStrandedRegion());	
+		}
 		manager.close();
 	}
 	
-	private class ArrayListSorter implements Comparable<ArrayListSorter>{		
-		private Object key;
-		private float val;		
-		public ArrayListSorter(){}		
-		public ArrayListSorter(Object key , float val){
-			super();
-			this.key = key;
-			this.val = val;
-		}		
-		public Object getKey(){
-			return key;
-		}		
-		public float getVal(){ 
-			return val;
+	private class RegionCounts implements Comparable<RegionCounts>{	
+		
+		protected Point coord=null;  //Event coordinate
+		protected StrandedPoint spoints=null;
+		protected Region reg=null; //
+		protected StrandedRegion sreg=null;
+		protected float count;
+		
+		public RegionCounts(float count){
+			this.count=count;
 		}
-		public void setKey(Object key){
-			this.key = key;
-		}		
-		public void setVal(float val){
-			this.val = val;
-		}		
-		public int compareTo (ArrayListSorter compareObj){			
-			float compareVal = ((ArrayListSorter) compareObj).getVal();			
-			// descending order
-			if (compareVal > this.val){
+		
+		public void setCoord(Point coord){ this.coord=coord;}
+		public void setStrandedCoord(StrandedPoint spoints){this.spoints=spoints;}
+		public void setRegion(Region reg){this.reg=reg;}
+		public void setStrandedRegion(StrandedRegion sreg){this.sreg=sreg;}
+		
+		public Point getCoord(){ return coord;}
+		public StrandedPoint getStrandedCoord(){return spoints;}
+		public Region getRegion(){return reg;}
+		public StrandedRegion getStrandedRegion(){return sreg;}
+		
+		public int compareTo(RegionCounts regcounts){
+			float compareVal = count;
+			if (compareVal > this.count){
 				return 1;
 			}else{
 				return -1;
 			}
 		}
 	}
+
 	
 	public static void main(String[] args){
 		ArgParser ap = new ArgParser(args);		
