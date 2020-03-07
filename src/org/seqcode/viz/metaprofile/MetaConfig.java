@@ -43,6 +43,10 @@ public class MetaConfig {
 			fivePrimeShift = Args.parseInteger(args,"readshift", 0);
 			lineMin = Args.parseDouble(args,"linemin", 0);
 			lineMax = Args.parseDouble(args,"linemax", 100);
+			if(lineMin>=lineMax){
+				System.err.println("Error: lineMin greater than or equal to lineMax. Setting to 0.");
+				lineMin=0;
+			}
 			lineThick = Args.parseInteger(args,"linethick", 1);
 			pbMax = Args.parseDouble(args,"pbmax", 100);
 			strand = Args.parseString(args, "strand", ".").charAt(0);

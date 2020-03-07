@@ -53,6 +53,7 @@ public class MetaMaker {
 				
 				BinningParameters params = new BinningParameters(mconfig.winLen, mconfig.bins);
 				System.out.println("Binding Parameters:\tWindow size: "+params.getWindowSize()+"\tBins: "+params.getNumBins());
+				System.out.println("LineMin: "+mconfig.lineMin+"\tLineMax"+mconfig.lineMax);
 			
 				PointProfiler profiler=null;
 				boolean normalizeProfile=false;
