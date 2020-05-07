@@ -478,14 +478,16 @@ public abstract class Hits implements Closeable {
                     int len = extension<0 ? getLengthOne(l) : extension;
                     boolean strand = getStrandOne(l);
                     if (strand) {
-                        while (len > 0 && ++bin < output.length) {
+                        while (len > 0 && bin < output.length) {
                             output[bin]++;
                             len -= stepsize;
+                            bin++;
                         }
                     } else {
-                        while (len > 0 && --bin > 0) {
+                        while (len > 0 && bin > 0) {
                             output[bin]++;
                             len -= stepsize;
+                            bin--;
                         }
                     }
                 }
@@ -554,14 +556,16 @@ public abstract class Hits implements Closeable {
                     int len = extension<0 ? getLengthOne(l) : extension;
                     boolean strand = getStrandOne(l);
                     if (strand) {
-                        while (len > 0 && ++bin < output.length) {
+                        while (len > 0 && bin < output.length) {
                             output[bin] += f;
                             len -= stepsize;
+                            bin++;
                         }
                     } else {
-                        while (len > 0 && --bin > 0) {
+                        while (len > 0 && bin > 0) {
                             output[bin] += f;
                             len -= stepsize;
+                            bin--;
                         }
                     }
                 }
