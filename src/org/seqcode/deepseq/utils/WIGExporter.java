@@ -100,27 +100,6 @@ public class WIGExporter {
 	    gen = gcon.getGenome();
 	    
 	    
-	    		
-	    // Load the experiments
-	    //List<SeqLocator> dbexpts = Args.parseSeqExpt(args, "dbexpt");
-	    //List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt");
-	    //List<File> expts = Args.parseFileHandles(args, "expt");
-	    //boolean nonUnique = ap.hasKey("nonunique") ? true : false;
-	    //String fileFormat = Args.parseString(args, "format", "ELAND");
-	    //if(expts.size()>0 && dbexpts.size() == 0 && rdbexpts.size()==0){
-	     //  	expt= new DeepSeqExpt(gen, expts, nonUnique, fileFormat, (int)readLength);
-	    //}else if (dbexpts.size() > 0 && expts.size() == 0) {
-	    //	expt = new DeepSeqExpt(gen, dbexpts, "db", (int)readLength);
-	    //	dbconnected = true;
-	    //}else if (rdbexpts.size()>0 && expts.size() == 0){
-	    //	expt = new DeepSeqExpt(gen, rdbexpts, "readdb", -1);
-	    //	dbconnected=true;
-	    //}else {
-	     // logger.error("Must provide either an aligner output file or Gifford lab DB experiment name for the signal experiment (but not both)");
-	     // System.exit(1);
-	    //}
-	    //logger.info("Expt hit count: " + (int) expt.getHitCount() + ", weight: " + (int) expt.getWeightTotal());
-	    
 	    read3PrimeExt = Math.max(0, read3PrimeExt-readLength);
 	    
 	    sample.initializeCache(cacheAllData, null);
@@ -170,7 +149,7 @@ public class WIGExporter {
 						
 						if(winHits>0){
 							if(!recording){
-								fw.write("fixedStep chrom=chr"+currSubRegion.getChrom()+" start="+(i+1)+" step="+winStep+" span="+winSize+"\n");
+								fw.write("fixedStep chrom=chr"+currSubRegion.getChrom()+" start="+i+" step="+winStep+" span="+winSize+"\n");
 								recording=true;
 							}
 							fw.write(String.format("%.1f\n", winHits));
