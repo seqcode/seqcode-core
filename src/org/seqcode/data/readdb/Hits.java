@@ -475,7 +475,7 @@ public abstract class Hits implements Closeable {
                     lastpos = pos;
                     int bin = (pos - start) / stepsize;
                     int l = las.get(i);
-                    int len = extension<0 ? getLengthOne(l) : extension;
+                    int len = extension<0 ? getLengthOne(l) : extension+1;
                     boolean strand = getStrandOne(l);
                     if (strand) {
                         while (len > 0 && bin < output.length) {
@@ -553,7 +553,7 @@ public abstract class Hits implements Closeable {
                     lastpos = pos;
                     int bin = (pos - start) / stepsize;
                     int l = las.get(i);
-                    int len = extension<0 ? getLengthOne(l) : extension;
+                    int len = extension<0 ? getLengthOne(l) : extension+1;
                     boolean strand = getStrandOne(l);
                     if (strand) {
                         while (len > 0 && bin < output.length) {
