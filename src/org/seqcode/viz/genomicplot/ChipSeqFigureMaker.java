@@ -33,24 +33,28 @@ public class ChipSeqFigureMaker {
         GenomeConfig gcon = new GenomeConfig(args);
     	ExptConfig econ = new ExptConfig(gcon.getGenome(), args);
         String ofile = ap.getKeyValue("options");
-        File outfile = new File(ap.getKeyValue("out"));
+        String outfile = ap.getKeyValue("out");
         boolean isBatch = ap.hasKey("batch");
         ChipSeqFigureMaker figure = new ChipSeqFigureMaker(ofile, gcon, econ, isBatch, outfile);
         
 	}
 	
-	public ChipSeqFigureMaker(String optionFile, GenomeConfig g, ExptConfig e, boolean isBatch, File outFile){
+	public ChipSeqFigureMaker(String optionFile, GenomeConfig g, ExptConfig e, boolean isBatch, String outfile){
 		gconfig=g;
 		econfig=e;
 		options = new FigureOptions(gconfig, econfig);
 		options.loadOptions(new File(optionFile));
+		File outfilePNG = new File(new String(outfile+".png"));
+        File outfileSVG = new File(new String(outfile+".svg"));
+        
 		//Paint the picture
 		ChipSeqFigurePaintable painter = new ChipSeqFigurePaintable(options);
 		
 		if(isBatch){
 			System.setProperty("java.awt.headless", "true");
 			try {
-				painter.saveImage(outFile, options.screenSizeX, options.screenSizeY, true);
+				painter.saveImage(outfilePNG, options.screenSizeX, options.screenSizeY, true);
+				painter.saveImage(outfileSVG, options.screenSizeX, options.screenSizeY, false);
 				System.exit(0);
 			} catch (IOException e1) {
 				e1.printStackTrace();
