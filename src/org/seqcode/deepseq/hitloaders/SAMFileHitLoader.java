@@ -95,14 +95,17 @@ public class SAMFileHitLoader extends FileHitLoader{
         float weight = 1 / ((float)mapcount);
         Read currRead = new Read();
 		for (SAMRecord record : records) {
-		    int start = record.getAlignmentStart();
-		    int end = record.getAlignmentEnd();
-		    ReadHit currHit = new ReadHit(
-						  record.getReferenceName().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", ""), 
-						  start, end, 
-						  record.getReadNegativeStrandFlag() ? '-' : '+',
-						  weight);
-		    currRead.addHit(currHit);
+			if(!useNonUnique && record.getMappingQuality()==0){}
+			else{
+			    int start = record.getAlignmentStart();
+			    int end = record.getAlignmentEnd();
+			    ReadHit currHit = new ReadHit(
+							  record.getReferenceName().replaceFirst("^chromosome", "").replaceFirst("^chrom", "").replaceFirst("^chr", ""), 
+							  start, end, 
+							  record.getReadNegativeStrandFlag() ? '-' : '+',
+							  weight);
+			    currRead.addHit(currHit);
+			}
 		}currRead.setNumHits(mapcount);
 		addHits(currRead);
     }//end of processRead
