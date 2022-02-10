@@ -56,6 +56,7 @@ public class ExptConfig {
 	protected boolean loadType2Reads = false; //Load Type2 reads (if exists and distinguishable)
 	protected boolean loadRead2=true; //Load second in pair reads (only used by BAM loader for now)
 	protected boolean loadPairs = false; //Load pair information (if exists)
+	protected boolean sortMid = false; //Sort pairs according to midpoint
 	protected double NCISMinBinFrac = 0.75; //NCIS estimates begin using the lower fraction of the genome (based on total tags)
 	
 	    
@@ -112,6 +113,7 @@ public class ExptConfig {
 				loadType1Reads = !Args.parseFlags(args).contains("not1reads");
 				loadType2Reads = Args.parseFlags(args).contains("loadt2reads");
 				loadRead2 = !Args.parseFlags(args).contains("noread2");
+				sortMid = Args.parseArgs(args).contains("sortMid");
 				
 				////////////////////////
 				//Read limit parameters

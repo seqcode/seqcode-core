@@ -95,6 +95,7 @@ public class HitCache {
 	protected double uniquePairs=0; //count of the total number of unique paired hits
 	protected boolean loadPairs; //Load them if they exist
 	protected boolean hasPairs; //Some pairs have been loaded
+	protected boolean sortMid; //Sort pairs according to midpoint
 	protected BackgroundCollection perBaseBack=new BackgroundCollection();
 	protected float maxReadsPerBP=-1;
 	
@@ -181,6 +182,7 @@ public class HitCache {
 		this.loaders = hloaders;
 		maxReadsPerBP= perBaseReadMax;
 		this.loadPairs = loadPairs;
+		this.sortMid = ec.sortMid;
 		initialize(cacheEverything, initialCacheRegions);
 	}
 	
@@ -768,12 +770,16 @@ public class HitCache {
 				}
 			}
 		}
-		//Sort the paired-end arrays !!!!!!!!!!ATTENTION!!!!!!!!!!!!!: I need to sort by midpoint here
+		//Sort the paired-end arrays
 		if(loadPairs && hasPairs){ 
 			for(int i = 0; i < pairR1Pos.length; i++) {  // chr
 				for(int j = 0; j < pairR1Pos[i].length; j++) { // strand
 					if(pairR1Pos[i][j]!=null && pairR2Pos[i][j]!=null && pairR2Chrom[i][j]!=null && pairR2Strand[i][j]!=null){
-						int[] inds = StatUtil.findSort(pairMid[i][j]);
+						int[] inds;
+						if (sortMid)
+							inds = StatUtil.findSort(pairMid[i][j]);
+						else
+							inds = StatUtil.findSort(pairR1Pos[i][j]);
 						pairR1Pos[i][j] = StatUtil.permute(pairR1Pos[i][j], inds);
 						pairR2Pos[i][j] = StatUtil.permute(pairR2Pos[i][j], inds);
 						pairR2Chrom[i][j] = StatUtil.permute(pairR2Chrom[i][j], inds);
