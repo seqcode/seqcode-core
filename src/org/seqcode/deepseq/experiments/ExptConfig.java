@@ -334,6 +334,7 @@ public class ExptConfig {
 	public void setLoadType2Reads(boolean l){loadType2Reads = l;}
 	public void setLoadRead2(boolean l){loadRead2 = l;}
 	public void setLoadPairs(boolean l){loadPairs = l;}
+	public void setSortMid(boolean l) {sortMid = l;}
 	
 	
 	/**
@@ -386,6 +387,7 @@ public class ExptConfig {
 				"\t--nocache [flag to turn off caching of the entire set of experiments (i.e. run slower with less memory)]\n" +
 				"\t--not1reads / --loadt2reads [flags to use Type1 or Type2 reads] (Type1 loaded by default)\n" +
 				"\t--noread2 [flag to ignore second reads in paired-end]\n" +
+				"\t--sortMid [flag to decide if sort read pairs by midpoint or 5' end (default: 5' end)]\n" +
 				""));
 	}
 }
