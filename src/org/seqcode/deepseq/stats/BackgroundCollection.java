@@ -1,6 +1,7 @@
 package org.seqcode.deepseq.stats;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.seqcode.genome.location.Region;
 

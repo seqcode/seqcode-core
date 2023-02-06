@@ -76,6 +76,17 @@ public class ExperimentCondition {
 			total += s.getHitCount();
 		return total;
 	}
+	
+	/**
+	 *Get total weight pair count for signal samples 
+	 */
+	public double getTotalSignalPairCount() {
+		double total=0;
+		for(Sample s: signalSamples)
+			total += s.getPairCount();
+		return total;
+	}
+	
 	/**
 	 * Get the total weight count for signal samples from one strand
 	 * @return
@@ -88,7 +99,7 @@ public class ExperimentCondition {
 	}
 		
 	/**
-	 * Get the total weight count for signal samples
+	 * Get the total weight count for control samples
 	 * @return
 	 */
 	public double getTotalControlCount(){
@@ -97,6 +108,17 @@ public class ExperimentCondition {
 			total += s.getHitCount();
 		return total;
 	}
+	
+	/**
+	 *Get total weight pair count for control samples 
+	 */
+	public double getTotalControlPairCount() {
+		double total=0;
+		for(Sample s: controlSamples)
+			total += s.getPairCount();
+		return total;
+	}
+	
 	/**
 	 * Get the total weight count for control samples from one strand
 	 * @return
@@ -117,6 +139,17 @@ public class ExperimentCondition {
 		for(ControlledExperiment rep : replicates){
 			s+=rep.getSignal().getHitCount()*rep.getSignalVsNoiseFraction();
 		}return(s/getTotalSignalCount());
+	}
+	
+	/**
+	 * Get the pooled signal pair fraction from all underlying signal channels
+	 */
+	public double getTotalSignalPairVsNoisePairFrac() {
+		double s=0;
+		for(ControlledExperiment rep: replicates) {
+			s += rep.getSignal().getPairCount() * rep.getSignalVsNoiseFraction();
+		}
+		return (s/getTotalSignalPairCount());
 	}
 	
 	/**

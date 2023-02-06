@@ -246,14 +246,23 @@ public class ExperimentManager {
 				for(ControlledExperiment r : cond.getReplicates()){
 					System.err.println("\tReplicate:\t"+r.getName());
 					if(r.getControl()==null)
-						System.err.println(String.format("\t\tSignal:\t%.1f", r.getSignal().getHitCount()));
+						System.err.println(String.format("\t\tSignal:\t%.1f pairs, %.1f hits", r.getSignal().getPairCount(), r.getSignal().getHitCount()));
 					else
-						System.err.println(String.format("\t\tSignal:\t%.1f\tControl:\t%.1f\tScalingFactor:\t%.3f",  r.getSignal().getHitCount(), r.getControl().getHitCount(), r.getControlScaling()));
+						System.err.println(String.format("\t\tSignal:\t%.1f pairs, %.1f hits\tControl:\t%.1f pairs, %.1f hits\tScalingFactor:\t%.3f",  
+								r.getSignal().getPairCount(), r.getSignal().getHitCount(), 
+								r.getSignal().getPairCount(), r.getControl().getHitCount(), 
+								r.getControlScaling()));
 				}
 				if(cond.getTotalControlCount()>0)
-					System.err.println(String.format("\tPooled replicates for condition:\t%s\n\t\tSignal:\t%.1f\tControl:%.1f\tScalingFactor:%.3f",cond.getName(), cond.getTotalSignalCount(), cond.getTotalControlCount(), cond.getPooledSampleControlScaling()));
+					System.err.println(String.format("\tPooled replicates for condition:\t%s\n\t\tSignal:\t%.1f pairs, %.1f hits\tControl:%.1f pairs, %.1f hits\tScalingFactor:%.3f",
+							cond.getName(), 
+							cond.getTotalSignalPairCount(), cond.getTotalSignalCount(), 
+							cond.getTotalControlPairCount(), cond.getTotalControlCount(), 
+							cond.getPooledSampleControlScaling()));
 				else
-					System.err.println(String.format("\tPooled replicates for condition:\t%s\n\t\tSignal:\t%.1f",cond.getName(), cond.getTotalSignalCount()));
+					System.err.println(String.format("\tPooled replicates for condition:\t%s\n\t\tSignal:\t%.1f pairs, %.1f hits",
+							cond.getName(), 
+							cond.getTotalSignalPairCount(), cond.getTotalSignalCount()));
 			}
 		}
 

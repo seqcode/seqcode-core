@@ -3,6 +3,7 @@ package org.seqcode.deepseq.experiments;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.HashMap;
 
 import org.seqcode.deepseq.ExtReadHit;
 import org.seqcode.deepseq.ReadHit;
@@ -92,6 +93,15 @@ public class Sample {
 			gen = cache.getGenome();
 	}
 	
+	/**
+	 * Load fragment size frequency
+	 * @return
+	 * @author Jianyu Yang
+	 */
+	public HashMap<Integer, Integer> getFragSizeFrequency() {
+		return cache.getFragSizeFrequency();
+	}
+	
 	
 	/**
 	 * Load all base counts in a region, regardless of strand.
@@ -120,6 +130,10 @@ public class Sample {
 	 */
 	public List<StrandedPair> getPairs(Region r) {
 		return cache.getPairs(r);
+	}
+	
+	public List<StrandedPair> getPairsByMid(Region r) {
+		return cache.getPairsByMid(r);
 	}
 	
 	/**
