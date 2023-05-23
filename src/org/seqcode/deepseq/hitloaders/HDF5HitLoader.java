@@ -4,19 +4,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.seqcode.genome.Genome;
 import org.seqcode.deepseq.HitPair;
 import org.seqcode.deepseq.Read;
 import org.seqcode.deepseq.ReadHit;
-import org.seqcode.deepseq.StrandedPair;
 import org.seqcode.deepseq.utils.HierarchicalHitInfo;
 
-import hdf.hdf5lib.H5;
-import hdf.hdf5lib.HDF5Constants;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.SamReaderFactory;
@@ -242,18 +237,4 @@ public class HDF5HitLoader extends HitLoader {
     	}
     }
     
-	public static void main(String[] args) {
-		File genFile = new File(args[0]);
-		File bamFile = new File(args[1]);
-		
-		Genome gen = new Genome("Genome", genFile, true);
-		
-		HDF5HitLoader hl = new HDF5HitLoader(gen, bamFile, false, false, false, true, false);
-		
-		hl.sourceAllHits();
-		hl.getHitPairInfo().sortByReference();
-		
-		hl.close();
-	}
-	
 }

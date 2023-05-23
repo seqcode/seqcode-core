@@ -1,6 +1,9 @@
 package org.seqcode.deepseq.experiments;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,7 +29,6 @@ public class HDF5HitCache implements HitCacheInterface{
 	private HierarchicalHitInfo readHHI;
 	private HierarchicalHitInfo pairHHI;
 	private Collection<HitLoader> loaders;	// source of hits
-	private File localCacheDir;
 	private Genome gen;
 	private ExptConfig econfig;
 	protected String name;
@@ -52,8 +54,13 @@ public class HDF5HitCache implements HitCacheInterface{
 		this.loadReads = econfig.loadReads;
 		this.loadPairs = econfig.loadPairs;
 		
-		this.localCacheDir = new File("");
-
+		try {
+			Files.createDirectories(Paths.get(econfig.getFileCacheDirName()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		initialize();
 	}
 	
@@ -66,8 +73,8 @@ public class HDF5HitCache implements HitCacheInterface{
 	private void initialize() {
 		
 		// Create the hitInfo dataset for the HDF5HitCache itself
-		readHHI = new HierarchicalHitInfo(gen, localCacheDir.getAbsolutePath()+ "/" + name.replace(':', '_') + ".read.h5", false);
-		pairHHI = new HierarchicalHitInfo(gen, localCacheDir.getAbsolutePath()+ "/" + name.replace(':', '_') + ".pair.h5", true);
+		readHHI = new HierarchicalHitInfo(gen, econfig.getFileCacheDirName()+ "/" + name.replace(':', '_') + ".read.h5", false);
+		pairHHI = new HierarchicalHitInfo(gen, econfig.getFileCacheDirName()+ "/" + name.replace(':', '_') + ".pair.h5", true);
 		
 		// Initialize
 		readHHI.initializeHDF5();
@@ -567,46 +574,6 @@ public class HDF5HitCache implements HitCacheInterface{
 			}
 		}
 		return -mid - 1;
-	}
-	
-	public static void main(String[] args) {
-		File genFile = new File(args[0]);
-		File bam1File = new File(args[1]);
-		File bam2File = new File(args[2]);
-		
-		Genome gen = new Genome("Genome", genFile, true);
-		ExptConfig ec = new ExptConfig(gen, args);
-		
-		HDF5HitLoader hl1 = new HDF5HitLoader(gen, bam1File, true, true, true, true, false);
-		HDF5HitLoader hl2 = new HDF5HitLoader(gen, bam2File, true, true, true, true, false);
-		
-		List<HitLoader> hList = new ArrayList<HitLoader>() {
-			{
-				add(hl1);
-				add(hl2);
-			}
-		};
-		
-		long start = System.currentTimeMillis();
-		HDF5HitCache hc = new HDF5HitCache(ec, hList, "test");
-		long end = System.currentTimeMillis();
-		System.err.println((end - start) + "ms");
-		
-		List<StrandedPair> pairList = hc.getPairsByMid(new Region(gen, "I", 1000000000, 1000000100));
-		for (StrandedPair sp: pairList) {
-			System.out.println(sp);
-		}
-		List<StrandedBaseCount> baseList = hc.getBases(new Region(gen, "M", 5000, 5200));
-		for (StrandedBaseCount sbc: baseList) {
-			System.out.println(sbc);
-		}
-		List<StrandedPair> pairList2 = hc.getPairs(new Region(gen, "I", 3000, 3100));
-		for (int i  = 0; i  < 5; i ++) {
-			System.out.println(pairList2.get(i));
-		}
-
-		hc.close();
-		
 	}
 	
 }
