@@ -82,8 +82,6 @@ public class HierarchicalHitInfo {
 	// store reference array to increase the speed.
 	protected double[][] ref;
 	
-	public long time = 0;
-	
 	/**
 	 * Constructor
 	 * @param g			genome info to determine the dim1
@@ -248,7 +246,6 @@ public class HierarchicalHitInfo {
 		// transpose the hitInfo
 		long start = System.currentTimeMillis();
 		double[][] transposedHitInfo = transposeMatrix(hitInfo);
-		time += (System.currentTimeMillis() - start);
 		
 		// convert each row of the hitInfo to strandedPair then return
 		List<StrandedPair> pairs = new ArrayList<StrandedPair>();

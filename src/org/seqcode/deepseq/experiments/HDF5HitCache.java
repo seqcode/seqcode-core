@@ -43,10 +43,6 @@ public class HDF5HitCache implements HitCacheInterface{
 	protected String readReference = "5'end";	
 	protected String pairReference = "pairMid";
 	
-	protected long getIndexTime = 0;
-	protected long getPairsTime = 0;
-	protected long binarySearchTime = 0;
-	
 	public HDF5HitCache(ExptConfig ec, Collection<HitLoader> hloaders, String sampleName) {
 		this.econfig = ec;
 		this.gen = econfig.getGenome();
@@ -445,9 +441,7 @@ public class HDF5HitCache implements HitCacheInterface{
 					try {
 						int[] ind = getIndexInRegion(chr, j, r, true);
 						if(ind[1] > ind[0]) {
-							long start = System.currentTimeMillis();
 							pairs.addAll(pairHHI.getPair(chr, j, ind[0], ind[1]));
-							getPairsTime += (System.currentTimeMillis() - start);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -455,10 +449,6 @@ public class HDF5HitCache implements HitCacheInterface{
 					}
 				}
 		}
-		System.out.println("Get Index: " + getIndexTime);
-		System.out.println("Get Pairs: " + getPairsTime);
-		System.out.println("Binary search: " + binarySearchTime);
-		System.out.println("tranpose: " + pairHHI.time);
 		return pairs;		
 	}
 	
@@ -512,7 +502,6 @@ public class HDF5HitCache implements HitCacheInterface{
 	 * @return
 	 */
 	private int[] getIndexInRegion(String chr, int strand, Region r, boolean isPair) {
-		long start = System.currentTimeMillis();
 		int start_ind; int end_ind;
 		HierarchicalHitInfo hhInfo = isPair ? pairHHI : readHHI;
 		int length = hhInfo.getLength(chr, strand);
@@ -537,7 +526,6 @@ public class HDF5HitCache implements HitCacheInterface{
 		} else {
 			return new int[] {0, 0};
 		}
-		getIndexTime += (System.currentTimeMillis() - start);
 		return new int[] {start_ind, end_ind};
 	}
 	
@@ -550,7 +538,6 @@ public class HDF5HitCache implements HitCacheInterface{
 	 * @return
 	 */
 	private int binarySearch(String chr, int strand, int index, boolean isPair) {
-		long start = System.currentTimeMillis();
 		HierarchicalHitInfo hhInfo;
 		if(isPair)
 			hhInfo = pairHHI;
@@ -579,7 +566,6 @@ public class HDF5HitCache implements HitCacheInterface{
 				System.exit(1);
 			}
 		}
-		binarySearchTime += (System.currentTimeMillis() - start);
 		return -mid - 1;
 	}
 	
