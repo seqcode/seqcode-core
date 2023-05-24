@@ -281,14 +281,19 @@ public class HDF5HitCache implements HitCacheInterface{
 			for(String chr: gen.getChromList())
 				for(int strand=0; strand<2; strand++) {
 					if(pairHHI.getLength(chr, strand)>0) {
+						int r1ChrId = gen.getChromID(chr); 
 						double[] r1Pos = pairHHI.getElement(chr, strand, "r1Pos");
 						double[] r2Pos = pairHHI.getElement(chr, strand, "r2Pos");
+						double[] pairWeight = pairHHI.getElement(chr,  strand, "pairWeight");
+						double[] r2Chr = pairHHI.getElement(chr, strand, "r2Chr");
 						for(int i=0; i<r1Pos.length; i++) {
-							int size = Math.abs((int)(r2Pos[i] - r1Pos[i]));
-							if(frequency.containsKey(size)) {
-								frequency.put(size, frequency.get(size) + 1);
-							} else {
-								frequency.put(size, 1);
+							if (r2Chr[i] == r1ChrId) {
+								int size = Math.abs((int)(r2Pos[i] - r1Pos[i]))+1;
+								if(frequency.containsKey(size)) {
+									frequency.put(size, frequency.get(size) + (int)pairWeight[i]);
+								} else {
+									frequency.put(size, 1);
+								}
 							}
 						}
 						r1Pos = null;
