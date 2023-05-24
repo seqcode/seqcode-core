@@ -349,7 +349,7 @@ public class HitCache implements HitCacheInterface{
 							if(frequency.containsKey(size)) {
 								frequency.put(size, frequency.get(size)+(int)pairWeight[chrID][strand][index]);
 							} else {
-								frequency.put(size, 1);
+								frequency.put(size, (int)pairWeight[chrID][strand][index]);
 							}
 						} 
 				}

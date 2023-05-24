@@ -1,17 +1,12 @@
 package org.seqcode.deepseq.experiments;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import javax.xml.stream.events.EndDocument;
 
 import org.seqcode.deepseq.ExtReadHit;
 import org.seqcode.deepseq.ReadHit;
@@ -292,7 +287,7 @@ public class HDF5HitCache implements HitCacheInterface{
 								if(frequency.containsKey(size)) {
 									frequency.put(size, frequency.get(size) + (int)pairWeight[i]);
 								} else {
-									frequency.put(size, 1);
+									frequency.put(size, (int)pairWeight[i]);
 								}
 							}
 						}
