@@ -75,7 +75,7 @@ public class HDF5HitCache implements HitCacheInterface{
 		readHHI.initializeHDF5();
 		pairHHI.initializeHDF5();
 		
-		// Append all hits into the dataset and extract the info into the HDF5HitCache
+		// Append all hits into the dataset and extract the info into the HDF5HitCache, then sort by reference info
 //		boolean needSort = loaders.size()>1;
 		for(HitLoader currLoader: loaders) {
 			HDF5HitLoader currHDF5Loader = (HDF5HitLoader)currLoader;

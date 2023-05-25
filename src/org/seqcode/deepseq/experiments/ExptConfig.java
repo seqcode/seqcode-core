@@ -55,7 +55,7 @@ public class ExptConfig {
 	protected boolean loadType1Reads = true; //Load Type1 reads
 	protected boolean loadType2Reads = false; //Load Type2 reads (if exists and distinguishable)
 	protected boolean loadRead2=true; //Load second in pair reads (only used by BAM loader for now)
-	protected boolean loadReads = false;  //Load read information
+	protected boolean loadReads = true;  //Load read information
 	protected boolean loadPairs = false; //Load pair information (if exists)
 	protected boolean sortMid = false; //Sort pairs according to midpoint
 	protected boolean keepHDF5 = false; // Keep the hdf5 file for future use
@@ -111,7 +111,6 @@ public class ExptConfig {
 				//////////////////////
 				//Which reads to load?
 				////////////////////////
-				loadReads = Args.parseFlags(args).contains("loadreads");
 				loadPairs = Args.parseFlags(args).contains("loadpairs");
 				loadType1Reads = !Args.parseFlags(args).contains("not1reads");
 				loadType2Reads = Args.parseFlags(args).contains("loadt2reads");
@@ -121,7 +120,7 @@ public class ExptConfig {
 				//////////////////////
 				//keep the HDF5Cache file?
 				////////////////////////
-				keepHDF5 = Args.parseFlags(args).contains("keepCache");
+				keepHDF5 = Args.parseFlags(args).contains("keepHDF5Cache");
 				
 				////////////////////////
 				//Read limit parameters
@@ -343,6 +342,7 @@ public class ExptConfig {
 	public void setLoadType1Reads(boolean l){loadType1Reads = l;}
 	public void setLoadType2Reads(boolean l){loadType2Reads = l;}
 	public void setLoadRead2(boolean l){loadRead2 = l;}
+	public void setLoadReads(boolean l){loadReads = l;}
 	public void setLoadPairs(boolean l){loadPairs = l;}
 	public void setSortMid(boolean l) {sortMid = l;}
 	
@@ -399,6 +399,7 @@ public class ExptConfig {
 				"\t--noread2 [flag to ignore second reads in paired-end]\n" +
 				"\t--sortMid [flag to decide if sort read pairs by midpoint or 5' end (default: 5' end)]\n" +
 				"\t--loadpairs [flag to load pair-end reads]\n" + 
+				"\t--keepHDF5Cache" +
 				""));
 	}
 }
