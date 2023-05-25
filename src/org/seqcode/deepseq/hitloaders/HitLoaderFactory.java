@@ -1,6 +1,7 @@
 package org.seqcode.deepseq.hitloaders;
 
 import java.io.File;
+import java.io.ObjectInputFilter.Config;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +60,7 @@ public class HitLoaderFactory {
 	public HitLoader makeFileHitLoader(String filename, String format, boolean useNonUnique){
 		HitLoader currReader=null;
 		File file = new File(filename);
-		if(!file.isFile()){System.err.println("File not found: "+file.getName());System.exit(1);}
+		if(!file.isFile() && !format.equals("HDF5Cache")){System.err.println("File not found: "+file.getName());System.exit(1);}
 		if(format.equals("SAM") || format.equals("BAM")){
 			currReader = new SAMFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadRead2(), econfig.getLoadPairs());
 		}else if(format.equals("TOPSAM")){
@@ -72,7 +73,12 @@ public class HitLoaderFactory {
 			currReader = new BEDFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs());
 		}else if(format.equals("SCIDX") || format.equals("IDX")){
 			currReader = new IDXFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadPairs());
-		}else{
+		}else if(format.equals("HDF5")) {
+			currReader = new HDF5HitLoader(econfig.getGenome(), file, econfig.getLoadReads(), useNonUnique, econfig.getLoadRead2(), econfig.getLoadPairs(), false);			
+		}else if(format.equals("HDF5Cache")) {
+			currReader = new HDF5HitLoader(econfig.getGenome(), file, econfig.getLoadReads(), useNonUnique, econfig.getLoadRead2(), econfig.getLoadPairs(), true);			
+		}
+		else{
 		    System.err.println("Unknown file format: "+format);
 		    System.exit(1);
 		}

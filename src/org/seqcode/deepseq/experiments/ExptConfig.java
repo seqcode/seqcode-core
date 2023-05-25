@@ -55,8 +55,10 @@ public class ExptConfig {
 	protected boolean loadType1Reads = true; //Load Type1 reads
 	protected boolean loadType2Reads = false; //Load Type2 reads (if exists and distinguishable)
 	protected boolean loadRead2=true; //Load second in pair reads (only used by BAM loader for now)
+	protected boolean loadReads = true;  //Load read information
 	protected boolean loadPairs = false; //Load pair information (if exists)
 	protected boolean sortMid = false; //Sort pairs according to midpoint
+	protected boolean keepHDF5 = false; // Keep the hdf5 file for future use
 	protected double NCISMinBinFrac = 0.75; //NCIS estimates begin using the lower fraction of the genome (based on total tags)
 	
 	    
@@ -114,6 +116,11 @@ public class ExptConfig {
 				loadType2Reads = Args.parseFlags(args).contains("loadt2reads");
 				loadRead2 = !Args.parseFlags(args).contains("noread2");
 				sortMid = Args.parseArgs(args).contains("sortMid");
+				
+				//////////////////////
+				//keep the HDF5Cache file?
+				////////////////////////
+				keepHDF5 = Args.parseFlags(args).contains("keepHDF5Cache");
 				
 				////////////////////////
 				//Read limit parameters
@@ -318,7 +325,9 @@ public class ExptConfig {
 	public boolean getLoadType1Reads(){return loadType1Reads;}
 	public boolean getLoadType2Reads(){return loadType2Reads;}
 	public boolean getLoadRead2(){return loadRead2;}
+	public boolean getLoadReads() {return loadReads;}
 	public boolean getLoadPairs(){return loadPairs;}
+	public boolean getKeepHDF5() {return keepHDF5;}
 	public double getNCISMinBinFrac(){return NCISMinBinFrac;}
 	
 	//Some accessors to allow modification of options after config .
@@ -333,6 +342,7 @@ public class ExptConfig {
 	public void setLoadType1Reads(boolean l){loadType1Reads = l;}
 	public void setLoadType2Reads(boolean l){loadType2Reads = l;}
 	public void setLoadRead2(boolean l){loadRead2 = l;}
+	public void setLoadReads(boolean l){loadReads = l;}
 	public void setLoadPairs(boolean l){loadPairs = l;}
 	public void setSortMid(boolean l) {sortMid = l;}
 	
@@ -388,6 +398,8 @@ public class ExptConfig {
 				"\t--not1reads / --loadt2reads [flags to use Type1 or Type2 reads] (Type1 loaded by default)\n" +
 				"\t--noread2 [flag to ignore second reads in paired-end]\n" +
 				"\t--sortMid [flag to decide if sort read pairs by midpoint or 5' end (default: 5' end)]\n" +
+				"\t--loadpairs [flag to load pair-end reads]\n" + 
+				"\t--keepHDF5Cache" +
 				""));
 	}
 }

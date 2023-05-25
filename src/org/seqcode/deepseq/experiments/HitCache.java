@@ -76,7 +76,7 @@ import org.seqcode.math.stats.StatUtil;
  * @author mahony
  * This class combines functionality from DeepSeq and ReadCache in the old GSE setup.
  */
-public class HitCache {
+public class HitCache implements HitCacheInterface{
 
 	private Collection<HitLoader> loaders; //Source of reads
 	private boolean cacheMemoryEntireGenome=false;
@@ -345,15 +345,13 @@ public class HitCache {
 				if(pairR1Pos[chrID][strand]!=null) {
 					for(int index=0; index<pairR1Pos[chrID][strand].length; index++)
 						if(chrID==pairR2Chrom[chrID][strand][index]) { 
-							int size = Math.abs(pairR1Pos[chrID][strand][index]-pairR2Pos[chrID][strand][index]+1);
+							int size = Math.abs(pairR1Pos[chrID][strand][index]-pairR2Pos[chrID][strand][index])+1;
 							if(frequency.containsKey(size)) {
-								int oldValue = frequency.get(size);
-								int newValue = oldValue + 1;
-								frequency.put(size, newValue);
+								frequency.put(size, frequency.get(size)+(int)pairWeight[chrID][strand][index]);
 							} else {
-								frequency.put(size, 1);
+								frequency.put(size, (int)pairWeight[chrID][strand][index]);
 							}
-						}
+						} 
 				}
 			}
 		}
@@ -1370,7 +1368,7 @@ public class HitCache {
 	 * Beware: only works if all reads are loaded.
 	 * @param perBaseScaling float threshold
 	 */
-	protected void linearCountCorrection(float perBaseScaling){
+	public void linearCountCorrection(float perBaseScaling){
 		if(perBaseScaling<1)
 			System.err.println("linearCountCorrection: perBaseScaling is less than 1 - makes no sense to scale");
 		else{
