@@ -11,8 +11,7 @@ import org.seqcode.data.seqdata.*;
 import org.seqcode.genome.Genome;
 import org.seqcode.gseutils.*;
 
-import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-
+import java.sql.SQLIntegrityConstraintViolationException;
 
 /** 
  * Creates an experiment (if necessary) in the database and prints the DBID on stdout.  
@@ -102,7 +101,7 @@ public class CreateExpt {
 			            insert.setString(16, exptnote);
 			            insert.execute();
 			            insert.close();
-		        	} catch(MySQLIntegrityConstraintViolationException ex){
+		        	} catch(SQLIntegrityConstraintViolationException ex){
                         //Duplicate primary keys - someone else added the same experiment at the same time                                    
 		        		//Do nothing - it will try loading the experiment again in the next step                                              
 		        	}
