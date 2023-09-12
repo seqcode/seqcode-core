@@ -134,7 +134,7 @@ public class DatabaseConnectionManager {
         	p.setDriverClassName("oracle.jdbc.OracleDriver");
         	currType=ORACLE;
         } else if (m.matches()) {
-        	p.setDriverClassName("com.mysql.jdbc.Driver");
+        	p.setDriverClassName("com.mysql.cj.jdbc.Driver");
         	currType=MYSQL;
         } else {
             throw new SQLException("Unknown database type in " + cs);
