@@ -75,7 +75,7 @@ public class ScatterPanel extends JPanel {
 		
 		XYItemRenderer renderer = ((XYPlot)plot).getRenderer();
         renderer.setSeriesPaint(0, color);
-        renderer.setBaseStroke(new BasicStroke((float).5));
+        renderer.setDefaultStroke(new BasicStroke((float).5));
         renderer.setSeriesStroke(0,new BasicStroke((float).5));
         renderer.setSeriesShape(0,new Rectangle(1,1));
         
