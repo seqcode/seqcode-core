@@ -1202,9 +1202,7 @@ Listener<EventObject>, PainterContainer, MouseListener {
     		   SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
     		   svgGenerator.setSVGCanvasSize(new Dimension(w,h));
     		   // Ask the test to render into the SVG Graphics2D implementation
-    		   svgGenerator.setColor(Color.white);        
-    		   svgGenerator.fillRect(0,0,w,h);
-    		   mainPanel.paintComponent(svgGenerator,50,50,w-100,h-100);
+    		   mainPanel.paintComponent(svgGenerator);
 
     		   // Finally, stream out SVG to the standard output using UTF-8
     		   // character to byte encoding

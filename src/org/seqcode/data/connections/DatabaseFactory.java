@@ -117,11 +117,8 @@ public abstract class DatabaseFactory {
 
     public static void addPool(String key, Properties props) throws SQLException{
         String cs = props.getProperty("jdbcconnectstring");
-        Matcher o = oraclePattern.matcher(cs);
         Matcher m = mysqlPattern.matcher(cs);
-        if (o.matches()) {
-            pools.put(key,new OracleCxnPool(props));
-        } else if (m.matches()) {
+        if (m.matches()) {
             pools.put(key,new MySQLCxnPool(props));
         } else {
             throw new SQLException("Unknown database type in " + cs);

@@ -1,7 +1,7 @@
 This file contains descriptions and license information for all libraries referenced by SeqCode
 
-Copies of applicable license are stored in ./licenses. 
- 
+Copies of applicable license are stored in ./licenses.
+
 
 SeqCode
 -----------------
@@ -11,7 +11,7 @@ License: MIT.
 
 AffxFusion
 ----------
-Library used for loading affymetrix expression array data from CEL files. 
+Library used for loading affymetrix expression array data from CEL files.
 http://www.affymetrix.com/estore/partners_programs/programs/developer/fusion/index.affx?terms=no
 License: LGPL v2.1
 Packages: affymetrix.*
@@ -29,41 +29,44 @@ https://commons.apache.org/
 License: Apache v2.0
 Packages: org.apache.commons.*
 Jars:
-	./apachecommons/commons-cli-1.3.1.jar
-	./apachecommons/commons-lang3-3.4.jar
-	./apachecommons/commons-math3-3.6.1.jar
-
+ ./apache-commons/commons-cli-1.5.0.jar
+ ./apache-commons/commons-lang3-3.13.0.jar
+ ./apache-commons/commons-math4-core-4.0-beta1.jar
+ ./apache-commons/commons-math4-legacy-4.0-beta1.jar
+ ./apache-commons/commons-math4-legacy-core-4.0-beta1.jar
+ ./apache-commons/commons-math4-legacy-exception-4.0-beta1.jar
+ ./apache-commons/commons-math4-neuralnet-4.0-beta1.jar
+ ./apache-commons/commons-math4-transform-4.0-beta1.jar
 
 Apache HTTP Components
 ----------------------
 Toolset of low level Java components focused on HTTP and associated protocols.
 https://hc.apache.org/
-License: Apache v2.0 
+License: Apache v2.0
 Packages: org.apache.http.*
 Jars:
-	./apache-httpcomponents/httpclient-4.5.2.jar
-	./apache-httpcomponents/httpcore-4.4.4.jar
-
+ ./apache-httpcomponents/httpclient5-5.2.1.jar
+ ./apache-httpcomponents/httpcore5-5.2.2.jar
 
 Apache Logging
 --------------
 Application logging services.
 https://logging.apache.org/
-License: Apache v2.0 
+License: Apache v2.0
 Packages: org.apache.logging.*
 Jars:
-	./apache-logging/log4j-api-2.6.jar
-	./apache-logging/log4j-core-2.6.jar
-	
+ ./apache-logging/log4j-api-2.20.0.jar
+ ./apache-logging/log4j-core-2.20.0.jar
+
 
 Batik
 -----
-Apache toolset for images in the Scalable Vector Graphics (SVG) format 
+Apache toolset for images in the Scalable Vector Graphics (SVG) format
 http://xmlgraphics.apache.org/batik/
-License: Apache v2.0 
+License: Apache v2.0
 Packages: org.apache.batik.*
 Jars:
-	./batik/batik-1.8/batik*-1.8.jar
+	./batik/batik*-1.17.jar
 
 
 BioJava
@@ -72,15 +75,8 @@ http://biojava.org
 License: LGPL
 Packages: org.biojava.*
 Jars:
-	./biojava-1.5/biojava-1.5-beta2.jar
-	./biojava-1.5/apps-1.5.jar
-	./biojava-1.5/biojava-1.5.jar
-	./biojava-1.5/bytecode.jar
-	./biojava-1.5/commons-cli.jar
-	./biojava-1.5/commons-collections-2.1.jar
-	./biojava-1.5/commons-dbcp-1.1.jar
-	./biojava-1.5/commons-pool-1.1.jar
-	./biojava-1.5/demos-1.5.jar
+ ./biojava/biojava-1.5.jar
+NOTE: newer versions are very different and would require migration
 
 
 COLT
@@ -107,7 +103,7 @@ License:
         the exception that any usage related to military applications is
         expressly forbidden. The software and documentation made
         available under the terms of this license are provided with no
-        warranty. 
+        warranty.
 Packages: cern.colt.*, cern.jet.*, cern.clhep.*
 Jars:
 	./colt/colt-1.2.0.jar
@@ -120,8 +116,8 @@ https://github.com/samtools/htsjdk
 License: MIT
 Packages: htsjdk.*
 Jars:
-	./htsjdk/htsjdk-1.125.jar
-	
+	./htsjdk/htsjdk-3.0.5-SNAPSHOT.jar
+
 
 JAHMM
 -----
@@ -157,7 +153,7 @@ JFreeChart
 Java chart library
 http://www.jfree.org/
 License: LGPL
-Packages: org.jfree.* 
+Packages: org.jfree.*
 Jars:
 	./jfreechart/jfreechart-1.0.13/jfreechart-1.0.13.jar
 	./jfreechart/jfreechart-1.0.13/jcommon-1.0.10.jar
@@ -181,7 +177,7 @@ License: BSD
 Packages: org.math.io.*, org.math.plot.*
 Jars:
 	./jmathplot/jmathplot-1.0.0.jar
-	
+
 
 JUnit
 -----
@@ -190,7 +186,7 @@ http://junit.org/junit4
 License: Eclipse Public License v1.0
 Packages: org.junit, org.hamcrest
 Jars:
-	./junit/junit-4.12.jar
+	./junit/junit-4.13.2.jar
 	./junit/hamcrest-core-1.3.jar
 
 
@@ -232,12 +228,12 @@ Jars:
 
 MYSQL
 -----
-Connection management & official JDBC driver for mySQL. 
+Connection management & official JDBC driver for mySQL.
 http://dev.mysql.com/downloads/connector/j
 License: GPL, but Oracle FOSS exception allows MIT license (described here: http://www.mysql.com/about/legal/licensing/foss-exception)
 Packages: com.mysql.jdbc
 Jars:
-	./mysql-connector/mysql-connector-java-5.1.25-bin.jar
+	./mysql-connector/mysql-connector-j-8.1.0.jar
 
 
 OJDBC
@@ -245,10 +241,10 @@ OJDBC
 Oracle Database 10g Release 2 JDBC Drivers
 http://www.oracle.com/technetwork/apps-tech/jdbc-10201-088211.html
 License: Oracle Technology Network Development and Distribution License
-Packages: oracle.jdbc.*, oracle.sql.* 
+Packages: oracle.jdbc.*, oracle.sql.*
 Jars:
 	./ojdbc/ojdbc14.jar
-	
+
 
 SSJ
 ---
@@ -260,7 +256,7 @@ Included dependencies:
 	nonlinear optimization (http://www1.fpl.fs.fed.us/optimization.html) - Public Domain
 Packages: umontreal.ssj.*
 Jars:
-	./ssj/ssj-3.0.0-rc1.jar
+	./ssj/ssj-3.3.1.jar
 
 
 T-SNE-Java
@@ -268,26 +264,26 @@ T-SNE-Java
 Pure Java implementation of Van Der Maaten and Hinton's t-sne clustering algorithm.
 https://github.com/lejon/T-SNE-Java
 License:
-	This Java port of t-SNE is is Copyright (c) Leif Jonsson 2014. The original Python implementation is Copyright (c) 
+	This Java port of t-SNE is is Copyright (c) Leif Jonsson 2014. The original Python implementation is Copyright (c)
 	Laurens van der Maaten on 20-12-08, Tilburg University. All rights reserved.
-	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the 
+	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 	following conditions are met:
 		- Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
 		- Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer
 		  in the documentation and/or other materials provided with the distribution.
-		- Neither the name of Tilburg University nor the names of its contributors may be used to endorse or promote products derived 
+		- Neither the name of Tilburg University nor the names of its contributors may be used to endorse or promote products derived
 		  from this software without specific prior written permission.
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
-	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Leif 
-	Jonsson or Laurens van der Maaten BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
-	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
-	HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Leif
+	Jonsson or Laurens van der Maaten BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+	HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Packages: com.jujutsu.tsne.*
 Jars:
-	./t-sne-java/tsne-0.0.2.jar
-	./t-sne-java/tsne-demos-0.1.jar
-	
+	./t-sne-java/tsne-2.6.4.jar
+	./t-sne-java/tsne-demos-2.5.3.jar
+
 
 Tomcat
 ------
@@ -307,4 +303,3 @@ License: GPL
 Packages: weka.*
 Jars:
 	./weka/weka-3-7-12.jar
-
