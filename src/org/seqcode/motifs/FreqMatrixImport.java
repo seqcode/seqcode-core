@@ -4,9 +4,6 @@ import java.util.*;
 import java.sql.*;
 import java.text.ParseException;
 
-import org.seqcode.data.*;
-import org.seqcode.data.connections.DatabaseException;
-import org.seqcode.data.connections.DatabaseFactory;
 import org.seqcode.data.connections.UnknownRoleException;
 import org.seqcode.data.io.BackgroundModelIO;
 import org.seqcode.data.motifdb.CountsBackgroundModel;

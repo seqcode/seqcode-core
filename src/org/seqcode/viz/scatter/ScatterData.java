@@ -17,7 +17,7 @@ import java.util.Random;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.annotations.XYTextAnnotation;
 import org.jfree.data.xy.DefaultXYDataset;
-import org.jfree.ui.TextAnchor;
+import org.jfree.chart.ui.TextAnchor;
 
 import Jama.Matrix;
 
