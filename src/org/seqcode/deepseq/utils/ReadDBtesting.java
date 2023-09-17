@@ -67,9 +67,9 @@ public class ReadDBtesting {
 	
 	public static void main(String[] args) throws SQLException, NotFoundException {
 		
-		WIGExporterFromReadDB wig = new WIGExporterFromReadDB(args);
-		wig.execute();
-		wig.close();
+		ReadDBtesting tester = new ReadDBtesting(args);
+		tester.execute();
+		tester.close();
 		
 		System.exit(0);
 	}

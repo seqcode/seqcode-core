@@ -1272,7 +1272,6 @@ public class ServerTask {
 	        printOK();
 	        printString(Integer.toString(hist.length) + "\n");
 	        Bits.sendInts(hist, outstream, buffer);
-	        outstream.flush(); 
     	}
     }
 
@@ -1341,7 +1340,6 @@ public class ServerTask {
 	        printString(Integer.toString(parray.length) + "\n");
 	        Bits.sendInts(parray, outstream, buffer);        
 	        Bits.sendFloats(farray, outstream, buffer);
-	        outstream.flush(); 
     	}
     }
     public void processCheckSort(Header header, Hits hits) throws IOException {

@@ -1,6 +1,5 @@
 package org.seqcode.deepseq.utils;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -61,6 +60,8 @@ public class WIGExporterFromReadDB {
 	private boolean hasPairedAligns=false;
 	private List<Integer> fivePrimePosList = null;
 	private List<Float> fivePrimeCountsList = null;
+	
+	private int conncount = 0; 
 
 	
 	public static void main(String[] args) throws SQLException, NotFoundException {
@@ -193,9 +194,9 @@ public class WIGExporterFromReadDB {
 			while(chroms.hasNext()){
 				NamedRegion currentRegion = chroms.next();
 				
-				//Split the job up into chunks of 100Mbp
-				for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=100000000){
-					int y = x+100000000; 
+				//Split the job up into chunks of 10Mbp
+				for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=10000000){
+					int y = x+10000000; 
 					if(y>currentRegion.getEnd()){y=currentRegion.getEnd();}
 					Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 					
@@ -259,9 +260,10 @@ public class WIGExporterFromReadDB {
         ArrayList<Float> counts = new ArrayList<Float>();
         try {
         	//Start a new ReadDB client
-    		if(client==null)
+    		if(client==null) {
     			client = new Client();
-
+    		}
+    		
     		allHits = client.getWeightHistogram(alignIDs,
                                                 r.getGenome().getChromID(r.getChrom()),
                                                 loadType2,

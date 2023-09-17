@@ -114,7 +114,7 @@ public class Bits {
         stream.flush();
     }
     public static int[] readInts(int count, InputStream instream, byte[] buffer) throws IOException {
-        int[] output = new int[count];        
+        int[] output = new int[count];
         int outputpos = 0;
         int bytesLeftover = 0;
         ByteBuffer bb = ByteBuffer.wrap(buffer);
@@ -144,8 +144,6 @@ public class Bits {
             if (bytesLeftover > bb.capacity()) {
                 System.err.println(String.format("leftover %d capacity %d", bytesLeftover, bb.capacity()));
             }
-
-
         }
         return output;
     }
@@ -158,6 +156,12 @@ public class Bits {
             bb.position(bytesLeftover);
             int toread = Math.min((count - outputpos) * 4, buffer.length - bytesLeftover);
             int bytesavail = instream.read(buffer, bytesLeftover, toread) + bytesLeftover;
+            if (bytesavail == -1 && outputpos < count) {
+                IOException e = new IOException(String.format("couldn't read enough bytes : %d %d", outputpos, count));
+                e.printStackTrace();
+                throw e;
+            }
+            
             int i = 0;
             for (i = 0; i < bytesavail / 4 && outputpos < count; i++) {
                 output[outputpos++] = bb.getFloat(i*4);
@@ -168,6 +172,12 @@ public class Bits {
                 j++;
             }
             bytesLeftover = bytesavail - i*4;
+            if (bytesLeftover < 0) {
+                System.err.println(String.format("avail was %d but i=%d",bytesavail,i));
+            }
+            if (bytesLeftover > bb.capacity()) {
+                System.err.println(String.format("leftover %d capacity %d", bytesLeftover, bb.capacity()));
+            }
         }
         return output;
     }    
