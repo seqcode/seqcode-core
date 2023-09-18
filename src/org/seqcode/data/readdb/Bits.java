@@ -164,7 +164,7 @@ public class Bits {
         while (outputpos < count) {
             bb.position(bytesLeftover);
             //int toread = Math.min((count - outputpos) * 4, buffer.length - bytesLeftover);
-            int toread = Math.min((count - outputpos) * 4, buffer.length - bytesLeftover);
+            int toread = Math.min(((count - outputpos) * 4)-bytesLeftover, buffer.length - bytesLeftover);
             System.out.println("ReadFloats: cycle "+cycle+", toread "+toread);
             int bytesavail = instream.read(buffer, bytesLeftover, toread) + bytesLeftover;
             System.out.println("ReadFloats: cycle "+cycle+", bytesavail "+bytesavail);
@@ -200,7 +200,7 @@ public class Bits {
             }
             System.arraycopy(buffer, bytesavail, buffer, 0, bytesLeftover);
             
-            System.out.println("ReadFloats: cycle "+cycle+", bytesLeftover "+bytesLeftover);
+            System.out.println("ReadFloats: cycle "+cycle+", bytesLeftover "+bytesLeftover+", outputpos "+outputpos);
             if (bytesLeftover > bb.capacity()) {
                 System.err.println(String.format("leftover %d capacity %d", bytesLeftover, bb.capacity()));
             }
