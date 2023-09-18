@@ -1336,10 +1336,14 @@ public class ServerTask {
 	                pos++;
 	            }
 	        }
+	        System.out.println("Made arrays with "+n+" values");
 	        printOK();
 	        printString(Integer.toString(parray.length) + "\n");
-	        Bits.sendInts(parray, outstream, buffer);        
+	        System.out.println("Sent count");
+	        Bits.sendInts(parray, outstream, buffer);
+	        System.out.println("Sent pos");
 	        Bits.sendFloats(farray, outstream, buffer);
+	        System.out.println("Sent floats");
     	}
     }
     public void processCheckSort(Header header, Hits hits) throws IOException {
