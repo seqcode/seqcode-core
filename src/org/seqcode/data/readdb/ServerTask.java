@@ -54,7 +54,7 @@ public class ServerTask {
     private long lastActivity=0;
 
     public ServerTask(Server serv, Socket s, int inactivityLimit) throws IOException {
-        buffer = new byte[1024];
+        buffer = new byte[Server.BUFFERLEN];
         request = new Request();
         args = new ArrayList<String>();
         saslprops = new HashMap<String,String>();
@@ -1337,15 +1337,11 @@ public class ServerTask {
 	                pos++;
 	            }
 	        }
-	        System.out.println("Made arrays with "+n+" values");
 	        printOK();
 	        printString(Integer.toString(parray.length) + "\n");
-	        System.out.println("Sent count");
 	        Bits.sendInts(parray, outstream, buffer);
-	        System.out.println("Sent pos");
 	        Bits.sendFloats(farray, outstream, buffer);
 	        outstream.flush();
-	        System.out.println("Sent floats & flushed");
     	}
     }
     public void processCheckSort(Header header, Hits hits) throws IOException {

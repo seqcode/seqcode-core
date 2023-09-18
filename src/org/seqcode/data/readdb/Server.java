@@ -50,7 +50,7 @@ public class Server {
     private Map<String,Set<String>> groups;
     // BUFFERLEN should be a multiple of 8 to avoid problems with partial ints, floats, or doubles
     // in buffers when the buffer is allocated in bytes.
-    public static final int BUFFERLEN = 8192*32;
+    public static final int BUFFERLEN = 8192*16;
 
     private LRUCache<Header> singleHeaders;
     private LRUCache<Header> pairedHeaders;
