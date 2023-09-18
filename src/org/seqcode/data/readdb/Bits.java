@@ -82,6 +82,7 @@ public class Bits {
         ByteBuffer bb = ByteBuffer.wrap(buffer);
         while (i < a.length) {
             int end = i + (buffer.length/4) - 1;
+            bb.clear();
             int bufpos = 0;
             if (end >= a.length) {
                 end = a.length - 1;
@@ -100,6 +101,7 @@ public class Bits {
         ByteBuffer bb = ByteBuffer.wrap(buffer);
         while (i < a.length) {
             int end = i + (buffer.length/4) - 1;
+            bb.clear();
             int bufpos = 0;
             if (end >= a.length) {
                 end = a.length - 1;

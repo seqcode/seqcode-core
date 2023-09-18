@@ -48,7 +48,7 @@ public class Client implements ReadOnlyClient {
     BufferedInputStream instream;
     Thread closeTimerThread=null; //checks time of last activity - closes connection if idle for too long
     byte[] buffer; //temporary space for receiving data; contents not persistent between method calls
-    private static final int BUFFERLEN = 8192*16;
+    private static final int BUFFERLEN = 8192*32;
     private final int socketLoadDataReadTimeout = 1000*60*8; //socket timeout in ms: set to 8 minutes because we should only be relying on the timeout to detect server shutdowns, and some uses of Client (e.g. loading a lot of reads to ReadDB) can take a long time on the Server.
     private final int socketQueryReadTimeout = 60000; //socket timeout in ms for queries
     private final int threadSleepTime = 30000; //check time of last activity thread sleep time in ms
