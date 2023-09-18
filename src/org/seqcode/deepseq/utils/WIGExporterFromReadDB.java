@@ -194,9 +194,9 @@ public class WIGExporterFromReadDB {
 			while(chroms.hasNext()){
 				NamedRegion currentRegion = chroms.next();
 				
-				//Split the job up into chunks of 10Mbp
-				for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=10000000){
-					int y = x+10000000; 
+				//Split the job up into chunks of 100Mbp
+				for(int x=currentRegion.getStart(); x<=currentRegion.getEnd(); x+=100000000){
+					int y = x+100000000; 
 					if(y>currentRegion.getEnd()){y=currentRegion.getEnd();}
 					Region currSubRegion = new Region(gen, currentRegion.getChrom(), x, y);
 					
