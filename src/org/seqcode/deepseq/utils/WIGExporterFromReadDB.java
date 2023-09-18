@@ -263,7 +263,6 @@ public class WIGExporterFromReadDB {
     		if(client==null) {
     			client = new Client();
     		}
-    		System.out.println(r.getLocationString()+" requested");
     		allHits = client.getWeightHistogram(alignIDs,
                                                 r.getGenome().getChromID(r.getChrom()),
                                                 loadType2,
