@@ -66,6 +66,7 @@ public class ServerTask {
         username = null;
         uname = null;
         haventTriedRead = 0;
+        socket.setTcpNoDelay(true);
         socket.setReceiveBufferSize(Server.BUFFERLEN);
         socket.setSendBufferSize(Server.BUFFERLEN);
         socket.setSoTimeout(1000000);
@@ -75,7 +76,6 @@ public class ServerTask {
         outchannel = Channels.newChannel(outstream);
         bufferpos = 0;
         sasl = null;
-        socket.setTcpNoDelay(true);
         taskInactivityLimit = inactivityLimit;
         if(taskInactivityLimit>0)
         	limitInactivity=true;
