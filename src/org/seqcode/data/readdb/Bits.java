@@ -129,7 +129,8 @@ public class Bits {
         //int cycle=0;
         while (outputpos < count) {
             bb.position(bytesLeftover);
-            int toread = Math.min(((count - outputpos) * 4)-bytesLeftover, buffer.length - bytesLeftover);
+            //int toread = Math.min(((count - outputpos) * 4)-bytesLeftover, buffer.length - bytesLeftover);
+            int toread = Math.min(((count - outputpos) * 4), buffer.length - bytesLeftover);
             //System.out.println("ReadInts: cycle "+cycle+", toread "+toread);
             int bytesavail = instream.read(buffer, bytesLeftover, toread) + bytesLeftover;
             //System.out.println("ReadInts: cycle "+cycle+", bytesavail "+bytesavail);
