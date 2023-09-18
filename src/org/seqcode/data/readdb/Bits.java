@@ -99,7 +99,7 @@ public class Bits {
     public static void sendFloats(float[] a, OutputStream stream, byte[] buffer) throws IOException {
         int i = 0;
         ByteBuffer bb = ByteBuffer.wrap(buffer);
-        System.out.println("SendFloats: "+a.length+ " datapoints");
+        System.out.println("SendFloats: "+a.length+ " datapoints, "+buffer.length+" buffer-length");
         int cycle=0;
         while (i < a.length) {
             int end = i + (buffer.length/4) - 1;
@@ -113,7 +113,7 @@ public class Bits {
                 bufpos++;
             }		
             stream.write(buffer,0,(end - i + 1) * 4);
-            System.out.println("SendFloats: cycle "+cycle+ ", "+buffer.length+" bytes");
+            System.out.println("SendFloats: cycle "+cycle+ ", "+(end - i + 1)+" bytes, i="+i);
             cycle++;
             i += buffer.length / 4;
         }
@@ -159,7 +159,7 @@ public class Bits {
         int outputpos = 0;
         int bytesLeftover = 0;
         ByteBuffer bb = ByteBuffer.wrap(buffer);
-        System.out.println("ReadFloats: "+count+ " datapoints");
+        System.out.println("ReadFloats: "+count+ " datapoints, "+buffer.length+" buffer-length");
         int cycle=0;
         while (outputpos < count) {
             bb.position(bytesLeftover);
