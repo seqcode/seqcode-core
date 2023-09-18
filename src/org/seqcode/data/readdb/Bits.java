@@ -99,6 +99,8 @@ public class Bits {
     public static void sendFloats(float[] a, OutputStream stream, byte[] buffer) throws IOException {
         int i = 0;
         ByteBuffer bb = ByteBuffer.wrap(buffer);
+        System.out.println("SendFloats: "+a.length+ " datapoints");
+        int cycle=0;
         while (i < a.length) {
             int end = i + (buffer.length/4) - 1;
             bb.clear();
@@ -111,6 +113,8 @@ public class Bits {
                 bufpos++;
             }		
             stream.write(buffer,0,(end - i + 1) * 4);
+            System.out.println("SendFloats: cycle "+cycle+ ", "+(end - i + 1)+" bytes");
+            cycle++;
             i += buffer.length / 4;
         }
         stream.flush();
@@ -154,10 +158,14 @@ public class Bits {
         int outputpos = 0;
         int bytesLeftover = 0;
         ByteBuffer bb = ByteBuffer.wrap(buffer);
+        System.out.println("ReadFloats: "+count+ " datapoints");
+        int cycle=0;
         while (outputpos < count) {
             bb.position(bytesLeftover);
             int toread = Math.min((count - outputpos) * 4, buffer.length - bytesLeftover);
+            System.out.println("ReadFloats: cycle "+cycle+", toread "+toread);
             int bytesavail = instream.read(buffer, bytesLeftover, toread) + bytesLeftover;
+            System.out.println("ReadFloats: cycle "+cycle+", bytesavail "+bytesavail);
             if (bytesavail == -1 && outputpos < count) {
                 IOException e = new IOException(String.format("couldn't read enough bytes : %d %d", outputpos, count));
                 e.printStackTrace();
@@ -180,6 +188,7 @@ public class Bits {
             if (bytesLeftover > bb.capacity()) {
                 System.err.println(String.format("leftover %d capacity %d", bytesLeftover, bb.capacity()));
             }
+            cycle++;
         }
         return output;
     }    
