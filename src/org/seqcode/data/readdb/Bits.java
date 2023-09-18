@@ -118,6 +118,7 @@ public class Bits {
             i += buffer.length / 4;
         }
         stream.flush();
+        System.out.println("SendFloats: Flushed");
     }
     public static int[] readInts(int count, InputStream instream, byte[] buffer) throws IOException {
         int[] output = new int[count];

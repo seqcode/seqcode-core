@@ -1344,7 +1344,8 @@ public class ServerTask {
 	        Bits.sendInts(parray, outstream, buffer);
 	        System.out.println("Sent pos");
 	        Bits.sendFloats(farray, outstream, buffer);
-	        System.out.println("Sent floats");
+	        outstream.flush();
+	        System.out.println("Sent floats & flushed");
     	}
     }
     public void processCheckSort(Header header, Hits hits) throws IOException {
