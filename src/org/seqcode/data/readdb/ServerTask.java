@@ -54,7 +54,7 @@ public class ServerTask {
     private long lastActivity=0;
 
     public ServerTask(Server serv, Socket s, int inactivityLimit) throws IOException {
-        buffer = new byte[8192];
+        buffer = new byte[1024];
         request = new Request();
         args = new ArrayList<String>();
         saslprops = new HashMap<String,String>();

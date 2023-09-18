@@ -125,14 +125,14 @@ public class Bits {
         int outputpos = 0;
         int bytesLeftover = 0;
         ByteBuffer bb = ByteBuffer.wrap(buffer);
-        //System.out.println("ReadFloats: "+count+ " datapoints, "+buffer.length+" buffer-length");
+        System.out.println("ReadFloats: "+count+ " datapoints, "+buffer.length+" buffer-length");
         int cycle=0;
         while (outputpos < count) {
             bb.position(bytesLeftover);
             int toread = Math.min(((count - outputpos) * 4)-bytesLeftover, buffer.length - bytesLeftover);
-            //System.out.println("ReadInts: cycle "+cycle+", toread "+toread);
+            System.out.println("ReadInts: cycle "+cycle+", toread "+toread);
             int bytesavail = instream.read(buffer, bytesLeftover, toread) + bytesLeftover;
-            //System.out.println("ReadInts: cycle "+cycle+", bytesavail "+bytesavail);
+            System.out.println("ReadInts: cycle "+cycle+", bytesavail "+bytesavail);
             
             if (bytesavail == -1 && outputpos < count) {
                 IOException e = new IOException(String.format("couldn't read enough bytes : %d %d", outputpos, count));
@@ -149,7 +149,7 @@ public class Bits {
             }
             System.arraycopy(buffer, bytesavail, buffer, 0, bytesLeftover);
             
-            //System.out.println("ReadInts: cycle "+cycle+", bytesLeftover "+bytesLeftover+", outputpos "+outputpos);
+            System.out.println("ReadInts: cycle "+cycle+", bytesLeftover "+bytesLeftover+", outputpos "+outputpos);
             if (bytesLeftover > bb.capacity()) {
                 System.err.println(String.format("leftover %d capacity %d", bytesLeftover, bb.capacity()));
             }
