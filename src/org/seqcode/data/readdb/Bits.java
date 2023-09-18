@@ -182,6 +182,7 @@ public class Bits {
                 j++;
             }
             bytesLeftover = bytesavail - i*4;
+            System.out.println("ReadFloats: cycle "+cycle+", bytesLeftover "+bytesLeftover);
             if (bytesLeftover < 0) {
                 System.err.println(String.format("avail was %d but i=%d",bytesavail,i));
             }
