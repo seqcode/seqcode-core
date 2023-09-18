@@ -111,7 +111,6 @@ public class Bits {
             for (int j = i; j <= end; j++) {
                 bb.putFloat(bufpos*4, a[j]);
                 bufpos++;
-                System.out.println("\t"+a[j]);
             }		
             stream.write(buffer,0,(end - i + 1) * 4);
             System.out.println("SendFloats: cycle "+cycle+ ", "+buffer.length+" bytes");
@@ -197,10 +196,7 @@ public class Bits {
             bb.position(0);
             int i=0;
             for (i = 0; i < bytesavail / 4; i++) {
-                //output[outputpos++] = bb.getFloat();
-            	float tmp = bb.getFloat();
-            	output[outputpos++] = tmp;
-            	System.out.println("\t"+tmp);
+                output[outputpos++] = bb.getFloat();
             }
             System.arraycopy(buffer, bytesavail, buffer, 0, bytesLeftover);
             
