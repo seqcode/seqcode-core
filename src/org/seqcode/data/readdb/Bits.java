@@ -125,14 +125,14 @@ public class Bits {
         int outputpos = 0;
         int bytesLeftover = 0;
         ByteBuffer bb = ByteBuffer.wrap(buffer);
-        System.out.println("ReadFloats: "+count+ " datapoints, "+buffer.length+" buffer-length");
-        int cycle=0;
+        //System.out.println("ReadInts: "+count+ " datapoints, "+buffer.length+" buffer-length");
+        //int cycle=0;
         while (outputpos < count) {
             bb.position(bytesLeftover);
             int toread = Math.min(((count - outputpos) * 4)-bytesLeftover, buffer.length - bytesLeftover);
-            System.out.println("ReadInts: cycle "+cycle+", toread "+toread);
+            //System.out.println("ReadInts: cycle "+cycle+", toread "+toread);
             int bytesavail = instream.read(buffer, bytesLeftover, toread) + bytesLeftover;
-            System.out.println("ReadInts: cycle "+cycle+", bytesavail "+bytesavail);
+            //System.out.println("ReadInts: cycle "+cycle+", bytesavail "+bytesavail);
             
             if (bytesavail == -1 && outputpos < count) {
                 IOException e = new IOException(String.format("couldn't read enough bytes : %d %d", outputpos, count));
@@ -149,11 +149,11 @@ public class Bits {
             }
             System.arraycopy(buffer, bytesavail, buffer, 0, bytesLeftover);
             
-            System.out.println("ReadInts: cycle "+cycle+", bytesLeftover "+bytesLeftover+", outputpos "+outputpos);
+            //System.out.println("ReadInts: cycle "+cycle+", bytesLeftover "+bytesLeftover+", outputpos "+outputpos);
             if (bytesLeftover > bb.capacity()) {
                 System.err.println(String.format("leftover %d capacity %d", bytesLeftover, bb.capacity()));
             }
-            cycle++;
+            //cycle++;
         }
         return output;
     }
@@ -176,22 +176,6 @@ public class Bits {
                 e.printStackTrace();
                 throw e;
             }
-            
-            /*
-            int i = 0;
-            for (i = 0; i < bytesavail / 4 && outputpos < count; i++) {
-                output[outputpos++] = bb.getFloat(i*4);
-            }
-            int j = i * 4 + 1;
-            while (j < bytesavail) {
-                buffer[j - i*4] = buffer[j];
-                j++;
-            }
-            bytesLeftover = bytesavail - i*4;
-            if (bytesLeftover < 0) {
-                System.err.println(String.format("avail was %d but i=%d",bytesavail,i));
-            }
-            */
             
             bytesLeftover = bytesavail % 4;
             bytesavail -= bytesLeftover;
