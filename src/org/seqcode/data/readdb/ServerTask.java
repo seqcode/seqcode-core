@@ -69,6 +69,7 @@ public class ServerTask {
         socket.setReceiveBufferSize(Server.BUFFERLEN);
         socket.setSendBufferSize(Server.BUFFERLEN);
         socket.setSoTimeout(1000000);
+        socket.setKeepAlive(true);
         instream = new BufferedInputStream(socket.getInputStream());
         outstream = socket.getOutputStream();
         outchannel = Channels.newChannel(outstream);

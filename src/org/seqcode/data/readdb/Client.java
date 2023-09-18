@@ -127,6 +127,7 @@ public class Client implements ReadOnlyClient {
     	
     	synchronized(this){
 	    	socket = new Socket(hostname,portnum);
+	        socket.setKeepAlive(true);
 	        socket.setTcpNoDelay(true);
 	        socket.setSendBufferSize(BUFFERLEN);
 	        socket.setReceiveBufferSize(BUFFERLEN);
