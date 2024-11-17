@@ -116,7 +116,7 @@
 	<!-- Depends: build, unjarall, setpwfilespath                         		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
 	<!--              for the seqview browser.  							     -->
-	<!--   ant -Dpwbasepath=/gpfs/group/sam77/default/code/pwfiles  -Dpwset=mahonylab makeseqviewjar     -->
+	<!--   ant -Dpwbasepath=/storage/group/sam77/default/code/pwfiles  -Dpwset=mahonylab makeseqviewjar     -->
 	<!-- ======================================================================= -->
   <target name="makeseqviewjar" depends="build, unjarall, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
@@ -136,7 +136,7 @@
 	<!-- Depends: build, unjarall, setpwfilespath                         		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
 	<!--              for the seqview browser.                                  -->
-	<!--    ant -Dpwbasepath=/gpfs/group/sam77/default/code/pwfiles -Dpwset=pughlab makesigniftestjar     -->
+	<!--    ant -Dpwbasepath=/storage/group/sam77/default/code/pwfiles -Dpwset=pughlab makesigniftestjar     -->
 	<!-- ======================================================================= -->
   <target name="makesigniftestjar" depends="build, unjarall, setpwfilespath">
     <delete dir="${build.unjar.dir}/META-INF"/>
@@ -156,7 +156,7 @@
 	<!-- Depends: build, unjarall                                          		 -->
 	<!-- Description: Compiles all the client source files and builds the jar    -->
 	<!--              for the seqcode jar.    									 -->
-	<!--     ant -Dpwbasepath=/gpfs/group/sam77/default/code/pwfiles  -Dpwset=mahonylab  makeseqcodejar    -->
+	<!--     ant -Dpwbasepath=/storage/group/sam77/default/code/pwfiles  -Dpwset=mahonylab  makeseqcodejar    -->
 	<!-- ======================================================================= -->
 	
   <target name="makeseqcodejar" depends="build, unjarall, setpwfilespath">
@@ -176,7 +176,7 @@
     <mkdir dir="${build.unjar.dir}.tmp" />
     <unjar dest="${build.unjar.dir}.tmp">
       <fileset dir="${lib.dir}">
-	<include name="apache-commons/commons-cli-1.3.1.jar"/>
+	<include name="apache-commons/commons-cli-1.5.0.jar"/>
       </fileset>
     </unjar>
     <move file="${build.unjar.dir}.tmp" tofile="${build.unjar.dir}" />

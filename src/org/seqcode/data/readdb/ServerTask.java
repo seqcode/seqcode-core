@@ -54,7 +54,7 @@ public class ServerTask {
     private long lastActivity=0;
 
     public ServerTask(Server serv, Socket s, int inactivityLimit) throws IOException {
-        buffer = new byte[8192];
+        buffer = new byte[Server.BUFFERLEN];
         request = new Request();
         args = new ArrayList<String>();
         saslprops = new HashMap<String,String>();
@@ -66,15 +66,16 @@ public class ServerTask {
         username = null;
         uname = null;
         haventTriedRead = 0;
+        socket.setTcpNoDelay(true);
         socket.setReceiveBufferSize(Server.BUFFERLEN);
         socket.setSendBufferSize(Server.BUFFERLEN);
         socket.setSoTimeout(1000000);
+        socket.setKeepAlive(true);
         instream = new BufferedInputStream(socket.getInputStream());
         outstream = socket.getOutputStream();
         outchannel = Channels.newChannel(outstream);
         bufferpos = 0;
         sasl = null;
-        socket.setTcpNoDelay(true);
         taskInactivityLimit = inactivityLimit;
         if(taskInactivityLimit>0)
         	limitInactivity=true;
@@ -1338,8 +1339,9 @@ public class ServerTask {
 	        }
 	        printOK();
 	        printString(Integer.toString(parray.length) + "\n");
-	        Bits.sendInts(parray, outstream, buffer);        
+	        Bits.sendInts(parray, outstream, buffer);
 	        Bits.sendFloats(farray, outstream, buffer);
+	        outstream.flush();
     	}
     }
     public void processCheckSort(Header header, Hits hits) throws IOException {

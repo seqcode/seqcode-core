@@ -82,6 +82,7 @@ public class Bits {
         ByteBuffer bb = ByteBuffer.wrap(buffer);
         while (i < a.length) {
             int end = i + (buffer.length/4) - 1;
+            bb.clear();
             int bufpos = 0;
             if (end >= a.length) {
                 end = a.length - 1;
@@ -100,6 +101,7 @@ public class Bits {
         ByteBuffer bb = ByteBuffer.wrap(buffer);
         while (i < a.length) {
             int end = i + (buffer.length/4) - 1;
+            bb.clear();
             int bufpos = 0;
             if (end >= a.length) {
                 end = a.length - 1;
@@ -120,27 +122,24 @@ public class Bits {
         ByteBuffer bb = ByteBuffer.wrap(buffer);
         while (outputpos < count) {
             bb.position(bytesLeftover);
-            int toread = Math.min((count - outputpos) * 4, buffer.length - bytesLeftover);
+            int toread = Math.min(((count - outputpos) * 4)-bytesLeftover, buffer.length - bytesLeftover);
             int bytesavail = instream.read(buffer, bytesLeftover, toread) + bytesLeftover;
+            
             if (bytesavail == -1 && outputpos < count) {
                 IOException e = new IOException(String.format("couldn't read enough bytes : %d %d", outputpos, count));
                 e.printStackTrace();
                 throw e;
             }
-
-            int i = 0;
-            for (i = 0; i < bytesavail / 4 && outputpos < count; i++) {
-                output[outputpos++] = bb.getInt(i*4);
+            
+            bytesLeftover = bytesavail % 4;
+            bytesavail -= bytesLeftover;
+            bb.position(0);
+            int i=0;
+            for (i = 0; i < bytesavail / 4; i++) {
+                output[outputpos++] = bb.getInt();
             }
-            int j = i * 4 + 1;
-            while (j < bytesavail) {
-                buffer[j - i*4] = buffer[j];
-                j++;
-            }
-            bytesLeftover = bytesavail - i*4;
-            if (bytesLeftover < 0) {
-                System.err.println(String.format("avail was %d but i=%d",bytesavail,i));
-            }
+            System.arraycopy(buffer, bytesavail, buffer, 0, bytesLeftover);
+            
             if (bytesLeftover > bb.capacity()) {
                 System.err.println(String.format("leftover %d capacity %d", bytesLeftover, bb.capacity()));
             }
@@ -154,27 +153,24 @@ public class Bits {
         ByteBuffer bb = ByteBuffer.wrap(buffer);
         while (outputpos < count) {
             bb.position(bytesLeftover);
-            int toread = Math.min((count - outputpos) * 4, buffer.length - bytesLeftover);
+            int toread = Math.min(((count - outputpos) * 4)-bytesLeftover, buffer.length - bytesLeftover);
             int bytesavail = instream.read(buffer, bytesLeftover, toread) + bytesLeftover;
+            
             if (bytesavail == -1 && outputpos < count) {
                 IOException e = new IOException(String.format("couldn't read enough bytes : %d %d", outputpos, count));
                 e.printStackTrace();
                 throw e;
             }
             
-            int i = 0;
-            for (i = 0; i < bytesavail / 4 && outputpos < count; i++) {
-                output[outputpos++] = bb.getFloat(i*4);
+            bytesLeftover = bytesavail % 4;
+            bytesavail -= bytesLeftover;
+            bb.position(0);
+            int i=0;
+            for (i = 0; i < bytesavail / 4; i++) {
+                output[outputpos++] = bb.getFloat();
             }
-            int j = i * 4 + 1;
-            while (j < bytesavail) {
-                buffer[j - i*4] = buffer[j];
-                j++;
-            }
-            bytesLeftover = bytesavail - i*4;
-            if (bytesLeftover < 0) {
-                System.err.println(String.format("avail was %d but i=%d",bytesavail,i));
-            }
+            System.arraycopy(buffer, bytesavail, buffer, 0, bytesLeftover);
+            
             if (bytesLeftover > bb.capacity()) {
                 System.err.println(String.format("leftover %d capacity %d", bytesLeftover, bb.capacity()));
             }
