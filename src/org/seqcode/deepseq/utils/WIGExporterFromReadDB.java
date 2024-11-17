@@ -50,6 +50,8 @@ public class WIGExporterFromReadDB {
 	private boolean loadType1=true;
 	private boolean loadType2=false;
 	private boolean loadPairs=false;
+	private boolean rpm=false;
+	private double totalReads=0;
 	private Client client=null;
 	private List<String> exptNames = new ArrayList<String>();
 	private List<SeqAlignment> aligns = new ArrayList<SeqAlignment>();
@@ -87,6 +89,7 @@ public class WIGExporterFromReadDB {
 					"\t--description <string to use as track description>\n" +
 					"\t--ylimit <default track y max>\n" +
 					"\t--color <R,G,B>\n" +
+					"\t--rpm [read per million normalize]" +
 					"\t--out <output file name>");
 			System.exit(1);
 		}
@@ -102,9 +105,9 @@ public class WIGExporterFromReadDB {
 		String strandStr = Args.parseString(args,"strand",".");
 		strand = strandStr.charAt(0);
 		winSize = Args.parseInteger(args,"winsize",winSize);
+		rpm = Args.parseFlags(args).contains("rpm") ? true : false;
 		
 		//General options processed directly by ExptConfig
-		
 		perBaseMax = Args.parseInteger(args,"pbmax",perBaseMax);
 		if(ap.hasKey("ylimit")){trackYMax=Args.parseInteger(args,"ylimit",-1);}
 	    winStep=winSize;
@@ -114,6 +117,7 @@ public class WIGExporterFromReadDB {
 		    		
 		    // Load the experiments
 		    sdloader = new SeqDataLoader();
+		    
 		    List<SeqLocator> rdbexpts = Args.parseSeqExpt(args,"rdbexpt");
 		    if (rdbexpts.size()>0){
 		    	//Start a new ReadDB client
@@ -143,6 +147,8 @@ public class WIGExporterFromReadDB {
 			            if(alignment.getNumPairs()>0){
 			            	availPairedChroms.get(alignment).addAll(client.getChroms(Integer.toString(alignment.getDBID()), false,true, null));
 			            }
+			            
+			            totalReads+=alignment.getTotalWeight();
 		        	}else{
 		        		System.err.println("ReadDBHitLoader: Error: "+alignment.getExpt().getName()+";"+alignment.getExpt().getReplicate()+";"+alignment.getName()+"\tRDBID:"+alignment.getDBID()+" does not exist in ReadDB.");
 		        		System.exit(1);
@@ -177,6 +183,7 @@ public class WIGExporterFromReadDB {
 	public void execute(){
 		try {
 			FileWriter fw = new FileWriter(outName+".wig");
+			double millionReads = totalReads/1000000;
 			
 			double basesDone=0, printStep=10000000,  numPrint=0;
 			if(trackName.equals("out"))
@@ -225,13 +232,19 @@ public class WIGExporterFromReadDB {
 						int binid = (int)Math.max(0, ((double)(currWin.getStart()-currSubRegion.getStart())/winStep));
 						double winHits=(double)stackedHitCounts[binid];
 						
+						if(rpm)
+							winHits/=millionReads;
+						
 						if(winHits>0){
 							if(!recording){
 								//WIG is 1-based, inclusive (although bigWig is 0 based)
 								fw.write("fixedStep chrom=chr"+currSubRegion.getChrom()+" start="+i+" step="+winStep+" span="+winSize+"\n");
 								recording=true;
 							}
-							fw.write(String.format("%.1f\n", winHits));
+							if(rpm)
+								fw.write(String.format("%.4f\n", winHits));
+							else
+								fw.write(String.format("%.1f\n", winHits));
 						}else{
 							recording=false;
 						}
@@ -263,7 +276,7 @@ public class WIGExporterFromReadDB {
     		if(client==null) {
     			client = new Client();
     		}
-    		
+    		System.out.println(r.getLocationString()+" requested");
     		allHits = client.getWeightHistogram(alignIDs,
                                                 r.getGenome().getChromID(r.getChrom()),
                                                 loadType2,
