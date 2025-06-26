@@ -52,8 +52,8 @@ public class StrandedPair implements Comparable<StrandedPair>{
 	public int getFragmentSize(){
 		if(!sameChrom)
 			return -1;
-		else if((r1Coordinate<r2Coordinate && r1Strand=='+' && r2Strand=='-') || (r2Coordinate<r1Coordinate && r2Strand=='+' && r1Strand=='-')){
-			return Math.abs(r2Coordinate-r1Coordinate);
+		else if((r1Coordinate<=r2Coordinate && r1Strand=='+' && r2Strand=='-') || (r2Coordinate<=r1Coordinate && r2Strand=='+' && r1Strand=='-')){
+			return Math.abs(r2Coordinate-r1Coordinate)+1;
 		}else{
 			return -1;
 		}
