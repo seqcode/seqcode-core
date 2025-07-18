@@ -62,7 +62,7 @@ public class HitLoaderFactory {
 		if(!file.isFile() && !format.equals("HDF5Cache")){System.err.println("File not found: "+file.getName());System.exit(1);}
 		if(format.equals("SAM") || format.equals("BAM")){
 			currReader = new SAMFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(), econfig.getLoadRead2(), econfig.getLoadPairs());
-		}if(format.equals("SAMPE") || format.equals("BAMPE")){
+		}else if(format.equals("SAMPE") || format.equals("BAMPE")){
 			currReader = new SAMFilePEHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads());
 		}else if(format.equals("TOPSAM")){
 			currReader = new TophatFileHitLoader(file,useNonUnique, econfig.getLoadType1Reads(), econfig.getLoadType2Reads(),  econfig.getLoadRead2(), econfig.getLoadPairs());
@@ -78,8 +78,7 @@ public class HitLoaderFactory {
 			currReader = new HDF5HitLoader(econfig.getGenome(), file, econfig.getLoadReads(), useNonUnique, econfig.getLoadRead2(), econfig.getLoadPairs(), false);			
 		}else if(format.equals("HDF5Cache")) {
 			currReader = new HDF5HitLoader(econfig.getGenome(), file, econfig.getLoadReads(), useNonUnique, econfig.getLoadRead2(), econfig.getLoadPairs(), true);			
-		}
-		else{
+		}else{
 		    System.err.println("Unknown file format: "+format);
 		    System.exit(1);
 		}
