@@ -124,8 +124,7 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
             	System.exit(-1);
             }
             
-        }
-        if (chromseq == null) {
+        } else {
             java.sql.Connection cxn = DatabaseConnectionManager.getConnection("core");
             PreparedStatement ps = cxn.prepareStatement("select sequence from chromsequence where id = ?");
             ps.setInt(1,chromid);
@@ -173,22 +172,27 @@ public class SequenceGenerator<X extends Region> implements Mapper<X,String>, Se
 	                result = chromString.substring(region.getStart()-1, region.getEnd());
 	            }
 	            if (result == null) {
-	                java.sql.Connection cxn =
-	                DatabaseConnectionManager.getConnection("core");
-	                PreparedStatement ps;
-	                //1-based version (mysql substr is 1-based)
-	                int start = Math.max(region.getStart(), 0);
-	                ps = cxn.prepareStatement("select substr(sequence,?,?) from chromsequence where id = ?");
-	                ps.setInt(1,start);
-	                ps.setInt(2,region.getEnd() - region.getStart() + 1);
-	                ps.setInt(3,chromid);                   
-	                ResultSet rs = ps.executeQuery();
-	                if (rs.next()) {
-	                    result = rs.getString(1);
-	                } 
-	                rs.close();
-	                ps.close();
-	                if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
+	            	if(useLocalFiles) {
+	            		System.out.println("Cannot find this region in provided genome files: "+region.getLocationString());
+	    	        	System.exit(-1);
+	            	}else {
+		                java.sql.Connection cxn =
+		                DatabaseConnectionManager.getConnection("core");
+		                PreparedStatement ps;
+		                //1-based version (mysql substr is 1-based)
+		                int start = Math.max(region.getStart(), 0);
+		                ps = cxn.prepareStatement("select substr(sequence,?,?) from chromsequence where id = ?");
+		                ps.setInt(1,start);
+		                ps.setInt(2,region.getEnd() - region.getStart() + 1);
+		                ps.setInt(3,chromid);                   
+		                ResultSet rs = ps.executeQuery();
+		                if (rs.next()) {
+		                    result = rs.getString(1);
+		                } 
+		                rs.close();
+		                ps.close();
+		                if(cxn!=null) try {cxn.close();}catch (Exception ex) {throw new DatabaseException("Couldn't close connection with role core", ex); }
+	            	}
 	            }
 	        } catch (SQLException ex) {
 	            ex.printStackTrace();           

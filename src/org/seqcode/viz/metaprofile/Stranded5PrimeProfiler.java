@@ -33,23 +33,11 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 	private int baseRelPosition=0;  //Only plot tags that have this base at baseRelPosition
 	private SequenceGenerator seqgen=null;
 	private int fivePrimeShift = 0;
+	private boolean cpmNorm = false;
 	private boolean signal = true; // Profile signal
 	
-	public Stranded5PrimeProfiler(GenomeConfig genConfig, BinningParameters ps, ExperimentManager man, char strand, int fivePrimeShift, char base, int baseRelPosition) {
-		genome = genConfig.getGenome();
-		manager = man;
-		params = ps;
-		this.strand = strand;
-		this.base = base;
-		this.baseRelPosition = baseRelPosition;
-		this.fivePrimeShift=fivePrimeShift;
-		
-		if(base != '.'){
-			seqgen = genConfig.getSequenceGenerator();
-		}
-	}
 	
-	public Stranded5PrimeProfiler(GenomeConfig genConfig, BinningParameters ps, ExperimentManager man, char strand, int fivePrimeShift, char base, int baseRelPosition, boolean profileSignal) {
+	public Stranded5PrimeProfiler(GenomeConfig genConfig, BinningParameters ps, ExperimentManager man, char strand, int fivePrimeShift, char base, int baseRelPosition, boolean profileSignal, boolean countsPerMillion) {
 		genome = genConfig.getGenome();
 		manager = man;
 		params = ps;
@@ -58,6 +46,7 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 		this.baseRelPosition = baseRelPosition;
 		this.fivePrimeShift=fivePrimeShift;
 		this.signal=profileSignal;
+		this.cpmNorm=countsPerMillion;
 		
 		if(base != '.'){
 			seqgen = genConfig.getSequenceGenerator();
@@ -98,7 +87,8 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 		double[] array = new double[params.getNumBins()];
 		for(int i = 0; i < array.length; i++) { array[i] = 0; }
 		for(ControlledExperiment expt : manager.getReplicates()){
-			Sample currSample = signal ? expt.getSignal() : expt.getControl();			
+			Sample currSample = signal ? expt.getSignal() : expt.getControl();	
+			double normFactor = cpmNorm ? 1000000/currSample.getHitCount() : 1.0;
 			List<StrandedBaseCount> sbcs = currSample.getBases(extQuery);
 			for(StrandedBaseCount sbc : sbcs){
 				if(base=='.' || (seq!=null && getBaseAtPosition(sbc, baseRelPosition, extQuery, seq)==base)){
@@ -109,7 +99,7 @@ public class Stranded5PrimeProfiler implements PointProfiler<Point,PointProfile>
 							int hit5Prime = hitPos-start;
 							if(pointStrand=='-')
 								hit5Prime = end-hitPos;
-							array[params.findBin(hit5Prime)]+=hit.getWeight();
+							array[params.findBin(hit5Prime)]+=(hit.getWeight()*normFactor);
 						}				
 					}
 				}

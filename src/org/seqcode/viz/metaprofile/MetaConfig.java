@@ -19,6 +19,7 @@ public class MetaConfig {
 	public int lineThick = 1;
 	public double pbMax = 100;
 	public char strand = '.';
+	public boolean cpmNorm=false;
 	public boolean drawColorBar = true;
 	public boolean saveSVG = false;
 	public boolean transparent = false;
@@ -52,6 +53,7 @@ public class MetaConfig {
 			strand = Args.parseString(args, "strand", ".").charAt(0);
 			drawColorBar = !Args.parseFlags(args).contains("nocolorbar");
 			saveSVG = Args.parseFlags(args).contains("svg");
+			cpmNorm = Args.parseFlags(args).contains("cpm");
 			transparent = Args.parseFlags(args).contains("transparent");
 			printMatrix = Args.parseFlags(args).contains("printMatrix");
 			profilerType = Args.parseString(args, "profiler", "simplechipseq");	
